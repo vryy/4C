@@ -158,11 +158,6 @@ void POROELAST::PORO_SCATRA_Base::SetScatraSolution()
   poro_->FluidField()->SetIterScalarFields(scatra_->ScaTraField()->Phinp(),
                                         scatra_->ScaTraField()->Phin(),
                                         scatra_->ScaTraField()->Phidtnp(),
-                                        Teuchos::null,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
                                         scatra_->ScaTraField()->Discretization());
 }
 

@@ -85,6 +85,7 @@ FLD::TimIntLoma::~TimIntLoma()
 }
 
 /*----------------------------------------------------------------------*
+ | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::SetIterScalarFields(
@@ -98,8 +99,77 @@ void FLD::TimIntLoma::SetIterScalarFields(
    const double             thermpressdtam,
    Teuchos::RCP<DRT::Discretization> scatradis)
 {
-  FluidImplicitTimeInt::SetIterScalarFields(scalaraf,scalaram,scalardtam,fsscalaraf,
-      thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,scatradis);
+  // initializations
+  int err(0);
+  double value(0.0);
+  std::vector<int> nodedofs;
+
+  //--------------------------------------------------------------------------
+  // Filling the scaaf-vector and scaam-vector at time n+alpha_F/n+1 and
+  // n+alpha_M/n, respectively, with scalar at pressure dofs
+  // Additionally, filling the scaam-vector at time n+alpha_M/n with
+  // velocity at time n at velocity dofs for OST/BDF2
+  // Filling the accam-vector at time n+alpha_M/n+1, respectively, with
+  // scalar time derivative values at pressure dofs
+  //--------------------------------------------------------------------------
+  // get velocity values at time n in scaam-vector as copy from veln-vector
+  scaam_->Update(1.0,*veln_,0.0);
+
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = scatradis->NumDof(0,lscatranode);
+    const int globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
+    const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    // get the processor's local fluid node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    // get the global ids of degrees of freedom associated with this node
+    nodedofs = discret_->Dof(0,lnode);
+    // get global and processor's local pressure dof id (using the map!)
+    const int numdof = discret_->NumDof(0,lnode);
+    const int globaldofid = discret_->Dof(0,lnode,numdof-1);
+    const int localdofid = scaam_->Map().LID(globaldofid);
+    if (localdofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    // now copy the values
+    value = (*scalaraf)[localscatradofid];
+    err = scaaf_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into scaaf_");
+
+    value = (*scalaram)[localscatradofid];
+    err = scaam_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into scaam_");
+
+    if (scalardtam != Teuchos::null)
+    {
+      value = (*scalardtam)[localscatradofid];
+    }
+    else
+    {
+      value = 0.0; // for safety reasons: set zeros in accam_
+    }
+    err = accam_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into accam_");
+
+    if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      if (fsscalaraf != Teuchos::null)
+       value = (*fsscalaraf)[localscatradofid];
+      else
+       dserror("Expected fine-scale scalar!");
+
+      err = fsscaaf_->ReplaceMyValue(localdofid,0,value);
+      if (err != 0) dserror("error while inserting value into fsscaaf_");
+    }
+  }
 
   //--------------------------------------------------------------------------
   // get thermodynamic pressure at n+alpha_F/n+1 and n+alpha_M/n and
@@ -111,8 +181,8 @@ void FLD::TimIntLoma::SetIterScalarFields(
   thermpressdtam_ = thermpressdtam;
 
   return;
-
 } // TimIntLoma::SetIterScalarFields
+
 
 /*----------------------------------------------------------------------*
  | set scalar fields     vg 09/09 |

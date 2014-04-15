@@ -4044,11 +4044,6 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
    Teuchos::RCP<const Epetra_Vector> scalaram,
    Teuchos::RCP<const Epetra_Vector> scalardtam,
-   Teuchos::RCP<const Epetra_Vector> fsscalaraf,
-   const double             thermpressaf,
-   const double             thermpressam,
-   const double             thermpressdtaf,
-   const double             thermpressdtam,
    Teuchos::RCP<DRT::Discretization> scatradis)
 {
   // initializations
@@ -4111,16 +4106,6 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(
     err = accam_->ReplaceMyValue(localdofid,0,value);
     if (err != 0) dserror("error while inserting value into accam_");
 
-    if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
-    {
-      if (fsscalaraf != Teuchos::null)
-       value = (*fsscalaraf)[localscatradofid];
-      else
-       dserror("Expected fine-scale scalar!");
-
-      err = fsscaaf_->ReplaceMyValue(localdofid,0,value);
-      if (err != 0) dserror("error while inserting value into fsscaaf_");
-    }
   }
   return;
 } // FluidImplicitTimeInt::SetIterScalarFields

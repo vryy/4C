@@ -106,15 +106,8 @@ namespace ADAPTER
     virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,
-                                   Teuchos::RCP<const Epetra_Vector> fsscalaraf,
-                                   const double             thermpressaf,
-                                   const double             thermpressam,
-                                   const double             thermpressdtaf,
-                                   const double             thermpressdtam,
                                    Teuchos::RCP<DRT::Discretization> scatradis)
-    { return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, fsscalaraf, thermpressaf,
-                                       thermpressam, thermpressdtaf,
-                                       thermpressdtam, scatradis); }
+    { return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, scatradis); }
     virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,

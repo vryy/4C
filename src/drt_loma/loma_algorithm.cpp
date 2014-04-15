@@ -24,6 +24,7 @@ Maintainer: Volker Gravemeier
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fluid/fluid_timint_loma.H"
 
 #include "../drt_scatra/scatra_timint_loma.H"
 
@@ -494,7 +495,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
   {
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    FluidField().SetIterScalarFields(ScaTraField()->Phiaf(),
+    dynamic_cast<FLD::TimIntLoma&>(FluidField()).SetIterScalarFields(ScaTraField()->Phiaf(),
                                    ScaTraField()->Phiam(),
                                    ScaTraField()->Phidtam(),
                                    ScaTraField()->FsPhi(),
@@ -507,7 +508,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
   break;
   case INPAR::FLUID::timeint_one_step_theta:
   {
-    FluidField().SetIterScalarFields(ScaTraField()->Phinp(),
+    dynamic_cast<FLD::TimIntLoma&>(FluidField()).SetIterScalarFields(ScaTraField()->Phinp(),
                                    ScaTraField()->Phin(),
                                    ScaTraField()->Phidtnp(),
                                    ScaTraField()->FsPhi(),

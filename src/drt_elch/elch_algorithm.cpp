@@ -200,11 +200,6 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(), // we have to provide something here
         Teuchos::null,
-        Teuchos::null,
-        1.0,
-        1.0,
-        0.0,
-        0.0,
         ScaTraField()->Discretization());
     break;
   }
@@ -215,11 +210,6 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchN(),
         Teuchos::null,
-        Teuchos::null,
-        1.0,
-        1.0,
-        0.0,
-        0.0,
         ScaTraField()->Discretization());
     break;
   }

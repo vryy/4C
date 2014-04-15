@@ -327,11 +327,6 @@ public:
       Teuchos::RCP<const Epetra_Vector> scalaraf,
       Teuchos::RCP<const Epetra_Vector> scalaram,
       Teuchos::RCP<const Epetra_Vector> scalardtam,
-      Teuchos::RCP<const Epetra_Vector> fsscalaraf,
-      const double                      thermpressaf,
-      const double                      thermpressam,
-      const double                      thermpressdtaf,
-      const double                      thermpressdtam,
       Teuchos::RCP<DRT::Discretization> scatradis)
   { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 

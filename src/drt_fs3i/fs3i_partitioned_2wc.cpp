@@ -20,6 +20,7 @@ Maintainers: Volker Gravemeier & Lena Yoshihara
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_fluid/fluid_timint_loma.H"
 
 #include "../drt_scatra/scatra_timint_loma.H"
 
@@ -236,7 +237,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
     // derivatives and discretization based on time-integration scheme
     /*if (fsi_->FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
     {
-      fsi_->FluidField().SetIterScalarFields(fluidscatra_->ScaTraField()->Phiaf(),
+      dynamic_cast<FLD::TimIntLoma&>(fsi_->FluidField()).SetIterScalarFields(fluidscatra_->ScaTraField()->Phiaf(),
                                            fluidscatra_->ScaTraField()->Phiam(),
                                            fluidscatra_->ScaTraField()->Phidtam(),
                                            Teuchos::null,
@@ -250,7 +251,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
     }
     else
     {*/
-      fsi_->FluidField().SetIterScalarFields(fluidscatra_->ScaTraField()->Phinp(),
+      dynamic_cast<FLD::TimIntLoma&>(fsi_->FluidField()).SetIterScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                            fluidscatra_->ScaTraField()->Phin(),
                                            fluidscatra_->ScaTraField()->Phidtnp(),
                                            Teuchos::null,
