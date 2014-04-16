@@ -121,7 +121,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.5
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 4.51377515515661965e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 4.51361394148197814e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
