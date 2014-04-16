@@ -552,6 +552,35 @@ int main(
 
       break;
     }
+    case prb_fpssi:
+    {
+      std::string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* porofluidfield = problem.get_discretization(1);
+      FluidEnsightWriter porofluidwriter(porofluidfield, basename);
+      porofluidwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(2);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      /////////////
+
+      int numdisc = problem.num_discr();
+
+      for (int i=0; i<numdisc-4; ++i)
+      {
+        PostField* scatrafield = problem.get_discretization(4+i);
+        ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+
+      break;
+    }
     case prb_ssi:
     {
       std::string basename = problem.outname();

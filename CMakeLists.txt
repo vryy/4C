@@ -956,6 +956,7 @@ set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i_partitioned.cpp
   src/drt_fs3i/fs3i_partitioned_service.cpp
   src/drt_fs3i/fs3i_partitioned_1wc.cpp
+  src/drt_fs3i/fps3i_partitioned_1wc.cpp
   src/drt_fs3i/fs3i_partitioned_2wc.cpp
   src/drt_fs3i/biofilm_fsi.cpp
   src/drt_fs3i/aero_tfsi.cpp

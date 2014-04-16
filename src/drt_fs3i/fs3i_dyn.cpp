@@ -16,6 +16,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include "fs3i.H"
 #include "fs3i_partitioned_1wc.H"
+#include "fps3i_partitioned_1wc.H"
 #include "fs3i_partitioned_2wc.H"
 #include "biofilm_fsi.H"
 #include "aero_tfsi.H"
@@ -59,6 +60,11 @@ void fs3i_dyn()
     case prb_tfsi_aero:
     {
       fs3i = Teuchos::rcp(new FS3I::AeroTFSI(comm));
+    }
+    break;
+    case prb_fpssi:
+    {
+      fs3i = Teuchos::rcp(new FS3I::PartFPS3I_1WC(comm));
     }
     break;
     default:
