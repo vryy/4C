@@ -121,7 +121,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.5
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 4.51221555070422942e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 4.51377515515662298e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -133,7 +133,7 @@ E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 -----------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
 DSURF  2
 E 2 - SPRING_STIFF 10000.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal
-E 3 - SPRING_STIFF 1.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.01 DIRECTION all
+E 3 - SPRING_STIFF 1.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.001 DIRECTION all
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
