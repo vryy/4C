@@ -33,7 +33,6 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
   )
 : so3_ele(id,owner),
   So3_Base(),
-  intpoints_(distype),
   stab_s_(-1.),
   cpl_(-1.),
   last_plastic_defgrd_inverse_(Teuchos::null),
@@ -59,7 +58,6 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
   eastype_(soh8p_easnone),
   neas_(0)
 {
-  numgpt_ = intpoints_.NumPoints();
   kintype_ = geo_nonlinear;
 
   return;
@@ -74,10 +72,8 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
   const DRT::ELEMENTS::So3_Plast<so3_ele,distype>& old
   )
 : so3_ele(old),
-  So3_Base(),
-  intpoints_(distype)
+  So3_Base()
 {
-  numgpt_ = intpoints_.NumPoints();
   return;
 }
 
@@ -129,12 +125,19 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
   for (int i=0; i<size; ++i)
     so3_ele::AddtoPack(data,invJ_[i]);
 
+  // add base class Element
+  so3_ele::Pack(data);
+
+  // Gauss points and weights
+  const int size2 = (int)xsi_.size();
+  so3_ele::AddtoPack(data,size2);
+  for (int i=0; i<size2;++i)
+    so3_ele::AddtoPack(data,xsi_[i]);
+  so3_ele::AddtoPack(data,wgt_);
+
   // parameters
   so3_ele::AddtoPack(data,stab_s_);
   so3_ele::AddtoPack(data,cpl_);
-
-  // add base class Element
-  so3_ele::Pack(data);
 
   // plasticity stuff
   int histsize=0;
@@ -181,6 +184,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
   )
 {
   std::vector<char>::size_type position = 0;
+
   // extract type
   int type = 0;
   so3_ele::ExtractfromPack(position,data,type);
@@ -201,14 +205,22 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
   for (int i=0; i<size; ++i)
     so3_ele::ExtractfromPack(position,data,invJ_[i]);
 
-  // paramters
-  so3_ele::ExtractfromPack(position,data,stab_s_);
-  so3_ele::ExtractfromPack(position,data,cpl_);
-
   // extract base class Element
   std::vector<char> basedata(0);
   so3_ele::ExtractfromPack(position,data,basedata);
   so3_ele::Unpack(basedata);
+
+  // Gauss points and weights
+  int size2 = so3_ele::ExtractInt(position,data);
+  xsi_.resize(size2, LINALG::Matrix<nsd_,1>(true));
+  for (int i=0; i<size2;++i)
+    so3_ele::ExtractfromPack(position,data,xsi_[i]);
+  so3_ele::ExtractfromPack(position,data,wgt_);
+  numgpt_=wgt_.size();
+
+  // paramters
+  so3_ele::ExtractfromPack(position,data,stab_s_);
+  so3_ele::ExtractfromPack(position,data,cpl_);
 
    int histsize=so3_ele::ExtractInt(position,data);
 
@@ -219,6 +231,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
    so3_ele::ExtractfromPack(position,data,neas_);
    if ((int)eastype_!=neas_)
      dserror("mismatch in EAS");
+
    // no EAS
    if (eastype_==soh8p_easnone)
    {
@@ -346,6 +359,115 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
   else
     dserror("Reading of SO3_PLAST element failed! KINEM unknown");
 
+  // quadrature
+  if (linedef->HaveNamed("NUMGP"))
+  {
+    if (ElementType()!=DRT::ELEMENTS::So_hex8PlastType::Instance())
+      dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
+
+    int ngp =0;
+    linedef->ExtractInt("NUMGP",ngp);
+
+    switch(ngp)
+    {
+    case 8:
+    {
+      DRT::UTILS::GaussIntegration ip(distype,3);
+      numgpt_=ip.NumPoints();
+      xsi_.resize(numgpt_);
+      wgt_.resize(numgpt_);
+      for (int gp=0; gp<numgpt_; ++gp)
+      {
+       wgt_[gp]=ip.Weight(gp);
+        const double* gpcoord = ip.Point(gp);
+        for (int idim=0; idim<nsd_; idim++)
+          xsi_[gp](idim) = gpcoord[idim];
+      }
+      break;
+    }
+    case 9:
+    {
+      DRT::UTILS::GaussIntegration ip(distype,3);
+      numgpt_=ip.NumPoints()+1;
+      xsi_.resize(numgpt_);
+      wgt_.resize(numgpt_);
+      for (int gp=0; gp<numgpt_-1; ++gp)
+      {
+        wgt_[gp]=5./9.;
+        const double* gpcoord = ip.Point(gp);
+        for (int idim=0; idim<nsd_; idim++)
+          xsi_[gp](idim) = gpcoord[idim];
+      }
+      // 9th quadrature point at element center
+      xsi_[numgpt_-1](0) = 0.;
+      xsi_[numgpt_-1](1) = 0.;
+      xsi_[numgpt_-1](2) = 0.;
+      wgt_[numgpt_-1] = 32./9.;
+      break;
+    }
+    case 27:
+    {
+      DRT::UTILS::GaussIntegration ip(distype,4);
+      numgpt_=ip.NumPoints();
+      xsi_.resize(numgpt_);
+      wgt_.resize(numgpt_);
+      for (int gp=0; gp<numgpt_; ++gp)
+      {
+       wgt_[gp]=ip.Weight(gp);
+        const double* gpcoord = ip.Point(gp);
+        for (int idim=0; idim<nsd_; idim++)
+          xsi_[gp](idim) = gpcoord[idim];
+      }
+      break;
+    }
+    default:
+      dserror("so3_plast doesn't know what to do with %i Gauss points",ngp);
+      break;
+    }
+  }
+  else // default integration
+  {
+    DRT::UTILS::GaussIntegration ip(distype,3);
+    numgpt_=ip.NumPoints();
+    xsi_.resize(numgpt_);
+    wgt_.resize(numgpt_);
+    for (int gp=0; gp<numgpt_; ++gp)
+    {
+     wgt_[gp]=ip.Weight(gp);
+      const double* gpcoord = ip.Point(gp);
+      for (int idim=0; idim<nsd_; idim++)
+        xsi_[gp](idim) = gpcoord[idim];
+    }
+  }
+
+  // EAS
+  if (linedef->HaveNamed("EAS"))
+  {
+    if (distype != DRT::Element::hex8)
+      dserror("EAS in so3 plast currently only for HEX8 elements");
+
+    if (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance())
+      dserror("no combination of Fbar and EAS ... And, by the way, how did you get here???");
+    linedef->ExtractString("EAS",buffer);
+
+    if (buffer == "none")
+      eastype_=soh8p_easnone;
+    else if (buffer == "mild")
+      eastype_=soh8p_easmild;
+    else if (buffer=="full")
+      eastype_=soh8p_easfull;
+    else
+      dserror("unknown EAS type for so3_plast");
+
+    if (HaveHillPlasticity() && eastype_!=soh8p_easnone)
+      dserror("no EAS for Hill-plasticity yet");
+  }
+  else
+    eastype_=soh8p_easnone;
+
+  // initialize EAS data
+  EasInit();
+
   LINALG::Matrix<3,3> tmp33(true);
   LINALG::Matrix<3,3> id2(true);
   for (int i=0; i<3; i++) id2(i,i)=1.;
@@ -391,31 +513,6 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     KbdHill_               = Teuchos::null;
     fbetaHill_             = Teuchos::null;
   }
-
-  // EAS
-  if (linedef->HaveNamed("EAS"))
-  {
-    if (distype != DRT::Element::hex8)
-      dserror("EAS in so3 plast currently only for HEX8 elements");
-
-    if (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance())
-      dserror("no combination of Fbar and EAS ... And, by the way, how did you get here???");
-    linedef->ExtractString("EAS",buffer);
-    if (buffer == "none")
-      eastype_=soh8p_easnone;
-    else if (buffer == "mild")
-      eastype_=soh8p_easmild;
-    else if (buffer == "full")
-      eastype_=soh8p_easfull;
-    else
-      dserror("unknown EAS type for so3_plast");
-
-    if (HaveHillPlasticity() && eastype_!=soh8p_easnone)
-      dserror("no EAS for Hill-plasticity yet");
-  }
-  else
-    eastype_=soh8p_easnone;
-  EasInit();
 
   return true;
 

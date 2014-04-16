@@ -536,12 +536,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::InitJacobianMapping()
   // coordinates of the current integration point (xsi_)
   for (int gp=0; gp<numgpt_; ++gp)
   {
-    // get the coordinates of Gauss points, here use intrepid
-    const double* gpcoord = intpoints_.Point(gp);
-    for (int idim=0; idim<nsd_; idim++)
-    {
-      xsi_[gp](idim) = gpcoord[idim];
-    }
     // first derivatives of shape functions (deriv)
     DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
 
@@ -837,61 +831,67 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       CalcConsistentDefgrd(defgrd,total_glstrain,defgrd_mod);
     } // ------------------------------------------------------------------ EAS
 
-
     // calculate nonlinear B-operator
     LINALG::Matrix<numstr_,numdofperelement_> bop(false);
     CalculateBop(&bop,&defgrd,&N_XYZ);
 
     // strain output *********************************
-    switch (iostrain)
+    if (eastype_!=soh8p_easnone && numgpt_!=8)
     {
-    case INPAR::STR::strain_gl:
-    {
-      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-      LINALG::Matrix<numstr_,1> total_glstrain(false);
-      total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
-      total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
-      total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
-      total_glstrain(3) = total_cauchygreen(0,1);
-      total_glstrain(4) = total_cauchygreen(1,2);
-      total_glstrain(5) = total_cauchygreen(2,0);
-
-      if (elestrain == NULL) dserror("strain data not available");
-      for (int i = 0; i < 3; ++i)
-        (*elestrain)(gp,i) = total_glstrain(i);
-      for (int i = 3; i < 6; ++i)
-        (*elestrain)(gp,i) = 0.5 * total_glstrain(i);
+      // no stress output currently
     }
-    break;
-    case INPAR::STR::strain_ea:
+    else
     {
-      if (elestrain == NULL) dserror("strain data not available");
+      switch (iostrain)
+      {
+      case INPAR::STR::strain_gl:
+      {
+        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+        LINALG::Matrix<numstr_,1> total_glstrain(false);
+        total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
+        total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
+        total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
+        total_glstrain(3) = total_cauchygreen(0,1);
+        total_glstrain(4) = total_cauchygreen(1,2);
+        total_glstrain(5) = total_cauchygreen(2,0);
 
-      // inverse of deformation gradient
-      LINALG::Matrix<3,3> invdefgrd;
-      invdefgrd.Invert(defgrd);
-
-      LINALG::Matrix<3,3> total_euler_almansi(true);
-      for (int i=0; i<3; i++) total_euler_almansi(i,i) =1.;
-      tmp1.MultiplyTN(invdefgrd,invdefgrd);
-      total_euler_almansi.MultiplyTN(-1.,invdefgrd,tmp1,1.);
-      total_euler_almansi.Scale(0.5);
-
-      (*elestrain)(gp,0) = total_euler_almansi(0,0);
-      (*elestrain)(gp,1) = total_euler_almansi(1,1);
-      (*elestrain)(gp,2) = total_euler_almansi(2,2);
-      (*elestrain)(gp,3) = total_euler_almansi(0,1);
-      (*elestrain)(gp,4) = total_euler_almansi(1,2);
-      (*elestrain)(gp,5) = total_euler_almansi(0,2);
-    }
-    break;
-    case INPAR::STR::strain_none:
+        if (elestrain == NULL) dserror("strain data not available");
+        for (int i = 0; i < 3; ++i)
+          (*elestrain)(gp,i) = total_glstrain(i);
+        for (int i = 3; i < 6; ++i)
+          (*elestrain)(gp,i) = 0.5 * total_glstrain(i);
+      }
       break;
-    default:
-    {
-      dserror("requested strain type not available");
+      case INPAR::STR::strain_ea:
+      {
+        if (elestrain == NULL) dserror("strain data not available");
+
+        // inverse of deformation gradient
+        LINALG::Matrix<3,3> invdefgrd;
+        invdefgrd.Invert(defgrd);
+
+        LINALG::Matrix<3,3> total_euler_almansi(true);
+        for (int i=0; i<3; i++) total_euler_almansi(i,i) =1.;
+        tmp1.MultiplyTN(invdefgrd,invdefgrd);
+        total_euler_almansi.MultiplyTN(-1.,invdefgrd,tmp1,1.);
+        total_euler_almansi.Scale(0.5);
+
+        (*elestrain)(gp,0) = total_euler_almansi(0,0);
+        (*elestrain)(gp,1) = total_euler_almansi(1,1);
+        (*elestrain)(gp,2) = total_euler_almansi(2,2);
+        (*elestrain)(gp,3) = total_euler_almansi(0,1);
+        (*elestrain)(gp,4) = total_euler_almansi(1,2);
+        (*elestrain)(gp,5) = total_euler_almansi(0,2);
+      }
       break;
-    }
+      case INPAR::STR::strain_none:
+        break;
+      default:
+      {
+        dserror("requested strain type not available");
+        break;
+      }
+      }
     }
     // end of strain output **************************
 
@@ -1131,7 +1131,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     }
 
     // integrate usual internal force and stiffness matrix
-    double detJ_w = detJ*intpoints_.Weight(gp);
+    double detJ_w = detJ*wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
     if (force != NULL)
@@ -2225,7 +2225,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     }
 
     // integrate usual internal force and stiffness matrix
-    double detJ_w = detJ*intpoints_.Weight(gp);
+    double detJ_w = detJ*wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
     if (force != NULL)

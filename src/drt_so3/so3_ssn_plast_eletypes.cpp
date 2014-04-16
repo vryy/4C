@@ -104,6 +104,7 @@ void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
     = definitions["SOLIDH8PLAST"];
 
   defs["HEX8"] = defs_hex8["HEX8"];
+  defs["HEX8"].AddOptionalNamedInt("NUMGP");
 
 }  // SetupElementDefinition()
 

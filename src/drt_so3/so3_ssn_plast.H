@@ -271,7 +271,7 @@ namespace ELEMENTS
      * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
      * New enum for so3_plast. Currently only for hex8
      */
-    enum EASType  // with meaningfull value for matrix size info
+    enum EASType  // with meaningful value for matrix size info
     {
       soh8p_easnone = 0,  //!< no EAS i.e. displacement based with tremendous locking
       soh8p_easmild = 9,  //!< 9 parameters consisting of modes to alleviate
@@ -292,8 +292,8 @@ namespace ELEMENTS
     DRT::Container data_;
     //! vector of coordinates of current integration point in reference coordinates
     std::vector<LINALG::Matrix<nsd_,1> > xsi_;
-
-    DRT::UTILS::GaussIntegration intpoints_;
+    //! Gauss point weights
+    std::vector<double>                  wgt_;
 
     //! @name plasticity related stuff
 
