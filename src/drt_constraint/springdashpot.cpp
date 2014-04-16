@@ -73,7 +73,7 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
         element->Evaluate(eparams,actdis,lm,dummat,dummat,dumvec,dumvec,dumvec);
 
         // when refsurfnormal direction is chosen, call the respective element evaluation routine and assemble
-        if (*dir == "refsurfnormal" or *dir == "refsurfnormal_pos" or *dir == "refsurfnormal_neg")
+        if (*dir == "refsurfnormal")
         {
           eparams2.set("action","calc_ref_nodal_normals");
           element->Evaluate(eparams2,actdis,lm,dummat,dummat,elevector,dumvec,dumvec);
@@ -108,7 +108,7 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
       (*springdashpotcond[cond]).Add("areapernode",apern);
 
 
-      if (*dir == "refsurfnormal" or *dir == "refsurfnormal_pos" or *dir == "refsurfnormal_neg")
+      if (*dir == "refsurfnormal")
       {
         std::vector<double> refndnorms(3 * nodes->size(),0.0);
 
@@ -226,12 +226,11 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           }
         }
         // assemble into residual and stiffness matrix for case that spring / dashpot acts in reference surface normal direction
-        else if (*dir == "refsurfnormal" or *dir == "refsurfnormal_pos" or *dir == "refsurfnormal_neg")
+        else if (*dir == "refsurfnormal")
         {
           // extract averaged nodal ref normal and compute its absolute value
           std::vector<double> unitrefnormal(numdof);
           double temp_ref = 0.;
-          double proj = 0.;
           for (int k=0; k<numdof; ++k)
           {
             unitrefnormal[k] = (*refnodalnormals)[numdof*j+k];
@@ -245,12 +244,6 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
             unitrefnormal[k] /= unitrefnormalabsval;
           }
 
-          // scalar product of unit normal with displacement vector to evaluate if movement is in or againt unit ref surface normal
-          for(int k=0; k<numdof; ++k)
-          {
-            proj += unitrefnormal[k]*u[k];
-          }
-
           //dyadic product of ref normal with itself (N \otimes N)
           Epetra_SerialDenseMatrix N_x_N(numdof,numdof);
           for (int l=0; l<numdof; ++l)
@@ -261,46 +254,10 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           {
             for (int m=0; m<numdof; ++m)
             {
-
-              double val = 0.;
-
-              if (*dir == "refsurfnormal")
-              {
-                val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
-                int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-                if (err) dserror("SumIntoGlobalValues failed!");
-                stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
-              }
-
-              if (*dir == "refsurfnormal_pos")
-              {
-                if (proj < 0.)
-                {
-                  val=0.0;
-                }
-                else
-                {
-                  val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
-                  int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-                  if (err) dserror("SumIntoGlobalValues failed!");
-                  stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
-                }
-              }
-
-              if (*dir == "refsurfnormal_neg")
-              {
-                if (proj > 0.0)
-                {
-                  val=0.0;
-                }
-                else
-                {
-                  val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
-                  int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-                  if (err) dserror("SumIntoGlobalValues failed!");
-                  stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
-                }
-              }
+              double val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
+              int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+              if (err) dserror("SumIntoGlobalValues failed!");
+              stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
             }
           }
         }
