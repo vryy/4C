@@ -173,6 +173,9 @@ namespace ADAPTER
     /// Get the current time
     virtual double GetTime() const = 0;
 
+    /// Set time and step
+    virtual void SetTimeStep(const double time, const int step) = 0;
+
     //@}
 
   };  // class Particle

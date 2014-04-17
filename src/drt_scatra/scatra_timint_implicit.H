@@ -146,9 +146,9 @@ public:
   virtual void PrepareLinearSolve();
 
   //! set time and step value
-  void SetTimeStep(
-    double time, //!< new time value
-    int step     //!< new step value
+  virtual void SetTimeStep(
+    const double time, //!< new time value
+    const int step     //!< new step value
     )
   {
     time_ = time;

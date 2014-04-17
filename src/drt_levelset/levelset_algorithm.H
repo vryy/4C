@@ -98,6 +98,9 @@ namespace SCATRA
     /// perform result test
     void TestResults();
 
+    /// set time and step value
+    void SetTimeStep(const double time, const int step);
+
   protected:
 
     // -----------------------------------------------------------------

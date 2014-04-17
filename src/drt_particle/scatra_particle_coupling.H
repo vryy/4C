@@ -82,6 +82,14 @@ namespace PARTICLE
     /// compute velocities of particles at intermediate time n+theta
     Teuchos::RCP<Epetra_Vector> GetVelocity(const double theta); /// intermediate point in time
 
+    /// set time and step from outside (i.e., particle algorithm is not main algorithm)
+    void SetTimeStepAdditionalParticles(const double time, const int step)
+    {
+      SetTimeStep(time,step);
+      particles_->SetTimeStep(time,step);
+      return;
+    }
+
   protected:
 
     /// setup ghosting of bins, particles & underlying scatra

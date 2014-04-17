@@ -296,11 +296,19 @@ namespace PARTICLE
     //! @name Time step helpers
     //@{
 
-    //! Return current step number map
+    //! Return current time map
     double GetTime() const { return (*time_)[0]; }
 
     //! Return current step number map
     int GetStep() const { return step_; }
+
+    //! Set current time and step number map
+    void SetTimeStep(const double time, const int step)
+    {
+      (*time_)[0] = time;
+      step_ = step;
+      return;
+    }
 
     //@}
 

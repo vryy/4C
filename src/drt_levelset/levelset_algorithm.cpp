@@ -505,3 +505,22 @@ void SCATRA::LevelSetAlgorithm::TestResults()
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | set time and step value                              rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::SetTimeStep(
+  const double time,
+  const int step
+  )
+{
+  // call base class function
+  SCATRA::ScaTraTimIntImpl::SetTimeStep(time,step);
+
+  // set information also in scalar field
+  if (particle_ != Teuchos::null)
+    Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_)->SetTimeStepAdditionalParticles(time,step);
+
+  return;
+}

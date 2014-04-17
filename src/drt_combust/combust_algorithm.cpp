@@ -1244,7 +1244,8 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   //ScaTraField()->Output();
 
   // set time in scalar transport time integration scheme
-  if(restartfromfluid)
+  // this has also to be done for restartscatrainput, since a particle field may now be included
+  if(restartfromfluid or restartscatrainput)
     ScaTraField()->SetTimeStep(FluidField().Time(),step);
 
   SetTimeStep(FluidField().Time(),step);
