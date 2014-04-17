@@ -2233,7 +2233,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
     } // end if (is_higher_order_ele_) or (newton_)
 
     {//linearization of stabilization parameter w.r.t. structure displacement
-      const double v = my::fldpara_->ViscReaStabFac()* ( my::reacoeff_*dtaudphi_(1)/my::tau_(1) + my::reacoeff_/porosity_ );
+      const double v = timefacfac * my::fldpara_->ViscReaStabFac()* ( my::reacoeff_*dtaudphi_(1)/my::tau_(1) + my::reacoeff_/porosity_ );
       for (int vi=0; vi<my::nen_; ++vi)
       {
         const double w = -1.0 * v * my::funct_(vi) ;
@@ -5020,10 +5020,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(
                                        +  my::derxy_(1, inode)*grad_porosity_(1)
                                      )
                                      ;
-      my::viscs2_(1,inode) = 0.5 * my::derxy2_(2,inode)//+ 0.5 * porosity_inv * my::derxy_(0, inode)*grad_porosity_(1)
+      my::viscs2_(1,inode) = 0.5 * my::derxy2_(2,inode)+ 0.5 * porosity_inv * my::derxy_(0, inode)*grad_porosity_(1)
           ;
       /********************************************************************/
-      my::viscs2_(2,inode) = 0.5 * my::derxy2_(2,inode)//+ 0.5 * porosity_inv * my::derxy_(1, inode)*grad_porosity_(0)
+      my::viscs2_(2,inode) = 0.5 * my::derxy2_(2,inode)+ 0.5 * porosity_inv * my::derxy_(1, inode)*grad_porosity_(0)
           ;
       my::viscs2_(3,inode) =   0.5 * (sum + my::derxy2_(1,inode))
                              + 0.5 * porosity_inv * (

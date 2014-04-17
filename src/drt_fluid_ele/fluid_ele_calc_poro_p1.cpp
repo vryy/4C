@@ -1173,7 +1173,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       } // end if (is_higher_order_ele_) or (newton_)
 
       {//linearization of stabilization parameter w.r.t. porosity
-        const double v = my::fldpara_->ViscReaStabFac() * ( my::reacoeff_*my::dtaudphi_(1)/my::tau_(1)
+        const double v = timefacfac * my::fldpara_->ViscReaStabFac() * ( my::reacoeff_*my::dtaudphi_(1)/my::tau_(1)
         + my::reacoeff_/my::porosity_
         );
         for (int vi=0; vi<my::nen_; ++vi)
@@ -1317,42 +1317,6 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
             timefacfac,
             timefacfacpre,
             rhsfac);
-
-//  double scal_grad_q=0.0;
-//
-//  if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-//  {
-//    scal_grad_q=0.0;//my::tau_(1);
-//  }
-//  else
-//  {
-//    scal_grad_q=my::fldparatimint_->AlphaF()*fac3;
-//  }
-//
-//  for(int jdim=0;jdim<my::nsd_;++jdim)
-//  {
-//    for (int ui=0; ui<my::nen_; ++ui)
-//    {
-//      const int fui_p_jdim   = my::nsd_*ui + jdim;
-//
-//      for (int vi=0; vi<my::nen_; ++vi)
-//      {
-//        const double temp_vi_idim=my::derxy_(jdim,vi)*scal_grad_q;
-//
-//        estif_q_u(vi,fui_p_jdim) += timefacfacpre*my::conres_old_*my::funct_(ui)*temp_vi_idim;
-//      } // vi
-//    } // ui
-//  } //jdim
-//
-//  const double temp = rhsfac*scal_grad_q*my::conres_old_;
-//  for (int idim = 0; idim <my::nsd_; ++idim)
-//  {
-//    for (int vi=0; vi<my::nen_; ++vi)
-//    {
-//      // pressure stabilisation
-//      preforce(vi) -= temp*my::derxy_(idim, vi)*my::velint_(idim);
-//    }
-//  } // end for(idim)
 }
 
 /*----------------------------------------------------------------------*
