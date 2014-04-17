@@ -132,7 +132,8 @@ PARTICLEBANDWIDTH           3.0
 RESEEDING                   40
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   0.05
+//CUTOFF_RADIUS                   0.05
+BIN_PER_DIR                     45 80 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
 -------------------------------------------------------XFEM GENERAL
