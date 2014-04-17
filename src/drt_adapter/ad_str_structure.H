@@ -451,6 +451,9 @@ namespace ADAPTER {
 
 		/// Get map of newly introduced node ids with their corresponding old node ids
     virtual std::map<int,int> getOldNewCrackNodes() = 0;
+
+		/// Get new crack tip nodes after propagation
+    virtual std::vector<int> GetCrackTipNodes() = 0;
     //@}
 
   };

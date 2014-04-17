@@ -566,6 +566,8 @@ namespace FLD
       tip_nodes_.clear();
       if( tip_nodes.size() > 0 )
         tip_nodes_.insert( tip_nodes.begin(), tip_nodes.end() );
+
+      setTipNodesInCut_ = true;
     }
 
     /// Properly initialize the DOFs of new nodes introduced after the crack propagation
@@ -854,6 +856,9 @@ namespace FLD
 		/// nodes of the crack tip when simulating FSI with crack
     std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
     
+    //! Whether tip nodes should be set in the cut discretization
+    bool setTipNodesInCut_;
+
     
 /*    /// crack tip elements in case of FSI with cracking structure
     std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;*/

@@ -3313,3 +3313,10 @@ std::map<int,int> STR::TimInt::getOldNewCrackNodes()
     dserror( "You are trying to access crack nodes; but this is not a crack problem" );
   return propcrack_->GetOldNewNodeIds();
 }
+
+std::vector<int> STR::TimInt::GetCrackTipNodes()
+{
+  if( not isCrack_ )
+    dserror( "You are trying to access crack nodes; but this is not a crack problem" );
+  return propcrack_->GetCrackTipNodes();
+}

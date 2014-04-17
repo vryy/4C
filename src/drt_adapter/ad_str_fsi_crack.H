@@ -71,53 +71,7 @@ namespace ADAPTER {
       Teuchos::RCP<Structure> stru
     );
 
-    /*!
-     * Store all possible crack surfaces. If there is a master crack surface,
-     * it should always be associated with a slave crack surface
-     * This structure stores all details that are relevant to decide whether this
-     * particular master-slave crack surface combination has already formed during
-     * the simulation
-     */
-    struct crackSurface_
-    {
-      void setProcInfo( bool info ){ isDone_ = info; }
-      void setMaster( DRT::Element* m ){ mas_ = m; }
-      void setSlave( DRT::Element* s ){ sla_ = s; }
-      void setAttachedCohesiveElem( std::vector<int> dcoh ){ dcoh_ = dcoh; }
-
-      void print()
-      {
-        std::cout<<"\n---crack surface details---\n";
-
-        std::cout<<"master element id = "<<mas_->Id();
-        std::cout<<"slave element id = "<<sla_->Id();
-        std::cout<<"connected dcohesive elements are = \n";
-        for( unsigned i=0;i<dcoh_.size();i++ )
-          std::cout<<dcoh_[i]<<"\t";
-        std::cout<<"\n";
-      }
-
-
-      DRT::Element* mas_;                 //! master crack surface
-      DRT::Element* sla_;                 //! slave crack surface
-      std::vector<int>  dcoh_;            //! vector of cohesive spring elements connected to this surface
-      bool isDone_;                       //! whether these surfaces are already added
-    };
-
-    struct dcohDetails_
-    {
-      int masNodId;
-      int slaNodId;
-      int dcohId;
-    };
-
-
-    //! this means that the crack has propagated fully through the structure, and no need to calculate any further
-    bool allDone_;
-
-    /*void addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                     std::map<int, Teuchos::RCP<DRT::Element> >& tipele );*/
-
+    //! After crack has been propagated, add appropriate crack surfaces to cut interface
     void addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
                                       std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
@@ -138,29 +92,25 @@ namespace ADAPTER {
     //! bool to check whether we are adding the crack elements for the first time
     bool firstTime_;
 
+    //! minimum opening displacement that should be satisfied so that new crack surfaces can be added to cut discretization
+    double minOpeningDist_;
 
-    //! all possible surfaces that can be added as a crack surface
-    std::map<DRT::Element*,crackSurface_> possSurfaces_;
-
-    //! store cohesive element id and its corresponding master and slave node ids
-    std::map<int, std::pair<int,int> > coheEleMasSla_;   // std::map<cohesive element id, std::pair<masternodeid, slavenodeid> >
-
+    //! Add the nodal numbers given in the map to the given condition
     void addNodesToConditions( DRT::Condition * cond, std::map<int,int> oldnew );
 
-    /*!
-     * \brief Check whether all dcohesive elements are added to the FSI interface
-     */
-    void checkAllDone();
+    //! Add the nodal numbers given in the vector to the given condition
+    void addNodesToConditions( DRT::Condition * cond, std::vector<int> add );
 
-    /*!
-     * \brief Delete all the tip elements from the last time step
-     */
-    void deleteOldTipElements( Teuchos::RCP<DRT::Discretization>& boundary,
-                               std::map<int, Teuchos::RCP<DRT::Element> >& tipele );
+    //! Rebuild cut interface only when crack mouth opening distance satisfies predefined value
+    void RebuildInterfaceWithConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                             std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
-    void addThisElementBoundary( Teuchos::RCP<DRT::Discretization>& boundary, DRT::Element* ele );
+    //! Rebuild cut interface irrespective of crack mouth opening displacement
+    void RebuildInterfaceWithoutConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                                std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
-    Teuchos::RCP<DRT::Discretization> masterCrackDis_, slaveCrackDis_;
+    //! Returns true when the given crack mouth opening criterion is satisfied
+    bool isCrackMouthOpeningConditionSatisfied( const std::map<int,int>& tips );
 
   };  // class FSICrackingStructure
 

@@ -9,11 +9,13 @@
 
 #include "../drt_adapter/ad_str_fsi_crack.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_xfem.H"
+#include "../drt_adapter/ad_fld_xfluid_fsi.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_fld_fluid_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_fluid_xfluid/xfluid.H"
 
 /*-------------------------------------------------------------------------------------*
  *        Constructor
@@ -40,7 +42,7 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     AddNewCrackSurfaceToCutInterface();
 
     // rebuild FSI interface of fluid side
-    MBFluidField().RebuildFSIInterface();
+    dynamic_cast<ADAPTER::XFluidFSI&>(MBFluidField().FluidField()).RebuildFSIInterface();
 
     // rebuild FSI interface of structure side
     StructureField()->RebuildInterface();
@@ -71,17 +73,16 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
   const Teuchos::RCP<ADAPTER::FSICrackingStructure>& structfield =
                                 Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
 
-  ADAPTER::FluidXFEM& ad_xfem = dynamic_cast<ADAPTER::FluidXFEM&>(MBFluidField());
-  ADAPTER::Fluid& ad_flui = ad_xfem.FluidField();
+  Teuchos::RCP<FLD::XFluid> xfluid =  dynamic_cast<ADAPTER::XFluidFSI&>(MBFluidField().FluidField()).MyFluid();
 
   Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
-  ad_flui.BoundaryDis( boundary_dis );
+  xfluid->BoundaryDis( boundary_dis );
 
   std::map<int, LINALG::Matrix<3,1> > tip_nodes;
-  ad_flui.GetCrackTipNodes( tip_nodes );
+  xfluid->GetCrackTipNodes( tip_nodes );
   structfield->addCrackSurfacesToCutSides( boundary_dis, tip_nodes );
-  ad_flui.setBoundaryDis( boundary_dis );
-  ad_flui.SetCrackTipNodes( tip_nodes );
+  xfluid->setBoundaryDis( boundary_dis );
+  xfluid->SetCrackTipNodes( tip_nodes );
 
-  ad_flui.UpdateBoundaryValuesAfterCrack( structfield->getOldNewCrackNodes() );
+  xfluid->UpdateBoundaryValuesAfterCrack( structfield->getOldNewCrackNodes() );
 }

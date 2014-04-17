@@ -412,6 +412,9 @@ namespace ADAPTER
 		/// Get map of newly introduced node ids with their corresponding old node ids
     virtual std::map<int,int> getOldNewCrackNodes(){ return structure_->getOldNewCrackNodes(); }
 
+		/// Get current crack tip nodes
+    virtual std::vector<int> GetCrackTipNodes(){ return structure_->GetCrackTipNodes(); }
+
     //@}
 
 

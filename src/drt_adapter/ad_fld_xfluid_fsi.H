@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_fsi.H
+\file ad_fld_xfluid_fsi.H
 
 \brief Fluid field adapter for fsi
 
@@ -102,6 +102,8 @@ namespace ADAPTER {
     /// convert increment of displacement to increment in velocity
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
 
+    /// Rebuild FSI interface in case of FSI-crack problem
+    virtual void RebuildFSIInterface();
 
 
     /// return coupling matrix between fluid and structure as sparse matrices
@@ -110,6 +112,8 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix();
 
     Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec();
+
+    Teuchos::RCP<FLD::XFluid> MyFluid() {return xfluid_; }
 
   protected:
     /// A casted pointer to the fluid itself

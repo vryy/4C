@@ -733,6 +733,7 @@ void DRT::CRACK::PropagateCrack::decidePropagationAngle()
   propAngle_ = 2.0*atan( -2.0 * K_II_ / deno );
 
 
+  //propAngle_ = 0.0;
   /*********************************************************/
   /*static int k = 1;
   if( k==1 )
@@ -1001,6 +1002,17 @@ void DRT::CRACK::PropagateCrack::AddConditions()
                                                                      conit != allcondn.end(); conit++ )
   {
     Teuchos::RCP<Condition> cond = conit->second;
+
+    //TODO: check how to control adding new nodes to FSIcondition
+
+    // Do not include the new nodes into FSICoupling and XFEMcoupling conditions
+    // This is because the interface is built based on these conditions, and we want
+    // to control what nodes are added during FSI-crack problem
+    // Appropriate nodes are added when building new interface after crack propagation
+
+    //DRT::Condition::ConditionType ct = cond->Type();
+    //if( ct == DRT::Condition::FSICoupling or ct == DRT::Condition::XFEMCoupling )
+    //  continue;
 
     for( std::map<int,int>::iterator it = oldnew_.begin(); it != oldnew_.end(); it++ )
     {

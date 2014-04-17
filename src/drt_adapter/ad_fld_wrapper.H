@@ -298,16 +298,6 @@ namespace ADAPTER
     { return fluid_->SetFldGrDisp(fluid_growth_disp); }
     virtual void CutAndSetStateVectors( bool isnewNewtonIncrement )
     { return fluid_->CutAndSetStateVectors(isnewNewtonIncrement); }
-    virtual void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun )
-    { return fluid_->BoundaryDis( boun ); }
-    virtual void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun )
-    { return fluid_->setBoundaryDis( boun ); }
-    virtual void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
-    { return fluid_->GetCrackTipNodes(tip_nodes); }
-    virtual void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
-    { return fluid_->SetCrackTipNodes(tip_nodes); }
-    virtual void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds )
-    { return fluid_->UpdateBoundaryValuesAfterCrack( oldnewIds ); }
 
     /// calculate error in comparison to analytical solution
     virtual void CalculateError()

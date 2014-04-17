@@ -45,6 +45,11 @@ public:
    */
   std::map<int,int> GetOldNewNodeIds(){ return oldnew_; }
 
+	/*!
+	\brief Return the crack tip nodes after crack has been propagated
+	 */
+  std::vector<int> GetCrackTipNodes(){ return tipnodes_; }
+
 private:
 
   /*!
@@ -52,8 +57,6 @@ private:
   used to calculate stress intensity factors
    */
   void buildNeighborInfoTipNodes( DRT::Node * node1, DRT::Node * node2, DRT::Node * tipnode );
-
-  void GetInitialOldTipNodes();
 
   /*!
   \brief Construct normal and tangential vectors at the crack tip

@@ -36,6 +36,7 @@ namespace FLD
 
 namespace ADAPTER
 {
+  class Fluid;
 
   /// generalized fluid base: fluid with moving boundaries
   /*!
@@ -58,6 +59,10 @@ namespace ADAPTER
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+    /// fluid field
+    virtual const ADAPTER::Fluid& FluidField() const = 0;
+    virtual ADAPTER::Fluid& FluidField() = 0;
 
     /// communication object at the interface
     virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
@@ -134,9 +139,6 @@ namespace ADAPTER
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
-
-		/// Rebuild FSI interface in case of FSI-crack problem
-    virtual void RebuildFSIInterface() = 0;
   };
 
 

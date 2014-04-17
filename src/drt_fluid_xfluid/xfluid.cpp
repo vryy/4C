@@ -97,7 +97,10 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   xfluid_.state_it_++;
 
   // --- set crack tip nodes to fluid-wizard ---
-  wizard_->setCrackTipNodes( xfluid_.tip_nodes_ );
+  if( xfluid_.setTipNodesInCut_ )
+    wizard_->setCrackTipNodes( xfluid_.tip_nodes_ );
+
+  xfluid_.setTipNodesInCut_ = false;
 
   //--------------------------------------------------------------------------------------
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
@@ -6219,13 +6222,12 @@ void FLD::XFluid::UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldne
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, idispnp_, oldnewIds );
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, idispn_, oldnewIds );
 
-
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, itrueresidual_, oldnewIds );
+  itrueresidual_ = LINALG::CreateVector(*boundarydis2_->DofRowMap(),true);
 
   //TODO: I guess the following lines are unnecessary (Sudhakar)
   {
-    iforcenp_ = LINALG::CreateVector(*boundarydis2_->DofRowMap(),true);
-    LINALG::Export( *itrueresidual_, *iforcenp_ );
+    //iforcenp_ = LINALG::CreateVector(*boundarydis2_->DofRowMap(),true);
+    //LINALG::Export( *itrueresidual_, *iforcenp_ );
 
   }
 }

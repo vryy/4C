@@ -164,13 +164,3 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
   return FluidField().CreateFieldTest();
 }
 
-/*----------------------------------------------------------------------*
- * Rebuild FSI interface in case of crack-FSI problem               sudhakar 03/14
- * This is needed when we add new nodes to the FSI interface
- *----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::RebuildFSIInterface()
-{
-  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
-  FluidField().BoundaryDis( boundary_dis );
-  FluidField().Interface()->Setup(*boundary_dis);
-}

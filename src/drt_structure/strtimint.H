@@ -1008,6 +1008,9 @@ namespace STR
 
     //! Get map of old and new crack tip nodes
     std::map<int,int> getOldNewCrackNodes();
+
+		//! Get the crack tip nodes
+    std::vector<int> GetCrackTipNodes();
     //@}
 
   protected:

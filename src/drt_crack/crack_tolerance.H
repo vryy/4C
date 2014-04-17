@@ -5,7 +5,11 @@
 // This in in DEGREE, not in radians
 // if angle between an edge and the exact propagation angle is less
 // than this value, then the crack is assumed to propagate through this edge
-#define MIN_PROP_ANGLE 0.1
+//---
+// Results are found to be sensitive for this quantity   (sudhakar 04/14)
+// For one test case, when refining the mesh, it was necessary to modify this value
+//----
+#define MIN_PROP_ANGLE 0.5
 
 // In order to find the correct node through which the crack propagates,
 // we define a vector along the direction of propagation angle from crack tip

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_fsi.cpp
+\file ad_fld_xfluid_fsi.cpp
 
 \brief Fluid field adapter for fsi
 
@@ -180,4 +180,16 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
 {
   return xfluid_->RHS_Struct_Vec();
 }
+
+/*----------------------------------------------------------------------*
+ * Rebuild FSI interface in case of crack-FSI problem               sudhakar 03/14
+ * This is needed when we add new nodes to the FSI interface
+ *----------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::RebuildFSIInterface()
+{
+  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
+  xfluid_->BoundaryDis( boundary_dis );
+  Interface()->Setup(*boundary_dis);
+}
+
 
