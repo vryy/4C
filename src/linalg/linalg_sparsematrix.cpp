@@ -74,7 +74,9 @@ LINALG::SparseMatrix::SparseMatrix(
     bool                explicitdirichlet,
     bool                savegraph,
     MatrixType          matrixtype)
-  : explicitdirichlet_(explicitdirichlet),
+  : graph_(Teuchos::null),
+    dbcmaps_(Teuchos::null),
+    explicitdirichlet_(explicitdirichlet),
     savegraph_(savegraph),
     maxnumentries_(npr),
     matrixtype_(matrixtype)
@@ -98,7 +100,9 @@ LINALG::SparseMatrix::SparseMatrix(
     bool                      explicitdirichlet,
     bool                      savegraph,
     MatrixType                matrixtype)
-  : explicitdirichlet_(explicitdirichlet),
+  : graph_(Teuchos::null),
+    dbcmaps_(Teuchos::null),
+    explicitdirichlet_(explicitdirichlet),
     savegraph_(savegraph),
     maxnumentries_(matrix.MaxNumEntries()),
     matrixtype_(matrixtype)
@@ -125,7 +129,9 @@ LINALG::SparseMatrix::SparseMatrix(
     bool                            explicitdirichlet,
     bool                            savegraph,
     MatrixType                      matrixtype)
-  : explicitdirichlet_(explicitdirichlet),
+  : graph_(Teuchos::null),
+    dbcmaps_(Teuchos::null),
+    explicitdirichlet_(explicitdirichlet),
     savegraph_(savegraph),
     maxnumentries_(0),
     matrixtype_(matrixtype)
@@ -177,7 +183,9 @@ LINALG::SparseMatrix::SparseMatrix(
     bool                  explicitdirichlet,
     bool                  savegraph,
     MatrixType            matrixtype)
-  : explicitdirichlet_(explicitdirichlet),
+  : graph_(Teuchos::null),
+    dbcmaps_(Teuchos::null),
+    explicitdirichlet_(explicitdirichlet),
     savegraph_(savegraph),
     maxnumentries_(1),
     matrixtype_(matrixtype)
@@ -349,6 +357,7 @@ void LINALG::SparseMatrix::Reset()
     dserror("matrix type is not correct");
 
   graph_ = Teuchos::null;
+  dbcmaps_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
