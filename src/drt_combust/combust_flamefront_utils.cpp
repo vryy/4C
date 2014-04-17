@@ -732,11 +732,15 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
   const Teuchos::RCP<Epetra_Vector> curvaturerow = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap(),true));
   curvaturerow->PutScalar(0.0);
 
+  // safety check
+  if (!gfuncdis_->Filled())   dserror("FillComplete() was not called");
+  if (!gfuncdis_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
   //get dof row map of scalar field
   const Epetra_Map* dofrowmap = gfuncdis_->DofRowMap();
 
   // safety check
-  if (not fluiddis_->NodeRowMap()->SameAs(*(gfuncdis_->NodeRowMap())))
+  if (not fluiddis_->NodeRowMap()->PointSameAs(*(gfuncdis_->NodeRowMap())))
     dserror("Same node map expected");
 
   // create empty matrix
@@ -754,12 +758,6 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
 
   // get number of elements
   const int numele = gfuncdis_->NumMyColElements();
-
-  rhs->PutScalar(0.0);
-  matrix->PutScalar(0.0);
-
-  if (!gfuncdis_->Filled())   dserror("FillComplete() was not called");
-  if (!gfuncdis_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   //loop column elements
   for (int i = 0; i< numele;i++)
@@ -813,31 +811,23 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
 
         // shape function at Gauss point
         static LINALG::Matrix<numnode,1> funct_gp;
-        funct_gp.Clear();
         DRT::UTILS::shape_function_3D(funct_gp,gp(0),gp(1),gp(2),distype);
 
         // derivatives evaluated at Gauss point
         static LINALG::Matrix<nsd,numnode> deriv_gp;
-        deriv_gp.Clear();
         DRT::UTILS::shape_function_3D_deriv1(deriv_gp,gp(0),gp(1),gp(2),distype);
 
         // Jacobian for integration over element domain
         static LINALG::Matrix<nsd,nsd> xjm_gp;
-        xjm_gp.Clear();
         xjm_gp.MultiplyNT(deriv_gp,xyze);
 
         // invert of Jacobian for integration over element domain
         static LINALG::Matrix<nsd,nsd> xji_gp;
-        xji_gp.Clear();
-        xji_gp.Invert(xjm_gp);
+        const double det = xji_gp.Invert(xjm_gp);
 
         // global derivatives
         static LINALG::Matrix<nsd,numnode> deriv_gp_xyz;
-        deriv_gp_xyz.Clear();
         deriv_gp_xyz.Multiply(xji_gp,deriv_gp);
-
-        // Jacobian determinant
-        const double det = xjm_gp.Determinant();
 
         // check for degenerated elements
         if (det < 0.0)
@@ -866,9 +856,10 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
         // get second derivatives of phi at Gauss point
         static LINALG::Matrix<nsd*nsd,1> grad2_phi;
         grad2_phi.Clear();
-        for(size_t inode = 0; inode < numnode; inode++)
+
+        if (L2ProjSecDerivatives)
         {
-          if (L2ProjSecDerivatives)
+          for(size_t inode = 0; inode < numnode; inode++)
           {
             grad2_phi(0) += egrad2phi(0,inode)*funct_gp(inode); // ,xx
             grad2_phi(1) += egrad2phi(1,inode)*funct_gp(inode);  // ,yy
@@ -880,7 +871,10 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
             grad2_phi(7) += egrad2phi(7,inode)*funct_gp(inode);  // ,zx
             grad2_phi(8) += egrad2phi(8,inode)*funct_gp(inode);  // ,zy
           }
-          else
+        }
+        else
+        {
+          for(size_t inode = 0; inode < numnode; inode++)
           {
             grad2_phi(0) += deriv_gp_xyz(0,inode)*egradephi(0,inode); // ,xx
             grad2_phi(1) += deriv_gp_xyz(1,inode)*egradephi(1,inode); // ,yy
@@ -960,7 +954,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
 
   // create a solver
   // remark: we take a new here, which is assumed to have number 3
-  Teuchos::RCP<LINALG::Solver>  solver_ =
+  Teuchos::RCP<LINALG::Solver>  solver =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -975,12 +969,12 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
   // solution vector on dof row map of gfunc discretization
   Teuchos::RCP<Epetra_Vector> solcurve = Teuchos::rcp(new Epetra_Vector(*gfuncdis_->DofRowMap(),true));
   // solver call
-  solver_->Solve(matrix->EpetraOperator(),
+  solver->Solve(matrix->EpetraOperator(),
                  solcurve,
                  rhs,
                  refactor,
                  reset);
-  solver_->Reset();
+  solver->Reset();
 
   // store result in vector
   // loop all nodes on the processor

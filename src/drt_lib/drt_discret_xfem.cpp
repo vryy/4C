@@ -122,7 +122,7 @@ static void DoDirichletConditionCombust(DRT::Condition&             cond,
                                  );
 
 
-#if 0
+#if 1
 /*----------------------------------------------------------------------*
  | set Dirichlet conditions for XFEM problems               henke 07/09 |
  | remark: read documentation at top of this file!                      |
@@ -262,8 +262,8 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         const int gid = dofs[j];
         std::vector<double> value(deg+1,(*val)[truncj]);
 
-        std::cout << "DOFS:   8  " << std::endl;
-        std::cout << "j " << j << std::endl;
+//        std::cout << "DOFS:   8  " << std::endl;
+//        std::cout << "j " << j << std::endl;
 
         // factor given by time curve
         std::vector<double> curvefac(deg+1, 1.0);
@@ -784,7 +784,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         //if (j%2!=0) // if XFEM dof
         if (j==4) // if XFEM dof
         {
-          cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << std::endl;
+          std::cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << std::endl;
           for (unsigned i=0; i<deg+1; ++i)
           {
             value[i] = 0.0; // previously assigned DBC value is overwritten by 0.0
@@ -820,6 +820,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 }
 #endif
 
+#if 0
 /*----------------------------------------------------------------------*
  | set Dirichlet conditions for XFEM problems               henke 07/09 |
  | remark: read documentation at top of this file!                      |
@@ -1016,6 +1017,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
   }  // loop over nodes
   return;
 }
+#endif
 
 
 /*----------------------------------------------------------------------*

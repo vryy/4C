@@ -92,9 +92,6 @@ namespace ADAPTER
     { return fluid_->RemoveDirichCond(maptoremove); }
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialFlowField(initfield, startfuncno); }
-    /// clear time integration data for XFEM problems
-    virtual void ClearTimeInt()
-    { dserror("not implemented"); }
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
     virtual void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume)
@@ -252,12 +249,6 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractPressurePart(velpres); }
     virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity, Teuchos::RCP<TOPOPT::Optimizer>& optimizer){ dserror("not implemented!"); };
-    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
-    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
-    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
     { return fluid_->ApplyInterfaceVelocities(ivel); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp()

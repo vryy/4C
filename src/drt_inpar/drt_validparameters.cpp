@@ -719,7 +719,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
   DoubleParameter("VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
   DoubleParameter("RANGE_TOL",1e-6,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
-  DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
+  DoubleParameter("CUTOFF_RADIUS",-1.0,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
+  setNumericStringParameter("BIN_PER_DIR","-1 -1 -1",
+                            "Number of bins per direction (x, y, z) in particle simulations.",
+                            &meshfree);
   setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e12 1e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);

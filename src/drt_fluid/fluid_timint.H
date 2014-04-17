@@ -162,8 +162,6 @@ public:
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { dserror("Implemented in the fluid wrapper and derived classes");
     static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }
 
-  virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
-
   virtual void ReadRestart(int step) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual void SetRestart(const int step,
@@ -296,13 +294,6 @@ public:
 
   /// set initial flow field
   virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
-
-  /// clear time integration data for XFEM problems
-  virtual void ClearTimeInt() { dserror("Not implemented in the base class, may be overridden by a subclass."); return; };
-
-  /// set initial flow field
-  virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield,const int startfuncno) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
-
   /// set initial porosity field
   virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 

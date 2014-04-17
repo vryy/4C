@@ -714,6 +714,7 @@ public:
   virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
   /// provide access to the box filter for dynamic Smagorinsky model
   virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter();
+  /// provide access to the box filter for Vreman model
   virtual Teuchos::RCP<FLD::Vreman> Vreman();
 
   /// introduce surface split extractor object

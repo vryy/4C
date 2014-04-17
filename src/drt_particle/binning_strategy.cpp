@@ -63,6 +63,19 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
 
   // get cutoff radius
   cutoff_radius_ = meshfreeparams.get<double>("CUTOFF_RADIUS");
+  // get number of bins per direction
+  std::istringstream binstream(Teuchos::getNumericStringParameter(meshfreeparams,"BIN_PER_DIR"));
+  for(int idim=0; idim<3; idim++)
+  {
+    int val = -1;
+    if (binstream >> val)
+      bin_per_dir_[idim] = val;
+  }
+  // check input: either the cutoff_radius_ or the number of bins per direction have to be set
+  if (cutoff_radius_<0.0 and bin_per_dir_[0]<0.0 and bin_per_dir_[1]<0.0 and bin_per_dir_[2]<0.0)
+    dserror("Cutoff radius and number of bins per direction have not been set in the input file. Please prescribe the cutoff radius or define the number of bins for each spatial direction.");
+  if (cutoff_radius_>0.0 and bin_per_dir_[0]>0.0 and bin_per_dir_[1]>0.0 and bin_per_dir_[2]>0.0)
+    dserror("Cutoff radius and number of bins per direction have been set in the input file. Please prescribe only one of the two options");
 
   XAABB_.PutScalar(1.0e12);
   // get bounding box specified in the input file
@@ -364,8 +377,11 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
   // divide global bounding box into bins
   for (int dim=0; dim<3; ++dim)
   {
+    // determine number of bins per direction for prescribed cutoff radius
     // std::floor leads to bins that are at least of size cutoff_radius
-    bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
+    if (cutoff_radius_>0.0)
+      bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
+
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
   }
 

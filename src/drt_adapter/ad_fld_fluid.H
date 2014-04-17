@@ -23,7 +23,6 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_CrsGraph.h>
 
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -221,8 +220,6 @@ namespace ADAPTER {
 
     /// Shorten the Dirichlet DOF set
     virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) = 0;
-
-    //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
@@ -487,20 +484,6 @@ namespace ADAPTER {
 
     /// set pseudo-porosity field in the fluid
     virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity, Teuchos::RCP<TOPOPT::Optimizer>& optimizer) = 0;
-    //@}
-
-    //! @name Import geometrical coupling information about an implicitely defined interface from a different field
-
-    /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
-    /// methods, might need to know the interface geometry
-    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) = 0;
-
-    /// set initial flow field for combustion problem
-    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno) = 0;
-
-    /// clear time integration data for XFEM problems
-    virtual void ClearTimeInt() = 0;
-
     //@}
 
     //! @name Apply interface values

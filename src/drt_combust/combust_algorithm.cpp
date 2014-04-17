@@ -29,6 +29,7 @@ Maintainer: Ursula Rasthofer
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_levelset/levelset_algorithm.H"
+#include "../drt_scatra/scatra_timint_ost.H"
 //#include "../drt_lib/standardtypes_cpp.H" // required to use mathematical constants such as PI
 
 
@@ -111,24 +112,24 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // set initial fluid field (based on standard dofset)
   //---------------------------------------------------
   // update fluid interface with flamefront
-  FluidField().ImportFlameFront(flamefront_,false);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,false);
   // read parameters for initial field
   const INPAR::COMBUST::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(
       combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD");
   const int initfuncno = combustdyn_.sublist("COMBUSTION FLUID").get<int>("INITFUNCNO");
   // set initial flow field based on standard dofs only
-  FluidField().SetInitialFlowField(initfield, initfuncno);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->SetInitialFlowField(initfield, initfuncno);
   // clear fluid's memory to flamefront
-  FluidField().ImportFlameFront(Teuchos::null,false);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,false);
 
   //--------------------------------------------------------
   // incorporate the XFEM dofs into the fluid
   // remark: this includes setting the initial enriched dofs
   //--------------------------------------------------------
   // update fluid interface with flamefront
-  FluidField().ImportFlameFront(flamefront_,true);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,true);
   // clear fluid's memory to flamefront
-  FluidField().ImportFlameFront(Teuchos::null,true);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,true);
 
   // transfer the initial convective velocity from initial fluid field to scalar transport field
   // subgrid scales not transferred since they are zero at time t=0.0
@@ -139,6 +140,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // bool indicates initalization call
   SetVelocityLevelSet(true);
 
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -265,13 +267,13 @@ void COMBUST::Algorithm::OutputInitialField()
   if (Step() == 0)
   {
     // update fluid interface with flamefront
-    FluidField().ImportFlameFront(flamefront_,false);
+    Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,false);
     // output fluid initial state
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary
         and DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false)
       FluidField().Output();
     // clear fluid's memory to flamefront
-    FluidField().ImportFlameFront(Teuchos::null,false);
+    Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,false);
 
     // output G-function initial state
     if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary and
@@ -645,7 +647,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
       notconverged = false;
 
     if (!notconverged)
-      FluidField().ClearTimeInt(); // clear XFEM time integration
+      Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ClearTimeInt(); // clear XFEM time integration
   }
 
   // update fgi-vectors
@@ -770,13 +772,13 @@ void COMBUST::Algorithm::DoFluidField()
   }
 
   // update fluid interface with flamefront
-  FluidField().ImportFlameFront(flamefront_,true);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,true);
 
   // solve nonlinear Navier-Stokes equations
   FluidField().Solve();
 
   // clear fluid's memory to flamefront
-  FluidField().ImportFlameFront(Teuchos::null,false);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,false);
 
 
   return;
@@ -850,11 +852,11 @@ void COMBUST::Algorithm::Output()
   // this hack is necessary for the visualization of disconituities in Gmsh             henke 10/09
   //------------------------------------------------------------------------------------------------
   // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_,false);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,false);
   // write fluid output
   FluidField().Output();
   // clear fluid's memory to flamefront
-  FluidField().ImportFlameFront(Teuchos::null,false);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,false);
 
 
   // causes error in DEBUG mode (trueresidual_ is null)
@@ -1066,7 +1068,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     IO::cout << "---------------------------------------------" << IO::endl;
   }
   if (restartfromfluid and !restartscatrainput)
-    dserror("scalar field must be read from input file for restart from standard fluid");
+    dserror("Scalar field has to be read from input file for restart from standard fluid");
 
   // read level-set field from input file instead of restart file
   Teuchos::RCP<Epetra_Vector> oldphidtn  = Teuchos::null;
@@ -1086,7 +1088,20 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
 
   // restart of scalar transport (G-function) field
   if (!restartfromfluid) // not if restart is done from standard fluid field; there is no scalar field
-    ScaTraField()->ReadRestart(step);
+  {
+    // for particle level-set method, we cannot call the level-set restart, since the are no particles yet
+    // (restart from flow generation via combustion fluid)
+    if (!restartscatrainput)
+      ScaTraField()->ReadRestart(step);
+    else
+    {
+      // call restart function of base time integrator only
+      if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_one_step_theta)
+        Teuchos::rcp_dynamic_cast<SCATRA::TimIntOneStepTheta>(ScaTraField())->SCATRA::TimIntOneStepTheta::ReadRestart(step);
+      else // particles are not yet supported by other time integration schemes
+        ScaTraField()->ReadRestart(step);
+    }
+  }
 
   // get pointers to the discretizations from the time integration scheme of each field
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField()->Discretization();
@@ -1097,9 +1112,9 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
 
   // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_,true);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,true);
   // delete fluid's memory of flame front; it should never have seen it in the first place!
-  FluidField().ImportFlameFront(Teuchos::null,false);
+  Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,false);
 
   // restart of fluid field
   FluidField().ReadRestart(step);
@@ -1138,9 +1153,9 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     flamefront_->UpdateOldInterfaceHandle();
 
     // show flame front to fluid time integration scheme
-    FluidField().ImportFlameFront(flamefront_,true);
+    Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(flamefront_,true);
     // delete fluid's memory of flame front; it should never have seen it in the first place!
-    FluidField().ImportFlameFront(Teuchos::null,false);
+    Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidFieldrcp())->ImportFlameFront(Teuchos::null,false);
 
     if (gmshoutput_)
     {
