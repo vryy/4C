@@ -307,6 +307,8 @@ namespace PARTICLE
     {
       (*time_)[0] = time;
       step_ = step;
+      timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
+      stepn_ = step_ + 1;
       return;
     }
 
