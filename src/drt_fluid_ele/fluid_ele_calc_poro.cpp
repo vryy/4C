@@ -219,6 +219,19 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
     Epetra_SerialDenseVector&                   elevec3_epetra,
     const DRT::UTILS::GaussIntegration &        intpoints)
 {
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    return(0);
+  } // Nurbs specific stuff
+
   // set element id
   my::eid_ = ele->Id();
   //get structure material
@@ -314,19 +327,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> >(
       ele, my::xyze_);
 
-  //----------------------------------------------------------------
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  //----------------------------------------------------------------
-  if(my::isNurbs_)
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-    return(0);
-  } // Nurbs specific stuff
-
   PreEvaluate(params,ele,discretization);
 
   // call inner evaluate (does not know about DRT element or discretization object)
@@ -376,6 +376,19 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
     Epetra_SerialDenseVector&             elevec3_epetra,
     const DRT::UTILS::GaussIntegration &  intpoints)
 {
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    return(0);
+  } // Nurbs specific stuff
+
   // set element id
   my::eid_ = ele->Id();
 
