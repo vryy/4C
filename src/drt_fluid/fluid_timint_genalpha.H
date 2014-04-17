@@ -47,13 +47,13 @@ public:
   \brief Print information about current time step to screen (reimplementation)
 
   */
-  void PrintTimeStepInfo();
+  virtual void PrintTimeStepInfo();
 
   /*!
   \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
 
   */
-  void SetTheta();
+  virtual void SetTheta();
 
   /*!
   \brief Set the part of the righthandside belonging to the last
@@ -79,26 +79,26 @@ public:
 
 
   */
-  void SetOldPartOfRighthandside();
+  virtual void SetOldPartOfRighthandside();
 
   /*!
   \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
   */
-  void SetStateTimInt();
+  virtual void SetStateTimInt();
 
   /*!
   \brief Set time factor in GenAlpha
 
   */
-  double SetTimeFac();
+  virtual double SetTimeFac();
 
   /*!
   \brief Calculate time derivatives for
          stationary/one-step-theta/BDF2/af-generalized-alpha time integration
          for incompressible and low-Mach-number flow
   */
-  void CalculateAcceleration(
+  virtual void CalculateAcceleration(
       const Teuchos::RCP<const Epetra_Vector>    velnp,    ///< velocity at     n+1
       const Teuchos::RCP<const Epetra_Vector>    veln,     ///< velocity at     n
       const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
@@ -110,25 +110,25 @@ public:
   \brief Set gamma to a value
 
   */
-  void SetGamma(Teuchos::ParameterList& eleparams);
+  virtual void SetGamma(Teuchos::ParameterList& eleparams);
 
   /*!
   \brief Scale separation
 
   */
-  void Sep_Multiply();
+  virtual void Sep_Multiply();
 
   /*!
   \brief Update velaf_ for GenAlpha
 
   */
-  void UpdateVelafGenAlpha();
+  virtual void UpdateVelafGenAlpha();
 
   /*!
   \brief Output of filtered velocity
 
   */
-  void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
+  virtual void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
                            Teuchos::RCP<Epetra_Vector> fsoutvec);
 
   /*!
@@ -138,13 +138,13 @@ public:
          and in the fluid boundary element
 
   */
-  void SetElementTimeParameter();
+  virtual void SetElementTimeParameter();
 
   /*!
   \brief return scheme-specific time integration parameter
 
   */
-  const double TimIntParam() const;
+  virtual const double TimIntParam() const;
 
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
@@ -162,19 +162,19 @@ protected:
   \brief update acceleration for generalized-alpha time integration
 
   */
-  void GenAlphaUpdateAcceleration();
+  virtual void GenAlphaUpdateAcceleration();
 
   /*!
   \brief compute values at intermediate time steps for gen.-alpha
 
   */
-  void GenAlphaIntermediateValues() ;
+  virtual void GenAlphaIntermediateValues() ;
 
   /*!
   \brief return scaling of the residual
 
   */
-  double ResidualScaling() const
+  virtual double ResidualScaling() const
   {
 
     return alphaM_/(gamma_*dta_);
@@ -185,7 +185,7 @@ protected:
   \brief velocity required for evaluation of related quantites required on element level
 
   */
-  const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velaf_;};
+  virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velaf_;};
 
 
 private:
