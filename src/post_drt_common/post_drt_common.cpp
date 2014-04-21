@@ -5,10 +5,10 @@
 \brief drt binary filter library
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 
 */
@@ -54,12 +54,14 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
 
   std::string file = "xxx";
   std::string output;
+  filter_ = "ensight";
   struct_vel_acc_ = "no";
   struct_mat_disp_ = "no";
 
   int printparobjecttypes = 0;
 
   CLP.throwExceptions(false);
+  CLP.setOption("filter",&filter_,"filter to run [ensight, gid, vtu]");
   CLP.setOption("start",&start_,"first time step to read");
   CLP.setOption("end",&end_,"last time step to read");
   CLP.setOption("step",&step_,"number of time steps to jump");

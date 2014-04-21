@@ -290,11 +290,10 @@ namespace
 
 
 VtuWriter::VtuWriter(PostField* field,
-                     const std::string filename)
-  : field_(field),
-    filename_(filename),
-    myrank_(((field->problem())->comm())->MyPID()),
-    numproc_(((field->problem())->comm())->NumProc()),
+                     const std::string &filename)
+:
+    PostWriterBase(field, filename),
+    numproc_ (field->problem()->comm()->NumProc()),
     time_ (std::numeric_limits<double>::min()),
     timestep_ (0),
     cycle_ (std::numeric_limits<int>::max())
@@ -466,12 +465,8 @@ VtuWriter::WriteGeo()
 
   currentout_ << "  </Cells>\n\n";
 
-  // step 5: start data fields by writing out the owner of the cells, an easy task ;-)
-  std::vector<float> owner (nnodes, static_cast<float>(myrank_));
+  // start the scalar fields that will later be written
   currentout_ << "  <PointData Scalars=\"scalars\">\n";
-  currentout_ << "    <DataArray type=\"Float32\" Name=\"owner\" format=\"binary\">\n";
-  writeCompressedBlock(owner, currentout_);
-  currentout_ << "    </DataArray>\n";
 
 
   if (myrank_ == 0) {
@@ -479,17 +474,29 @@ VtuWriter::WriteGeo()
     currentmasterout_ << "      <PDataArray type=\"Float64\" NumberOfComponents=\"3\"/>\n";
     currentmasterout_ << "    </PPoints>\n";
     currentmasterout_ << "    <PPointData Scalars=\"scalars\">\n";
-    currentmasterout_ << "      <PDataArray type=\"Float32\" Name=\"owner\" format=\"ascii\"/>\n";
   }
 }
 
 
-// what do I want to re-use from other writers (post_ensight, post_generic)
-// generic fluid, structure, acou, etc writer
-// maybe even eigenstress writer
-// the 'driver' routine in the main file that sets up which fields to write
-// how to do: Introduce a base interface in post_drt_common that holds the actual writer object and distinguishes steps
-// then finally create the actual writer interface
+void
+VtuWriter::WriteSpecialField (
+      SpecialFieldInterface &special,
+      PostResult& result,   ///< result group in the control file
+      const ResultType  restype,
+      const std::string &groupname,
+      const std::vector<std::string> &fieldnames,
+      const std::string &outinfo)
+{
+  // Vtu writes everything into the same file, so create to each output the
+  // pointer to the same output writer
+  std::vector<Teuchos::RCP<std::ofstream> > files(fieldnames.size());
+  for (unsigned int i=0; i<fieldnames.size(); ++i)
+    files[i] = Teuchos::rcp(&currentout_, false);
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
+  special(files,result,resultfilepos,groupname,fieldnames);
+}
+
+
 
 void
 VtuWriter::WriteResult(const std::string groupname,
@@ -511,15 +518,70 @@ VtuWriter::WriteResult(const std::string groupname,
   }
   if (!foundit) return;
 
-  // jump to the correct location in the data vector
+  // jump to the correct location in the data vector. Some fields might only
+  // be stored once, so need to catch that case as well
+  bool once = false;
   for (int i=0; i<timestep_; ++i)
     if ( not result.next_result(groupname) )
-      dserror("Could not locate time step %d for field %s in result file", timestep_, groupname.c_str());
+    {
+      once = true;
+      break;
+    }
+  if (once)
+  {
+    result = PostResult(field_);
+    result.next_result(groupname);
+  }
 
-  if (restype != dofbased)
-    dserror("Given result type %i currently not implemented", restype);
+  if ( not (field_->problem()->SpatialApproximation()=="Polynomial" or
+            field_->problem()->SpatialApproximation()=="Meshfree" or
+            field_->problem()->SpatialApproximation()=="HDG") )
+    dserror("Only polynomial or meshfree approximations can be written with the VTU filter");
 
-  const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
+  // need dummy structure that is required for the generic writer interface
+  // but not needed by the vtu writer.
+  std::map<std::string, std::vector<std::ofstream::pos_type> > dummy;
+
+  switch (restype)
+    {
+    case dofbased:
+      {
+        const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
+        WriteDofResultStep(currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
+        break;
+      }
+    case nodebased:
+      {
+        const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+        WriteNodalResultStep(currentout_, data, dummy, groupname, name, numdf);
+        break;
+      }
+    case elementbased:
+      {
+        const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+        WriteElementResultStep(currentout_, data, dummy, groupname, name, numdf, from);
+        break;
+      }
+    default:
+      dserror("Result type not yet implemented");
+    }
+}
+
+
+
+void
+VtuWriter::WriteDofResultStep(
+    std::ofstream& file,
+    const Teuchos::RCP<Epetra_Vector> &data,
+    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+    const std::string& groupname,
+    const std::string& name,
+    const int numdf,
+    const int from,
+    const bool fillzeros) const
+{
+  if (myrank_==0 && timestep_ == 0)
+    std::cout << "writing dof-based field " << name <<std::endl;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
@@ -577,27 +639,154 @@ VtuWriter::WriteResult(const std::string groupname,
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
-  currentout_ << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
-  if (numdf > 1)
-    currentout_ << " NumberOfComponents=\"3\"";
-  currentout_ << " format=\"binary\">\n";
+  WriteSolutionVector(solution, ncomponents, name, file);
+}
 
-  writeCompressedBlock(solution, currentout_);
 
-  currentout_<< "    </DataArray>\n";
 
+void
+VtuWriter::WriteNodalResultStep(
+    std::ofstream& file,
+    const Teuchos::RCP<Epetra_MultiVector>& data,
+    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+    const std::string& groupname,
+    const std::string& name,
+    const int numdf) const
+{
+  if (myrank_==0 && timestep_ == 0)
+    std::cout << "writing node-based field " << name <<std::endl;
+
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+
+  // Here is the only thing we need to do for parallel computations: We need read access to all dofs
+  // on the row elements, so need to get the DofColMap to have this access
+  const Epetra_Map* colmap = dis->NodeColMap();
+  const Epetra_BlockMap& vecmap = data->Map();
+
+  Teuchos::RCP<Epetra_MultiVector> ghostedData;
+  if (colmap->SameAs(vecmap))
+    ghostedData = data;
+  else {
+    ghostedData = LINALG::CreateVector(*colmap,false);
+    LINALG::Export(*data,*ghostedData);
+  }
+
+  int ncomponents = numdf;
+  if (numdf > 1 && numdf == field_->problem()->num_dim())
+    ncomponents = 3;
+
+  // count number of nodes and number of elements for each processor
+  int nnodes = 0;
+  for (int e=0; e<dis->NumMyRowElements(); ++e)
+    nnodes += dis->lRowElement(e)->NumNode();
+
+  std::vector<double> solution;
+  solution.reserve(ncomponents*nnodes);
+
+  for (int e=0; e<dis->NumMyRowElements(); ++e) {
+    const DRT::Element* ele = dis->lRowElement(e);
+    for (int n=0; n<ele->NumNode(); ++n) {
+
+      for (int idf=0; idf<numdf; ++idf)
+        {
+          Epetra_Vector* column = (*ghostedData)(idf);
+
+          int lid = ghostedData->Map().LID(ele->Nodes()[n]->Id());
+
+          if (lid > -1)
+            solution.push_back((*column)[lid]);
+          else {
+            dserror("received illegal node local id: %d", lid);
+          }
+        }
+      for (int d=numdf; d<ncomponents; ++d)
+        solution.push_back(0.);
+    }
+  }
+  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+
+  WriteSolutionVector(solution, ncomponents, name, file);
+}
+
+
+
+void
+VtuWriter::WriteElementResultStep(
+    std::ofstream& file,
+    const Teuchos::RCP<Epetra_MultiVector>& data,
+    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+    const std::string& groupname,
+    const std::string& name,
+    const int numdf,
+    const int from) const
+{
+  if (myrank_==0 && timestep_ == 0)
+    std::cout << "writing element-based field " << name << std::endl;
+
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+
+  int ncomponents = numdf;
+  if (numdf > 1 && numdf == field_->problem()->num_dim())
+    ncomponents = 3;
+
+  // count number of nodes and number of elements for each processor
+  int nnodes = 0;
+  for (int e=0; e<dis->NumMyRowElements(); ++e)
+    nnodes += dis->lRowElement(e)->NumNode();
+
+  std::vector<double> solution;
+  solution.reserve(ncomponents*nnodes);
+
+  const int numcol = data->NumVectors();
+  if (numdf+from > numcol)
+    dserror("violated column range of Epetra_MultiVector: %d",numcol);
+
+  for (int e=0; e<dis->NumMyRowElements(); ++e) {
+    const DRT::Element* ele = dis->lRowElement(e);
+    for (int n=0; n<ele->NumNode(); ++n) {
+      for (int d=0; d<numdf; ++d) {
+        Epetra_Vector* column = (*data)(d+from);
+        solution.push_back((*column)[e]);
+      }
+      for (int d=numdf; d<ncomponents; ++d)
+        solution.push_back(0.);
+    }
+  }
+  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+
+  WriteSolutionVector(solution, ncomponents, name, file);
+}
+
+
+
+void
+VtuWriter::WriteSolutionVector (const std::vector<double> &solution,
+                                const int ncomponents,
+                                const std::string &name,
+                                std::ofstream &file) const
+{
+  file << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
+  if (ncomponents > 1)
+    file << " NumberOfComponents=\"" << ncomponents << "\"";
+  file << " format=\"binary\">\n";
+
+  writeCompressedBlock(solution, file);
+
+  file << "    </DataArray>\n";
+
+  std::ofstream & masterfile = const_cast<std::ofstream&>(currentmasterout_);
   if (myrank_ == 0) {
-    currentmasterout_ << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"";
-    if (numdf > 1)
-      currentmasterout_ << " NumberOfComponents=\"3\"";
-    currentmasterout_ << " format=\"ascii\"/>\n";
+    masterfile << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"";
+    if (ncomponents > 1)
+      masterfile << " NumberOfComponents=\"" << ncomponents << "\"";
+    masterfile << " format=\"ascii\"/>\n";
   }
 }
 
 
 
 void
-VtuWriter::WriteFiles()
+VtuWriter::WriteFiles(PostFilterBase &filter)
 {
   PostResult result = PostResult(field_);
 
@@ -623,7 +812,7 @@ VtuWriter::WriteFiles()
 
     WriteGeo();
 
-    WriteAllResults(field_);
+    filter.WriteAllResults(field_);
 
     WriteVtuFooter(filename_base);
   }
@@ -654,4 +843,3 @@ VtuWriter::WriteFiles()
   }
 
 }
-

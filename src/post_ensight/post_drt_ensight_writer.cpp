@@ -4,10 +4,10 @@
   \brief Ensight filter basis class
 
   <pre>
-  Maintainer: Ulrich Kuettler
-  kuettler@lnm.mw.tum.de
-  http://www.lnm.mw.tum.de/Members/kuettler
-  089 - 289-15238
+  Maintainer: Martin Kronbichler
+  kronbichler@lnm.mw.tum.de
+  http://www.lnm.mw.tum.de
+  089 - 289-15235
   </pre>
 
 */
@@ -38,10 +38,9 @@ const int Hex20_BaciToEnsightGold[20] =
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EnsightWriter::EnsightWriter(PostField* field,
-                             const std::string filename)
-  : field_(field),
-    filename_(filename),
-    myrank_(((field->problem())->comm())->MyPID()),
+                             const std::string &filename)
+:
+    PostWriterBase(field, filename),
     nodeidgiven_(true)
 {
   // initialize proc0map_ correctly
@@ -88,12 +87,11 @@ EnsightWriter::EnsightWriter(PostField* field,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteFiles()
+void EnsightWriter::WriteFiles(PostFilterBase &filter)
 {
 #ifndef PARALLEL
   if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
-
   PostResult result(field_);
 
   // timesteps when the solution is written
@@ -121,7 +119,7 @@ void EnsightWriter::WriteFiles()
   ///////////////////////////////////
   //  write solution fields files  //
   ///////////////////////////////////
-  WriteAllResults(field_);
+  filter.WriteAllResults(field_);
 
   // prepare the time sets and file sets for case file creation
   int setcounter = 0;
@@ -190,7 +188,7 @@ void EnsightWriter::WriteFiles()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteFilesChangingGeom()
+void EnsightWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 {
   // times and steps when the solution is written
   std::vector<double> soltime;
@@ -271,7 +269,7 @@ void EnsightWriter::WriteFilesChangingGeom()
     if(istep+1 == numsoltimes)
       laststep = true;
 
-    WriteAllResultsOneTimeStep(result, firststep, laststep);
+    filter.WriteAllResultsOneTimeStep(result, firststep, laststep);
   }
 
   // append index table for geo file
@@ -769,7 +767,8 @@ void EnsightWriter::WriteNodeConnectivityPar(
  * \author gjb
  * \date 01/08
  */
-NumElePerDisType EnsightWriter::GetNumElePerDisType(
+EnsightWriter::NumElePerDisType
+EnsightWriter::GetNumElePerDisType(
   const Teuchos::RCP<DRT::Discretization> dis
   ) const
 {
@@ -865,7 +864,8 @@ int EnsightWriter::GetNumSubEle(
 /*!
  * \brief parse all elements and get the global ids of the elements for each distype
  */
-EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
+EnsightWriter::EleGidPerDisType
+EnsightWriter::GetEleGidPerDisType(
   const Teuchos::RCP<DRT::Discretization> dis,
   NumElePerDisType numeleperdistype
   ) const
@@ -1007,48 +1007,6 @@ std::string EnsightWriter::GetEnsightString(
   return entry->second;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void EnsightWriter::WriteAnyResults(PostField* field, const char* type, const ResultType restype)
-{
-  PostResult result = PostResult(field_);
-  result.next_result();
-
-  MAP_ITERATOR iter;
-  init_map_iterator(&iter,result.group());
-
-  while (next_map_node(&iter))
-  {
-    // We do not support multiple definitions of the same name here. We just
-    // use the map node to obtain the key string. Afterward we can use normal
-    // map functions to find out if this key names an element vector group.
-    MAP_NODE* node = iterator_get_node(&iter);
-    char* key = node->key;
-    if (map_has_map(result.group(),key))
-    {
-      MAP* entry = map_read_map(result.group(),key);
-      if (map_has_string(entry, "type", type))
-      {
-        int dim;
-        // This is bad. We should have a generic way to find how many dofs
-        // there are. Until then this is remains a special purpose routine
-        // that cannot serve everybody.
-        if (restype==elementbased)
-          // for elements we have the number of columns
-          dim = map_read_int(entry, "columns");
-        else if (restype==nodebased)
-          // for node the number of columns might be a same bet as well
-          dim = map_read_int(entry, "columns");
-        else
-          // Normal dof vectors have ndim dofs per node. (But then there are
-          // velocity / pressure vectors and such...)
-          dim = field->problem()->num_dim();
-        WriteResult(key,key,restype,dim);
-      }
-    }
-  }
-}
 
 
 /*----------------------------------------------------------------------*/
@@ -1434,6 +1392,135 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result,
   return;
 }
 
+
+
+void
+EnsightWriter::WriteSpecialField (
+    SpecialFieldInterface &special,
+    PostResult& result,
+    const ResultType  restype,
+    const std::string &groupname,
+    const std::vector<std::string> &fieldnames,
+    const std::string &outinfo
+    )
+{
+  const int numfiles = fieldnames.size();
+
+  // new for file continuation
+  std::vector<bool> multiple_files(numfiles);
+  for (int i=0;i<numfiles;++i)
+  {
+    multiple_files[i] = false;
+  }
+
+  // open file
+  std::vector<std::string> filenames(numfiles);
+  for (int i=0;i<numfiles;++i)
+  {
+    filenames[i] = filename_ + "_"+ field_->name() + "."+ fieldnames[i];
+  }
+
+  std::vector<Teuchos::RCP<std::ofstream> > files(numfiles);
+  std::vector<int> startfilepos(numfiles);
+  for (int i=0;i<numfiles;++i)
+    startfilepos[i] = 0;
+  for (int i=0;i<numfiles;++i)
+  {
+    files[i] = Teuchos::rcp(new std::ofstream);
+
+    if (myrank_==0)
+    {
+      files[i]->open(filenames[i].c_str());
+      startfilepos[i] = files[i]->tellp(); // file position should be zero, but we stay flexible
+    }
+  }
+
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
+  std::vector<int> stepsize(numfiles);
+  for (int i=0;i<numfiles;++i)
+  {
+    stepsize[i]=0;
+  }
+
+  if (myrank_==0)
+  {
+    if (restype == nodebased)
+      std::cout << "writing node-based ";
+    else if (restype == elementbased)
+      std::cout << "writing element-based ";
+    else
+      std::cout << "writing [unknown type] ";
+    std::cout << outinfo << std::endl;
+  }
+
+  // store information for later case file creation
+  for (int i=0;i<numfiles;++i)
+  {
+    variableresulttypemap_[fieldnames[i]] = (restype == nodebased ? "node" : "element");
+  }
+
+  special(files,result,resultfilepos,groupname,fieldnames);
+
+  // how many bits are necessary per time step (we assume a fixed size)?
+  if (myrank_==0)
+  {
+    for (int i=0;i<numfiles;++i)
+    {
+      stepsize[i] = ((int) files[i]->tellp())-startfilepos[i];
+      if (stepsize[i] <= 0) dserror("found invalid step size for result file");
+    }
+  }
+  else
+  {
+    for (int i=0;i<numfiles;++i)
+    {
+      stepsize[i] = 1; //use dummy value on other procs
+    }
+  }
+
+  while (result.next_result())
+  {
+    for (int i=0;i<numfiles;++i)
+    {
+      const int indexsize = 80+2*sizeof(int)+(files[i]->tellp()/stepsize[i]+2)*sizeof(long);
+      if (static_cast<long unsigned int>(files[i]->tellp())+stepsize[i]+indexsize>= FILE_SIZE_LIMIT_)
+      {
+        bool mf = multiple_files[i];
+        FileSwitcher(*(files[i]),mf,filesetmap_,resultfilepos,stepsize[i],fieldnames[i],filenames[i]);
+      }
+    }
+
+    special(files,result,resultfilepos,groupname,fieldnames);
+  }
+  // store information for later case file creation
+
+  const std::vector<int> numdfmap = special.NumDfMap();
+  dsassert(static_cast<int>(numdfmap.size()) == numfiles, "Wrong number of components in NumDfMap.");
+  for (int i=0;i<numfiles;++i)
+  {
+    filesetmap_[fieldnames[i]].push_back(files[i]->tellp()/stepsize[i]);// has to be done BEFORE writing the index table
+    variablenumdfmap_[fieldnames[i]] = numdfmap[i];
+    variablefilenamemap_[fieldnames[i]] = filenames[i];
+  }
+
+  // store solution times vector for later case file creation
+  for (int i=0;i<numfiles;++i)
+  {
+    PostResult res = PostResult(field_); // this is needed!
+    std::vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    timesetmap_[fieldnames[i]] = restimes;
+  }
+
+  //append index table
+  for (int i=0;i<numfiles;++i)
+  {
+    WriteIndexTable(*(files[i]), resultfilepos[fieldnames[i]]);
+    resultfilepos[fieldnames[i]].clear();
+    if (files[i]->is_open()) files[i]->close();
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::FileSwitcher(
@@ -1493,8 +1580,8 @@ void EnsightWriter::FileSwitcher(
 void EnsightWriter::WriteDofResultStep(std::ofstream& file,
                                        PostResult& result,
                                        std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-                                       const std::string groupname,
-                                       const std::string name,
+                                       const std::string& groupname,
+                                       const std::string& name,
                                        const int numdf,
                                        const int frompid,
                                        const bool fillzeros) const
@@ -1691,8 +1778,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
 void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          PostResult& result,
                                          std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-                                         const std::string groupname,
-                                         const std::string name,
+                                         const std::string& groupname,
+                                         const std::string& name,
                                          const int numdf) const
 {
   const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
@@ -1708,8 +1795,8 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
 void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          const Teuchos::RCP<Epetra_MultiVector>& data,
                                          std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-                                         const std::string groupname,
-                                         const std::string name,
+                                         const std::string& groupname,
+                                         const std::string& name,
                                          const int numdf) const
 {
   //-------------------------------------------
@@ -1784,8 +1871,8 @@ void EnsightWriter::WriteElementDOFResultStep(
   std::ofstream& file,
   PostResult& result,
   std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-  const std::string groupname,
-  const std::string name,
+  const std::string& groupname,
+  const std::string& name,
   const int numdof,
   const int from
   ) const
@@ -1947,8 +2034,8 @@ void EnsightWriter::WriteElementResultStep(
   std::ofstream& file,
   PostResult& result,
   std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-  const std::string groupname,
-  const std::string name,
+  const std::string& groupname,
+  const std::string& name,
   const int numdf,
   const int from
   ) const
@@ -1972,8 +2059,8 @@ void EnsightWriter::WriteElementResultStep(
   std::ofstream& file,
   const Teuchos::RCP<Epetra_MultiVector>& data,
   std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-  const std::string groupname,
-  const std::string name,
+  const std::string &groupname,
+  const std::string &name,
   const int numdf,
   const int from
   ) const

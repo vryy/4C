@@ -20,4 +20,11 @@ Maintainer: Ulrich Kuettler
 
 #include "../post_drt_common/post_drt_common.H"
 
+
+namespace PostGid
+{
+  //! Runs the Gid filter
+  void runGidFilter(PostProblem &problem);
+}
+
 #endif

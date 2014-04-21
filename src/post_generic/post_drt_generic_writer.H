@@ -25,6 +25,7 @@
 #include <string>
 
 #include "../post_drt_common/post_drt_common.H"
+#include "../post_drt_common/post_filter_base.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
@@ -70,17 +71,6 @@ const int subhexmap[8][8] =
 typedef std::map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
 typedef std::map<DRT::Element::DiscretizationType, std::vector<int> > EleGidPerDisType;
-
-//! defines different result types (node-based, element-based, Gauss-Points?)
-enum ResultType
-{
-  no_restype,          // unknown result type
-  dofbased,            // dof-based result values
-  nodebased,           // node-based result values
-  elementbased,        // element-based result values
-  elementdof,          // element degree of freedom values
-  max_restype          // end marker. must be the last entry
-};
 
 //! basis class for the Ensight filter
 class EnsightWriter

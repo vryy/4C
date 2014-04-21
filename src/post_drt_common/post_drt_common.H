@@ -5,10 +5,10 @@
 \brief drt binary filter library
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 
 The drt binary filter library contains classes to open and read binary
@@ -86,6 +86,9 @@ public:
   //@}
 
   // @{ \name Access methods
+
+  //! returns the filter to be used for post-processing
+  std::string filter() const { return filter_; }
 
   //! returns the basename of the control file
   std::string basename() const { return basename_; }
@@ -178,6 +181,9 @@ private:
   //
   // Keeps track of global field variable
   PostField getfield(MAP* field_info);
+
+  //! type of filter we want to apply
+  std::string filter_;
 
   //! type of the problem we post process
   PROBLEM_TYP problemtype_;
@@ -418,6 +424,7 @@ private:
   MAP* group_;
   IO::HDFReader file_;
 };
+
 
 
 #endif

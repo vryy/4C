@@ -421,111 +421,107 @@ void write_mesh(PostProblem* problem, int disnum)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int main(int argc, char** argv)
+
+/* --------------------------------------------------------------------------
+  \brief Main driving routine of the Gid filter, called from post_processor
+ */
+namespace PostGid
 {
-  Teuchos::CommandLineProcessor My_CLP;
-  My_CLP.setDocString(
-    "Post DRT GiD Filter\n"
-    );
-
-  PostProblem problem = PostProblem(My_CLP,argc,argv);
-
-  std::string filename = problem.outname() + ".flavia.res";
-  if (GiD_OpenPostResultFile(const_cast<char*>(filename.c_str()))!=0)
-    dserror("failed to open gid output file '%s'", filename.c_str());
-
-  // just write the mesh
-  for (int i = 0; i<problem.num_discr(); ++i)
+  void runGidFilter(PostProblem &problem)
   {
-    write_mesh(&problem,i);
-  }
+    std::string filename = problem.outname() + ".flavia.res";
+    if (GiD_OpenPostResultFile(const_cast<char*>(filename.c_str()))!=0)
+      dserror("failed to open gid output file '%s'", filename.c_str());
 
-  for (int i = 0; i<problem.num_discr(); ++i)
-  {
-    PostField* field = problem.get_discretization(i);
-    PostResult result = PostResult(field);
-    while (result.next_result())
+    // just write the mesh
+    for (int i = 0; i<problem.num_discr(); ++i)
     {
-      if (map_has_map(result.group(), "displacement"))
+      write_mesh(&problem,i);
+    }
+
+    for (int i = 0; i<problem.num_discr(); ++i)
+    {
+      PostField* field = problem.get_discretization(i);
+      PostResult result = PostResult(field);
+      while (result.next_result())
       {
-        write_vector_result("displacement", field, &result);
-      }
-      if (map_has_map(result.group(), "dispnp"))
-      {
-        write_vector_result("dispnp", field, &result);
-      }
-      if (map_has_map(result.group(), "velocity"))
-      {
-        write_vector_result("velocity", field, &result);
-      }
-      if (map_has_map(result.group(), "velnp"))
-      {
-        write_vector_result("velnp", field, &result);
-      }
-      if (map_has_map(result.group(), "pressure"))
-      {
-        write_scalar_result("pressure", field, &result);
-      }
-      if (map_has_map(result.group(), "acceleration"))
-      {
-        write_vector_result("acceleration", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_cauchy_stresses_xyz"))
-      {
-        write_serialdensematrix_result("gauss_cauchy_stresses_xyz", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_2PK_stresses_xyz"))
-      {
-        write_serialdensematrix_result("gauss_2PK_stresses_xyz", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_GL_strains_xyz"))
-      {
-        write_serialdensematrix_result("gauss_GL_strains_xyz", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_EA_strains_xyz"))
-      {
-        write_serialdensematrix_result("gauss_EA_strains_xyz", field, &result);
-      }
+        if (map_has_map(result.group(), "displacement"))
+        {
+          write_vector_result("displacement", field, &result);
+        }
+        if (map_has_map(result.group(), "dispnp"))
+        {
+          write_vector_result("dispnp", field, &result);
+        }
+        if (map_has_map(result.group(), "velocity"))
+        {
+          write_vector_result("velocity", field, &result);
+        }
+        if (map_has_map(result.group(), "velnp"))
+        {
+          write_vector_result("velnp", field, &result);
+        }
+        if (map_has_map(result.group(), "pressure"))
+        {
+          write_scalar_result("pressure", field, &result);
+        }
+        if (map_has_map(result.group(), "acceleration"))
+        {
+          write_vector_result("acceleration", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_cauchy_stresses_xyz"))
+        {
+          write_serialdensematrix_result("gauss_cauchy_stresses_xyz", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_2PK_stresses_xyz"))
+        {
+          write_serialdensematrix_result("gauss_2PK_stresses_xyz", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_GL_strains_xyz"))
+        {
+          write_serialdensematrix_result("gauss_GL_strains_xyz", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_EA_strains_xyz"))
+        {
+          write_serialdensematrix_result("gauss_EA_strains_xyz", field, &result);
+        }
 
 
-      if (map_has_map(result.group(), "temperature"))
-      {
-        write_vector_result("temperature", field, &result);
-      }
-      if (map_has_map(result.group(), "tempnp"))
-      {
-        write_vector_result("tempnp", field, &result);
-      }
-      if (map_has_map(result.group(), "rate"))
-      {
-        write_vector_result("rate", field, &result);
-      }
-      if (map_has_map(result.group(), "ratenp"))
-      {
-        write_vector_result("ratenp", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_current_heatfluxes_xyz"))
-      {
-        write_serialdensematrix_result("gauss_current_heatfluxes_xyz", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_initial_heatfluxes_xyz"))
-      {
-        write_serialdensematrix_result("gauss_initial_heatfluxes_xyz", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_initial_tempgrad_xyz"))
-      {
-        write_serialdensematrix_result("gauss_initial_tempgrad_xyz", field, &result);
-      }
-      if (map_has_map(result.group(), "gauss_current_tempgrad_xyz"))
-      {
-        write_serialdensematrix_result("gauss_current_tempgrad_xyz", field, &result);
+        if (map_has_map(result.group(), "temperature"))
+        {
+          write_vector_result("temperature", field, &result);
+        }
+        if (map_has_map(result.group(), "tempnp"))
+        {
+          write_vector_result("tempnp", field, &result);
+        }
+        if (map_has_map(result.group(), "rate"))
+        {
+          write_vector_result("rate", field, &result);
+        }
+        if (map_has_map(result.group(), "ratenp"))
+        {
+          write_vector_result("ratenp", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_current_heatfluxes_xyz"))
+        {
+          write_serialdensematrix_result("gauss_current_heatfluxes_xyz", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_initial_heatfluxes_xyz"))
+        {
+          write_serialdensematrix_result("gauss_initial_heatfluxes_xyz", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_initial_tempgrad_xyz"))
+        {
+          write_serialdensematrix_result("gauss_initial_tempgrad_xyz", field, &result);
+        }
+        if (map_has_map(result.group(), "gauss_current_tempgrad_xyz"))
+        {
+          write_serialdensematrix_result("gauss_current_tempgrad_xyz", field, &result);
+        }
       }
     }
+
+    GiD_ClosePostResultFile();
   }
-
-  GiD_ClosePostResultFile();
-  return 0;
 }
-

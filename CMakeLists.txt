@@ -768,25 +768,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_ssn_plast_eletypes.cpp
   src/drt_so3/so3_ssn_plast_eas.cpp
 )
-set(OBJS_POST_DRT_ENSIGHT
-  src/post_ensight/post_drt_ensight.cpp
-  src/post_ensight/post_drt_ensight_single_field_writers.cpp
-  src/post_ensight/post_drt_ensight_structure_stress.cpp
-  src/post_ensight/post_drt_ensight_thermo_heatflux.cpp
-  src/post_ensight/post_drt_ensight_writer.cpp
-  src/post_ensight/post_drt_ensight_writer_nurbs.cpp
-)
-set(OBJS_POST_DRT_GENERIC
-  src/post_generic/post_drt_generic.cpp
-  src/post_generic/post_drt_generic_single_field_writers.cpp
-  src/post_generic/post_drt_generic_structure_stress.cpp
-  src/post_generic/post_drt_generic_writer.cpp
-)
-set(OBJS_POST_DRT_VTU
-  src/post_vtu/post_drt_vtu_writer.cpp
-  src/post_vtu/post_drt_vtu_single_field_writers.cpp
-  src/post_vtu/post_drt_vtu.cpp
-)
 set(OBJS_DRT_ELCH
   src/drt_elch/elch_algorithm.cpp
   src/drt_elch/elch_dyn.cpp
@@ -1200,6 +1181,27 @@ set(OBJS_DRT_LOMA
 )
 set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
+)
+set(OBJS_POST_PROCESSOR_MAIN
+  src/post_drt_common/post_processor.cpp
+  src/post_drt_common/post_single_field_writers.cpp
+  src/post_drt_common/post_structure_stress.cpp
+  src/post_drt_common/post_thermo_heatflux.cpp
+  src/post_drt_common/post_filter_base.cpp
+  src/post_drt_common/post_writer_base.cpp
+)
+set(OBJS_POST_DRT_ENSIGHT
+  src/post_ensight/post_drt_ensight_writer.cpp
+  src/post_ensight/post_drt_ensight_writer_nurbs.cpp
+)
+set(OBJS_POST_DRT_GENERIC
+  src/post_generic/post_drt_generic.cpp
+  src/post_generic/post_drt_generic_single_field_writers.cpp
+  src/post_generic/post_drt_generic_structure_stress.cpp
+  src/post_generic/post_drt_generic_writer.cpp
+)
+set(OBJS_POST_DRT_VTU
+  src/post_vtu/post_drt_vtu_writer.cpp
 )
 set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/gen_inv_analysis.cpp
@@ -2009,6 +2011,9 @@ set(SUPPORT_LIBRARIES
 # filter framework
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
 add_library(filter_common ${OBJS_FILTER_COMMON})
+add_library(post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
+add_library(post_drt_gid ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
+add_library(post_drt_vtu ${OBJS_POST_DRT_VTU})
 
 # linear algebra objects
 #add_library(linalg SHARED ${OBJS_LINALG})
@@ -2022,12 +2027,10 @@ set(baciname baci-${BUILD_TYPE})
 # the baci executable
 add_executable (${baciname} ${OBJS_BACI_MAIN})
 
-add_executable (post_drt_gid     EXCLUDE_FROM_ALL ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
-add_executable (post_drt_ensight EXCLUDE_FROM_ALL ${OBJS_POST_DRT_ENSIGHT})
+add_executable (post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
 add_executable (post_drt_generic EXCLUDE_FROM_ALL ${OBJS_POST_DRT_GENERIC})
 add_executable (post_drt_monitor EXCLUDE_FROM_ALL ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert EXCLUDE_FROM_ALL ${OBJS_POST_DRT_S8CONVERT})
-add_executable (post_drt_vtu     EXCLUDE_FROM_ALL ${OBJS_POST_DRT_VTU})
 add_executable (pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
 add_executable (pre_curve EXCLUDE_FROM_ALL ${OBJS_PRE_CURVE})
 add_executable (pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
@@ -2064,21 +2067,24 @@ set(FILTER_LIBRARIES
   drt_comm
   ${LIBRARIES})
 
-target_link_libraries (post_drt_gid ${FILTER_LIBRARIES})
-target_link_libraries (post_drt_ensight ${FILTER_LIBRARIES})
+target_link_libraries (post_processor post_drt_ensight post_drt_gid post_drt_vtu ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_generic ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
-target_link_libraries (post_drt_vtu ${FILTER_LIBRARIES})
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
 target_link_libraries (pre_locsys ${FILTER_LIBRARIES})
 target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 
 
 ADD_CUSTOM_TARGET(baci DEPENDS ${baciname}) 
-ADD_CUSTOM_TARGET(post DEPENDS post_drt_ensight post_drt_monitor) 
+ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor) 
 ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post) 
-ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_drt_gid pre_exodus post_drt_ensight post_drt_generic post_drt_monitor post_drt_s8convert post_drt_vtu pre_exodus pre_curve pre_locsys cut_test) 
+ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_generic post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test) 
+
+# various post-processing tools
+ADD_CUSTOM_COMMAND(TARGET post_processor
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -D CMAKE_PROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/baci_create_post_scripts.cmake)
 
 ###------------------------------------------------------------------ Tests
 

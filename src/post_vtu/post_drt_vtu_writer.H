@@ -18,6 +18,8 @@ Maintainer: Martin Kronbichler
 
 
 #include "../drt_lib/drt_dserror.H"
+#include "../post_drt_common/post_drt_common.H"
+#include "../post_drt_common/post_writer_base.H"
 
 #include <iostream>
 #include <fstream>
@@ -35,16 +37,6 @@ namespace DRT
   class Node;
 }
 
-//! defines different result types (node-based, element-based, Gauss-Points?)
-enum ResultType
-{
-  no_restype,          // unknown result type
-  dofbased,            // result values based on dofrowmap
-  nodebased,           // result values based on noderowmap
-  elementbased,        // result values based on elementrowmap
-  elementdof,          // result values based on elementdofrowmap (unused)
-  max_restype          // end marker. must be the last entry
-};
 
 /*
  \brief Base class for VTU output generation
@@ -52,30 +44,27 @@ enum ResultType
  \author kronbichler
  \date 03/14
 */
-class VtuWriter
+class VtuWriter : public PostWriterBase
 {
 public:
-  //! constructor
-  VtuWriter(PostField* field,
-            const std::string filename);
+  //! constructor. Initializes the writer to a certain field.
+  VtuWriter (PostField* field,
+             const std::string &name);
 
   //! destructor
   virtual ~VtuWriter()
   {}
 
   //! write the whole thing
-  void WriteFiles();
+  virtual void WriteFiles(PostFilterBase &filter);
 
   //! write the whole thing
-  void WriteFilesChangingGeom()
+  virtual void WriteFilesChangingGeom(PostFilterBase &filter)
   {
     CurrentlyNotImplemented();
   }
 
 protected:
-
-  //! look for problem dependent result entries and write them
-  virtual void WriteAllResults(PostField* field) = 0;
 
   /*!
    \brief write one time step of a result
@@ -87,7 +76,7 @@ protected:
    pressure) and we want to write just one part of it. So we have to
    specify which part.
    */
-  void WriteResult(
+  virtual void WriteResult(
     const std::string groupname, ///< name of the result group in the control file
     const std::string name, ///< name of the result to be written
     const ResultType restype, ///< type of the result to be written (nodal-/element-based)
@@ -96,10 +85,79 @@ protected:
     const bool fillzeros=false ///< zeros are filled to vtu file when no data is available
     );
 
+
+  virtual void WriteResultOneTimeStep(
+            PostResult& result,   ///< result group in the control file
+            const std::string groupname, ///< name of the result group in the control file
+            const std::string name, ///< name of the result to be written
+            const ResultType restype, ///< type of the result to be written (nodal-/element-based)
+            const int numdf, ///< number of dofs per node to this result
+            bool firststep, ///< bool whether this is the first time step
+            bool laststep,  ///< bool whether this is the last time step
+            const int from=0 ///< start position of values in nodes
+            )
+  {
+    dserror("Not yet implemented");
+  }
+
+  /*!
+   \brief write a particular variable to file
+
+   Write results. Some variables need interaction with the post filter,
+   e.g. structural stresses that do some element computations before output.
+   To allow for a generic interface, the calling site needs to supply a
+   class derived from SpecialFieldInterface that knows which function to call.
+
+   \author kronbichler
+   \date 04/14
+   */
+  virtual void WriteSpecialField (
+      SpecialFieldInterface &special,
+      PostResult& result,   ///< result group in the control file
+      const ResultType  restype,
+      const std::string &groupname,
+      const std::vector<std::string> &fieldnames,
+      const std::string &outinfo);
+
+  void WriteDofResultStep(
+    std::ofstream& file,
+    const Teuchos::RCP<Epetra_Vector> &data,
+    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+    const std::string& groupname,
+    const std::string& name,
+    const int numdf,
+    const int from,
+    const bool fillzeros) const;
+
+  virtual void WriteNodalResultStep(
+    std::ofstream& file,
+    const Teuchos::RCP<Epetra_MultiVector>& data,
+    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+    const std::string& groupname,
+    const std::string& name,
+    const int numdf) const;
+
+  virtual void WriteElementResultStep(
+    std::ofstream& file,
+    const Teuchos::RCP<Epetra_MultiVector>& data,
+    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+    const std::string& groupname,
+    const std::string& name,
+    const int numdf,
+    const int from) const;
+
   /*!
    \brief write the geometry of one time step
    */
   void WriteGeo();
+
+  /*!
+   \brief write the solution data collected in the given vector
+   */
+  void WriteSolutionVector (const std::vector<double>& solution,
+                            const int ncomponents,
+                            const std::string &name,
+                            std::ofstream& file) const;
 
   /*!
    \brief write prologue of the VTU file
@@ -111,16 +169,6 @@ protected:
    */
   void WriteVtuFooter (const std::string &filenamebase);
 
-  /// write all element based results
-  /*!
-    \note This method sees only those element results that are defined in
-    the first result group.
-   */
-  void WriteElementResults(PostField* field)
-  {
-    if (myrank_ == 0)
-      std::cout << "WriteElementResults currently not implemented" << std::endl;
-  }
 
   /*!
    \brief writes debug output as long as this filter is incomplete (TODO MK: should go away at some point)
@@ -130,17 +178,8 @@ protected:
     dserror("Functionality currently not implemented");
   }
 
-  //! Current post field
-  PostField* field_;
-
-  //! Current file name
-  const std::string filename_;
-
-  //! Rank of current processor, all processors output one file each, and proc 0 an additional master file
-  const int myrank_;
-
-  //! Total number of MPI processors
-  const int numproc_;
+  //! Total number of MPI processors (all processors output their row elements)
+  int numproc_;
 
   //! Output stream for current time step
   std::ofstream currentout_;

@@ -4,10 +4,10 @@
  \brief contains basis class for the Ensight filter
 
  <pre>
- Maintainer: Ulrich Kuettler
- kuettler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/Members/kuettler
- 089 - 289-15238
+ Maintainer: Martin Kronbichler
+ kronbichler@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de/Members/kronbichler
+ 089 - 289-15235
  </pre>
 
  */
@@ -25,6 +25,7 @@
 #include <string>
 
 #include "../drt_lib/drt_element.H" // due to DiscretizationType
+#include "../post_drt_common/post_writer_base.H" // base class PostWriterBase
 
 //class PostProblem;
 class PostField;
@@ -71,74 +72,31 @@ const int subhexmap[8][8] =
   { 26, 22, 14, 23, 25, 17, 6, 18 },
   { 24, 26, 23, 15, 19, 25, 18, 7 } };
 
-typedef std::map<DRT::Element::DiscretizationType, int> NumElePerDisType;
-
-typedef std::map<DRT::Element::DiscretizationType, std::vector<int> > EleGidPerDisType;
-
-//! defines different result types (node-based, element-based, Gauss-Points?)
-enum ResultType
-{
-  no_restype,          // unknown result type
-  dofbased,            // result values based on dofrowmap
-  nodebased,           // result values based on noderowmap
-  elementbased,        // result values based on elementrowmap
-  elementdof,          // result values based on elementdofrowmap (unused)
-  max_restype          // end marker. must be the last entry
-};
 
 //! basis class for the Ensight filter
-class EnsightWriter
+class EnsightWriter : public PostWriterBase
 {
 public:
-  //! constructor
-  EnsightWriter(
-    PostField* field,
-    const std::string filename);
+
+  typedef std::map<DRT::Element::DiscretizationType, int> NumElePerDisType;
+
+  typedef std::map<DRT::Element::DiscretizationType, std::vector<int> > EleGidPerDisType;
+
+  //! constructor, does nothing (SetField must be called before usage)
+  EnsightWriter(PostField* field,
+                const std::string &name);
+
   //! destructor
   virtual ~EnsightWriter()
   {}
 
   //! write the whole thing
-  void WriteFiles();
+  virtual void WriteFiles(PostFilterBase &filter);
 
   //! write the whole thing for changing geometries
-  void WriteFilesChangingGeom();
+  virtual void WriteFilesChangingGeom(PostFilterBase &filter);
 
 protected:
-
-  //! look for problem dependent result entries and write them
-  virtual void WriteAllResults(PostField* field) = 0;
-  
-  //! look for problem dependent result entries and write them for one time step
-  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep) {dserror("not implemented"); }
-
-  /// write all element based results
-  /*!
-    \note This method sees only those element results that are defined in
-    the first result group.
-   */
-  void WriteElementResults(PostField* field) { WriteAnyResults(field,"element",elementbased); }
-
-  /// write all node based results
-  /*!
-    \note This method sees only those node results that are defined in
-    the first result group.
-   */
-  void WriteNodeResults(PostField* field) { WriteAnyResults(field,"node",nodebased); }
-
-  /// write all dof based results
-  /*!
-    \note This method sees only those dof results that are defined in
-    the first result group.
-   */
-  void WriteDofResults(PostField* field) { WriteAnyResults(field,"dof",dofbased); }
-
-  /// write all results of the given type
-  /*!
-    \note This method sees only those results that are defined in the first
-    result group (that is the first time step).
-   */
-  void WriteAnyResults(PostField* field, const char* type, const ResultType restype);
 
   /*!
    \brief write all time steps of a result
@@ -182,7 +140,7 @@ protected:
      \author ghamm
      \date 03/13
      */
-    void WriteResultOneTimeStep(
+  void WriteResultOneTimeStep(
             PostResult& result,   ///< result group in the control file
             const std::string groupname, ///< name of the result group in the control file
             const std::string name, ///< name of the result to be written
@@ -192,6 +150,25 @@ protected:
             bool laststep,  ///< bool whether this is the last time step
             const int from=0 ///< start position of values in nodes
             );
+
+  /*!
+   \brief write a particular variable to file
+
+   Write results. Some variables need interaction with the post filter,
+   e.g. structural stresses that do some element computations before output.
+   To allow for a generic interface, the calling site needs to supply a
+   class derived from SpecialFieldInterface that knows which function to call.
+
+   \author kronbichler
+   \date 04/14
+   */
+  virtual void WriteSpecialField (
+      SpecialFieldInterface &special,
+      PostResult& result,   ///< result group in the control file
+      const ResultType  restype,
+      const std::string &groupname,
+      const std::vector<std::string> &fieldnames,
+      const std::string &outinfo);
 
   template<class T> void Write(
     std::ofstream& os,
@@ -348,8 +325,8 @@ protected:
     std::ofstream& file,
     PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-    const std::string groupname,
-    const std::string name,
+    const std::string& groupname,
+    const std::string& name,
     const int numdf,
     const int from,
     const bool fillzeros) const;
@@ -419,38 +396,38 @@ protected:
     std::ofstream& file,
     PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-    const std::string groupname,
-    const std::string name,
+    const std::string& groupname,
+    const std::string& name,
     const int numdf) const;
-  void WriteNodalResultStep(
+  virtual void WriteNodalResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-    const std::string groupname,
-    const std::string name,
+    const std::string& groupname,
+    const std::string& name,
     const int numdf) const;
   void WriteElementDOFResultStep(
     std::ofstream& file,
     PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-    const std::string groupname,
-    const std::string name,
+    const std::string& groupname,
+    const std::string& name,
     const int numdf,
     const int from) const;
   void WriteElementResultStep(
     std::ofstream& file,
     PostResult& result,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-    const std::string groupname,
-    const std::string name,
+    const std::string& groupname,
+    const std::string& name,
     const int numdf,
     const int from) const;
-  void WriteElementResultStep(
+  virtual void WriteElementResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-    const std::string groupname,
-    const std::string name,
+    const std::string& groupname,
+    const std::string& name,
     const int numdf,
     const int from) const;
   void WriteIndexTable(
@@ -534,9 +511,6 @@ protected:
     const std::map<std::string,std::vector<int> >& filesetmap  ///< filesets when using multiple huge binary files
     ) const;
 
-  PostField* field_;
-  std::string filename_;
-  int myrank_; ///< global processor id
   bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
 
   NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type

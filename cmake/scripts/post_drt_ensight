@@ -1,0 +1,2 @@
+#!/bin/sh
+./post_processor --filter=ensight $@
