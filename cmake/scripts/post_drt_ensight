@@ -1,2 +1,2 @@
 #!/bin/sh
-./post_processor --filter=ensight $@
+$( dirname "${BASH_SOURCE[0]}")/post_processor --filter=ensight $@
