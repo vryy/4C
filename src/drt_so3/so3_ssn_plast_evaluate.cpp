@@ -2108,8 +2108,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     break;
     case INPAR::STR::stress_cauchy:
     {
+      // displacement-based deformation gradient
+      LINALG::Matrix<nsd_,nsd_> defgrd_disp;
+      defgrd_disp.MultiplyTT(xcurr,N_XYZ);
+
       if (elestress == NULL) dserror("stress data not available");
-      const double detF = defgrd.Determinant();
+      const double detF = defgrd_disp.Determinant();
 
       LINALG::Matrix<3,3> pkstress;
       pkstress(0,0) = pk2_stress(0);
@@ -2123,8 +2127,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
       pkstress(2,2) = pk2_stress(2);
 
       LINALG::Matrix<3,3> cauchystress;
-      tmp1.Multiply(1.0/detF,defgrd,pkstress);
-      cauchystress.MultiplyNT(tmp1,defgrd);
+      tmp1.Multiply(1.0/detF,defgrd_disp,pkstress);
+      cauchystress.MultiplyNT(tmp1,defgrd_disp);
 
       (*elestress)(gp,0) = cauchystress(0,0);
       (*elestress)(gp,1) = cauchystress(1,1);
