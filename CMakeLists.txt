@@ -1194,12 +1194,6 @@ set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight_writer.cpp
   src/post_ensight/post_drt_ensight_writer_nurbs.cpp
 )
-set(OBJS_POST_DRT_GENERIC
-  src/post_generic/post_drt_generic.cpp
-  src/post_generic/post_drt_generic_single_field_writers.cpp
-  src/post_generic/post_drt_generic_structure_stress.cpp
-  src/post_generic/post_drt_generic_writer.cpp
-)
 set(OBJS_POST_DRT_VTU
   src/post_vtu/post_drt_vtu_writer.cpp
 )
@@ -2028,7 +2022,6 @@ set(baciname baci-${BUILD_TYPE})
 add_executable (${baciname} ${OBJS_BACI_MAIN})
 
 add_executable (post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
-add_executable (post_drt_generic EXCLUDE_FROM_ALL ${OBJS_POST_DRT_GENERIC})
 add_executable (post_drt_monitor EXCLUDE_FROM_ALL ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert EXCLUDE_FROM_ALL ${OBJS_POST_DRT_S8CONVERT})
 add_executable (pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
@@ -2068,7 +2061,6 @@ set(FILTER_LIBRARIES
   ${LIBRARIES})
 
 target_link_libraries (post_processor post_drt_ensight post_drt_gid post_drt_vtu ${FILTER_LIBRARIES})
-target_link_libraries (post_drt_generic ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
@@ -2079,7 +2071,7 @@ target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 ADD_CUSTOM_TARGET(baci DEPENDS ${baciname}) 
 ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor) 
 ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post) 
-ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_generic post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test) 
+ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test) 
 
 # various post-processing tools
 ADD_CUSTOM_COMMAND(TARGET post_processor
