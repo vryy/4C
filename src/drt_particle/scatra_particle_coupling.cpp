@@ -71,6 +71,28 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   //               setup particle discretization
   // -------------------------------------------------------------------
 
+  // this is done here this way to avoid overloading of ReadRestart()
+  if (restarted)
+  {
+    // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
+    particledis_->FillComplete(false,false,false);
+
+    std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
+    Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
+    for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
+    {
+      DRT::Node* node = particledis_->gNode(particlerowmap->GID(lid));
+      const double* currpos = node->X();
+      PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
+    }
+
+    // start round robin loop to fill particles into their correct bins
+    FillParticlesIntoBins(homelessparticles);
+
+    particledis_->FillComplete(true, false, true);
+    return;
+  }
+
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
   particledis_->FillComplete(false,false,false);
   // extract noderowmap because it will be called Reset() after adding elements
@@ -108,21 +130,12 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   //               setup time integration
   // -------------------------------------------------------------------
 
-  // the following has only to be done once --> skip in case of restart
-  // remark:
-  // read restart deletes all initial particles, here the ones of the inital seeding
-  // this is ok
-  // then Init() is called once more
-  // therefore, we have to ensure that the time integrator is only setup once
-  if(not restarted)
-  {
-    // create time integrator
-    Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
-        Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm((*params_), particledis_));
-    particles_ = particles->ParticleField();
-    // set particle algorithm into time integration
-    particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
-  }
+  // create time integrator
+  Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
+      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm((*params_), particledis_));
+  particles_ = particles->ParticleField();
+  // set particle algorithm into time integration
+  particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
 
   // -------------------------------------------------------------------
   //               initialize all members
