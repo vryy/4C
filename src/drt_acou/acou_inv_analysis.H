@@ -243,6 +243,9 @@ private:
   //! Solve the optical adjoint problem
   void SolveAdjointOptiProblem();
 
+  //! Calculate RhsVec for adjoint Opti Problem
+  Teuchos::RCP<Epetra_Vector> CalculateNonconformRhsvec(Teuchos::RCP<Epetra_Vector> acounodevec);
+
   //! Build the gradient
   void CalculateGradient();
 

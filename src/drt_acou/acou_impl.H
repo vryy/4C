@@ -136,6 +136,9 @@ public:
   /// Output nodal internal psi field at new time step
   void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
 
+  /// Fill Touch Count Vector (needed for inverse analysis)
+  void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
+
   /// For result tests
   Teuchos::RCP<DRT::Discretization> Discretization();
   Teuchos::RCP<Epetra_Vector> Velnp()   { return velnp_; }

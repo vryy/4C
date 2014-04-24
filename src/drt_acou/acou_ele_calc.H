@@ -281,6 +281,15 @@ namespace ELEMENTS
                          INPAR::ACOU::DynamicType          dyna,
                          bool                              adjoint);
 
+
+    /// add terms corresponding to the absorbing boundary condition
+    void ComputeABCNodeVals(DRT::ELEMENTS::Acou*        ele,
+                            Teuchos::ParameterList&     params,
+                            Teuchos::RCP<MAT::Material> & mat,
+                            int                         face,
+                            Epetra_SerialDenseMatrix    &elemat,
+                            Epetra_SerialDenseVector    &elevec);
+
     /// reads from global vectors
     void ReadGlobalVectors(const DRT::Element     & ele,
                            DRT::Discretization    & discretization,

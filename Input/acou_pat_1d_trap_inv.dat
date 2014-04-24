@@ -43,13 +43,13 @@ INV_ANALYSIS                    pat
 MONITORFILE                     acou_pat_1d_trap_inv.monitor 
 FDCHECK                         No
 PARAMETRIZATION			elementwise
-INV_TOL                         1e-10
+INV_TOL                         1e-3
 INV_MAX_RUN                     20
 INV_TOL_GRAD_YN                 No
 INV_LS_MAX_RUN                  3
 ALPHA_MUA                       0.0
 BETA_MUA                        0.0
-OPTIMIZATION			LBFGS   
+OPTIMIZATION			GradientDescent   
 SIZESTORAGE                     10 
 ELE_SCALING			No
 LS_STEPLENGTHRED		0.1    
@@ -170,7 +170,8 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.00027 REACOEFF 200
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0.1*exp(4.1*(-x^2.0-y^2.0))
 ----------------------------------------------------------------------FUNCT2
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC_INVANA DIS scatra ELEMENT 11 QUANTITY absorptioncoeff VALUE 300 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 11 QUANTITY absorptioncoeff VALUE 300 TOLERANCE 1e-2
+ACOUSTIC_INVANA DIS scatra ELEMENT 12 QUANTITY absorptioncoeff VALUE 300 TOLERANCE 1e-2
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

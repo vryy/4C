@@ -598,7 +598,7 @@ void ACOU::InvAnalysis::SolveStandardProblem()
     dserror("Unknown time integration scheme for problem type Acoustics");
     break;
   }
-  acoualgo_->SetInitialPhotoAcousticField(pulse,phi_,scatra_discret_, meshconform);
+  acoualgo_->SetInitialPhotoAcousticField(pulse,phi_,scatra_discret_,meshconform);
 
   // we have to call a slightly changed routine, which fills our history vector which we need for the adjoint problem
   acou_rhs_->Scale(0.0);
@@ -623,23 +623,17 @@ void ACOU::InvAnalysis::SolveStandardProblem()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
 {
-
-  Teuchos::RCP<Epetra_Vector> node_mu_a_col = LINALG::CreateVector(*(scatra_discret_->NodeColMap()),true);
-  LINALG::Export(*node_mu_a_,*node_mu_a_col);
-
   J_ = 0.0;
 
+  // contribution from regularization
   if(alpha_ != 0.0)
   {
     double val = 0.0;
     STR::INVANA::MVNorm(matman_->GetParams(),2,&val,matman_->ParamLayoutMap());
     J_ += 0.5*alpha_*val*val;
   }
-  //std::cout<<"acou_rhsm_"<<std::endl;
-  //acou_rhsm_->Print(std::cout);
-  //std::cout<<"acou_rhs_"<<std::endl;
-  //acou_rhs_->Print(std::cout);
 
+  // contribution from difference between measured and simulated values
   Epetra_MultiVector tempvec = Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors());
   tempvec.Update(1.0,*acou_rhsm_,0.0);
   tempvec.Update(1.0,*acou_rhs_,-1.0);
@@ -689,6 +683,10 @@ void ACOU::InvAnalysis::SolveAdjointAcouProblem()
   */
   acou_rhs_->Update(-1.0,*acou_rhsm_,1.0);
 
+  // acou_rhs_ has to be scaled with weighting (adjoint of the weighting)
+  Teuchos::RCP<Epetra_Vector> touchcountvec = LINALG::CreateVector(*abcnodes_map_);
+  acoualgo_->FillTouchCountVec(touchcountvec);
+  acou_rhs_->Multiply(1.0,*touchcountvec,*acou_rhs_,0.0);
   acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhs_);
 
   std::string outname = name_;
@@ -766,49 +764,57 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
 
   // calculate this rhs vector!!!
   // acou node based vector -> opti dof based vector
-  Teuchos::RCP<Epetra_Vector> rhsvec = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
+  Teuchos::RCP<Epetra_Vector> rhsvec;
+  bool meshconform = DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM");
+  if(meshconform)
+  {
+    rhsvec = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
+
+    int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
+    for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
+    {
+      // get node and owner
+      int myoptnodeowner = -1;
+      int optnodeowner = -1;
+      DRT::Node* opti_node = NULL;
+      if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou+1) )
+      {
+        opti_node = scatra_discret_->gNode(nd+maxnodeidacou+1);
+        myoptnodeowner = opti_node->Owner();
+        if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
+      }
+      scatra_discret_->Comm().MaxAll(&myoptnodeowner,&optnodeowner,1);
+      if( optnodeowner == -1 ) // in this case, this node does not exist in the scatra discretization
+        continue;
+
+      double loc_value = 0.0;
+      if(acou_discret_->NodeRowMap()->LID(nd)>-1)
+      {
+        loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
+      }
+      double glo_value = 0.0;
+      acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
+
+      // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
+      if(scatra_discret_->Comm().MyPID() == optnodeowner)
+      {
+        int lnodeid = node_mu_a_->Map().LID(nd+maxnodeidacou+1);
+        double mu_a = node_mu_a_->operator [](lnodeid);
+        int dofgid = scatra_discret_->Dof(opti_node,0);
+        int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
+        int err = rhsvec->ReplaceMyValue(doflid,0,-glo_value*mu_a);
+        if (err) dserror("could not replace local vector entry");
+      }
+    }
+  } // if(meshconform)
+  else
+  {
+    rhsvec = CalculateNonconformRhsvec(adjoint_phi_0_);
+  } // else ** if(meshconform)
 
   std::string condname = "Dirichlet";
   std::vector<DRT::Condition*> dirichlets;
   scatra_discret_->GetCondition(condname,dirichlets);
-
-  int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
-  for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
-  {
-    // get node and owner
-    int myoptnodeowner = -1;
-    int optnodeowner = -1;
-    DRT::Node* opti_node = NULL;
-    if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou+1) )
-    {
-      opti_node = scatra_discret_->gNode(nd+maxnodeidacou+1);
-      myoptnodeowner = opti_node->Owner();
-      if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
-    }
-    scatra_discret_->Comm().MaxAll(&myoptnodeowner,&optnodeowner,1);
-    if( optnodeowner == -1 ) // in this case, this node does not exist in the scatra discretization
-      continue;
-
-    double loc_value = 0.0;
-    if(acou_discret_->NodeRowMap()->LID(nd)>-1)
-    {
-      loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
-    }
-    double glo_value = 0.0;
-    acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
-
-    // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
-    if(scatra_discret_->Comm().MyPID() == optnodeowner)
-    {
-      int lnodeid = node_mu_a_->Map().LID(nd+maxnodeidacou+1);
-      double mu_a = node_mu_a_->operator [](lnodeid);
-      int dofgid = scatra_discret_->Dof(opti_node,0);
-      int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
-      int err = rhsvec->ReplaceMyValue(doflid,0,-glo_value*mu_a);
-      if (err) dserror("could not replace local vector entry");
-    }
-  }
-
   for(int nd=0; nd<scatra_discret_->NumMyRowNodes(); ++nd)
   {
     DRT::Node* opti_node = scatra_discret_->lRowNode(nd);
@@ -841,6 +847,162 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
   return;
 } // void ACOU::InvAnalysis::SolveAdjointOptiProblem()
 
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ACOU::InvAnalysis::CalculateNonconformRhsvec(Teuchos::RCP<Epetra_Vector> acounodevec)
+{
+  // this function is similar to the mapping in void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField
+  // just the other way round
+
+  Teuchos::RCP<Epetra_Vector> rhsvec = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
+
+  // export input vector to column map
+  Teuchos::RCP<Epetra_Vector> acounodeveccol = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->NodeColMap())),true);
+  LINALG::Export(*acounodevec,*acounodeveccol);
+
+  int numdim = DRT::Problem::Instance()->NDim();
+  int minoptnodegid = scatra_discret_->NodeRowMap()->MinAllGID();
+  for(int optnd=0; optnd<scatra_discret_->NumGlobalNodes(); ++optnd)
+  {
+    DRT::Node* optnode = NULL;
+    int myoptnodeowner = -1;
+    if(scatra_discret_->HaveGlobalNode(optnd+minoptnodegid))
+    {
+      optnode = scatra_discret_->gNode(optnd+minoptnodegid);
+      myoptnodeowner = optnode->Owner();
+      if(myoptnodeowner != myrank_) myoptnodeowner = -1;
+    }
+    int optnodeowner = -1;
+    scatra_discret_->Comm().MaxAll(&myoptnodeowner,&optnodeowner,1);
+
+    double optnodecoords[numdim];
+    if(myrank_==optnodeowner)
+    {
+      for(int d=0; d<numdim; ++d)
+        optnodecoords[d] = optnode->X()[d];
+    }
+    scatra_discret_->Comm().Broadcast(&optnodecoords[0],numdim,optnodeowner);
+
+    double r = 0.0;
+    for(int acouel=0; acouel<acou_discret_->NumMyRowElements(); ++acouel)
+    {
+      DRT::Element* ele = acou_discret_->lRowElement(acouel);
+      // get the nodes of this element, and then check if acoustical node is inside
+      if(ele->Shape()==DRT::Element::quad4)
+      {
+        double acounodecoords[4][numdim];
+        double minmaxvals[2][numdim];
+        for(int j=0; j<numdim; ++j)
+        {
+          minmaxvals[0][j] = 1.0e6; // minvals
+          minmaxvals[1][j] = -1.0e6; // maxvals
+        }
+        for(int nd=0;nd<4;++nd) // quad4 has 4 nodes
+          for(int d=0;d<numdim;++d)
+          {
+            acounodecoords[nd][d] = ele->Nodes()[nd]->X()[d];
+            if(acounodecoords[nd][d] < minmaxvals[0][d]) minmaxvals[0][d]=acounodecoords[nd][d];
+            if(acounodecoords[nd][d] > minmaxvals[1][d]) minmaxvals[1][d]=acounodecoords[nd][d];
+          }
+        // check, if acoustical node is in bounding box
+        bool inside = true;
+        for(int d=0;d<numdim;++d)
+          if(optnodecoords[d]>minmaxvals[1][d]+1.0e-5 || optnodecoords[d]<minmaxvals[0][d]-1.0e-5)
+            inside=false;
+        if(inside)
+        {
+          // solve for xi by local Newton
+          LINALG::Matrix<2,1> F(true);
+          LINALG::Matrix<2,2> dFdxi(true);
+          LINALG::Matrix<2,1> xi(true);
+          LINALG::Matrix<2,1> deltaxi(true);
+          double deltaxinorm = 0.0;
+          int count = 0;
+          do{
+            count++;
+            F(0) = 0.25 * ( (1. - xi(0))*(1. - xi(1)) ) * acounodecoords[0][0]
+                 + 0.25 * ( (1. + xi(0))*(1. - xi(1)) ) * acounodecoords[1][0]
+                 + 0.25 * ( (1. + xi(0))*(1. + xi(1)) ) * acounodecoords[2][0]
+                 + 0.25 * ( (1. - xi(0))*(1. + xi(1)) ) * acounodecoords[3][0]  - optnodecoords[0];
+            F(1) = 0.25 * ( (1. - xi(0))*(1. - xi(1)) ) * acounodecoords[0][1]
+                 + 0.25 * ( (1. + xi(0))*(1. - xi(1)) ) * acounodecoords[1][1]
+                 + 0.25 * ( (1. + xi(0))*(1. + xi(1)) ) * acounodecoords[2][1]
+                 + 0.25 * ( (1. - xi(0))*(1. + xi(1)) ) * acounodecoords[3][1]  - optnodecoords[1] ;
+
+            dFdxi(0,0) = - 0.25 * (1. - xi(1)) * acounodecoords[0][0]
+                         + 0.25 * (1. - xi(1)) * acounodecoords[1][0]
+                         + 0.25 * (1. + xi(1)) * acounodecoords[2][0]
+                         - 0.25 * (1. + xi(1)) * acounodecoords[3][0] ;
+            dFdxi(0,1) = - 0.25 * (1. - xi(0)) * acounodecoords[0][0]
+                         - 0.25 * (1. + xi(0)) * acounodecoords[1][0]
+                         + 0.25 * (1. + xi(0)) * acounodecoords[2][0]
+                         + 0.25 * (1. - xi(0)) * acounodecoords[3][0] ;
+            dFdxi(1,0) = - 0.25 * (1. - xi(1)) * acounodecoords[0][1]
+                         + 0.25 * (1. - xi(1)) * acounodecoords[1][1]
+                         + 0.25 * (1. + xi(1)) * acounodecoords[2][1]
+                         - 0.25 * (1. + xi(1)) * acounodecoords[3][1] ;
+            dFdxi(1,1) = - 0.25 * (1. - xi(1)) * acounodecoords[0][1]
+                         - 0.25 * (1. + xi(1)) * acounodecoords[1][1]
+                         + 0.25 * (1. + xi(1)) * acounodecoords[2][1]
+                         + 0.25 * (1. - xi(1)) * acounodecoords[3][1] ;
+
+            LINALG::FixedSizeSerialDenseSolver<2,2,1> inverser;
+            inverser.SetMatrix(dFdxi);
+            inverser.SetVectors(deltaxi,F);
+            inverser.Solve();
+
+            deltaxinorm = deltaxi.Norm2();
+            xi.Update(-1.0,deltaxi,1.0);
+          } while ( deltaxinorm > 1.0e-8 && count < 10 );
+          if(!(count == 10 || xi.NormInf()>1.0+0.1))
+          {
+            // get the values!
+            double values[4] = {0};
+            for(int nd=0;nd<4;++nd)
+            {
+              int lid = acou_discret_->NodeColMap()->LID(ele->Nodes()[nd]->Id());
+              if(lid<0)
+                dserror("node of element not on this processor");
+              else
+                values[nd] = acounodeveccol->operator [](lid);
+            }
+            r = 0.25 * ( (1. - xi(0))*(1. - xi(1)) ) * values[0]
+              + 0.25 * ( (1. + xi(0))*(1. - xi(1)) ) * values[1]
+              + 0.25 * ( (1. + xi(0))*(1. + xi(1)) ) * values[2]
+              + 0.25 * ( (1. - xi(0))*(1. + xi(1)) ) * values[3];
+          }
+        } // if(inside)
+      }
+      else dserror("up to now only implemented for quad4");
+    } // for(int acouel=0; acouel<acou_discret_->NumMyRowElements(); ++acouel)
+    // one processor might provide a value
+
+    double glob_p_min = 0.0;
+    scatra_discret_->Comm().MinAll(&r,&glob_p_min,1);
+    double glob_p_max = 0.0;
+    scatra_discret_->Comm().MaxAll(&r,&glob_p_max,1);
+    // take higher absolut values
+    double glob_p = 0.0;
+    if(std::abs(glob_p_min)>std::abs(glob_p_max))
+      glob_p = glob_p_min;
+    else
+      glob_p = glob_p_max;
+
+    // set p value in node based vector
+    if(myrank_==optnodeowner)
+    {
+      int dof = scatra_discret_->Dof(optnode,0);
+      int lid = scatra_discret_->DofRowMap()->LID(dof);
+      if(lid<0) dserror("cannot find dof for node %d ",optnd);
+      rhsvec->ReplaceMyValue(lid,0,glob_p);
+    }
+  } // for(int optnd=0; optnd<scatra_discret_->NumGlobalNodes(); ++optnd)
+
+
+  return rhsvec;
+} // void ACOU::InvAnalysis::CalculateNonconformRhsvec()
+
+
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::CalculateGradient()
 {
@@ -869,40 +1031,46 @@ void ACOU::InvAnalysis::CalculateGradient()
 
   Teuchos::RCP<Epetra_Vector> psi = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
 
-  int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
-  for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
+  bool meshconform = DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM");
+  if(meshconform)
   {
-    // get node and owner
-    int myoptnodeowner = -1;
-    int optnodeowner = -1;
-    DRT::Node* opti_node = NULL;
-    if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou+1) )
+    int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
+    for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
     {
-      opti_node = scatra_discret_->gNode(nd+maxnodeidacou+1);
-      myoptnodeowner = opti_node->Owner();
-      if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
-    }
-    scatra_discret_->Comm().MaxAll(&myoptnodeowner,&optnodeowner,1);
-    if( optnodeowner == -1 ) // in this case, this node does not exist in the scatra discretization
-      continue;
+      // get node and owner
+      int myoptnodeowner = -1;
+      int optnodeowner = -1;
+      DRT::Node* opti_node = NULL;
+      if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou+1) )
+      {
+        opti_node = scatra_discret_->gNode(nd+maxnodeidacou+1);
+        myoptnodeowner = opti_node->Owner();
+        if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
+      }
+      scatra_discret_->Comm().MaxAll(&myoptnodeowner,&optnodeowner,1);
+      if( optnodeowner == -1 ) // in this case, this node does not exist in the scatra discretization
+        continue;
 
-    double loc_value = 0.0;
-    if(acou_discret_->NodeRowMap()->LID(nd)>-1)
-    {
-      loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
-    }
-    double glo_value = 0.0;
-    acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
+      double loc_value = 0.0;
+      if(acou_discret_->NodeRowMap()->LID(nd)>-1)
+      {
+        loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
+      }
+      double glo_value = 0.0;
+      acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
 
-    // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
-    if(scatra_discret_->Comm().MyPID() == optnodeowner)
-    {
-      int dofgid = scatra_discret_->Dof(opti_node,0);
-      int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
-      int err = psi->ReplaceMyValue(doflid,0,glo_value);
-      if (err) dserror("could not replace local vector entry");
+      // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
+      if(scatra_discret_->Comm().MyPID() == optnodeowner)
+      {
+        int dofgid = scatra_discret_->Dof(opti_node,0);
+        int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
+        int err = psi->ReplaceMyValue(doflid,0,glo_value);
+        if (err) dserror("could not replace local vector entry");
+      }
     }
   }
+  else
+    psi = CalculateNonconformRhsvec(adjoint_phi_0_);
 
   scatra_discret_->SetState("psi",psi);
   matman_->Evaluate(0.0,objgrad_);
@@ -997,6 +1165,7 @@ void ACOU::InvAnalysis::FD_GradientCheck()
 /*----------------------------------------------------------------------*/
 bool ACOU::InvAnalysis::UpdateParameters()
 {
+  double J_before = J_;
 
   if(iter_==0 || opti_ == INPAR::ACOU::inv_gd)
     d_->Update(-1.0,*objgrad_,0.0);
@@ -1016,8 +1185,13 @@ bool ACOU::InvAnalysis::UpdateParameters()
   {
     // in this case we try a steepest descent step!
     d_->Update(-1.0/normgrad0_,*objgrad_,0.0);
+
     if(!myrank_)
       std::cout<<"line search failed, we try steepest descent from now on!"<<std::endl;
+
+    // reset objective function
+    J_ = J_before;
+
     // and in every following step we do steepest descent
     opti_ = INPAR::ACOU::inv_gd;
     success = LineSearch();
@@ -1149,6 +1323,8 @@ bool ACOU::InvAnalysis::LineSearch()
     {
       if( opti_ == INPAR::ACOU::inv_gd && count == 1)// we only needed one step within the line search
          ls_gd_scal_ /= ls_rho_;
+      else if ( opti_ == INPAR::ACOU::inv_gd )
+        ls_gd_scal_ *= ls_rho_;
       return success;
     }
     alpha *= ls_rho_;

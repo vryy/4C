@@ -143,6 +143,16 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
 
     break;
   }
+  case ACOU::calc_abc_nodevals:
+  {
+    int face = params.get<int>("face");
+    ReadGlobalVectors(*ele,discretization,lm);
+    shapes_.Evaluate(*ele);
+    shapes_.EvaluateFace(*ele, face);
+    ComputeABCNodeVals(ele,params,mat,face,elemat1,elevec1);
+
+    break;
+  }
   case ACOU::calc_systemmat_and_residual:
   {
     const bool resonly = params.get<bool>("resonly");
@@ -219,6 +229,9 @@ ReadGlobalVectors(const DRT::Element     & ele,
                   const std::vector<int> & lm)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ReadGlobalVectors");
+
+  if(discretization.HasState("trace")==false) dserror("Cannot read vector 'trace'");
+  if(discretization.HasState(1,"intvel")==false) dserror("Cannot read vector 'intvel'");
 
   // read the HDG solution vector (for traces)
   traceVal_.resize(nfaces_*nfdofs_);
@@ -514,23 +527,28 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
     Epetra_SerialDenseVector&            elevec2)
 {
 
+  shapes_.Evaluate(*ele);
   bool meshconform = params.get<bool>("mesh conform");
+
+  // this is the easy case: the corresponding optical element has exactly the same nodes
+  // and hence we can easily get the scatra dofs of the nodes and substitute the pressure
+  // values
+  int numlightnode = nen_;
+
+  double lightxyz[numlightnode][nsd_];
+  double values[numlightnode];
+  double absorptioncoeff = -1.0;
 
   if(meshconform)
   {
-    // this is the easy case: the corresponding optical element has exactly the same nodes
-    // and hence we can easily get the scatra dofs of the nodes and substitute the pressure
-    // values
-
     // get the absorption coefficient
-    double absorptioncoeff = params.get<double>("absorption");
+    absorptioncoeff =  params.get<double>("absorption");
 
     Teuchos::RCP<std::vector<double> > nodevals = params.get<Teuchos::RCP<std::vector<double> > >("nodevals");
-    int numlightnode = (*nodevals).size()/(nsd_+1);
 
-    double lightxyz[numlightnode][nsd_];
-    double values[numlightnode];
+    if(int((*nodevals).size()/(nsd_+1))!=numlightnode) dserror("node number not matching");
 
+    // meanwhile: check if we are at least near the element, otherwise we can already go home
     for(int i=0; i<numlightnode; ++i)
     {
       for(unsigned int j=0; j<nsd_; ++j)
@@ -538,101 +556,81 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
       values[i] = (*nodevals)[i*(nsd_+1)+nsd_];
     }
 
-    // now we have locations "lightxyz" and corresponding phis in "values"
-    // what we want to do now is to evaluate the field in the locations of the
-    // Gauss points in this element, to assign an initial distribution
-    // so we do exactly the same as in ProjectInitalField BUT call an other
-    // evaluate function which will interpolate from given lightxyz and values
-
-    shapes_.Evaluate(*ele);
-    const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-    double rho = actmat->Density();
-
-    double pulse = params.get<double>("pulse");
-
-    // internal variables
-    if (elevec2.M() > 0)
-    {
-      LINALG::Matrix<ndofs_,nsd_+1> localMat(true);
-      localMat.PutScalar(0.);
-      Epetra_SerialDenseMatrix massPart;
-      massPart.Shape(ndofs_,ndofs_);
-
-      for (unsigned int q=0; q<ndofs_; ++q )
-      {
-        const double fac = shapes_.jfac(q);
-        const double sqrtfac = std::sqrt(fac);
-        double xyz[nsd_];
-        for (unsigned int d=0; d<nsd_; ++d)
-          xyz[d] = shapes_.xyzreal(d,q); // coordinates of quadrature point in real coordinates
-        double p=0.0;
-        EvaluateLight(lightxyz,values,numlightnode, xyz, p, rho/pulse, absorptioncoeff); // p at quadrature point
-
-        for (unsigned int i=0; i<ndofs_; ++i)
-        {
-          massPart(i,q) = shapes_.shfunct(i,q) * sqrtfac;
-          localMat(i,nsd_) += shapes_.shfunct(i,q) * p * fac;
-        }
-      }
-      Epetra_SerialDenseMatrix massMat;
-      massMat.Shape(ndofs_,ndofs_);
-      massMat.Multiply('N','T',1.,massPart,massPart,0.);
-      {
-        LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_,nsd_+1> inverseMass;
-        LINALG::Matrix<ndofs_,ndofs_> mass(massMat,true);
-        inverseMass.SetMatrix(mass);
-        inverseMass.SetVectors(localMat,localMat);
-        inverseMass.Solve();
-      }
-
-      for (unsigned int r=0; r<ndofs_; ++r )
-      {
-        elevec2[r*(nsd_+1)+nsd_] += localMat(r,nsd_); // pressure
-      }
-    }
-
-    // trace variable
-    LINALG::Matrix<nfdofs_,nfdofs_> mass;
-    LINALG::Matrix<nfdofs_,1> trVec;
-    dsassert(elevec1.M() == nfaces_*nfdofs_, "Wrong size in project vector 1");
-
-    for (unsigned int face=0; face<nfaces_; ++face)
-    {
-      shapes_.EvaluateFace(*ele, face);
-
-      mass.PutScalar(0.);
-      trVec.PutScalar(0.);
-
-      for (unsigned int q=0; q<nfdofs_; ++q)
-      {
-        const double fac = shapes_.jfacF(q);
-        double xyz[nsd_];
-        for (unsigned int d=0; d<nsd_; ++d)
-          xyz[d] = shapes_.xyzFreal(d,q);
-        double p = 0.0;
-
-        EvaluateLight(lightxyz,values,numlightnode, xyz, p, rho/pulse, absorptioncoeff); // u and p at quadrature point
-
-        for (unsigned int i=0; i<nfdofs_; ++i)
-        {
-          // mass matrix
-          for (unsigned int j=0; j<nfdofs_; ++j)
-            mass(i,j) += shapes_.shfunctF(i,q) * shapes_.shfunctF(j,q) * fac;
-          trVec(i,0) += shapes_.shfunctF(i,q) * p * fac;
-        }
-      }
-
-      LINALG::FixedSizeSerialDenseSolver<nfdofs_,nfdofs_,1> inverseMass;
-      inverseMass.SetMatrix(mass);
-      inverseMass.SetVectors(trVec,trVec);
-      inverseMass.Solve();
-
-      for (unsigned int i=0; i<nfdofs_; ++i)
-        elevec1(face*nfdofs_+i) = trVec(i,0);
-    }
   }
   else
-    dserror("non conforming meshes not yet implemented");
+  {
+    // get node based values!
+    Teuchos::RCP<const Epetra_Vector> matrix_state = params.get<Teuchos::RCP<Epetra_Vector> >("pressurenode");
+    std::vector<double> nodevals;
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,nodevals,*matrix_state);
+    if(nodevals.size() != nen_) dserror("node number not matching: %d vs. %d",nodevals.size(),nen_);
+
+    for(int i=0; i<numlightnode; ++i)
+    {
+      for(unsigned int j=0; j<nsd_; ++j)
+        lightxyz[i][j] = shapes_.xyze(j,i);
+      values[i] = nodevals[i];
+    }
+  }
+
+//  for(int i=0; i<numlightnode; ++i)
+//  {
+//    for(unsigned int j=0; j<nsd_; ++j)
+//      std::cout<<lightxyz[i][j]<<" ";
+//    std::cout<<std::endl<<values[i]<<" "<<std::endl;
+//  }
+
+  // now we have locations "lightxyz" and corresponding phis in "values"
+  // what we want to do now is to evaluate the field in the locations of the
+  // Gauss points in this element, to assign an initial distribution
+  // so we do exactly the same as in ProjectInitalField BUT call an other
+  // evaluate function which will interpolate from given lightxyz and values
+
+  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
+  double rho = actmat->Density();
+
+  double pulse = params.get<double>("pulse");
+
+  // internal variables
+  if (elevec2.M() > 0)
+  {
+    LINALG::Matrix<ndofs_,nsd_+1> localMat(true);
+    localMat.PutScalar(0.);
+    Epetra_SerialDenseMatrix massPart;
+    massPart.Shape(ndofs_,ndofs_);
+
+    for (unsigned int q=0; q<ndofs_; ++q )
+    {
+      const double fac = shapes_.jfac(q);
+      const double sqrtfac = std::sqrt(fac);
+      double xyz[nsd_];
+      for (unsigned int d=0; d<nsd_; ++d)
+        xyz[d] = shapes_.xyzreal(d,q); // coordinates of quadrature point in real coordinates
+      double p=0.0;
+      EvaluateLight(lightxyz,values,numlightnode, xyz, p, rho/pulse, absorptioncoeff); // p at quadrature point
+
+      for (unsigned int i=0; i<ndofs_; ++i)
+      {
+        massPart(i,q) = shapes_.shfunct(i,q) * sqrtfac;
+        localMat(i,nsd_) += shapes_.shfunct(i,q) * p * fac;
+      }
+    }
+    Epetra_SerialDenseMatrix massMat;
+    massMat.Shape(ndofs_,ndofs_);
+    massMat.Multiply('N','T',1.,massPart,massPart,0.);
+    {
+      LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_,nsd_+1> inverseMass;
+      LINALG::Matrix<ndofs_,ndofs_> mass(massMat,true);
+      inverseMass.SetMatrix(mass);
+      inverseMass.SetVectors(localMat,localMat);
+      inverseMass.Solve();
+    }
+
+    for (unsigned int r=0; r<ndofs_; ++r )
+    {
+      elevec2[r*(nsd_+1)+nsd_] += localMat(r,nsd_); // pressure
+    }
+  }
 
   return 0;
 }
@@ -1594,6 +1592,42 @@ CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_Se
   return err_p;
 } // FillMatrices
 
+/*----------------------------------------------------------------------*
+ * ComputeAbsorbingBC
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::
+ComputeABCNodeVals(DRT::ELEMENTS::Acou*        ele,
+                   Teuchos::ParameterList&     params,
+                   Teuchos::RCP<MAT::Material> & mat,
+                   int                         face,
+                   Epetra_SerialDenseMatrix    &elemat,
+                   Epetra_SerialDenseVector    &elevec)
+{
+  if(elevec.M()!=DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace)  dserror("Vector does not have correct size");
+
+  Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+
+  LINALG::Matrix<1,nfdofs_> fvalues;
+  LINALG::Matrix<nsd_-1,1> xsiFl;
+
+  // const int * fnodeIds = ele->Faces()[face]->NodeIds();
+  for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+  {
+    // evaluate shape polynomials in node
+    for (unsigned int idim=0;idim<nsd_-1;idim++)
+      xsiFl(idim) = locations(idim,i);
+    shapes_.polySpaceFace_.Evaluate(xsiFl,fvalues); // TODO: fix face orientation here
+
+    // compute values for velocity and pressure by summing over all basis functions
+    double sum = 0;
+    for (unsigned int k=0; k<nfdofs_; ++k)
+      sum += fvalues(k) * traceVal_[face*nfdofs_+k];
+    elevec(i) = sum;
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * ComputeAbsorbingBC
@@ -1647,79 +1681,84 @@ ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
 
     if(step<stepmax)
     {
+      bool smoothing = true;
+      if(!smoothing)
+      {
+        // adjointrhs is a nodebased vector. Which nodes do belong to this element and which values are associated to those?
+        const int * fnodeIds = ele->Faces()[face]->NodeIds();
+        int numfnode = ele->Faces()[face]->NumNode();
+        double values[numfnode];
+
+        for(int i=0; i<numfnode; ++i)
+        {
+          int localnodeid = adjointrhs->Map().LID(fnodeIds[i]);
+          values[i] = adjointrhs->operator ()(stepmax-step-1)->operator [](localnodeid); // in inverse order -> we're integrating backwards in time
+        } // for(int i=0; i<numfnode; ++i)
+
+        Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+
+        LINALG::Matrix<1,nfdofs_> fvalues;
+        LINALG::Matrix<nsd_-1,1> xsitemp;
+        for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+        {
+          // evaluate shape polynomials in node
+          for (unsigned int idim=0;idim<nsd_-1;idim++)
+            xsitemp(idim) = locations(idim,i);
+          shapes_.polySpaceFace_.Evaluate(xsitemp,fvalues); // TODO: fix face orientation here
+
+          // compute values for velocity and pressure by summing over all basis functions
+          for (unsigned int k=0; k<nfdofs_; ++k)
+            elevec(face*nfdofs_+k) +=  fvalues(k) * values[i];
+
+        }
+      }
+      else
+      {
       // adjointrhs is a nodebased vector. Which nodes do belong to this element and which values are associated to those?
       const int * fnodeIds = ele->Faces()[face]->NodeIds();
       int numfnode = ele->Faces()[face]->NumNode();
+      double fnodexyz[numfnode][nsd_];
       double values[numfnode];
 
       for(int i=0; i<numfnode; ++i)
       {
         int localnodeid = adjointrhs->Map().LID(fnodeIds[i]);
         values[i] = adjointrhs->operator ()(stepmax-step-1)->operator [](localnodeid); // in inverse order -> we're integrating backwards in time
+        for(unsigned int d=0; d<nsd_; ++d)
+          fnodexyz[i][d] = shapes_.xyzeF(d,i);
+
       } // for(int i=0; i<numfnode; ++i)
 
-      Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+      // now get the nodevalues to the dof values just as in ProjectOpticalField function
+      LINALG::Matrix<nfdofs_,nfdofs_> mass(true);
+      LINALG::Matrix<nfdofs_,1> trVec(true);
 
-      LINALG::Matrix<1,nfdofs_> fvalues;
-      LINALG::Matrix<nsd_-1,1> xsitemp;
-      for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+      for(unsigned int q=0; q<nfdofs_; ++q)
       {
-        // evaluate shape polynomials in node
-        for (unsigned int idim=0;idim<nsd_-1;idim++)
-          xsitemp(idim) = locations(idim,i);
-        shapes_.polySpaceFace_.Evaluate(xsitemp,fvalues); // TODO: fix face orientation here
+        const double fac = shapes_.jfacF(q);
+        double xyz[nsd_];
+        for (unsigned int d=0; d<nsd_; ++d)
+          xyz[d] = shapes_.xyzFreal(d,q);
+        double val = 0.0;
 
-        // compute values for velocity and pressure by summing over all basis functions
-        for (unsigned int k=0; k<nfdofs_; ++k)
-          elevec(face*nfdofs_+k) +=  fvalues(k) * values[i];
+        EvaluateFaceAdjoint(fnodexyz,values,numfnode,xyz,val);
 
+        for (unsigned int i=0; i<nfdofs_; ++i)
+        {
+          // mass matrix
+          for (unsigned int j=0; j<nfdofs_; ++j)
+            mass(i,j) += shapes_.shfunctF(i,q) * shapes_.shfunctF(j,q) * fac;
+          trVec(i,0) += shapes_.shfunctF(i,q) * val * fac * double(numfnode)/double(nfdofs_);
+        }
+      } // for(unsigned int q=0; q<nfdofs_; ++q)
+
+      LINALG::FixedSizeSerialDenseSolver<nfdofs_,nfdofs_,1> inverseMass;
+      inverseMass.SetMatrix(mass);
+      inverseMass.SetVectors(trVec,trVec);
+      inverseMass.Solve();
+      for (unsigned int i=0; i<nfdofs_; ++i)
+        elevec(face*nfdofs_+i) = trVec(i);
       }
-
-//      // adjointrhs is a nodebased vector. Which nodes do belong to this element and which values are associated to those?
-//      const int * fnodeIds = ele->Faces()[face]->NodeIds();
-//      int numfnode = ele->Faces()[face]->NumNode();
-//      double fnodexyz[numfnode][nsd_];
-//      double values[numfnode];
-//
-//      for(int i=0; i<numfnode; ++i)
-//      {
-//        int localnodeid = adjointrhs->Map().LID(fnodeIds[i]);
-//        values[i] = adjointrhs->operator ()(stepmax-step-1)->operator [](localnodeid); // in inverse order -> we're integrating backwards in time
-//        for(unsigned int d=0; d<nsd_; ++d)
-//          fnodexyz[i][d] = shapes_.xyzeF(d,i);
-//
-//      } // for(int i=0; i<numfnode; ++i)
-//
-//      // now get the nodevalues to the dof values just as in ProjectOpticalField function
-//      LINALG::Matrix<nfdofs_,nfdofs_> mass(true);
-//      LINALG::Matrix<nfdofs_,1> trVec(true);
-//
-//      for(unsigned int q=0; q<nfdofs_; ++q)
-//      {
-//        const double fac = shapes_.jfacF(q);
-//        double xyz[nsd_];
-//        for (unsigned int d=0; d<nsd_; ++d)
-//          xyz[d] = shapes_.xyzFreal(d,q);
-//        double val = 0.0;
-//
-//        EvaluateFaceAdjoint(fnodexyz,values,numfnode,xyz,val);
-//
-//        for (unsigned int i=0; i<nfdofs_; ++i)
-//        {
-//          // mass matrix
-//          for (unsigned int j=0; j<nfdofs_; ++j)
-//            mass(i,j) += shapes_.shfunctF(i,q) * shapes_.shfunctF(j,q) * fac;
-//          trVec(i,0) += shapes_.shfunctF(i,q) * val * fac;
-//        }
-//      } // for(unsigned int q=0; q<nfdofs_; ++q)
-//
-//      LINALG::FixedSizeSerialDenseSolver<nfdofs_,nfdofs_,1> inverseMass;
-//      inverseMass.SetMatrix(mass);
-//      inverseMass.SetVectors(trVec,trVec);
-//      inverseMass.Solve();
-//      for (unsigned int i=0; i<nfdofs_; ++i)
-//        elevec(face*nfdofs_+i) = trVec(i);
-
     } // if(step<stepmax)
 
   } // if(adjoint)
