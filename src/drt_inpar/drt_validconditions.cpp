@@ -3797,7 +3797,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   /*--------------------------------------------------------------------*/
 
-  // parallel spring dashpot boundary condition - mhv 01/14
+  // structural spring dashpot boundary condition (spring and dashpot in parallel) - mhv 01/14
 
   Teuchos::RCP<ConditionDefinition> springdashpotcond =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF SPRING DASHPOT CONDITIONS",
@@ -3808,7 +3808,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
 
-  AddNamedReal(springdashpotcond,"SPRING_STIFF");
+  AddNamedReal(springdashpotcond,"SPRING_STIFF_TENS");
+  AddNamedReal(springdashpotcond,"SPRING_STIFF_COMP");
   AddNamedReal(springdashpotcond,"SPRING_OFFSET");
   AddNamedReal(springdashpotcond,"DASHPOT_VISCOSITY");
   springdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));

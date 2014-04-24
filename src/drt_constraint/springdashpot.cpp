@@ -172,7 +172,8 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
   for (int i=0; i<(int)springdashpotcond.size(); ++i)
   {
     const std::vector<int>* nodes = springdashpotcond[i]->Nodes();
-    double springstiff = springdashpotcond[i]->GetDouble("SPRING_STIFF");
+    double springstiff_tens = springdashpotcond[i]->GetDouble("SPRING_STIFF_TENS");
+    double springstiff_comp = springdashpotcond[i]->GetDouble("SPRING_STIFF_COMP");
     double springoffset = springdashpotcond[i]->GetDouble("SPRING_OFFSET");
     double dashpotvisc = springdashpotcond[i]->GetDouble("DASHPOT_VISCOSITY");
     const std::string* dir = springdashpotcond[i]->Get<std::string>("direction");
@@ -219,18 +220,29 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
         {
           for (int k=0; k<numdof; ++k)
           {
-            double val = nodalarea*(springstiff*(u[k]-springoffset) + dashpotvisc*v[k]);
+            double val = nodalarea*(springstiff_tens*(u[k]-springoffset) + dashpotvisc*v[k]);
+            double dval = nodalarea*(springstiff_tens + dashpotvisc*gamma/(beta*ts_size));
+
+            if (springstiff_tens != springstiff_comp)
+            {
+              dserror("SPRING_STIFF_TENS != SPRING_STIFF_COMP: Different spring moduli for tension and compression not supported "
+                  "when specifying 'all' as DIRECTION (no ref surface normal information is calculated for that case)! "
+                  "Only possible for DIRECTION 'refsurfnormal'.");
+            }
+
             int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
             if (err) dserror("SumIntoGlobalValues failed!");
-            stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
+            stiff->Assemble(dval,dofs[k],dofs[k]);
           }
         }
+
         // assemble into residual and stiffness matrix for case that spring / dashpot acts in reference surface normal direction
         else if (*dir == "refsurfnormal")
         {
           // extract averaged nodal ref normal and compute its absolute value
           std::vector<double> unitrefnormal(numdof);
           double temp_ref = 0.;
+          double proj = 0.;
           for (int k=0; k<numdof; ++k)
           {
             unitrefnormal[k] = (*refnodalnormals)[numdof*j+k];
@@ -244,6 +256,12 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
             unitrefnormal[k] /= unitrefnormalabsval;
           }
 
+          // projection of displacement vector to refsurfnormal (u \cdot N)
+          for(int k=0; k<numdof; ++k)
+          {
+            proj += u[k]*unitrefnormal[k];
+          }
+
           //dyadic product of ref normal with itself (N \otimes N)
           Epetra_SerialDenseMatrix N_x_N(numdof,numdof);
           for (int l=0; l<numdof; ++l)
@@ -254,10 +272,26 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           {
             for (int m=0; m<numdof; ++m)
             {
-              double val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
+              double val = 0.;
+              double dval = 0.;
+
+              // projection of displacement to refsurfnormal negative: we have a tensile spring
+              if (proj < 0)
+              {
+                val = nodalarea*N_x_N(k,m)*(springstiff_tens*(u[m]-springoffset) + dashpotvisc*v[m]);
+                dval = nodalarea*(springstiff_tens + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m);
+              }
+
+              // projection of displacement to refsurfnormal positive: we have a compressive spring
+              if (proj >= 0)
+              {
+                val = nodalarea*N_x_N(k,m)*(springstiff_comp*(u[m]-springoffset) + dashpotvisc*v[m]);
+                dval = nodalarea*(springstiff_comp + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m);
+              }
+
               int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
               if (err) dserror("SumIntoGlobalValues failed!");
-              stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
+              stiff->Assemble(dval,dofs[k],dofs[m]);
             }
           }
         }
