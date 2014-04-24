@@ -10,8 +10,12 @@ Maintainer: Marc Hirschvogel
             http://www.mhpc.mw.tum.de
             089 - 289-10363
 </pre>
-*/
 
+***************************************************************************************************************
+NOT SURE WHETHER WE WILL NEED THIS ADAPTER IF USING THE WK-STRUCTURE COUPLING WITHIN ANOTHER COUPLED PROBLEM!!!
+IT EMERGED FROM THE CONSTRAINT FRAMEWORK AND WAS CONSTRUCTED ANALOGOUSLY!!!
+***************************************************************************************************************
+*/
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_structure/strtimint_create.H"
@@ -66,12 +70,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureWindkesselMerged::InitialGue
 {
   //get initial guesses from structure and windkesselmanager
   Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
-  Teuchos::RCP<const Epetra_Vector> presGuess = Teuchos::rcp(new Epetra_Vector(*(structure_->GetWindkesselManager()->GetWindkesselMap()),true));
+  Teuchos::RCP<const Epetra_Vector> wkGuess = Teuchos::rcp(new Epetra_Vector(*(structure_->GetWindkesselManager()->GetWindkesselMap()),true));
 
   //merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedGuess = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
   windkmerger_->AddCondVector(strucGuess,mergedGuess);
-  windkmerger_->AddOtherVector(presGuess,mergedGuess);
+  windkmerger_->AddOtherVector(wkGuess,mergedGuess);
 
   return mergedGuess;
 }
@@ -82,12 +86,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureWindkesselMerged::RHS()
 {
   //get rhs-vectors from structure and windkesselmanager
   Teuchos::RCP<const Epetra_Vector> struRHS = structure_->RHS();
-  Teuchos::RCP<const Epetra_Vector> presRHS = structure_->GetWindkesselManager()->GetWindkesselRHS();
+  Teuchos::RCP<const Epetra_Vector> wkRHS = structure_->GetWindkesselManager()->GetWindkesselRHS();
 
   //merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedRHS = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
   windkmerger_->AddCondVector(struRHS,mergedRHS);
-  windkmerger_->AddOtherVector(-1.0,presRHS,mergedRHS);
+  windkmerger_->AddOtherVector(-1.0,wkRHS,mergedRHS);
 
   return mergedRHS;
 }
@@ -99,12 +103,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureWindkesselMerged::Dispnp()
 {
   //get current state from structure and windkesselmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispnp();
-  Teuchos::RCP<const Epetra_Vector> pres = structure_->GetWindkesselManager()->GetPresVector();
+  Teuchos::RCP<const Epetra_Vector> wkdof = structure_->GetWindkesselManager()->GetDofVector();
 
   //merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
   windkmerger_->AddCondVector(strudis,mergedstat);
-  windkmerger_->AddOtherVector(pres,mergedstat);
+  windkmerger_->AddOtherVector(wkdof,mergedstat);
 
   return mergedstat;
 }
@@ -116,7 +120,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureWindkesselMerged::Dispn()
 {
   //get last converged state from structure and windkesselmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispn();
-  Teuchos::RCP<const Epetra_Vector> pres = structure_->GetWindkesselManager()->GetPresVectorOld();
+  Teuchos::RCP<const Epetra_Vector> pres = structure_->GetWindkesselManager()->GetDofVectorOld();
 
   //merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
@@ -144,19 +148,19 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureWindkesselMerged::SystemMat
   Teuchos::RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
   strustiff->Complete();
   
-  Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_vol_d = structure_->GetWindkesselManager()->GetMatDwindkDd();
-  coupoffdiag_vol_d->Complete();
+  Teuchos::RCP<LINALG::SparseOperator> mat_dwindk_dd = structure_->GetWindkesselManager()->GetMatDwindkDd();
+  mat_dwindk_dd->Complete();
 
-  Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_fext_p = structure_->GetWindkesselManager()->GetMatDstructDp();
-  coupoffdiag_fext_p->Complete();
+  Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dwkdof = structure_->GetWindkesselManager()->GetMatDstructDp();
+  mat_dstruct_dwkdof->Complete();
 
   Teuchos::RCP<LINALG::SparseMatrix> windkstiff = structure_->GetWindkesselManager()->GetWindkesselStiffness();
   windkstiff->Complete();
 
   // Add matrices together
   mergedmatrix -> Add(*strustiff,false,1.0,0.0);
-  mergedmatrix -> Add(*coupoffdiag_vol_d,false,1.0,1.0);
-  mergedmatrix -> Add(*coupoffdiag_fext_p,false,1.0,1.0);
+  mergedmatrix -> Add(*mat_dwindk_dd,false,1.0,1.0);
+  mergedmatrix -> Add(*mat_dstruct_dwkdof,false,1.0,1.0);
   mergedmatrix -> Add(*windkstiff,false,1.0,1.0);
   mergedmatrix -> Complete(*dofrowmap_,*dofrowmap_);
 

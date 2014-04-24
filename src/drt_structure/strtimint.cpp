@@ -1626,8 +1626,8 @@ void STR::TimInt::ReadRestartWindkessel()
     IO::DiscretizationReader reader(discret_, step_);
     Teuchos::RCP<Epetra_Map> windkmap=windkman_->GetWindkesselMap();
     Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*windkmap, true);
-    reader.ReadVector(tempvec, "pressuredof");
-    windkman_->SetPresVector(tempvec);
+    reader.ReadVector(tempvec, "wkdof");
+    windkman_->SetDofVector(tempvec);
     reader.ReadVector(tempvec, "refwindkval");
     windkman_->SetRefBaseValues(tempvec, (*time_)[0]);
 
@@ -1904,8 +1904,8 @@ void STR::TimInt::OutputRestart
   // Windkessel
   if (windkman_->HaveWindkessel())
   {
-    output_->WriteVector("pressuredof",
-                          windkman_->GetPresVector());
+    output_->WriteVector("wkdof",
+                          windkman_->GetDofVector());
     output_->WriteVector("refwindkval",
                           windkman_->GetRefVolValue());
   }
@@ -2025,8 +2025,8 @@ void STR::TimInt::AddRestartToOutputState()
   // Windkessel
   if (windkman_->HaveWindkessel())
   {
-    output_->WriteVector("pressuredof",
-                          windkman_->GetPresVector());
+    output_->WriteVector("wkdof",
+                          windkman_->GetDofVector());
     output_->WriteVector("refwindkval",
                           windkman_->GetRefVolValue());
   }
