@@ -28,7 +28,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_dofset_independent.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_problemtype.H"
 
 #include "../pss_full/pss_cpp.h"
@@ -636,19 +636,19 @@ void PostProblem::read_meshes()
         particledis->ReplaceDofSet(independentdofset);
         if(comm_->MyPID()==0)
         {
-          // add a single meshfree bin to get correct numdofs for nodes
-          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", 0, 0);
-          particledis->AddElement(ele);
-          Teuchos::RCP<DRT::MESHFREE::MeshfreeMultiBin> bin = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin>(ele);
           // find maximum number of possible particles during simulation
           int maxnodeid = get_max_nodeid("particle");
-          // insert maxnodeid+1 particles into discret placed at the origin
+          // insert maxnodeid+1 particles into discret (on proc 0) placed at the origin
           double coords[] = {0.0, 0.0, 0.0};
-          for(int id=0; id<=maxnodeid; id++)
+          for(int id=0; id<=maxnodeid; ++id)
           {
+            // add a rigid shpere element for each particle (element id euqal to node id)
+            Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("RIGIDSPHERE","dummy", id, 0);
+            particledis->AddElement(ele);
+
             Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new DRT::Node(id, coords, 0));
             particledis->AddNode(particle);
-            bin->AddNode(particle.get());
+            ele->SetNodeIds(1, &id);
           }
           currfield.set_num_nodes(maxnodeid+1);
         }

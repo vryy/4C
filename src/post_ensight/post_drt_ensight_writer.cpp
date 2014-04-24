@@ -65,6 +65,7 @@ EnsightWriter::EnsightWriter(PostField* field,
   // it includes only strings for cell types known in ensight
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
+  distype2ensightstring_[DRT::Element::point1] = "point";
   distype2ensightstring_[DRT::Element::line2] = "bar2";
   distype2ensightstring_[DRT::Element::line3] = "bar2"; //"bar3";
   distype2ensightstring_[DRT::Element::hex8] = "hexa8";
@@ -561,6 +562,7 @@ void EnsightWriter::WriteCells(
         DRT::Node** const nodes = actele->Nodes();
         switch (actele->Shape())
         {
+        case DRT::Element::point1:
         case DRT::Element::line2:
      // case DRT::Element::line3: // Ensight format supports line3, Paraview does not.
         case DRT::Element::hex8:
