@@ -5028,12 +5028,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         false,
         "control parameters for level-set problems\n");
 
-    // TODO: kann ich die nicht aus SCATRA DYN nehmen
     IntParameter("NUMSTEP",24,"Total number of time steps",&levelsetcontrol);
     DoubleParameter("TIMESTEP",0.1,"Time increment dt",&levelsetcontrol);
     DoubleParameter("MAXTIME",1000.0,"Total simulation time",&levelsetcontrol);
     IntParameter("UPRES",1,"Increment for writing solution",&levelsetcontrol);
     IntParameter("RESTARTEVRY",1,"Increment for writing restart",&levelsetcontrol);
+
+    setStringToIntegralParameter<int>("CALCERROR","No",
+                                 "compute error compared to analytical solution",
+                                 tuple<std::string>(
+                                   "No",
+                                   "ZalesaksDisk"
+                                   ),
+                                 tuple<int>(
+                                     INPAR::SCATRA::calcerror_no_ls,
+                                     INPAR::SCATRA::calcerror_initial_field
+                                     ),
+                                     &levelsetcontrol);
 
     BoolParameter("EXTRACT_INTERFACE_VEL","No","replace computed velocity at nodes of given distance of interface by approximated interface velocity",&levelsetcontrol);
     IntParameter("NUM_CONVEL_LAYERS",-1,"number of layers around the interface which keep their computed convective velocity",&levelsetcontrol);

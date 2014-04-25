@@ -164,7 +164,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   case INPAR::SCATRA::scatratype_levelset:
   {
     if (not params.get<bool>("solve reinit eq",false))
-      impltype = INPAR::SCATRA::impltype_std;
+      impltype = INPAR::SCATRA::impltype_levelset;
     else
       impltype = INPAR::SCATRA::impltype_lsreinit;
     break;

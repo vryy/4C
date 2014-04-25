@@ -116,6 +116,9 @@ namespace SCATRA
     /// update state vectors
     virtual void UpdateState() = 0;
 
+    /// calculate error compared to analytical solution
+    void EvaluateErrorComparedToAnalyticalSol();
+
     // -----------------------------------------------------------------
     // hybrid method including particles
     // -----------------------------------------------------------------

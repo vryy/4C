@@ -122,7 +122,7 @@ static void DoDirichletConditionCombust(DRT::Condition&             cond,
                                  );
 
 
-#if 1
+#if 0
 /*----------------------------------------------------------------------*
  | set Dirichlet conditions for XFEM problems               henke 07/09 |
  | remark: read documentation at top of this file!                      |
@@ -820,7 +820,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 }
 #endif
 
-#if 0
+#if 1
 /*----------------------------------------------------------------------*
  | set Dirichlet conditions for XFEM problems               henke 07/09 |
  | remark: read documentation at top of this file!                      |

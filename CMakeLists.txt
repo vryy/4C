@@ -976,6 +976,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_loma.cpp
+  src/drt_scatra_ele/scatra_ele_calc_ls.cpp
   src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
@@ -989,6 +990,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_turbulence.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_ls.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_loma.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch_NP.cpp

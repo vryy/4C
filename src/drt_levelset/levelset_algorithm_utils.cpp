@@ -210,6 +210,111 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 }
 
 
+/*----------------------------------------------------------------------*
+ | calculate error compared to analytical solution      rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
+{
+  const INPAR::SCATRA::CalcErrorLevelSet calcerr
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_,"CALCERROR");
+
+  switch (calcerr)
+  {
+  case INPAR::SCATRA::calcerror_no_ls: // do nothing (the usual case)
+    break;
+  case INPAR::SCATRA::calcerror_initial_field:
+  {
+    if (step_ == stepmax_) // do only at the end of the simulation
+    {
+      // create the parameters for the error calculation
+      Teuchos::ParameterList eleparams;
+      eleparams.set<int>("action",SCATRA::calc_error);
+      eleparams.set<int>("scatratype",scatratype_);
+      eleparams.set<int>("calcerrorflag",calcerr);
+
+      // get initial field
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> phiref = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+
+      // get function
+      int startfuncno = params_->get<int>("INITFUNCNO");
+      if (startfuncno<1) dserror("No initial field defined!");
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node*  lnode = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        std::vector<int> nodedofset = discret_->Dof(0,lnode);
+
+        int numdofs = nodedofset.size();
+        for (int k=0;k< numdofs;++k)
+        {
+          const int dofgid = nodedofset[k];
+          int doflid = dofrowmap->LID(dofgid);
+          // evaluate component k of spatial function
+          double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
+          int err = phiref->ReplaceMyValues(1,&initialval,&doflid);
+          if (err != 0) dserror("dof not on proc");
+        }
+      }
+
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
+      discret_->SetState("phiref",phiref);
+
+      // get error and volume
+      Teuchos::RCP<Epetra_SerialDenseVector> errors
+        = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+      discret_->EvaluateScalars(eleparams, errors);
+      discret_->ClearState();
+
+      double errL1 = (*errors)[0]/(*errors)[1];
+      Teuchos::RCP<Epetra_Vector> phidiff = Teuchos::rcp(new Epetra_Vector(*phinp_));
+      phidiff->Update(-1.0,*phiref,1.0);
+      double errLinf = 0.0;
+      phiref->NormInf(&errLinf);
+
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = simulation+"_shape.error";
+
+      if (step_==0)
+      {
+        std::ofstream f;
+        f.open(fname.c_str());
+        f << "#| Step | Time | L1-err        | L2-err        |\n";
+        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
+          << time_ << std::setw(8) << std::setprecision(10) << "    "
+          << errL1 << std::setw(8) << std::setprecision(10) << "    " << errLinf << " "<<"\n";
+
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
+          << time_ << std::setw(8) << std::setprecision(10) << "    "
+          << errL1 << std::setw(8) << std::setprecision(10) << "    " << errLinf << " "<<"\n";
+
+        f.flush();
+        f.close();
+      }
+    }
+  }
+  break;
+  default:
+    dserror("Cannot calculate error. Unknown type of analytical test problem");
+    break;
+  }
+
+  return;
+}
+
+
 /*------------------------------------------------------------------------------------------------*
  | compute convective velocity for contact points no-slip wall and interface      rasthofer 12/13 |
  *------------------------------------------------------------------------------------------------*/

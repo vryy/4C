@@ -85,6 +85,13 @@ namespace INPAR
       reinit_stationarycheck_numsteps
     };
 
+    /// compute error compared to analytical solution
+    enum CalcErrorLevelSet
+    {
+      calcerror_no_ls,
+      calcerror_initial_field
+    };
+
   }  // namespace SCATRA
 
   namespace PARTICLE

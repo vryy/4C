@@ -16,6 +16,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_factory.H"
 
 #include "scatra_ele_calc_std.H"
+#include "scatra_ele_calc_ls.H"
 #include "scatra_ele_calc_lsreinit.H"
 #include "scatra_ele_calc_elch_NP.H"
 #include "scatra_ele_calc_elch_diffcond.H"
@@ -172,6 +173,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 {
   if (problem == INPAR::SCATRA::impltype_std)
     return DRT::ELEMENTS::ScaTraEleCalcStd<distype>::Instance(numdofpernode,numscal);
+  else if (problem == INPAR::SCATRA::impltype_levelset)
+    return DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode,numscal);
   else if (problem == INPAR::SCATRA::impltype_lsreinit)
     return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal);
   else if (problem == INPAR::SCATRA::impltype_loma)

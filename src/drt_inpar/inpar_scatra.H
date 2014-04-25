@@ -186,6 +186,7 @@ namespace INPAR
       impltype_elch_NP,
       impltype_elch_diffcond,
       impltype_lsreinit,
+      impltype_levelset,
       impltype_poro,
       impltype_advreac,
       impltype_pororeac,
