@@ -116,32 +116,25 @@ UTILS::WindkesselManager::WindkesselManager
   {
     // dof vector for ONE windkessel of this type: [p]^T
     num_dofs_per_windkessel = 1;
-    numWindkesselID_ = num_dofs_per_windkessel * std::max(maxWindkesselID-offsetID_+1,0);
-    windkesseldofset_ = Teuchos::rcp(new WindkesselDofSet());
-    windkesseldofset_->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
-    offsetID_ -= windkesseldofset_->FirstGID();
   }
   if (wk_heartvalvearterial_->HaveWindkessel())
   {
     // dof vector for ONE windkessel of this type: [p_v  p_ar]^T
     num_dofs_per_windkessel = 2;
-    numWindkesselID_ = num_dofs_per_windkessel * std::max(maxWindkesselID-offsetID_+1,0);
-    windkesseldofset_ = Teuchos::rcp(new WindkesselDofSet());
-    windkesseldofset_->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
-    offsetID_ -= windkesseldofset_->FirstGID();
   }
   if (wk_heartvalvearterial_proxdist_->HaveWindkessel())
   {
     // dof vector for ONE windkessel of this type: [p_v  p_arp  y_arp  p_ard]^T
     num_dofs_per_windkessel = 4;
-    numWindkesselID_ = num_dofs_per_windkessel * std::max(maxWindkesselID-offsetID_+1,0);
-    windkesseldofset_ = Teuchos::rcp(new WindkesselDofSet());
-    windkesseldofset_->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
-    offsetID_ -= windkesseldofset_->FirstGID();
   }
 
   if (wk_std_->HaveWindkessel() or wk_heartvalvearterial_->HaveWindkessel() or wk_heartvalvearterial_proxdist_->HaveWindkessel())
   {
+    numWindkesselID_ = num_dofs_per_windkessel * std::max(maxWindkesselID-offsetID_+1,0);
+    windkesseldofset_ = Teuchos::rcp(new WindkesselDofSet());
+    windkesseldofset_->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
+    offsetID_ -= windkesseldofset_->FirstGID();
+
     Teuchos::ParameterList p;
     //double time = params.get<double>("total time",0.0);
     double sc_timint = params.get("scale_timint",1.0);

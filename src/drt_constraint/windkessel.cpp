@@ -1069,10 +1069,10 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       factor_q[1] = 0.;
       factor_1[1] = -p_v/Rav + y_arp;
 
-      factor_dof[2] = R_arp;
-      factor_ddof[2] = L_arp;
+      factor_dof[2] = 1.;
+      factor_ddof[2] = L_arp/R_arp;
       factor_q[2] = 0.;
-      factor_1[2] = -p_arp + p_ard;
+      factor_1[2] = (-p_arp + p_ard)/R_arp;
 
       factor_dof[3] = 1./R_ard;
       factor_ddof[3] = C_ard;
@@ -1123,7 +1123,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
       wkstiff(2,0) = 0.;
       wkstiff(2,1) = theta * (-1.);
-      wkstiff(2,2) = theta * (L_arp/(theta*ts_size) + R_arp);
+      wkstiff(2,2) = theta * (L_arp/(R_arp*theta*ts_size) + 1.);
       wkstiff(2,3) = theta * (1.);
 
       wkstiff(3,0) = 0.;
