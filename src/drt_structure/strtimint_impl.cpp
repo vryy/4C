@@ -1612,10 +1612,10 @@ void STR::TimIntImpl::UpdateIterIncrConstr
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::UpdateIterIncrWindkessel
 (
-  Teuchos::RCP<Epetra_Vector> dofincr ///< pressure increment
+  Teuchos::RCP<Epetra_Vector> wkdofincr ///< wk dof increment
 )
 {
-  windkman_->UpdateDof(dofincr);
+  windkman_->UpdateWkDof(wkdofincr);
 }
 
 /*----------------------------------------------------------------------*/

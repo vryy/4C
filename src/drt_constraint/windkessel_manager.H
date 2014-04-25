@@ -107,12 +107,12 @@ namespace UTILS
     /*!
      \brief Scale all pressures by a double d
     */
-    void ScalePres
+    void ScaleWkDof
     (
       double d   ///< scale factor
     )
     {
-        dofn_->Scale(d);
+        wkdofn_->Scale(d);
         return;
     };
 
@@ -122,9 +122,9 @@ namespace UTILS
     void UpdateTimeStep();
 
     /// Add a vector as residual increment to the vector of pressures
-    void UpdateDof
+    void UpdateWkDof
     (
-      Teuchos::RCP<Epetra_Vector> dofincrement  ///< vector to add
+      Teuchos::RCP<Epetra_Vector> wkdofincrement  ///< vector to add
     );
 
     ///
@@ -170,9 +170,9 @@ namespace UTILS
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseOperator> GetMatDstructDp() //const
+    Teuchos::RCP<LINALG::SparseOperator> GetMatDstructDwkdof() //const
     {
-      return mat_dstruct_ddof_;
+      return mat_dstruct_dwkdof_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
@@ -184,28 +184,28 @@ namespace UTILS
     /*!
       \brief Return pressure for Windkessel i
     */
-    double GetDof
+    double GetWkDof
     (
       int i ///< ID of Windkessel of interest
     ) const
     {
-      return (*dofn_)[i];
+      return (*wkdofn_)[i];
     };
 
     /*!
       \brief Return dof vector
     */
-    Teuchos::RCP<Epetra_Vector> GetDofVector() const
+    Teuchos::RCP<Epetra_Vector> GetWkDofVector() const
     {
-      return dofn_;
+      return wkdofn_;
     };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> GetDofVectorOld() const
+    Teuchos::RCP<Epetra_Vector> GetWkDofVectorOld() const
     {
-      return dof_;
+      return wkdof_;
     };
 
     /*!
@@ -235,13 +235,13 @@ namespace UTILS
     );
 
     /// Reset dofs
-    void SetDofVector
+    void SetWkDofVector
     (
       Teuchos::RCP<Epetra_Vector> newdof  ///< new Windkessel dofs
     )
     {
-      dofn_->Update(1.0,*newdof,0.0);
-      dof_->Update(1.0,*newdof,0.0);
+      wkdofn_->Update(1.0,*newdof,0.0);
+      wkdof_->Update(1.0,*newdof,0.0);
       return;
     }
 
@@ -288,12 +288,12 @@ namespace UTILS
     Teuchos::RCP<Epetra_Map> redwindkesselmap_;   ///< fully redundant map of Windkessel values
     Teuchos::RCP<Epetra_Export> windkimpo_;  ///< importer for fully redundant Windkessel vector into distributed one
     Teuchos::RCP<Epetra_Vector> actpres_;
-    Teuchos::RCP<Epetra_Vector> dof_; ///< dof vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> dofn_; ///< dof vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> dofm_; ///< dof vector at mid-point
-    Teuchos::RCP<Epetra_Vector> ddof_; ///< dof rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> ddofn_; ///< dof rate vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> ddofm_; ///< dof rate vector at mid-point
+    Teuchos::RCP<Epetra_Vector> wkdof_; ///< wkdof vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> wkdofn_; ///< wkdof vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> wkdofm_; ///< wkdof vector at mid-point
+    Teuchos::RCP<Epetra_Vector> dwkdof_; ///< wkdof rate vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> dwkdofn_; ///< wkdof rate vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> dwkdofm_; ///< wkdof rate vector at mid-point
     Teuchos::RCP<Epetra_Vector> v_; ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> vn_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> vm_; ///< vol vector at mid-point
@@ -307,8 +307,8 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> ddqn_; ///< time deriv of flux rate vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> ddqm_; ///< time deriv of flux rate vector at mid-point
     Teuchos::RCP<Epetra_Vector> windkesselrhsm_; ///< Windkessel rhs vector at mid-point
-    Teuchos::RCP<Epetra_Vector> windk_rhs_dof_; ///< Windkessel rhs associated with p
-    Teuchos::RCP<Epetra_Vector> windk_rhs_ddof_; ///< Windkessel rhs associated with pressure rate dp/dt
+    Teuchos::RCP<Epetra_Vector> windk_rhs_wkdof_; ///< Windkessel rhs associated with p
+    Teuchos::RCP<Epetra_Vector> windk_rhs_dwkdof_; ///< Windkessel rhs associated with pressure rate dp/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_q_; ///< Windkessel rhs associated with q
     Teuchos::RCP<Epetra_Vector> windk_rhs_dq_; ///< Windkessel rhs associated with s
     Teuchos::RCP<Epetra_Vector> windk_rhs_ddq_; ///< Windkessel rhs associated with ds/dt
@@ -318,7 +318,7 @@ namespace UTILS
     int numWindkesselID_;  ///< number of Windkessel bcs
     std::vector<int> currentID;
     Teuchos::RCP<LINALG::SparseOperator> mat_dwindk_dd_;  ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_ddof_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dwkdof_;  ///< additional rectangular matrix
     Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
     Teuchos::RCP<Windkessel> wk_std_;

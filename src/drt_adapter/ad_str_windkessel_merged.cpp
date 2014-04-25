@@ -103,7 +103,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureWindkesselMerged::Dispnp()
 {
   //get current state from structure and windkesselmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispnp();
-  Teuchos::RCP<const Epetra_Vector> wkdof = structure_->GetWindkesselManager()->GetDofVector();
+  Teuchos::RCP<const Epetra_Vector> wkdof = structure_->GetWindkesselManager()->GetWkDofVector();
 
   //merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
@@ -120,7 +120,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureWindkesselMerged::Dispn()
 {
   //get last converged state from structure and windkesselmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispn();
-  Teuchos::RCP<const Epetra_Vector> pres = structure_->GetWindkesselManager()->GetDofVectorOld();
+  Teuchos::RCP<const Epetra_Vector> pres = structure_->GetWindkesselManager()->GetWkDofVectorOld();
 
   //merge stuff together
   Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
@@ -151,7 +151,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureWindkesselMerged::SystemMat
   Teuchos::RCP<LINALG::SparseOperator> mat_dwindk_dd = structure_->GetWindkesselManager()->GetMatDwindkDd();
   mat_dwindk_dd->Complete();
 
-  Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dwkdof = structure_->GetWindkesselManager()->GetMatDstructDp();
+  Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dwkdof = structure_->GetWindkesselManager()->GetMatDstructDwkdof();
   mat_dstruct_dwkdof->Complete();
 
   Teuchos::RCP<LINALG::SparseMatrix> windkstiff = structure_->GetWindkesselManager()->GetWindkesselStiffness();
