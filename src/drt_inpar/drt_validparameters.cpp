@@ -55,6 +55,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_acou.H"
+#include "../drt_inpar/inpar_volmortar.H"
 
 #include <AztecOO.h>
 
@@ -1791,6 +1792,29 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("MESH_ADAPTIVE_CT","no",
                                      "use 2D integration for pseudo 3D",
                                      yesnotuple,yesnovalue,&scontact);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for volmortar */
+  Teuchos::ParameterList& volmortar = list->sublist("VOLMORTAR COUPLING",false,"");
+
+  setStringToIntegralParameter<int>("INTTYPE","Elements","Type of numerical integration scheme",
+    tuple<std::string>("Elements","elements",
+                       "Segments","segments"),
+    tuple<int>(
+        INPAR::VOLMORTAR::inttype_elements, INPAR::VOLMORTAR::inttype_elements,
+        INPAR::VOLMORTAR::inttype_segments, INPAR::VOLMORTAR::inttype_segments),
+    &volmortar);
+
+  setStringToIntegralParameter<int>("CUTTYPE","dd","Type of cut procedure/ integration point calculation",
+    tuple<std::string>("dd","directdivergence","DirectDivergence",
+                       "tessellation","t","Tessellation"),
+    tuple<int>(
+        INPAR::VOLMORTAR::cuttype_directdivergence, INPAR::VOLMORTAR::cuttype_directdivergence, INPAR::VOLMORTAR::cuttype_directdivergence,
+        INPAR::VOLMORTAR::cuttype_tessellation, INPAR::VOLMORTAR::cuttype_tessellation, INPAR::VOLMORTAR::cuttype_tessellation),
+    &volmortar);
+
+  setStringToIntegralParameter<int>("MESH_INIT","No","If chosen, mesh initialization procedure is performed",
+                               yesnotuple,yesnovalue,&volmortar);
 
   /*----------------------------------------------------------------------*/
   /* parameters for wear */

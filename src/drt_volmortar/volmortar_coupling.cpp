@@ -18,7 +18,10 @@ Maintainer: Philipp Farah
 #include "volmortar_cell.H"
 #include "volmortar_defines.H"
 
+#include "../drt_inpar/inpar_volmortar.H"
+
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
@@ -29,14 +32,13 @@ Maintainer: Philipp Farah
 #include "../drt_mortar/mortar_calc_utils.H"
 #include "../drt_mortar/mortar_element.H"
 
-// Cut...
-#include "../drt_xfem/xfem_fluidwizard.H"
-#include "../drt_cut/cut_utils.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_volumecell.H"
-
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_so3/so3_thermo.H"
+
+// Cut...
+#include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_cut/cut_volumecell.H"
+#include "../drt_cut/cut_elementhandle.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
@@ -49,14 +51,16 @@ dim_(dim),
 Adiscret_(Adis),
 Bdiscret_(Bdis)
 {
+  //check
   if(Adiscret_->Comm().NumProc() != 1)
      dserror("volume mortar not yet working in parallel!");
-
-  //check
   if( not Adiscret_->Filled() or not Bdiscret_->Filled())
     dserror("FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
   if( (Adiscret_->NumDofSets()==1) or (Bdiscret_->NumDofSets()==1)  )
     dserror("Both discretizations need to own at least two dofsets for mortar coupling!");
+
+  // get required parameter list
+  ReadAndCheckInput();
 
   // not used up to now
   //TODO: communicator from which discretization needed???
@@ -72,6 +76,7 @@ Bdiscret_(Bdis)
   polygoncounter_= 0;
   cellcounter_   = 0;
   inteles_       = 0;
+  volume_        = 0.0;
 
   return;
 }
@@ -81,19 +86,176 @@ Bdiscret_(Bdis)
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::Evaluate()
 {
-  /**************************************************
-   * Welcome                                        *
-   **************************************************/
+  /***********************************************************
+   * Welcome                                                 *
+   ***********************************************************/
   std::cout << "**************************************************" << std::endl;
   std::cout << "*****     Welcome to VOLMORTAR-Coupling!     *****" << std::endl;
   std::cout << "**************************************************" << std::endl;
 
-
-  /**************************************************
-   * initialize global matrices                     *
-   **************************************************/
+  /***********************************************************
+   * initialize global matrices                              *
+   ***********************************************************/
   Initialize();
 
+  /***********************************************************
+   * Assign materials                                        *
+   ***********************************************************/
+  AssignMaterials();
+
+  /***********************************************************
+   * Segment-based integration                               *
+   ***********************************************************/
+  if(DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(),"INTTYPE")
+      == INPAR::VOLMORTAR::inttype_segments)
+    EvaluateSegments();
+
+  /***********************************************************
+   * Element-based Integration                               *
+   ***********************************************************/
+  else if(DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(),"INTTYPE")
+      == INPAR::VOLMORTAR::inttype_elements)
+    EvaluateElements();
+
+  // no other possibility
+  else
+    dserror("Chosen INTTYPE not provided");
+
+  /***********************************************************
+   * complete global matrices and create projection operator *
+   ***********************************************************/
+  Complete();
+  CreateProjectionOpterator();
+
+  /***********************************************************
+   * Check initial residuum and perform mesh init             *
+   ***********************************************************/
+  CheckInitialResiduum();
+
+  // mesh initialization procedure
+  if(DRT::INPUT::IntegralValue<int>(Params(), "MESH_INIT") )
+    MeshInit();
+
+  /**************************************************
+   * Bye                                            *
+   **************************************************/
+
+  std::cout << "**************************************************" << std::endl;
+  std::cout << "*****       VOLMORTAR-Coupling Done!!!       *****" << std::endl;
+  std::cout << "**************************************************" << std::endl;
+
+  //output
+  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
+  std::cout << "Created Cells      = " << cellcounter_    << std::endl;
+  std::cout << "Integr. Elements   = " << inteles_        << std::endl;
+  std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
+
+  // reset counter
+  polygoncounter_=0;
+  cellcounter_   =0;
+  inteles_       =0;
+  volume_        =0.0;
+
+  // coupling done
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assign materials for both fields                         farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::AssignMaterials()
+{
+  //loop over all adis elements
+  for (int i=0;i<Adiscret_->NumMyRowElements();++i)
+  {
+    //get slave element
+    DRT::Element* Aele = Adiscret_->lRowElement(i);
+
+    //loop over all bdis elements
+    for (int j=0;j<Bdiscret_->NumMyColElements();++j)
+    {
+      //get master element
+      DRT::Element* Bele = Bdiscret_->lColElement(j);
+
+      // exchange material pointers
+      //TODO: make this more general
+      Bele->AddMaterial(Aele->Material());
+      Aele->AddMaterial(Bele->Material());
+
+      // initialise kinematic type to geo_linear.
+      // kintype is passed to the cloned thermo element
+      GenKinematicType kintype = geo_linear;
+
+      // if oldele is a so3_base element
+      DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(Aele);
+      if (so3_base != NULL)
+        kintype = so3_base->GetKinematicType();
+      else
+        dserror("oldele is not a so3_thermo element!");
+
+      // note: SetMaterial() was reimplemented by the thermo element!
+      DRT::ELEMENTS::Thermo* therm =dynamic_cast<DRT::ELEMENTS::Thermo*>(Bele);
+      if (therm != NULL)
+      {
+        therm->SetKinematicType(kintype);  // set kintype in cloned thermal element
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  Element-based routine                                    farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::EvaluateElements()
+{
+  // check dimension
+  if(dim_==2)
+    dserror("Element-based integration only for 3D coupling!");
+
+  // output
+  std::cout << "*****       Element-based Integration        *****" << std::endl;
+  std::cout << "*****       First Projector:                 *****" << std::endl;
+
+  /**************************************************
+   * loop over all Adis elements                    *
+   **************************************************/
+  for (int j=0;j<Adiscret_->NumMyColElements();++j)
+  {
+    PrintStatus(j,false);
+
+    //get master element
+    DRT::Element* Aele = Adiscret_->lColElement(j);
+
+    Integrate3DEleBased_ADis(*Aele);
+  }
+
+  // half-time output
+  std::cout << "**************************************************" << std::endl;
+  std::cout << "*****       Second Projector:                *****" << std::endl;
+
+  /**************************************************
+   * loop over all Bdis elements                    *
+   **************************************************/
+  for (int j=0;j<Bdiscret_->NumMyColElements();++j)
+  {
+    PrintStatus(j,true);
+
+    //get master element
+    DRT::Element* Bele = Bdiscret_->lColElement(j);
+
+    Integrate3DEleBased_BDis(*Bele);
+  }
+
+  // stats
+  inteles_ += Adiscret_->NumGlobalElements();
+  inteles_ += Bdiscret_->NumGlobalElements();
+}
+
+/*----------------------------------------------------------------------*
+ |  Segment-based routine                                    farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
+{
   /**************************************************
    * loop over all slave elements                   *
    **************************************************/
@@ -113,66 +275,12 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
       //get master element
       DRT::Element* Bele = Bdiscret_->lColElement(j);
 
-      // exchange material pointers
-      //TODO: make this more general
-      Bele->AddMaterial(Aele->Material());
-      Aele->AddMaterial(Bele->Material());
-
-      // initialise kinematic type to geo_linear.
-      // kintype is passed to the cloned thermo element
-      GenKinematicType kintype = geo_linear;
-      // if oldele is a so3_base element
-      DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(Aele);
-      if (so3_base != NULL)
-        kintype = so3_base->GetKinematicType();
-      else
-        dserror("oldele is not a so3_thermo element!");
-
-      // note: SetMaterial() was reimplemented by the thermo element!
-      DRT::ELEMENTS::Thermo* therm =dynamic_cast<DRT::ELEMENTS::Thermo*>(Bele);
-      if (therm != NULL)
-      {
-        therm->SetKinematicType(kintype);  // set kintype in cloned thermal element
-      }
-
       /**************************************************
        *                    2D                          *
        **************************************************/
       if (dim_==2)
       {
-        // define polygon vertices
-        static std::vector<MORTAR::Vertex>                  SlaveVertices;
-        static std::vector<MORTAR::Vertex>                  MasterVertices;
-        static std::vector<MORTAR::Vertex>                  ClippedPolygon;
-        static std::vector<Teuchos::RCP<MORTAR::IntCell> >  cells;
-
-        // clear old polygons
-        SlaveVertices.clear();
-        MasterVertices.clear();
-        ClippedPolygon.clear();
-        cells.clear();
-        cells.resize(0);
-
-        // build new polygons
-        DefineVerticesMaster(*Bele,MasterVertices);
-        DefineVerticesSlave(*Aele,SlaveVertices);
-
-        double tol = 1e-12;
-        PolygonClippingConvexHull(SlaveVertices,MasterVertices,ClippedPolygon,*Aele,*Bele,tol);
-        int clipsize = (int)(ClippedPolygon.size());
-
-        // proceed only if clipping polygon is at least a triangle
-        if (clipsize<3)
-          continue;
-        else
-          polygoncounter_+=1;
-
-        // triangulation
-        DelaunayTriangulation(cells, ClippedPolygon,tol);
-        cellcounter_+=(int)cells.size();
-
-        //integrate cells
-        Integrate2D(*Aele,*Bele,cells);
+        EvaluateSegments2D(*Aele,*Bele);
       }
 
       /**************************************************
@@ -180,55 +288,9 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
        **************************************************/
       else if (dim_==3)
       {
-        //check need element-based integration over sele:
-        bool integrateA = CheckEleIntegration(*Aele,*Bele);
-
-        //check need element-based integration over mele:
-        bool integrateB = CheckEleIntegration(*Bele,*Aele);
-
-        //check need for cut:
-        bool performcut = CheckCut(*Aele,*Bele);
-
-        /**************************************************
-         * Integrate element-based Sele                   *
-         **************************************************/
-        if(integrateA)
-        {
-          //integrate over Aele
-          Integrate3D(*Aele, *Bele, 0);
-        }
-        /**************************************************
-         * Integrate element-based Mele                   *
-         **************************************************/
-        else if (integrateB)
-        {
-          //integrate over Bele
-          Integrate3D(*Aele, *Bele,1);
-        }
-        /**************************************************
-         * Start Cut                                      *
-         **************************************************/
-        else if(performcut)
-        {
-          // create empty vector of integration cells
-          std::vector<Teuchos::RCP<Cell> > IntCells;
-
-          // call cut and create integration cells
-          try
-          {
-            PerformCut(Aele, Bele,IntCells);
-          }
-          catch ( std::runtime_error & err )
-          {
-            IntCells.clear();
-            PerformCut(Bele, Aele,IntCells);
-          }
-
-          //integrate found cells
-          Integrate3DCell(*Aele, *Bele, IntCells);
-
-        }// end performcut
+        EvaluateSegments3D(Aele,Bele);
       }
+
       /**************************************************
        * Wrong Dimension !!!                            *
        **************************************************/
@@ -237,49 +299,294 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
 
     } // end master element loop
   } // end slave element loop
+}
+
+/*----------------------------------------------------------------------*
+ |  Segment-based routine 2D                                 farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele,
+                                                   DRT::Element& Bele)
+{
+  // define polygon vertices
+  static std::vector<MORTAR::Vertex>                  SlaveVertices;
+  static std::vector<MORTAR::Vertex>                  MasterVertices;
+  static std::vector<MORTAR::Vertex>                  ClippedPolygon;
+  static std::vector<Teuchos::RCP<MORTAR::IntCell> >  cells;
+
+  // clear old polygons
+  SlaveVertices.clear();
+  MasterVertices.clear();
+  ClippedPolygon.clear();
+  cells.clear();
+  cells.resize(0);
+
+  // build new polygons
+  DefineVerticesMaster(Bele,MasterVertices);
+  DefineVerticesSlave(Aele,SlaveVertices);
+
+  double tol = 1e-12;
+  PolygonClippingConvexHull(SlaveVertices,MasterVertices,ClippedPolygon,Aele,Bele,tol);
+  int clipsize = (int)(ClippedPolygon.size());
+
+  // proceed only if clipping polygon is at least a triangle
+  if (clipsize<3)
+    return;
+  else
+    polygoncounter_+=1;
+
+  // triangulation
+  DelaunayTriangulation(cells, ClippedPolygon,tol);
+  cellcounter_+=(int)cells.size();
+
+  //integrate cells
+  Integrate2D(Aele,Bele,cells);
+}
+
+/*----------------------------------------------------------------------*
+ |  Segment-based routine 3D                                 farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele,
+                                                   DRT::Element* Bele)
+{
+  //check need element-based integration over sele:
+  bool integrateA = CheckEleIntegration(*Aele,*Bele);
+
+  //check need element-based integration over mele:
+  bool integrateB = CheckEleIntegration(*Bele,*Aele);
+
+  //check need for cut:
+  bool performcut = CheckCut(*Aele,*Bele);
 
   /**************************************************
-   * complete global matrices                       *
+   * Integrate element-based Sele                   *
    **************************************************/
-  Complete();
-
+  if(integrateA)
+  {
+    //integrate over Aele
+    Integrate3D(*Aele, *Bele, 0);
+  }
   /**************************************************
-   * compute the projection operator P              *
+   * Integrate element-based Mele                   *
    **************************************************/
-  CreateProjectionOpterator();
-
-  std::cout << "**************************************************" << std::endl;
-  std::cout << "*****       VOLMORTAR-Coupling Done!!!       *****" << std::endl;
-  std::cout << "**************************************************" << std::endl;
-
-  //output
-  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
-  std::cout << "Created Cells      = " << cellcounter_ << std::endl;
-  std::cout << "Integr. Elements   = " << inteles_ << "\n" << std::endl;
-
-  // reset counter
-  polygoncounter_=0;
-  cellcounter_   =0;
-  inteles_       =0;
+  else if (integrateB)
+  {
+    //integrate over Bele
+    Integrate3D(*Aele, *Bele,1);
+  }
+  /**************************************************
+   * Start Cut                                      *
+   **************************************************/
+  else if(performcut)
+  {
+    // call cut and create integration cells
+    try
+    {
+      bool switched_conf = false;
+      PerformCut(Aele, Bele,switched_conf);
+    }
+    catch ( std::runtime_error & err1 )
+    {
+      try
+      {
+        bool switched_conf = true;
+        PerformCut(Bele, Aele, switched_conf);
+      }
+      catch ( std::runtime_error & err2 )
+      {
+        std::cout << "runtime error 2 = " << err2.what() << std::endl;
+      }
+    }
+  }// end performcut
+  else
+  {
+    // do nothing...
+  }
 
   return;
 }
 
 /*----------------------------------------------------------------------*
+ |  get parameters and check for validity                    farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
+{
+  // read input parameters
+  const Teuchos::ParameterList& volmortar   = DRT::Problem::Instance()->VolmortarParams();
+
+  // check validity
+  if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar,"INTTYPE") == INPAR::VOLMORTAR::inttype_segments)
+  {
+    std::cout<<"WARNING: The chosen integration type for volmortar coupling requires cut procedure !"<< std::endl;
+    std::cout<<"WARNING: The cut is up to now not able to exactly calculate the required segments!"<< std::endl;
+  }
+
+  // merge to global parameter list
+  params_.setParameters(volmortar);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  check initial residuum                                   farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
+{
+  // create vectors of initial primary variables
+  Teuchos::RCP<Epetra_Vector> var_A = LINALG::CreateVector(*ADiscret()->DofRowMap(0),true);
+  Teuchos::RCP<Epetra_Vector> var_B = LINALG::CreateVector(*BDiscret()->DofRowMap(1),true);
+
+  // solution
+  Teuchos::RCP<Epetra_Vector> result_A = LINALG::CreateVector(*BDiscret()->DofRowMap(1),true);
+  Teuchos::RCP<Epetra_Vector> result_B = LINALG::CreateVector(*BDiscret()->DofRowMap(1),true);
+
+  // node positions for Discr A
+  for (int i=0;i<ADiscret()->NumMyRowElements();++i)
+  {
+    DRT::Element* Aele = ADiscret()->lRowElement(i);
+    for(int j=0;j<Aele->NumNode();++j)
+    {
+      DRT::Node* cnode = Aele->Nodes()[j];
+      int nsdof=ADiscret()->NumDof(0,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
+      {
+        int id  = ADiscret()->Dof(0,cnode,jdof);
+        double val = cnode->X()[jdof];
+
+        var_A->ReplaceGlobalValue(id,0,val);
+      }
+    }
+  }
+
+  // node positions for Discr B
+  for (int i=0;i<BDiscret()->NumMyRowElements();++i)
+  {
+    DRT::Element* Bele = BDiscret()->lRowElement(i);
+    for(int j=0;j<Bele->NumNode();++j)
+    {
+      DRT::Node* cnode = Bele->Nodes()[j];
+      int nsdof=BDiscret()->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
+      {
+        int id  = BDiscret()->Dof(1,cnode,jdof);
+        double val = cnode->X()[jdof];
+
+        var_B->ReplaceGlobalValue(id,0,val);
+      }
+    }
+  }
+
+  //std::cout << "vector of slave positions " << *var_B << std::endl;
+
+  // do: D*db - M*da
+  //int err1 = dmatrixB_->Multiply(false, *var_B, *result_B);
+  //int err2 = mmatrixB_->Multiply(false, *var_A, *result_A);
+
+  //if(err1!=0 or err2!=0)
+  //  dserror("error");
+
+  int err = pmatrixB_->Multiply(false,*var_A,*result_A);
+  if(err!=0)
+    dserror("error");
+
+
+  // substract both results
+  result_A->Update(-1.0,*var_B,1.0);
+
+  std::cout << "Result of init check= " << *result_A << std::endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  check initial residuum                                   farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::MeshInit()
+{
+  // create vectors of initial primary variables
+  Teuchos::RCP<Epetra_Vector> var_A = LINALG::CreateVector(*ADiscret()->DofRowMap(0),true);
+
+  // solution
+  Teuchos::RCP<Epetra_Vector> result_A = LINALG::CreateVector(*BDiscret()->DofRowMap(1),true);
+
+  // node positions for Discr A
+  for (int i=0;i<ADiscret()->NumMyRowElements();++i)
+  {
+    DRT::Element* Aele = ADiscret()->lRowElement(i);
+    for(int j=0;j<Aele->NumNode();++j)
+    {
+      DRT::Node* cnode = Aele->Nodes()[j];
+      int nsdof=ADiscret()->NumDof(0,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
+      {
+        int id  = ADiscret()->Dof(0,cnode,jdof);
+        double val = cnode->X()[jdof];
+
+        var_A->ReplaceGlobalValue(id,0,val);
+      }
+    }
+  }
+
+  //-----------------------------------------------------
+  // mesh init
+  int err = pmatrixB_->Multiply(false,*var_A,*result_A);
+  if(err!=0)
+    dserror("error");
+
+  //std::cout << "New slave positions " << *result_A << std::endl;
+
+  // node positions for Discr B
+  for (int i=0;i<BDiscret()->NumMyRowElements();++i)
+  {
+    DRT::Element* Bele = BDiscret()->lRowElement(i);
+    for(int j=0;j<Bele->NumNode();++j)
+    {
+      DRT::Node* cnode = Bele->Nodes()[j];
+      int nsdof=BDiscret()->NumDof(1,cnode);
+      std::vector<double> nvector(3);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
+      {
+        const int lid = result_A->Map().LID(BDiscret()->Dof(1,cnode,jdof));
+        nvector[jdof] = (*result_A)[lid]-cnode->X()[jdof];
+      }
+
+      cnode->ChangePos(nvector);
+    }
+  }
+
+  BDiscret()->FillComplete(false,true,true);
+
+  return;
+}
+/*----------------------------------------------------------------------*
  |  PrintStatus (public)                                     farah 02/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i)
+void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i, bool dis_switch)
 {
   static int percent_counter = 0;
-  static int AEleSum = 0;
+  static int EleSum = 0;
 
   if(i==0)
-    AEleSum = Adiscret_->NumGlobalElements();
+  {
+    if(dis_switch)
+      EleSum = Bdiscret_->NumGlobalElements();
+    else
+      EleSum = Adiscret_->NumGlobalElements();
 
-  if( (int)((i*100)/AEleSum) > (int)(10*percent_counter))
+    percent_counter = 0;
+  }
+
+  if( (int)((i*100)/EleSum) > (int)(10*percent_counter))
   {
     std::cout << "---------------------------" << std::endl;
-    std::cout << (int)((i*100)/AEleSum) -1 << "% of Coupling Evaluations are done!" << std::endl;
+    std::cout << (int)((i*100)/EleSum) -1 << "% of Coupling Evaluations are done!" << std::endl;
     std::cout << "---------------------------" << std::endl;
 
     percent_counter++;
@@ -293,9 +600,10 @@ void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i)
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
                                            DRT::Element* mele,
-                                           std::vector<Teuchos::RCP<Cell> >& IntCells)
+                                           bool switched_conf)
 {
-  IntCells.resize(0);
+  // create empty vector of integration cells
+  std::vector<Teuchos::RCP<Cell> > IntCells;
 
   // the cut wizard wants discretizations to perform the cut. One is supposed to be the background discretization and the
   // other the interface discretization.
@@ -337,41 +645,97 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   //dummy displacement vector --> zero due to coupling in reference configuration
   Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*sauxdis->DofRowMap(0),true);
 
- //TODO: need to be parallel?
-  // do the (parallel!) cut
-  wizard->Cut(  true,            // include_inner
-                *idispcol,       // interface displacements
-                "Tessellation",  // how to create volume cell Gauss points?
-                "Tessellation",  // how to create boundary cell Gauss points?
-                true,            // parallel cut framework
-                false,           // gmsh output for cut library
-                true,            // find point positions
-                true,            // create tet cells only
-                false,           // suppress screen output
-                true             // cut in reference coordinates
-                );
-
-  GEO::CUT::plain_volumecell_set cells_out;
-  GEO::CUT::plain_volumecell_set cells_in;
-  GEO::CUT::ElementHandle * e = wizard->GetElement( mele );
-
-  // is mele in cut involved?
-  if (e!=NULL)
+  // *************************************
+  // TESSELATION *************************
+  if(DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(),"CUTTYPE")
+      == INPAR::VOLMORTAR::cuttype_tessellation)
   {
-    e->CollectVolumeCells(true, cells_in, cells_out);
+    //TODO: need to be parallel?
+     // do the (parallel!) cut
 
-    int count = 0;
+     wizard->Cut(  true,            // include_inner
+                   *idispcol,       // interface displacements
+                   "Tessellation",  // how to create volume cell Gauss points?
+                   "Tessellation",  // how to create boundary cell Gauss points?
+                   true,            // parallel cut framework
+                   false,           // gmsh output for cut library
+                   true,            // find point positions
+                   true,            // create tet cells only
+                   false,            // screen output
+                   true             // cut in reference coordinates
+                   );
 
-    for(int u=0;u<(int)cells_in.size();++u)
-      for(int z=0;z<(int)cells_in[u]->IntegrationCells().size();++z)
-      {
-        IntCells.push_back(Teuchos::rcp(new VOLMORTAR::Cell(count,4,cells_in[u]->IntegrationCells()[z]->Coordinates(),DRT::Element::tet4) ));
-        count++;
-      }
+     GEO::CUT::plain_volumecell_set mcells_out;
+     GEO::CUT::plain_volumecell_set mcells_in;
+     GEO::CUT::ElementHandle * em = wizard->GetElement( mele );
 
-    polygoncounter_+=cells_in.size();
-    cellcounter_+=count;
+      //is mele in cut involved?
+     if (em!=NULL)
+     {
+       em->CollectVolumeCells(true, mcells_in, mcells_out);
+
+       int count = 0;
+
+       for(int u=0;u<(int)mcells_in.size();++u)
+         for(int z=0;z<(int)mcells_in[u]->IntegrationCells().size();++z)
+         {
+           IntCells.push_back(Teuchos::rcp(new VOLMORTAR::Cell(count,4,mcells_in[u]->IntegrationCells()[z]->Coordinates(),mcells_in[u]->IntegrationCells()[z]->Shape()) ));
+           volume_ += IntCells[count]->Vol();
+
+           count++;
+         }
+
+       //integrate found cells - tesselation
+       Integrate3DCell(*sele, *mele, IntCells);
+
+       // count the cells and the polygons/polyhedra
+       polygoncounter_+= mcells_in.size();
+       cellcounter_   += count;
+    }
   }
+
+  // *******************************************
+  // DIRECT DIVERGENCE *************************
+  else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(),"CUTTYPE")
+      == INPAR::VOLMORTAR::cuttype_directdivergence)
+  {
+
+    wizard->Cut(  true,                // include_inner
+                  *idispcol,           // interface displacements
+                  "DirectDivergence",  // how to create volume cell Gauss points?
+                  "DirectDivergence",  // how to create boundary cell Gauss points?
+                  true,                // parallel cut framework
+                  false,               // gmsh output for cut library
+                  true,                // find point positions
+                  false,                // create tet cells only
+                  false,               // suppress screen output
+                  true                 // cut in reference coordinates
+                  );
+
+    GEO::CUT::plain_volumecell_set mcells_out;
+    GEO::CUT::plain_volumecell_set mcells_in;
+    GEO::CUT::ElementHandle * em = wizard->GetElement( mele );
+
+    // for safety
+    volcell_.clear();
+    if (em!=NULL)
+    {
+      em->CollectVolumeCells(true,volcell_,mcells_out);
+
+      // start integration
+      if(switched_conf)
+        Integrate3DCell_DirectDivergence(*mele, *sele, switched_conf);
+      else
+        Integrate3DCell_DirectDivergence(*sele, *mele, switched_conf);
+
+      polygoncounter_+= volcell_.size();
+    }
+  }
+
+  // *******************************************
+  // DEFAULT           *************************
+  else
+    dserror("Chosen Cuttype for volmortar not supported!");
 
   return;
 }
@@ -429,8 +793,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
     }
     else
     {
-      std::cout << "!!!!!!!!! NOT CONVERGED !!!!!!!!!" << std::endl;
-      integrateele = false;
+      std::cout << "!!! GLOBAL TO LOCAL NOT CONVERGED !!!" << std::endl;
+      return false;
     }
   }
 
@@ -492,11 +856,10 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele,
         if(xi[0]>0.0+VOLMORTARCUTTOL) xi0=true;
         if(xi[1]>0.0+VOLMORTARCUTTOL) xi1=true;
         if(xi[2]>0.0+VOLMORTARCUTTOL) xi2=true;
-        if((xi[0]+xi[1]+xi[2])<1.0-VOLMORTARCUTTOL) all=true;
+        if((xi[0]+xi[1]+xi[2])<1.0-3.0*VOLMORTARCUTTOL) all=true;
       }
-
     }
-  }
+  } //end node loop
 
   if(sele.Shape()==DRT::Element::tet4)
   {
@@ -556,7 +919,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele,
         if(xi[0]>0.0+VOLMORTARCUTTOL) xi0=true;
         if(xi[1]>0.0+VOLMORTARCUTTOL) xi1=true;
         if(xi[2]>0.0+VOLMORTARCUTTOL) xi2=true;
-        if((xi[0]+xi[1]+xi[2])<1.0-VOLMORTARCUTTOL) all=true;
+        if((xi[0]+xi[1]+xi[2])<1.0-3.0*VOLMORTARCUTTOL) all=true;
       }
     }
   }
@@ -603,7 +966,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele,
         if( xi[0]>0.0+VOLMORTARCUT2TOL and xi[0]<1.0-VOLMORTARCUT2TOL and
             xi[1]>0.0+VOLMORTARCUT2TOL and xi[1]<1.0-VOLMORTARCUT2TOL and
             xi[2]>0.0+VOLMORTARCUT2TOL and xi[2]<1.0-VOLMORTARCUT2TOL and
-            (xi[0]+xi[1]+xi[2])<1.0-3*VOLMORTARCUT2TOL)
+            (xi[0]+xi[1]+xi[2])<1.0-3.0*VOLMORTARCUT2TOL)
           return true;
     }
   }
@@ -636,7 +999,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele,
         if( xi[0]>0.0+VOLMORTARCUT2TOL and xi[0]<1.0-VOLMORTARCUT2TOL and
             xi[1]>0.0+VOLMORTARCUT2TOL and xi[1]<1.0-VOLMORTARCUT2TOL and
             xi[2]>0.0+VOLMORTARCUT2TOL and xi[2]<1.0-VOLMORTARCUT2TOL and
-            (xi[0]+xi[1]+xi[2])<1.0-3*VOLMORTARCUT2TOL)
+            (xi[0]+xi[1]+xi[2])<1.0-3.0*VOLMORTARCUT2TOL)
           return true;
     }
   }
@@ -804,7 +1167,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       case DRT::Element::hex8:
       {
         static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
-        integrator.InitializeGP();
+        integrator.InitializeGP(false,0,cells[q]->Shape());
         integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
             Adiscret_,Bdiscret_);
         break;
@@ -812,7 +1175,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
-        integrator.InitializeGP();
+        integrator.InitializeGP(false,0,cells[q]->Shape());
         integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
             Adiscret_,Bdiscret_);
         break;
@@ -833,7 +1196,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       case DRT::Element::hex8:
       {
         static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
-        integrator.InitializeGP();
+        integrator.InitializeGP(false,0,cells[q]->Shape());
         integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
             Adiscret_,Bdiscret_);
         break;
@@ -841,7 +1204,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
-        integrator.InitializeGP();
+        integrator.InitializeGP(false,0,cells[q]->Shape());
         integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
             Adiscret_,Bdiscret_);
         break;
@@ -864,6 +1227,260 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Integrate3D Cells                                        farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
+{
+  // assume that all BDis element types are equal
+  DRT::Element::DiscretizationType btype = Bdiscret_->lColElement(0)->Shape();
+
+  switch (Aele.Shape())
+  {
+  // 2D surface elements
+  case DRT::Element::hex8:
+  {
+    switch (btype)
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
+      integrator.InitializeGP(true,0);
+      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
+      integrator.InitializeGP(true,0);
+      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    switch (btype)
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
+      integrator.InitializeGP(true,0);
+      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
+      integrator.InitializeGP(true,0);
+      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  default:
+  {
+    dserror("unknown shape!");
+    break;
+  }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate3D Cells                                        farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele)
+{
+  // assume that all BDis element types are equal
+  DRT::Element::DiscretizationType atype = Adiscret_->lColElement(0)->Shape();
+
+  switch (atype)
+  {
+  // 2D surface elements
+  case DRT::Element::hex8:
+  {
+    switch (Bele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
+      integrator.InitializeGP(true,1);
+      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
+      integrator.InitializeGP(true,1);
+      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    switch (Bele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
+      integrator.InitializeGP(true,1);
+      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
+      integrator.InitializeGP(true,1);
+      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  default:
+  {
+    dserror("unknown shape!");
+    break;
+  }
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  Integrate3D Cells for direct divergence approach         farah 04/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(DRT::Element& sele,
+                                                                 DRT::Element& mele,
+                                                                 bool switched_conf)
+{
+  if((int)(volcell_.size())>1)
+    std::cout << "****************************   CELL SIZE > 1 ***************************" << std::endl;
+
+  for(int i=0; i<(int)(volcell_.size());++i)
+  {
+
+    if(volcell_[i]==NULL)
+      continue;
+
+    GEO::CUT::VolumeCell * vc = volcell_[i];
+
+    if(vc->IsNegligiblySmall())
+      continue;
+
+    // main gp rule
+    Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints = vc->GetGaussRule();
+
+    //--------------------------------------------------------------------
+    // loop over cells for A Field
+
+    switch (sele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
+        integrator.IntegrateCells3D_DirectDiveregence(sele,mele,*vc,intpoints,switched_conf,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
+        integrator.IntegrateCells3D_DirectDiveregence(sele,mele,*vc,intpoints,switched_conf,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
+        break;
+      }
+      default:
+      {
+        dserror("unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
+        integrator.IntegrateCells3D_DirectDiveregence(sele,mele,*vc,intpoints,switched_conf,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
+        integrator.IntegrateCells3D_DirectDiveregence(sele,mele,*vc,intpoints,switched_conf,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
+        break;
+      }
+      default:
+      {
+        dserror("unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    default:
+    {
+      dserror("unknown shape!");
+      break;
+    }
+    }
+  }
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Integrate over A-element domain                          farah 01/14|
  *----------------------------------------------------------------------*/
@@ -883,7 +1500,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     // 2D surface elements
     case DRT::Element::hex8:
     {
-      VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
+      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true,domain);
       integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
@@ -1002,10 +1619,7 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOpterator()
   // set zero diagonal values to dummy 1.0
   for (int i=0;i<diagA->MyLength();++i)
     if ( abs((*diagA)[i])<1e-12)
-    {
-      //dserror("shitti shit");
       (*diagA)[i]=1.0;
-    }
 
   // scalar inversion of diagonal values
   err = diagA->Reciprocal(*diagA);

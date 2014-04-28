@@ -20,6 +20,8 @@ Maintainer: Philipp Farah
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_cut/cut_utils.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
@@ -83,7 +85,7 @@ public:
   \brief Initialize Gauss rule (points, weights)
 
   */
-  void InitializeGP(bool integrateele=false, int domain=0);
+  void InitializeGP(bool integrateele=false, int domain=0, DRT::Element::DiscretizationType shape = DRT::Element::tet4);
 
   /*!
   \brief Integrate cell for 2D problems
@@ -114,6 +116,23 @@ public:
       Teuchos::RCP<const DRT::Discretization> Bdis);
 
   /*!
+  \brief Integrate cell for 3D problems
+
+  */
+  void IntegrateCells3D_DirectDiveregence(
+      DRT::Element& Aele,
+      DRT::Element& Bele,
+      GEO::CUT::VolumeCell& vc,
+      Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints,
+      bool switched_conf,
+      LINALG::SparseMatrix& dmatrix_A,
+      LINALG::SparseMatrix& mmatrix_A,
+      LINALG::SparseMatrix& dmatrix_B,
+      LINALG::SparseMatrix& mmatrix_B,
+      Teuchos::RCP<const DRT::Discretization> Adis,
+      Teuchos::RCP<const DRT::Discretization> Bdis);
+
+  /*!
   \brief Integrate ele for 3D problems
 
   */
@@ -127,6 +146,30 @@ public:
        LINALG::SparseMatrix& mmatrix_B,
        Teuchos::RCP<const DRT::Discretization> Adis,
        Teuchos::RCP<const DRT::Discretization> Bdis);
+
+  /*!
+  \brief Integrate ele for 3D problems
+
+  */
+  void IntegrateEleBased3D_ADis(DRT::Element& sele,
+                           LINALG::SparseMatrix& dmatrixA_,
+                           LINALG::SparseMatrix& mmatrixA_,
+                           LINALG::SparseMatrix& dmatrixB_,
+                           LINALG::SparseMatrix& mmatrixB_,
+                           Teuchos::RCP<const DRT::Discretization> Adiscret_,
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret_);
+
+  /*!
+  \brief Integrate ele for 3D problems
+
+  */
+  void IntegrateEleBased3D_BDis(DRT::Element& mele,
+                           LINALG::SparseMatrix& dmatrixA_,
+                           LINALG::SparseMatrix& mmatrixA_,
+                           LINALG::SparseMatrix& dmatrixB_,
+                           LINALG::SparseMatrix& mmatrixB_,
+                           Teuchos::RCP<const DRT::Discretization> Adiscret_,
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret_);
 
   //@}
 private:

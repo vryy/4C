@@ -283,6 +283,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
+  reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);

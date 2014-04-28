@@ -52,6 +52,11 @@ public:
   */
   virtual ~Cell() {};
 
+  /*!
+  \brief calc jacobian
+
+  */
+  double CalcJac(const double* xi);
 
   /*!
   \brief get cell id
@@ -81,7 +86,7 @@ public:
   \brief get cell volume
 
   */
-  virtual double& Vol() { return vol_; }
+  virtual double Vol() { return vol_; }
 
   //@}
 protected:

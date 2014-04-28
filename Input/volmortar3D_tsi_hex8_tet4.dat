@@ -11,6 +11,8 @@
 // - testing the setup and functionality of volume mortar in TSI framework
 // - tet4 - hex8 mesh
 // - expansion due to prescribed temperatures
+// - element-based integratio procedure
+// - mesh init for dislpacement quantities
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    488
 //NODES       208
@@ -100,6 +102,9 @@ RESTARTEVRY                     1
 TIMESTEP                        0.4  // 0.05
 UPRES                           5 //
 MATCHINGGRID                    no
+---------------------------------------------------------VOLMORTAR COUPLING
+INTTYPE                         elements
+MESH_INIT                       yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
@@ -218,15 +223,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/4)-(pi/2)))+0.5 t1 0.0 t2 4.0 // Tmax=4
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //0°C
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 1.16859043902502158e-03 TOLERANCE 1.0e-8 NAME dispx_x0
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 1.32489877853789054e-03 TOLERANCE 1.0e-8 NAME dispy_x0
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 3.64734495469040763e-04 TOLERANCE 1.0e-8 NAME dispz_x0
-STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -3.59540847270455651e-03 TOLERANCE 1.0e-8 NAME dispx_x1
-STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE 1.18486045028180146e-03 TOLERANCE 1.0e-8 NAME dispy_x1
-STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 9.35024177138730453e-04 TOLERANCE 1.0e-8 NAME dispz_x1
-THERMAL DIS thermo NODE 195 QUANTITY temp VALUE 6.66351636525372104e-01 TOLERANCE 1.0e-8
-THERMAL DIS thermo NODE 185 QUANTITY temp VALUE 3.33055979167551308e-01 TOLERANCE 1.0e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -1027,5 +1023,13 @@ NODE 208  	COORD	5.0000000000000000e+00	2.5000000000000000e+00	-2.50000000000000
    486 THERMO HEX8  186 185 189 190 202 201 205 206    MAT 2
    487 THERMO HEX8  185 187 191 189 201 203 207 205    MAT 2
    488 THERMO HEX8  187 188 192 191 203 204 208 207    MAT 2
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 1.16111411143829239e-03 TOLERANCE 1.0e-8 NAME dispx_x0
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 1.32487817042863261e-03 TOLERANCE 1.0e-8 NAME dispy_x0
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 3.63216522190178441e-04 TOLERANCE 1.0e-8 NAME dispz_x0
+STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE 2.19996527511405601e-03 TOLERANCE 1.0e-8 NAME dispx_x1
+STRUCTURE DIS structure NODE 49 QUANTITY dispy VALUE -5.67940999531334179e-04 TOLERANCE 1.0e-8 NAME dispy_x1
+STRUCTURE DIS structure NODE 49 QUANTITY dispz VALUE -7.78827338919877788e-04 TOLERANCE 1.0e-8 NAME dispz_x1
+THERMAL DIS thermo NODE 188 QUANTITY temp VALUE 3.33017660198965337e-01 TOLERANCE 1.0e-8
 ---------------------------------------------------------------END
 // END

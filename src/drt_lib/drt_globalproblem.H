@@ -329,6 +329,7 @@ public:
   const Teuchos::ParameterList& BeamContactParams() const { return getParameterList()->sublist("BEAM CONTACT"); }
   const Teuchos::ParameterList& SemiSmoothPlastParams() const { return getParameterList()->sublist("SEMI-SMOOTH PLASTICITY"); }
   const Teuchos::ParameterList& AcousticParams() const { return getParameterList()->sublist("ACOUSTIC DYNAMIC"); }
+  const Teuchos::ParameterList& VolmortarParams() const { return getParameterList()->sublist("VOLMORTAR COUPLING"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
 

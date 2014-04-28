@@ -47,38 +47,38 @@ double Jacobian(const double* xi, DRT::Element& ele);
 
 template<class V>
 void volmortar_shape_function_2D(
-  V&                                 funct,   ///< to be filled with shape function values
-  double&                            xi0,       ///< xi0 coordinate
-  double&                            xi1,       ///< xi1 coordinate
-  DRT::Element::DiscretizationType  shape    ///< distuinguish between mortar shape
+  V&                                 funct,  ///< to be filled with shape function values
+  double&                            xi0,    ///< xi0 coordinate
+  double&                            xi1,    ///< xi1 coordinate
+  DRT::Element::DiscretizationType  shape    ///< distinguish between mortar shape
   );
 
 template<class V>
 void volmortar_shape_function_3D(
-  V&                                 funct,     ///< to be filled with shape function values
+  V&                                 funct,   ///< to be filled with shape function values
   double&                            r,       ///< xi0 coordinate
   double&                            s,       ///< xi1 coordinate
   double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape       ///< distuinguish between mortar shape
+  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
   );
 
 template<class V>
 void volmortar_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
   DRT::Element&                            ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between mortar shape
   );
 
 template<class V>
 void volmortar_dualshape_function_3D(
   V&                                       funct,   ///< to be filled with shape function values
   DRT::Element&                            ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const double&                            xi2,       ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const double&                            xi2,     ///< xi1 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between mortar shape
   );
 
 /*----------------------------------------------------------------------*
