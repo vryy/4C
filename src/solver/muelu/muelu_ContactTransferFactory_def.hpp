@@ -59,9 +59,6 @@ namespace MueLu {
 
     Teuchos::RCP<OperatorClass> Ptent = coarseLevel.Get<Teuchos::RCP<OperatorClass> >("P",PtentFact_.get());
 
-
-#if 1
-
     // extract maps from mapextractor:
     std::vector<Teuchos::RCP<Vector> > subMapBlockVectors;
     for(size_t i=0; i<mapextractor->NumMaps(); i++) {
@@ -130,7 +127,6 @@ namespace MueLu {
     }
 
     // build column maps
-
     std::vector<Teuchos::RCP<const Map> > colMaps(mapextractor->NumMaps());
     for(size_t i=0; i<mapextractor->NumMaps(); i++) {
         std::vector<GlobalOrdinal> gidvector = coarseSubMapGids[i];
@@ -143,126 +139,13 @@ namespace MueLu {
         TEUCHOS_TEST_FOR_EXCEPTION((colMaps[i])->getNodeNumElements()!=gidvector.size(), Exceptions::RuntimeError, "MueLu::ContactTransferFactory::Build: size of map does not fit to size of gids.");
     }
 
-    std::cout << "length of MASTER map=" << colMaps[0]->getGlobalNumElements() << std::endl;
-    std::cout << "length of SLAVE  map=" << colMaps[1]->getGlobalNumElements() << std::endl;
-
     // build coarse level MapExtractor
     Teuchos::RCP<const MapExtractorClass> coarseMapExtractor = Xpetra::MapExtractorFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>::Build(Ptent->getDomainMap(),colMaps);
 
     // store map extractor in coarse level
     coarseLevel.Set("SegAMapExtractor", coarseMapExtractor, MueLu::NoFactory::get());
 
-#else
-    // extract maps from mapextractor:          // TODO write a more common class for n distint submaps in map extractor (not just 2)
-    Teuchos::RCP<const Map> mastermap = mapextractor->getMap(0);
-    Teuchos::RCP<const Map> slavemap  = mapextractor->getMap(1);
 
-    Monitor m(*this, "Contact transfer factory");
-
-    Teuchos::RCP<Vector> fullMasterVector = VectorFactoryClass::Build(mapextractor->getFullMap());
-    Teuchos::RCP<Vector> fullSlaveVector = VectorFactoryClass::Build(mapextractor->getFullMap());
-    fullMasterVector->putScalar(0.0); // do we need 0/1 vectors? why not just using the maps??? TODO
-    fullSlaveVector->putScalar(0.0);
-
-    Teuchos::RCP<Vector> blockMasterVector  = VectorFactoryClass::Build(mastermap);  blockMasterVector->putScalar(1.0);
-    mapextractor->InsertVector(blockMasterVector,  0, fullMasterVector);
-    Teuchos::RCP<Vector> blockSlaveVector  = VectorFactoryClass::Build(slavemap);  blockSlaveVector->putScalar(1.0);
-    mapextractor->InsertVector(blockSlaveVector,  1, fullSlaveVector);
-
-    // BlockColMapVector is a vector which lives in the column map of Ptent
-    // Its values are the number of submap in the coarse-level map extractor or -1, if it is not in the mapextractor at all
-    // we initialize the vector with -2.0 (= uninitialized)
-    // in the end all entries should be > -2.0
-    Teuchos::RCP<VectorClass> BlockColMapVector  = VectorFactoryClass::Build(Ptent->getColMap());
-    BlockColMapVector->putScalar(-2.0);
-    Teuchos::ArrayRCP< Scalar > localBlockColMapVector = BlockColMapVector->getDataNonConst(0);
-
-    // needed for access of local values of fullMasterVector and fullSlaveVector
-    Teuchos::ArrayRCP< const Scalar > localMasterVector = fullMasterVector->getData(0); // TODO just use the maps!!!!
-    Teuchos::ArrayRCP< const Scalar > localSlaveVector = fullSlaveVector->getData(0);
-
-    // loop over local rows of Ptent
-    for(size_t row=0; row<Ptent->getNodeNumRows(); row++) {
-
-        const Scalar lmv = localMasterVector[row]; // is zero or one TODO: use submap index of map extractor!
-        const Scalar lsv = localSlaveVector[row];
-
-        // we have to distinguish the following cases:
-        // lmv == true && lsv == true -> error
-        // lmv == true && lsv == false -> master dof
-        // lmv == false && lsv == true -> slave dof
-        // lmv == false && lsv == false -> dof is not in a submap of coarse mapextractor
-
-        Teuchos::ArrayView<const LocalOrdinal> indices;
-        Teuchos::ArrayView<const Scalar> vals;
-        Ptent->getLocalRowView(row, indices, vals);
-
-        for(size_t i=0; i<(size_t)indices.size(); i++) {
-            // furthermore: localBlockColMapVector(indices[i]) should be either -2 (not initialized) or
-            // have the same number of submap from map extractor!
-            //localBlockColMapVector[indices[i]]
-
-            // 1) if Index indices[i] has not been assigned yet, define it as inner DOF per default
-            if(localBlockColMapVector[indices[i]] == -2.0)
-              localBlockColMapVector[indices[i]] = -1.0;        // -1.0 denotes (no MASTER nor SLAVE)
-
-            if(lmv == 1.0 && lsv == 0.0) { // LID indices[i] belongs to master map
-                if(localBlockColMapVector[indices[i]] != -1.0 && localBlockColMapVector[indices[i]] != 0.0) std::cout << "localBlockColMapVector already initialized overwrite with MASTER" << std::endl;
-                localBlockColMapVector[indices[i]] = 0.0;        // 0.0 denotes MASTER
-            } else if(lmv == 0.0 && lsv == 1.0) { // LID indices[i] belongs to slave map
-                if(localBlockColMapVector[indices[i]] != -1.0 && localBlockColMapVector[indices[i]] != 1.0) std::cout << "localBlockColMapVector already initialized overwrite with SLAVE" << std::endl;
-                localBlockColMapVector[indices[i]] = 1.0;        // 1.0 denotes SLAVE
-            }/* else if(lmv == 0.0 && lsv == 0.0){
-                if(localBlockColMapVector[indices[i]] != -2.0 && localBlockColMapVector[indices[i]] != -1.0) std::cout << "localBlockColMapVector already initialized overwrite with nothing " << std::endl;
-                localBlockColMapVector[indices[i]] = -1.0;        // -1.0 denotes (no MASTER nor SLAVE)
-            }*/ else if(lmv == 1.0 && lsv == 1.0) {
-                std::cout << "Oooops. bad things are happening. DoF cannot be slave and master at the same time" << std::endl;
-            }
-
-        }
-    }
-
-    //std::cout << *BlockColMapVector << std::endl; // vector has only entries from set {-1,0,1}
-
-    TEUCHOS_TEST_FOR_EXCEPTION(BlockColMapVector->getLocalLength() != localBlockColMapVector.size(),Exceptions::RuntimeError, "MueLu::ContactTransferFactory::Build(): size of localBlockColMapVector wrong");
-
-    std::vector<GlobalOrdinal> masterGids;
-    std::vector<GlobalOrdinal> slaveGids;
-    for(size_t i=0; i<localBlockColMapVector.size(); i++) {
-        if(localBlockColMapVector[i]==0)
-          masterGids.push_back(BlockColMapVector->getMap()->getGlobalElement(Teuchos::as<LocalOrdinal>(i)));
-        else if(localBlockColMapVector[i]==1)
-          slaveGids.push_back(BlockColMapVector->getMap()->getGlobalElement(Teuchos::as<LocalOrdinal>(i)));
-    }
-
-    // build column maps
-    int numMaps = 2;
-    std::vector<Teuchos::RCP<const Map> > colMaps(numMaps);
-    for(size_t i=0; i<numMaps; i++) {
-        std::vector<GlobalOrdinal> gidvector;
-        if(i==0)
-          gidvector = masterGids;
-        else
-          gidvector = slaveGids;
-        std::sort(gidvector.begin(), gidvector.end());
-        gidvector.erase(std::unique(gidvector.begin(), gidvector.end()), gidvector.end());
-        //TEUCHOS_TEST_FOR_EXCEPTION(gidvector.size()==0, Exceptions::RuntimeError, "MueLu::SegregationATransferFactory::Build: empty column map. Error.");
-
-        Teuchos::ArrayView<GlobalOrdinal> gidsForMap(&gidvector[0],gidvector.size());
-        colMaps[i] = MapFactoryClass::Build(Ptent->getColMap()->lib(), gidsForMap.size(), gidsForMap, Ptent->getColMap()->getIndexBase(), Ptent->getColMap()->getComm());
-        TEUCHOS_TEST_FOR_EXCEPTION(colMaps[i]==Teuchos::null, Exceptions::RuntimeError, "MueLu::ContactTransferFactory::Build: error when building column map.");
-        TEUCHOS_TEST_FOR_EXCEPTION((colMaps[i])->getNodeNumElements()!=gidvector.size(), Exceptions::RuntimeError, "MueLu::ContactTransferFactory::Build: size of map does not fit to size of gids.");
-    }
-    std::cout << "length of MASTER map=" << colMaps[0]->getGlobalNumElements() << std::endl;
-    std::cout << "length of SLAVE  map=" << colMaps[1]->getGlobalNumElements() << std::endl;
-
-    // build coarse level MapExtractor
-    Teuchos::RCP<const MapExtractorClass> coarseMapExtractor = Xpetra::MapExtractorFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>::Build(Ptent->getDomainMap(),colMaps);
-
-    // store map extractor in coarse level
-    coarseLevel.Set("SegAMapExtractor", coarseMapExtractor, MueLu::NoFactory::get());
-
-#endif
   }
 
 

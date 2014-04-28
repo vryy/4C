@@ -121,11 +121,6 @@ namespace MueLu {
     TEUCHOS_TEST_FOR_EXCEPTION(SmootherPrototype::IsSetup() == false, Exceptions::RuntimeError, "MueLu::AmesosSmoother::Apply(): Setup() has not been called");
     TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "IsSetup() == true but s_ == Teuchos::null. This does not make sense");
 
-    //std::cout << "slaveDofMap: " << map_->getGlobalNumElements() << std::endl;
-    // values from X for map_ dofs are exact to be prescribed on B and X
-
-    //TEUCHOS_TEST_FOR_EXCEPTION(X.getNumVectors() > 1, Exceptions::RuntimeError, "MyTrilinosSmoother::Apply: MyTrilinosSmoother only supports vectors (and no multivectors with more than one vectors");
-
     // create non-const copy of rhs vector B
     Teuchos::RCP<MultiVector> Btemp = MultiVectorFactory::Build(B.getMap(),1,true);
     Btemp->update(1.0,B,0.0);
