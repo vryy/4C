@@ -95,45 +95,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   //                        ^
   //                        x
 
-#ifdef DEBUG
-  // consistency vhecks
-  if(0>ldofid || ldofid>degree_)
-  {
-    this->Throwerror("ldofid not in allowed (element dof) range [0;degree]\n");
-  }
-
-  // The node support looks like this:
-  //
-  //  |<----degree----->|     |<----degree----->|
-  //  |                 |     |                 |
-  //  |                 |     |                 |
-  //
-  //  +-----+-----+-----+-----+-----+-----+-----+
-  //
-  //                    |     |
-  //                    |     |
-  //                    |<--->|
-  //
-  //              element containing x
-  //
-  // check that we really have got something like this:
-
-  if(myknotvector_.Length()!=2*degree_+2)
-  {
-    std::string errorstring;
-
-    errorstring.append("node support size is not 2*degree_+2\n");
-    errorstring.append("Cannot compute bspline values\n");
-    this->Throwerror(errorstring);
-  }
-
-  if(x<myknotvector_(degree_  )-1e-9
-     ||
-     x>myknotvector_(degree_+1)+1e-9)
-  {
-    this->Throwerror("Point not in evaluation interval\n");
-  }
-#endif
+  /*****************************************************************
+  *  WARNING: here was a consistency check which was removed       *
+  *           in revision 19453. It guaranteed that only           *
+  *           evaluations of points located within the element     *
+  *           are valid. But, the contact algorithm requires eval. *
+  *           outside the element domain due to GP-projections !!! *
+  ******************************************************************/
 
   // define the vector of values at x of all initial polynomials
   std::vector<double> bspline(degree_+1);
@@ -329,45 +297,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   //                        ^
   //                        x
 
-#ifdef DEBUG
-  // consistency vhecks
-  if(0>ldofid || ldofid>degree_)
-  {
-    this->Throwerror("lodfid not in allowed (element dof) range [0;degree]\n");
-  }
-
-  // The node support looks like this:
-  //
-  //  |<----degree----->|     |<----degree----->|
-  //  |                 |     |                 |
-  //  |                 |     |                 |
-  //
-  //  +-----+-----+-----+-----+-----+-----+-----+
-  //
-  //                    |     |
-  //                    |     |
-  //                    |<--->|
-  //
-  //              element containing x
-  //
-  // check that we really have got something like this:
-
-  if(myknotvector_.Length()!=2*degree_+2)
-  {
-    std::string errorstring;
-
-    errorstring.append("node support size is not 2*degree_+2\n");
-    errorstring.append("Cannot compute bspline values\n");
-    this->Throwerror(errorstring);
-  }
-
-  if(x<myknotvector_(degree_  )-1e-9
-     ||
-     x>myknotvector_(degree_+1)+1e-9)
-  {
-    this->Throwerror("Point not in Evaluation interval\n");
-  }
-#endif
+  /*****************************************************************
+  *  WARNING: here was a consistency check which was removed       *
+  *           in revision 19453. It guaranteed that only           *
+  *           evaluations of points located within the element     *
+  *           are valid. But, the contact algorithm requires eval. *
+  *           outside the element domain due to GP-projections !!! *
+  ******************************************************************/
 
   // define the vector of values at x of all initial polynomials
   std::vector<double> bspline(degree_+1);
@@ -722,45 +658,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //                        ^
   //                        x
 
-#ifdef DEBUG
-  // consistency vhecks
-  if(0>ldofid || ldofid>degree_)
-  {
-    this->Throwerror("lodfid not in allowed ldofid (element dof) range [0;degree]\n");
-  }
-
-  // The node support looks like this:
-  //
-  //  |<----degree----->|     |<----degree----->|
-  //  |                 |     |                 |
-  //  |                 |     |                 |
-  //
-  //  +-----+-----+-----+-----+-----+-----+-----+
-  //
-  //                    |     |
-  //                    |     |
-  //                    |<--->|
-  //
-  //              element containing x
-  //
-  // check that we really have got something like this:
-
-  if(myknotvector_.Length()!=2*degree_+2)
-  {
-    std::string errorstring;
-
-    errorstring.append("node support size is not 2*degree_+2\n");
-    errorstring.append("Cannot compute bspline values\n");
-    this->Throwerror(errorstring);
-  }
-
-  if(x<myknotvector_(degree_  )-1e-9
-     ||
-     x>myknotvector_(degree_plus_one_)+1e-9)
-  {
-    this->Throwerror("Point not in evaluation interval\n");
-  }
-#endif
+  /*****************************************************************
+  *  WARNING: here was a consistency check which was removed       *
+  *           in revision 19453. It guaranteed that only           *
+  *           evaluations of points located within the element     *
+  *           are valid. But, the contact algorithm requires eval. *
+  *           outside the element domain due to GP-projections !!! *
+  ******************************************************************/
 
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid
