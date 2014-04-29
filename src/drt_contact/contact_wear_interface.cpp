@@ -3424,10 +3424,10 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     if (frinode->FriData().Slip())
       sl.push_back(frinode->Id());
   }
-  Teuchos::RCP<Epetra_Map> auxa = Teuchos::rcp(new Epetra_Map(-1,(int)a.size(),&a[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> auxa  = Teuchos::rcp(new Epetra_Map(-1,(int)a.size(), &a[0], 0,Comm()));
   Teuchos::RCP<Epetra_Map> auxsl = Teuchos::rcp(new Epetra_Map(-1,(int)sl.size(),&sl[0],0,Comm()));
 
-  const Teuchos::RCP<Epetra_Map> ara = LINALG::AllreduceEMap(*(auxa));
+  const Teuchos::RCP<Epetra_Map> ara  = LINALG::AllreduceEMap(*(auxa));
   const Teuchos::RCP<Epetra_Map> arsl = LINALG::AllreduceEMap(*(auxsl));
 
   for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
@@ -3472,11 +3472,13 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     if (!ele) dserror("ERROR: Cannot find node with gid %",gid);
     MORTAR::MortarElement* moele = static_cast<MORTAR::MortarElement*>(ele);
 
-    if(moele->IsAttached()==true)
+    if(moele->IsAttached()==true and moele->Owner()==Comm().MyPID())
       eleatt.push_back(moele->Id());
   }
+
   Teuchos::RCP<Epetra_Map> auxe = Teuchos::rcp(new Epetra_Map(-1,(int)eleatt.size(),&eleatt[0],0,Comm()));
   const Teuchos::RCP<Epetra_Map> att = LINALG::AllreduceEMap(*(auxe));
+
   for (int j=0;j<att->NumMyElements();++j)
   {
     int gid = att->GID(j);
@@ -3488,18 +3490,16 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
       moele->SetAttached()=true;
   }
 
-
   //Detect maps
-
   std::vector<int> wa;
   std::vector<int> wsl;
   std::vector<int> wad;
   std::vector<int> wsln;
 
   // loop over all slave nodes on the current interface
-  for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
+  for (int j=0;j<SlaveRowNodes()->NumMyElements();++j)
   {
-    int gid = SlaveColNodes()->GID(j);
+    int gid = SlaveRowNodes()->GID(j);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* frinode = static_cast<FriNode*>(node);
@@ -3576,8 +3576,8 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
   Teuchos::RCP<Epetra_Map> slimn = Teuchos::rcp(new Epetra_Map(-1,(int)wsl.size(),&wsl[0],0,Comm()));
   Teuchos::RCP<Epetra_Map> slimd = Teuchos::rcp(new Epetra_Map(-1,(int)wsln.size(),&wsln[0],0,Comm()));
 
-  const Teuchos::RCP<Epetra_Map> ARactmn = LINALG::AllreduceEMap(*(actmn));
-  const Teuchos::RCP<Epetra_Map> ARslimn = LINALG::AllreduceEMap(*(slimn));
+  const Teuchos::RCP<Epetra_Map> ARactmn = LINALG::AllreduceOverlappingEMap(*(actmn));
+  const Teuchos::RCP<Epetra_Map> ARslimn = LINALG::AllreduceOverlappingEMap(*(slimn));
 
   std::vector<int> ga;
   std::vector<int> gs;
