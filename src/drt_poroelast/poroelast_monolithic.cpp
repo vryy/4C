@@ -43,7 +43,7 @@
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_adapter/ad_fld_poro.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -271,10 +271,18 @@ void POROELAST::Monolithic::SetupSystem()
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces_fpsi;
 
-    vecSpaces_fpsi.push_back(StructureField()->Interface()->Map(0));
-    vecSpaces_fpsi.push_back(StructureField()->Interface()->Map(1));
-    vecSpaces_fpsi.push_back(FluidField()->FPSIInterface()->Map(0));
-    vecSpaces_fpsi.push_back(FluidField()->FPSIInterface()->Map(1));
+		//Split PoroField into: 
+		//                      --> Structure (inside + FSI-Interface)
+		//                      --> Structure FPSI-Interface 
+    //								      --> Fluid (inside + FSI-Interface)
+    //                      --> Fluid FPSI-Interface
+
+    Teuchos::RCP<const Epetra_Map> s_other_map = LINALG::MergeMap(StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_other),StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_fsi));
+    vecSpaces_fpsi.push_back(s_other_map); //other map
+    vecSpaces_fpsi.push_back(StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_fpsi)); //FPSICoupling
+    Teuchos::RCP<const Epetra_Map> f_other_map = LINALG::MergeMap(FluidField()->FPSIInterface()->Map(FLD::UTILS::MapExtractor::cond_other),FluidField()->FPSIInterface()->Map(FLD::UTILS::MapExtractor::cond_fsi));
+    vecSpaces_fpsi.push_back(f_other_map); //other map
+    vecSpaces_fpsi.push_back(FluidField()->FPSIInterface()->Map(FLD::UTILS::MapExtractor::cond_fpsi)); //FPSICoupling
 
     fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces_fpsi);
     // full Poroelasticity-blockmap

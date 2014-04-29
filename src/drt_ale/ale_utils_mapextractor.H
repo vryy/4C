@@ -26,10 +26,11 @@ namespace UTILS
       cond_ale_wear  = 4,
       cond_bio_gr    = 5,
       cond_ll        = 6,
+      cond_fpsi      = 7
     };
 
     /// setup the whole thing
-    void Setup(const DRT::Discretization& dis);
+    void Setup(const DRT::Discretization& dis, bool overlapping = false);
 
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;
@@ -41,6 +42,7 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond,cond_ale_wear)
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
     MAP_EXTRACTOR_VECTOR_METHODS(LLCond, cond_ll)
+    MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
   };
 
   /// specific MultiMapExtractor to handle the fluid_fluid_Coupling

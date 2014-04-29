@@ -73,7 +73,10 @@ void ADAPTER::FluidFSI::Init()
   if (fluidimpl_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
-  interface_->Setup(*dis_,false);
+  if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
+    interface_->Setup(*dis_,false);
+  else
+    interface_->Setup(*dis_,false,true); //create overlapping maps for fpsi problem
 
   fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
@@ -262,7 +265,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 #endif
 
   /*
-   * Delta u(n+1,i+1) = fac * Delta d(n+1,i+1) - dt * u(n)
+   * Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))
    *
    *             / = 2 / dt   if interface time integration is second order
    * with fac = |

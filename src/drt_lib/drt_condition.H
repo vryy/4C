@@ -153,6 +153,7 @@ public:
     SurfaceMixHybDirichlet,
     SurfaceConservativeOutflowConsistency,
     FSICoupling,
+    FPSICoupling,
     FSICouplingNoSlide,
     FSICouplingCenterDisp,
     FREESURFCoupling,

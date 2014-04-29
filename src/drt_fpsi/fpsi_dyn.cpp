@@ -101,10 +101,10 @@ void fpsi_drt()
 
     if(comm.NumProc() > 1)
     {
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,*problem->GetDis("porofluid"),"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,*problem->GetDis("porofluid"),"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),*problem->GetDis("fluid")    ,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),*problem->GetDis("fluid")    ,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
     }
   }
 

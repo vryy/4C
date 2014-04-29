@@ -69,14 +69,16 @@ double STR::AUX::CalculateVectorNorm
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, const Epetra_Map& fullmap)
+void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
+  mcs.SetOverlapping(overlapping);
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"BioGrCoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FPSICoupling",0,ndim)));
 
   mcs.SetupExtractor(dis,fullmap,*this);
 }
@@ -90,13 +92,15 @@ Teuchos::RCP<std::set<int> > STR::AUX::MapExtractor::ConditionedElementMap(const
   Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"StructAleCoupling");
   Teuchos::RCP<std::set<int> > condelements3 = DRT::UTILS::ConditionedElementMap(dis,"BioGrCoupling");
   Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"AleWear");
-
+  Teuchos::RCP<std::set<int> > condelements5 = DRT::UTILS::ConditionedElementMap(dis,"FPSICoupling");
 
   std::copy(condelements2->begin(),condelements2->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements3->begin(),condelements3->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements4->begin(),condelements4->end(),
+            std::inserter(*condelements,condelements->begin()));
+  std::copy(condelements5->begin(),condelements5->end(),
             std::inserter(*condelements,condelements->begin()));
   return condelements;
 }

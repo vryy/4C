@@ -22,6 +22,7 @@ Maintainer: Georg Hammerl
 #include "ad_str_lung.H"
 #include "ad_str_redairway.H"
 #include "ad_str_fsi_crack.H"
+#include "ad_str_fpsiwrapper.H"
 
 #include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -482,13 +483,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       if (tmpstr->HaveConstraint())
       {
         if (coupling == INPAR::POROELAST::Monolithic_structuresplit or coupling == INPAR::POROELAST::Monolithic_fluidsplit)
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
+          structure_ = Teuchos::rcp(new FPSIStructureWrapper(tmpstr));
         else
           structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
       }
       else
       {
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
+          structure_ = Teuchos::rcp(new FPSIStructureWrapper(tmpstr));
       }
     }
     break;

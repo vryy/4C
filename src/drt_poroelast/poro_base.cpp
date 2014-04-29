@@ -50,7 +50,7 @@
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_adapter/ad_fld_poro.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_structure/stru_aux.H"
 
 /*----------------------------------------------------------------------*
@@ -72,10 +72,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(structure->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)
-    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+    dserror("cast from ADAPTER::Structure to ADAPTER::FPSIStructureWrapper failed");
 
   // ask base algorithm for the fluid time integrator
   DRT::Problem* problem = DRT::Problem::Instance();

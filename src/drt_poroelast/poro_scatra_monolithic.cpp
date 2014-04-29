@@ -18,7 +18,7 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 

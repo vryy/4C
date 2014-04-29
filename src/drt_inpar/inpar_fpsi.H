@@ -43,7 +43,9 @@ namespace FPSI
   // type of norm to check for convergence
   enum ConvergenceNorm
   {
-    absoluteconvergencenorm
+    absoluteconvergencenorm, //compare absolute value with single tolerance
+    absoluteconvergencenorm_sys_split, //compare absolute value with correction of systemsize  with different tolerances for each field
+    relativconvergencenorm_sys //compare relative value with correction of systemsize with single tolerance
   };
 
   // type of norm to check for convergence

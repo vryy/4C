@@ -175,7 +175,8 @@ void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretizat
 
       // if the selector applies, we are done
       if ( conds.SelectDofs( node, conddofset_[j] ) )
-        break;
+        if (!overlapping_)
+          break;
     }
   }
 }

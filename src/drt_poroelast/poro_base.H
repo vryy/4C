@@ -45,7 +45,7 @@ namespace ADAPTER
 {
   class FluidPoro;
   class Coupling;
-  class FSIStructureWrapper;
+  class FPSIStructureWrapper;
 }
 
 /*----------------------------------------------------------------------*
@@ -82,7 +82,7 @@ namespace POROELAST
       //! @name access methods
 
       //! access to structural field
-      const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+      const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField(){return structure_;}
 
       //! access to fluid field
       const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return fluid_;}
@@ -218,7 +218,7 @@ namespace POROELAST
       //! @name Underlying fields
 
       //! underlying structure of the poro problem
-      Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
+      Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>    structure_;
 
       //! underlying fluid of the poro problem
       Teuchos::RCP< ::ADAPTER::FluidPoro>        fluid_;

@@ -6243,24 +6243,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  yesnotuple,yesnovalue,&fpsidyn);
 
     // Iterationparameters
-    DoubleParameter("RESTOL",1e-8,"tolerance in the residual norm for the Newton iteration",&fpsidyn);
-    DoubleParameter("INCTOL",1e-8,"tolerance in the increment norm for the Newton iteration",&fpsidyn);
+    setNumericStringParameter("RESTOL","1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+                              "tolerances for single fields in the residual norm for the Newton iteration \n"
+                              "for NORM_RESF != *_split only the first value is used for all fields \n"
+                              "order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, fluidpressure, ale",
+                              &fpsidyn);
 
-    setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+    setNumericStringParameter("INCTOL","1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+                              "tolerance in the increment norm for the Newton iteration \n"
+                              "for NORM_INC != *_split only the first value is used for all fields \n"
+                              "order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, fluidpressure, ale",
+                              &fpsidyn);
+
+    setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check \n"
+                                 "Abs: absolute values, Abs_sys_split: absolute values with correction of systemsize for every field seperate, Rel_sys: relative values with correction of systemsize",
                                  tuple<std::string>(
-                                   "Abs"
+                                   "Abs","Abs_sys_split","Rel_sys"
                                    ),
                                  tuple<int>(
-                                   INPAR::FPSI::absoluteconvergencenorm
+                                     INPAR::FPSI::absoluteconvergencenorm,INPAR::FPSI::absoluteconvergencenorm_sys_split,INPAR::FPSI::relativconvergencenorm_sys
                                    ),
                                  &fpsidyn);
 
-    setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
+    setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for primary variables convergence check \n"
+                                   "Abs: absolute values, Abs_sys_split: absolute values with correction of systemsize for every field seperate, Rel_sys: relative values with correction of systemsize",
                                    tuple<std::string>(
-                                     "Abs"
+                                     "Abs","Abs_sys_split","Rel_sys"
                                      ),
                                    tuple<int>(
-                                     INPAR::FPSI::absoluteconvergencenorm
+                                     INPAR::FPSI::absoluteconvergencenorm,INPAR::FPSI::absoluteconvergencenorm_sys_split,INPAR::FPSI::relativconvergencenorm_sys
                                      ),
                                    &fpsidyn);
 

@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 
 #include <Teuchos_TimeMonitor.hpp>

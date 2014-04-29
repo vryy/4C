@@ -450,7 +450,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   beaversjosephcoefficient = fpsidynparams           . get<double>("ALPHABJ");
 
   // calculate factor for the tangential interface condition on the free fluid field
-  tangentialfac = (beaversjosephcoefficient*fluiddynamicviscosity)/(fluiddensity*sqrt(permeability));
+  tangentialfac = (beaversjosephcoefficient*fluiddynamicviscosity)/(sqrt(permeability));
 
   const double timescale = params.get<double>("timescale",-1.0);
   if(timescale == -1.0)
@@ -827,7 +827,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
           tangentialderiv1(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(0,node))/(pow(normoftangential1,3.0));
-          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(1,node))/(pow(normoftangential2,3.0));;
+          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/(pow(normoftangential2,3.0));//TODO: is that right??? should be two times tangential 2 !!! ChrAg ...check later
         }
       }
     }
@@ -1133,8 +1133,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+my::nsd_) -=
                 ( // sign checked to be negative
                     pfunct(inode) * pfunct(nnod) * my::unitnormal_(idof2)
+                    
+                )*my::fac_*timefac;//scalarintegraltransformfac;
 
-                )/fluiddensity*my::fac_*timefac;//scalarintegraltransformfac;
 
             /*                              _                      _
                               I  alpha mu_f  |                        |   I  /
@@ -1508,7 +1509,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
          */
         for(int idof2=0;idof2<my::nsd_;idof2++)
         {
-          elevec1(inode*my::numdofpernode_+idof2) +=(+(pfunct(inode)*my::unitnormal_(idof2)*pressint(0,0)/fluiddensity) // pressure part
+          elevec1(inode*my::numdofpernode_+idof2) +=(+(pfunct(inode)*my::unitnormal_(idof2)*pressint(0,0)) // pressure part // pressure part
               +((pfunct(inode)*tangential1(idof2)*(tangentialgridvelocity1(0,0)+porosityint*(tangentialvelocity1(0,0)-tangentialgridvelocity1(0,0)))) // Beavers-Joseph
                   + (pfunct(inode)*tangential2(idof2)*(tangentialgridvelocity2(0,0)+porosityint*(tangentialvelocity2(0,0)-tangentialgridvelocity2(0,0))))
               )*tangentialfac)*rhsfac*survivor(inode);

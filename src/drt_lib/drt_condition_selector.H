@@ -191,6 +191,9 @@ namespace UTILS
                         const Epetra_Map& fullmap,
                         LINALG::MultiMapExtractor& extractor);
 
+    /// Activate overlapping
+    void SetOverlapping(bool overlapping){overlapping_ = overlapping;}
+
   private:
 
     /// evaluate the ConditionSelector objects
@@ -201,6 +204,9 @@ namespace UTILS
 
     /// sets of selected dof numbers
     std::vector<std::set<int> > conddofset_;
+
+    /// flag defines if maps are overlapping
+    bool overlapping_;
   };
 
 }

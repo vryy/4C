@@ -50,11 +50,12 @@ namespace AUX
       cond_fsi       = 1,
       cond_lung_asi  = 2,
       cond_bio_gr    = 3,
-      cond_ale_wear  = 4
+      cond_ale_wear  = 4,
+      cond_fpsi      = 5
     };
 
     /// setup the whole thing
-    void Setup(const DRT::Discretization& dis,  const Epetra_Map& fullmap);
+    void Setup(const DRT::Discretization& dis,  const Epetra_Map& fullmap, bool overlapping = false);
 
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;
@@ -64,6 +65,7 @@ namespace AUX
     MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
     MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond,cond_ale_wear)
+    MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
 
   };
 }

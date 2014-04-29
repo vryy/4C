@@ -148,6 +148,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==SurfaceLocsys)                 os << "Surface local coordinate system condition: ";
   else if (Type()==VolumeLocsys)                  os << "Volume local coordinate system condition: ";
   else if (Type()==FSICoupling)                   os << "FSI Coupling condition: ";
+  else if (Type()==FPSICoupling)                  os << "FPSI Coupling condition: ";
   else if (Type()==XFEMCoupling)                  os << "XFEM Coupling condition: ";
   else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";
   else if (Type()==ALEFluidCoupling)              os << "ALE Fluid Coupling condition: ";

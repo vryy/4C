@@ -40,7 +40,7 @@ void ADAPTER::FluidFPSI::Init()
   // call base class init
   FluidFSI::Init();
 
-  fpsiinterface_->Setup(*dis_,true);
+  fpsiinterface_->Setup(*dis_,true, true); //Always Create overlapping FPSI Interface
 
   return;
 }

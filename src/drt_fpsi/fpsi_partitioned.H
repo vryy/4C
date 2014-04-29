@@ -15,7 +15,7 @@ Maintainer: Andreas Rauch
 #define FPSI_PARTITIONED_H
 
 #include "fpsi.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_adapter/ad_fld_fluid_ale.H"
 #include "../drt_poroelast/poro_base.H"

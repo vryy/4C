@@ -27,11 +27,12 @@ namespace UTILS
       cond_vol_surf_flow            = 4,
       cond_total_traction_corrector = 5,
       cond_bio_gr                   = 6,
-      cond_ll                       = 7
+      cond_ll                       = 7,
+      cond_fpsi                     = 8
     };
 
     /// setup the whole thing
-    void Setup(const DRT::Discretization& dis, bool withpressure = false);
+    void Setup(const DRT::Discretization& dis, bool withpressure = false, bool overlapping = false);
 
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;
@@ -44,6 +45,7 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(TotalTractionCorrectionCond,cond_total_traction_corrector)
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
     MAP_EXTRACTOR_VECTOR_METHODS(LLCond, cond_ll)
+    MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
   };
 
   /// specific MultiMapExtractor to handle the part of fluid with Krylov space projection

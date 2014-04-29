@@ -73,7 +73,11 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
 
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
-  interface_->Setup(*actdis);
+
+  if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
+    interface_->Setup(*actdis);
+  else
+    interface_->Setup(*actdis,true); //create overlapping maps for fpsi problem
 
   SetupDBCMapEx(dirichletcond);
 
@@ -272,6 +276,7 @@ void ALE::Ale::SetupDBCMapEx(bool dirichletcond)
     condmaps.push_back(interface_->FSICondMap());
     condmaps.push_back(interface_->AleWearCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
+    condmaps.push_back(interface_->FPSICondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
@@ -328,6 +333,22 @@ void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
     interface_->InsertFSICondVector(idisp,dispnp_);
   else
     interface_->AddAleWearCondVector(idisp,dispnp_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp, bool FPSI)
+{
+  if (!FPSI)
+  {
+    ApplyInterfaceDisplacements(idisp);
+    return;
+  }
+  else
+  {
+    interface_->InsertFPSICondVector(idisp,dispnp_);
+    return;
+  }
 }
 
 /*---------------------------------------------------------------*/

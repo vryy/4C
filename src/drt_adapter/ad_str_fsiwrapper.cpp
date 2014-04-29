@@ -30,7 +30,11 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 {
   // set-up FSI interface
   interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
-  interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
+
+  if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
+    interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
+  else
+    interface_->Setup(*Discretization(), *Discretization()->DofRowMap(),true); //create overlapping maps for fpsi problem
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");

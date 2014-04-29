@@ -2,7 +2,7 @@
 
 
 #include "fpsi_robinneumann.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

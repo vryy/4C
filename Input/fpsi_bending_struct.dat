@@ -375,7 +375,7 @@ DVOL  				1
 // obstacle_volume
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+-------------------------------DESIGN FPSI COUPLING SURF CONDITIONS
 DSURF  2
 // whole_channel_interface
 E 18 - 1 fluid conforming fsi_real

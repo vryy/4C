@@ -92,6 +92,8 @@ public:
 
   /// displacements at the interface are prescribed
   virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
+  /// overload for FPSI - Case
+  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp, bool FPSI);
 
   /// displacements at the free surface are prescribed
   virtual void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);

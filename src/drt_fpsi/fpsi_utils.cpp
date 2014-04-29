@@ -56,7 +56,7 @@
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 
 //LINALG includes
 #include "../linalg/linalg_utils.H"
@@ -128,7 +128,7 @@ Teuchos::RCP<FPSI::FPSI_Base > FPSI::UTILS::SetupDiscretizations(const Epetra_Co
  We expect the fluiddis to have smaller dof numbers than the ale discretization. Finally
  cloning the aledis from the fluiddis makes this dream come true. Building the monolithic
  systemmatrix based on the DofMaps built before, results in the following order of the
- diagonal blocks (from northwest to southeast): porostructure - porofluid - fee fluid - ale.
+ diagonal blocks (from northwest to southeast): porostructure - porofluid - free fluid - ale.
 
 Thats nice....
 
@@ -195,17 +195,18 @@ them.
   PoroFluid_Fluid_InterfaceMap = Teuchos::rcp(new std::map<int,int> );
   Fluid_PoroFluid_InterfaceMap = Teuchos::rcp(new std::map<int,int> );
 
-  SetupLocalInterfaceFacingElementMap(*fluiddis,*porofluiddis,"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
-  SetupLocalInterfaceFacingElementMap(*porofluiddis,*fluiddis,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
+  SetupLocalInterfaceFacingElementMap(*fluiddis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+  SetupLocalInterfaceFacingElementMap(*porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+
   if(comm.NumProc() > 1 and problem->Restart() == 0)
   {
-    RedistributeInterface(fluiddis,*porofluiddis,"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
-    RedistributeInterface(aledis,*porofluiddis,"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
-    RedistributeInterface(porofluiddis,*fluiddis,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
-    RedistributeInterface(structdis,*fluiddis,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
+    //ChrAg ... check if for mpi additional if is required :-)
+    RedistributeInterface(fluiddis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+    RedistributeInterface(aledis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+    RedistributeInterface(porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+    RedistributeInterface(structdis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
   }
-
-    //4.- get coupling algorithm
+  //4.- get coupling algorithm
     Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
     int coupling = DRT::INPUT::IntegralValue<int>(fpsidynparams,"COUPALGO");
     switch (coupling)
@@ -247,15 +248,30 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
   DRT::Problem* problem = DRT::Problem::Instance();
   const Epetra_Comm& mastercomm = problem->GetDis(masterdis.Name())->Comm();
 
+  bool condition_exists = true;
 
   DRT::Condition* slavecond = slavedis.GetCondition(condname);
-  std::map<int,Teuchos::RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
+  if (slavecond == NULL)
+  {
+    condition_exists = false;
+    std::cout << "WARNING: Condition <" << condname << "> does not exist on discretisation <" << slavedis.Name() << ">! (OK if no " << condname << "-Interface is wanted)" << std::endl;
+  }
 
   DRT::Condition* mastercond = masterdis.GetCondition(condname);
+  if (mastercond == NULL)
+  {
+    condition_exists = false;
+    std::cout << "WARNING: Condition <" << condname << "> does not exist on discretisation <" << masterdis.Name() << ">! (OK if no " << condname << "-Interface is wanted)" << std::endl;
+  }
+
+  if (!condition_exists)
+    return;
+
+
+  std::map<int,Teuchos::RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
   std::map<int,Teuchos::RCP<DRT::Element> >& mastergeom = mastercond->Geometry();
 
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-
   std::multimap<int,double> slaveinterfaceelementidentificationmap;
 
 
@@ -335,7 +351,6 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 //    count++;
 //  }
 //  std::cout<<"count = "<< count << " "<<"on proc"<<mastercomm.MyPID()<<endl;
-
  ///////////////////////////////////////////////////////////////////////////////////
  ////////////                                                           ////////////
  ////////////                         MASTER                            ////////////
@@ -413,7 +428,7 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
         if(parenteleid == -1)
           dserror("Couldn't get master parent element Id() ...");
         parenteleowner = fbele->ParentElement()->Owner();
-        if(parenteleid == -1)
+        if(parenteleowner == -1)
           dserror("Couldn't get master parent element Owner() ...");
 
       }
@@ -429,7 +444,6 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 //      }
 
       mastercomm.Barrier();
-
       // match current master element
       // compare position to every element on interface slave side, every processor compares masterloc of current master element of processor[proc]
       Teuchos::RCP<DRT::Element> matchcurr = Teuchos::null;
@@ -464,11 +478,26 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
       } // end matching
 
       mastercomm.Barrier();
-
-      if(matchcurr != Teuchos::null)
+      //std::cout << "|--Im "  << mastercomm.MyPID() << "--" << matchcurr->Id() << "||" << std::flush;
+      for (int p = 0; p < mastercomm.NumProc(); ++p)
       {
-        //std::cout<<"FOUND MATCH ON PROC "<<mastercomm.MyPID()<<" for slaveelement "<<matchcurr->Id()<<" and master element "<<parenteleid<<" !!! ... "<<endl;
-        interfacefacingelementmap.insert(std::pair<int,int>(matchcurr->Id(),parenteleid)); // slave interface element is unique => key
+        mastercomm.Barrier();
+        if (mastercomm.MyPID()==p)
+        {
+          if(matchcurr != Teuchos::null)
+          {
+            interfacefacingelementmap.insert(std::pair<int,int>(matchcurr->Id(),parenteleid)); // slave interface element is unique => key
+//            std::cout << "<<<<<< PROC " << p << " >>>>>>>>" << std::endl;
+//            if (interfacefacingelementmap.find(matchcurr->Id()) != interfacefacingelementmap.end())
+//            {std::cout<<"FOUND MATCH ON PROC "<<mastercomm.MyPID()<<" for slaveelement "<<matchcurr->Id()<<" and master element "<<parenteleid<<" !!! ... "<<endl;}
+//            std::cout << "length of list: " << interfacefacingelementmap.size() << "entries: " << std::flush;
+//            for (std::map<int,int>::iterator it = interfacefacingelementmap.begin();it != interfacefacingelementmap.end(); it++ )
+//            {
+//              std::cout << "||" <<it->first << "|" << it->second << std::flush;
+//            }
+//            std::cout << std::endl;
+          }
+        }
       }
 
       mastercomm.Barrier();
@@ -505,7 +534,7 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
  if(abs(globalslavegeomsize - globalmatchedelements) < 1e-6 and mastercomm.MyPID() == 0)
    std::cout<<"Setting up local interfacefacingelementmaps was successfull. \n"<<std::endl;
  else if(abs(globalslavegeomsize - globalmatchedelements) > 1e-3 and mastercomm.MyPID() == 0)
-   dserror("ERROR");
+   dserror("ERROR: globalslavegeomsize != globalmatchedelements (%d,%d)", globalslavegeomsize, globalmatchedelements);
 return;
 }
 

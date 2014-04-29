@@ -19,7 +19,7 @@
 
 #include "poro_base.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 
 #include "../drt_lib/drt_globalproblem.H"

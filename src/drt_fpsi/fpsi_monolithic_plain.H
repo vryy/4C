@@ -30,7 +30,7 @@ namespace ADAPTER
 
 namespace FSI
 {
-  
+  class MonolithicFluidSplit;
   namespace UTILS
   {
     class MatrixRowTransform;
@@ -75,6 +75,9 @@ namespace FPSI
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
+    /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
+    virtual void RecoverLagrangeMultiplier();
+
 
   protected:
 
@@ -86,14 +89,22 @@ namespace FPSI
            */
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
+    //! set fluid fluidfpsi_fsi dof row map
+            /*!
+            A subclass calls this method (from its constructor) and thereby
+            defines the number of blocks, their maps and the block order. The block
+            maps must be row maps by themselves and must not contain identical GIDs.
+            */
+    void SetFluidFPSI_FSIDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
     /// extract the three field vectors from a given composed vector
-    virtual void ExtractFieldVectors(
+    void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,   ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx, ///< structural displacements
         Teuchos::RCP<const Epetra_Vector>& fx, ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax  ///< ale displacements
-    );
-
+        Teuchos::RCP<const Epetra_Vector>& ax,  ///< ale displacements
+        bool firstiter_                        ///< firstiteration?
+        );
 
   private:
 
@@ -106,13 +117,32 @@ namespace FPSI
         double fluidscale                       ///< residual scaling for fluid
     );
 
+    void SetupRHSLambda(
+        Epetra_Vector& f  ///< composed vector that contains all field vectors
+    );
 
+    void SetupRHSFirstIter(
+        Epetra_Vector& f  ///< composed vector that contains all field vectors
+    );
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
 
     Teuchos::RCP<FSI::UTILS::MatrixColTransform>    aigtransform_ ;
     Teuchos::RCP<FSI::UTILS::MatrixColTransform>    kpatransform_ ;
+
+    /// @name Matrix block transform objects
+    /// Handle row and column map exchange for matrix blocks
+
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform2_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform2_;
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform2_;
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform2_;
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     fmiitransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fmgitransform_;
 
 
     ///@}
@@ -188,8 +218,8 @@ namespace FPSI
     //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration \f$i\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
 
-
     //@}
+
   };  // class monolithic_plain
 } // namespace FPSI
 

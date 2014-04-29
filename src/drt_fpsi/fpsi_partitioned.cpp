@@ -66,11 +66,12 @@ FPSI::Partitioned::Partitioned(const Epetra_Comm& comm,
       matchingnodes_ = true;
       const int ndim = DRT::Problem::Instance()->NDim();
       coupsf_->SetupConditionCoupling(*poroelast_subproblem_->StructureField()->Discretization(),            //masterdis (const)
-                                       poroelast_subproblem_->StructureField()->Interface()->FSICondMap(),   //mastercondmap
+                                       poroelast_subproblem_->StructureField()->Interface()->FPSICondMap(),   //mastercondmap
                                       *fluid_subproblem_->Discretization(),                                  //slavedis (const)
                                        fluid_subproblem_->Interface().FSICondMap(),                          //slavecondmap
                                       "FPSICoupling",                                                        //condname
-                                       ndim);                                                                //numdof
+                                       ndim);
+      //numdof
 
       if (coupsf_->MasterDofMap()->NumGlobalElements()==0)
         dserror("No nodes in matching FPSI interface. Empty FPSI coupling condition?");
@@ -192,7 +193,7 @@ void FPSI::Partitioned::TimeUpdateAndOutput()
   poroelast_subproblem_   ->Update();
   fluid_subproblem_       ->Update();
 
-  idispn_ = poroelast_subproblem_->StructureField()->ExtractInterfaceDispn();
+  idispn_ = poroelast_subproblem_->StructureField()->ExtractInterfaceDispn(true);
   iveln_  = FluidToStruct(fluid_subproblem_->ExtractInterfaceVeln());
 
   poroelast_subproblem_   ->Output();
@@ -306,7 +307,7 @@ bool FPSI::Partitioned::ConvergenceCheck(int itnum)
 Teuchos::RCP<Epetra_Vector> FPSI::Partitioned::InterfaceDisp()
 {
   // extract displacements
-  return poroelast_subproblem_->StructureField()->ExtractInterfaceDispnp();
+  return poroelast_subproblem_->StructureField()->ExtractInterfaceDispnp(true);
 }
 
 

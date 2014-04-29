@@ -1476,6 +1476,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffsicd);
 
   /*--------------------------------------------------------------------*/
+  // FPSI
+
+  std::vector<Teuchos::RCP<ConditionComponent> > fpsicomponents;
+
+  fpsicomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> linefpsi =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FPSI COUPLING LINE CONDITIONS",
+                                         "FPSICoupling",
+                                         "FPSI Coupling",
+                                         DRT::Condition::FPSICoupling,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surffpsi =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FPSI COUPLING SURF CONDITIONS",
+                                         "FPSICoupling",
+                                         "FPSI Coupling",
+                                         DRT::Condition::FPSICoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<fsicomponents.size(); ++i)
+  {
+    linefpsi->AddComponent(fpsicomponents[i]);
+    surffpsi->AddComponent(fpsicomponents[i]);
+  }
+
+  condlist.push_back(linefpsi);
+  condlist.push_back(surffpsi);
+
+/*--------------------------------------------------------------------*/
   // IMMERSED FSI
 
   Teuchos::RCP<ConditionDefinition> immersedsearchbox =
