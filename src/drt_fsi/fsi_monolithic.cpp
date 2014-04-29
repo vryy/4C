@@ -689,7 +689,6 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 #ifdef DEBUG
   // check whether all fields have the same time step size
   CheckIfDtsSame();
-  CheckIfTimesSame();
 #endif
 
   Teuchos::RCP<const Epetra_Vector> sx;
