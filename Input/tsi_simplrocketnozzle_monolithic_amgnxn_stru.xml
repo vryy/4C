@@ -12,7 +12,7 @@
 
     <ParameterList name="myCoalesceDropFact">
       <Parameter name="factory"                             type="string" value="CoalesceDropFactory"/>
-      <Parameter name="lightweight wrap"                    type="bool"   value="true"/>
+      <Parameter name="lightweight wrap"                    type="bool"   value="false"/> <!-- Should be false because we use shifted maps -->
       <!--
       <Parameter name="aggregation threshold"               type="double" value="0.02"/>
       -->
