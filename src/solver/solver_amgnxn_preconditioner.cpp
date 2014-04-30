@@ -19,6 +19,7 @@ Created on: Feb 27, 2014
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp> 
+#include "EpetraExt_RowMatrixOut.h"
 #include "../drt_lib/drt_dserror.H"
 #include "solver_amgnxn_preconditioner.H" 
 
@@ -97,7 +98,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
     Teuchos::rcp(new MultiMapExtractor(*fullmap_range ,range_maps ));
 
   // Create the concrete matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> the_matrix = 
+  Teuchos::RCP< LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > the_matrix = 
     Teuchos::rcp( new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *domainmaps,
           *rangemaps,
@@ -130,7 +131,10 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
   the_matrix->Complete();
 
   // Return
-  return the_matrix;
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> the_matrix_base = 
+    Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(the_matrix); 
+
+  return the_matrix_base;
 }
 
 
@@ -1015,6 +1019,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
     } // if coarse levels
   } // Loop in levels
 
+
   //==========================================
   // Build block level Smothers
   //==========================================
@@ -1112,6 +1117,22 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
 
   } // Loop in levels
 
+  //// Uncoment for printing matrices in matlab format
+  //for(int level=0;level<NumLevelAMG_;level++)
+  //{
+  //  Teuchos::RCP<LINALG::BlockSparseMatrixBase> Abl = AGlobal[level];
+  //  if(Abl==Teuchos::null)
+  //    dserror("Something went wrong");
+  //  Teuchos::RCP<LINALG::SparseMatrix> Amerged = Abl->Merge();
+  //  Teuchos::RCP<Epetra_CrsMatrix> Acrs = Amerged->EpetraMatrix();
+  //  std::stringstream ss1;
+  //  ss1 << "A_";
+  //  ss1 << level; 
+  //  ss1 << ".mm";
+  //  EpetraExt::RowMatrixToMatrixMarketFile(ss1.str().c_str(), *Acrs, "test matrix",
+  //      "This is a test matrix");
+  //}
+
   //==========================================
   // Build up the AMG preconditioner
   //==========================================
@@ -1147,6 +1168,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
     SPosGlobal_base[i]=
       Teuchos::rcp_dynamic_cast<LINALG::SOLVER::SmootherWrapperBase>(SPosGlobal[i]);
   P_->SetPosSmoothers(SPosGlobal_base);
+
 
 
   //==========================================
@@ -1249,9 +1271,6 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
   Epetra_MultiVector * b 
 )
 {
-  //=================================================================
-  // Preliminaries 
-  //=================================================================
 
   // Setup underlying linear system
   SetupLinearProblem( matrix, x, b );
@@ -1260,15 +1279,30 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
   if(!create)
     return;
 
+  // Check whether this is a block sparse matrix
+  BlockSparseMatrixBase* A_bl = dynamic_cast<BlockSparseMatrixBase*>(matrix);
+  if(A_bl==NULL)
+    dserror("The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
+  
+  // Do all the setup 
+  Setup(Teuchos::rcp(A_bl,false));
+
+  return;
+}
+
+
+
+void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrixBase> A)
+{
+
   // Free old matrix and preconditioner
   A_ = Teuchos::null;
   P_ = Teuchos::null;
 
-  // Create own copy of the system matrix
-  BlockSparseMatrixBase* A_bl = dynamic_cast<BlockSparseMatrixBase*>(matrix);
-  if(A_bl==NULL)
-    dserror("The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
-  A_ = A_bl->Clone(Copy);
+  // Create own copy of the system matrix in order to allow reusing the preconditioner
+  A_ = A;
+  A_ = A_->Clone(Copy);
+  A_->Complete();
 
   // Determine number of blocks
   int NumBlocks = A_->Rows();
@@ -1341,7 +1375,7 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
   std::string xmlFileName;
   Teuchos::RCP<Epetra_Operator> A_eop;
   // Vector for the offsets
-   std::vector<int> offsets(NumLevelAMG-1,0);
+  std::vector<int> offsets(NumLevelAMG-1,0);
   // loop in blocks
   for(int block=0;block<NumBlocks;block++)
   {

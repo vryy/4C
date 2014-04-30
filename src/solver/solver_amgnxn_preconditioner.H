@@ -540,7 +540,6 @@ namespace LINALG
     {
       public:
         AMGnxn_Preconditioner( FILE * outfile, Teuchos::ParameterList & params);
-        // TODO remove this destructor.
 
         virtual void Setup
           (
@@ -549,6 +548,9 @@ namespace LINALG
            Epetra_MultiVector * x,
            Epetra_MultiVector * b 
           );
+
+        virtual void Setup(Teuchos::RCP<BlockSparseMatrixBase> A);
+
 
         virtual Epetra_Operator * PrecOperator() const ;
         virtual void Print( std::ostream & stream ){stream << "AMGnxn";}
