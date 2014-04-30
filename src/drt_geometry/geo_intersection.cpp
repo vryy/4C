@@ -125,16 +125,52 @@ void GEO::CutWizard::CutParallel( bool include_inner,
 
   mesh_->Status();
 
+  // just for time measurement
+  dis_.Comm().Barrier();
 
+  //----------------------------------------------------------
   // FIRST step (1/3): cut the mesh
-  mesh_->Cut_Mesh( include_inner,screenoutput );
+  {
+    const double t_start = Teuchos::Time::wallTime();
 
+    // cut the mesh
+    mesh_->Cut_Mesh( include_inner,screenoutput );
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime()-t_start;
+    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+  }
+
+  //----------------------------------------------------------
   // SECOND step (2/3): find node positions and create dofset in PARALLEL
-  CutParallel_FindPositionDofSets( include_inner, communicate,screenoutput );
+  {
+    const double t_start = Teuchos::Time::wallTime();
 
+    CutParallel_FindPositionDofSets( include_inner, communicate,screenoutput );
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime()-t_start;
+    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+  }
+
+  //----------------------------------------------------------
   // THIRD step (3/3): perform tessellation or moment fitting on the mesh
-  mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
+  {
+    const double t_start = Teuchos::Time::wallTime();
 
+    // perform tessellation or moment fitting on the mesh
+    mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime()-t_start;
+    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+  }
 
   mesh_->Status(VCellgausstype);
 }
@@ -145,12 +181,14 @@ void GEO::CutWizard::CutParallel( bool include_inner,
  *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput)
 {
+
+
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
 
 
   if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
 
-  const double t_start = Teuchos::Time::wallTime();
+//  const double t_start = Teuchos::Time::wallTime();
 
   //----------------------------------------------------------
 
@@ -190,13 +228,23 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
 
   }
 
-  //----------------------------------------------------------
-
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0  and screenoutput)
-  {
-    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
+//  // just for time measurement
+//  dis_.Comm().Barrier();
+//
+//  //----------------------------------------------------------
+//
+//  const double t_diff = Teuchos::Time::wallTime()-t_start;
+//  if ( myrank_ == 0 )
+//  {
+//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+//  }
+//
+//
+//  const double t_diff = Teuchos::Time::wallTime()-t_start;
+//  if ( myrank_ == 0  and screenoutput)
+//  {
+//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+//  }
 
 }
 

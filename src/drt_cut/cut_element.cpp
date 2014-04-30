@@ -11,6 +11,7 @@
 #include <string>
 #include <stack>
 
+#include <Teuchos_TimeMonitor.hpp>
 
 /*--------------------------------------------------------------------*
  * struct for comparison of position of sides using ray-tracing techniques
@@ -232,6 +233,10 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
  *------------------------------------------------------------------------------------------*/
 bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & ele_side, Side & cut_side, int recursion )
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- FindCutPoints" );
+
+
   bool cut = ele_side.FindCutPoints( mesh, this, cut_side, recursion );         // edges of element side cuts through cut side
   bool reverse_cut = cut_side.FindCutPoints( mesh, this, ele_side, recursion ); // edges of cut side cuts through element side
   return cut or reverse_cut;
@@ -242,6 +247,9 @@ bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & ele_side, Side & cut_
  *------------------------------------------------------------------------------------------*/
 bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & ele_side, Side & cut_side )
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- FindCutLines" );
+
+
   bool cut = ele_side.FindCutLines( mesh, this, cut_side );
   bool reverse_cut = cut_side.FindCutLines( mesh, this, ele_side );
   return cut or reverse_cut;

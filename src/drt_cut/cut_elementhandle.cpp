@@ -1508,10 +1508,19 @@ void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
 {
   Position<DRT::Element::hex20> pos( nodes_, xyz );
 
-  bool success = pos.Compute();
+  bool success = pos.ComputeTol(1e-10);;
   if ( not success )
   {
-	  dserror("local coordinates for hex20 element could not be determined");
+    std::cout << "local coordinates for hex20 element could not be determined" << std::endl;
+    for(int i=0; i< (int)(nodes_.size()); i++)
+    {
+      std::cout << " node " << i << std::endl;
+      nodes_[i]->Plot(std::cout);
+    }
+
+    std::cout << "point in xyz: " << xyz << std::endl;
+
+    dserror("local coordinates for hex20 element could not be determined");
   }
   rst = pos.LocalCoordinates();
 }

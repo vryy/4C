@@ -21,6 +21,8 @@
 //#include "cut_output.H"
 #include "cut_selfcut.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 //#define DEBUG_SELFCUT
 
 /*-------------------------------------------------------------------------------------*
@@ -29,6 +31,7 @@
 GEO::CUT::SelfCut::SelfCut(Mesh & cut_mesh) :
     mesh_(cut_mesh)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- SELFCUT" );
 
   CollisionDetection();
   MeshIntersection();
@@ -43,6 +46,7 @@ GEO::CUT::SelfCut::SelfCut(Mesh & cut_mesh) :
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::CollisionDetection()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- SELFCUT --- CollisionDetection" );
 
   FindCuttingSides();
   FindSelfCutPoints();
@@ -55,6 +59,7 @@ void GEO::CUT::SelfCut::CollisionDetection()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::MeshIntersection()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- SELFCUT --- MeshIntersection" );
 
   CreateSelfCutNodes();
   CreateSelfCutEdges();
@@ -71,6 +76,7 @@ void GEO::CUT::SelfCut::MeshIntersection()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::ElementSelection()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- SELFCUT --- ElementSelection" );
 
   DetermineSelfCutPosition();
   PropagateSelfCutPosition();

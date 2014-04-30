@@ -543,18 +543,21 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
 {
   BoundingBox sidebox( side ); // define a bounding box around the maybe twisted side to determine a preselection of cutting sides and elements
   plain_element_set elements;
-  
+
 #if(0)
-  // REMARK: do not use pp_->CollectElements anymore
-  // it can happen that some intersections between elements and sides
-  // are not detected, because the octtree bounding boxes can lie
-  // within a real background element. Such small bounding boxes
-  // do not have to contain any points adjacent to elements,
-  // then elements have not been found
-  //
-  // schott 10/2012
-  
-  //pp_->CollectElements( sidebox, elements ); // find involved elements (octree-based)
+  {
+    // REMARK: do not use pp_->CollectElements anymore
+    // it can happen that some intersections between elements and sides
+    // are not detected, because the octtree bounding boxes can lie
+    // within a real background element. Such small bounding boxes
+    // do not have to contain any points adjacent to elements,
+    // then elements have not been found
+    //
+    // schott 10/2012
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- preselection of possible cut between" );
+
+    pp_->CollectElements( sidebox, elements ); // find involved elements (octree-based)
+  }
 
 #else
   // use a brute force preselection
@@ -567,39 +570,48 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
   // an additional octtree for elements to get a logartithmic complexity
   // 
 
-
-  // preselection of possible cut between linear elements and the current side
-  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end(); i++)
   {
-    Element* e= &*(i->second);
-    BoundingBox elementbox;
-    elementbox.Assign(*e);
-    if(elementbox.Within(1.0, sidebox))
+
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- preselection of possible cut between" );
+
+
+    // preselection of possible cut between linear elements and the current side
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end(); i++)
     {
-      if(elements.count(e) == 0)
+      Element* e= &*(i->second);
+      BoundingBox elementbox;
+      elementbox.Assign(*e);
+      if(elementbox.Within(1.0, sidebox))
       {
-        elements.insert(e);
+        if(elements.count(e) == 0)
+        {
+          elements.insert(e);
+        }
       }
     }
-  }
-  // preselection of possible cut between shadow elements of quadratic elements and the current side
-  for(std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
-      i!=shadow_elements_.end();
-      i++)
-  {
-    Element* e= &**i;
-    BoundingBox elementbox;
-    elementbox.Assign(*e);
-    if(elementbox.Within(1.0, sidebox))
+    // preselection of possible cut between shadow elements of quadratic elements and the current side
+    for(std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        i++)
     {
-      if(elements.count(e) == 0)
+      Element* e= &**i;
+      BoundingBox elementbox;
+      elementbox.Assign(*e);
+      if(elementbox.Within(1.0, sidebox))
       {
-        elements.insert(e);
+        if(elements.count(e) == 0)
+        {
+          elements.insert(e);
+        }
       }
     }
-  }
 
+  }
 #endif
+
+
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- cutting sides with elements" );
 
 
   // perform the cut of this side for each involved element
@@ -613,6 +625,8 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
         elements_done.insert( e );
       }
     }
+  }
+
   }
 }
 
@@ -798,6 +812,10 @@ void GEO::CUT::Mesh::MakeVolumeCells()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::FindNodePositions()
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- FindNodePositions" );
+
+
   // On multiple cuts former outside positions can become inside
   // positions. Thus reset all outside positions.
   pp_->ResetOutsidePoints();
@@ -880,6 +898,9 @@ void GEO::CUT::Mesh::FindLSNodePositions()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::FindFacetPositions()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- FindFacetPositions" );
+
+
   plain_volumecell_set undecided;
 
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )

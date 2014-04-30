@@ -167,7 +167,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
 
   if(myrank_==0 and screenoutput) IO::cout << "\n\t * 1/3 Cut_Mesh ...";
 
-  const double t_start = Teuchos::Time::wallTime();
+//  const double t_start = Teuchos::Time::wallTime();
 
   //----------------------------------------------------------
 
@@ -192,11 +192,11 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
 
   //----------------------------------------------------------
 
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0  and screenoutput)
-  {
-    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
+//  const double t_diff = Teuchos::Time::wallTime()-t_start;
+//  if ( myrank_ == 0  and screenoutput)
+//  {
+//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+//  }
 
 }
 
@@ -210,7 +210,7 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , boo
 
   if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets ...";
 
-  const double t_start = Teuchos::Time::wallTime();
+//  const double t_start = Teuchos::Time::wallTime();
 
   //----------------------------------------------------------
 
@@ -232,13 +232,13 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , boo
   }
 
 
-  //----------------------------------------------------------
-
-   const double t_diff = Teuchos::Time::wallTime()-t_start;
-   if ( myrank_ == 0 and screenoutput)
-   {
-     IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-   }
+//  //----------------------------------------------------------
+//
+//   const double t_diff = Teuchos::Time::wallTime()-t_start;
+//   if ( myrank_ == 0 and screenoutput)
+//   {
+//     IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+//   }
 }
 
 
@@ -257,7 +257,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
 
   if(myrank_==0 and screenoutput) IO::cout << "\t * 3/3 Cut_Finalize";
 
-  const double t_start = Teuchos::Time::wallTime();
+//  const double t_start = Teuchos::Time::wallTime();
 
   //----------------------------------------------------------
 
@@ -300,16 +300,17 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
 
 
   //----------------------------------------------------------
-
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0 and screenoutput)
-  {
-    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
+//
+//  const double t_diff = Teuchos::Time::wallTime()-t_start;
+//  if ( myrank_ == 0 and screenoutput)
+//  {
+//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+//  }
 
 #if(0)
   std::cout << "\n XFEM::FluidWizard::Quadrature construction time = " << t_diff <<"\n";
 #endif
+
 }
 
 
@@ -318,6 +319,8 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::Discretization& dis)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
+
 
     std::set<int> eids; // eids of elements that are involved in CUT and include ele_vc_set_inside/outside (no duplicates!)
 
