@@ -503,7 +503,7 @@ namespace FLD
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
-    const Teuchos::RCP<DRT::Discretization>& Discretization() { return boundarydis2_; }
+    const Teuchos::RCP<DRT::Discretization>& Discretization() { return boundarydis_; }
 
 
     /// set the maximal number of nonlinear steps
@@ -552,10 +552,10 @@ namespace FLD
     /// return boundary discretization
     Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
-    void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis2_; }
+    void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis_; }
 
 		/// set the given discretization as the boundary discretization
-    void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis2_ = boun; }
+    void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis_ = boun; }
 
     /// Get the nodes that defines crack tip
     void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
@@ -652,7 +652,6 @@ namespace FLD
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
-    Teuchos::RCP<DRT::Discretization>      boundarydis2_;  //! boundary discretization
 
     //---------------------------------input parameters------------------
 

@@ -91,7 +91,7 @@ Maintainer:  Benedikt Schott
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol  )
   : xfluid_( xfluid ),
-    wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis2_)) )
+    wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis_)) )
 {
   // increase the state-class counter
   xfluid_.state_it_++;
@@ -276,7 +276,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
     xfluid_.fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
   }
 
-  xfluid_.boundarydofrowmap_ = xfluid_.boundarydis2_->DofRowMap();
+  xfluid_.boundarydofrowmap_ = xfluid_.boundarydis_->DofRowMap();
 
   C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
   C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
@@ -344,7 +344,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
   if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
-    const Epetra_Map * boundarydofrowmap = xfluid_.boundarydis2_->DofRowMap();
+    const Epetra_Map * boundarydofrowmap = xfluid_.boundarydis_->DofRowMap();
     xfluid_.ivelnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
     xfluid_.iveln_  = LINALG::CreateVector(*boundarydofrowmap,true);
     xfluid_.ivelnm_ = LINALG::CreateVector(*boundarydofrowmap,true);
@@ -2237,7 +2237,6 @@ void FLD::XFluid::Init()
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis_, "FSICoupling", "boundary", element_name, conditions_to_copy);
-  boundarydis2_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis_, "FSICoupling", "boundary", element_name, conditions_to_copy);
   if (boundarydis_->NumGlobalNodes() == 0)
   {
     dserror("Empty boundary discretization detected. No FSI coupling will be performed...");
@@ -2250,9 +2249,6 @@ void FLD::XFluid::Init()
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
-
-  boundarydis2_->ReplaceDofSet(newdofset);//do not call this with true!!
-  boundarydis2_->FillComplete();
 
   /*----------- POSSIBILITY 1 --- adding zero displacement at crack tip nodes----------------------*/
   if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
@@ -2289,8 +2285,8 @@ void FLD::XFluid::Init()
 
 /*  Teuchos::RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
 
-  boundarydis2_->ReplaceDofSet(newdofset1);//do not call this with true!!
-  boundarydis2_->FillComplete();*/
+  boundarydis_->ReplaceDofSet(newdofset1);//do not call this with true!!
+  boundarydis_->FillComplete();*/
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
@@ -2304,20 +2300,7 @@ void FLD::XFluid::Init()
   boundarydis_->ExportColumnNodes(nodecolmap);
   boundarydis_->ExportColumnElements(elemcolmap);
 
-  const Epetra_Map noderowmap2 = *boundarydis2_->NodeRowMap();
-  const Epetra_Map elemrowmap2 = *boundarydis2_->ElementRowMap();
-
-  // put all boundary nodes and elements onto all processors
-  const Epetra_Map nodecolmap2 = *LINALG::AllreduceEMap(noderowmap2);
-  const Epetra_Map elemcolmap2 = *LINALG::AllreduceEMap(elemrowmap2);
-
-  // redistribute nodes and elements to column (ghost) map
-  boundarydis2_->ExportColumnNodes(nodecolmap2);
-  boundarydis2_->ExportColumnElements(elemcolmap2);
-
-
   boundarydis_->FillComplete();
-  boundarydis2_->FillComplete();
 
 
   // -------------------------------------------------------------------
@@ -2347,7 +2330,7 @@ void FLD::XFluid::Init()
   //--------------------------------------------------------
   // create interface fields
   // -------------------------------------------------------
-  boundarydofrowmap_ = boundarydis2_->DofRowMap();
+  boundarydofrowmap_ = boundarydis_->DofRowMap();
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
   iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
   ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
@@ -2603,7 +2586,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                       la[0].lm_,
                       mat,
                       ele_interf_norms,
-                      *boundarydis2_,
+                      *boundarydis_,
                       bcells,
                       bintpoints,
                       side_coupling,
@@ -3437,7 +3420,7 @@ void FLD::XFluid::Solve()
       eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-      state_->Evaluate( eleparams, *discret_, *boundarydis2_, itnum );
+      state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -3455,7 +3438,7 @@ void FLD::XFluid::Solve()
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
       LINALG::Export(*state_->residual_,*output_col_residual);
-      state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
     }
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
@@ -3467,7 +3450,7 @@ void FLD::XFluid::Solve()
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
       LINALG::Export(*state_->residual_,*output_col_residual);
-      state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_residual", step_, itnum, output_col_residual );
+      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, output_col_residual );
     }
 
     if (updateprojection_)
@@ -3680,7 +3663,7 @@ void FLD::XFluid::Solve()
 
         LINALG::Export(*state_->incvel_,*output_col_incvel);
 
-        state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_icnr", step_, itnum, output_col_incvel );
+        state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_icnr", step_, itnum, output_col_incvel );
       }
 
       // unscale solution
@@ -4043,7 +4026,7 @@ void FLD::XFluid::Evaluate(
     eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
     eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-    state_->Evaluate( eleparams, *discret_, *boundarydis2_, itnum );
+    state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
 
     // end time measurement for element
     dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -4061,7 +4044,7 @@ void FLD::XFluid::Evaluate(
     Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
     LINALG::Export(*state_->residual_,*output_col_residual);
-    state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+    state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
   }
 
 }
@@ -4232,7 +4215,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------  NEW STATE CLASS including CUT  ------------------
 
     // new cut at current time step at current partitioned XFSI iteration
-    Epetra_Vector idispcol( *boundarydis2_->DofColMap() );
+    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
     idispcol.PutScalar( 0. );
 
     LINALG::Export(*idispnp_,idispcol);
@@ -4381,10 +4364,10 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
 
       if(myrank_==0) std::cout << "\t ...SemiLagrangean...";
 
-      boundarydis2_->ClearState();
+      boundarydis_->ClearState();
 
-      boundarydis2_->SetState("idispnp",idispnp_);
-      boundarydis2_->SetState("idispn",idispn_);
+      boundarydis_->SetState("idispnp",idispnp_);
+      boundarydis_->SetState("idispn",idispn_);
 
       Teuchos::RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
       LINALG::Export(*veln_Intn_,*veln_col);
@@ -4414,7 +4397,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
 
         timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
             discret_,
-            boundarydis2_,
+            boundarydis_,
             wizard_Intn_,
             state_->Wizard(),
             dofset_Intn_,
@@ -4537,7 +4520,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
         LINALG::Export(*state_->veln_,*output_col_vel);
         LINALG::Export(*state_->accn_,*output_col_acc);
 
-        state_->GmshOutput( *discret_, *boundarydis2_, "TIMINT", step_, count , output_col_vel, output_col_acc );
+        state_->GmshOutput( *discret_, *boundarydis_, "TIMINT", step_, count , output_col_vel, output_col_acc );
       }
 
       if(myrank_==0) std::cout << "finished CutAndSetStateVectors()" << endl;
@@ -4677,7 +4660,7 @@ void FLD::XFluid::ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghos
       Teuchos::ParameterList eleparams;
 
       // evaluate routine
-      state_->GradientPenalty(eleparams, *discret_, *boundarydis2_, vec, itnum);
+      state_->GradientPenalty(eleparams, *discret_, *boundarydis_, vec, itnum);
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -5007,7 +4990,7 @@ void FLD::XFluid::OutputDiscret()
   if(gmsh_discret_out_)
   {
     ExtractNodeVectors(*soliddis_, soliddispnp_, currsolidpositions);
-    ExtractNodeVectors(*boundarydis2_, idispnp_, currinterfacepositions);
+    ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
     //TODO: fill the soliddispnp in the XFSI case!
 
     // cast to DiscretizationXFEM
@@ -5025,7 +5008,7 @@ void FLD::XFluid::OutputDiscret()
 
     disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
     disToStream(soliddis_,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
-    disToStream(boundarydis2_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
+    disToStream(boundarydis_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
 
     gmshfilecontent.close();
 
@@ -5068,7 +5051,7 @@ void FLD::XFluid::Output()
     Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
     LINALG::Export(*state_->accnp_,*output_col_acc);
 
-    state_->GmshOutput( *discret_, *boundarydis2_, "SOL", step_, count , output_col_vel, output_col_acc );
+    state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel, output_col_acc );
 
 
     //--------------------------------------------------------------------
@@ -5667,7 +5650,7 @@ void FLD::XFluid::SetInitialFlowField(
       LINALG::Export(*state_->veln_,*output_col_vel);
       LINALG::Export(*state_->accn_,*output_col_acc);
 
-      state_->GmshOutput( *discret_, *boundarydis2_, "START", step_, count , output_col_vel, output_col_acc );
+      state_->GmshOutput( *discret_, *boundarydis_, "START", step_, count , output_col_vel, output_col_acc );
 
   }
 
@@ -5686,12 +5669,12 @@ void FLD::XFluid::SetInitialInterfaceField()
     if(myrank_ == 0) cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << endl;
 
     // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<boundarydis2_->NumMyRowNodes();lnodeid++)
+    for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
     {
       // get the processor local node
-      DRT::Node*  lnode      = boundarydis2_->lRowNode(lnodeid);
+      DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const std::vector<int> nodedofset = boundarydis2_->Dof(lnode);
+      const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
 
       if (nodedofset.size()!=0)
       {
@@ -6202,7 +6185,7 @@ void FLD::XFluid::ReadRestart(int step)
     LINALG::Export(*state_->veln_,*output_col_vel);
     LINALG::Export(*state_->accn_,*output_col_acc);
 
-    state_->GmshOutput( *discret_, *boundarydis2_, "RESTART", step_, count , output_col_vel, output_col_acc );
+    state_->GmshOutput( *discret_, *boundarydis_, "RESTART", step_, count , output_col_vel, output_col_acc );
 
   }
 
@@ -6215,21 +6198,26 @@ void FLD::XFluid::ReadRestart(int step)
  *---------------------------------------------------------------------------------------------*/
 void FLD::XFluid::UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds )
 {
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, ivelnp_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, iveln_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, ivelnm_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, ivelnp_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, iveln_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, ivelnm_, oldnewIds );
 
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, idispnp_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, idispn_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, idispnp_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, idispn_, oldnewIds );
 
-  itrueresidual_ = LINALG::CreateVector(*boundarydis2_->DofRowMap(),true);
+  itrueresidual_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  //DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, itrueresidual_, oldnewIds );
 
   //TODO: I guess the following lines are unnecessary (Sudhakar)
   {
-    //iforcenp_ = LINALG::CreateVector(*boundarydis2_->DofRowMap(),true);
+    //iforcenp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
     //LINALG::Export( *itrueresidual_, *iforcenp_ );
 
   }
+
+  //TODO: Check whether the output in case of crack-FSI work properly (Sudhakar)
+  //boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
+  //boundary_output_ = boundarydis_->Writer();
 }
 
 
@@ -6384,10 +6372,10 @@ void FLD::XFluid::ReadRestartBound(int step)
   // and check whether the normals are consistent
   bool reverse = false, check=false;
 
-  const int numrowele = boundarydis2_->NumMyRowElements();
+  const int numrowele = boundarydis_->NumMyRowElements();
   for (int i=0; i<numrowele; ++i)
   {
-    DRT::Element* actele = boundarydis2_->lRowElement(i);
+    DRT::Element* actele = boundarydis_->lRowElement(i);
 
     const int* idnodes = actele->NodeIds();
     for( int j=0; j<actele->NumNode(); j++ )
@@ -6402,9 +6390,9 @@ void FLD::XFluid::ReadRestartBound(int step)
 
     if( check )
     {
-      const double * x1 = boundarydis2_->gNode( idnodes[0] )->X();
-      const double * x2 = boundarydis2_->gNode( idnodes[1] )->X();
-      const double * x3 = boundarydis2_->gNode( idnodes[2] )->X();
+      const double * x1 = boundarydis_->gNode( idnodes[0] )->X();
+      const double * x2 = boundarydis_->gNode( idnodes[1] )->X();
+      const double * x3 = boundarydis_->gNode( idnodes[2] )->X();
 
       eqn_ref[0] = x1[1]*(x2[2]-x3[2])+x2[1]*(x3[2]-x1[2])+x3[1]*(x1[2]-x2[2]);
       eqn_ref[1] = x1[2]*(x2[0]-x3[0])+x2[2]*(x3[0]-x1[0])+x3[2]*(x1[0]-x2[0]);
@@ -6433,12 +6421,12 @@ void FLD::XFluid::ReadRestartBound(int step)
     if( reverse )
     { finalids[0] = nodeids[2]; finalids[2] = nodeids[0]; }
 
-    int neweleid = boundarydis2_->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","tri3", neweleid, boundarydis2_->gNode(nodeids[0])->Owner() );
+    int neweleid = boundarydis_->NumGlobalElements();
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","tri3", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
     spr->SetNodeIds( 3, finalids );
     //spr->Print(std::cout);
-    boundarydis2_->AddElement( spr );
-    boundarydis2_->FillComplete();
+    boundarydis_->AddElement( spr );
+    boundarydis_->FillComplete();
 
     crackTip_[neweleid] = spr;
   }
@@ -6450,12 +6438,12 @@ void FLD::XFluid::ReadRestartBound(int step)
     if( reverse )
     { finalids[0] = nodeids[3]; finalids[1] = nodeids[2]; finalids[2] = nodeids[1]; finalids[3] = nodeids[0]; }
 
-    int neweleid = boundarydis2_->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, boundarydis2_->gNode(nodeids[0])->Owner() );
+    int neweleid = boundarydis_->NumGlobalElements();
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
     spr->SetNodeIds( 4, finalids );
     spr->Print(std::cout);
-    boundarydis2_->AddElement( spr );
-    boundarydis2_->FillComplete();
+    boundarydis_->AddElement( spr );
+    boundarydis_->FillComplete();
 
     crackTip_[neweleid] = spr;
 
