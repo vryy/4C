@@ -134,6 +134,8 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
   bool EOS_Div_div_jump = false;
   bool GP_visc          = false;
   bool GP_u_p_2nd       = false;
+  bool GP_trans         = false;
+
 
   if(face_type == INPAR::XFEM::face_type_std)
   {
@@ -144,6 +146,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
     EOS_Div_div_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos);
 
     GP_visc          = false;
+    GP_trans         = false;
     GP_u_p_2nd       = false;
   }
   else if(face_type == INPAR::XFEM::face_type_ghost_penalty)
@@ -157,6 +160,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
                      or DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp);
 
     GP_visc          = faceparams.get<bool>("visc_ghost_penalty", false);
+    GP_trans         = faceparams.get<bool>("trans_ghost_penalty", false);
     GP_u_p_2nd       = faceparams.get<bool>("u_p_ghost_penalty_2nd", false);
   }
   else if(face_type == INPAR::XFEM::face_type_ghost)
@@ -167,6 +171,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
     EOS_Div_vel_jump = false;
     EOS_Div_div_jump = false;
     GP_visc          = false;
+    GP_trans         = false;
     GP_u_p_2nd       = false;
   }
   else dserror("unknown face_type!!!");
@@ -189,11 +194,14 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
   stabparams.set<bool>("EOS_Div_vel_jump", EOS_Div_vel_jump);
   stabparams.set<bool>("EOS_Div_div_jump", EOS_Div_div_jump);
   stabparams.set<bool>("GP_visc",          GP_visc);
+  stabparams.set<bool>("GP_trans",         GP_trans);
   stabparams.set<bool>("GP_u_p_2nd",       GP_u_p_2nd);
 
 
   stabparams.set("ghost_penalty_reconstruct", faceparams.get<bool>("ghost_penalty_reconstruct", false) );
   stabparams.set("ghost_penalty_fac",         faceparams.get<double>("GHOST_PENALTY_FAC", 0.0));
+  stabparams.set("ghost_penalty_trans_fac",   faceparams.get<double>("GHOST_PENALTY_TRANSIENT_FAC", 0.0));
+
 
   stabparams.set("action", faceparams.get<int>("action"));
 
@@ -204,6 +212,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
       !EOS_Div_vel_jump and
       !EOS_Div_div_jump and
       !GP_visc and
+      !GP_trans and
       !GP_u_p_2nd) return false;
 
   return true;

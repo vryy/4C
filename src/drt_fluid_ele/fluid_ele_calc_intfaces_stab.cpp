@@ -253,16 +253,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   bool EOS_conv_stream = params.get<bool>("EOS_Conv_Stream");      // eos/gp convective streamline stabilization
   bool EOS_conv_cross  = params.get<bool>("EOS_Conv_Cross");       // eos/gp convective crosswind stabilization
   bool EOS_div_vel_jump= params.get<bool>("EOS_Div_vel_jump");     // eos/gp divergence stabilization based on velocity jump
-  bool GP_visc         = params.get<bool>("GP_visc");              // ghost penalty stabilization according to Nitsche's method
+
+  bool   GP_visc       = params.get<bool>("GP_visc");              // ghost penalty stabilization according to Nitsche's method
   double GP_visc_fac   = params.get<double>("ghost_penalty_fac");  // ghost penalty stabilization factor according to Nitsche's method
-  bool GP_u_p_2nd      = params.get<bool>("GP_u_p_2nd");           // 2nd order ghost penalty stabilization for velocity und pressure
+  if(!GP_visc) GP_visc_fac = 0.0;
+
+  bool   GP_trans      = params.get<bool>("GP_trans");                   // ghost penalty stabilization according to Nitsche's method
+  double GP_trans_fac  = params.get<double>("ghost_penalty_trans_fac");  // ghost penalty stabilization factor according to Nitsche's method
+  if(!GP_trans) GP_trans_fac = 0.0;
+
+  bool GP_u_p_2nd      = params.get<bool>("GP_u_p_2nd");                  // 2nd order ghost penalty stabilization for velocity und pressure
 
   // flags to integrate velocity gradient jump based stabilization terms
   bool EOS_div_div_jump= params.get<bool>("EOS_Div_div_jump");  // eos/gp divergence stabilization based on divergence jump
 
   bool EOS_vel         = false;
   // decide if velocity gradient based term has to be assembled
-  if(EOS_conv_stream or EOS_conv_cross or EOS_div_vel_jump or GP_visc) EOS_vel=true;
+  if(EOS_conv_stream or EOS_conv_cross or EOS_div_vel_jump or GP_visc or GP_trans) EOS_vel=true;
 
   if(ghost_penalty_reconstruct)
   {
@@ -328,6 +335,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     timefacpre = 1.0;
     timefacrhs = 1.0;
   }
+  
+  bool instationary = !(fldparatimint.IsStationary());
 
   //---------------------------------------------------
 
@@ -658,7 +667,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     ishigherorder = (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4);
 
-    if(!GP_visc and GP_u_p_2nd)
+    if(!GP_visc and !GP_trans and GP_u_p_2nd)
     {
       dserror("do you really want to neglect the gradient based ghost penalty term but stabilize the 2nd order derivatives?");
     }
@@ -666,7 +675,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     {
       // allow only gradient-based ghost-penalties for hex8 elements
     }
-    else if(ishigherorder and GP_visc and !GP_u_p_2nd)
+    else if(ishigherorder and (GP_visc or GP_trans) and !GP_u_p_2nd)
     {
       // however, force the 2nd order ghost-penalties for real higher order elements (hex20, hex 27 etc)
       dserror("you should switch on the 2nd order ghost penalty terms for u and p!");
@@ -930,7 +939,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                                                       tau_grad, tau_u, tau_div, tau_p,
                                                       kinvisc, dens,
                                                       normal_vel_lin_space, max_vel_L2_norm,
-                                                      timefac, GP_visc_fac);
+                                                      timefac, instationary, GP_visc_fac, GP_trans_fac);
 
     // EOS stabilization term for pressure
     if(EOS_pres)
@@ -973,7 +982,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
           if (fldparatimint.IsGenalphaNP()) dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
           else tau_vel += tau_div;
         }
-        if(GP_visc)         tau_vel += tau_grad;
+        if(GP_visc or GP_trans)  tau_vel += tau_grad;
 
         // just to be sure
         if (fldpara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
@@ -2683,7 +2692,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   const double  normal_vel_lin_space,
   const double  max_vel_L2_norm,
   const double  timefac,
-  double&       gamma_ghost_penalty)
+  const bool    instationary,
+  const double  gamma_ghost_penalty_visc,
+  const double  gamma_ghost_penalty_trans)
 {
 
 
@@ -3104,8 +3115,11 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   //                                               ghost penalty
   //--------------------------------------------------------------------------------------------------------------
 
-  tau_grad = gamma_ghost_penalty*kinvisc*density*p_hk_;
+  // viscous part of velocity ghost penalty
+  tau_grad = gamma_ghost_penalty_visc*kinvisc*density*p_hk_;
 
+  // transient part of velocity ghost penalty
+  tau_grad += gamma_ghost_penalty_trans*density*p_hk_*p_hk_*p_hk_/timefac;
 
   return;
 }

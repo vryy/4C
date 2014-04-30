@@ -265,7 +265,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
-  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
+  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_ or xfluid_.ghost_penalty_transient_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.discret_));
   //--------------------------------------------------------------------------------------
 
@@ -842,7 +842,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     }
 
     // call edge stabilization
-    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
+    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_ or xfluid_.ghost_penalty_transient_)
     {
       TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -850,8 +850,10 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
       // set additional faceparams according to ghost-penalty terms due to Nitsche's method
       faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
+      faceparams.set("trans_ghost_penalty",xfluid_.ghost_penalty_transient_);
       faceparams.set("u_p_ghost_penalty_2nd",xfluid_.ghost_penalty_2ndorder_);
       faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
+      faceparams.set("GHOST_PENALTY_TRANSIENT_FAC", xfluid_.ghost_penalty_transient_fac_);
 
       //------------------------------------------------------------
       // loop over row faces
@@ -2033,7 +2035,7 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
     DRT::Element::LocationArray la( 1 );
 
     // call edge stabilization
-    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
+    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_ or xfluid_.ghost_penalty_transient_)
     {
       TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -2178,9 +2180,12 @@ void FLD::XFluid::Init()
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
 
   // set flag if the viscous ghost-penalty stabiliation due to Nitsche's method has to be integrated
-  ghost_penalty_          = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
-  ghost_penalty_2ndorder_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB");
-  ghost_penalty_fac_      = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
+  ghost_penalty_                    = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
+  ghost_penalty_transient_          = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB");
+  ghost_penalty_2ndorder_           = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB");
+  ghost_penalty_fac_                = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
+  ghost_penalty_transient_fac_      = params_xf_stab.get<double>("GHOST_PENALTY_TRANSIENT_FAC", 0.0);
+
 
   // get general XFEM specific parameters
   VolumeCellGaussPointBy_ = params_xfem.get<std::string>("VOLUME_GAUSS_POINTS_BY");
@@ -2196,7 +2201,7 @@ void FLD::XFluid::Init()
   gmsh_sol_out_          = (bool)params_xfem.get<int>("GMSH_SOL_OUT");
   gmsh_debug_out_        = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
   gmsh_debug_out_screen_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_));
+  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_ or ghost_penalty_transient_ or ghost_penalty_2ndorder_));
   gmsh_discret_out_      = (bool)params_xfem.get<int>("GMSH_DISCRET_OUT");
   gmsh_cut_out_          = (bool)params_xfem.get<int>("GMSH_CUT_OUT");
   gmsh_step_diff_        = 500;
@@ -2226,7 +2231,7 @@ void FLD::XFluid::Init()
 
 
   // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
-  if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
+  if(edge_based_ or ghost_penalty_ or ghost_penalty_transient_ or ghost_penalty_2ndorder_)
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     actdis->CreateInternalFacesExtension();
@@ -2846,8 +2851,7 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
                                      Teuchos::ParameterList& params_xf_gen,
                                      Teuchos::ParameterList& params_xf_stab)
 {
-  if (myrank_==0)
-  {
+
     // ----------------------------------------------------------------------
     // check XFEM GENERAL parameter list
     // ----------------------------------------------------------------------
@@ -2898,18 +2902,41 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
 
     // convective stabilization parameter (scaling factor and stabilization factor)
     if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
-      std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
+    {
+      if(myrank_ == 0)
+      {
+        IO::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << IO::endl;
+      }
+    }
     if(conv_stab_fac_ != 1.0 and (    conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_inflow
                                    or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_abs_normal_vel
                                    or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel) )
     {
-      std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC is set to 1.0" << END_COLOR << endl;
+      if(myrank_ == 0)
+      {
+        IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+        IO::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC is set to 1.0" << END_COLOR << IO::endl;
+        IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+      }
+
       conv_stab_fac_ = 1.0;
     }
     if(conv_stab_fac_ <= 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_const)
       dserror("INPUT CHECK: 'CONV_STAB_SCALING = const' with CONV_STAB_FAC <= 0.0  has no effect");
 
-  } // proc 0
+    // check for unreasonable transient ghost penalty stabilization
+    if( timealgo_ == INPAR::FLUID::timeint_stationary and ghost_penalty_transient_ == true)
+    {
+      if(myrank_ == 0)
+      {
+        IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+        IO::cout << RED_LIGHT << "/!\\ WARNING: GHOST_PENALTY_TRANSIENT_STAB switched off for stationary computations" << IO::endl;
+        IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+      }
+
+      ghost_penalty_transient_ = false;
+    }
+
 
   return;
 }
@@ -2943,8 +2970,8 @@ void FLD::XFluid::PrintStabilizationParams()
 
       string def_tau = stabparams->get<string>("DEFINITION_TAU");
 
-      if(    def_tau == "Franca_Barrenechea_Valentin_Frey_Wall"
-          or def_tau == "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt") dserror("do not use Franca_Barrenechea_Valentin_Frey_Wall stabilization for XFEM -no stable results!");
+//      if(    def_tau == "Franca_Barrenechea_Valentin_Frey_Wall"
+//          or def_tau == "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt") dserror("do not use Franca_Barrenechea_Valentin_Frey_Wall stabilization for XFEM -no stable results!");
 
 
       // instationary case
@@ -3037,7 +3064,6 @@ void FLD::XFluid::PrintStabilizationParams()
     IO::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
     IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
-
     //---------------------------------------------------------------------------------------------
 
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
@@ -3046,20 +3072,23 @@ void FLD::XFluid::PrintStabilizationParams()
     IO::cout << "Coupling strategy:       " << interfstabparams->get<string>("COUPLING_STRATEGY") << "\n"<< IO::endl;
 
     if(boundIntType_ == INPAR::XFEM::BoundaryTypeSigma)
-      IO::cout << "MSH_L2_PROJ:             " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
+      IO::cout << "MSH_L2_PROJ:                       " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
 
     if(boundIntType_ == INPAR::XFEM::BoundaryTypeNitsche)
     {
-      IO::cout << "VISC_STAB_FAC:           " << visc_stab_fac_ << "\n";
-      IO::cout << "VISC_STAB_SCALING:       " << interfstabparams->get<string>("VISC_STAB_SCALING") << "\n";
+      IO::cout << "VISC_STAB_FAC:                     " << visc_stab_fac_ << "\n";
+      IO::cout << "VISC_STAB_SCALING:                 " << interfstabparams->get<string>("VISC_STAB_SCALING") << "\n";
     }
 
-    IO::cout << "GHOST_PENALTY_STAB:      " << interfstabparams->get<string>("GHOST_PENALTY_STAB") << "\n";
-    IO::cout << "GHOST_PENALTY_2nd_STAB:  " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << "\n";
-    IO::cout << "GHOST_PENALTY_FAC:       " << ghost_penalty_fac_ << "\n";
+    IO::cout << "GHOST_PENALTY_STAB:                " << interfstabparams->get<string>("GHOST_PENALTY_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_TRANSIENT_STAB:      " << interfstabparams->get<string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_FAC:                 " << ghost_penalty_fac_ << "\n";
+    IO::cout << "GHOST_PENALTY_TRANSIENT_FAC:       " << ghost_penalty_transient_fac_ << "\n";
+    IO::cout << "GHOST_PENALTY_2nd_STAB:            " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << "\n";
 
-    IO::cout << "CONV_STAB_SCALING:       " << interfstabparams->get<string>("CONV_STAB_SCALING") << "\n";
-    IO::cout << "CONV_STAB_FAC:           " << conv_stab_fac_ << "\n";
+
+    IO::cout << "CONV_STAB_SCALING:                 " << interfstabparams->get<string>("CONV_STAB_SCALING") << "\n";
+    IO::cout << "CONV_STAB_FAC:                     " << conv_stab_fac_ << "\n";
 
     IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
@@ -3130,7 +3159,7 @@ void FLD::XFluid::Integrate()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::TimeLoop()
 {
-  printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
+  if(myrank_ == 0) printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
   while (step_<stepmax_ and time_<maxtime_)
   {
     // -----------------------------------------------------------------
@@ -5004,7 +5033,7 @@ void FLD::XFluid::OutputDiscret()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    bool xdis_faces = (ghost_penalty_ or ghost_penalty_2ndorder_ or edge_based_);
+    bool xdis_faces = (ghost_penalty_ or ghost_penalty_transient_ or ghost_penalty_2ndorder_ or edge_based_);
 
     disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
     disToStream(soliddis_,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
@@ -5094,7 +5123,7 @@ void FLD::XFluid::Output()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    if( xdiscret->FilledExtension() == true && (ghost_penalty_ or ghost_penalty_2ndorder_) ) // stabilization output
+    if( xdiscret->FilledExtension() == true && (ghost_penalty_ or ghost_penalty_transient_ or ghost_penalty_2ndorder_) ) // stabilization output
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";

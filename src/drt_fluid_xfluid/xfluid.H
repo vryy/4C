@@ -708,8 +708,12 @@ namespace FLD
 
     /// ghost penalty stabilization (1st order, 2nd order derivatives) due to Nitsche's method
     bool ghost_penalty_;
+    bool ghost_penalty_transient_;
+
     bool ghost_penalty_2ndorder_;
     double ghost_penalty_fac_;
+    double ghost_penalty_transient_fac_;
+
 
     //! @name flags for gmsh output
     bool gmsh_debug_out_;

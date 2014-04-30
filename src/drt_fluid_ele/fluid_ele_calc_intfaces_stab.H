@@ -1024,9 +1024,11 @@ namespace DRT
           const double  kinvisc,
           const double  density,
           const double  normal_vel_lin_space,
-          const double  max_pevelnp,
+          const double  max_vel_L2_norm,
           const double  timefac,
-          double&       gamma_ghost_penalty);
+          const bool    instationary,
+          const double  gamma_ghost_penalty_visc,
+          const double  gamma_ghost_penalty_trans);
 
 
     private:
