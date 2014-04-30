@@ -70,6 +70,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   // all the cut sides
   // Then, when adding elements from background discret, only the elements that intersect this
   // bounding box are added
+  // Changing the order would render in problems when all bg-elements on one proc are within the structure,
+  // then the bb around the bg-mesh on this proc has no intersection with an an bb around an side element
 
   // 1. Add CutSides (sides of the cutterdiscretization)
   int numcutelements = cutterdis_.NumMyColElements();
