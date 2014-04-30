@@ -759,15 +759,23 @@ namespace FSI
 
     int numflfsidbcdofs_;   ///< Number of fluid interface DOFs with Dirichlet BC
 
-    //! variables to store the norms of the local error vectors of displacement (in the structure field) and velocity (in the fluid field)
-    double strnorm_;
-    double flnorm_;
-    double strfsinorm_;
-    double flfsinorm_;
-    double strinnernorm_;
-    double flinnernorm_;
+    // L2-norms of estimation of temporal discretization errors
+    double strnorm_;      ///< L2-norm of error in entire structure field
+    double flnorm_;       ///< L2-norm of error in entire fluid field
+    double strfsinorm_;   ///< L2-norm of error in interface DOFs of structure field
+    double flfsinorm_;    ///< L2-norm of error in interface DOFs of fluid field
+    double strinnernorm_; ///< L2-norm of error in interior DOFs of structure field
+    double flinnernorm_;  ///< L2-norm of error in interior DOFs of fluid field
 
-    // time step sizes calculated according to the 6 available norms
+    // L-inf-norms of estimation of temporal discretization errors
+    double strinfnorm_;       ///< L-inf-norm of error in entire structure field
+    double flinfnorm_;        ///< L-inf-norm of error in entire fluid field
+    double strinffsinorm_;    ///< L-inf-norm of error in interface DOFs of structure field
+    double flinffsinorm_;     ///< L-inf-norm of error in interface DOFs of fluid field
+    double strinfinnernorm_;  ///< L-inf-norm of error in interior DOFs of structure field
+    double flinfinnernorm_;   ///< L-inf-norm of error in interior DOFs of fluid field
+
+    // time step sizes calculated according to the 6 available L2-norms
     double dtstr_;          ///< time step size based on error in entire structure field
     double dtfl_;           ///< time step size based on error in entire fluid field
     double dtstrfsi_;       ///< time step size based on error in interface DOFs of structure field

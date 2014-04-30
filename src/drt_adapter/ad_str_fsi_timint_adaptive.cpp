@@ -64,13 +64,16 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
 /* Indicate norms of local discretization error */
 void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err,
                                                         double& errcond,
-                                                        double& errother)
+                                                        double& errother,
+                                                        double& errinf,
+                                                        double& errinfcond,
+                                                        double& errinfother)
 {
   // call functionality of adaptive structural time integrator
   StrAda()->EvaluateLocalErrorDis();
 
   // Indicate has to be done by the FSI algorithm since it depends on the interface
-  IndicateErrors(err, errcond, errother);
+  IndicateErrors(err, errcond, errother, errinf, errinfcond, errinfother);
 
   return;
 }
@@ -79,7 +82,10 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err,
 /* Indicate local discretization error */
 void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err,
                                                     double& errcond,
-                                                    double& errother)
+                                                    double& errother,
+                                                    double& errinf,
+                                                    double& errinfcond,
+                                                    double& errinfother)
 {
   // vector with local discretization error for each DOF
   Teuchos::RCP<Epetra_Vector> error = StrAda()->LocErrDis();
@@ -94,10 +100,15 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err,
   Teuchos::RCP<Epetra_Vector> errorother
     = Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
 
-  // calculate norms of different subsets of local discretization error vector
+  // calculate L2-norms of different subsets of local discretization error vector
   err = STR::AUX::CalculateVectorNorm(errnorm_, error, numdbcdofs_);
   errcond = STR::AUX::CalculateVectorNorm(errnorm_, errorcond, numdbcfsidofs_);
   errother = STR::AUX::CalculateVectorNorm(errnorm_, errorother, numdbcinnerdofs_);
+
+  // calculate L-inf-norms of different subsets of local discretization error vector
+  errinf = STR::AUX::CalculateVectorNorm(INPAR::STR::norm_inf, error);
+  errinfcond = STR::AUX::CalculateVectorNorm(INPAR::STR::norm_inf, errorcond);
+  errinfother = STR::AUX::CalculateVectorNorm(INPAR::STR::norm_inf, errorother);
 
   return;
 }

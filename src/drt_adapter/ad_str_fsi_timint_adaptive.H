@@ -72,10 +72,14 @@ namespace ADAPTER {
     virtual void TimeStepAuxiliar();
 
     //! Indicate norms of local discretization error
-    virtual void IndicateErrorNorms(double& err,       ///< norm of local discretization error based on all DOFs
-                                    double& errcond,   ///< norm of local discretization error based on interface DOFs
-                                    double& errother   ///< norm of local discretization error based on interior DOFs
-                                    );
+    virtual void IndicateErrorNorms(
+        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
+        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
+        );
 
     //! Calculate time step size suggestion
     virtual const double CalculateDt(const double norm);
@@ -98,10 +102,14 @@ namespace ADAPTER {
   private:
 
     //! Indicate local discretization error
-    void IndicateErrors(double& err,       ///< local discretization error based on all DOFs
-                        double& errcond,   ///< local discretization error based on interface DOFs
-                        double& errother   ///< local discretization error based on interior DOFs
-                        );
+    void IndicateErrors(
+        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
+        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
+        );
 
     enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
 

@@ -590,7 +590,10 @@ void ADAPTER::FluidFSI::AdamsBashforth2(const Epetra_Vector& veln,
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::IndicateErrorNorms(double& err,
                                            double& errcond,
-                                           double& errother
+                                           double& errother,
+                                           double& errinf,
+                                           double& errinfcond,
+                                           double& errinfother
                                            )
 {
   // compute estimation of local discretization error
@@ -613,11 +616,16 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err,
   Teuchos::RCP<Epetra_Vector> errorother
     = Teuchos::rcp(new Epetra_Vector(*interface_->ExtractOtherVector(locerrvelnp_)));
 
-  // calculate norms of different subsets of local discretization error vector
+  // calculate L2-norms of different subsets of temporal discretization error vector
   // (neglect Dirichlet and pressure DOFs for length scaling)
   err = CalculateErrorNorm(*locerrvelnp_, fluidimpl_->GetDBCMapExtractor()->CondMap()->NumGlobalElements() + fluidimpl_->PressureRowMap()->NumGlobalElements());
   errcond = CalculateErrorNorm(*errorcond, numfsidbcdofs_);
   errother = CalculateErrorNorm(*errorother, fluidimpl_->PressureRowMap()->NumGlobalElements() + (fluidimpl_->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numfsidbcdofs_));
+
+  // calculate L-inf-norms of temporal discretization errors
+  locerrvelnp_->NormInf(&errinf);
+  errorcond->NormInf(&errinfcond);
+  errorother->NormInf(&errinfother);
 
   return;
 }

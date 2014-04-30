@@ -353,10 +353,14 @@ namespace ADAPTER {
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void IndicateErrorNorms(double& err,       ///< norm of local discretization error based on all DOFs
-                                    double& errcond,   ///< norm of local discretization error based on interface DOFs
-                                    double& errother   ///< norm of local discretization error based on interior DOFs
-                                    ) = 0;
+    virtual void IndicateErrorNorms(
+        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
+        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
+        ) = 0;
 
     /// set time step size
     virtual void SetDt(const double dtold) = 0;

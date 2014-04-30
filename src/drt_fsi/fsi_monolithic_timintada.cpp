@@ -53,6 +53,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
 
   adareason_ = "none";
 
+  // L2-norms of estimation of temporal discretization errors
   strnorm_ = 0.0;
   flnorm_ = 0.0;
   strfsinorm_ = 0.0;
@@ -60,6 +61,15 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   strinnernorm_ = 0.0;
   flinnernorm_ = 0.0;
 
+  // L-inf-norms of estimation of temporal discretization errors
+  strinfnorm_ = 0.0;
+  flinfnorm_ = 0.0;
+  strinffsinorm_ = 0.0;
+  flinffsinorm_ = 0.0;
+  strinfinnernorm_ = 0.0;
+  flinfinnernorm_ = 0.0;
+
+  // time step sizes calculated according to the 6 available L2-norms
   dtstr_ = 0.0;
   dtfl_ = 0.0;
   dtstrfsi_ = 0.0;
@@ -334,12 +344,18 @@ void FSI::Monolithic::WriteAdaFileHeader() const
                << std::right << std::setw(16) << "dt"
                << std::right << std::setw(16) << "#adaptiter"
                << std::right << std::setw(16) << "dt of field"
-               << std::right << std::setw(16) << "err str field"
-               << std::right << std::setw(16) << "err str inner"
-               << std::right << std::setw(16) << "err str fsi"
-               << std::right << std::setw(16) << "err fl field"
-               << std::right << std::setw(16) << "err fl inner"
-               << std::right << std::setw(16) << "err fl fsi"
+               << std::right << std::setw(16) << "L2-err str field"
+               << std::right << std::setw(16) << "L2-err str inner"
+               << std::right << std::setw(16) << "L2-err str fsi"
+               << std::right << std::setw(16) << "L2-err fl field"
+               << std::right << std::setw(16) << "L2-err fl inner"
+               << std::right << std::setw(16) << "L2-err fl fsi"
+               << std::right << std::setw(16) << "Linf str field"
+               << std::right << std::setw(16) << "Linf str inner"
+               << std::right << std::setw(16) << "Linf str fsi"
+               << std::right << std::setw(16) << "Linf fl field"
+               << std::right << std::setw(16) << "Linf fl inner"
+               << std::right << std::setw(16) << "Linf fl fsi"
                << "\n\n"
       ;
   }
@@ -362,13 +378,21 @@ void FSI::Monolithic::WriteAdaFile() const
     // Who is responsible for the new time step size?
     (*logada_)  << std::right << std::setw(16) << adareason_;
 
-    // print norms of the truncation error indications
+    // print L2-norms of the temporal discretization error indications
     (*logada_)  << std::right << std::setw(16) << strnorm_
                 << std::right << std::setw(16) << strinnernorm_
                 << std::right << std::setw(16) << strfsinorm_
                 << std::right << std::setw(16) << flnorm_
                 << std::right << std::setw(16) << flinnernorm_
-                << std::right << std::setw(16) << flfsinorm_
+                << std::right << std::setw(16) << flfsinorm_;
+
+    // print L-inf-norms of the temporal discretization error indications
+    (*logada_)  << std::right << std::setw(16) << strinfnorm_
+                << std::right << std::setw(16) << strinfinnernorm_
+                << std::right << std::setw(16) << strinffsinorm_
+                << std::right << std::setw(16) << flinfnorm_
+                << std::right << std::setw(16) << flinfinnernorm_
+                << std::right << std::setw(16) << flinffsinorm_
                 << std::endl;
   }
 }
@@ -448,7 +472,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   if (IsAdaStructure())
   {
     Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)
-        ->IndicateErrorNorms(strnorm_, strfsinorm_, strinnernorm_);
+        ->IndicateErrorNorms(strnorm_, strfsinorm_, strinnernorm_, strinfnorm_, strinffsinorm_, strinfinnernorm_);
 
     // structure based time step size suggestions
     dtstr_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->CalculateDt(strnorm_);
@@ -462,7 +486,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // -----------------------------------------------------------------------
   if (IsAdaFluid())
   {
-    FluidField().IndicateErrorNorms(flnorm_, flfsinorm_, flinnernorm_);
+    FluidField().IndicateErrorNorms(flnorm_, flfsinorm_, flinnernorm_, flinfnorm_, flinffsinorm_, flinfinnernorm_);
 
     //calculate time step sizes resulting from errors in the fluid field
     dtfl_ = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);

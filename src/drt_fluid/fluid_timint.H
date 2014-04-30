@@ -192,14 +192,18 @@ public:
    */
   virtual void TimeStepAuxiliar() { dserror("We do this in the Adapter until time adaptivity is available in the fluid field."); }
 
-  /*! Indicate norms of local discretization error
+  /*! Indicate norms of temporal discretization error
    *
    *  \author mayr.mt \date 12/2013
    */
-  virtual void IndicateErrorNorms(double& err,       ///< norm of local discretization error based on all DOFs
-                                  double& errcond,   ///< norm of local discretization error based on interface DOFs
-                                  double& errother   ///< norm of local discretization error based on interior DOFs
-                                  ) { dserror("We do this in the Adapter until time adaptivity is available in the fluid field."); }
+  virtual void IndicateErrorNorms(
+      double& err,        ///< L2-norm of temporal discretization error based on all DOFs
+      double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
+      double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
+      double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
+      double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
+      double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
+      ) { dserror("We do this in the Adapter until time adaptivity is available in the fluid field."); }
 
   //@}
 
