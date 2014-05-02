@@ -282,7 +282,7 @@ namespace UTILS
     WindkesselManager(const WindkesselManager& old);
 
 
-    Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of Windkessel boundary live in
+    Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of windkessel boundary live in
     Teuchos::RCP<WindkesselDofSet> windkesseldofset_; ///< degrees of freedom of pressures
     Teuchos::RCP<Epetra_Map> windkesselmap_;  ///< unique map of Windkessel values
     Teuchos::RCP<Epetra_Map> redwindkesselmap_;   ///< fully redundant map of Windkessel values

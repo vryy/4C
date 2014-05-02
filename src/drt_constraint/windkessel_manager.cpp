@@ -413,35 +413,46 @@ void UTILS::WindkesselManager::SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newr
 void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(Teuchos::RCP<Epetra_Vector> actpres)
 {
 
+  std::vector<DRT::Condition*> windkcond;
   std::vector<DRT::Condition*> surfneumcond;
+  std::vector<DRT::Condition*> windkstructcoupcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null)
     dserror("No structure discretization available!");
 
-  // first get all Neumann conditions on structure
+  // get all windkessel conditions on structure
+  if (wk_std_->HaveWindkessel()) structdis->GetCondition("WindkesselStdStructureCond",windkcond);
+  if (wk_heartvalvearterial_->HaveWindkessel()) structdis->GetCondition("WindkesselHeartValveArterialStructureCond",windkcond);
+  if (wk_heartvalvearterial_proxdist_->HaveWindkessel()) structdis->GetCondition("WindkesselHeartValveArterialProxDistStructureCond",windkcond);
+
+  // get all Neumann conditions on structure
   structdis->GetCondition("SurfaceNeumann",surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
   if (numneumcond == 0) dserror("No Neumann conditions on structure!");
+  // now filter those Neumann conditions that are due to the windkessel structure coupling
 
-  // now filter those Neumann conditions that are due to the coupling
-  std::vector<DRT::Condition*> coupcond;
   for (unsigned int k = 0; k < numneumcond; ++k)
   {
     DRT::Condition* actcond = surfneumcond[k];
     if (actcond->Type() == DRT::Condition::WindkesselStructureCoupling)
-      coupcond.push_back(actcond);
+      windkstructcoupcond.push_back(actcond);
   }
-  unsigned int numcond = coupcond.size();
-  if (numcond == 0) dserror("No coupling conditions found!");
 
-  for (unsigned int i=0; i<numcond; ++i)
+  unsigned int numwkcoupcond = windkstructcoupcond.size();
+  if (numwkcoupcond == 0) dserror("No coupling conditions found!");
+
+  // fill the i-sorted wk coupling conditions vector with the id-sorted values of the wk pressure vector, at the respective coupling_id
+  for (unsigned int i=0; i<numwkcoupcond; ++i)
   {
-    DRT::Condition* cond = coupcond[i];
+
+    int id_wkstrcoupcond = (windkstructcoupcond[i])->GetInt("coupling_id");
+
+    DRT::Condition* cond = windkstructcoupcond[i];
     std::vector<double> newval(6,0.0);
-    if (wk_std_->HaveWindkessel()) newval[0] = -(*actpres)[i];
-    if (wk_heartvalvearterial_->HaveWindkessel()) newval[0] = -(*actpres)[2*i];
-    if (wk_heartvalvearterial_proxdist_->HaveWindkessel()) newval[0] = -(*actpres)[4*i];
+    if (wk_std_->HaveWindkessel()) newval[0] = -(*actpres)[id_wkstrcoupcond];
+    if (wk_heartvalvearterial_->HaveWindkessel()) newval[0] = -(*actpres)[2*id_wkstrcoupcond];
+    if (wk_heartvalvearterial_proxdist_->HaveWindkessel()) newval[0] = -(*actpres)[4*id_wkstrcoupcond];
     cond->Add("val",newval);
   }
 
@@ -557,7 +568,7 @@ void UTILS::WindkesselManager::Solve
   Teuchos::RCP<LINALG::SparseMatrix> mat_dstruct_dwkdof =
       (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetMatDstructDwkdof()));
 
-  // prepare residual pressure
+  // prepare residual wkdof
   wkdofincr->PutScalar(0.0);
 
 

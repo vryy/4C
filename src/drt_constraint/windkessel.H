@@ -21,6 +21,7 @@ Maintainer: Marc Hirschvogel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 #include "Epetra_FECrsMatrix.h"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 
@@ -149,10 +150,13 @@ namespace UTILS
   protected:
 
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
-    std::vector<DRT::Condition*> windkesselcond_; ///< conditions, that define the Windkessel (all of the same kind)
+    std::vector<DRT::Condition*> windkesselcond_; ///< windkessel conditions
+    std::vector<DRT::Condition*> windkesselstructcoupcond_; ///< windkessel structure coupling conditions
     WindkesselType windkesseltype_; ///< Windkessel type
     std::map<int,double>  inittimes_; ///< map with times at which Windkessel is supposed to become active
     std::map<int,bool> activecons_; ///< map with indicator if Windkessels are active
+    //! gaussian integration to be used
+    DRT::UTILS::GaussRule2D gaussrule_;
 
   private:
 

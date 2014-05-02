@@ -49,7 +49,16 @@ Maintainer: Marc Hirschvogel
 
 #include "windkessel.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../drt_so3/so_surface.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -69,7 +78,7 @@ UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
     std::vector<int> curcoupID;
     for (unsigned int i=0; i<windkesselcond_.size();i++)
     {
-      //windkesselcond_[i]->Print(std::cout);
+
       int condID=(*(windkesselcond_[i]->Get<std::vector<int> >("id")))[0];
 
       //std::vector<int> curID(i);
@@ -83,53 +92,72 @@ UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
       {
         offsetID=condID;
       }
+    }
 
-      std::vector<DRT::Condition*> surfneumcond;
-      std::vector<int> tmp;
-      Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-      if (structdis == Teuchos::null) dserror("no structure discretization available");
+    std::vector<DRT::Condition*> surfneumcond;
+    //std::vector<int> tmp;
+    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+    if (structdis == Teuchos::null) dserror("no structure discretization available");
 
-      // first get all Neumann conditions on structure
-      structdis->GetCondition("SurfaceNeumann",surfneumcond);
-      unsigned int numneumcond = surfneumcond.size();
-      if (numneumcond == 0) dserror("no Neumann conditions on structure");
+    // first get all Neumann conditions on structure
+    structdis->GetCondition("SurfaceNeumann",surfneumcond);
+    unsigned int numneumcond = surfneumcond.size();
+    if (numneumcond == 0) dserror("no Neumann conditions on structure");
 
-      // now filter those Neumann conditions that are due to the coupling
-      std::vector<DRT::Condition*> coupcond;
-      for (unsigned int k = 0; k < numneumcond; ++k)
-      {
-        DRT::Condition* actcond = surfneumcond[k];
-        if (actcond->Type() == DRT::Condition::WindkesselStructureCoupling)
-          coupcond.push_back(actcond);
-      }
-      unsigned int numcond = coupcond.size();
+    // now filter those Neumann conditions that are due to the coupling
+    //std::vector<DRT::Condition*> coupcond;
+    for (unsigned int k = 0; k < numneumcond; ++k)
+    {
+      DRT::Condition* actcond = surfneumcond[k];
+      if (actcond->Type() == DRT::Condition::WindkesselStructureCoupling)
+        windkesselstructcoupcond_.push_back(actcond);
+    }
+    unsigned int numcond = windkesselstructcoupcond_.size();
 
-      curcoupID.push_back((coupcond[i])->GetInt("coupling id"));
-      if (curID.size() != curcoupID.size()) dserror("Coupling conditions do not match Windkessel conditions!");
 
-      if (numcond == 0) dserror("no coupling conditions found");
+    if (numcond == 0) dserror("no coupling conditions found");
 
-      int coupcondID = 0;
+    if (windkesselcond_.size() != windkesselstructcoupcond_.size()) dserror("Coupling conditions do not match windkessel conditions!");
 
-      DRT::Condition* cond = coupcond[i];
-      cond->Add("type","neum_orthopressure");
+
+    std::vector<int> wkID(windkesselcond_.size());
+    for (unsigned int i=0; i<windkesselcond_.size(); i++)
+    {
+      wkID[i]=(windkesselcond_[i])->GetInt("id");
+    }
+    std::vector<int> coupcondID(windkesselstructcoupcond_.size());
+    //set Neumann line to condition
+    for (unsigned int i=0; i<windkesselstructcoupcond_.size(); i++)
+    {
+
+      coupcondID[i]=(windkesselstructcoupcond_[i])->GetInt("coupling_id");
+
+      windkesselstructcoupcond_[i]->Add("type","neum_orthopressure");
       std::vector<int> onoff(6,0);
       onoff[0] = 1;
-      cond->Add("onoff",onoff);
+      windkesselstructcoupcond_[i]->Add("onoff",onoff);
       std::vector<double> val(6,0.0);
-      cond->Add("val",val);
-      coupcondID = (coupcond[i])->GetInt("coupling id");
-      tmp.push_back(coupcondID);
-
-      if (curID[i] != curcoupID[i]) dserror("Choose the same ids for the Windkessel and the structural coupling surface!");
+      windkesselstructcoupcond_[i]->Add("val",val);
 
     }
+
+    if (std::min(wkID[0],wkID[windkesselcond_.size()-1]) != 0)
+      dserror("Start your id numbering from 0 on!");
+    if (std::min(coupcondID[0],coupcondID[windkesselstructcoupcond_.size()-1]) != 0)
+      dserror("Start your id numbering from 0 on!");
+
+    if (std::min(coupcondID[0],coupcondID[windkesselstructcoupcond_.size()-1]) != std::min(wkID[0],wkID[windkesselcond_.size()-1]))
+      dserror("Min windkessel id not equal to min windkessel structure coupling id!");
+    if (std::max(coupcondID[0],coupcondID[windkesselstructcoupcond_.size()-1]) != std::max(wkID[0],wkID[windkesselcond_.size()-1]))
+      dserror("Max windkessel id not equal to max windkessel structure coupling id!");
+
   }
   else
   {
     windkesseltype_=none;
   }
 }
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
@@ -325,6 +353,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
+  // loop over windkessel conditions
   for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
   {
     DRT::Condition& cond = *(windkesselcond_[i]);
@@ -334,11 +363,11 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-    double C = windkesselcond_[i]->GetDouble("C");
-    double R_p = windkesselcond_[i]->GetDouble("R_p");
-    double Z_c = windkesselcond_[i]->GetDouble("Z_c");
-    double L = windkesselcond_[i]->GetDouble("L");
-    double p_ref = windkesselcond_[i]->GetDouble("p_ref");
+    double C = windkesselcond_[condID]->GetDouble("C");
+    double R_p = windkesselcond_[condID]->GetDouble("R_p");
+    double Z_c = windkesselcond_[condID]->GetDouble("Z_c");
+    double L = windkesselcond_[condID]->GetDouble("L");
+    double p_ref = windkesselcond_[condID]->GetDouble("p_ref");
 
     // Windkessel stiffness
     double wkstiff = 0.;
@@ -362,20 +391,18 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     }
 
 
-    // is condition already labeled as active?
-    if(activecons_.find(condID)->second==false)
-    {
-      const std::string action = params.get<std::string>("action");
-      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-      actdisc_->SetState("displacement",displast);
-      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-      actdisc_->SetState("displacement",disp);
-      params.set("action",action);
-    }
+    const std::string action = params.get<std::string>("action");
+    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+    actdisc_->SetState("displacement",displast);
+    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+    actdisc_->SetState("displacement",disp);
+    params.set("action",action);
+
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     int gindex = condID-offsetID;
+    //std::cout << "g1: " << gindex << std::endl;
 
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
@@ -446,7 +473,6 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     Epetra_SerialDenseVector elevector1;
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
-    Epetra_SerialDenseVector elevector4;
 
     std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -468,48 +494,190 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
 
       elematrix2.Shape(eledim,eledim);
       elevector2.Size(eledim);
-      elevector3.Size(eledim);
-      elevector4.Size(1);
+      elevector3.Size(1);
 
+      //dummies
       Epetra_SerialDenseMatrix dummat(0,0);
       Epetra_SerialDenseVector dumvec(0);
 
       // call the element specific evaluate method
-      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector4);
-      int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3,dumvec);
-      if (err1 or err2) dserror("error while evaluating elements");
+      int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
-      // assembly
       int eid = curr->second->Id();
 
       if (assmat2)
       {
-        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
+        // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex;
         elevector2.Scale(-(factor_q/ts_size + factor_dq/(theta*ts_size*ts_size) + factor_ddq/(theta*theta*ts_size*ts_size*ts_size)));
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
       }
-      if (assmat3)
-      {
-        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-        std::vector<int> colvec(1);
-        colvec[0]=gindex;
-        elevector3.Scale(sc_strtimint);
-        sysmat3->Assemble(eid,lmstride,elevector3,lm,lmowner,colvec);
-      }
       if (assvec7)
       {
+        // assemble the current volume of the enclosed surface of the windkessel condition
         std::vector<int> windkessellm;
         std::vector<int> windkesselowner;
         windkessellm.push_back(gindex);
         windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec7,elevector4,windkessellm,windkesselowner);
+        LINALG::Assemble(*sysvec7,elevector3,windkessellm,windkesselowner);
       }
 
     }
 
   }
+
+
+  // loop over windkessel structure coupling conditions
+  /* here we do an extra loop to assemble the correct offdiagonal stiffness block dfext/dwkdof
+  this effectively is the derivative of the orthopressure Neumann load wrt the pressure,
+  corresponding to the area integral -> we do a similar loop like in so_surface_evaluate.cpp
+  without the Neumann load factor infront of it*/
+  for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)
+  {
+    DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
+
+    int coupcondID=coupcond.GetInt("coupling_id");
+    //std::cout << "" << condition << std::endl;
+    params.set("coupling_id",coupcondID);
+
+    const std::string action = params.get<std::string>("action");
+    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+    actdisc_->SetState("displacement",displast);
+    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+    actdisc_->SetState("displacement",disp);
+    params.set("action",action);
+
+    // global and local ID of this bc in the redundant vectors
+    const int offsetID = params.get<int>("OffsetID");
+    int gindex = coupcondID-offsetID;
+
+
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = coupcond.Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
+
+      Epetra_SerialDenseVector elevector;
+      elevector.Size(eledim);
+
+      DRT::Element* element = curr->second.get();
+      int numnode=element->NumNode();
+
+      // allocate vector for shape functions and matrix for derivatives
+      LINALG::SerialDenseVector funct(numnode);
+      LINALG::SerialDenseMatrix deriv(2,numnode);
+      LINALG::SerialDenseMatrix xc;
+
+      xc.LightShape(numnode,3);
+
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+      Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*curdispl,mydisp,lm);
+
+      for (int j=0; j<numnode; ++j)
+      {
+        xc(j,0) = element->Nodes()[j]->X()[0] + mydisp[j*3+0];
+        xc(j,1) = element->Nodes()[j]->X()[1] + mydisp[j*3+1];
+        xc(j,2) = element->Nodes()[j]->X()[2] + mydisp[j*3+2];
+      }
+
+      /*----------------------------------------------------------------------*
+      |               start loop over integration points                     |
+      *----------------------------------------------------------------------*/
+      DRT::Element::DiscretizationType shape = element->Shape();
+      // type of gaussian integration
+      switch(shape)
+      {
+      case DRT::Element::tri3:
+        gaussrule_ = DRT::UTILS::intrule_tri_3point;
+      break;
+      case DRT::Element::tri6:
+        gaussrule_ = DRT::UTILS::intrule_tri_6point;
+      break;
+      case DRT::Element::quad4:
+        gaussrule_ = DRT::UTILS::intrule_quad_4point;
+      break;
+      case DRT::Element::quad8:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      case DRT::Element::quad9:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      case DRT::Element::nurbs9:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      default:
+          dserror("shape type unknown!\n");
+      }
+
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+      for (int gp=0; gp<intpoints.nquad; gp++)
+      {
+        // set gausspoints from integration rule
+        Epetra_SerialDenseVector e(2);
+        e(0) = intpoints.qxg[gp][0];
+        e(1) = intpoints.qxg[gp][1];
+
+        // get shape functions and derivatives in the plane of the element
+
+        DRT::UTILS::shape_function_2D(funct,e(0),e(1),shape);
+        DRT::UTILS::shape_function_2D_deriv1(deriv,e(0),e(1),shape);
+
+        //stuff to get spatial Neumann
+        const int numdim = 3;
+        LINALG::SerialDenseMatrix gp_coord(1,numdim);
+
+        std::vector<double> normal(3);
+
+        // note that the length of this normal is the area dA
+        // compute dXYZ / drs
+        LINALG::SerialDenseMatrix dxyzdrs(2,3);
+        dxyzdrs.Multiply('N','N',1.0,deriv,xc,0.0);
+
+        normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+        normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+        normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+        const double fac = intpoints.qwgt[gp];
+        for (int node=0; node < numnode; ++node)
+          for(int dim=0 ; dim<3; dim++)
+            elevector[node*3+dim] += funct[node] * normal[dim] * fac;
+
+      }
+
+      int eid = curr->second->Id();
+
+      if (assmat3)
+      {
+        // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dwkdof
+        std::vector<int> colvec(1);
+        colvec[0]=gindex;
+        //scale with factor from structural time integration
+        elevector.Scale(sc_strtimint);
+        sysmat3->Assemble(eid,lmstride,elevector,lm,lmowner,colvec);
+      }
+    }
+
+  }
+
+
   return;
 } // end of EvaluateCondition
 
@@ -574,30 +742,30 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-    double R_av_max = windkesselcond_[i]->GetDouble("R_av_max");
-    double R_av_min = windkesselcond_[i]->GetDouble("R_av_min");
-    double R_mv_max = windkesselcond_[i]->GetDouble("R_mv_max");
-    double R_mv_min = windkesselcond_[i]->GetDouble("R_mv_min");
-    double k_p = windkesselcond_[i]->GetDouble("k_p");
+    double R_av_max = windkesselcond_[condID]->GetDouble("R_av_max");
+    double R_av_min = windkesselcond_[condID]->GetDouble("R_av_min");
+    double R_mv_max = windkesselcond_[condID]->GetDouble("R_mv_max");
+    double R_mv_min = windkesselcond_[condID]->GetDouble("R_mv_min");
+    double k_p = windkesselcond_[condID]->GetDouble("k_p");
 
-    double C = windkesselcond_[i]->GetDouble("C");
-    double R_p = windkesselcond_[i]->GetDouble("R_p");
-    double Z_c = windkesselcond_[i]->GetDouble("Z_c");
-    double L = windkesselcond_[i]->GetDouble("L");
+    double C = windkesselcond_[condID]->GetDouble("C");
+    double R_p = windkesselcond_[condID]->GetDouble("R_p");
+    double Z_c = windkesselcond_[condID]->GetDouble("Z_c");
+    double L = windkesselcond_[condID]->GetDouble("L");
 
-    double p_ref = windkesselcond_[i]->GetDouble("p_ref");
+    double p_ref = windkesselcond_[condID]->GetDouble("p_ref");
 
-    double p_at_fac = windkesselcond_[i]->GetDouble("fac");
+    double p_at_fac = windkesselcond_[condID]->GetDouble("fac");
 
     // find out whether we will use a time curve and get the factor
-    const std::vector<int>* curve  = windkesselcond_[i]->Get<std::vector<int> >("curve");
+    const std::vector<int>* curve  = windkesselcond_[condID]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
     if (curvenum>=0 && usetime)
       curvefac = DRT::Problem::Instance()->Curve(curvenum).f(tim);
 
-    const std::string* valvelaw = windkesselcond_[i]->Get<std::string>("valvelaw");
+    const std::string* valvelaw = windkesselcond_[condID]->Get<std::string>("valvelaw");
 
     // Windkessel stiffness
     Epetra_SerialDenseMatrix wkstiff(2,2);
@@ -632,9 +800,9 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
       //extract values of dof vector dofm
       //ventricular pressure
-      p_v = (*sysvec8)[2*i];
+      p_v = (*sysvec8)[2*condID];
       //arterial pressure
-      p_ar = (*sysvec8)[2*i+1];
+      p_ar = (*sysvec8)[2*condID+1];
       //atrial pressure
       p_at = p_at_fac * curvefac;
 
@@ -715,21 +883,17 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
     }
 
+    const std::string action = params.get<std::string>("action");
+    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+    actdisc_->SetState("displacement",displast);
+    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+    actdisc_->SetState("displacement",disp);
+    params.set("action",action);
 
-    // is condition already labeled as active?
-    if(activecons_.find(condID)->second==false)
-    {
-      const std::string action = params.get<std::string>("action");
-      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-      actdisc_->SetState("displacement",displast);
-      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-      actdisc_->SetState("displacement",disp);
-      params.set("action",action);
-    }
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
-    int gindex = condID-offsetID + i ;
+    int gindex = 2*condID-offsetID;
     int gindex2 = gindex+1;
 
     // elements might need condition
@@ -842,9 +1006,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     Epetra_SerialDenseVector elevector1;
     Epetra_SerialDenseVector elevector2a;
     Epetra_SerialDenseVector elevector2b;
-    Epetra_SerialDenseVector elevector3a;
-    Epetra_SerialDenseVector elevector3b;
-    Epetra_SerialDenseVector elevector4;
+    Epetra_SerialDenseVector elevector3;
 
     std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -867,20 +1029,16 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       elematrix2.Shape(eledim,eledim);
       elevector2a.Size(eledim);
       elevector2b.Size(eledim);
-      elevector3a.Size(eledim);
-      elevector3b.Size(eledim);
-      elevector4.Size(2);
+      elevector3.Size(2);
 
 
       Epetra_SerialDenseMatrix dummat(0,0);
       Epetra_SerialDenseVector dumvec(0);
 
       // call the element specific evaluate method
-      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2a,elevector4);
+      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2a,elevector3);
       int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector2b,dumvec);
-      int err3 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3a,dumvec);
-      int err4 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3b,dumvec);
-      if (err1 or err2 or err3 or err4) dserror("error while evaluating elements");
+      if (err1 or err2) dserror("error while evaluating elements");
 
 
       // assembly
@@ -888,7 +1046,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
       if (assmat2)
       {
-        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
+        // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec1(1);
         std::vector<int> colvec2(1);
         colvec1[0]=gindex;
@@ -900,33 +1059,171 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
 
       }
-      if (assmat3)
-      {
-        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-        std::vector<int> colvec1(1);
-        std::vector<int> colvec2(1);
-        colvec1[0]=gindex;
-        colvec2[0]=gindex2;
-        elevector3a.Scale(sc_strtimint);
-        sysmat3->Assemble(eid,lmstride,elevector3a,lm,lmowner,colvec1);
-        elevector3b.Scale(0.0);
-        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec2);
-      }
       if (assvec7)
       {
-        elevector4[1]=elevector4[0];
+        // assemble the current volume of the enclosed surface of the windkessel condition
+        elevector3[1]=elevector3[0];
         std::vector<int> windkessellm;
         std::vector<int> windkesselowner;
         windkessellm.push_back(gindex);
         windkessellm.push_back(gindex2);
         windkesselowner.push_back(curr->second->Owner());
         windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec7,elevector4,windkessellm,windkesselowner);
+        LINALG::Assemble(*sysvec7,elevector3,windkessellm,windkesselowner);
       }
 
     }
 
   }
+
+
+  // loop over windkessel structure coupling conditions
+  /* here we do an extra loop to assemble the correct offdiagonal stiffness block dfext/dwkdof
+  this effectively is the derivative of the orthopressure Neumann load wrt the pressure,
+  corresponding to the area integral -> we do a similar loop like in so_surface_evaluate.cpp
+  without the Neumann load factor infront of it*/
+  for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)
+  {
+    DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
+
+    int coupcondID=coupcond.GetInt("coupling_id");
+    //std::cout << "" << condition << std::endl;
+    params.set("coupling_id",coupcondID);
+
+    const std::string action = params.get<std::string>("action");
+    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+    actdisc_->SetState("displacement",displast);
+    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+    actdisc_->SetState("displacement",disp);
+    params.set("action",action);
+
+    // global and local ID of this bc in the redundant vectors
+    const int offsetID = params.get<int>("OffsetID");
+    int gindex = 2*coupcondID-offsetID;
+
+
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = coupcond.Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
+
+      Epetra_SerialDenseVector elevector;
+      elevector.Size(eledim);
+
+      DRT::Element* element = curr->second.get();
+      int numnode=element->NumNode();
+
+      // allocate vector for shape functions and matrix for derivatives
+      LINALG::SerialDenseVector funct(numnode);
+      LINALG::SerialDenseMatrix deriv(2,numnode);
+      LINALG::SerialDenseMatrix xc;
+
+      xc.LightShape(numnode,3);
+
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+      Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*curdispl,mydisp,lm);
+
+      for (int j=0; j<numnode; ++j)
+      {
+        xc(j,0) = element->Nodes()[j]->X()[0] + mydisp[j*3+0];
+        xc(j,1) = element->Nodes()[j]->X()[1] + mydisp[j*3+1];
+        xc(j,2) = element->Nodes()[j]->X()[2] + mydisp[j*3+2];
+      }
+
+      /*----------------------------------------------------------------------*
+      |               start loop over integration points                     |
+      *----------------------------------------------------------------------*/
+      DRT::Element::DiscretizationType shape = element->Shape();
+      // type of gaussian integration
+      switch(shape)
+      {
+      case DRT::Element::tri3:
+        gaussrule_ = DRT::UTILS::intrule_tri_3point;
+      break;
+      case DRT::Element::tri6:
+        gaussrule_ = DRT::UTILS::intrule_tri_6point;
+      break;
+      case DRT::Element::quad4:
+        gaussrule_ = DRT::UTILS::intrule_quad_4point;
+      break;
+      case DRT::Element::quad8:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      case DRT::Element::quad9:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      case DRT::Element::nurbs9:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      default:
+          dserror("shape type unknown!\n");
+      }
+
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+      for (int gp=0; gp<intpoints.nquad; gp++)
+      {
+        // set gausspoints from integration rule
+        Epetra_SerialDenseVector e(2);
+        e(0) = intpoints.qxg[gp][0];
+        e(1) = intpoints.qxg[gp][1];
+
+        // get shape functions and derivatives in the plane of the element
+
+        DRT::UTILS::shape_function_2D(funct,e(0),e(1),shape);
+        DRT::UTILS::shape_function_2D_deriv1(deriv,e(0),e(1),shape);
+
+        //stuff to get spatial Neumann
+        const int numdim = 3;
+        LINALG::SerialDenseMatrix gp_coord(1,numdim);
+
+        std::vector<double> normal(3);
+
+        // note that the length of this normal is the area dA
+        // compute dXYZ / drs
+        LINALG::SerialDenseMatrix dxyzdrs(2,3);
+        dxyzdrs.Multiply('N','N',1.0,deriv,xc,0.0);
+
+        normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+        normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+        normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+        const double fac = intpoints.qwgt[gp];
+        for (int node=0; node < numnode; ++node)
+          for(int dim=0 ; dim<3; dim++)
+            elevector[node*3+dim] += funct[node] * normal[dim] * fac;
+
+      }
+
+      int eid = curr->second->Id();
+
+      if (assmat3)
+      {
+        // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dwkdof
+        std::vector<int> colvec1(1);
+        colvec1[0]=gindex;
+        //scale with factor from structural time integration
+        elevector.Scale(sc_strtimint);
+        sysmat3->Assemble(eid,lmstride,elevector,lm,lmowner,colvec1);
+      }
+    }
+
+  }
+
   return;
 } // end of EvaluateCondition
 
@@ -1042,10 +1339,10 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6)
     {
       //extract values of dof vector dofm
-      p_v = (*sysvec6)[4*i];
-      p_arp = (*sysvec6)[4*i+1];
-      y_arp = (*sysvec6)[4*i+2];
-      p_ard = (*sysvec6)[4*i+3];
+      p_v = (*sysvec6)[4*condID];
+      p_arp = (*sysvec6)[4*condID+1];
+      y_arp = (*sysvec6)[4*condID+2];
+      p_ard = (*sysvec6)[4*condID+3];
 
       //atrial pressure
       p_at = p_at_fac * curvefac;
@@ -1094,7 +1391,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
-    int gindex = condID-offsetID + 3*i ;
+    int gindex = 4*condID-offsetID;
     int gindex2 = gindex+1;
     int gindex3 = gindex+2;
     int gindex4 = gindex+3;
@@ -1217,11 +1514,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     Epetra_SerialDenseMatrix elematrix1;
     Epetra_SerialDenseMatrix elematrix2;
     Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2a;
-    Epetra_SerialDenseVector elevector2b;
-    Epetra_SerialDenseVector elevector3a;
-    Epetra_SerialDenseVector elevector3b;
-    Epetra_SerialDenseVector elevector4;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
 
     std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -1242,22 +1536,16 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       const int eledim = (int)lm.size();
 
       elematrix2.Shape(eledim,eledim);
-      elevector2a.Size(eledim);
-      elevector2b.Size(eledim);
-      elevector3a.Size(eledim);
-      elevector3b.Size(eledim);
-      elevector4.Size(4);
+      elevector2.Size(eledim);
+      elevector3.Size(4);
 
 
       Epetra_SerialDenseMatrix dummat(0,0);
       Epetra_SerialDenseVector dumvec(0);
 
       // call the element specific evaluate method
-      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2a,elevector4);
-      int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector2b,dumvec);
-      int err3 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3a,dumvec);
-      int err4 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3b,dumvec);
-      if (err1 or err2 or err3 or err4) dserror("error while evaluating elements");
+      int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
 
       // assembly
@@ -1265,46 +1553,21 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
       if (assmat2)
       {
-        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
+        // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec1(1);
-        std::vector<int> colvec2(1);
-        std::vector<int> colvec3(1);
-        std::vector<int> colvec4(1);
         colvec1[0]=gindex;
-        colvec2[0]=gindex2;
-        colvec3[0]=gindex3;
-        colvec4[0]=gindex4;
-        elevector2a.Scale(-factor_q[0]/ts_size);
-        elevector2b.Scale(0.);
-        sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
-        sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
-        sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec3);
-        sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec4);
+        elevector2.Scale(-factor_q[0]/ts_size);
+        sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec1);
 
       }
-      if (assmat3)
-      {
-        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-        std::vector<int> colvec1(1);
-        std::vector<int> colvec2(1);
-        std::vector<int> colvec3(1);
-        std::vector<int> colvec4(1);
-        colvec1[0]=gindex;
-        colvec2[0]=gindex2;
-        colvec3[0]=gindex3;
-        colvec4[0]=gindex4;
-        elevector3a.Scale(sc_strtimint);
-        elevector3b.Scale(0.0);
-        sysmat3->Assemble(eid,lmstride,elevector3a,lm,lmowner,colvec1);
-        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec2);
-        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec3);
-        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec4);
-      }
+
       if (assvec5)
       {
-        elevector4[1]=elevector4[0];
-        elevector4[2]=elevector4[0];
-        elevector4[3]=elevector4[0];
+        // assemble the current volume of the enclosed surface of the windkessel condition
+        elevector3[1]=elevector3[0];
+        elevector3[2]=elevector3[0];
+        elevector3[3]=elevector3[0];
         std::vector<int> windkessellm;
         std::vector<int> windkesselowner;
         windkessellm.push_back(gindex);
@@ -1315,9 +1578,158 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
         windkesselowner.push_back(curr->second->Owner());
         windkesselowner.push_back(curr->second->Owner());
         windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec5,elevector4,windkessellm,windkesselowner);
+        LINALG::Assemble(*sysvec5,elevector3,windkessellm,windkesselowner);
       }
 
+    }
+
+  }
+
+
+
+  // loop over windkessel structure coupling conditions
+  /* here we do an extra loop to assemble the correct offdiagonal stiffness block dfext/dwkdof
+  this effectively is the derivative of the orthopressure Neumann load wrt the pressure,
+  corresponding to the area integral -> we do a similar loop like in so_surface_evaluate.cpp
+  without the Neumann load factor infront of it*/
+  for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)
+  {
+    DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
+
+    int coupcondID=coupcond.GetInt("coupling_id");
+    //std::cout << "" << condition << std::endl;
+    params.set("coupling_id",coupcondID);
+
+    const std::string action = params.get<std::string>("action");
+    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+    actdisc_->SetState("displacement",displast);
+    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+    actdisc_->SetState("displacement",disp);
+    params.set("action",action);
+
+    // global and local ID of this bc in the redundant vectors
+    const int offsetID = params.get<int>("OffsetID");
+    int gindex = 4*coupcondID-offsetID;
+
+
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = coupcond.Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
+
+      Epetra_SerialDenseVector elevector;
+      elevector.Size(eledim);
+
+      DRT::Element* element = curr->second.get();
+      int numnode=element->NumNode();
+
+      // allocate vector for shape functions and matrix for derivatives
+      LINALG::SerialDenseVector funct(numnode);
+      LINALG::SerialDenseMatrix deriv(2,numnode);
+      LINALG::SerialDenseMatrix xc;
+
+      xc.LightShape(numnode,3);
+
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+      Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*curdispl,mydisp,lm);
+
+      for (int j=0; j<numnode; ++j)
+      {
+        xc(j,0) = element->Nodes()[j]->X()[0] + mydisp[j*3+0];
+        xc(j,1) = element->Nodes()[j]->X()[1] + mydisp[j*3+1];
+        xc(j,2) = element->Nodes()[j]->X()[2] + mydisp[j*3+2];
+      }
+
+      /*----------------------------------------------------------------------*
+      |               start loop over integration points                     |
+      *----------------------------------------------------------------------*/
+      DRT::Element::DiscretizationType shape = element->Shape();
+      // type of gaussian integration
+      switch(shape)
+      {
+      case DRT::Element::tri3:
+        gaussrule_ = DRT::UTILS::intrule_tri_3point;
+      break;
+      case DRT::Element::tri6:
+        gaussrule_ = DRT::UTILS::intrule_tri_6point;
+      break;
+      case DRT::Element::quad4:
+        gaussrule_ = DRT::UTILS::intrule_quad_4point;
+      break;
+      case DRT::Element::quad8:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      case DRT::Element::quad9:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      case DRT::Element::nurbs9:
+        gaussrule_ = DRT::UTILS::intrule_quad_9point;
+      break;
+      default:
+          dserror("shape type unknown!\n");
+      }
+
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+      for (int gp=0; gp<intpoints.nquad; gp++)
+      {
+        // set gausspoints from integration rule
+        Epetra_SerialDenseVector e(2);
+        e(0) = intpoints.qxg[gp][0];
+        e(1) = intpoints.qxg[gp][1];
+
+        // get shape functions and derivatives in the plane of the element
+
+        DRT::UTILS::shape_function_2D(funct,e(0),e(1),shape);
+        DRT::UTILS::shape_function_2D_deriv1(deriv,e(0),e(1),shape);
+
+        //stuff to get spatial Neumann
+        const int numdim = 3;
+        LINALG::SerialDenseMatrix gp_coord(1,numdim);
+
+        std::vector<double> normal(3);
+
+        // note that the length of this normal is the area dA
+        // compute dXYZ / drs
+        LINALG::SerialDenseMatrix dxyzdrs(2,3);
+        dxyzdrs.Multiply('N','N',1.0,deriv,xc,0.0);
+
+        normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+        normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+        normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+        const double fac = intpoints.qwgt[gp];
+        for (int node=0; node < numnode; ++node)
+          for(int dim=0 ; dim<3; dim++)
+            elevector[node*3+dim] += funct[node] * normal[dim] * fac;
+
+      }
+
+      int eid = curr->second->Id();
+
+      if (assmat3)
+      {
+        // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dwkdof
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec1(1);
+        colvec1[0]=gindex;
+        elevector.Scale(sc_strtimint);
+        sysmat3->Assemble(eid,lmstride,elevector,lm,lmowner,colvec1);
+      }
     }
 
   }
@@ -1352,7 +1764,7 @@ void UTILS::Windkessel::InitializeStdWindkessel(
     int offsetID = params.get<int> ("OffsetID");
     int gindex = condID-offsetID;
 
-    double p_0=windkesselcond_[i]->GetDouble("p_0");
+    double p_0=windkesselcond_[condID]->GetDouble("p_0");
 
     std::vector<int> colvec(1);
     colvec[0]=gindex;
@@ -1439,10 +1851,10 @@ void UTILS::Windkessel::InitializeHeartValveArterialWindkessel(
 
     // global and local ID of this bc in the redundant vectors
     int offsetID = params.get<int> ("OffsetID");
-    int gindex = condID-offsetID + i;
+    int gindex = 2*condID-offsetID;
     int gindex2 = gindex+1;
 
-    double p_ar_0=windkesselcond_[i]->GetDouble("p_ar_0");
+    double p_ar_0=windkesselcond_[condID]->GetDouble("p_ar_0");
 
     std::vector<int> colvec(2);
     colvec[0]=gindex;
@@ -1533,12 +1945,12 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
 
     // global and local ID of this bc in the redundant vectors
     int offsetID = params.get<int> ("OffsetID");
-    int gindex = condID-offsetID + 3*i;
+    int gindex = 4*condID-offsetID;
     int gindex2 = gindex+1;
     int gindex3 = gindex+2;
     int gindex4 = gindex+3;
 
-    double p_arp_0=windkesselcond_[i]->GetDouble("p_arp_0");
+    double p_arp_0=windkesselcond_[condID]->GetDouble("p_arp_0");
 
     std::vector<int> colvec(4);
     colvec[0]=gindex;

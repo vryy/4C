@@ -3377,11 +3377,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // Monolithic coupling of structure and Windkessel: Neumann coupling surface - mhv 11/13
 
-  std::vector<Teuchos::RCP<ConditionComponent> > windkstructcomponents;
-
-  windkstructcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-
-  Teuchos::RCP<ConditionDefinition> surfwindkstruct =
+  Teuchos::RCP<ConditionDefinition> windkesselstructurecouplingcond =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS",
                                          "SurfaceNeumann",
                                          "structure windkessel coupling surface condition",
@@ -3389,12 +3385,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
-  for (unsigned i=0; i<windkstructcomponents.size(); ++i)
-  {
-    surfwindkstruct->AddComponent(windkstructcomponents[i]);
-  }
+  AddNamedInt(windkesselstructurecouplingcond,"coupling_id");
 
-  condlist.push_back(surfwindkstruct);
+  condlist.push_back(windkesselstructurecouplingcond);
 
 
   /*--------------------------------------------------------------------*/
