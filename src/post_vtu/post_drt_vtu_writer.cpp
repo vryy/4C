@@ -492,8 +492,35 @@ VtuWriter::WriteSpecialField (
   std::vector<Teuchos::RCP<std::ofstream> > files(fieldnames.size());
   for (unsigned int i=0; i<fieldnames.size(); ++i)
     files[i] = Teuchos::rcp(&currentout_, false);
+
+  bool foundit = false;
+  PostResult activeresult(result.field());
+  while (activeresult.next_result(groupname))
+  {
+    if (map_has_map(activeresult.group(), groupname.c_str()))
+    {
+      foundit = true;
+      break;
+    }
+  }
+  dsassert(foundit, "Internal error");
+  // jump to the correct location in the data vector. Some fields might only
+  // be stored once, so need to catch that case as well
+  bool once = false;
+  for (int i=0; i<timestep_; ++i)
+    if ( not activeresult.next_result(groupname) )
+    {
+      once = true;
+      break;
+    }
+  if (once)
+  {
+    activeresult = PostResult(field_);
+    activeresult.next_result(groupname);
+  }
+
   std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
-  special(files,result,resultfilepos,groupname,fieldnames);
+  special(files,activeresult,resultfilepos,groupname,fieldnames);
 }
 
 
