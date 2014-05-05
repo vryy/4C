@@ -22,7 +22,6 @@
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast_eletypes.H"
 
-#include "../drt_tsi/kinematictype.H"
 #include "../drt_thermo/thermo_ele_impl_utils.H"
 
 // include header because number of Gauss points are determined
@@ -40,46 +39,14 @@ class Discretization;
 
 namespace ELEMENTS
 {
-  //! A wrapper for 3-dimensional structural elements
-  class So3_Base
-  {
-
-  public:
-
-    //! @name Constructors and destructors and related methods
-
-    //! Destructor
-    virtual ~So3_Base(){};
-
-    //@}
-
-
-
-    //! kinematic type
-    GenKinematicType kintype_;
-
-    // get the kinematic type from the corresponding cloned element
-    // function is called in clone strategy in tsi_utils.cpp
-    GenKinematicType GetKinematicType()
-    {
-      return kintype_;
-    }
-  };  // class So3_Base
-
 
   //! A C++ version of a 3 dimensional solid element with modifications von Mises
   //! plasticity using a semi-smooth Newton method
-  //!
-  //! A structural 3 dimensional solid displacement element for large deformations
-  //! and with small and large strains
-  template<class so3_ele, DRT::Element::DiscretizationType distype>
-  class So3_Plast : public so3_ele,
-                     public So3_Base
+  template<DRT::Element::DiscretizationType distype>
+  class So3_Plast : public DRT::Element
   {
     //! @name Friends
     friend class So_hex8PlastType;
-    friend class So_hex8fbarPlastType;
-    friend class So_tet4PlastType;
     friend class So_hex27PlastType;
 
   public:
@@ -147,9 +114,15 @@ namespace ELEMENTS
     //! dofsets (implements pure virtual DRT::Element)
     //!
     //! The element decides how many degrees of freedom its nodes must have.
-    virtual int NumDofPerNode() const
+    virtual int NumDofPerNode(const DRT::Node& node) const
     {
         return nsd_;
+    };
+
+    //! Get number of degrees of freedom of this element
+    virtual int NumDofPerElement() const
+    {
+        return 0;
     };
 
     //@}
@@ -160,7 +133,10 @@ namespace ELEMENTS
     void Print(std::ostream& os) const  ;
 
     //! return elementtype
-    virtual DRT::ElementType& ElementType() const;
+     virtual DRT::ElementType& ElementType() const;
+
+     //! return element shape
+     virtual DiscretizationType Shape() const {return distype;};
 
     //@}
 
@@ -232,6 +208,27 @@ namespace ELEMENTS
 
     //@}
 
+    /*!
+    \brief Evaluate a Neumann boundary condition
+
+    this method evaluates a surface Neumann condition on the solid3 element
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param condition (in)     : The condition to be evaluated
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+    \return 0 if successful, negative otherwise
+    */
+    virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+                                DRT::Discretization&      discretization,
+                                DRT::Condition&           condition,
+                                std::vector<int>&         lm,
+                                Epetra_SerialDenseVector& elevec1,
+                                Epetra_SerialDenseMatrix* elemat1 = NULL);
+
     //! init the inverse of the jacobian and its determinant in the material
     //! configuration
     virtual void InitJacobianMapping();
@@ -288,8 +285,6 @@ namespace ELEMENTS
     std::vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
     //! determinant of Jacobian in material frame
     std::vector<double> detJ_;
-    //! container containing all kind of solid3 thisandthat
-    DRT::Container data_;
     //! vector of coordinates of current integration point in reference coordinates
     std::vector<LINALG::Matrix<nsd_,1> > xsi_;
     //! Gauss point weights
@@ -347,54 +342,54 @@ namespace ELEMENTS
         );
 
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
-    void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
+    virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
 
     //! calculate the derivative of the exponential of a symmetric 3x3 matrix
-    void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
+    virtual void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
 
     //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
-    void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
+    virtual void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
 
     // index notation:
     // Dexp_ijkl += 0.5*fac* (A_ik*B_lj + B_ik*A_lj + A_jk*B_li + B_jk*A_li)
     // A and B symmetric!
-    void AddToSymMatrixExponentialDeriv(const double fac,
+    virtual void AddToSymMatrixExponentialDeriv(const double fac,
         const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp);
 
     // index notation:
     // Dexp_ijkl += fac*( A_ik * B_lj )
     // A and B non-symmetric!
-    void AddToMatrixExponentialDeriv(const double fac,
+    virtual void AddToMatrixExponentialDeriv(const double fac,
         const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp);
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
-    void UpdatePlasticDeformation_nln();
+    virtual void UpdatePlasticDeformation_nln();
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics and Hill plasticity
-    void UpdatePlasticDeformationHill_nln();
+    virtual void UpdatePlasticDeformationHill_nln();
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
-    void UpdatePlasticDeformation_lin();
+    virtual void UpdatePlasticDeformation_lin();
 
     //@}
 
     //! calculate nonlinear B-operator
-    void CalculateBop(
+    virtual void CalculateBop(
       LINALG::Matrix<numstr_,numdofperelement_>* bop,
       LINALG::Matrix<nsd_,nsd_>* defgrd,
       LINALG::Matrix<nsd_,nen_>* N_XYZ
       );
 
     //! calculate linear B-operator
-    void CalculateBoplin(
+    virtual void CalculateBoplin(
       LINALG::Matrix<numstr_,numdofperelement_>* boplin,
       LINALG::Matrix<nsd_,nen_>* N_XYZ
       );
 
     // return the accumulated plastic strain at given gp
-    double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp)(0);}
+    virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp)(0);}
 
-    bool HaveHillPlasticity() ;
+    virtual bool HaveHillPlasticity() ;
 
     /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
     /// todo: Unfortunately, there is no universal extrapolation function in all base elements,
@@ -406,10 +401,10 @@ namespace ELEMENTS
 
     // EAS element techonolgy *******************************************
     //! Initialize data for EAS (once)
-    void EasInit();
+    virtual void EasInit();
 
     //! setup EAS for each evaluation
-    void EasSetup(
+    virtual void EasSetup(
         std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
         double& detJ0,                      // det of Jacobian at origin
         LINALG::Matrix<numstr_,numstr_>& T0invT,   // maps M(origin) local to global
@@ -426,7 +421,7 @@ namespace ELEMENTS
      * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
      * \param defgrd_mod   (out) : consistent modified deformation gradient
      */
-    void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
+    virtual void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
                               LINALG::Matrix<6,1> glstrain_mod,
                               LINALG::Matrix<3,3>& defgrd_mod);
 
@@ -434,16 +429,11 @@ namespace ELEMENTS
 
     //@}
 
-  private:
-    DRT::Node** Nodes();
-
-    Teuchos::RCP<MAT::Material> Material() const;
-
-    int Id() const;
 
     // algoirthmic parameters
     double stab_s_;
     double cpl_;
+    bool fbar_;
 
     static const int VOIGT3X3SYM_[3][3];
     static const int VOIGT3X3NONSYM_[3][3];
@@ -510,7 +500,6 @@ namespace ELEMENTS
 
 }  // namespace ELEMENTS
 }  // namespace DRT
-
 
 /*----------------------------------------------------------------------*/
 #endif  // SO3_SSN_PLAST_H

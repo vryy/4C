@@ -26,13 +26,12 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   int id,
   int owner
   )
-: so3_ele(id,owner),
-  So3_Base(),
+: DRT::Element(id,owner),
   stab_s_(-1.),
   cpl_(-1.),
   last_plastic_defgrd_inverse_(Teuchos::null),
@@ -58,8 +57,6 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
   eastype_(soh8p_easnone),
   neas_(0)
 {
-  kintype_ = geo_nonlinear;
-
   return;
 }
 
@@ -67,12 +64,11 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
-  const DRT::ELEMENTS::So3_Plast<so3_ele,distype>& old
-  )
-: so3_ele(old),
-  So3_Base()
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
+  const DRT::ELEMENTS::So3_Plast<distype>& old
+  ):
+   DRT::Element(old)
 {
   return;
 }
@@ -82,27 +78,27 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
  | deep copy this instance of Solid3 and return pointer to  seitz 07/13 |
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-DRT::Element* DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Clone() const
+template<DRT::Element::DiscretizationType distype>
+DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
 {
-  DRT::ELEMENTS::So3_Plast< so3_ele, distype>* newelement
-    = new DRT::ELEMENTS::So3_Plast< so3_ele, distype>(*this);
+  DRT::ELEMENTS::So3_Plast<distype>* newelement
+    = new DRT::ELEMENTS::So3_Plast<distype>(*this);
 
   return newelement;
 }
 
 
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-const int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-const int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VOIGT3X3NONSYM_[3][3] = {{0,3,5},{6,1,4},{8,7,2}};
+template<DRT::Element::DiscretizationType distype>
+const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
+template<DRT::Element::DiscretizationType distype>
+const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3NONSYM_[3][3] = {{0,3,5},{6,1,4},{8,7,2}};
 
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   DRT::PackBuffer& data
   ) const
 {
@@ -111,64 +107,62 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  so3_ele::AddtoPack(data,type);
-  // data_
-  so3_ele::AddtoPack(data,data_);
-  // kintype_
-  so3_ele::AddtoPack(data,kintype_);
+  AddtoPack(data,type);
+
+  // add base class Element
+  Element::Pack(data);
+
   // detJ_
-  so3_ele::AddtoPack(data,detJ_);
+  AddtoPack(data,detJ_);
 
   // invJ_
   const int size = (int)invJ_.size();
-  so3_ele::AddtoPack(data,size);
+  AddtoPack(data,size);
   for (int i=0; i<size; ++i)
-    so3_ele::AddtoPack(data,invJ_[i]);
-
-  // add base class Element
-  so3_ele::Pack(data);
+    AddtoPack(data,invJ_[i]);
 
   // Gauss points and weights
   const int size2 = (int)xsi_.size();
-  so3_ele::AddtoPack(data,size2);
+  AddtoPack(data,size2);
   for (int i=0; i<size2;++i)
-    so3_ele::AddtoPack(data,xsi_[i]);
-  so3_ele::AddtoPack(data,wgt_);
+    AddtoPack(data,xsi_[i]);
+  AddtoPack(data,wgt_);
 
   // parameters
-  so3_ele::AddtoPack(data,stab_s_);
-  so3_ele::AddtoPack(data,cpl_);
+  AddtoPack(data,stab_s_);
+  AddtoPack(data,cpl_);
+  AddtoPack(data,(int)fbar_);
 
   // plasticity stuff
   int histsize=0;
   if (last_plastic_defgrd_inverse_!=Teuchos::null)
       histsize=last_plastic_defgrd_inverse_->size();
-  so3_ele::AddtoPack(data,histsize);
+  AddtoPack(data,histsize);
   bool Hill=(bool)(mDLp_last_iter_!=Teuchos::null);
-  so3_ele::AddtoPack(data,(int)Hill);
+  AddtoPack(data,(int)Hill);
 
   // EAS element technology
-  so3_ele::AddtoPack(data,(int)eastype_);
-  so3_ele::AddtoPack(data,neas_);
+  AddtoPack(data,(int)eastype_);
+  AddtoPack(data,neas_);
   if (eastype_!=soh8p_easnone)
   {
-    so3_ele::AddtoPack(data,(*alpha_eas_));
-    so3_ele::AddtoPack(data,(*alpha_eas_last_timestep_));
-    so3_ele::AddtoPack(data,(*alpha_eas_delta_over_last_timestep_));
+    AddtoPack(data,(*alpha_eas_));
+    AddtoPack(data,(*alpha_eas_last_timestep_));
+    AddtoPack(data,(*alpha_eas_delta_over_last_timestep_));
   }
 
   // history at each Gauss point
   if (histsize!=0)
     for (int i=0; i<histsize; i++)
     {
-      so3_ele::AddtoPack(data,last_plastic_defgrd_inverse_->at(i));
-      so3_ele::AddtoPack(data,last_alpha_isotropic_->at(i));
-      so3_ele::AddtoPack(data,last_alpha_kinematic_->at(i));
-      so3_ele::AddtoPack(data,(int)activity_state_->at(i));
+      AddtoPack(data,last_plastic_defgrd_inverse_->at(i));
+      AddtoPack(data,last_alpha_isotropic_->at(i));
+      AddtoPack(data,last_alpha_kinematic_->at(i));
+      AddtoPack(data,(int)activity_state_->at(i));
       if (Hill)
-        so3_ele::AddtoPack(data,mDLp_last_iter_->at(i));
+        AddtoPack(data,mDLp_last_iter_->at(i));
       else
-        so3_ele::AddtoPack(data,DalphaK_last_iter_->at(i));
+        AddtoPack(data,DalphaK_last_iter_->at(i));
     }
 
   return;
@@ -178,8 +172,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
   const std::vector<char>& data
   )
 {
@@ -187,48 +181,45 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
 
   // extract type
   int type = 0;
-  so3_ele::ExtractfromPack(position,data,type);
+  ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-  // extract base class element data_
-  std::vector<char> tmp(0);
-  so3_ele::ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
-  // kintype_
-  kintype_ = static_cast<GenKinematicType>( so3_ele::ExtractInt(position,data) );
-  // detJ_
-  so3_ele::ExtractfromPack(position,data,detJ_);
-  // invJ_
-  int size = 0;
-  so3_ele::ExtractfromPack(position,data,size);
-  invJ_.resize(size, LINALG::Matrix<nsd_,nsd_>(true));
-  for (int i=0; i<size; ++i)
-    so3_ele::ExtractfromPack(position,data,invJ_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  so3_ele::ExtractfromPack(position,data,basedata);
-  so3_ele::Unpack(basedata);
+  ExtractfromPack(position,data,basedata);
+  Element::Unpack(basedata);
+
+  // kintype_
+//  kintype_ = static_cast<GenKinematicType>( ExtractInt(position,data) );
+  // detJ_
+  ExtractfromPack(position,data,detJ_);
+  // invJ_
+  int size = 0;
+  ExtractfromPack(position,data,size);
+  invJ_.resize(size, LINALG::Matrix<nsd_,nsd_>(true));
+  for (int i=0; i<size; ++i)
+    ExtractfromPack(position,data,invJ_[i]);
 
   // Gauss points and weights
-  int size2 = so3_ele::ExtractInt(position,data);
+  int size2 = ExtractInt(position,data);
   xsi_.resize(size2, LINALG::Matrix<nsd_,1>(true));
   for (int i=0; i<size2;++i)
-    so3_ele::ExtractfromPack(position,data,xsi_[i]);
-  so3_ele::ExtractfromPack(position,data,wgt_);
+    ExtractfromPack(position,data,xsi_[i]);
+  ExtractfromPack(position,data,wgt_);
   numgpt_=wgt_.size();
 
   // paramters
-  so3_ele::ExtractfromPack(position,data,stab_s_);
-  so3_ele::ExtractfromPack(position,data,cpl_);
+  ExtractfromPack(position,data,stab_s_);
+  ExtractfromPack(position,data,cpl_);
+  fbar_=(bool)ExtractInt(position,data);
 
-   int histsize=so3_ele::ExtractInt(position,data);
+   int histsize=ExtractInt(position,data);
 
-   bool Hill=(bool)so3_ele::ExtractInt(position,data);
+   bool Hill=(bool)ExtractInt(position,data);
 
    // EAS element technology
-   eastype_=static_cast<EASType>(so3_ele::ExtractInt(position,data));
-   so3_ele::ExtractfromPack(position,data,neas_);
+   eastype_=static_cast<EASType>(ExtractInt(position,data));
+   ExtractfromPack(position,data,neas_);
    if ((int)eastype_!=neas_)
      dserror("mismatch in EAS");
 
@@ -298,21 +289,21 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
 
    if (eastype_!=soh8p_easnone)
    {
-     so3_ele::ExtractfromPack(position,data,(*alpha_eas_));
-     so3_ele::ExtractfromPack(position,data,(*alpha_eas_last_timestep_));
-     so3_ele::ExtractfromPack(position,data,(*alpha_eas_delta_over_last_timestep_));
+     ExtractfromPack(position,data,(*alpha_eas_));
+     ExtractfromPack(position,data,(*alpha_eas_last_timestep_));
+     ExtractfromPack(position,data,(*alpha_eas_delta_over_last_timestep_));
    }
 
    for (int i=0; i<histsize; i++)
     {
-      so3_ele::ExtractfromPack(position,data,(*last_plastic_defgrd_inverse_)[i]);
-      so3_ele::ExtractfromPack(position,data,(*last_alpha_isotropic_)[i]);
-      so3_ele::ExtractfromPack(position,data,(*last_alpha_kinematic_)[i]);
-      (*activity_state_)[i]=(bool)(so3_ele::ExtractInt(position,data));
+      ExtractfromPack(position,data,(*last_plastic_defgrd_inverse_)[i]);
+      ExtractfromPack(position,data,(*last_alpha_isotropic_)[i]);
+      ExtractfromPack(position,data,(*last_alpha_kinematic_)[i]);
+      (*activity_state_)[i]=(bool)(ExtractInt(position,data));
       if (Hill)
-        so3_ele::ExtractfromPack(position,data,(*mDLp_last_iter_)[i]);
+        ExtractfromPack(position,data,(*mDLp_last_iter_)[i]);
       else
-        so3_ele::ExtractfromPack(position,data,(*DalphaK_last_iter_)[i]);
+        ExtractfromPack(position,data,(*DalphaK_last_iter_)[i]);
     }
 
   if (position != data.size())
@@ -325,8 +316,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
 /*----------------------------------------------------------------------*
  | print this element (public)                              seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Print(std::ostream& os) const
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::Print(std::ostream& os) const
 {
   os << "So3_Plast ";
   return;
@@ -336,14 +327,22 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
+template<DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   const std::string& eletype,
   const std::string& eledistype,
   DRT::INPUT::LineDefinition* linedef
   )
 {
-  so3_ele::ReadElement(eletype,eledistype,linedef);
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+
+  SetMaterial(material);
+
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(numgpt_, linedef);
+
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
@@ -351,18 +350,33 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
   // geometrically linear
   if (buffer == "linear")
   {
-    kintype_ = geo_linear;
+    dserror("no linear kinematics");
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
-    kintype_ = geo_nonlinear;
+  {
+    // everything ok
+  }
   else
     dserror("Reading of SO3_PLAST element failed! KINEM unknown");
+
+  // fbar
+  if (linedef->HaveNamed("FBAR"))
+  {
+    std::string fb;
+    linedef->ExtractString("FBAR",fb);
+    if (fb=="yes")
+      fbar_=true;
+    else if (fb=="no")
+      fbar_=false;
+    else
+      dserror("unknown fbar option (valid: yes/no)");
+  }
 
   // quadrature
   if (linedef->HaveNamed("NUMGP"))
   {
-    if (ElementType()!=DRT::ELEMENTS::So_hex8PlastType::Instance())
+    if (distype!=DRT::Element::hex8)
       dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
 
     int ngp =0;
@@ -446,8 +460,6 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     if (distype != DRT::Element::hex8)
       dserror("EAS in so3 plast currently only for HEX8 elements");
 
-    if (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance())
-      dserror("no combination of Fbar and EAS ... And, by the way, how did you get here???");
     linedef->ExtractString("EAS",buffer);
 
     if (buffer == "none")
@@ -459,8 +471,8 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     else
       dserror("unknown EAS type for so3_plast");
 
-    if (HaveHillPlasticity() && eastype_!=soh8p_easnone)
-      dserror("no EAS for Hill-plasticity yet");
+    if (fbar_ && eastype_!=soh8p_easnone)
+      dserror("no combination of Fbar and EAS");
   }
   else
     eastype_=soh8p_easnone;
@@ -521,25 +533,16 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UniqueParObjectId() const
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
 {
   switch(distype)
   {
   case DRT::Element::hex8:
   {
-    // cast the most specialised element
-    // otherwise cast fails, because hex8fbar == hex8
-    const DRT::ELEMENTS::So_hex8fbar* ele
-      = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
-    if(ele != NULL)
-      return So_hex8fbarPlastType::Instance().UniqueParObjectId();
-    else
-      return So_hex8PlastType::Instance().UniqueParObjectId();
+    return So_hex8PlastType::Instance().UniqueParObjectId();
     break;
   }  // hex8
-  case DRT::Element::tet4:
-    return So_tet4PlastType::Instance().UniqueParObjectId();
   case DRT::Element::hex27:
     return So_hex27PlastType::Instance().UniqueParObjectId();
     break;
@@ -556,25 +559,16 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UniqueParObjectId() const
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-DRT::ElementType& DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ElementType() const
+template<DRT::Element::DiscretizationType distype>
+DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
 {
   switch(distype)
   {
   case DRT::Element::hex8:
   {
-    // cast the most specialised element
-    // caution: otherwise does not work, because hex8fbar == hex8
-    const DRT::ELEMENTS::So_hex8fbar* ele
-      = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
-    if(ele != NULL)
-      return So_hex8fbarPlastType::Instance();
-    else
-      return So_hex8PlastType::Instance();
+    return So_hex8PlastType::Instance();
     break;
   }
-  case DRT::Element::tet4:
-    return So_tet4PlastType::Instance();
   case DRT::Element::hex27:
     return So_hex27PlastType::Instance();
     break;
@@ -589,47 +583,15 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ElementType() const
 
 
 /*----------------------------------------------------------------------*
- | get the nodes from so3 (public)                          seitz 07/13 |
- *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline DRT::Node** DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Nodes()
-{
-  return so3_ele::Nodes();
-}
-
-
-/*----------------------------------------------------------------------*
- | get the material from so3 (public)                       seitz 07/13 |
- *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Material(
-  ) const
-{
-  return so3_ele::Material();
-}
-
-
-/*----------------------------------------------------------------------*
- | get the node Ids from so3 (public)                       seitz 07/13 |
- *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Id() const
-{
-  return so3_ele::Id();
-}
-
-
-/*----------------------------------------------------------------------*
  | return names of visualization data (public)              seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisNames(std::map<std::string,int>& names)
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string,int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
   std::string plastic_zone = "plastic_zone";
   names[plastic_zone] = 1; // scalar
-  so3_ele::VisNames(names);
 
   return;
 }  // VisNames()
@@ -637,8 +599,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisNames(std::map<std::string,in
 /*----------------------------------------------------------------------*
  | return visualization data (public)                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisData(const std::string& name, std::vector<double>& data)
+template<DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   if (name == "accumulatedstrain")
   {
@@ -661,15 +623,15 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisData(const std::string& name,
     data[0] = plastic_history+curr_active;
   }
 
-  return so3_ele::VisData(name, data);
+  return true;
 
 }  // VisData()
 
 /*----------------------------------------------------------------------*
  | return if there is hill plasticity                       seitz 09/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::HaveHillPlasticity()
+template<DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Plast<distype>::HaveHillPlasticity()
 {
   // get plastic hyperelastic material
      MAT::PlasticElastHyper* plmat = NULL;
@@ -683,14 +645,16 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::HaveHillPlasticity()
 /*----------------------------------------------------------------------*
  | read relevant parameters from paramter list              seitz 01/14 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams)
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams)
 {
-
   cpl_=plparams->get<double>("SEMI_SMOOTH_CPL");
   stab_s_=plparams->get<double>("STABILIZATION_S");
   if (eastype_!=soh8p_easnone)
     plparams->get<int>("have_EAS")=1;
+
+  if (HaveHillPlasticity() && eastype_!=soh8p_easnone)
+    dserror("no EAS for Hill-plasticity yet");
 
   return;
 }
@@ -699,8 +663,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadParameterList(Teuchos::RCP<T
 /*----------------------------------------------------------------------*
  | extrapolate stresses for hex8 elements (public)           seitz 12/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::soh8_expol(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
     LINALG::Matrix<numgpt_post,numstr_>& stresses,
     Epetra_MultiVector& expolstresses
     )
@@ -713,14 +677,14 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::soh8_expol(
   LINALG::Matrix<numgpt_post,numstr_> stresses_ordered(false);
   for (int i=0; i<numstr_; ++i)
   {
-    stresses_ordered(7,i) = stresses(0,i);
-    stresses_ordered(6,i) = stresses(1,i);
-    stresses_ordered(4,i) = stresses(2,i);
-    stresses_ordered(5,i) = stresses(3,i);
-    stresses_ordered(3,i) = stresses(4,i);
-    stresses_ordered(2,i) = stresses(5,i);
-    stresses_ordered(0,i) = stresses(6,i);
-    stresses_ordered(1,i) = stresses(7,i);
+    stresses_ordered(6,i) = stresses(0,i);
+    stresses_ordered(7,i) = stresses(1,i);
+    stresses_ordered(5,i) = stresses(2,i);
+    stresses_ordered(4,i) = stresses(3,i);
+    stresses_ordered(2,i) = stresses(4,i);
+    stresses_ordered(3,i) = stresses(5,i);
+    stresses_ordered(1,i) = stresses(6,i);
+    stresses_ordered(0,i) = stresses(7,i);
   }
 
   // static variables, that are the same for every element
@@ -785,8 +749,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::soh8_expol(
   // "assembly" of extrapolated nodal stresses
   for (int i=0;i<nen_;++i)
   {
-    int gid = so3_ele::NodeIds()[i];
-    if (expolstresses.Map().MyGID(so3_ele::NodeIds()[i])) // rownode
+    int gid = NodeIds()[i];
+    if (expolstresses.Map().MyGID(NodeIds()[i])) // rownode
     {
       int lid = expolstresses.Map().LID(gid);
       int myadjele = Nodes()[i]->NumElement();
@@ -796,7 +760,4 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::soh8_expol(
   }
 }
 
-
-/*----------------------------------------------------------------------*/
-// include the file at the end of so3_ssn_plast.cpp
 #include "so3_ssn_plast_fwd.hpp"

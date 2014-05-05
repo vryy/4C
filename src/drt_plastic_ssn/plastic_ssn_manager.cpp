@@ -67,13 +67,10 @@ void UTILS::PlastSsnManager::ReadAndCheckInput()
   {
     DRT::Element* actele = discret_->lColElement(i);
     if (  actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele)->ReadParameterList(plparams_);
-    if ( actele->ElementType() == DRT::ELEMENTS::So_tet4PlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(actele)->ReadParameterList(plparams_);
-    if ( actele->ElementType() == DRT::ELEMENTS::So_hex8fbarPlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(actele)->ReadParameterList(plparams_);
+      static_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(actele)->ReadParameterList(plparams_);
+
     if ( actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(actele)->ReadParameterList(plparams_);
+      static_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(actele)->ReadParameterList(plparams_);
   }
 
   int eas_local = plparams_->get<int>("have_EAS");

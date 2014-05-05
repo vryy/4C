@@ -25,8 +25,8 @@
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                           seitz 04/14 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EasInit()
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
 {
   if (eastype_==soh8p_easnone)
     neas_=0;
@@ -54,8 +54,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EasInit()
 /*----------------------------------------------------------------------*
  |  setup EAS data (private)                                seitz 04/14 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EasSetup(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::EasSetup(
     std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
     double& detJ0,                      // det of Jacobian at origin
     LINALG::Matrix<numstr_,numstr_>& T0invT,   // maps M(origin) local to global
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EasSetup(
   T0invT(5,5) = jac0(0,0) * jac0(2,2) + jac0(2,0) * jac0(0,2);
 
   // now evaluate T0^{-T} with solver
-  LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,1> solve_for_inverseT0;
+  LINALG::FixedSizeSerialDenseSolver<numstr_,numstr_,1> solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
@@ -204,8 +204,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EasSetup(
 /*----------------------------------------------------------------------*
  |  Defgrd consistent with enhanced GL strain (private)     seitz 04/14 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
     LINALG::Matrix<6,1> glstrain_mod,
     LINALG::Matrix<3,3>& defgrd_mod)
 {
@@ -259,4 +259,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalcConsistentDefgrd(LINALG::Mat
 
 }
 
-#include "so3_ssn_plast_fwd.hpp"
+
+template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>;
+template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>;

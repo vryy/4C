@@ -17,6 +17,7 @@
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast.H"
+
 #include "so3_ssn_plast_fwd.hpp"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -31,8 +32,8 @@
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                            seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
   DRT::Element::LocationArray& la,
@@ -97,7 +98,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
     LINALG::Matrix<numdofperelement_,numdofperelement_> myemat(true);
 
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    if (kintype_ == geo_nonlinear)
+    if (true /* kintype_ == geo_nonlinear */)
     {
       if (HaveHillPlasticity())
         nln_stiffmass_hill(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
@@ -107,8 +108,9 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
             INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
     }
     // geometric geo_linear
-    else if (kintype_ == geo_linear)
+    else if (false /* kintype_ == geo_linear */)
     {
+      dserror("no linear kinematics!");
       lin_stiffmass(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
       if (HaveHillPlasticity())
@@ -141,7 +143,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    if (kintype_ == geo_nonlinear)
+    if (true /* kintype_ == geo_nonlinear */)
     {
       if (HaveHillPlasticity())
         nln_stiffmass_hill(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
@@ -151,8 +153,9 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
             INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
     }
     // geometric geo_linear
-    else if (kintype_ == geo_linear)
+    else if (false /* kintype_ == geo_linear */)
     {
+      dserror("no linear kinematics!");
       lin_stiffmass(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
       if (HaveHillPlasticity())
@@ -185,7 +188,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
      LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
 
      // default: geometrically non-linear analysis with Total Lagrangean approach
-     if (kintype_ == geo_nonlinear)
+     if (true /* kintype_ == geo_nonlinear */)
      {
        if (HaveHillPlasticity())
            nln_stiffmass_hill(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
@@ -195,8 +198,9 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
                INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
      }
      // geometric geo_linear
-     else if (kintype_ == geo_linear)
+     else if (false /* kintype_ == geo_linear */)
      {
+      dserror("no linear kinematics!");
        lin_stiffmass(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
            INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
        if (HaveHillPlasticity())
@@ -226,7 +230,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
     // elemat1+2,elevec1-3 are not used anyway
 
     // nothing to do for ghost elements
-    if (discretization.Comm().MyPID() == so3_ele::Owner())
+    if (discretization.Comm().MyPID() == Owner())
     {
       Teuchos::RCP<const Epetra_Vector> disp
         = discretization.GetState(0,"displacement");
@@ -250,7 +254,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == geo_nonlinear)
+      if (true /* kintype_ == geo_nonlinear */)
       {
         if (HaveHillPlasticity())
             nln_stiffmass_hill(la[0].lm_,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
@@ -260,8 +264,9 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
                 iostress,iostrain,discretization.Comm().MyPID());
       }
       // geometric geo_linear
-      else if (kintype_ == geo_linear)
+      else if (false /* kintype_ == geo_linear */)
       {
+      dserror("no linear kinematics!");
         lin_stiffmass(la[0].lm_,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
             iostress,iostrain,discretization.Comm().MyPID());
         if (HaveHillPlasticity())
@@ -317,7 +322,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
   {
     // update plastic deformation
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    if (kintype_ == geo_nonlinear)
+    if (true /* kintype_ == geo_nonlinear */)
     {
       if (HaveHillPlasticity())
         UpdatePlasticDeformationHill_nln();
@@ -325,7 +330,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
         UpdatePlasticDeformation_nln();
     }
     // geometric geo_linear
-    else if (kintype_ == geo_linear)
+    else if (false /* kintype_ == geo_linear */)
       UpdatePlasticDeformation_lin();
     else
       dserror("unknown kinematics type");
@@ -400,8 +405,8 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator                       seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBop(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::CalculateBop(
   LINALG::Matrix<numstr_,numdofperelement_>* bop,
   LINALG::Matrix<nsd_,nsd_>* defgrd,
   LINALG::Matrix<nsd_,nen_>* N_XYZ
@@ -463,8 +468,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBop(
 /*----------------------------------------------------------------------*
  | calculate the linear B-operator                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBoplin(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::CalculateBoplin(
   LINALG::Matrix<numstr_,numdofperelement_>* boplin,
   LINALG::Matrix<nsd_,nen_>* N_XYZ
   )
@@ -506,6 +511,103 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBoplin(
   }
 }  // CalculateBoplin()
 
+/*----------------------------------------------------------------------*
+ |  Integrate a Volume Neumann boundary condition (public)  seitz 04/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&   params,
+                                            DRT::Discretization&      discretization,
+                                            DRT::Condition&           condition,
+                                            std::vector<int>&         lm,
+                                            Epetra_SerialDenseVector& elevec1,
+                                            Epetra_SerialDenseMatrix* elemat1)
+{
+  // get values and switches from the condition
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+
+  /*
+  **    TIME CURVE BUSINESS
+  */
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  // **
+
+  // (SPATIAL) FUNCTION BUSINESS
+  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
+  LINALG::Matrix<nsd_,1> xrefegp(false);
+  bool havefunct = false;
+  if (funct)
+    for (int dim=0; dim<nsd_; dim++)
+      if ((*funct)[dim] > 0)
+        havefunct = havefunct or true;
+
+  // update element geometry
+  LINALG::Matrix<nen_,nsd_> xrefe;  // material coord. of element
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<nen_; ++i){
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+  }
+  /* ================================================= Loop over Gauss Points */
+  for (int gp=0; gp<numgpt_; ++gp) {
+
+    // shape functions (shapefunct) and their first derivatives (deriv)
+    LINALG::Matrix<nen_,1> shapefunct;
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+    LINALG::Matrix<nsd_,nen_> deriv;
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    // compute the Jacobian matrix
+    LINALG::Matrix<nsd_,nsd_> jac;
+    jac.Multiply(deriv,xrefe);
+
+    // compute determinant of Jacobian
+    const double detJ = jac.Determinant();
+    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+
+    // material/reference co-ordinates of Gauss point
+    if (havefunct) {
+      for (int dim=0; dim<nsd_; dim++) {
+        xrefegp(dim) = 0.0;
+        for (int nodid=0; nodid<nen_; ++nodid)
+          xrefegp(dim) += shapefunct(nodid) * xrefe(nodid,dim);
+      }
+    }
+
+    // integration factor
+    const double fac = wgt_[gp] * curvefac * detJ;
+    // distribute/add over element load vector
+    for(int dim=0; dim<nsd_; dim++) {
+      // function evaluation
+      const int functnum = (funct) ? (*funct)[dim] : -1;
+      const double functfac
+        = (functnum>0)
+        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+        : 1.0;
+      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
+      for (int nodid=0; nodid<nen_; ++nodid) {
+        elevec1[nodid*nsd_+dim] += shapefunct(nodid) * dim_fac;
+      }
+    }
+
+  }/* ==================================================== end of Loop over GP */
+
+  return 0;
+}
 
 
 
@@ -513,8 +615,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBoplin(
  | initialise Jacobian                                      seitz 07/13 |
  | is called once in Initialize() in so3_ssn_plast_eletypes.cpp         |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::InitJacobianMapping()
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::InitJacobianMapping()
 {
   // get the material coordinates
   LINALG::Matrix<nen_,nsd_> xrefe;
@@ -571,8 +673,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  | internal force, stiffness and mass for f-bar elements    seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     std::vector<int>&              lm,             // location matrix
     std::vector<double>&           disp,           // current displacements
     std::vector<double>&           residual,       // current residual displ
@@ -587,9 +689,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     const int MyPID  // processor id
     )
 {
-  // check for f-bar element
-  bool fbar = (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance());
-
   // update element geometry
   LINALG::Matrix<nen_,3> xrefe;  // X, material coord. of element
   LINALG::Matrix<nen_,3> xcurr;  // x, current  coord. of element
@@ -628,7 +727,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   LINALG::Matrix<nsd_,nsd_> defgrd_0(false);
   LINALG::Matrix<nsd_,nsd_> invdefgrd_0(false);
   LINALG::Matrix<3,nen_> N_XYZ_0(false);
-  if(fbar)
+  if(fbar_)
   {
     //element coordinate derivatives at centroid
     LINALG::Matrix<3,nen_> N_rst_0(false);
@@ -747,9 +846,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     Kba_->at(gp).Shape(5,neas_);
   /* end of EAS Update ******************/
   }
-//  if (Id()==20)
-//      std::cout << "alpha_eas_: " << *alpha_eas_ << std::endl;
-
 
   // EAS matrix block
   Epetra_SerialDenseMatrix Kda(numdofperelement_,neas_);
@@ -901,7 +997,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     double f_bar_factor=1.;
 
     // calculate modified deformation gradient
-    if (fbar)
+    if (fbar_)
     {
       // inverse and determinant
       detF=invdefgrd.Invert(defgrd);
@@ -1115,7 +1211,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
       // communicate number of active plastic gauss points back to time integration
       // don't sum up for ghost elements
-      if (MyPID == so3_ele::Owner())
+      if (MyPID == Owner())
         ++num_active_gp;
     }
     // active
@@ -1136,7 +1232,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     // update internal force vector
     if (force != NULL)
     {
-      if (fbar)
+      if (fbar_)
         force->MultiplyTN(detJ_w/f_bar_factor, bop, pk2_stress, 1.0);
       else
         force->MultiplyTN(detJ_w, bop, pk2_stress, 1.0);
@@ -1152,14 +1248,14 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,numdofperelement_> cb;
       cb.Multiply(Cmat_ABCD,bop);
-      if (fbar)
+      if (fbar_)
         stiffmatrix->MultiplyTN(detJ_w*f_bar_factor,bop,cb,1.0);
       else
         stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       LINALG::Matrix<6,1> sfac(pk2_stress); // auxiliary integrated stress
-      if (fbar)
+      if (fbar_)
         sfac.Scale(detJ_w/f_bar_factor); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       else
         sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
@@ -1185,7 +1281,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       } // end of integrate `geometric' stiffness******************************
 
       // integrate additional fbar matrix**************************************
-      if (fbar)
+      if (fbar_)
       {
         for(int n=0;n<numdofperelement_;n++)
           for(int i=0;i<3;i++)
@@ -1304,7 +1400,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         dSdbeta.Multiply(dpk2dfpinv,DFpiDbeta);
 
         // Calculate stiffness matrix [k^e_{d,beta}]_ij (i=1..numdof; j=1..5)
-        if (fbar)
+        if (fbar_)
           kdbeta.MultiplyTN(detJ_w/f_bar_factor,bop,dSdbeta);
         else
           kdbeta.MultiplyTN(detJ_w,bop,dSdbeta);
@@ -1369,7 +1465,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
           dSigmadd.Multiply(dmdc,bop);
           LINALG::Matrix<6,1> tmp61;
           tmp61.Multiply(dmdc,RCG);
-          if (fbar)
+          if (fbar_)
           {
             dSigmadd.MultiplyNT(1./3.,tmp61,htensor,1.);
             dSigmadd.Scale(f_bar_factor*f_bar_factor);
@@ -1783,8 +1879,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 /*----------------------------------------------------------------------*
  | internal force, stiffness and mass for f-bar elements    seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass_hill(
     std::vector<int>&              lm,             // location matrix
     std::vector<double>&           disp,           // current displacements
     std::vector<double>&           residual,       // current residual displ
@@ -1799,9 +1895,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     const int MyPID  // processor id
     )
 {
-  // check for f-bar element
-  bool fbar = (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance());
-
   // update element geometry
   LINALG::Matrix<nen_,3> xrefe;  // X, material coord. of element
   LINALG::Matrix<nen_,3> xcurr;  // x, current  coord. of element
@@ -1840,7 +1933,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
   LINALG::Matrix<nsd_,nsd_> defgrd_0(false);
   LINALG::Matrix<nsd_,nsd_> invdefgrd_0(false);
   LINALG::Matrix<3,nen_> N_XYZ_0(false);
-  if(fbar)
+  if(fbar_)
   {
     //element coordinate derivatives at centroid
     LINALG::Matrix<3,nen_> N_rst_0(false);
@@ -1991,7 +2084,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     double f_bar_factor=1.;
 
     // calculate modified deformation gradient
-    if (fbar)
+    if (fbar_)
     {
       // inverse and determinant
       detF=invdefgrd.Invert(defgrd);
@@ -2234,7 +2327,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     // update internal force vector
     if (force != NULL)
     {
-      if (fbar)
+      if (fbar_)
         force->MultiplyTN(detJ_w/f_bar_factor, bop, pk2_stress, 1.0);
       else
         force->MultiplyTN(detJ_w, bop, pk2_stress, 1.0);
@@ -2254,7 +2347,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       LINALG::Matrix<6,1> sfac(pk2_stress); // auxiliary integrated stress
-      if (fbar)
+      if (fbar_)
         sfac.Scale(detJ_w/f_bar_factor); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       else
         sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
@@ -2280,7 +2373,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
       } // end of integrate `geometric' stiffness******************************
 
       // integrate additional fbar matrix**************************************
-      if (fbar)
+      if (fbar_)
       {
         for(int n=0;n<numdofperelement_;n++)
           for(int i=0;i<3;i++)
@@ -2384,7 +2477,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
         dSdbeta.Multiply(dpk2dfpinv,DFpiDbeta);
 
         // Calculate stiffness matrix [k^e_{d,beta}]_ij (i=1..numdof; j=1..5)
-        if (fbar)
+        if (fbar_)
           kdbeta.MultiplyTN(detJ_w/f_bar_factor,bop,dSdbeta);
         else
           kdbeta.MultiplyTN(detJ_w,bop,dSdbeta);
@@ -2406,7 +2499,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
           dSigmadd.Multiply(dmdc,bop);
           LINALG::Matrix<6,1> tmp61;
           tmp61.Multiply(dmdc,RCG);
-          if (fbar)
+          if (fbar_)
           {
             dSigmadd.MultiplyNT(1./3.,tmp61,htensor,1.);
             dSigmadd.Scale(f_bar_factor*f_bar_factor);
@@ -2523,7 +2616,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
           {
             // communicate number of active plastic gauss points back to time integration
             // don't sum up for ghost elements
-            if (MyPID == so3_ele::Owner())
+            if (MyPID == Owner())
               ++num_active_gp;
 
             // Symmetric complementarity function
@@ -2950,8 +3043,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 /*----------------------------------------------------------------------*
  | internal force, linear stiffness and mass                seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::lin_stiffmass(
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::lin_stiffmass(
     std::vector<int>&              lm,             // location matrix
     std::vector<double>&           disp,           // current displacements
     std::vector<double>&           residual,       // current residual displ
@@ -3488,8 +3581,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::lin_stiffmass(
 /*----------------------------------------------------------------------*
  |  update plastic deformation for nonlinear kinematics     seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_nln()
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln()
 {
   // loop over all Gauss points
   for (int gp=0; gp<numgpt_; gp++)
@@ -3555,8 +3648,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_nln()
 /*----------------------------------------------------------------------*
  |  update plastic deformation for nonlinear kinematics     seitz 09/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln()
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformationHill_nln()
 {
   // loop over all Gauss points
   for (int gp=0; gp<numgpt_; gp++)
@@ -3617,8 +3710,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln
 /*----------------------------------------------------------------------*
  |  update plastic deformation for linear kinematics        seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_lin()
 {
   // small strain plasticity using semi-smooth Newton is no longer supported
   dserror("linear kinematics for plasticity using semi-smooth Newton is no longer supported");
@@ -3661,8 +3754,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
 /*----------------------------------------------------------------------*
  |  matrix exponential                                      seitz 07/13 |
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut )
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut )
 {
   double Norm=MatrixInOut.Norm2();
   // direct calculation for zero-matrix
@@ -3701,8 +3794,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Ma
 /*---------------------------------------------------------------------------*
  |  matrix exponential derivative of a symmetric matrix          seitz 07/13 |
  *---------------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
 {
   double norm=MatrixIn.Norm2();
 
@@ -3895,8 +3988,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
 /*---------------------------------------------------------------------------*
  |  matrix exponential derivative of a symmetric matrix          seitz 09/13 |
  *---------------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv)
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv)
 {
   // see Souza-Neto: Computational Methods for plasticity, Box B.2.
   int nmax=0;
@@ -3942,8 +4035,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivative3x3(c
  |  add terms for matrix exponential derivative of a symmetric matrix        |
  | via power series                                              seitz 08/13 |
  *---------------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::AddToSymMatrixExponentialDeriv(const double fac,
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::AddToSymMatrixExponentialDeriv(const double fac,
     const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp)
 {
   Dexp(0,0) += 2. * fac * A(0,0) * B(0,0);
@@ -3995,8 +4088,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::AddToSymMatrixExponentialDeriv(c
  |  add terms for matrix exponential derivative of a symmetric matrix        |
  | via power series                                              seitz 09/13 |
  *---------------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::AddToMatrixExponentialDeriv(const double fac,
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::AddToMatrixExponentialDeriv(const double fac,
     const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp)
 {
   Dexp(0,0) += fac * A(0,0) * B(0,0);
