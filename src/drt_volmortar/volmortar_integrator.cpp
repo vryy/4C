@@ -593,6 +593,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis(DRT::Element& Aele,
+    std::vector<int>& foundeles,
     LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A,
     LINALG::SparseMatrix& dmatrix_B,
@@ -629,10 +630,10 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
     MORTAR::UTILS::GlobalToLocal<distypeS>(Aele,globgp,Axi);
 
     // loop over beles
-    for (int jeles=0;jeles<Bdis->NumMyColElements();++jeles)
+    for(int found=0;found<(int)foundeles.size();++found)//for (int jeles=0;jeles<Bdis->NumMyColElements();++jeles)
     {
       //get master element
-      DRT::Element* Bele = Bdis->lColElement(jeles);
+      DRT::Element* Bele = Bdis->gElement(foundeles[found]);//Bdis->lColElement(jeles);
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       MORTAR::UTILS::GlobalToLocal<distypeM>(*Bele,globgp,Bxi);
@@ -737,6 +738,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis(DRT::Element& Bele,
+    std::vector<int>& foundeles,
     LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A,
     LINALG::SparseMatrix& dmatrix_B,
@@ -772,11 +774,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
     double Bxi[3] = {0.0, 0.0, 0.0};
     MORTAR::UTILS::GlobalToLocal<distypeM>(Bele,globgp,Bxi);
 
-    // loop over beles
-    for (int jeles=0;jeles<Adis->NumMyColElements();++jeles)
+      // loop over beles
+    for(int found=0;found<(int)foundeles.size();++found)//for (int jeles=0;jeles<Bdis->NumMyColElements();++jeles)
     {
-      //get master element
-      DRT::Element* Aele = Adis->lColElement(jeles);
+        //get master element
+        DRT::Element* Aele = Adis->gElement(foundeles[found]);//DRT::Element* Aele = Adis->lColElement(jeles);
       double Axi[3] = {0.0, 0.0, 0.0};
 
       MORTAR::UTILS::GlobalToLocal<distypeS>(*Aele,globgp,Axi);

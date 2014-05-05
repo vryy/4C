@@ -35,6 +35,10 @@ namespace LINALG
   class SparseMatrix;
 }
 
+namespace GEO
+{
+  class SearchTree;
+}
 
 namespace MORTAR
 {
@@ -107,6 +111,18 @@ public:
 
   */
   virtual double* Auxn() { return auxn_; }
+
+  /*!
+  \brief calc dops for background mesh
+
+  */
+  virtual std::map<int,LINALG::Matrix<9,2> > CalcBackgroundDops(Teuchos::RCP<DRT::Discretization> searchdis);
+
+  /*!
+  \brief calc dops for one element
+
+  */
+  virtual LINALG::Matrix<9,2> CalcDop(DRT::Element& ele);
 
   /*!
   \brief check if we need cut (3D)
@@ -213,6 +229,18 @@ public:
   virtual void Initialize();
 
   /*!
+  \brief Initialize DOP normals for DOP calculation (Search algorithm)
+
+  */
+  virtual void InitDopNormals();
+
+  /*!
+  \brief Initialize search tree
+
+  */
+  virtual Teuchos::RCP<GEO::SearchTree> InitSearch(Teuchos::RCP<DRT::Discretization> searchdis);
+
+  /*!
   \brief perform 2D integration
 
   */
@@ -232,13 +260,15 @@ public:
   \brief perform 3D element-wise integration for ADis
 
   */
-  virtual void Integrate3DEleBased_ADis(DRT::Element& sele);
+  virtual void Integrate3DEleBased_ADis(DRT::Element& sele,
+                                        std::vector<int>& foundeles);
 
   /*!
   \brief perform 3D element-wise integration for BDis
 
   */
-  virtual void Integrate3DEleBased_BDis(DRT::Element& sele);
+  virtual void Integrate3DEleBased_BDis(DRT::Element& sele,
+                                        std::vector<int>& foundeles);
 
   /*!
   \brief perform 3D integration of created cells
@@ -298,38 +328,54 @@ public:
   */
   virtual void ReadAndCheckInput();
 
+  /*!
+  \brief search algorithm
+
+  */
+  virtual std::vector<int> Search(DRT::Element& ele,
+                                  Teuchos::RCP<GEO::SearchTree> SearchTree,
+                                  std::map<int,LINALG::Matrix<9,2> >& currentKDOPs);
+
   //@}
 protected:
   // don't want = operator and cctor
   VolMortarCoupl operator = (const VolMortarCoupl& old);
   VolMortarCoupl(const VolMortarCoupl& old);
 
-  const int                                dim_;       /// dimension of problem (2D or 3D)
-  Teuchos::ParameterList                   params_; // global parameter list for volmortar coupling
+  // global problem information
+  const int                          dim_;             /// dimension of problem (2D or 3D)
+  Teuchos::ParameterList             params_;          /// global parameter list for volmortar coupling
 
-  Teuchos::RCP<const DRT::Discretization>  Adiscret_;  /// the discretization of field A
-  Teuchos::RCP<DRT::Discretization>        Bdiscret_;        /// the discretization of field B
+  // discretizations
+  Teuchos::RCP<DRT::Discretization>  Adiscret_;        /// the discretization of field A
+  Teuchos::RCP<DRT::Discretization>  Bdiscret_;        /// the discretization of field B
 
-  Teuchos::RCP<LINALG::SparseMatrix>       dmatrixA_;        /// global Mortar matrix D for field A
-  Teuchos::RCP<LINALG::SparseMatrix>       dmatrixB_;        /// global Mortar matrix D for field B
+  // mortar matrices and projector
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixA_;        /// global Mortar matrix D for field A
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixB_;        /// global Mortar matrix D for field B
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixA_;        /// global Mortar matrix M for field A
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixB_;        /// global Mortar matrix M for field B
+  Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;        /// global Mortar projection matrix P for field A
+  Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;        /// global Mortar projection matrix P for field B
 
-  Teuchos::RCP<LINALG::SparseMatrix>       mmatrixA_;        /// global Mortar matrix M for field A
-  Teuchos::RCP<LINALG::SparseMatrix>       mmatrixB_;        /// global Mortar matrix M for field B
+  // quantitie for 2D segmentation
+  double                             auxn_[3];         /// normal of auxiliary plane (2D problems)
 
-  Teuchos::RCP<LINALG::SparseMatrix>       pmatrixA_;        /// global Mortar projection matrix P for field A
-  Teuchos::RCP<LINALG::SparseMatrix>       pmatrixB_;        /// global Mortar projection matrix P for field B
-
-
-  double                                   auxn_[3];         /// normal of auxiliary plane (2D problems)
+  // counter and stat. information
+  double                             volume_;          /// overall volume
   int                                polygoncounter_;  /// counter for created polygons/polyhedra
   int                                cellcounter_;     /// counter for created integration cells
   int                                inteles_;         /// counter for element-wise integration
-  double                             volume_;
 
+  // communicators
   Teuchos::RCP<Epetra_Comm>          commA_;           /// communicator for field A
   Teuchos::RCP<Epetra_Comm>          commB_;           /// communicator for field B
 
-  GEO::CUT::plain_volumecell_set     volcell_;
+  //cut specific quantities
+  GEO::CUT::plain_volumecell_set     volcell_;         /// set of volume cells for direct divergence integration
+
+  // seach algorithm
+  Epetra_SerialDenseMatrix           dopnormals_;      /// dop normals for seach algorihm
 
 };
 

@@ -635,14 +635,14 @@ public:
     );
 
 
-  /*!
-  \brief returns a vector of gids of contact elements whose AABBs intersect with
-         the AABB of a given contact element (This is a query method for CONTACT search!)
-  \param dis                  discretization
-  \param currentpositions     current nodal positions in discretization
-  \param element              given slave contact element
-  \return vector of master contact element gids
-   */
+    /*!
+    \brief returns a set of gids of elements whose 18-DOP (bounding volume) intersect with
+           the 18-DOP of a given element (This is a query method for CONTACT-related search!)
+    \param currentKDOPs        map of all current 18-DOPs for all elements
+    \param queryKDOP           18-DOP for considered element
+    \param label               label ???
+    \return set of master contact element gids
+     */
   void searchMultibodyContactElements(
     const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs,
     const LINALG::Matrix<9,2>&                  queryKDOP,
@@ -906,12 +906,12 @@ public:
         );
 
   /*!
-  \brief returns a vector of gids of contact elements whose AABBs intersect with
-         the AABB of a given contact element (This is a query method for CONTACT search!)
-  \param dis                  discretization
-  \param currentpositions     current nodal positions in discretization
-  \param element              given slave contact element
-  \return vector of master contact element gids
+  \brief returns a set of gids of elements whose 18-DOP (bounding volume) intersect with
+         the 18-DOP of a given element (This is a query method for CONTACT-related search!)
+  \param currentKDOPs        map of all current 18-DOPs for all elements
+  \param queryKDOP           18-DOP for considered element
+  \param label               label ???
+  \return set of master contact element gids
    */
   void searchMultibodyContactElements(
     const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs,

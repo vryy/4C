@@ -17,6 +17,7 @@ Maintainer: Philipp Farah
 #include "volmortar_integrator.H"
 #include "volmortar_cell.H"
 #include "volmortar_defines.H"
+#include "volmortar_shape.H"
 
 #include "../drt_inpar/inpar_volmortar.H"
 
@@ -40,6 +41,10 @@ Maintainer: Philipp Farah
 #include "../drt_cut/cut_volumecell.H"
 #include "../drt_cut/cut_elementhandle.H"
 
+//search
+#include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/searchtree_geometry_service.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
@@ -62,8 +67,11 @@ Bdiscret_(Bdis)
   // get required parameter list
   ReadAndCheckInput();
 
+  // init dop normals
+  InitDopNormals();
+
   // not used up to now
-  //TODO: communicator from which discretization needed???
+  //TODO: communicator from which discretization needed ???
    commA_ = Teuchos::rcp(Adis->Comm().Clone());
    commB_ = Teuchos::rcp(Bdis->Comm().Clone());
 
@@ -161,6 +169,151 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
 }
 
 /*----------------------------------------------------------------------*
+ |  Init normals for Dop calculation                         farah 05/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::InitDopNormals()
+{
+  dopnormals_.Reshape(9,3);
+  dopnormals_(0,0)= 1.0; dopnormals_(0,1)= 0.0; dopnormals_(0,2)= 0.0;
+  dopnormals_(1,0)= 0.0; dopnormals_(1,1)= 1.0; dopnormals_(1,2)= 0.0;
+  dopnormals_(2,0)= 0.0; dopnormals_(2,1)= 0.0; dopnormals_(2,2)= 1.0;
+  dopnormals_(3,0)= 1.0; dopnormals_(3,1)= 1.0; dopnormals_(3,2)= 0.0;
+  dopnormals_(4,0)= 1.0; dopnormals_(4,1)= 0.0; dopnormals_(4,2)= 1.0;
+  dopnormals_(5,0)= 0.0; dopnormals_(5,1)= 1.0; dopnormals_(5,2)= 1.0;
+  dopnormals_(6,0)= 1.0; dopnormals_(6,1)= 0.0; dopnormals_(6,2)=-1.0;
+  dopnormals_(7,0)= 1.0; dopnormals_(7,1)=-1.0; dopnormals_(7,2)= 0.0;
+  dopnormals_(8,0)= 0.0; dopnormals_(8,1)= 1.0; dopnormals_(8,2)=-1.0;
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  Init search tree                                         farah 05/14|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<GEO::SearchTree> VOLMORTAR::VolMortarCoupl::InitSearch(Teuchos::RCP<DRT::Discretization> searchdis)
+{
+  // init current positions
+  std::map<int,LINALG::Matrix<3,1> > currentpositions;
+
+  for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
+  {
+    DRT::Element* sele = searchdis->lColElement(lid);
+
+    // calculate slabs for every node on every element
+    for (int k=0;k<sele->NumNode();k++)
+    {
+      DRT::Node* node= sele->Nodes()[k];
+      LINALG::Matrix<3,1> currpos;
+
+      currpos(0) = node->X()[0];
+      currpos(1) = node->X()[1];
+      currpos(2) = node->X()[2];
+
+      currentpositions[node->Id()] = currpos;
+    }
+  }
+
+  //init of 3D search tree
+  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
+
+  // find the bounding box of the elements and initialize the search tree
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*searchdis,currentpositions);
+  searchTree->initializeTree(rootBox,*searchdis,GEO::TreeType(GEO::OCTTREE));
+
+  return searchTree;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Calculate Dops for background mesh                       farah 05/14|
+ *----------------------------------------------------------------------*/
+std::map<int,LINALG::Matrix<9,2> > VOLMORTAR::VolMortarCoupl::CalcBackgroundDops(Teuchos::RCP<DRT::Discretization> searchdis)
+{
+  std::map<int,LINALG::Matrix<9,2> > currentKDOPs;
+
+  for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
+  {
+    DRT::Element* sele = searchdis->lColElement(lid);
+
+    currentKDOPs[sele->Id()] = CalcDop(*sele);
+  }
+
+  return currentKDOPs;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate Dop for one Element                            farah 05/14|
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<9,2> VOLMORTAR::VolMortarCoupl::CalcDop(DRT::Element& ele)
+{
+  LINALG::Matrix<9,2>  dop;
+
+  // calculate slabs
+  for(int j=0; j<9;j++)
+  {
+    // initialize slabs
+    dop(j,0) =  1.0e12;
+    dop(j,1) = -1.0e12;
+  }
+
+  // calculate slabs for every node on every element
+  for (int k=0;k<ele.NumNode();k++)
+  {
+    DRT::Node* node= ele.Nodes()[k];
+
+    // get current node position
+    double pos[3] = {0.0, 0.0, 0.0};
+    for (int j=0;j<dim_;++j)
+      pos[j] = node->X()[j];
+
+    // calculate slabs
+    for(int j=0; j<9;j++)
+    {
+      //= ax+by+cz=d/sqrt(aa+bb+cc)
+      double num = dopnormals_(j,0)*pos[0]
+                 + dopnormals_(j,1)*pos[1]
+                 + dopnormals_(j,2)*pos[2];
+      double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+                         +(dopnormals_(j,1)*dopnormals_(j,1))
+                         +(dopnormals_(j,2)*dopnormals_(j,2)));
+      double dcurrent = num/denom;
+
+      if (dcurrent > dop(j,1)) dop(j,1) = dcurrent;
+      if (dcurrent < dop(j,0)) dop(j,0) = dcurrent;
+    }
+  }
+
+  return dop;
+}
+
+/*----------------------------------------------------------------------*
+ |  Perform searching procedure                              farah 05/14|
+ *----------------------------------------------------------------------*/
+std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
+                                                   Teuchos::RCP<GEO::SearchTree> SearchTree,
+                                                   std::map<int,LINALG::Matrix<9,2> >& currentKDOPs)
+{
+  // vector of global ids of found elements
+  std::vector<int> gids;
+  gids.clear();
+  std::set<int> gid;
+  gid.clear();
+
+  LINALG::Matrix<9,2> queryKDOP;
+
+  // calc dop for considered element
+  queryKDOP = CalcDop(ele);
+
+  //**********************************************************
+  //search for near elements to the background node's coord
+  SearchTree->searchMultibodyContactElements(currentKDOPs,queryKDOP,0,gid);
+
+  for(std::set<int>::iterator iter=gid.begin();iter!=gid.end();++iter)
+    gids.push_back(*iter);
+
+  return gids;
+}
+
+/*----------------------------------------------------------------------*
  |  Assign materials for both fields                         farah 04/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::AssignMaterials()
@@ -201,6 +354,8 @@ void VOLMORTAR::VolMortarCoupl::AssignMaterials()
       }
     }
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -216,6 +371,14 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
   std::cout << "*****       Element-based Integration        *****" << std::endl;
   std::cout << "*****       First Projector:                 *****" << std::endl;
 
+  // init searchtrees
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+
+  // calculate DOPs for search algorithm
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(Adiscret_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
+
   /**************************************************
    * loop over all Adis elements                    *
    **************************************************/
@@ -226,7 +389,8 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
     //get master element
     DRT::Element* Aele = Adiscret_->lColElement(j);
 
-    Integrate3DEleBased_ADis(*Aele);
+    std::vector<int> found = Search(*Aele, SearchTreeB,CurrentDOPsB);
+    Integrate3DEleBased_ADis(*Aele,found);
   }
 
   // half-time output
@@ -243,7 +407,8 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
     //get master element
     DRT::Element* Bele = Bdiscret_->lColElement(j);
 
-    Integrate3DEleBased_BDis(*Bele);
+    std::vector<int> found = Search(*Bele,SearchTreeA,CurrentDOPsA);
+    Integrate3DEleBased_BDis(*Bele,found);
   }
 
   // stats
@@ -256,6 +421,10 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
 {
+  // create search tree and current dops
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB       = InitSearch(Bdiscret_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
+
   /**************************************************
    * loop over all slave elements                   *
    **************************************************/
@@ -267,13 +436,16 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
     //get slave element
     DRT::Element* Aele = Adiscret_->lRowElement(i);
 
+    // get found elements from other discr.
+    std::vector<int> found = Search(*Aele, SearchTreeB,CurrentDOPsB);
+
     /**************************************************
      * loop over all master elements                  *
      **************************************************/
-    for (int j=0;j<Bdiscret_->NumMyColElements();++j)
+    for(int foundeles=0;foundeles<(int)found.size();++foundeles)
     {
-      //get master element
-      DRT::Element* Bele = Bdiscret_->lColElement(j);
+       //get b element
+       DRT::Element*Bele = Bdiscret_->gElement(found[foundeles]);
 
       /**************************************************
        *                    2D                          *
@@ -1231,7 +1403,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
+                                                         std::vector<int>& foundeles)
 {
   // assume that all BDis element types are equal
   DRT::Element::DiscretizationType btype = Bdiscret_->lColElement(0)->Shape();
@@ -1248,7 +1421,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
     {
       static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true,0);
-      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_ADis(Aele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1256,7 +1429,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
     {
       static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
       integrator.InitializeGP(true,0);
-      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_ADis(Aele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1277,7 +1450,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true,0);
-      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_ADis(Aele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1285,7 +1458,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
       integrator.InitializeGP(true,0);
-      integrator.IntegrateEleBased3D_ADis(Aele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_ADis(Aele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1310,7 +1483,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele)
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele)
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
+                                                         std::vector<int>& foundeles)
 {
   // assume that all BDis element types are equal
   DRT::Element::DiscretizationType atype = Adiscret_->lColElement(0)->Shape();
@@ -1327,7 +1501,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele)
     {
       static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true,1);
-      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_BDis(Bele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1335,7 +1509,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele)
     {
       static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
       integrator.InitializeGP(true,1);
-      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_BDis(Bele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1356,7 +1530,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele)
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true,1);
-      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_BDis(Bele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }
@@ -1364,7 +1538,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele)
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
       integrator.InitializeGP(true,1);
-      integrator.IntegrateEleBased3D_BDis(Bele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+      integrator.IntegrateEleBased3D_BDis(Bele,foundeles,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
     }

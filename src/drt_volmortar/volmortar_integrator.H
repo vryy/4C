@@ -152,6 +152,7 @@ public:
 
   */
   void IntegrateEleBased3D_ADis(DRT::Element& sele,
+                           std::vector<int>& foundeles,
                            LINALG::SparseMatrix& dmatrixA_,
                            LINALG::SparseMatrix& mmatrixA_,
                            LINALG::SparseMatrix& dmatrixB_,
@@ -164,6 +165,7 @@ public:
 
   */
   void IntegrateEleBased3D_BDis(DRT::Element& mele,
+                           std::vector<int>& foundeles,
                            LINALG::SparseMatrix& dmatrixA_,
                            LINALG::SparseMatrix& mmatrixA_,
                            LINALG::SparseMatrix& dmatrixB_,
