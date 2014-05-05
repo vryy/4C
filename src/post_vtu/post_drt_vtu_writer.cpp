@@ -503,7 +503,11 @@ VtuWriter::WriteSpecialField (
       break;
     }
   }
-  dsassert(foundit, "Internal error");
+  // should always find the correct result
+  if (!foundit)
+    dserror("Internal error when trying to identify output type %s",
+            groupname.c_str());
+
   // jump to the correct location in the data vector. Some fields might only
   // be stored once, so need to catch that case as well
   bool once = false;
@@ -686,15 +690,20 @@ VtuWriter::WriteNodalResultStep(
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
-  // on the row elements, so need to get the DofColMap to have this access
+  // on the row elements, so need to get the NodeColMap to have this access
   const Epetra_Map* colmap = dis->NodeColMap();
   const Epetra_BlockMap& vecmap = data->Map();
+
+  dsassert(colmap->MaxAllGID() == vecmap.MaxAllGID() &&
+           colmap->MinAllGID() == vecmap.MinAllGID(),
+           "Given data vector does not seem to match discretization node map");
 
   Teuchos::RCP<Epetra_MultiVector> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else {
-    ghostedData = LINALG::CreateVector(*colmap,false);
+    ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap,data->NumVectors(),
+                                                      false));
     LINALG::Export(*data,*ghostedData);
   }
 
@@ -768,11 +777,21 @@ VtuWriter::WriteElementResultStep(
   if (numdf+from > numcol)
     dserror("violated column range of Epetra_MultiVector: %d",numcol);
 
+  Teuchos::RCP<Epetra_MultiVector> importedData;
+  if (dis->ElementRowMap()->SameAs(data->Map()))
+    importedData = data;
+  else {
+    importedData = Teuchos::rcp(new Epetra_MultiVector(*dis->ElementRowMap(),
+                                                       data->NumVectors(),
+                                                       false));
+    LINALG::Export(*data,*importedData);
+  }
+
   for (int e=0; e<dis->NumMyRowElements(); ++e) {
     const DRT::Element* ele = dis->lRowElement(e);
     for (int n=0; n<ele->NumNode(); ++n) {
       for (int d=0; d<numdf; ++d) {
-        Epetra_Vector* column = (*data)(d+from);
+        Epetra_Vector* column = (*importedData)(d+from);
         solution.push_back((*column)[e]);
       }
       for (int d=numdf; d<ncomponents; ++d)
