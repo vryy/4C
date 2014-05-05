@@ -308,7 +308,7 @@ void GlobalToLocal(
    // first estimation for parameter space coordinates
    for(int p=0;p<ndim;++p)
    {
-     if(distype==DRT::Element::hex8)
+     if(distype==DRT::Element::hex8 or distype==DRT::Element::hex27)
        xi[p] = 0.0;
      else if(distype==DRT::Element::tet4)
      {
@@ -373,26 +373,12 @@ void GlobalToLocal(
      }
 //     else
 //     {
-//       std::cout << "NORM= " << sqrt(norm) << std::endl;
-//       std::cout << "XI= " << xi[0] << "  " << xi[1] << "  " << xi[2] << std::endl;
+//       std::cout << "norm= " << norm << " xi[0]=  " << xi[0]<< " xi[1]=  " << xi[1]<< " xi[2]=  " << xi[2] << std::endl;
 //     }
-
 
      // solve equation
      if (abs(xjm.Determinant())<1e-15)
      {
-
-       std::cout << "JAC= " << xjm.Determinant() << std::endl;
-       std::cout << "CONVERGED= " << converged << std::endl;
-       std::cout << "xi= " << xi[0] << "  " << xi[1] << "   " << xi[2]<< std::endl;
-       std::cout << "j= " << j << std::endl;
-       std::cout << "xjm= " << xjm << std::endl;
-       std::cout << "deriv= " << deriv << std::endl;
-       std::cout << "xref= " << xref << std::endl;
-       std::cout << "distype= " << distype << std::endl;
-       std::cout << "id= " << ele.Id() << std::endl;
-       std::cout << "ele shape= " << ele.Shape() << std::endl;
-
        dserror("*** WARNING: jacobi singular ***");
      }
 
@@ -418,8 +404,6 @@ void GlobalToLocal(
 
    if(!converged)
      dserror("Evaluation of element coordinates not converged!");
-
-   //dserror("BITCH");
 
    return;
 };
@@ -508,10 +492,12 @@ void GlobalToLocal(
      // solve equation
      if (abs(xjm.Determinant())<1e-15)
      {
-
+       std::cout << "WARNING !!! jacobi determinant singular!" << std::endl;
        std::cout << "JAC= " << xjm.Determinant() << std::endl;
        std::cout << "CONVERGED= " << converged << std::endl;
-       dserror("*** WARNING: jacobi singular ***");
+//       dserror("*** WARNING: jacobi singular ***");
+       converged = false;
+       break;
      }
 
      double xjm_invert = xjm.Invert();

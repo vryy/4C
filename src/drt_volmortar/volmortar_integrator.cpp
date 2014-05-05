@@ -121,6 +121,23 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integr
     }
     break;
   }
+  case DRT::Element::hex27:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
   default:
   {
     dserror("ERROR: VolMortarIntegrator: This element type is not implemented!");
@@ -614,10 +631,15 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
   for (int gp=0;gp<ngp_;++gp)
   {
 //    // coordinates and weight
-    double eta[3] = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
-    double wgt = weights_[gp];
-    double jac = 0.0;
+    double eta[3]    = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
+    double wgt       = weights_[gp];
+    double jac       = 0.0;
     double globgp[3] = {0.0, 0.0, 0.0};
+
+    // quantities for eval. outside gp
+    double gpdist    = 1.0e12;
+    int    gpid      = 0;
+    double AuxXi[3]  = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
     jac = UTILS::Jacobian<distypeS>(eta,Aele);
@@ -630,19 +652,41 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
     MORTAR::UTILS::GlobalToLocal<distypeS>(Aele,globgp,Axi);
 
     // loop over beles
-    for(int found=0;found<(int)foundeles.size();++found)//for (int jeles=0;jeles<Bdis->NumMyColElements();++jeles)
+    for(int found=0;found<(int)foundeles.size();++found)
     {
       //get master element
-      DRT::Element* Bele = Bdis->gElement(foundeles[found]);//Bdis->lColElement(jeles);
+      DRT::Element* Bele = Bdis->gElement(foundeles[found]);
       double Bxi[3] = {0.0, 0.0, 0.0};
 
-      MORTAR::UTILS::GlobalToLocal<distypeM>(*Bele,globgp,Bxi);
+      bool converged = true;
+      MORTAR::UTILS::GlobalToLocal<distypeM>(*Bele,globgp,Bxi, converged);
+      if(!converged)
+        continue;
+
+      // save distance of gp
+      double l = sqrt(Bxi[0]*Bxi[0] + Bxi[1]*Bxi[1] + Bxi[2]*Bxi[2]);
+      if(l<gpdist)
+      {
+        gpdist = l;
+        gpid   = foundeles[found];
+        AuxXi[0]  = Bxi[0];
+        AuxXi[1]  = Bxi[1];
+        AuxXi[2]  = Bxi[2];
+      }
 
       // Check parameter space mapping
       bool proj = CheckMapping3D(Aele,*Bele,Axi,Bxi);
 
-      if(!proj)
+      // if gp outside continue or eval nearest gp
+      if(!proj and (found!=((int)foundeles.size()-1)))
         continue;
+      else if(!proj and found==((int)foundeles.size()-1))
+      {
+        Bxi[0] = AuxXi[0];
+        Bxi[1] = AuxXi[1];
+        Bxi[2] = AuxXi[2];
+        Bele = Bdis->gElement(gpid);
+      }
 
       // evaluate trace space shape functions (on both elements)
       UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
@@ -690,42 +734,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
         }
       }
 
-      // compute cell D/M matrix ****************************************
-      // dual shape functions
-//      for (int j=0;j<nm_;++j)
-//      {
-//        DRT::Node* cnode = Bele->Nodes()[j];
-//        int nsdof=Bdis->NumDof(1,cnode);
-//
-//        //loop over slave dofs
-//        for (int jdof=0;jdof<nsdof;++jdof)
-//        {
-//          int row = Bdis->Dof(1,cnode,jdof);
-//
-//          // integrate M and D
-//          for (int k=0; k<ns_; ++k)
-//          {
-//            DRT::Node* mnode = Aele.Nodes()[k];
-//            int nmdof=Adis->NumDof(0,mnode);
-//
-//            for (int kdof=0;kdof<nmdof;++kdof)
-//            {
-//              int col = Adis->Dof(0,mnode,kdof);
-//
-//              // multiply the two shape functions
-//              double prod = lmval_B(j)*sval_A(k)*jac*wgt;
-//
-//              // dof to dof
-//              if (jdof==kdof)
-//              {
-//                if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-//                if (abs(prod)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
-//              }
-//            }
-//          }
-//        }
-//      }
-
       break;
     }//beles
   }//end gp loop
@@ -764,6 +772,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
     double jac = 0.0;
     double globgp[3] = {0.0, 0.0, 0.0};
 
+    // quantities for eval. outside gp
+    double gpdist    = 1.0e12;
+    int    gpid      = 0;
+    double AuxXi[3]  = {0.0, 0.0, 0.0};
+
     // evaluate the integration cell Jacobian
     jac = UTILS::Jacobian<distypeM>(eta,Bele);
 
@@ -775,19 +788,41 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
     MORTAR::UTILS::GlobalToLocal<distypeM>(Bele,globgp,Bxi);
 
       // loop over beles
-    for(int found=0;found<(int)foundeles.size();++found)//for (int jeles=0;jeles<Bdis->NumMyColElements();++jeles)
+    for(int found=0;found<(int)foundeles.size();++found)
     {
         //get master element
-        DRT::Element* Aele = Adis->gElement(foundeles[found]);//DRT::Element* Aele = Adis->lColElement(jeles);
+        DRT::Element* Aele = Adis->gElement(foundeles[found]);
       double Axi[3] = {0.0, 0.0, 0.0};
 
-      MORTAR::UTILS::GlobalToLocal<distypeS>(*Aele,globgp,Axi);
+      bool converged = true;
+      MORTAR::UTILS::GlobalToLocal<distypeS>(*Aele,globgp,Axi,converged);
+      if(!converged)
+        continue;
+
+      // save distance of gp
+      double l = sqrt(Axi[0]*Axi[0] + Axi[1]*Axi[1] + Axi[2]*Axi[2]);
+      if(l<gpdist)
+      {
+        gpdist = l;
+        gpid=foundeles[found];
+        AuxXi[0]  = Axi[0];
+        AuxXi[1]  = Axi[1];
+        AuxXi[2]  = Axi[2];
+      }
 
       // Check parameter space mapping
       bool proj = CheckMapping3D(*Aele,Bele,Axi,Bxi);
 
-      if(!proj)
+      // if gp outside continue or eval nearest gp
+      if(!proj and (found!=((int)foundeles.size()-1)))
         continue;
+      else if(!proj and found==((int)foundeles.size()-1))
+      {
+        Axi[0] = AuxXi[0];
+        Axi[1] = AuxXi[1];
+        Axi[2] = AuxXi[2];
+        Aele = Adis->gElement(gpid);
+      }
 
       // evaluate trace space shape functions (on both elements)
       UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
@@ -797,43 +832,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
       UTILS::volmortar_dualshape_function_3D(lmval_A,*Aele, Axi[0],Axi[1],Axi[2],distypeS);
       // ---
       UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
-
-
-      // compute cell D/M matrix ****************************************
-      // dual shape functions
-//      for (int j=0;j<ns_;++j)
-//      {
-//        DRT::Node* cnode = Aele.Nodes()[j];
-//        int nsdof=Adis->NumDof(1,cnode);
-//
-//        //loop over slave dofs
-//        for (int jdof=0;jdof<nsdof;++jdof)
-//        {
-//          int row = Adis->Dof(1,cnode,jdof);
-//
-//          // integrate M and D
-//          for (int k=0; k<nm_; ++k)
-//          {
-//            DRT::Node* mnode = Bele->Nodes()[k];
-//            int nmdof=Bdis->NumDof(0,mnode);
-//
-//            for (int kdof=0;kdof<nmdof;++kdof)
-//            {
-//              int col = Bdis->Dof(0,mnode,kdof);
-//
-//              // multiply the two shape functions
-//              double prod = lmval_A(j)*mval_A(k)*jac*wgt;
-//
-//              // dof to dof
-//              if (jdof==kdof)
-//              {
-//                if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-//                if (abs(prod)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
-//              }
-//            }
-//          }
-//        }
-//      }
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -1195,7 +1193,14 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3,DRT::Element::t
 //slave hex8
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex27>;
+
+//slave hex27
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex8>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex27>;
 
 //slave tet4
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex27>;

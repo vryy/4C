@@ -140,6 +140,7 @@ double Jacobian(const double* xi, DRT::Element& ele)
   std::vector<double> gxi(3);
   std::vector<double> geta(3);
 
+  //***************************************************************************
   // 2D bilinear case (4noded quadrilateral element)
   // 2D quadratic case (6noded triangular element)
   // 2D serendipity case (8noded quadrilateral element)
@@ -173,7 +174,7 @@ double Jacobian(const double* xi, DRT::Element& ele)
     cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
     jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
   }
-
+  //***************************************************************************
   // 3D Hex8
   else if (distype == DRT::Element::hex8)
   {
@@ -204,8 +205,8 @@ double Jacobian(const double* xi, DRT::Element& ele)
     if (jac <= 0.0)
       dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
   }
-
-  // 3D Hex8
+  //***************************************************************************
+  // 3D tet4
   else if (distype == DRT::Element::tet4)
   {
     LINALG::Matrix<4,4> jacob;
@@ -216,7 +217,37 @@ double Jacobian(const double* xi, DRT::Element& ele)
 
     jac=jacob.Determinant()/6.0;
   }
+  //***************************************************************************
+  // 3D Hex27
+  else if (distype == DRT::Element::hex27)
+  {
+    LINALG::Matrix<3,27> derivs;
+    const double r = xi[0];
+    const double s = xi[1];
+    const double t = xi[2];
 
+    DRT::UTILS::shape_function_3D_deriv1(derivs,r,s,t,DRT::Element::hex27);
+
+
+    LINALG::Matrix<27,3> xrefe;
+    for (int i=0; i<27; ++i)
+    {
+      DRT::Node** nodes=ele.Nodes();
+      if(!nodes) dserror("Nodes() returned null pointer");
+
+      xrefe(i,0) = nodes[i]->X()[0];
+      xrefe(i,1) = nodes[i]->X()[1];
+      xrefe(i,2) = nodes[i]->X()[2];
+    }
+
+    LINALG::Matrix<3,3> invJ;
+    invJ.Clear();
+
+    invJ.Multiply(derivs,xrefe);
+    jac = invJ.Invert();
+    if (jac <= 0.0)
+      dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
+  }
   // unknown case
   else
     dserror("ERROR: Jacobian called for unknown element type!");
@@ -278,10 +309,6 @@ void volmortar_shape_function_3D(
   DRT::Element::DiscretizationType  shape       ///< distuinguish between mortar shape
   )
 {
-  const double Q18 = 1.0/8.0;
-//  const double Q12 = 1.0/2.0;
-//  const double Q14 = 1.0/4.0;
-
   switch (shape)
   {
   case DRT::Element::hex8:
@@ -292,6 +319,7 @@ void volmortar_shape_function_3D(
       const double sm=1.0-s;
       const double tp=1.0+t;
       const double tm=1.0-t;
+      const double Q18 = 1.0/8.0;
 
       funct(0)=Q18*rm*sm*tm;
       funct(1)=Q18*rp*sm*tm;
@@ -302,6 +330,47 @@ void volmortar_shape_function_3D(
       funct(6)=Q18*rp*sp*tp;
       funct(7)=Q18*rm*sp*tp;
 
+      break;
+  }
+  case DRT::Element::hex27:
+  {
+      const double rm1=0.5*r*(r - 1.0);
+      const double r00=(1.0 - r*r);
+      const double rp1=0.5*r*(r + 1.0);
+      const double sm1=0.5*s*(s - 1.0);
+      const double s00=(1.0 - s*s);
+      const double sp1=0.5*s*(s + 1.0);
+      const double tm1=0.5*t*(t - 1.0);
+      const double t00=(1.0 - t*t);
+      const double tp1=0.5*t*(t + 1.0);
+
+      funct( 0) = rm1*sm1*tm1;
+      funct( 1) = rp1*sm1*tm1;
+      funct( 2) = rp1*sp1*tm1;
+      funct( 3) = rm1*sp1*tm1;
+      funct( 4) = rm1*sm1*tp1;
+      funct( 5) = rp1*sm1*tp1;
+      funct( 6) = rp1*sp1*tp1;
+      funct( 7) = rm1*sp1*tp1;
+      funct( 8) = r00*sm1*tm1;
+      funct( 9) = s00*tm1*rp1;
+      funct(10) = r00*tm1*sp1;
+      funct(11) = s00*rm1*tm1;
+      funct(12) = t00*rm1*sm1;
+      funct(13) = t00*sm1*rp1;
+      funct(14) = t00*rp1*sp1;
+      funct(15) = t00*rm1*sp1;
+      funct(16) = r00*sm1*tp1;
+      funct(17) = s00*rp1*tp1;
+      funct(18) = r00*sp1*tp1;
+      funct(19) = s00*rm1*tp1;
+      funct(20) = r00*s00*tm1;
+      funct(21) = r00*t00*sm1;
+      funct(22) = s00*t00*rp1;
+      funct(23) = r00*t00*sp1;
+      funct(24) = s00*t00*rm1;
+      funct(25) = r00*s00*tp1;
+      funct(26) = r00*s00*t00;
       break;
   }
   case DRT::Element::tet4:
@@ -417,10 +486,10 @@ void volmortar_dualshape_function_2D(
 template<class V>
 void volmortar_dualshape_function_3D(
   V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const double&                            xi2,       ///< xi1 coordinate
+  DRT::Element&                            ele,     ///< considered element
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const double&                            xi2,     ///< xi1 coordinate
   const DRT::Element::DiscretizationType&  shape    ///< distuinguish between mortar shape
   )
 {
@@ -498,7 +567,6 @@ void volmortar_dualshape_function_3D(
   }
   // *********************************************************************
   // 3D dual linear shape functions (tet4)
-  // (used for interpolation of Lagrange mutliplier field)
   // *********************************************************************
   case DRT::Element::tet4:
   {
@@ -506,6 +574,75 @@ void volmortar_dualshape_function_3D(
     funct(1) = -1.0 + 5.0*xi0;
     funct(2) = -1.0 + 5.0*xi1;
     funct(3) = -1.0 + 5.0*xi2;
+
+    break;
+  }
+  // *********************************************************************
+  // 3D dual tri-quadratic shape functions (hex27)
+  // *********************************************************************
+  case DRT::Element::hex27:
+  {
+    // initialize GaußRule
+    Epetra_SerialDenseMatrix coords;
+    std::vector<double> weights;
+    int ngp;
+
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp = intpoints.nquad;
+    coords.Reshape(ngp,3);
+    weights.resize(ngp);
+    for (int i=0;i<ngp;++i)
+    {
+      coords(i,0)=intpoints.qxg[i][0];
+      coords(i,1)=intpoints.qxg[i][1];
+      coords(i,2)=intpoints.qxg[i][2];
+      weights[i]=intpoints.qwgt[i];
+    }
+
+    int nnodes = ele.NumNode();
+    // get solution matrix with dual parameters
+    LINALG::Matrix<27,1>      stdval;
+
+    // establish fundamental data
+    double detg = 0.0;
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+
+    for (int i=0;i<ngp;++i)
+    {
+      double gpc[3] = {coords(i,0), coords(i,1) , coords(i,2)};
+      volmortar_shape_function_3D(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::hex27);
+      detg = Jacobian<DRT::Element::hex27>(gpc,ele);
+
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=weights[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*weights[i]*stdval(j)*detg;
+        }
+    }
+
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
+
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    double xi[3] = {xi0,xi1,xi2};
+    volmortar_shape_function_3D(stdval,xi[0],xi[1],xi[2],DRT::Element::hex27);
+
+    // evaluate dual shape functions
+    for (int i=0;i<nnodes;++i)
+      funct(i)=0;
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        funct(i)+=ae(i,j)*stdval(j);
 
     break;
   }
