@@ -117,7 +117,7 @@ UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
 
     if (numcond == 0) dserror("no coupling conditions found");
 
-    if (windkesselcond_.size() != windkesselstructcoupcond_.size()) dserror("Coupling conditions do not match windkessel conditions!");
+    //if (windkesselcond_.size() != windkesselstructcoupcond_.size()) dserror("Coupling conditions do not match windkessel conditions!");
 
 
     std::vector<int> wkID(windkesselcond_.size());
@@ -360,7 +360,6 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
-    //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
     double C = windkesselcond_[condID]->GetDouble("C");
@@ -402,7 +401,6 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     int gindex = condID-offsetID;
-    //std::cout << "g1: " << gindex << std::endl;
 
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
@@ -540,7 +538,6 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
 
     int coupcondID=coupcond.GetInt("coupling_id");
-    //std::cout << "" << condition << std::endl;
     params.set("coupling_id",coupcondID);
 
     const std::string action = params.get<std::string>("action");
@@ -739,7 +736,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
-    //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
     double R_av_max = windkesselcond_[condID]->GetDouble("R_av_max");
@@ -1087,7 +1083,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
 
     int coupcondID=coupcond.GetInt("coupling_id");
-    //std::cout << "" << condition << std::endl;
     params.set("coupling_id",coupcondID);
 
     const std::string action = params.get<std::string>("action");
@@ -1286,7 +1281,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
-    //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
     double R_av_max = windkesselcond_[i]->GetDouble("R_av_max");
@@ -1597,7 +1591,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
 
     int coupcondID=coupcond.GetInt("coupling_id");
-    //std::cout << "" << condition << std::endl;
     params.set("coupling_id",coupcondID);
 
     const std::string action = params.get<std::string>("action");

@@ -413,18 +413,12 @@ void UTILS::WindkesselManager::SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newr
 void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(Teuchos::RCP<Epetra_Vector> actpres)
 {
 
-  std::vector<DRT::Condition*> windkcond;
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<DRT::Condition*> windkstructcoupcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null)
     dserror("No structure discretization available!");
-
-  // get all windkessel conditions on structure
-  if (wk_std_->HaveWindkessel()) structdis->GetCondition("WindkesselStdStructureCond",windkcond);
-  if (wk_heartvalvearterial_->HaveWindkessel()) structdis->GetCondition("WindkesselHeartValveArterialStructureCond",windkcond);
-  if (wk_heartvalvearterial_proxdist_->HaveWindkessel()) structdis->GetCondition("WindkesselHeartValveArterialProxDistStructureCond",windkcond);
 
   // get all Neumann conditions on structure
   structdis->GetCondition("SurfaceNeumann",surfneumcond);
