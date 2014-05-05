@@ -60,7 +60,8 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi) // IMMERSEDFSI
+  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD")
+      and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi) // IMMERSEDFSI
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -74,9 +75,10 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0 and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi)
+  else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0
+           and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi)
   {
-    // coupling condition at the fsi interface: displacements (=number spacial dimensions) are coupled)
+    // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are coupled
     // e.g.: 3D: coupleddof = [1, 1, 1]
     std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
 
