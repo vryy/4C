@@ -289,7 +289,7 @@ set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
 set(BOOST_INCLUDEDIR,${BOOST_INCLUDEDIR})
 
 
-FIND_PACKAGE( Boost COMPONENTS graph program_options REQUIRED)
+FIND_PACKAGE( Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
   #message("Found Boost: ${Boost_INCLUDE_DIRS}")

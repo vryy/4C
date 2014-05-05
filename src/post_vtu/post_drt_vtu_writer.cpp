@@ -29,6 +29,8 @@ Maintainer: Martin Kronbichler
 #include "../drt_lib/drt_exporter.H"
 #include "../linalg/linalg_utils.H"
 
+#include <boost/filesystem.hpp>
+
 
 
 /*----------------------------------------------------------------------*/
@@ -841,17 +843,22 @@ VtuWriter::WriteFiles(PostFilterBase &filter)
   unsigned int ntdigits = ndigits(soltime.size()),
       npdigits = ndigits(field_->discretization()->Comm().NumProc());
   std::vector<std::pair<double, std::string> > filenames;
+
+  const std::string dirname = filename_ + "-files";
+  boost::filesystem::create_directories(dirname);
+
   for (timestep_=0; timestep_<(int)soltime.size(); ++timestep_) {
-    const std::string filename_base = filename_ + "-" + field_->name() + "-" + int2string(timestep_,ntdigits);
+    const std::string filename_base = field_->name() + "-" + int2string(timestep_,ntdigits);
     time_ = soltime[timestep_];
     filenames.push_back(std::pair<double,std::string>(time_, filename_base+".pvtu"));
 
     currentout_.close();
-    currentout_.open((filename_base+"-" + int2string(myrank_,npdigits) + ".vtu").c_str());
+    currentout_.open((dirname + "/" + filename_base + "-" +
+                      int2string(myrank_,npdigits) + ".vtu").c_str());
 
     if (myrank_ == 0) {
       currentmasterout_.close();
-      currentmasterout_.open((filename_base+".pvtu").c_str());
+      currentmasterout_.open((dirname + "/" + filename_base + ".pvtu").c_str());
     }
 
     WriteVtuHeader();
@@ -879,7 +886,8 @@ VtuWriter::WriteFiles(PostFilterBase &filter)
 
     for (unsigned int i = 0; i < filenames.size(); ++i)
       masterfile << "    <DataSet timestep=\"" << filenames[i].first
-                 << "\" group=\"\" part=\"0\" file=\"" << filenames[i].second
+                 << "\" group=\"\" part=\"0\" file=\"" << dirname << "/"
+                 << filenames[i].second
                  << "\"/>\n";
 
     masterfile << "  </Collection>\n";
