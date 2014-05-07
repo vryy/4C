@@ -414,7 +414,7 @@ protected:
   //@}
 
   //! connection between master and slave nodes on this proc
-  Teuchos::RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >     pbcmapmastertoslave_;
   //@}
 
   //!

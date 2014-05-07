@@ -121,16 +121,16 @@ private:
   std::map<const int, Teuchos::RCP<Fluid_couplingBc> > coup_map3D_;
 
   //! map of coupling variables returned by the reduced-D model at time step n+1
-  Teuchos::RCP<map<std::string, double > >                   mapRed_Dnp_;
+  Teuchos::RCP<std::map<std::string, double > >                   mapRed_Dnp_;
 
   //! map of coupling variables returned by the reduced-D model at time step n
-  Teuchos::RCP<map<std::string, double > >                   mapRed_Dn_;
+  Teuchos::RCP<std::map<std::string, double > >                   mapRed_Dn_;
 
   //! map of coupling variables returned by the 3-D model at time step n+1
-  Teuchos::RCP<map<std::string, double > >                   map3_Dnp_;
+  Teuchos::RCP<std::map<std::string, double > >                   map3_Dnp_;
 
   //! map of coupling variables returned by the 3-D model at time step n
-  Teuchos::RCP<map<std::string, double > >                   map3_Dn_;
+  Teuchos::RCP<std::map<std::string, double > >                   map3_Dn_;
 
   //! 3D fluid discretization
   Teuchos::RCP<DRT::Discretization>                     discret3D_;

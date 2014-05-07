@@ -13,6 +13,8 @@ Created on: Feb 27, 2014
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2014
 
+#include <iostream>
+
 //#include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
@@ -195,7 +197,7 @@ out_analysis_(Teuchos::null)
 {
 
   if (activate_analysis_)
-    out_analysis_ = Teuchos::rcp(new std::ofstream(file_for_analysis.c_str(),ios::app));
+    out_analysis_ = Teuchos::rcp(new std::ofstream(file_for_analysis.c_str(),std::ios::app));
 }
 
 /*------------------------------------------------------------------------------*/
@@ -807,7 +809,7 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   // Delete contents of analysis file
   if (analysis_AMG_ && (instance_id_==0))
   {
-    ofstream auxfile(file_analysis_AMG_.c_str());
+    std::ofstream auxfile(file_analysis_AMG_.c_str());
     instance_id_++;
   }
 

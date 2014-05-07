@@ -1518,7 +1518,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_/normstrrhsiter0_;
     break;
   case INPAR::STR::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normstrrhs_, normstrrhs_/normstrrhsiter0_);
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normstrrhs_, normstrrhs_/normstrrhsiter0_);
     break;
   default :
     dserror("You should not turn up here.");
@@ -1534,7 +1534,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_/normdisiiter0_;
     break;
   case INPAR::STR::convnorm_mix :
-   oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normdisiiter0_);
+   oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normdisi_, normdisi_/normdisiiter0_);
     break;
   default :
     dserror("You should not turn up here.");
@@ -3313,8 +3313,8 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
 
   // -------------------------------------------------- print results to screen
   std::cout.precision(7);
-  std::cout << scientific;
-  std::cout << fixed;
+  std::cout << std::scientific;
+  std::cout << std::fixed;
   if (ThermoField()->Discretization()->Comm().MyPID() == 0)
   {
     std::cout << "OUTPUT:\ttop-disp \ttop-Freact \tneck-disp \tneck-tempi \ttop-tempi \ttop-force\n"

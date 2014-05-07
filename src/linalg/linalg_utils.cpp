@@ -877,7 +877,7 @@ int LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
     {
       // Eigenvalues:
       // cout << "lambda " << i << ":  " <<  ALPHAR[i]/BETA[i] << endl;
-      maxlambda = max(ALPHAR[i]/BETA[i],maxlambda);
+      maxlambda = std::max(ALPHAR[i]/BETA[i],maxlambda);
     }
     if ( ALPHAI[i] > 1e-12 )
     {
@@ -1930,7 +1930,7 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
       delete [] Indices;
       delete [] Values;
 
-      os << flush;
+      os << std::flush;
 
       // close file
       os.close();
@@ -1980,7 +1980,7 @@ void LINALG::PrintSerialDenseMatrixInMatlabFormat(std::string fname,
         }
       }
 
-      os << flush;
+      os << std::flush;
 
       // close file
       os.close();
@@ -2062,7 +2062,7 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
           os << endl;
         }
       }
-      os << flush;
+      os << std::flush;
     }
     // close file
     os.close();
@@ -2122,7 +2122,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname,
           os << endl;
         }
       }
-      os << flush;
+      os << std::flush;
     }
     // close file
     os.close();

@@ -367,7 +367,7 @@ protected:
   //@}
 
   //! @name 1D artery values at the junctions
-  Teuchos::RCP<map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals_;
+  Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals_;
   //@}
 
   //! @name A condition to export 1D arteries as a gnuplot format
