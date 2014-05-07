@@ -239,7 +239,7 @@ private:
 
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return anisomod_;}
-    
+
     /// return if isotropic, splitted and viscos formulation
     virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
 
@@ -440,12 +440,14 @@ private:
     const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
     );
 
-    /// Flags to specify the formulations
-    bool isoprinc_;
-    bool isomod_;
-    bool anisoprinc_ ;
-    bool anisomod_ ;
-    bool isomodvisco_ ;
+    /// @name Flags to specify the formulations
+    //@{
+    bool isoprinc_; ///< global indicator for isotropic principal formulation
+    bool isomod_; ///< global indicator for isotropic splitted formulation
+    bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
+    bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
+    bool isomodvisco_ ; ///< global indicator for isotropic splitted viscous formulation
+    //@}
 
     /// @name Voigt index arrays
     //@{
