@@ -84,6 +84,17 @@ namespace FSI
 
   private:
 
+    /*! \brief Setup the Dirichlet map extractor
+     *
+     *  Create a map extractor #dbcmaps_ for the Dirichlet degrees of freedom
+     *  for the entire FSI problem. This is done just by combining the
+     *  condition maps and other maps from structure, fluid and ALE to a FSI-global
+     *  condition map and other map.
+     *
+     *  \author mayr.mt \date 05/2014
+     */
+    virtual void SetupDBCMapExtractor(){ dserror("Not implemented, yet."); }
+
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f);
 

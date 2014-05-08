@@ -185,26 +185,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   // ---------------------------------------------------------------------------
   // Build the global Dirichlet map extractor
-  //
-  // Dirichlet maps for structure and fluid do not intersect with interface map.
-  // ALE Dirichlet map might intersect with interface map, but ALE interface DOFs
-  // are not part of the final system of equations. Hence, we just need the
-  // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
-  std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
-  Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
-
-  // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
-  std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
-  dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
-  dbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
-  dbcmaps.push_back(aleintersectionmap);
-  Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
-
-  // Finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(),dbcmap,true));
-  if (dbcmaps_ == Teuchos::null) { dserror("Creation of FSI Dirichlet map extractor failed."); }
+  SetupDBCMapExtractor();
   // ---------------------------------------------------------------------------
 
   std::vector<int> pciter;
@@ -301,6 +282,34 @@ void FSI::MonolithicFluidSplit::SetupSystem()
     dserror("Unsupported type of monolithic solver");
     break;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::SetupDBCMapExtractor()
+{
+  // Dirichlet maps for structure and fluid do not intersect with interface map.
+  // ALE Dirichlet map might intersect with interface map, but ALE interface DOFs
+  // are not part of the final system of equations. Hence, we just need the
+  // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
+  std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
+  aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
+  Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+
+  // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
+  std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
+  dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(aleintersectionmap);
+  Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+
+  // Finally, create the global FSI Dirichlet map extractor
+  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(),dbcmap,true));
+  if (dbcmaps_ == Teuchos::null) { dserror("Creation of FSI Dirichlet map extractor failed."); }
+  // ---------------------------------------------------------------------------
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
