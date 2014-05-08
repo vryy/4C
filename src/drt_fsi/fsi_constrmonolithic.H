@@ -198,6 +198,15 @@ namespace FSI
 
   private:
 
+    /*! \brief Create the combined DOF row map for the FSI problem
+     *
+     *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
+     *  DOF row map.
+     *
+     *  \author mayr.mt \date 05/2014
+     */
+    virtual void CreateCombinedDofRowMap() = 0;
+
     /*! \brief Setup the Dirichlet map extractor
      *
      *  Create a map extractor #dbcmaps_ for the Dirichlet degrees of freedom

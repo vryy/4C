@@ -219,16 +219,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     FluidField().SetMeshMap(coupfa.MasterDofMap());
 
     // create combined map
-
-    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-    vecSpaces.push_back(StructureField()->Interface()->OtherMap());
-    vecSpaces.push_back(FluidField()    .DofRowMap());
-    vecSpaces.push_back(AleField()      .Interface()->OtherMap());
-
-    if (vecSpaces[0]->NumGlobalElements()==0)
-      dserror("No inner structural equations. Splitting not possible. Panic.");
-
-    SetDofRowMaps(vecSpaces);
+    CreateCombinedDofRowMap();
 
     // Use normal matrix for fluid equations but build (splitted) mesh movement
     // linearization (if requested in the input file)
@@ -360,6 +351,23 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     }
     notsetup_=false;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MortarMonolithicStructureSplit::CreateCombinedDofRowMap()
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
+  vecSpaces.push_back(FluidField().DofRowMap());
+  vecSpaces.push_back(AleField().Interface()->OtherMap());
+
+  if (vecSpaces[0]->NumGlobalElements()==0)
+    dserror("No inner structural equations. Splitting not possible. Panic.");
+
+  SetDofRowMaps(vecSpaces);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

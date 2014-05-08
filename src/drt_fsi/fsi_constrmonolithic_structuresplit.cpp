@@ -87,21 +87,8 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  //-----------------------------------------------------------------------------
   // create combined map
-  //-----------------------------------------------------------------------------
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
-  vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
-
-  vecSpaces.push_back(conman_->GetConstraintMap());
-
-  if (vecSpaces[0]->NumGlobalElements()==0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
-
-  SetDofRowMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
   FluidField().UseBlockMatrix(false);
 
@@ -194,6 +181,24 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::ConstrMonolithicStructureSplit::CreateCombinedDofRowMap()
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
+  vecSpaces.push_back(FluidField().DofRowMap());
+  vecSpaces.push_back(AleField().Interface()->OtherMap());
+
+  vecSpaces.push_back(conman_->GetConstraintMap());
+
+  if (vecSpaces[0]->NumGlobalElements()==0)
+    dserror("No inner structural equations. Splitting not possible. Panic.");
+
+  SetDofRowMaps(vecSpaces);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

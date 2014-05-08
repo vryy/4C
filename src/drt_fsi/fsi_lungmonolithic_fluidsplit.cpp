@@ -110,20 +110,8 @@ void FSI::LungMonolithicFluidSplit::SetupSystem()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  //-----------------------------------------------------------------------------
   // create combined map
-  //-----------------------------------------------------------------------------
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField()->DofRowMap());
-  vecSpaces.push_back(FluidField().DofRowMap());
-  vecSpaces.push_back(AleField().Interface()->OtherMap());
-  vecSpaces.push_back(ConstrMap_);
-
-  if (vecSpaces[0]->NumGlobalElements()==0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
-
-  SetDofRowMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
   FluidField().UseBlockMatrix(true);
 
@@ -207,6 +195,23 @@ void FSI::LungMonolithicFluidSplit::SetupSystem()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::LungMonolithicFluidSplit::CreateCombinedDofRowMap()
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  vecSpaces.push_back(StructureField()->DofRowMap());
+  vecSpaces.push_back(FluidField().DofRowMap());
+  vecSpaces.push_back(AleField().Interface()->OtherMap());
+  vecSpaces.push_back(ConstrMap_);
+
+  if (vecSpaces[0]->NumGlobalElements()==0)
+    dserror("No inner structural equations. Splitting not possible. Panic.");
+
+  SetDofRowMaps(vecSpaces);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -250,16 +250,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystem()
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
   // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
-  vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
-
-  if (vecSpaces[0]->NumGlobalElements()==0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
-
-  SetDofRowMaps(vecSpaces);
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
@@ -379,16 +370,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupNewSystem()
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupNewSystem()");
 
   // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
-  vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
-
-  if (vecSpaces[0]->NumGlobalElements()==0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
-
-  SetDofRowMaps(vecSpaces);
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -488,6 +470,24 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupNewSystem()
     dserror("Unsupported type of monolithic solver");
   break;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidFluidMonolithicStructureSplit::CreateCombinedDofRowMap()
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
+  vecSpaces.push_back(FluidField()    .DofRowMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
+
+  if (vecSpaces[0]->NumGlobalElements()==0)
+    dserror("No inner structural equations. Splitting not possible. Panic.");
+
+  SetDofRowMaps(vecSpaces);
+  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

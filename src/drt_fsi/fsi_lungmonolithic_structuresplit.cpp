@@ -103,24 +103,8 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
-
-  //-----------------------------------------------------------------------------
   // create combined map
-  //-----------------------------------------------------------------------------
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(structfield->FSIInterface()->OtherMap());
-  vecSpaces.push_back(FluidField().DofRowMap());
-  // remaining (not coupled) dofs of ale field
-  vecSpaces.push_back(AleField().Interface()->Map(0));
-  // additional volume constraints
-  vecSpaces.push_back(ConstrMap_);
-
-  if (vecSpaces[0]->NumGlobalElements()==0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
-
-  SetDofRowMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
   FluidField().UseBlockMatrix(false);
 
@@ -203,6 +187,27 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::LungMonolithicStructureSplit::CreateCombinedDofRowMap()
+{
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  vecSpaces.push_back(structfield->FSIInterface()->OtherMap());
+  vecSpaces.push_back(FluidField().DofRowMap());
+  // remaining (not coupled) dofs of ale field
+  vecSpaces.push_back(AleField().Interface()->Map(0));
+  // additional volume constraints
+  vecSpaces.push_back(ConstrMap_);
+
+  if (vecSpaces[0]->NumGlobalElements()==0)
+    dserror("No inner structural equations. Splitting not possible. Panic.");
+
+  SetDofRowMaps(vecSpaces);
+
+ return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

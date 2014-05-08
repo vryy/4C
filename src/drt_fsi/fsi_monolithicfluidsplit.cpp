@@ -163,16 +163,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   FSI::Monolithic::SetupSystem();
 
   // create combined map
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField()->DofRowMap());
-  vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
-
-  if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No inner fluid equations. Splitting not possible. Panic.");
-
-  SetDofRowMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
   /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix
@@ -282,6 +273,23 @@ void FSI::MonolithicFluidSplit::SetupSystem()
     dserror("Unsupported type of monolithic solver");
     break;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::CreateCombinedDofRowMap()
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  vecSpaces.push_back(StructureField()->DofRowMap());
+  vecSpaces.push_back(FluidField().DofRowMap());
+  vecSpaces.push_back(AleField().Interface()->OtherMap());
+
+  if (vecSpaces[1]->NumGlobalElements()==0)
+    dserror("No inner fluid equations. Splitting not possible. Panic.");
+
+  SetDofRowMaps(vecSpaces);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
