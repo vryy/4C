@@ -628,7 +628,7 @@ bool TOPOPT::Optimizer::CheckData(const bool doAdjoint)
     }
     else
     {
-      const INPAR::TOPOPT::AdjointType& adjointtype = DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointType>(params_.sublist("TOPOLOGY ADJOINT FLUID"),"ADJOINT_TYPE");
+//      const INPAR::TOPOPT::AdjointType& adjointtype = DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointType>(params_.sublist("TOPOLOGY ADJOINT FLUID"),"ADJOINT_TYPE");
 
       // TODO check here if sol at time 0 required. if so, remove outcommented lines.
       // if not use these lines
