@@ -21,8 +21,6 @@
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_ale/ale.H"
 
-#define FLUIDSPLITAMG
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(const Epetra_Comm& comm,

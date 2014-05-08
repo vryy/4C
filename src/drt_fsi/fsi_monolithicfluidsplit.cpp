@@ -43,8 +43,6 @@ Maintainer: Matthias Mayr
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
-#define FLUIDSPLITAMG
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
@@ -168,11 +166,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->DofRowMap());
-#ifdef FLUIDSPLITAMG
   vecSpaces.push_back(FluidField()    .DofRowMap());
-#else
-  vecSpaces.push_back(FluidField()    .Interface()->OtherMap());
-#endif
   vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   if (vecSpaces[1]->NumGlobalElements()==0)
@@ -335,9 +329,7 @@ void FSI::MonolithicFluidSplit::SetupRHSResidual(Epetra_Vector& f)
 
   // extract only inner DOFs from fluid (=slave) and ALE field
   Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
-#ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
-#endif
   Teuchos::RCP<const Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
 
   // add fluid interface values to structure vector
@@ -506,9 +498,7 @@ void FSI::MonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
   rhs->Scale(Dt() * timescale);
 
-#ifdef FLUIDSPLITAMG
   rhs = FluidField().Interface()->InsertOtherVector(rhs);
-#endif
 
   Extractor().AddVector(*rhs,1,f);
   // ----------end of term 1
@@ -520,9 +510,7 @@ void FSI::MonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
   rhs->Scale(-timescale);
 
-#ifdef FLUIDSPLITAMG
   rhs = FluidField().Interface()->InsertOtherVector(rhs);
-#endif
 
   Extractor().AddVector(*rhs,1,f);
   // ----------end of term 2
@@ -539,9 +527,7 @@ void FSI::MonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
     rhs->Scale(-1.);
 
-#ifdef FLUIDSPLITAMG
   rhs = FluidField().Interface()->InsertOtherVector(rhs);
-#endif
 
     Extractor().AddVector(*rhs,1,f);
   }
@@ -655,12 +641,8 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   if (stcalgo == INPAR::STR::stc_currsym)
     lfgi = LINALG::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
 
-#ifdef FLUIDSPLITAMG
   mat.Matrix(0,1).UnComplete();
   mat.Matrix(0,1).Add(*lfgi,false,1.,0.0);
-#else
-  mat.Assign(0,1,View,*lfgi);
-#endif
 
   if (stcalgo == INPAR::STR::stc_none)
   {
@@ -686,21 +668,13 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
     lfig = LINALG::MLMultiply(*lfig,false,*stcmat, false, false, false,true);
 
-#ifdef FLUIDSPLITAMG
     mat.Matrix(1,0).UnComplete();
     mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
-#else
-    mat.Assign(1,0,View,*lfig);
-#endif
   }
 
-#ifdef FLUIDSPLITAMG
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
   Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface()->FSICondMap());
   mat.Matrix(1,1).Add(*eye,false,1.,1.0);
-#else
-  mat.Assign(1,1,View,fii);
-#endif
 
   if (stcalgo == INPAR::STR::stc_none)
   {
@@ -814,13 +788,8 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
       if (stcalgo == INPAR::STR::stc_currsym)
         lfmgi = LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, true);
 
-#ifdef FLUIDSPLITAMG
       mat.Matrix(0,2).UnComplete();
       mat.Matrix(0,2).Add(*lfmgi,false,1.,0.0);
-#else
-      mat.Assign(0,2,View,*lfmgi);
-#endif
-
     }
   }
 
@@ -1352,9 +1321,7 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
   // ---------------------------------------------------------------------------
   // extract inner fluid solution increment from NOX increment
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
-#ifdef FLUIDSPLITAMG
   fox = FluidField().Interface()->ExtractOtherVector(fox);
-#endif
 
   // convert ALE solution increment to fluid solution increment at the interface
   Teuchos::RCP<Epetra_Vector> fcx = AleToFluidInterface(acx);
@@ -1622,9 +1589,7 @@ void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
-#ifdef FLUIDSPLITAMG
     fov = FluidField().Interface()->InsertOtherVector(fov);
-#endif
     Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
 
     // put them together

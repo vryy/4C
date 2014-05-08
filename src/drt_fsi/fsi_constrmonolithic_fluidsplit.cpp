@@ -22,8 +22,6 @@
 
 #include "../drt_constraint/constraint_manager.H"
 
-#define FLUIDSPLITAMG
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& comm,
@@ -98,11 +96,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystem()
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->DofRowMap());
-#ifdef FLUIDSPLITAMG
   vecSpaces.push_back(FluidField().DofRowMap());
-#else
-  vecSpaces.push_back(FluidField().Interface()->OtherMap());
-#endif
   vecSpaces.push_back(AleField().Interface()->OtherMap());
   vecSpaces.push_back(conman_->GetConstraintMap());
 
@@ -240,9 +234,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   fig.Apply(*fveln,*rhs);
   rhs->Scale(timescale*Dt());
 
-#ifdef FLUIDSPLITAMG
   rhs = FluidField().Interface()->InsertOtherVector(rhs);
-#endif
   Extractor().AddVector(*rhs,1,f);
 
   rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
@@ -342,13 +334,9 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                    ADAPTER::CouplingSlaveConverter(coupsf),
                    mat.Matrix(1,0));
 
-#ifdef FLUIDSPLITAMG
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
   Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface()->FSICondMap());
   mat.Matrix(1,1).Add(*eye,false,1.,1.0);
-#else
-  mat.Assign(1,1,View,fii);
-#endif
 
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
@@ -456,9 +444,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
-#ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
-#endif
   Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
 
   if (fabs(fluidscale)>=1.0E-10)
@@ -502,9 +488,7 @@ void FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // process fluid unknowns
 
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
-#ifdef FLUIDSPLITAMG
   fox = FluidField().Interface()->ExtractOtherVector(fox);
-#endif
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
   FluidField().DisplacementToVelocity(fcx);
