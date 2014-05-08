@@ -86,35 +86,35 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart()
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-     std::vector<DRT::Condition*>::iterator fool;
-     // loop through conditions and find the cathode
-     for (fool=cond.begin(); fool!=cond.end(); ++fool)
-     {
-       DRT::Condition* mycond = (*(fool));
-       const int condid = mycond->GetInt("ConditionID");
-       // galvanostatic mode: only applied potential of cathode is adapted
-       if (condid_cathode==condid or dlcapexists_==true)
-       {
-         std::stringstream temp;
-         temp << condid;
+    std::vector<DRT::Condition*>::iterator fool;
+    // loop through conditions and find the cathode
+    for (fool=cond.begin(); fool!=cond.end(); ++fool)
+    {
+      DRT::Condition* mycond = (*(fool));
+      const int condid = mycond->GetInt("ConditionID");
+      // galvanostatic mode: only applied potential of cathode is adapted
+      if (condid_cathode==condid or dlcapexists_==true)
+      {
+        std::stringstream temp;
+        temp << condid;
 
-         // electrode potential of the adjusted electrode kinetics BC at time n+1
-         double pot = mycond->GetDouble("pot");
-         output_->WriteDouble("pot_"+temp.str(),pot);
+        // electrode potential of the adjusted electrode kinetics BC at time n+1
+        double pot = mycond->GetDouble("pot");
+        output_->WriteDouble("pot_"+temp.str(),pot);
 
-         // electrode potential of the adjusted electrode kinetics BC at time n
-         double pot0n = mycond->GetDouble("pot0n");
-         output_->WriteDouble("pot0n_"+temp.str(),pot0n);
+        // electrode potential of the adjusted electrode kinetics BC at time n
+        double pot0n = mycond->GetDouble("pot0n");
+        output_->WriteDouble("pot0n_"+temp.str(),pot0n);
 
-         // electrode potential time derivative of the adjusted electrode kinetics BC at time n
-         double pot0dtn = mycond->GetDouble("pot0dtn");
-         output_->WriteDouble("pot0dtn_"+temp.str(),pot0dtn);
+        // electrode potential time derivative of the adjusted electrode kinetics BC at time n
+        double pot0dtn = mycond->GetDouble("pot0dtn");
+        output_->WriteDouble("pot0dtn_"+temp.str(),pot0dtn);
 
-         // history of electrode potential of the adjusted electrode kinetics BC
-         double pothist = mycond->GetDouble("pot0hist");
-         output_->WriteDouble("pot0hist_"+temp.str(),pothist);
-       }
-     }
+        // history of electrode potential of the adjusted electrode kinetics BC
+        double pothist = mycond->GetDouble("pot0hist");
+        output_->WriteDouble("pot0hist_"+temp.str(),pothist);
+      }
+    }
   }
 
   return;
@@ -426,7 +426,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(int step)
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);
 
-    int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+    int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
     std::vector<DRT::Condition*>::iterator fool;
     bool read_pot=false;
 
@@ -687,7 +687,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(int step)
      std::vector<DRT::Condition*> cond;
      discret_->GetCondition("ElectrodeKinetics",cond);
 
-     int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
      std::vector<DRT::Condition*>::iterator fool;
      bool read_pot=false;
 
@@ -918,7 +918,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(int step)
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);
 
-    int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+    int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
     std::vector<DRT::Condition*>::iterator fool;
     bool read_pot=false;
 
