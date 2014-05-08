@@ -34,11 +34,18 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   upres_(params_->get<int>("write solution every", -1)),
   numdim_(params_->get<int>("number of velocity degrees of freedom")),
   dt_(params_->get<double>("time step size")),
-  step_(0),
   stepmax_(params_->get<int>("max number timesteps")),
   maxtime_(params_->get<double>("total time"))
 {
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
+  adjointtype_ = params_->get<INPAR::TOPOPT::AdjointType>("adjoint type");
+
+  // check setting of time parameter
+  if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
+  {
+    dserror("Fix total simulation (T = %f, dt = %f, n = %i\n"
+        "so that: T = dt * n",maxtime_,dt_,stepmax_);
+  }
 
   // set initial time = endtime so that it fits to the fluid parameter setting
   // potentially we do one step less here than in fluid
@@ -50,21 +57,40 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   // required for evaluation of the fluid velocity at the correct step
   if (timealgo_==INPAR::FLUID::timeint_stationary)
   {
-    time_ = dt_;
-    stepmax_ = 1;
+    time_ = maxtime_+dt_;
+    step_=0;
   }
   else
   {
-    if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
-    {
-      dserror("Fix total simulation (T = %f, dt = %f, n = %i\n"
-          "so that: T = dt * n",maxtime_,dt_,stepmax_);
-    }
 
-    time_ = maxtime_;
+    // for discrete adjoints start with step 0 and end with step stepmax-1
+    if (adjointtype_==INPAR::TOPOPT::discrete_adjoint)
+    {
+      time_ = maxtime_+dt_;
+      step_ = -1;
+    }
+    else
+    {
+      time_ = maxtime_;
+      step_ = 0;
+    }
   }
 }
 
 
 
+bool TOPOPT::ADJOINT::FluidAdjointTimeInt::TimeLoopFinished() const
+{
+  if (step_==stepmax_)
+    return true;
+
+  // for discrete adjoints we start with step 0 and end with step stepmax-1
+  // since the adjoint solution of step stepmax at time 0 does not influence
+  // the optimization since the primal solution u_0 is independent of the
+  // optimization variable
+//  if ((adjointtype_==INPAR::TOPOPT::discrete_adjoint) and (step_==stepmax_-1))
+//      return true;
+
+  return false;
+}
 

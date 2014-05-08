@@ -154,6 +154,7 @@ public:
   Teuchos::RCP<const Epetra_Vector> Velnp() const { return velnp_; }
   Teuchos::RCP<const Epetra_Vector> Veln() const { return veln_; }
   Teuchos::RCP<const Epetra_Vector> Velnm() const { return velnm_; }
+  Teuchos::RCP<const Epetra_Vector> FluidVelnpp() const { return fluidvelnpp_; }
   Teuchos::RCP<const Epetra_Vector> FluidVelnp() const { return fluidvelnp_; }
   Teuchos::RCP<const Epetra_Vector> FluidVeln() const { return fluidveln_; }
 
@@ -226,7 +227,8 @@ protected:
   //@}
 
 
-  //! @name fluid velocity and pressure at time n+1, n
+  //! @name fluid velocity and pressure at time t^n+2, t^n+1, t^n
+  Teuchos::RCP<const Epetra_Vector>    fluidvelnpp_;
   Teuchos::RCP<const Epetra_Vector>    fluidvelnp_;
   Teuchos::RCP<const Epetra_Vector>    fluidveln_;
   //@}

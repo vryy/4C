@@ -252,7 +252,6 @@ namespace ADAPTER
     { return fluid_->ExtractVelocityPart(velpres); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractPressurePart(velpres); }
-    virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity, Teuchos::RCP<TOPOPT::Optimizer>& optimizer){ dserror("not implemented!"); };
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
     { return fluid_->ApplyInterfaceVelocities(ivel); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp()

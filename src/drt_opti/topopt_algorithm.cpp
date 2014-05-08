@@ -15,6 +15,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_algorithm.H"
 #include "topopt_fluidAdjoint_timeint.H"
 #include "topopt_optimizer.H"
+#include "../drt_fluid/fluid_timint_topopt.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -171,7 +172,7 @@ bool TOPOPT::Algorithm::OptimizationFinished()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareFluidField()
 {
-  FluidField().SetTopOptData(
+  dynamic_cast<FLD::TimIntTopOpt&>(FluidField()).SetTopOptData(
       Optimizer()->Density(),
       optimizer_);
 

@@ -52,6 +52,7 @@ public:
 
   INPAR::TOPOPT::AdjointType AdjointType() {return adjoint_type_;}
   bool IsStationary() {return is_stationary_;}
+  bool IsInitInstatStep() {return is_init_instat_step_;}
   bool IsInconsistent() {return is_inconsistent_;}
   bool PSPG() {return pspg_;}
   bool SUPG() {return supg_;}
@@ -100,6 +101,8 @@ private:
   INPAR::TOPOPT::AdjointType adjoint_type_;
   //! flag to (de)activate stationary formulation
   bool is_stationary_;
+  //! flag for step 0 when instationary
+  bool is_init_instat_step_;
   //! flag to (de)activate second derivatives
   bool is_inconsistent_;
   //! Flag to (de)activate PSPG stabilization

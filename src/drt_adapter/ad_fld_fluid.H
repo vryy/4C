@@ -67,10 +67,6 @@ namespace COMBUST
   class FlameFront;
 }
 
-namespace TOPOPT
-{
-  class Optimizer;
-}
 
 /// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
@@ -482,12 +478,6 @@ namespace ADAPTER {
     /// Some applications need only access to pressure-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
-    //@}
-
-    //! @name Transfer the porosity field used in the topology optimization to the fluid
-
-    /// set pseudo-porosity field in the fluid
-    virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity, Teuchos::RCP<TOPOPT::Optimizer>& optimizer) = 0;
     //@}
 
     //! @name Apply interface values

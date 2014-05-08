@@ -45,6 +45,7 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   pressure_drop_fac_(0.0),
   adjoint_type_(INPAR::TOPOPT::discrete_adjoint),
   is_stationary_(false),
+  is_init_instat_step_(false),
   is_inconsistent_(false),
   pspg_(true),
   supg_(true),
@@ -198,6 +199,9 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
   // get current time: n+alpha_F for generalized-alpha scheme, n+1 otherwise
   time_ = params.get<double>("total time",-1.0);
 
+  // get flag if step 0 in instationary
+  is_init_instat_step_ = params.get<bool>("initial instationary step",false);
+
     // get time-step length and time-integration parameters
   if (not is_stationary_)
   {
@@ -259,6 +263,8 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   std::cout << "|    method SetElmentGeneralAdjointParameter was called:    " << set_general_adjoint_parameter_ << std::endl;
   //! flag to (de)activate stationary formulation
   std::cout << "|    steady state:    " << is_stationary_ << std::endl;
+  //! flag to (de)activate special treatment of step 0 in instationary computation
+  std::cout << "|    initial instationary step:    " << is_init_instat_step_ << std::endl;
   //! flag to (de)activate second derivatives
   std::cout << "|    use inconsistent:    " << is_inconsistent_ << std::endl;
   //! Flag to (de)activate PSPG stabilization

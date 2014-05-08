@@ -305,7 +305,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
 
-  if (timeint!=INPAR::FLUID::timeint_stationary)
+  if ((timeint!=INPAR::FLUID::timeint_stationary) and
+      (fluidadjointtimeparams->get<INPAR::TOPOPT::AdjointType>("adjoint type")!=INPAR::TOPOPT::discrete_adjoint))
     adjointTimeInt_->Output();
 
   return;

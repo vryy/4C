@@ -29,7 +29,7 @@ NUMSTEP                         1
 RESTARTEVRY                     100000
 RESTOL                          1e-6
 RESTART_ACTION                  Fluid_Time_Step
-TIMESTEP                        0.05
+TIMESTEP                        0.5
 UPRES                           1
 ----------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 MAX_ITER                        1

@@ -612,15 +612,33 @@ bool TOPOPT::Optimizer::CheckData(const bool doAdjoint)
 
   size_t num_sols = 0;
   if (fluidParams_->get<int>("time int algo")==INPAR::FLUID::timeint_stationary)
-    num_sols = 1;
+    num_sols = fluidParams_->get<int>("max number timesteps");
   else
     num_sols = fluidParams_->get<int>("max number timesteps")+1;
 
   if (num_sols!=fluidvel_->size())
     dserror("fluid field and time step numbers do not fit: n_f = %i, n_t = %i",fluidvel_->size(),num_sols);
 
-  if ((doAdjoint==true) and (num_sols!=adjointvel_->size()))
-    dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
+  if (doAdjoint==true)
+  {
+    if (fluidParams_->get<int>("time int algo")==INPAR::FLUID::timeint_stationary)
+    {
+      if (num_sols!=adjointvel_->size())
+        dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
+    }
+    else
+    {
+      const INPAR::TOPOPT::AdjointType& adjointtype = DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointType>(params_.sublist("TOPOLOGY ADJOINT FLUID"),"ADJOINT_TYPE");
+
+      // TODO check here if sol at time 0 required. if so, remove outcommented lines.
+      // if not use these lines
+      if (/*(adjointtype!=INPAR::TOPOPT::discrete_adjoint) and*/ (num_sols!=adjointvel_->size()))
+        dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
+
+//      if ((adjointtype==INPAR::TOPOPT::discrete_adjoint) and (num_sols-1!=adjointvel_->size()))
+//        dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols-1);
+    }
+  }
 
   return true;
 }

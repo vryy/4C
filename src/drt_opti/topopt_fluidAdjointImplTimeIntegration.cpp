@@ -114,6 +114,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   velnm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // adjoint velocity/pressure at time n+1, n and n-1
+  fluidvelnpp_ = LINALG::CreateVector(*dofrowmap,true);
   fluidvelnp_ = LINALG::CreateVector(*dofrowmap,true);
   fluidveln_  = LINALG::CreateVector(*dofrowmap,true);
 
@@ -181,7 +182,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeLoop()
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + adjoint time loop");
 
-  while (step_<stepmax_)
+  // we start here with step 0 which corresponds to t^n and end with stepmax-1 which
+  // corresponds to t^1 since u_0 is independent with respect to objective variable
+  while (not TimeLoopFinished())
   {
     PrepareTimeStep();
 
@@ -314,17 +317,27 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
     nbcparams.set("special test case",params_->get<INPAR::TOPOPT::AdjointCase>("special test case"));
 
     // in instationary case: fluid starts at step 0 (=initial values), stops at
-    // stepmax adjoint starts at step stepmax (=initial values), stops at step 0
-    // evaluate fluid fields with according appropriate, reverse counted step
+    // stepmax adjoint starts at step 0 (=initial values), stops at step stepmax
+    // evaluate fluid fields with according appropriate, reverse counted time
     if (timealgo_ == INPAR::FLUID::timeint_stationary)
     {
-      fluidveln_ = fluid_vels_->find(1)->second;
-      fluidvelnp_ = fluidveln_;
+      fluidvelnp_ = fluid_vels_->find(stepmax_+1-step_)->second;
+      fluidveln_ = fluidvelnp_;
+      fluidvelnpp_ = fluidvelnp_;
     }
     else
     {
-      fluidveln_ = fluid_vels_->find(stepmax_-step_+1)->second;
       fluidvelnp_ = fluid_vels_->find(stepmax_-step_)->second;
+
+      if ((step_>0) or (adjointtype_==INPAR::TOPOPT::cont_adjoint))
+        fluidveln_ = fluid_vels_->find(stepmax_-step_+1)->second;
+      else
+        fluidveln_ = fluidvelnp_;
+
+      if (step_<stepmax_)
+        fluidvelnpp_ = fluid_vels_->find(stepmax_-step_-1)->second;
+      else
+        fluidvelnpp_ = fluidvelnp_;
     }
 
     discret_->SetState("fluidveln",fluidveln_);
@@ -431,6 +444,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
 
       discret_->SetState("fluidveln",fluidveln_);
       discret_->SetState("fluidvelnp",fluidvelnp_);
+      discret_->SetState("fluidvelnpp",fluidvelnpp_);
 
       discret_->SetState("veln",veln_);
       discret_->SetState("velnp",velnp_);
@@ -556,7 +570,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
           printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
         }
       }
-//      dserror("stop here");
     }
 
     // warn if itemax is reached without convergence, but proceed to
@@ -699,15 +712,17 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
   if (topopt_density_!=Teuchos::null)
   {
     if (timealgo_==INPAR::FLUID::timeint_stationary)
-      optimizer_->ImportAdjointFluidData(velnp_,1);
+      optimizer_->ImportAdjointFluidData(velnp_,stepmax_+1-step_);
     else
     {
       // we have to switch the step here since we start with step 0 at end-time,
       // but the step of adjoint fluid and fluid equations shall fit
       optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
 
-      // initial solution (=v_t_max) is old solution at step 1
-      if (step_==1)
+      // initial solution (=v_t_max) is old solution at step 1 for continuous
+      // adjoints where we start computing at time t_max-dt
+      // for discrete adjoints we firstly solve at time t_max and step 0
+      if ((step_==1) and (adjointtype_==INPAR::TOPOPT::cont_adjoint))
         optimizer_->ImportAdjointFluidData(velnm_,stepmax_); // currently velnm contains veln because timeupdate was called before
     }
   }
@@ -1100,7 +1115,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // set type of adjoint equations
-  eleparams.set<INPAR::TOPOPT::AdjointType>("adjoint type",params_->get<INPAR::TOPOPT::AdjointType>("adjoint type"));
+  eleparams.set<INPAR::TOPOPT::AdjointType>("adjoint type",adjointtype_);
   // set flag for test cases
   eleparams.set<INPAR::TOPOPT::AdjointCase>("special test case",params_->get<INPAR::TOPOPT::AdjointCase>("special test case"));
 
@@ -1138,6 +1153,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
   else
     dserror("time integration scheme not implemented");
 
+  if (step_==0)   eleparams.set("initial instationary step",true);
+  else            eleparams.set("initial instationary step",false);
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
@@ -1162,17 +1179,23 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
   velnm_ = LINALG::CreateVector(*dofrowmap,true);
 
 
-  step_ = 0;
-
   if (timealgo_==INPAR::FLUID::timeint_stationary)
-    time_ = dt_;
+  {
+    time_ = maxtime_+dt_;
+    step_ = 0;
+  }
   else
   {
-    if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
-      dserror("Fix total simulation time sim_time = %f, time step size dt = %f and number of time steps num_steps = %i\n"
-          "so that: sim_time = dt * num_steps",maxtime_,dt_,stepmax_);
-
-    time_ = maxtime_;
+    if (adjointtype_==INPAR::TOPOPT::discrete_adjoint)
+    {
+      time_ = maxtime_+dt_;
+      step_ = -1;
+    }
+    else
+    {
+      time_ = maxtime_;
+      step_ = 0;
+    }
   }
 
   if (newFiles)

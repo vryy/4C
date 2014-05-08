@@ -481,6 +481,17 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         if (optiparams_->IsStationary())
           timestep=1; // just one stationary time step 1
 
+        if (eadjointvels.find(timestep)==eadjointvels.end())
+        {
+          if (timestep==0) // for discrete_adjoints no solution of timestep 0 present
+            continue;
+          else
+            dserror("Adjoint solution of time step %i not found!",timestep);
+        }
+
+        if (efluidvels.find(timestep)==efluidvels.end())
+          dserror("Fluid solution of time step %i not found!",timestep);
+
         efluidvel_ = efluidvels.find(timestep)->second;
         eadjointvel_ = eadjointvels.find(timestep)->second;
 

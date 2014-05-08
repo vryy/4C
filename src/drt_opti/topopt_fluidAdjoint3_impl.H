@@ -146,10 +146,12 @@ public:
       const LINALG::Matrix<nen_,1>&                  eprenp,
       const LINALG::Matrix<nsd_,nen_> &              efluidveln,
       const LINALG::Matrix<nsd_,nen_> &              efluidvelnp,
+      const LINALG::Matrix<nsd_,nen_> &              efluidvelnpp,
       const LINALG::Matrix<nen_,1>&                  efluidpren,
       const LINALG::Matrix<nen_,1>&                  efluidprenp,
-      const LINALG::Matrix<nsd_,nen_>&               efluidbofon,
+      const LINALG::Matrix<nen_,1>&                  efluidprenpp,
       const LINALG::Matrix<nsd_,nen_>&               efluidbofonp,
+      const LINALG::Matrix<nsd_,nen_>&               efluidbofonpp,
       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
       LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
       const LINALG::Matrix<nen_,1> &                 edens,
@@ -199,7 +201,7 @@ private:
   void FluidBodyForce(
       DRT::ELEMENTS::Fluid*               ele,
       LINALG::Matrix<nsd_,nen_>&          efluidbofonp,
-      LINALG::Matrix<nsd_,nen_>&          efluidbofon
+      LINALG::Matrix<nsd_,nen_>&          efluidbofonpp
   );
 
   /// compute force term of continuity equation
@@ -459,8 +461,6 @@ private:
   LINALG::Matrix<nsd_,1> fluidgradp_old_;
   //! viscous fluid velocity in gausspoint
   LINALG::Matrix<nsd_,1> fluidvisc_old_;
-  //! body force of momentum equation
-  LINALG::Matrix<nsd_,1> fluidbodyforce_old_;
   //! body force of adjoint momentum equation
   LINALG::Matrix<nsd_,1> bodyforce_old_;
   //! body force of adjoint continuity equation
@@ -471,6 +471,15 @@ private:
   LINALG::Matrix<nsd_,1> conv1_old_;
   //! u_j,i * v_j
   LINALG::Matrix<nsd_,1> conv2_old_;
+  //@}
+
+
+  //! @name fluid variable values at next time step (= t^n+2)
+
+  //! fluid velocity vector in gausspoint
+  LINALG::Matrix<nsd_,1> fluidvelint_new_;
+  //! body force of momentum equation
+  LINALG::Matrix<nsd_,1> fluidbodyforce_new_;
   //@}
 
 
