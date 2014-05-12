@@ -5931,8 +5931,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER",false,"");
 
   setStringToIntegralParameter<int>("SHAPEDERIVATIVES","No",
-                               "Include linearization with respect to mesh movement in Navier Stokes equation.",
-                               yesnotuple,yesnovalue,&fsimono);
+                                    "Include linearization with respect to mesh movement in Navier Stokes equation.",
+                                    yesnotuple,yesnovalue,&fsimono);
+
+  setStringToIntegralParameter<int>("ENERGYFILE","No",
+                                    "Write artificial interface energie due to temporal discretization to file",
+                                    yesnotuple,yesnovalue,&fsimono);
 
   IntParameter("ITEMAX",100,"Maximum allowed number of nonlinear iterations",&fsimono);
 
@@ -5958,6 +5962,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::FSI::FSIAMG
                                  ),
                                &fsimono);
+
+  setStringToIntegralParameter<int>("FSIAMGANALYZE","No",
+                                   "run analysis on fsiamg multigrid scheme",
+                                   yesnotuple,yesnovalue,&fsimono);
 
   // monolithic preconditioner parameter
   setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
@@ -6084,10 +6092,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOL_VEL_RES_INF",1e-6,"Absolute tolerance for fluid velocity residual in Inf-norm",&fsimono);
   DoubleParameter("TOL_VEL_INC_L2",1e-6,"Absolute tolerance for fluid velocity increment in L2-norm",&fsimono);
   DoubleParameter("TOL_VEL_INC_INF",1e-6,"Absolute tolerance for fluid velocity increment in Inf-norm",&fsimono);
-
-  setStringToIntegralParameter<int>("FSIAMGANALYZE","No",
-                                 "run analysis on fsiamg multigrid scheme",
-                                 yesnotuple,yesnovalue,&fsimono);
 
   /*----------------------------------------------------------------------*/
   /* parameters for monolithic FSI solvers */

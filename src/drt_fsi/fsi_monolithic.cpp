@@ -292,6 +292,14 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
+  // write energy-file
+  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  {
+    std::string fileiter2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    fileiter2.append(".fsienergy");
+    logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
+  }
+
   // "Initialize" interface solution increments due to structural predictor
   ddgpred_ = Teuchos::null;
 
@@ -453,11 +461,28 @@ void FSI::Monolithic::PrepareTimeloop()
             << std::right << std::setw(16) << "res-norm"
             << std::right << std::setw(16) << "#liter"
             << std::right << std::setw(16) << "dt"
-      ;
+            ;
+
     (*log_) << "#\n\n";
   }
 
   WriteAdaFileHeader();
+
+  // write header of energy-file
+   if (Comm().MyPID() == 0 and (not logenergy_.is_null()))
+   {
+     (*logenergy_) << "# Artificial interface energy due to temporal discretization\n"
+                   << "# num procs      = " << Comm().NumProc() << "\n"
+                   << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
+                   << std::right << std::setw(9) << "# step"
+                   << std::right << std::setw(16) << "time"
+                   << std::right << std::setw(16) << "energy/step"
+                   << std::right << std::setw(16) << "sum_of_energy"
+                   ;
+
+     (*logenergy_) << "#\n\n";
+   }
+
 
   // check for prestressing,
   // do not allow monolithic in the pre-phase
@@ -549,6 +574,9 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
   RecoverLagrangeMultiplier();
 
+  // compute spurious interface energy increment due to temporal discretization
+  CalculateInterfaceEnergyIncrement();
+
   // stop time measurement
   timemonitor = Teuchos::null;
 
@@ -561,8 +589,9 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
             << std::right << std::setw(16) << nlParams.sublist("Output").get<double>("2-Norm of Residual")
             << std::right << std::setw(16) << lsParams.sublist("Output").get<int>("Total Number of Linear Iterations")
             << std::right << std::setw(16) << Dt();
+
+    (*log_) << std::endl;
   }
-  (*log_) << std::endl;
   lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
 
   // perform the error check to determine the error action to be performed
@@ -928,6 +957,26 @@ void FSI::Monolithic::CombineFieldVectors(Epetra_Vector& v,
   Extractor().AddVector(*sv, 0, v);
   Extractor().AddVector(*fv, 1, v);
   Extractor().AddVector(*av, 2, v);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::WriteInterfaceEnergyFile(const double energystep,
+                                               const double energysum)
+{
+  // write to energy file
+  if (Comm().MyPID() == 0 and (not logenergy_.is_null()))
+  {
+    (*logenergy_) << std::right << std::setw(9) << Step()
+                  << std::right << std::setw(16) << Time()
+                  << std::right << std::setw(16) << energystep
+                  << std::right << std::setw(16) << energysum
+                  ;
+
+    (*logenergy_) << std::endl;
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

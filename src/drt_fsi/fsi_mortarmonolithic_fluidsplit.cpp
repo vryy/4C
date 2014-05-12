@@ -48,7 +48,10 @@ Maintainer: Matthias Mayr
 FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& comm,
                                                             const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams),
-    comm_(comm)
+    comm_(comm),
+    lambda_(Teuchos::null),
+    lambdaold_(Teuchos::null),
+    energysum_(0.0)
 {
   // ---------------------------------------------------------------------------
   // FSI specific check of Dirichlet boundary conditions
@@ -126,6 +129,7 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& c
 
   // Recovery of Lagrange multiplier happens on fluid field
   lambda_   = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
+  lambdaold_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
   fmgiprev_ = Teuchos::null;
   fmgicur_  = Teuchos::null;
   fmggprev_ = Teuchos::null;
@@ -141,6 +145,7 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& c
   if (aigtransform_   == Teuchos::null) { dserror("Allocation of 'aigtransform_' failed."); }
   if (fmiitransform_  == Teuchos::null) { dserror("Allocation of 'fmiitransform_' failed."); }
   if (lambda_         == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
+  if (lambdaold_      == Teuchos::null) { dserror("Allocation of 'lambdaold_' failed."); }
 #endif
 
   return;
@@ -736,7 +741,6 @@ void FSI::MortarMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
@@ -981,7 +985,6 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
@@ -1035,7 +1038,6 @@ void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase&
     Extractor().InsertVector(*ax,2,b);
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1153,7 +1155,6 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
 
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
@@ -1192,7 +1193,6 @@ FSI::MortarMonolithicFluidSplit::CreateLinearSystem(Teuchos::ParameterList& nlPa
 
   return linSys;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1432,7 +1432,6 @@ FSI::MortarMonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlPara
   return combo;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(
@@ -1521,6 +1520,8 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(
   // ------------------------------------
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::Update()
 {
 
@@ -1557,6 +1558,8 @@ void FSI::MortarMonolithicFluidSplit::Update()
   FSI::MonolithicBase::Update();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::Output()
 {
   StructureField()->Output();
@@ -1600,6 +1603,8 @@ void FSI::MortarMonolithicFluidSplit::Output()
 
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
@@ -1646,12 +1651,13 @@ void FSI::MortarMonolithicFluidSplit::PrepareTimeStep()
   AleField().      PrepareTimeStep();
 }
 
-
 /*----------------------------------------------------------------------*/
-/* Recover the Lagrange multiplier at the interface   mayr.mt (10/2012) */
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
 {
+  // store previous Lagrange multiplier for calculation of interface energy
+  lambdaold_->Update(1.0, *lambda_, 0.0);
+
   // get time integration parameter of fluid time integrator
   // to enable consistent time integration among the fields
   const double ftiparam = FluidField().TimIntParam();
@@ -1821,6 +1827,41 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MortarMonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
+{
+  // get time integration parameters of structure and fluid time integrators
+  // to enable consistent time integration among the fields
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
+
+  // get the Mortar matrix M
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+
+  // interface traction weighted by time integration factors
+  Teuchos::RCP<Epetra_Vector> tractionfluid = Teuchos::rcp(new Epetra_Vector(lambda_->Map(), true));
+  Teuchos::RCP<Epetra_Vector> tractionstructure = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
+  tractionfluid->Update(stiparam-ftiparam, *lambdaold_, ftiparam-stiparam, *lambda_, 0.0);
+  mortarm->Multiply(true, *tractionfluid, *tractionstructure);
+
+  // displacement increment of this time step
+  Teuchos::RCP<Epetra_Vector> deltad = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
+  deltad->Update(1.0, *StructureField()->Dispnp(), -1.0, *StructureField()->Dispn(), 0.0);
+
+  // calculate the energy increment
+  double energy = 0.0;
+  tractionstructure->Dot(*StructureField()->Interface()->ExtractFSICondVector(deltad), &energy);
+
+  energysum_ += energy;
+
+  WriteInterfaceEnergyFile(energy, energysum_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
 {
   // some scaling factors for fluid
@@ -1885,6 +1926,8 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
 {
   // get the Mortar matrices D and M
@@ -1932,6 +1975,8 @@ void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
                                       Teuchos::RCP<const Epetra_Vector> sv,
                                       Teuchos::RCP<const Epetra_Vector> fv,
@@ -1954,6 +1999,8 @@ void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     FSI::Monolithic::CombineFieldVectors(v,sv,fv,av);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double FSI::MortarMonolithicFluidSplit::SelectDtErrorBased() const
 {
   // get time step size suggestions
@@ -1978,6 +2025,8 @@ double FSI::MortarMonolithicFluidSplit::SelectDtErrorBased() const
   return dt;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool FSI::MortarMonolithicFluidSplit::SetAccepted() const
 {
   // get error norms

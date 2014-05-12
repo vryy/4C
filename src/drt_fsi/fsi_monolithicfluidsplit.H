@@ -131,9 +131,28 @@ namespace FSI
     /// start a new time step
     virtual void PrepareTimeStep();
 
-    /// recover Lagrange multiplier at the interface (i.e. condensed forces onto the fluid)
-    /// needed for rhs in next time step
+    /*! \brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
+     *
+     *  Recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the
+     *  end of each time step (i.e. condensed forces onto the structure) needed
+     *  for rhs in next time step in order to guarantee temporal consistent
+     *  exchange of coupling traction
+     */
     virtual void RecoverLagrangeMultiplier();
+
+    /*! \brief Compute spurious interface energy increment due to temporal discretization
+     *
+     *  Due to the temporal discretization, spurious energy \f$\Delta E_\Gamma^{n\rightarrow n+1}\f$
+     *  might be produced at the interface. It can be computed as
+     *  \f[
+     *  \Delta E_\Gamma^{n\rightarrow n+1}
+     *  = \left((a-b)\lambda^n + (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right)
+     *  \f]
+     *  with the time interpolation factors a and b.
+     *
+     *  \author mayr.mt \date 05/2014
+     */
+    virtual void CalculateInterfaceEnergyIncrement();
 
     /// Output routine accounting for Lagrange multiplier at the interface
     virtual void Output();
@@ -281,6 +300,9 @@ namespace FSI
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
+    //! Lagrange multiplier of previous time step
+    Teuchos::RCP<Epetra_Vector> lambdaold_;
+
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;
 
@@ -327,6 +349,9 @@ namespace FSI
     Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
 
     //@}
+
+    //! summation of amount of artificial interface energy due to temporal discretization
+    double energysum_;
   };
 }
 

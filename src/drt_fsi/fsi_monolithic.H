@@ -546,6 +546,20 @@ namespace FSI
 
     //@}
 
+    //! @name Artificial interface energy due to temporal discretization
+    //@{
+
+    //! Write data into interface energy file
+    virtual void WriteInterfaceEnergyFile(
+        const double energystep,  ///< interface energy of current time step
+        const double energysum    ///< summation of all interface energy increments
+        );
+
+    /// output stream for energy-file
+    Teuchos::RCP<std::ofstream> logenergy_;
+
+    //@}
+
   private:
 
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -595,6 +609,20 @@ namespace FSI
      *  exchange of coupling traction
      */
     virtual void RecoverLagrangeMultiplier(){ return; };
+
+    /*! \brief Compute spurious interface energy increment due to temporal discretization
+     *
+     *  Due to the temporal discretization, spurious energy \f$\Delta E_\Gamma^{n\rightarrow n+1}\f$
+     *  might be produced at the interface. It can be computed as
+     *  \f[
+     *  \Delta E_\Gamma^{n\rightarrow n+1}
+     *  = \left((a-b)\lambda^n + (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right)
+     *  \f]
+     *  with the time interpolation factors a and b.
+     *
+     *  \author mayr.mt \date 05/2014
+     */
+    virtual void CalculateInterfaceEnergyIncrement() { return; };
 
     //! @name Time loops
     //@{

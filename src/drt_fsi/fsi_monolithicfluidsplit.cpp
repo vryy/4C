@@ -47,7 +47,10 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------*/
 FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
                                                 const Teuchos::ParameterList& timeparams)
-  : BlockMonolithic(comm,timeparams)
+  : BlockMonolithic(comm,timeparams),
+    lambda_(Teuchos::null),
+    lambdaold_(Teuchos::null),
+    energysum_(0.0)
 {
   // ---------------------------------------------------------------------------
   // FSI specific check of Dirichlet boundary conditions
@@ -116,33 +119,35 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   }
   // ---------------------------------------------------------------------------
 
-  fggtransform_   = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fgitransform_   = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  figtransform_   = Teuchos::rcp(new UTILS::MatrixColTransform);
-  aigtransform_   = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_  = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_  = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_   = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
+  lambdaold_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
   fmgiprev_ = Teuchos::null;
-  fmgicur_  = Teuchos::null;
+  fmgicur_ = Teuchos::null;
   fmggprev_ = Teuchos::null;
-  fmggcur_  = Teuchos::null;
-  fgiprev_  = Teuchos::null;
-  fgicur_   = Teuchos::null;
-  fggprev_  = Teuchos::null;
-  fggcur_   = Teuchos::null;
+  fmggcur_ = Teuchos::null;
+  fgiprev_ = Teuchos::null;
+  fgicur_ = Teuchos::null;
+  fggprev_ = Teuchos::null;
+  fggcur_ = Teuchos::null;
 
 #ifdef DEBUG
   // check whether allocation was successful
-  if (fggtransform_   == Teuchos::null) { dserror("Allocation of 'fggtransform_' failed."); }
-  if (fgitransform_   == Teuchos::null) { dserror("Allocation of 'fgitransform_' failed."); }
-  if (figtransform_   == Teuchos::null) { dserror("Allocation of 'figtransform_' failed."); }
-  if (aigtransform_   == Teuchos::null) { dserror("Allocation of 'aigtransform_' failed."); }
-  if (fmiitransform_  == Teuchos::null) { dserror("Allocation of 'fmiitransform_' failed."); }
-  if (fmgitransform_  == Teuchos::null) { dserror("Allocation of 'fmgitransform_' failed."); }
-  if (lambda_         == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
+  if (fggtransform_ == Teuchos::null) { dserror("Allocation of 'fggtransform_' failed."); }
+  if (fgitransform_ == Teuchos::null) { dserror("Allocation of 'fgitransform_' failed."); }
+  if (figtransform_ == Teuchos::null) { dserror("Allocation of 'figtransform_' failed."); }
+  if (aigtransform_ == Teuchos::null) { dserror("Allocation of 'aigtransform_' failed."); }
+  if (fmiitransform_ == Teuchos::null) { dserror("Allocation of 'fmiitransform_' failed."); }
+  if (fmgitransform_ == Teuchos::null) { dserror("Allocation of 'fmgitransform_' failed."); }
+  if (lambda_ == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
+  if (lambdaold_ == Teuchos::null) { dserror("Allocation of 'lambdaold_' failed."); }
 #endif
 
   return;
@@ -581,7 +586,6 @@ void FSI::MonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
@@ -848,7 +852,6 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
@@ -902,7 +905,6 @@ void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, 
     Extractor().InsertVector(*ax,2,b);
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1016,7 +1018,6 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
     StructureField()->SystemMatrix()->Reset();
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
@@ -1056,7 +1057,6 @@ FSI::MonolithicFluidSplit::CreateLinearSystem(Teuchos::ParameterList& nlParams,
 
   return linSys;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1596,6 +1596,37 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::CalculateInterfaceEnergyIncrement()
+{
+  // get time integration parameters of structure and fluid time integrators
+  // to enable consistent time integration among the fields
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
+
+  // interface traction weighted by time integration factors
+  Teuchos::RCP<Epetra_Vector> tractionfluid = Teuchos::rcp(new Epetra_Vector(lambda_->Map(), true));
+  tractionfluid->Update(stiparam-ftiparam, *lambdaold_, ftiparam-stiparam, *lambda_, 0.0);
+  Teuchos::RCP<Epetra_Vector> tractionstructure = FluidToStruct(tractionfluid);
+
+  // displacement increment of this time step
+  Teuchos::RCP<Epetra_Vector> deltad = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
+  deltad->Update(1.0, *StructureField()->Dispnp(), -1.0, *StructureField()->Dispn(), 0.0);
+
+  // calculate the energy increment
+  double energy = 0.0;
+  tractionstructure->Dot(*StructureField()->Interface()->ExtractFSICondVector(deltad), &energy);
+
+  energysum_ += energy;
+
+  WriteInterfaceEnergyFile(energy, energysum_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
                                 Teuchos::RCP<const Epetra_Vector> sv,
                                 Teuchos::RCP<const Epetra_Vector> fv,
