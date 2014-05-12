@@ -530,7 +530,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
 
   // loop over windkessel structure coupling conditions
   /* here we do an extra loop to assemble the correct offdiagonal stiffness block dfext/dwkdof
-  this effectively is the derivative of the orthopressure Neumann load wrt the pressure,
+  this effectively is the derivative of the orthopressure Neumann load w.r.t. the pressure,
   corresponding to the area integral -> we do a similar loop like in so_surface_evaluate.cpp
   without the Neumann load factor infront of it*/
   for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)
@@ -1075,7 +1075,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
   // loop over windkessel structure coupling conditions
   /* here we do an extra loop to assemble the correct offdiagonal stiffness block dfext/dwkdof
-  this effectively is the derivative of the orthopressure Neumann load wrt the pressure,
+  this effectively is the derivative of the orthopressure Neumann load w.r.t. the pressure,
   corresponding to the area integral -> we do a similar loop like in so_surface_evaluate.cpp
   without the Neumann load factor infront of it*/
   for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)
@@ -1583,7 +1583,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
   // loop over windkessel structure coupling conditions
   /* here we do an extra loop to assemble the correct offdiagonal stiffness block dfext/dwkdof
-  this effectively is the derivative of the orthopressure Neumann load wrt the pressure,
+  this effectively is the derivative of the orthopressure Neumann load w.r.t. the pressure,
   corresponding to the area integral -> we do a similar loop like in so_surface_evaluate.cpp
   without the Neumann load factor infront of it*/
   for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)

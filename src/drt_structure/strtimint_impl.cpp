@@ -128,7 +128,7 @@ STR::TimIntImpl::TimIntImpl
   {
     if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
     	if (myrank_ == 0)
-    		printf("\n\n**** WARNING **** Chosen solution technique %s does not work with Windkessel bc !!!\n\n",
+    	  dserror("Chosen solution technique %s does not work with Windkessel bc.",
               	INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)

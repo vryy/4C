@@ -331,6 +331,7 @@ namespace UTILS
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
+    INPAR::STR::PreStress pstype_;
 
   }; //class
 }

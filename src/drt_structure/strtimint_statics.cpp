@@ -135,6 +135,11 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // initialize stiffness matrix to zero
   stiff_->Zero();
 
+  // add forces and stiffness due to Windkessel bcs
+  Teuchos::ParameterList pwindk;
+  pwindk.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
+
   // build new external forces
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
@@ -294,6 +299,9 @@ void STR::TimIntStatics::UpdateStepState()
 
   // update constraints
   UpdateStepConstraint();
+
+  // update Windkessel
+  UpdateStepWindkessel();
 
   // update contact / meshtying
   UpdateStepContactMeshtying();

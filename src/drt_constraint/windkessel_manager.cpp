@@ -142,6 +142,9 @@ UTILS::WindkesselManager::WindkesselManager
     theta_ = params.get("WINDKESSEL_TIMINT_THETA",0.5);
     if ( (theta_ <= 0.0) or (theta_ > 1.0) )
       dserror("theta for Windkessel time integration out of range (0.0,1.0] !");
+
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(params,"PRESTRESS");
+
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //build Epetra_Map used as domainmap and rowmap for result vectors
     windkesselmap_=Teuchos::rcp(new Epetra_Map(*(windkesseldofset_->DofRowMap())));
@@ -326,6 +329,14 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
 
   // end of Windkessel time integration: now we have values for wkdofm_, dwkdofm_, qm_, dqm, ddqm and can proceed
 
+  // no flux within the time-step when we have quasi-static prestressing!
+  if (pstype_ == INPAR::STR::prestress_mulf)
+  {
+    qm_->PutScalar(0.0);
+    dqm_->PutScalar(0.0);
+    ddqm_->PutScalar(0.0);
+  }
+
   LINALG::Export(*wkdofm_,*wkdofmredundant);
   LINALG::Export(*dwkdofm_,*dwkdofmredundant);
   LINALG::Export(*qm_,*qmredundant);
@@ -336,6 +347,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   wk_std_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dwkdof_,windk_rhs_wkdof_red,windk_rhs_dwkdof_red,windk_rhs_q_red,windk_rhs_dq_red,windk_rhs_ddq_red,windk_rhs_1_red,voldummy,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   wk_heartvalvearterial_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dwkdof_,windk_rhs_wkdof_red,windk_rhs_dwkdof_red,windk_rhs_q_red,windk_rhs_dq_red,windk_rhs_ddq_red,windk_rhs_1_red,voldummy,wkdofmredundant,Teuchos::null,Teuchos::null,Teuchos::null);
   wk_heartvalvearterial_proxdist_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dwkdof_,windk_rhs_wkdof_red,windk_rhs_dwkdof_red,windk_rhs_q_red,windk_rhs_1_red,voldummy,wkdofmredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
 
   windk_rhs_wkdof_->PutScalar(0.0);
   windk_rhs_wkdof_->Export(*windk_rhs_wkdof_red,*windkimpo_,Insert);
@@ -362,6 +374,9 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   windkesselstiffness_->Complete(*windkesselmap_,*windkesselmap_);
   mat_dwindk_dd_->Complete(*windkesselmap_,*dofrowmap);
   mat_dstruct_dwkdof_->Complete(*windkesselmap_,*dofrowmap);
+
+  // no flux, thus no change of vol w.r.t. displacements when prestressing
+  if (pstype_ == INPAR::STR::prestress_mulf) mat_dwindk_dd_->Zero();
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
