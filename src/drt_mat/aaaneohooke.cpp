@@ -370,15 +370,18 @@ void MAT::AAAneohooke::VisNames(std::map<std::string,int>& names)
 
 bool MAT::AAAneohooke::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {
+  // get element lID incase we have element specific material parameters
+  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+
   if (name=="beta")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    data[0] = params_->GetParameter(params_->beta,eleGID);
+    data[0] = params_->GetParameter(params_->beta,eleID);
   }
   else if (name=="youngs")
   {
     if ((int)data.size()!=1) dserror("size mismatch");;
-    data[0] = params_->GetParameter(params_->young,eleGID);
+    data[0] = params_->GetParameter(params_->young,eleID);
   }
   else
   {
