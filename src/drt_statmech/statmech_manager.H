@@ -254,7 +254,7 @@ public:
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
   //! \brief Initializes Truss3cl elements in case of periodic boundary conditions
-  void PeriodicBoundaryTruss3clInit(DRT::Element* element);
+  void PeriodicBoundaryTruss3CLInit(DRT::Element* element);
 
   /*! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
    * \param disrow  (in)  row map displacement vector

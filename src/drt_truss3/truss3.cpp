@@ -3,10 +3,10 @@
 \brief three dimensional total Lagrange truss element
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Dhrubajyoti Mukherjee
+            mukherjee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
+            089 - 289-15270
 </pre>
 
 *----------------------------------------------------------------------*/

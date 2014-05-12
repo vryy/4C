@@ -228,7 +228,7 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
 
       //in case of periodic boundary conditions Truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
-        statmechman_->PeriodicBoundaryTruss3Init(discret_->lColElement(i));
+        statmechman_->PeriodicBoundaryTruss3CLInit(discret_->lColElement(i));
     }
     else
       continue;

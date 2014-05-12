@@ -33,7 +33,7 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  const int fnnode=2;
+  const int nnode=4;
   DRT::ELEMENTS::Truss3CL::ActionType act = Truss3CL::calc_none;
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
@@ -62,10 +62,11 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
   {
     case Truss3CL::calc_struct_ptcstiff:
     {
+      dserror("PTC scheme not fully functional for Truss3CL elements for biopolymer applications!");
       EvaluatePTC<2,3,3>(params,elemat1);
     }
     break;
-    /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
+    /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero displacement and
      residual values*/
     case Truss3CL::calc_struct_linstiff:
     {
@@ -119,7 +120,7 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
 
       /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
        *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-      NodeShift<fnnode,3>(params,mydisp);
+      NodeShift<nnode,3>(params,mydisp);
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       std::vector<double> myvel(lm.size());
@@ -135,88 +136,14 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
       else if (act == Truss3CL::calc_struct_nlnstifflmass)
         t3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == Truss3CL::calc_struct_nlnstiff)
-        t3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+      {
+        for (int i=0; i<24; i++)
+          t3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+      }
+
       else if (act == Truss3CL::calc_struct_internalforce)
         t3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
 
-
-      /*
-      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-      //correctly or not by means of a numerically approximated stiffness matrix
-      //The code block will work for all higher order elements.
-      if(Id() == 3) //limiting the following tests to certain element numbers
-      {
-        //assuming the same number of DOF for all nodes
-        int numdof = NumDofPerNode(*(Nodes()[0]));
-        int nnode  = NumNode();
-
-        //variable to store numerically approximated stiffness matrix
-        Epetra_SerialDenseMatrix stiff_approx;
-        stiff_approx.Shape(numdof*nnode,numdof*nnode);
-
-
-        //relative error of numerically approximated stiffness matrix
-        Epetra_SerialDenseMatrix stiff_relerr;
-        stiff_relerr.Shape(numdof*nnode,numdof*nnode);
-
-        //characteristic length for numerical approximation of stiffness
-        double h_rel = 1e-9;
-
-        //flag indicating whether approximation leads to significant relative error
-        int outputflag = 0;
-
-        //calculating strains in new configuration
-        for(int i=0; i<numdof; i++) //for all dof
-        {
-          for(int k=0; k<nnode; k++)//for all nodes
-          {
-
-            Epetra_SerialDenseVector force_aux;
-            force_aux.Size(numdof*nnode);
-
-            //create new displacement and velocity vectors in order to store artificially modified displacements
-            std::vector<double> vel_aux(myvel);
-            std::vector<double> disp_aux(mydisp);
-
-            //modifying displacement artificially (for numerical derivative of internal forces):
-            disp_aux[numdof*k + i] += h_rel;
-            vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
-
-            t3_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-
-            //computing derivative d(fint)/du numerically by finite difference
-            for(int u = 0 ; u < numdof*nnode ; u++ )
-              stiff_approx(u,k*numdof+i) = ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
-
-          } //for(int k=0; k<nnode; k++)//for all nodes
-        } //for(int i=0; i<numdof; i++) //for all dof
-
-
-        for(int line=0; line<numdof*nnode; line++)
-        {
-          for(int col=0; col<numdof*nnode; col++)
-          {
-            stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
-
-            //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-            if ( fabs( stiff_relerr(line,col) ) < h_rel*1000 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
-              stiff_relerr(line,col) = 0;
-
-            if ( stiff_relerr(line,col) > 0)
-              outputflag = 1;
-
-          } //for(int col=0; col<numdof*nnode; col++)
-        } //for(int line=0; line<numdof*nnode; line++)
-
-        if(outputflag ==1)
-        {
-          std::cout<<"\n\n acutally calculated stiffness matrix in Element "<<Id()<<": "<< elemat1;
-          std::cout<<"\n\n approximated stiffness matrix in Element "<<Id()<<": "<< stiff_approx;
-          std::cout<<"\n\n rel error stiffness matrix in Element "<<Id()<<": "<< stiff_relerr;
-        }
-
-      } //end of section in which numerical approximation for stiffness matrix is computed
-       */
 
     }
     break;
@@ -260,6 +187,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList&  params,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
+  dserror("This method is yet to be configured for bio-polymer networks!");
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
@@ -317,7 +245,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList&  params,
 
     /*load vector ar; regardless of the actual number of degrees of freedom active with respect to this
      *element or certain nodes of it the vector val has always the lengths 6 and in order to deal with
-     *possibly different numbers of acutally used DOF we always loop through all the 6*/
+     *possibly different numbers of actually used DOF we always loop through all the 6*/
     double ar[6];
     // loop the dofs of a node
 
@@ -345,7 +273,7 @@ template<int fnnode, int ndim, int dof> //number of nodes, number of dimensions 
 int DRT::ELEMENTS::Truss3CL::EvaluatePTC(Teuchos::ParameterList&   params,
                                        Epetra_SerialDenseMatrix& elemat1)
 {
-
+  dserror("This method is yet to be configured for bio-polymer networks!");
   //factor to regulate artificial ptc stiffness;
   double ptcfactor = 0.5;
 
@@ -354,7 +282,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluatePTC(Teuchos::ParameterList&   params,
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
-  //damping coefficients for translational and rotatinal degrees of freedom
+  //damping coefficients for translational and rotational degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
 
@@ -387,10 +315,11 @@ int DRT::ELEMENTS::Truss3CL::EvaluatePTC(Teuchos::ParameterList&   params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                         mukherjee 01/14|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3CL::t3_energy(Teuchos::ParameterList&   params,
+void DRT::ELEMENTS::Truss3CL::t3_energy(Teuchos::ParameterList& params,
                                       std::vector<double>&      disp,
                                       Epetra_SerialDenseVector* intenergy)
 {
+  dserror("This method is yet to be configured for bio-polymer networks!");
    /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
    / function instead of e.g. Truss3CL_input.cpp or within the Truss3CLRegister class since it is not/
@@ -429,43 +358,46 @@ void DRT::ELEMENTS::Truss3CL::t3_energy(Teuchos::ParameterList&   params,
    fdisp[i]=0;
    // Interpolation of Translational displacements at fictitious nodes. Use hermite polynmials
   //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialized
-   std::vector<double> rxstart;
-   rxstart.resize(12);
+  LINALG::Matrix<12,1> XRefOnlyDisp;
+  XRefOnlyDisp.Clear();
 
    // Obtain cordinates of real nodes
    for (int node=0; node<4; node++)
      for(int d= 0; d < 3; d++)
-       rxstart[node*3 + d] = Nodes()[node]->X()[d];
+       XRefOnlyDisp(node*3 + d) = Nodes()[node]->X()[d];
 
 
    // length of first element and second element required for hermite shape function interpolation
-   std::vector<double> LengthofFilament(2);
+   std::vector<double> LengthofElementatRef(2);
    // auxilarry vector
    std::vector<double> aux(6);
-   aux[0]=rxstart[0]-rxstart[3];
-   aux[1]=rxstart[1]-rxstart[4];
-   aux[2]=rxstart[2]-rxstart[5];
-   aux[3]=rxstart[6]-rxstart[9];
-   aux[4]=rxstart[7]-rxstart[10];
-   aux[5]=rxstart[8]-rxstart[11];
+   aux[0]=XRefOnlyDisp(0)-XRefOnlyDisp(3);
+   aux[1]=XRefOnlyDisp(1)-XRefOnlyDisp(4);
+   aux[2]=XRefOnlyDisp(2)-XRefOnlyDisp(5);
+   aux[3]=XRefOnlyDisp(6)-XRefOnlyDisp(9);
+   aux[4]=XRefOnlyDisp(7)-XRefOnlyDisp(10);
+   aux[5]=XRefOnlyDisp(8)-XRefOnlyDisp(11);
 
 
    for (int filament=0; filament<2; filament++)
    {
-     LengthofFilament[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
+     LengthofElementatRef[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
    }
 
   // Evaluate Shape Functions at Binding positions
   std::vector<LINALG::Matrix<1,4> > Ibp(2);
   const DiscretizationType distype = this->Shape();
     for(int filament=0; filament<2; filament++)
-    DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofFilament[filament],distype);
+    {
+      DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofElementatRef[filament],distype);
+    }
 
-    //calculate interpolated fictitious nodal displacements
-    for(int j=0;j<2;j++)
-      for(int k=0;k<2;k++)
-       for(int i=0;i<3;i++)
-        fdisp[i+3*j]+= Ibp[j](2*k)*disp[i+3*k+6*j];
+    //calculate interpolated fictitious nodal displacaments.
+    for(int j=0;j<2;j++)       // Number of binding spots
+      for(int l=0;l<2;l++)     // l=0 left real node, l=0 right real node contributing to the binding spot
+        for(int r=0;r<2;r++)   //  right node contributing to the binding spot
+          for(int i=0;i<3;i++)  // Number of dimensions
+            fdisp[i+3*j]+= Ibp[j](2*l+r)*disp[i+3*r+6*l+12*j];
 
   //strain
   double epsilon;
@@ -527,9 +459,6 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
                                             Epetra_SerialDenseVector* force)
 {
   const int fnnode=2;
-  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<2,3>(params,disp);
 
   // calculate interpolated displacements and velocities of the two fictitious nodes
   /* vector containing fictitious nodal displacements.
@@ -537,63 +466,68 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
    * However, for ease in calculation and future extension to full 12 dofs for beam element the size of the vector is kept as 12.
    * Therefore, displacement degrees of freedoms are stored in 0,1,2 (1st node) and 6,7,8 (2nd node).
    */
-  std::vector<double> fdisp(6);
-  for(int i=0;i<6;i++)
-   fdisp[i]=0;
+  LINALG::Matrix<6,1> fdisp;
+  fdisp.Clear();
+
   // vector containing fictitious nodal velocities
   /* It is to be noted that the fictitious truss element contains only 6 dofs (3 translational degrees of freedom in each node).
    * Therefore, displacement degrees of freedoms are stored in 0...2 (1st node) and 3...5 (2nd node).
   */
-  std::vector<double> fvel(6);
-  for(int i=0;i<6;i++)
-   fvel[i]=0;
+  LINALG::Matrix<6,1> fvel;
+  fvel.Clear();
   // Evaluate Shape Functions at Binding positions
   /*
    * For interpolating binding sites and displacement quantities, Hermite polynomials need to be implemented.
    */
-  //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialized
-   std::vector<double> rxstart;
-   rxstart.resize(12);
 
-   // Obtain cordinates of real nodes
-   for (int node=0; node<4; node++)
-     for(int d= 0; d < 3; d++)
-       rxstart[node*3 + d] = Nodes()[node]->X()[d];
+   //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialized
 
+  LINALG::Matrix<12,1> XRefOnlyDisp;
+  XRefOnlyDisp.Clear();
+  for (int node=0; node<4; node++) //element has four nodes
+    for(int k= 0; k < 3; k++)
+      XRefOnlyDisp(node*3 + k) = Nodes()[node]->X()[k];
 
-   // length of first element and second element required for hermite shape function interpolation
-   std::vector<double> LengthofFilament(2);
-   // auxilarry vector
-   std::vector<double> aux(6);
-   aux[0]=rxstart[0]-rxstart[3];
-   aux[1]=rxstart[1]-rxstart[4];
-   aux[2]=rxstart[2]-rxstart[5];
-   aux[3]=rxstart[6]-rxstart[9];
-   aux[4]=rxstart[7]-rxstart[10];
-   aux[5]=rxstart[8]-rxstart[11];
+      // length of first element and second element required for hermite shape function interpolation
+      std::vector<double> LengthofElementatRef(2);
+      // auxiliary vector for norm/length calculations
+      std::vector<double> aux(6);
 
-
-   for (int filament=0; filament<2; filament++)
-     LengthofFilament[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
+      aux[0]=XRefOnlyDisp(0)-XRefOnlyDisp(3);
+      aux[1]=XRefOnlyDisp(1)-XRefOnlyDisp(4);
+      aux[2]=XRefOnlyDisp(2)-XRefOnlyDisp(5);
+      aux[3]=XRefOnlyDisp(6)-XRefOnlyDisp(9);
+      aux[4]=XRefOnlyDisp(7)-XRefOnlyDisp(10);
+      aux[5]=XRefOnlyDisp(8)-XRefOnlyDisp(11);
 
 
+      for (int filament=0; filament<2; filament++)
+      {
+        LengthofElementatRef[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
+      }
 
+
+   // Compute Hermite polynomials in current/spatial position, we need the length of filaments at reference configuration
    std::vector<LINALG::Matrix<1,4> > Ibp(2);
    const DiscretizationType distype = this->Shape();
      for(int filament=0; filament<2; filament++)
-       DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofFilament[filament],distype);
+     {
+       DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofElementatRef[filament],distype);
+     }
 
      //calculate interpolated fictitious nodal displacaments.
-     for(int j=0;j<2;j++)
-       for(int k=0;k<2;k++)
-        for(int i=0;i<3;i++)
-          fdisp[i+3*j]+= Ibp[j](2*k)*disp[i+3*k+6*j];
+     for(int j=0;j<2;j++)         // Number of binding spots
+       for(int l=0;l<2;l++)       // l=0 left real node, l=0 right real node contributing to the binding spot
+         for(int r=0;r<2;r++)     //  right node contributing to the binding spot
+           for(int i=0;i<3;i++)   // Number of dimensions
+             fdisp(i+3*j)+= Ibp[j](2*l+r)*disp[i+3*r+6*l+12*j];
 
      // calculate interpolated fictitious nodal velocities
-     for(int j=0;j<2;j++)
-       for(int k=0;k<2;k++)
-        for(int i=0;i<3;i++)
-         fvel[i+3*j]+= Ibp[j](2*k)*vel[i+3*k+6*j];
+     for(int j=0;j<2;j++)       // Number of binding spots
+       for(int l=0;l<2;l++)     // l=0 left real node, l=0 right real node contributing to the binding spot
+         for(int r=0;r<2;r++)   //  right node contributing to the binding spot
+           for(int i=0;i<3;i++)  // Number of dimensions
+             fvel(i+3*j)+= Ibp[j](2*l+r)*vel[i+3*r+6*l+12*j];
 
      //12x12 Stiffness Matrix of the beam described by the two fictitious nodes
      Epetra_SerialDenseMatrix fstiffmatrix;
@@ -621,7 +555,6 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
     break;
   }
 
-
   // internal force vector stored by class variable before application of stochastic excitations
   if(params.get<std::string>("internalforces","no")=="yes" && fforce != NULL)
     f_ = Teuchos::rcp(new Epetra_SerialDenseVector(fforce));
@@ -631,7 +564,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
-   CalcBrownian<2,3,3,3>(params,fvel,fdisp,fstiffmatrix,fforce);
+    CalcBrownian<2,3,3,3>(params,fvel,disp,fdisp,fstiffmatrix,fforce);
 
    if(stiffmatrix != NULL)
    {
@@ -640,20 +573,22 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
       for(int nodei = 0; nodei < fnnode; nodei++)
        for(int nodej = 0; nodej < fnnode; nodej++)
          for(int Ri=0; Ri<2; Ri++)
-          for(int Rj=0; Rj<2; Rj++)
-           for(int i=0; i<3; i++)
-            for(int j=0; j<3; j++)
-                (*stiffmatrix)(12*nodei+6*Ri+i,12*nodej+6*Rj+j) += Ibp[nodei](2*Ri)*Ibp[nodej](2*Rj)*fstiffmatrix(3*nodei+i,3*nodej+j);
+           for(int Rl=0; Rl<2; Rl++)
+             for(int Rj=0; Rj<2; Rj++)
+               for(int Rr=0; Rr<2; Rr++)
+                 for(int i=0; i<3; i++)
+                   for(int j=0; j<3; j++)
+                     (*stiffmatrix)(12*nodei+6*Ri+3*Rl+i,12*nodej+6*Rj+3*Rr+j) += Ibp[nodei](2*Ri+Rl)*Ibp[nodej](2*Rj+Rr)*fstiffmatrix(3*nodei+i,3*nodej+j);
 
     }
-
    if(force != NULL)
    {
      //Tranform 12x1 force vector for fictitious nodal beam to 24x1 force vector of the 4-noded beam
      for (int node=0; node<fnnode; ++node)
       for(int Ri=0; Ri<2; Ri++)
-       for(int i=0;i<3;i++)
-         (*force)(12*node+6*Ri+i)+=Ibp[node](2*Ri)*fforce(3*node+i);
+        for(int Rl=0; Rl<2; Rl++)
+          for(int i=0;i<3;i++)
+            (*force)(12*node+6*Ri+3*Rl+i)+=Ibp[node](2*Ri+Rl)*fforce(3*node+i);
    }
 
    return;
@@ -663,18 +598,18 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                               mukherjee 01/14|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(std::vector<double>&      disp,
-                                                   Epetra_SerialDenseMatrix stiffmatrix,
+void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(LINALG::Matrix<6,1>& fdisp,
+                                                   Epetra_SerialDenseMatrix& fstiffmatrix,
                                                    Epetra_SerialDenseMatrix* massmatrix,
-                                                   Epetra_SerialDenseVector force)
+                                                   Epetra_SerialDenseVector& fforce)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
 
   /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
-   * to reference configuration; note: in general this is not equal to the values in disp since the
-   * latter one referes to a nodal displacement compared to a reference configuration before the first
-   * time step whereas the following variable referes to the displacement with respect to a reference
+   * to reference configuration; note: in general this is not equal to the values in fdisp since the
+   * fdisp referes to a nodal displacement compared to a reference configuration before the first
+   * time step whereas ucurr referes to the displacement with respect to a reference
    * configuration which may have been set up at any point of time during the simulation (usually this
    * is only important if an element has been added to the discretization after the start of the simulation)*/
   LINALG::Matrix<6,1> ucurr;
@@ -685,54 +620,16 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(std::vector<double>&      d
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6,1> aux;
 
-  //reference node position real nodes
-    std::vector<double> rxrefe;
-    //reference node position fiktive nodes
-    std::vector<double> xrefe;
-
-    const int nnode=4;
-    const int fnnode=2;
-
-    //resize xrefe for the number of coordinates we need to store
-    rxrefe.resize(3*nnode);
-    xrefe.resize(3*fnnode);
-
-    for (int node=0; node<nnode; node++) //element has four nodes
-      for(int dof= 0; dof < 3; dof++)
-        rxrefe[node*3 + dof] = Nodes()[node]->X()[dof];
-
-    // length of first element and second element required for hermite shape function interpolation
-    std::vector<double> LengthofFilament(2);
-    // auxilarry vector
-    std::vector<double> auxForReference(6);
-
-    auxForReference[0]=rxrefe[0]-rxrefe[3];
-    auxForReference[1]=rxrefe[1]-rxrefe[4];
-    auxForReference[2]=rxrefe[2]-rxrefe[5];
-    auxForReference[3]=rxrefe[6]-rxrefe[9];
-    auxForReference[4]=rxrefe[7]-rxrefe[10];
-    auxForReference[5]=rxrefe[8]-rxrefe[11];
-
-    for (int filament=0; filament<2; filament++)
-    {
-      LengthofFilament[filament]=sqrt(pow(auxForReference[3*filament],2)+pow(auxForReference[3*filament+1],2)+pow(auxForReference[3*filament+2],2));
-    }
-
-   std::vector<LINALG::Matrix<1,4> > Ibp(2);
-   for(int filament=0; filament<2; filament++)
-     DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofFilament[filament],this->Shape());
-   for(int filament=0;filament<2;filament++)
-     for(int k=0;k<fnnode;k++)
-       for(int i=0;i<3;i++)
-       {
-         xrefe[i+3*filament]+= Ibp[filament](2*k)*rxrefe[i+3*k+6*filament];
-       }
+  // Vector for storing reference degrees of freedom at t=0 at binding spot or the connecting nodes of the truss element
+  LINALG::Matrix<6,1> Xstart;
+  Xstart.Clear();
+  ComputeRefDOFs(Xstart);
 
   //current nodal position
   for (int j=0; j<3; ++j)
   {
-    xcurr(j  )   = xrefe[j] + disp[  j]; //first node
-    xcurr(j+3)   = xrefe[3+j] + disp[3+j]; //second node
+    xcurr(j  )   = Xstart(j) + fdisp(j); //first node
+    xcurr(j+3)   = Xstart(3+j) + fdisp(3+j); //second node
   }
 
   //current displacement = current position - reference position
@@ -740,12 +637,12 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(std::vector<double>&      d
   ucurr -= X_;
 
   //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = 0.25 * (xcurr(0) - xcurr(3));
-  aux(1) = 0.25 * (xcurr(1) - xcurr(4));
-  aux(2) = 0.25 * (xcurr(2) - xcurr(5));
-  aux(3) = 0.25 * (xcurr(3) - xcurr(0));
-  aux(4) = 0.25 * (xcurr(4) - xcurr(1));
-  aux(5) = 0.25 * (xcurr(5) - xcurr(2));
+  aux(0) = (xcurr(0) - xcurr(3));
+  aux(1) = (xcurr(1) - xcurr(4));
+  aux(2) = (xcurr(2) - xcurr(5));
+  aux(3) = (xcurr(3) - xcurr(0));
+  aux(4) = (xcurr(4) - xcurr(1));
+  aux(5) = (xcurr(5) - xcurr(2));
 
   //calculating strain epsilon from node position by scalar product:
   //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
@@ -783,33 +680,31 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(std::vector<double>&      d
     break;
   }
 
-
   //computing global internal forces
-  if (force != NULL)
+  if (fforce != NULL)
   {
     for (int i=0; i<6; ++i)
     {
-      force(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
+      fforce(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
     }
   }
 
-
   //computing linear stiffness matrix
-  if (stiffmatrix != NULL)
+  if (fstiffmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
     {
         //stiffness entries for first node
-        stiffmatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
-        stiffmatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
+        fstiffmatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
+        fstiffmatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
         //stiffness entries for second node
-        stiffmatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
-        stiffmatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
+        fstiffmatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
+        fstiffmatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
     }
 
     for (int i=0; i<6; ++i)
       for (int j=0; j<6; ++j)
-        stiffmatrix(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+        fstiffmatrix(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
    }
 
   //calculating consistent mass matrix
@@ -820,7 +715,6 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(std::vector<double>&      d
       (*massmatrix)(i,i) = 1;
     }
   }
-
   return;
 } // DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag
 
@@ -829,10 +723,10 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(std::vector<double>&      d
  | nonlinear stiffness and mass matrix (private)                                                 mukherjee 01/14|
  | engineering strain measure, large displacements and rotations                                                |
   *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(std::vector<double>&      fdisp,
-                                                   Epetra_SerialDenseMatrix stiffmatrix,
+void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(const LINALG::Matrix<6,1>& fdisp,
+                                                   Epetra_SerialDenseMatrix& stiffmatrix,
                                                    Epetra_SerialDenseMatrix* massmatrix,
-                                                   Epetra_SerialDenseVector force)
+                                                   Epetra_SerialDenseVector& force)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
@@ -843,57 +737,17 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(std::vector<double>&      f
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6,1> aux;
 
-  //reference node position real nodes
-  std::vector<double> rxrefe;
-  //reference node position fiktive nodes
-  std::vector<double> xrefe;
-
-  const int nnode=4;
-  const int fnnode=2;
-
-  //resize xrefe for the number of coordinates we need to store
-  rxrefe.resize(3*nnode);
-  xrefe.resize(3*fnnode);
-
-  for (int node=0; node<nnode; node++) //element has four nodes
-    for(int dof= 0; dof < 3; dof++)
-      rxrefe[node*3 + dof] = Nodes()[node]->X()[dof];
-
-  // length of first element and second element required for hermite shape function interpolation
-  std::vector<double> LengthofFilament(2);
-  // auxilarry vector
-  std::vector<double> auxForReference(6);
-
-  auxForReference[0]=rxrefe[0]-rxrefe[3];
-  auxForReference[1]=rxrefe[1]-rxrefe[4];
-  auxForReference[2]=rxrefe[2]-rxrefe[5];
-  auxForReference[3]=rxrefe[6]-rxrefe[9];
-  auxForReference[4]=rxrefe[7]-rxrefe[10];
-  auxForReference[5]=rxrefe[8]-rxrefe[11];
-
-  for (int filament=0; filament<2; filament++)
-  {
-    LengthofFilament[filament]=sqrt(pow(auxForReference[3*filament],2)+pow(auxForReference[3*filament+1],2)+pow(auxForReference[3*filament+2],2));
-  }
-
- std::vector<LINALG::Matrix<1,4> > Ibp(2);
- for(int filament=0; filament<2; filament++)
-   DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofFilament[filament],this->Shape());
- for(int filament=0;filament<2;filament++)
-   for(int k=0;k<fnnode;k++)
-     for(int i=0;i<3;i++)
-     {
-       xrefe[i+3*filament]+= Ibp[filament](2*k)*rxrefe[i+3*k+6*filament];
-     }
-
+  // Vector for storing reference degrees of freedom at t=0 at binding spot or the connecting nodes of the truss element
+  LINALG::Matrix<6,1> Xstart;
+  Xstart.Clear();
+  ComputeRefDOFs(Xstart);
 
    //current nodal position (first
    for (int j=0; j<3; ++j)
    {
-     xcurr(j  )   = xrefe[j] + fdisp[  j]; //first node
-     xcurr(j+3)   = xrefe[3+j] + fdisp[3+j]; //second node
+     xcurr(j  )  = Xstart(j) + fdisp(j); //first node
+     xcurr(j+3)  = Xstart(3+j) + fdisp(3+j); //second node
    }
-
 
   //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
   aux(0) = (xcurr(0) - xcurr(3));
@@ -932,7 +786,6 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(std::vector<double>&      f
       dserror("unknown or improper type of material law");
     break;
   }
-
   // resulting force scaled by current length
   double forcescalar=(ym*crosssec_*epsilon)/lcurr;
 
@@ -965,8 +818,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(std::vector<double>&      f
   {
     for (int i=0; i<6; ++i)
     {
-      (*massmatrix)(i,i)     = 1;
-
+      (*massmatrix)(i,i) = 1;
     }
   }
 
@@ -1022,7 +874,7 @@ int DRT::ELEMENTS::Truss3CL::HowManyRandomNumbersINeed()
 {
   /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
    *random numbers for the translational degrees of freedom*/
-  return (3*2);
+  return (3*4);
 
 }//DRT::ELEMENTS::Truss3CL::HowManyRandomNumbersINeed
 
@@ -1044,6 +896,9 @@ void DRT::ELEMENTS::Truss3CL::MyBackgroundVelocity(Teuchos::ParameterList&      
   velbackground.PutScalar(0);
   velbackground(0) = evaluationpoint(ndim-1) * params.get<double>("CURRENTSHEAR",0.0);
 
+  if (velbackground(0)!=0)
+    dserror("Method MyTranslationalDamping needs to be modified before continuing!");
+
   velbackgroundgrad.PutScalar(0);
   velbackgroundgrad(0,ndim-1) = params.get<double>("CURRENTSHEAR",0.0);
 
@@ -1054,17 +909,18 @@ void DRT::ELEMENTS::Truss3CL::MyBackgroundVelocity(Teuchos::ParameterList&      
  *----------------------------------------------------------------------------------------------------------*/
 template<int fnnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
 inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                                  const std::vector<double>&     vel,  //!< element velocity vector
-                                                  const std::vector<double>&     disp, //!<element disp vector
-                                                  Epetra_SerialDenseMatrix       stiffmatrix,  //!< element stiffness matrix
-                                                  Epetra_SerialDenseVector       force)//!< element internal force vector
+                                                  const LINALG::Matrix<6,1>& fvel,  //!< element velocity vector
+                                                  const std::vector<double>& disp, //!<element real disp vector
+                                                  const LINALG::Matrix<6,1>& fdisp, //!<element fictitious disp vector
+                                                  Epetra_SerialDenseMatrix&  fstiffmatrix,  //!< element stiffness matrix
+                                                  Epetra_SerialDenseVector&  fforce)//!< element internal force vector
 {
   //get time step size
   double dt = params.get<double>("delta time",0.0);
 
   //velocity and gradient of background velocity field
-  LINALG::Matrix<ndim,1> velbackground;
-  LINALG::Matrix<ndim,ndim> velbackgroundgrad;
+  LINALG::Matrix<3,1> velbackground;
+  LINALG::Matrix<3,3> velbackgroundgrad;
 
   //evaluation point in physical space corresponding to a certain Gauss point in parameter space
   LINALG::Matrix<ndim,1> evaluationpoint;
@@ -1081,11 +937,6 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-  {
-    integrationtype = lobattointegration;
-    jacobi = jacobinode_;
-  }
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode,integrationtype));
@@ -1094,46 +945,10 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
   LINALG::Matrix<1,fnnode> funct;
   LINALG::Matrix<1,fnnode> deriv;
 
-  //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialized
-   std::vector<double> rxstart;
-   std::vector<double> xstart;
-   rxstart.resize(12);
-   xstart.resize(6);
-   for(int i=0;i<6;i++)
-     xstart[i]=0;
-
-   // Obtain cordinates of real nodes
-   for (int node=0; node<4; node++)
-     for(int d= 0; d < 3; d++)
-       rxstart[node*3 + d] = Nodes()[node]->X()[d];
-
-
-   // length of first element and second element required for hermite shape function interpolation
-   std::vector<double> LengthofFilament(2);
-   // auxilarry vector
-   std::vector<double> aux(6);
-   aux[0]=rxstart[0]-rxstart[3];
-   aux[1]=rxstart[1]-rxstart[4];
-   aux[2]=rxstart[2]-rxstart[5];
-   aux[3]=rxstart[6]-rxstart[9];
-   aux[4]=rxstart[7]-rxstart[10];
-   aux[5]=rxstart[8]-rxstart[11];
-
-
-   for (int filament=0; filament<2; filament++)
-     LengthofFilament[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
-
-
-   // For interpolating internodal binding spot, Hermite polynomials are used
-   std::vector<LINALG::Matrix<1,4> > Ibp(2);
-   const DiscretizationType dtype = this->Shape();
-   for(int filament=0; filament<2; filament++)
-    DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofFilament[filament],dtype);
-
-   for(int filament=0;filament<2;filament++)
-     for(int k=0;k<2;k++)
-      for(int i=0;i<3;i++)
-        xstart[i+3*filament]+= Ibp[filament](2*k)*rxstart[i+3*k+6*filament];
+   // Vector for storing reference degrees of freedom at t=0 at binding spot or the connecting nodes of the truss element
+   LINALG::Matrix<6,1> Xstart;
+   Xstart.Clear();
+   ComputeRefDOFs(Xstart);
 
    // for calculations inside truss element, Lagrange polynomials are used
   for(int gp=0; gp < gausspoints.nquad; gp++)
@@ -1148,31 +963,35 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
     for(int i=0; i<fnnode; i++)
       //loop over all dimensions
       for(int j=0; j<ndim; j++)
-        evaluationpoint(j) += funct(i)*(xstart[3*i+j]+disp[dof*i+j]);
+        evaluationpoint(j) += funct(i)*(Xstart(3*i+j)+fdisp(dof*i+j));
 
     //compute velocity and gradient of background flow field at evaluationpoint
     MyBackgroundVelocity<ndim>(params,evaluationpoint,velbackground,velbackgroundgrad);
-
+    if (velbackground.Norm2()!= 0 && velbackgroundgrad.Norm2()!=0)
+      dserror("Non-zero background velocity found! Please modify the algorithm accordingly.");
 
     //compute tangent vector t_{\par} at current Gauss point
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<fnnode; i++)
       for(int k=0; k<ndim; k++)
-        tpar(k) += deriv(i)*(xstart[3*i+k]+disp[dof*i+k]) / jacobi[gp];
-
+        tpar(k) += deriv(i)*(Xstart(3*i+k)+fdisp(dof*i+k)) / jacobi[gp];
 
     //compute velocity vector at this Gauss point
     LINALG::Matrix<ndim,1> velgp(true);
     for(int i=0; i<fnnode; i++)
       for(int l=0; l<ndim; l++)
-        velgp(l) += funct(i)*vel[dof*i+l];
+        velgp(l) += funct(i)*fvel(dof*i+l);
 
+    /* This part of the code is important, only if there exist a background velocity.
+     * Uncomment this if there is background velocity
+     *
     //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
     LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
     for(int i=0; i<ndim; i++)
       for(int j=0; j<ndim; j++)
         for(int k=0; k<ndim; k++)
           tpartparvelbackgroundgrad(i,j) += tpar(i)*tpar(k)*velbackgroundgrad(k,j);
+     */
 
     //loop over all line nodes
     for(int i=0; i<fnnode; i++)
@@ -1181,17 +1000,20 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
         //loop over columns of matrix t_{\par} \otimes t_{\par}
         for(int l=0; l<ndim; l++)
         {
-          if(force != NULL)
-            force(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
+          if(fforce != NULL)
+            fforce(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
 
-          if(stiffmatrix != NULL)
+          if(fstiffmatrix != NULL)
             //loop over all column nodes
             for (int j=0; j<fnnode; j++)
             {
-              stiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
-              stiffmatrix(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
-              stiffmatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
-              stiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
+              fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*((k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
+              /* This part of the code is important, only if there exist a background velocity.
+               * Uncomment this if there is background velocity
+              fstiffmatrix(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
+              */
+              fstiffmatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
+              fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
             }
         }
   }
@@ -1203,11 +1025,10 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
  | computes stochastic forces and resulting stiffness (public)                                mukherjee 01/14|
  *----------------------------------------------------------------------------------------------------------*/
 template<int fnnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList&    params,  //!<parameter list
-                                                      const std::vector<double>& vel,  //!< element velocity vector
-                                                      const std::vector<double>& disp, //!<element disp vector
-                                                      Epetra_SerialDenseMatrix   stiffmatrix,  //!< element stiffness matrix
-                                                      Epetra_SerialDenseVector   force)//!< element internal force vector
+inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList&  params,  //!<parameter list
+                                                      const LINALG::Matrix<6,1>& fdisp, //!<element disp vector
+                                                      Epetra_SerialDenseMatrix&  fstiffmatrix,  //!< element stiffness matrix
+                                                      Epetra_SerialDenseVector&  fforce)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -1222,11 +1043,6 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
-  {
-    integrationtype = lobattointegration;
-    jacobi = jacobinode_;
-  }
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode,integrationtype));
@@ -1241,43 +1057,11 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
    Teuchos::RCP<Epetra_MultiVector> randomnumbers = params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
 
-   //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialize!
-   std::vector<double> rxstart;
-   std::vector<double> xstart;
-   rxstart.resize(12);
-   xstart.resize(6);
-   for(int i=0;i<6;i++)
-     xstart[i]=0;
+   // Vector for storing reference degrees of freedom at t=0 at binding spot or the connecting nodes of the truss element
+   LINALG::Matrix<6,1> Xstart;
+   Xstart.Clear();
+   ComputeRefDOFs(Xstart);
 
-   for (int node=0; node<4; node++)
-     for(int d= 0; d < 3; d++)
-       rxstart[node*3 + d] = Nodes()[node]->X()[d];
-
-   // length of first element and second element required for hermite shape function interpolation
-   std::vector<double> LengthofFilament(2);
-   // auxilarry vector
-   std::vector<double> aux(6);
-   aux[0]=rxstart[0]-rxstart[3];
-   aux[1]=rxstart[1]-rxstart[4];
-   aux[2]=rxstart[2]-rxstart[5];
-   aux[3]=rxstart[6]-rxstart[9];
-   aux[4]=rxstart[7]-rxstart[10];
-   aux[5]=rxstart[8]-rxstart[11];
-
-
-   for (int filament=0; filament<2; filament++)
-     LengthofFilament[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
-
-   // for interpolating internodal binding spot, Hermite shape functions are used.
-   std::vector<LINALG::Matrix<1,4> > Ibp(2);
-   const DiscretizationType dtype = this->Shape();
-   for(int filament=0; filament<2; filament++)
-     DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofFilament[filament],dtype);
-
-     for(int filament=0;filament<2;filament++)
-       for(int k=0;k<2;k++)
-        for(int i=0;i<3;i++)
-          xstart[i+3*filament]+= Ibp[filament](2*k)*rxstart[i+3*k+6*filament];
   // For calculations inside truss element, Lagrange polynomials are used.
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
@@ -1289,7 +1073,7 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<fnnode; i++)
       for(int k=0; k<ndim; k++)
-        tpar(k) += deriv(i)*(xstart[3*i+k]+disp[dof*i+k]) / jacobi[gp];
+        tpar(k) += deriv(i)*(Xstart(3*i+k)+fdisp(dof*i+k)) / jacobi[gp];
 
 
     //loop over all line nodes
@@ -1299,19 +1083,18 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
         //loop dimensions with respect to columns
         for(int l=0; l<ndim; l++)
         {
-          if(force != NULL)
-            force(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
+          if(fforce != NULL)
+            fforce(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
 
-          if(stiffmatrix != NULL)
+          if(fstiffmatrix != NULL)
             //loop over all column nodes
             for (int j=0; j<fnnode; j++)
             {
-              stiffmatrix(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
-              stiffmatrix(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              fstiffmatrix(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              fstiffmatrix(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
             }
         }
   }
-
   return;
 }//DRT::ELEMENTS::Truss3CL::MyStochasticForces(.)
 
@@ -1321,21 +1104,22 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
  | theorem                                                                           (public) mukherjee 01/14|
  *----------------------------------------------------------------------------------------------------------*/
 template<int fnnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Truss3CL::CalcBrownian(Teuchos::ParameterList&    params,
-                                                const std::vector<double>& vel,  //!< element velocity vector
-                                                const std::vector<double>& disp, //!< element displacement vector
-                                                Epetra_SerialDenseMatrix   stiffmatrix,  //!< element stiffness matrix
-                                                Epetra_SerialDenseVector   force) //!< element internal force vector
+inline void DRT::ELEMENTS::Truss3CL::CalcBrownian(Teuchos::ParameterList&  params,
+                                                const LINALG::Matrix<6,1>& fvel,  //!< element velocity vector
+                                                const std::vector<double>& disp, //!< element real displacement vector
+                                                const LINALG::Matrix<6,1>& fdisp, //!< element fictitious displacement vector
+                                                Epetra_SerialDenseMatrix&  fstiffmatrix,  //!< element stiffness matrix
+                                                Epetra_SerialDenseVector&  fforce) //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
   //add stiffness and forces due to translational damping effects
-  MyTranslationalDamping<fnnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
+  MyTranslationalDamping<fnnode,ndim,dof>(params,fvel,disp,fdisp,fstiffmatrix,fforce);
 
   //add stochastic forces and (if required) resulting stiffness
-  MyStochasticForces<fnnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
+  MyStochasticForces<fnnode,ndim,dof,randompergauss>(params,fdisp,fstiffmatrix,fforce);
 
 return;
 
@@ -1355,7 +1139,8 @@ inline void DRT::ELEMENTS::Truss3CL::NodeShift(Teuchos::ParameterList& params,  
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
-
+  if (nnode==4 && disp.size()==24)
+      numdof = 6;
   double time = params.get<double>("total time",0.0);
   double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
@@ -1410,3 +1195,43 @@ return;
 
 }//DRT::ELEMENTS::Truss3CL::NodeShift
 
+/*-----------------------------------------------------------------------------------------------------------*
+ | computes reference DOFs for TRUSS3CL at t=0, i.e. before first time step (public)          mukherjee 01/14|
+ *----------------------------------------------------------------------------------------------------------*/
+
+ /* It is to be stressed out that the reference configuration of the filaments are not same as the reference
+  * configuration of the cross-linkers. The filaments exist from the beginning of the time-step. On the other
+  * hand, the cross-linkers are added in the middle of the solution. However, we want to evaluate the forces
+  * acting on the cross-linkers from the beginning of the simulation. This particular method serves this purpose.*/
+
+inline void DRT::ELEMENTS::Truss3CL::ComputeRefDOFs(LINALG::Matrix<6,1>& Xstart)
+{
+  //  Here we need the position of the internodal Binding Spot at time t=0,
+  //  when the filament beam elements where initialized
+  LINALG::Matrix<1,12> XRefOnlyDisp;
+  XRefOnlyDisp.Clear();
+
+  for (int node=0; node<4; node++) //element has four nodes
+    for(int k= 0; k < 3; k++)
+      XRefOnlyDisp(node*3 + k) = Nodes()[node]->X()[k];
+
+/* Compute Lagrange polynomials in reference position.
+   Since beams are straight at initial configuration, it's a valid assumption. */
+
+  std::vector<LINALG::Matrix<1,2> > Ibp(2);
+  const DiscretizationType distype = this->Shape();
+
+  for(int filament=0; filament<2; filament++)
+    {
+      DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],distype);
+    }
+
+  for(int filament=0;filament<2;filament++)
+    for(int node=0;node<2;node++)
+      for(int dof=0;dof<3;dof++)
+      {
+        Xstart(dof+3*filament)+= Ibp[filament](node)*XRefOnlyDisp(dof+3*node+6*filament);
+      }
+
+  return;
+}//DRT::ELEMENTS::Truss3CL::ComputeRefDOFs

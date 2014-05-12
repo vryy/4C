@@ -232,7 +232,7 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       if(statmechparams_.get<double>("ILINK",0.0) == 0.0)
       {
         if(!discret_->Comm().MyPID())
-          std::cout<<"  -- standard Truss3 linkers with interpolated binding site positions for BEAM3EB elements"<<std::endl;
+          std::cout<<"  -- standard Truss3 linkers with interpolated binding site positions for BEAM3 elements"<<std::endl;
       }
       else
       {
@@ -291,7 +291,7 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   if((linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol || linkermodel_==statmech_linker_myosinthick) && statmechparams_.get<double>("DELTABELLSEQ",0.0)==0.0)
     dserror("Active linkers need a non-zero value DELTABELLSEQ for a force-dependent off-rate");
   if((linkermodel_==statmech_linker_std || linkermodel_==statmech_linker_stdintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)!=0.0)
-    dserror("This linker model does not work with DELTABELLSEQ!=0.0! Check your input file!");
+    dserror("This linker model needs zero value of DELTABELLSEQ! Check your input file!");
   if((linkermodel_==statmech_linker_stdintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && riseperbspot_->at(0)<=0.0)
     dserror("The input parameter RISEPERBSPOT has an invalid value %f", riseperbspot_->at(0));
 
@@ -429,7 +429,11 @@ void STATMECH::StatMechManager::CreateFullyOverlappingNodeMap()
   for (int i=0; i<noderowmap.NumMyElements(); ++i)
     sdata[i] = noderowmap.GID(i);
 
-  //if current processor has elements it writes its number into stproc
+  /*
+   * If current processor has elements it writes the processor ID into stproc.
+   * In this case, elements doesn't mean finite elements, but rather components
+   * of a particular array.
+   */
   std::vector<int> stproc(0);
 
 
@@ -437,7 +441,10 @@ void STATMECH::StatMechManager::CreateFullyOverlappingNodeMap()
     stproc.push_back(discret_->Comm().MyPID());
 
 
-  //information how many processors work at all
+  /*
+   * Information how many processors work at all.
+   * Size of variable allproc= number of processors
+   */
   std::vector<int> allproc(discret_->Comm().NumProc());
 
   //in case of n processors allproc becomes a std::vector with entries (0,1,...,n-1)
@@ -446,12 +453,15 @@ void STATMECH::StatMechManager::CreateFullyOverlappingNodeMap()
   //declaring new variable into which the information of stproc on all processors is gathered
   std::vector<int> rtproc(0);
 
-  /*gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which
-   * contains the numbers of all processors which have elements*/
+  /*
+   * Gathers information of stproc and writes it into rtproc. In the end rtproc is a vector which
+   * contains the numbers of all processors which have elements. Lookup method "LINALG::Gather" to
+   * understand more about the variables.
+   */
   LINALG::Gather<int>(stproc,rtproc,discret_->Comm().NumProc(),&allproc[0],discret_->Comm());
 
   /*in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are
-   * stored on different processors in their own variables sdata; thereby each processor gets
+   * stored on different processors in their own variables sdata. Therefore, each processor gets
    * the information about all the nodes numbers existing in this problem*/
   std::vector<int> rdata;
 
@@ -470,7 +480,7 @@ void STATMECH::StatMechManager::CreateFullyOverlappingNodeMap()
   discret_->ExportColumnNodes(*newnodecolmap);
   /*rebuild discretization based on the new column map so that each processor creates new ghost elements
    * if necessary; after the following line we have a discretization, where each processor has a fully
-   * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
+   * overlapping column map regardless of how overlapping was managed when starting BACI; having ensured
    * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
    * crosslinkers in parallel computing*/
   discret_->FillComplete(true,false,false);
@@ -523,7 +533,7 @@ void STATMECH::StatMechManager::InitializeForceSensors()
   forcesensor_ = Teuchos::rcp( new Epetra_Vector(*(discret_->DofColMap())) );
   forcesensor_->PutScalar(-1.0);
 
-  //gettin a vector consisting of pointers to all filament number conditions set
+  //Getting a vector consisting of pointers to all filament number conditions set
   std::vector<DRT::Condition*> forcesensorconditions(0);
   discret_->GetCondition("ForceSensor",forcesensorconditions);
 
@@ -1005,9 +1015,14 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
     LINALG::Matrix<3, 1> currpos;
     LINALG::Matrix<3, 1> currrot;
     LINALG::Matrix<1,2>  Ibp;
+    LINALG::Matrix<1,4>  Ibp_hermite;         //Hermite shape functions for beam3EB element
+    std::vector<double> Tcurr_(6); // Vector containing tangent of Nodal Positions.
+    // length of first element and second element required for hermite shape function interpolation
+    double LengthofElementatRef;
     LINALG::Matrix<3,1> ThetaXi;
     // Vector containing Nodal Positions. Only translational DOFs are evaluated
     std::vector<double> position(6);
+    std::vector<double> InitialPosition(6);
     //Quaternions at relevant filament nodes
     LINALG::Matrix<4,1>  bQ;
     std::vector<LINALG::Matrix<4,1> >  nQ(2);
@@ -1023,7 +1038,8 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
       if(elegid!=prevelegid)
       {
         filelement = discret_->gElement(elegid);
-        filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->gElement(elegid));
+        if (filelement->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+          filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->gElement(elegid));
 
         node0 = discret_->gNode(filelement->NodeIds()[0]);
         node1 = discret_->gNode(filelement->NodeIds()[1]);
@@ -1037,6 +1053,46 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
         position[4] = node1->X()[1] + discol[discret_->DofColMap()->LID(dofnode1[1])];
         position[5] = node1->X()[2] + discol[discret_->DofColMap()->LID(dofnode1[2])];
 
+
+
+        /* Compute the tangential degrees of freedom at current time step.
+         * Since filaments are assumed to be straight at reference configuration,
+         * initial values are zero.
+         */
+        if(filelement->ElementType()==DRT::ELEMENTS::Beam3ebType::Instance())
+        {
+          InitialPosition[0] = node0->X()[0];
+          InitialPosition[1] = node0->X()[1];
+          InitialPosition[2] = node0->X()[2];
+          InitialPosition[3] = node1->X()[0];
+          InitialPosition[4] = node1->X()[1];
+          InitialPosition[5] = node1->X()[2];
+
+          // NodeShift Initial positions
+          UnshiftPositions(InitialPosition);
+
+          //Tangents at reference configuration
+          std::vector<LINALG::Matrix<3,1> > Tref_(2);
+          double norm2=0;
+          for(int node = 0; node<2 ; node++)
+          {
+            for(int dof = 0; dof< 3 ; dof++ )
+            {
+              Tref_[node](dof) =  InitialPosition[dof+3]- InitialPosition[dof];
+            }
+            norm2 = Tref_[node].Norm2();
+            LengthofElementatRef=norm2;
+            Tref_[node].Scale(1/norm2);
+          }
+
+          Tcurr_[0] = Tref_[0](0) + discol[discret_->DofColMap()->LID(dofnode0[3])];
+          Tcurr_[1] = Tref_[0](1) + discol[discret_->DofColMap()->LID(dofnode0[4])];
+          Tcurr_[2] = Tref_[0](2) + discol[discret_->DofColMap()->LID(dofnode0[5])];
+          Tcurr_[3] = Tref_[1](0) + discol[discret_->DofColMap()->LID(dofnode1[3])];
+          Tcurr_[4] = Tref_[1](1) + discol[discret_->DofColMap()->LID(dofnode1[4])];
+          Tcurr_[5] = Tref_[1](2) + discol[discret_->DofColMap()->LID(dofnode1[5])];
+        }
+
         // NodeShift
         UnshiftPositions(position);
 
@@ -1047,15 +1103,25 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
             for(int k=0;k<4;k++)
               nQ[j](k) = (filele->Qnew()[j])(k);
         }
-
         prevelegid = elegid;
       }
 
       // Interpolation of Positions
-      DRT::UTILS::shape_function_1D(Ibp,(double)(*bspotxi_)[bspotrowmap_->GID(i)],filelement->Shape());
-      currpos.PutScalar(0);
-      for(int j=0;j<3;j++)
-        currpos(j)= Ibp(0)*position[j]+Ibp(1)*position[j+3];
+      if (filelement->ElementType()==DRT::ELEMENTS::Beam3ebType::Instance())
+      {
+        //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialized
+        DRT::UTILS::shape_function_hermite_1D(Ibp_hermite,(double)(*bspotxi_)[bspotrowmap_->GID(i)],LengthofElementatRef,filelement->Shape());
+        currpos.PutScalar(0);
+        for(int j=0;j<3;j++)
+          currpos(j)= Ibp_hermite(0)*position[j]+Ibp_hermite(1)*Tcurr_[j]+Ibp_hermite(2)*position[j+3]+Ibp_hermite(3)*Tcurr_[j+3];
+      }
+      else
+      {
+        DRT::UTILS::shape_function_1D(Ibp,(double)(*bspotxi_)[bspotrowmap_->GID(i)],filelement->Shape());
+        currpos.PutScalar(0);
+        for(int j=0;j<3;j++)
+          currpos(j)= Ibp(0)*position[j]+Ibp(1)*position[j+3];
+      }
 
       /*if bspot currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),or smaller than 0
        *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) sufficiently often to lie again in the domain*/
@@ -1098,17 +1164,17 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
 
 //  if(discret_->Comm().MyPID()==0)
 //  {
-////  std::cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE DISTANCES  ****************** " << std::endl;
-////  double ll;
-////  std::cout << " Anzahl BSPOTS : " << bspotpositions.MyLength() << std::endl;
-////  for(int ii=1;ii<bspotpositions.MyLength();ii++)
-////  {
-////      ll= sqrt(pow(bspotpositions[2][ii]-bspotpositions[2][ii-1],2)+pow(bspotpositions[1][ii]-bspotpositions[1][ii-1],2)+pow(bspotpositions[0][ii]-bspotpositions[0][ii-1],2));
-////      std::cout<< " BSPOTDISTANCE "<< ll<< std::endl;
-////  }
-////  for(int ii=0;ii<bspotpositions.MyLength();ii++)
-////    std::cout<< "BSPOTXI " << (*bspotxi_)[ii] << " BSPOT2NODES " << (*bspot2nodes_)[0][ii] << " "<<(*bspot2nodes_)[1][ii] <<   std::endl;
-//
+//  std::cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE DISTANCES  ****************** " << std::endl;
+//  double ll;
+//  std::cout << " Anzahl BSPOTS : " << bspotpositions->MyLength() << std::endl;
+//  for(int ii=1;ii<bspotpositions->MyLength();ii++)
+//  {
+//      ll= std::sqrt(std::pow((*bspotpositions)[2][ii]-(*bspotpositions)[2][ii-1],2)+pow((*bspotpositions)[1][ii]-(*bspotpositions)[1][ii-1],2)+pow((*bspotpositions)[0][ii]-(*bspotpositions)[0][ii-1],2));
+//      std::cout<< " BSPOTDISTANCE "<< ll<< std::endl;
+//  }
+//  for(int ii=0;ii<bspotpositions->MyLength();ii++)
+//    std::cout<< "BSPOTXI " << (*bspotxi_)[ii] << " BSPOT2NODES " << (*bspot2nodes_)[0][ii] << " "<<(*bspot2nodes_)[1][ii] <<   std::endl;
+
 //  std::cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE POSITIONS  ****************** " << std::endl;
 //  std::cout<< *bspotpositions << std::endl;
 //  }
@@ -1637,34 +1703,34 @@ void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element
 /*------------------------------------------------------------------------*
  | Truss3cl initialization when periodic BCs are applied   mukherjee 01/14|
  *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PeriodicBoundaryTruss3clInit(DRT::Element* element)
+void STATMECH::StatMechManager::PeriodicBoundaryTruss3CLInit(DRT::Element* element)
 {
-  // note: in analogy to PeriodicBoundaryBeam3Init()
+  // note: in analogy to PeriodicBoundaryBeam3clInit()
 
-  DRT::ELEMENTS::Truss3CL* truss = dynamic_cast<DRT::ELEMENTS::Truss3CL*>(element);
+  DRT::ELEMENTS::Truss3CL* truss3cl = dynamic_cast<DRT::ELEMENTS::Truss3CL*>(element);
 
 
-  if(truss->NumNode()!= 4)
+  if(truss3cl->NumNode()!= 4)
     dserror("PeriodicBoundarytTrussCLInit() only implemented for 4-noded Truss eleem");
   const int ndim = 3;
 
   /*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
-  std::vector<double> xrefe(truss->NumNode() * ndim, 0);
+  std::vector<double> xrefe(truss3cl->NumNode() * ndim, 0);
 
-  xrefe=truss->XRef();
-  for (int i=0; i<truss->NumNode(); i++)
+  xrefe=truss3cl->XRef();
+  for (int i=0; i<truss3cl->NumNode(); i++)
     for (int dof = 0; dof < ndim; dof++)
-      xrefe[3* i + dof] = truss->Nodes()[i]->X()[dof];
+      xrefe[3* i + dof] = truss3cl->Nodes()[i]->X()[dof];
 
   for(int dof=0; dof<ndim; dof++)
   {
-    if( fabs( truss->XRef()[3+dof] + periodlength_->at(dof) - truss->XRef()[dof] ) < fabs( truss->XRef()[3+dof] - truss->XRef()[dof] ) )
+    if( fabs( truss3cl->XRef()[3+dof] + periodlength_->at(dof) - truss3cl->XRef()[dof] ) < fabs( truss3cl->XRef()[3+dof] - truss3cl->XRef()[dof] ) )
       xrefe[3+dof] += periodlength_->at(dof);
-    if( fabs( truss->XRef()[3+dof] - periodlength_->at(dof) - truss->XRef()[dof] ) < fabs( truss->XRef()[3+dof] - truss->XRef()[dof] ) )
+    if( fabs( truss3cl->XRef()[3+dof] - periodlength_->at(dof) - truss3cl->XRef()[dof] ) < fabs( truss3cl->XRef()[3+dof] - truss3cl->XRef()[dof] ) )
       xrefe[3+dof] -= periodlength_->at(dof);
   }
 
-  truss->SetUpReferenceGeometry(xrefe,true);
+  truss3cl->SetUpReferenceGeometry(xrefe,true);
 }
 
 /*----------------------------------------------------------------------*
@@ -6277,7 +6343,9 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 //==NEW
     // new node positions and rotations
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Epetra_Vector disrow(*discret_->DofRowMap(), true);
     Epetra_Vector discol(*discret_->DofColMap(), true);
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
@@ -6560,7 +6628,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     if(numsetelementsall>0)
     {
       Teuchos::RCP<Epetra_MultiVector> nodalpositions = Teuchos::null;
-      // rotations from displacement vector
+      // rotations from displacement vector (not necessary for Truss3CL crosslinkers)
       Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null;
       // NODAL quaternions from filament elements
       Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
@@ -6633,7 +6701,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           //save positions of nodes between which a crosslinker has to be established in variables xrefe and rotrefe:
           std::vector<double> rotrefe(6);
           std::vector<double> xrefe(6);
-          // resize in case of interpolated crosslinker element
+          // resize in case of interpolated crosslinker element (not necessary for Truss3CL crosslinkers)
           if (linkermodel_ == statmech_linker_stdintpol ||
               linkermodel_ == statmech_linker_activeintpol ||
               linkermodel_ == statmech_linker_bellseqintpol ||

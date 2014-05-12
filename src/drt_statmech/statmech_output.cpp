@@ -1189,15 +1189,16 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           currele = dynamic_cast<DRT::ELEMENTS::Truss3CL*> (discret_->gElement(discret_->ElementColMap()->GID(i)));
           // Alternative way to get nodal positions
           DRT::Element* filelement = discret_->gElement(discret_->ElementColMap()->GID(i));
+          // length of first element and second element required for hermite shape function interpolation
+          double LengthofFilamentatRef;
+          LINALG::Matrix<1,4>  Ibp;         //Hermite shape functions for beam3EB element
+          std::vector<double> Tcurr_(6); // Vector containing tangent of Nodal Positions.
           DRT::Node* node0 = NULL;
           DRT::Node* node1 = NULL;
           std::vector<double> position(6);
+          std::vector<double> InitialPosition(6);
           std::vector<int> dofnode0;
           std::vector<int> dofnode1;
-
-          std::vector<LINALG::Matrix<1,2> > Ibp(2);
-          for(int filament=0; filament<2; filament++)
-            DRT::UTILS::shape_function_1D(Ibp[filament],currele->MyBindingPosition()[filament],currele->Shape());
 
           // determine positions of the interpolated nodes
           for(int ifil=0; ifil<coord.N(); ifil++)
@@ -1207,6 +1208,17 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
 
             dofnode0 = discret_->Dof(node0);
             dofnode1 = discret_->Dof(node1);
+
+            InitialPosition[0] = node0->X()[0];
+            InitialPosition[1] = node0->X()[1];
+            InitialPosition[2] = node0->X()[2];
+            InitialPosition[3] = node1->X()[0];
+            InitialPosition[4] = node1->X()[1];
+            InitialPosition[5] = node1->X()[2];
+
+            // NodeShift Initial positions
+            UnshiftPositions(InitialPosition);
+
             position[0] = node0->X()[0] + discol[discret_->DofColMap()->LID(dofnode0[0])];
             position[1] = node0->X()[1] + discol[discret_->DofColMap()->LID(dofnode0[1])];
             position[2] = node0->X()[2] + discol[discret_->DofColMap()->LID(dofnode0[2])];
@@ -1214,10 +1226,33 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
             position[4] = node1->X()[1] + discol[discret_->DofColMap()->LID(dofnode1[1])];
             position[5] = node1->X()[2] + discol[discret_->DofColMap()->LID(dofnode1[2])];
 
+            //Tangents at reference configuration
+            std::vector<LINALG::Matrix<3,1> > Tref_(2);
+            double norm2=0;
+            for(int node = 0; node<2 ; node++)
+            {
+              for(int dof = 0; dof< 3 ; dof++ )
+              {
+                Tref_[node](dof) = InitialPosition[dof+3]- InitialPosition[dof];
+              }
+              norm2 = Tref_[node].Norm2();
+              LengthofFilamentatRef=norm2;
+              Tref_[node].Scale(1/norm2);
+            }
+
+            Tcurr_[0] = Tref_[0](0) + discol[discret_->DofColMap()->LID(dofnode0[3])];
+            Tcurr_[1] = Tref_[0](1) + discol[discret_->DofColMap()->LID(dofnode0[4])];
+            Tcurr_[2] = Tref_[0](2) + discol[discret_->DofColMap()->LID(dofnode0[5])];
+            Tcurr_[3] = Tref_[1](0) + discol[discret_->DofColMap()->LID(dofnode1[3])];
+            Tcurr_[4] = Tref_[1](1) + discol[discret_->DofColMap()->LID(dofnode1[4])];
+            Tcurr_[5] = Tref_[1](2) + discol[discret_->DofColMap()->LID(dofnode1[5])];
+
             //shift nodes back in case they have been shifted due to PBC
             UnshiftPositions(position);
+
+            DRT::UTILS::shape_function_hermite_1D(Ibp,currele->MyBindingPosition()[ifil],LengthofFilamentatRef,currele->Shape());
             for(int id=0;id<3;id++)
-             coord(id, ifil) = Ibp[ifil](0)*position[id]+Ibp[ifil](1)*position[id+3];
+             coord(id, ifil) = Ibp(0)*position[id]+Ibp(1)*Tcurr_[id]+Ibp(2)*position[id+3]+Ibp(3)*Tcurr_[id+3];
             //shift Crosslinker intperpolated nodal positions into Periodic Boundary Domain
             for(int fil=0;fil<2;fil++)
               for(int j=0;j<3;j++)
@@ -1697,8 +1732,9 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
 
   //In case of the 4-noded Crosslinker Element we need the following vectors
   Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-  Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-
+  Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
+  if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+    bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
 
   GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
@@ -1925,10 +1961,13 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
 
   //In case of the 4-noded Crosslinker Element we need the following vectors
   Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-  Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+//  Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+  Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
+  if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+    bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
   GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
-  // get binding spot triads
+//  // get binding spot triads
   Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
   GetBindingSpotTriads(bspotrotations, bspottriadscol);
 
@@ -5091,12 +5130,19 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     LINALG::Export(disrow, discol);
 
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     GetBindingSpotPositions(discol,bspotpositions, bspotrotations);
 
     // NODAL TRIAD UPDATE
-    Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
-    GetBindingSpotTriads(bspotrotations, bspottriadscol);
+    Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
+    // beam elements only
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+    {
+      bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+      GetBindingSpotTriads(bspotrotations, bspottriadscol);
+    }
 
     // distance and orientation checks
     int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);

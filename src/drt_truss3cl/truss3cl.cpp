@@ -366,7 +366,7 @@ void DRT::ELEMENTS::Truss3CL::SetUpReferenceGeometry(const std::vector<double>& 
       X_(i) = xrefe[i];
 
     //length in reference configuration
-    lrefe_ = std::pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    lrefe_ = std::sqrt(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2));
 
     //set jacobi determinants for integration of mass matrix and at nodes
     jacobimass_.resize(2);
@@ -383,7 +383,8 @@ void DRT::ELEMENTS::Truss3CL::SetUpReferenceGeometry(const std::vector<double>& 
 
 int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
 {
-
+  const int nnode=4;
+  const int fnnode=2;
   //setting truss reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
   {
@@ -395,19 +396,11 @@ int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::Truss3CL* currele = dynamic_cast<DRT::ELEMENTS::Truss3CL*>(dis.lColElement(i));
     if (!currele) dserror("cast to Truss3CL* failed");
 
-    //reference node position real nodes
-    std::vector<double> rxrefe;
-    //reference node position fiktive nodes
-
-
-    const int nnode=4;
-    const int fnnode=2;
-    //resize xrefe for the number of coordinates we need to store
-    rxrefe.resize(3*nnode);
+    //reference node position of real nodes
+    LINALG::Matrix<12,1> xrefe;
+    xrefe.Clear();
     currele->xrefe_.resize(3*fnnode);
-    for (int j=0; j<3*fnnode; j++)
-      currele->xrefe_[j]=0;
-
+    currele->xrefe_.clear();
 
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
@@ -416,44 +409,27 @@ int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
     {
       for (int node=0; node<nnode; node++) //element has four nodes
         for(int dof= 0; dof < 3; dof++)
-          rxrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+          xrefe(node*3 + dof) = currele->Nodes()[node]->X()[dof];
 
-       // length of first element and second element required for hermite shape function interpolation
-       std::vector<double> LengthofFilament(2);
-       // auxilarry vector
-       std::vector<double> aux(6);
+     // since filaments are straight at initial configuration, only lagrange polynomials are enough
 
-       aux[0]=rxrefe[0]-rxrefe[3];
-       aux[1]=rxrefe[1]-rxrefe[4];
-       aux[2]=rxrefe[2]-rxrefe[5];
-       aux[3]=rxrefe[6]-rxrefe[9];
-       aux[4]=rxrefe[7]-rxrefe[10];
-       aux[5]=rxrefe[8]-rxrefe[11];
-
-       for (int filament=0; filament<2; filament++)
-       {
-         LengthofFilament[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
-    //     cout<<"LengthofFilament["<<filament<<"]"<<LengthofFilament[filament]<<endl
-       }
-
-      std::vector<LINALG::Matrix<1,4> > Ibp(2);
+      std::vector<LINALG::Matrix<1,2> > Ibp(2);
       for(int filament=0; filament<2; filament++)
-        DRT::UTILS::shape_function_hermite_1D(Ibp[filament],currele->mybindingposition_[filament],LengthofFilament[filament],currele->Shape());
+      {
+        DRT::UTILS::shape_function_1D(Ibp[filament],currele->mybindingposition_[filament],currele->Shape());
+      }
+
       for(int filament=0;filament<2;filament++)
-        for(int k=0;k<fnnode;k++)
-          for(int i=0;i<3;i++)
+        for(int node=0;node<fnnode;node++)
+          for(int dof=0;i<3;i++)
           {
-            currele->xrefe_[i+3*filament]+= Ibp[filament](2*k)*rxrefe[i+3*k+6*filament];
+            currele->xrefe_[i+3*filament]+= Ibp[filament](node)*xrefe(dof+3*node+6*filament);
           }
     }
-
     currele->SetUpReferenceGeometry(currele->xrefe_);
-
-
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
-
-
   return 0;
 }
+
 
 
