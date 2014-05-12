@@ -31,8 +31,11 @@ Maintainer: Philipp Farah
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::VolMortarIntegrator()
+VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::VolMortarIntegrator(Teuchos::ParameterList& params)
 {
+  // get type of quadratic modification
+  dualquad_ = DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params,"DUALQUAD");
+
   // define gp rule
   InitializeGP();
 }
@@ -104,9 +107,43 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integr
     }
     break;
   }
+  case DRT::Element::tet10:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_tet_45point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
   case DRT::Element::hex8:
   {
     DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_27point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
 
     const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
@@ -365,9 +402,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS);
+    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
     // ---
-    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
+    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
 
 
     // compute cell D/M matrix ****************************************
@@ -521,9 +558,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
       UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS);
+      UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
       // ---
-      UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
+      UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
 
 
       // compute cell D/M matrix ****************************************
@@ -613,8 +650,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
     std::vector<int>& foundeles,
     LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A,
-    LINALG::SparseMatrix& dmatrix_B,
-    LINALG::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
@@ -622,8 +657,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
   LINALG::Matrix<ns_,1>             sval_A;
   LINALG::Matrix<nm_,1>             mval_A;
   LINALG::Matrix<ns_,1>             lmval_A;
-  LINALG::Matrix<nm_,1>             lmval_B;
-
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -689,14 +722,18 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
       }
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
+      if(dualquad_ == INPAR::VOLMORTAR::dualquad_quad_mod)
+        UTILS::volmortar_shape_function_3D_modified(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
+      else if (dualquad_ == INPAR::VOLMORTAR::dualquad_no_mod)
+        UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
+      else
+        dserror("No lin modification for quadratic elements possible!");
+
+      // for "master" side
       UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS);
-      // ---
-      UTILS::volmortar_dualshape_function_3D(lmval_B,*Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
-
+      UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -710,7 +747,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
         {
           int row = Adis->Dof(1,cnode,jdof);
 
-          // integrate M and D
+          // integrate D
+          double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
+          if (abs(prod2)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod2, row, row);
+
+          // integrate M
           for (int k=0; k<nm_; ++k)
           {
             DRT::Node* mnode = Bele->Nodes()[k];
@@ -727,7 +768,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
               if (jdof==kdof)
               {
                 if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
               }
             }
           }
@@ -747,17 +787,14 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis(DRT::Element& Bele,
     std::vector<int>& foundeles,
-    LINALG::SparseMatrix& dmatrix_A,
-    LINALG::SparseMatrix& mmatrix_A,
     LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval_A;
-  LINALG::Matrix<nm_,1>             mval_A;
-  LINALG::Matrix<ns_,1>             lmval_A;
+  LINALG::Matrix<ns_,1>             mval_A;
+  LINALG::Matrix<nm_,1>             sval_B;
   LINALG::Matrix<nm_,1>             lmval_B;
 
 
@@ -825,13 +862,18 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
       }
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
-      UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
+      if(dualquad_ == INPAR::VOLMORTAR::dualquad_quad_mod)
+        UTILS::volmortar_shape_function_3D_modified(sval_B, Bxi[0],Bxi[1], Bxi[2],distypeM);
+      else if (dualquad_ == INPAR::VOLMORTAR::dualquad_no_mod)
+        UTILS::volmortar_shape_function_3D(sval_B, Bxi[0],Bxi[1], Bxi[2],distypeM);
+      else
+        dserror("No lin modification for quadratic elements possible!");
+
+      // for "master" side
+      UTILS::volmortar_shape_function_3D(mval_A, Axi[0],Axi[1], Axi[2],distypeS);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::volmortar_dualshape_function_3D(lmval_A,*Aele, Axi[0],Axi[1],Axi[2],distypeS);
-      // ---
-      UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
+      UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -845,7 +887,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
         {
           int row = Bdis->Dof(1,cnode,jdof);
 
-          // integrate M and D
+          // integrate D
+          double prod2 = lmval_B(j)*sval_B(j)*jac*wgt;
+          if (abs(prod2)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod2, row, row);
+
+          // integrate M
           for (int k=0; k<ns_; ++k)
           {
             DRT::Node* mnode = Aele->Nodes()[k];
@@ -856,13 +902,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
               int col = Adis->Dof(0,mnode,kdof);
 
               // multiply the two shape functions
-              double prod = lmval_B(j)*sval_A(k)*jac*wgt;
+              double prod = lmval_B(j)*mval_A(k)*jac*wgt;
 
               // dof to dof
               if (jdof==kdof)
               {
                 if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
               }
             }
           }
@@ -944,9 +989,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
     UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS);
+    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
     // ---
-    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
+    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
 
 
     // compute cell D/M matrix ****************************************
@@ -1191,16 +1236,37 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3,DRT::Element::q
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tri3,DRT::Element::tri3>;
 
 //slave hex8
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet10>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex27>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex20>;
+
+//slave hex20
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::tet10>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::hex8>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::hex27>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::hex20>;
 
 //slave hex27
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::tet10>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex27>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex20>;
 
 //slave tet4
-template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet10>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex27>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex20>;
+
+//slave tet10
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::tet10>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex8>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex27>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex20>;
+

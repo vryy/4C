@@ -379,6 +379,123 @@ int DRT::ELEMENTS::So_tet4ThermoType::Initialize(DRT::Discretization& dis)
  | ENDE TET4 Element
  *----------------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------------*
+ *  TET10 element
+ *----------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | build an instance of thermo type                         farah 05/14 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_tet10ThermoType DRT::ELEMENTS::So_tet10ThermoType::instance_;
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     farah 05/14 |
+ | is called in ElementRegisterType                                     |
+ *----------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::So_tet10ThermoType::Create(
+  const std::vector<char> & data
+  )
+{
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* object
+    = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1,-1);
+  object->Unpack(data);
+  return object;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     farah 05/14 |
+ | is called from ParObjectFactory                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ThermoType::Create(
+  const std::string eletype,
+  const std::string eledistype,
+  const int id,
+  const int owner
+  )
+{
+  if (eletype == "SOLIDT10THERMO")
+  {
+    Teuchos::RCP<DRT::Element> ele
+      = Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(
+          id,
+          owner
+          )
+        );
+    return ele;
+  }
+  return Teuchos::null;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     farah 05/14 |
+ | virtual method of ElementType                                        |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ThermoType::Create(
+  const int id,
+  const int owner
+  )
+{
+  Teuchos::RCP<DRT::Element> ele
+    = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(
+          id,
+          owner
+          )
+        );
+  return ele;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | build an instance of thermo type                         farah 05/14 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet10ThermoType::SetupElementDefinition(
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >& definitions
+  )
+{
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_tet10;
+  So_tet10Type::SetupElementDefinition(definitions_tet10);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10
+    = definitions_tet10["SOLIDT10"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs
+    = definitions["SOLIDT10THERMO"];
+
+  defs["TET10"] = defs_tet10["TET10"];
+
+}  // SetupElementDefinition()
+
+
+/*----------------------------------------------------------------------*
+ | initialise the element (public)                          farah 05/14 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_tet10ThermoType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* actele
+      = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10> * >(
+        dis.lColElement(i)
+        );
+    if (!actele)
+      dserror("cast to So_tet10_thermo* failed");
+
+    actele->So_tet10::InitJacobianMapping();
+    // as an alternative we can call: So_tet4Type::Initialize(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>::InitJacobianMapping();
+  }
+
+  return 0;
+ }  // Initialize()
+/*----------------------------------------------------------------------------*
+ | ENDE TET10 Element
+ *----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  HEX 27 Element
@@ -497,6 +614,125 @@ int DRT::ELEMENTS::So_hex27ThermoType::Initialize(DRT::Discretization& dis)
 }  // Initialize()
 /*----------------------------------------------------------------------------*
  | ENDE HEX27 Element
+ *----------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  HEX 20 Element
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | build an instance of thermo type                         farah 05/14 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_hex20ThermoType DRT::ELEMENTS::So_hex20ThermoType::instance_;
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     farah 05/14 |
+ | is called in ElementRegisterType                                     |
+ *----------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::So_hex20ThermoType::Create(
+  const std::vector<char> & data
+  )
+{
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>* object
+    = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>(-1,-1);
+  object->Unpack(data);
+  return object;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     farah 05/14 |
+ | is called from ParObjectFactory                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20ThermoType::Create(
+  const std::string eletype,
+  const std::string eledistype,
+  const int id,
+  const int owner
+  )
+{
+  if (eletype=="SOLIDH20THERMO")
+  {
+    Teuchos::RCP<DRT::Element> ele
+      = Teuchos::rcp(
+          new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>(
+            id,
+            owner
+            )
+          );
+    return ele;
+  }
+  return Teuchos::null;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     farah 05/14 |
+ | virtual method of ElementType                                        |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20ThermoType::Create(
+  const int id,
+  const int owner
+  )
+{
+  Teuchos::RCP<DRT::Element> ele
+    = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>(
+              id,
+              owner
+              )
+        );
+  return ele;
+}  // Create ()
+
+
+/*----------------------------------------------------------------------*
+ | setup the element definition (public)                    farah 05/14 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex20ThermoType::SetupElementDefinition(
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+  )
+{
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_hex20;
+  So_hex20Type::SetupElementDefinition(definitions_hex20);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex20
+    = definitions_hex20["SOLIDH20"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs
+    = definitions["SOLIDH20THERMO"];
+
+  defs["HEX20"]=defs_hex20["HEX20"];
+
+}  // SetupElementDefinition()
+
+
+/*----------------------------------------------------------------------*
+ | initialise the element (public)                          farah 05/14 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex20ThermoType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>* actele
+      = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20> * >(
+        dis.lColElement(i)
+        );
+    if (!actele)
+      dserror("cast to So_hex20_thermo* failed");
+
+    actele->So_hex20::InitJacobianMapping();
+    // as an alternative we can call: So_hex27Type::Initialize(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>::InitJacobianMapping();
+  }
+
+  return 0;
+}  // Initialize()
+/*----------------------------------------------------------------------------*
+ | ENDE HEX20 Element
  *----------------------------------------------------------------------------*/
 
 

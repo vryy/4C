@@ -67,10 +67,10 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
   {
     return TemperImpl<DRT::Element::tet4>::Instance();
   }
- /* case DRT::Element::tet10 :
+  case DRT::Element::tet10 :
   {
     return TemperImpl<DRT::Element::tet10>::Instance();
-  } */
+  }
   case DRT::Element::wedge6 :
   {
     return TemperImpl<DRT::Element::wedge6>::Instance();

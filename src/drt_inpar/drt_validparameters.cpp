@@ -1813,6 +1813,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         INPAR::VOLMORTAR::cuttype_tessellation, INPAR::VOLMORTAR::cuttype_tessellation, INPAR::VOLMORTAR::cuttype_tessellation),
     &volmortar);
 
+  setStringToIntegralParameter<int>("DUALQUAD","nomod","Type of dual shape function for weighting function for quadr. problems",
+    tuple<std::string>("nm","nomod",
+                       "lm","lin_mod",
+                       "qm","quad_mod"),
+    tuple<int>(
+        INPAR::VOLMORTAR::dualquad_no_mod,   INPAR::VOLMORTAR::dualquad_no_mod,
+        INPAR::VOLMORTAR::dualquad_lin_mod,  INPAR::VOLMORTAR::dualquad_lin_mod,
+        INPAR::VOLMORTAR::dualquad_quad_mod, INPAR::VOLMORTAR::dualquad_quad_mod),
+    &volmortar);
+
   setStringToIntegralParameter<int>("MESH_INIT","No","If chosen, mesh initialization procedure is performed",
                                yesnotuple,yesnovalue,&volmortar);
 

@@ -308,9 +308,9 @@ void GlobalToLocal(
    // first estimation for parameter space coordinates
    for(int p=0;p<ndim;++p)
    {
-     if(distype==DRT::Element::hex8 or distype==DRT::Element::hex27)
+     if(distype==DRT::Element::hex8 or distype==DRT::Element::hex20 or distype==DRT::Element::hex27)
        xi[p] = 0.0;
-     else if(distype==DRT::Element::tet4)
+     else if(distype==DRT::Element::tet4 or distype==DRT::Element::tet10)
      {
        xi[p] = 1.0/3.0;
      }

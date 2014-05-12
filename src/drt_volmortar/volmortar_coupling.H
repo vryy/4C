@@ -20,6 +20,7 @@ Maintainer: Philipp Farah
 #include <Epetra_Comm.h>
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_cut/cut_utils.H"
+#include "../drt_inpar/inpar_volmortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
@@ -157,6 +158,15 @@ public:
   virtual void CreateProjectionOpterator();
 
   /*!
+  \brief compute trafo operator
+
+  */
+  virtual void CreateTrafoOperator(DRT::Element& ele,
+                                   Teuchos::RCP<DRT::Discretization> searchdis,
+                                   bool dis,
+                                   std::set<int>& donebefore);
+
+  /*!
   \brief define vertices for 2D polygon clipping (master)
 
   */
@@ -210,6 +220,12 @@ public:
   virtual void EvaluateSegments3D(DRT::Element* Aele,
                                   DRT::Element* Bele);
 
+  /*!
+  \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
+
+  */
+  std::vector<int> GetAdjacentNodes(DRT::Element::DiscretizationType shape,
+                                    int& lid);
   /*!
   \brief get projection matrix A
 
@@ -295,7 +311,7 @@ public:
   \brief get parameter list
 
   */
-  Teuchos::ParameterList Params() {return params_;};
+  Teuchos::ParameterList& Params() {return params_;};
 
   /*!
   \brief perform cut and create integration cells (3D)
@@ -345,7 +361,6 @@ protected:
   // global problem information
   const int                          dim_;             /// dimension of problem (2D or 3D)
   Teuchos::ParameterList             params_;          /// global parameter list for volmortar coupling
-
   // discretizations
   Teuchos::RCP<DRT::Discretization>  Adiscret_;        /// the discretization of field A
   Teuchos::RCP<DRT::Discretization>  Bdiscret_;        /// the discretization of field B
@@ -358,6 +373,10 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;        /// global Mortar projection matrix P for field A
   Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;        /// global Mortar projection matrix P for field B
 
+  // trafo matrix for quadr. elements
+  Teuchos::RCP<LINALG::SparseMatrix> TA_;              /// global trafo matrix for A dis
+  Teuchos::RCP<LINALG::SparseMatrix> TB_;              /// global trafo matrix for B dis
+
   // quantitie for 2D segmentation
   double                             auxn_[3];         /// normal of auxiliary plane (2D problems)
 
@@ -367,15 +386,18 @@ protected:
   int                                cellcounter_;     /// counter for created integration cells
   int                                inteles_;         /// counter for element-wise integration
 
-  // communicators
-  Teuchos::RCP<Epetra_Comm>          commA_;           /// communicator for field A
-  Teuchos::RCP<Epetra_Comm>          commB_;           /// communicator for field B
+  // communicator
+  Teuchos::RCP<Epetra_Comm>          comm_;            /// communicator
 
   //cut specific quantities
   GEO::CUT::plain_volumecell_set     volcell_;         /// set of volume cells for direct divergence integration
 
   // seach algorithm
-  Epetra_SerialDenseMatrix           dopnormals_;      /// dop normals for seach algorihm
+  Epetra_SerialDenseMatrix           dopnormals_;      /// dop normals for seach algorithm
+
+  //input
+  INPAR::VOLMORTAR::DualQuad         dualquad_;        /// type of quadratic weighting interpolation
+
 
 };
 

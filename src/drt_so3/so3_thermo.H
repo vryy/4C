@@ -76,7 +76,9 @@ namespace ELEMENTS
     friend class So_hex8ThermoType;
     friend class So_hex8fbarThermoType;
     friend class So_tet4ThermoType;
+    friend class So_tet10ThermoType;
     friend class So_hex27ThermoType;
+    friend class So_hex20ThermoType;
 
   public:
 

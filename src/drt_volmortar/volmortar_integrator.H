@@ -22,6 +22,7 @@ Maintainer: Philipp Farah
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_cut/cut_utils.H"
+#include "../drt_inpar/inpar_volmortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
@@ -47,7 +48,7 @@ class VolMortarIntegrator
 public:
 
   // constructor
-  VolMortarIntegrator();
+  VolMortarIntegrator(Teuchos::ParameterList& params);
 
   // destructor
   virtual ~VolMortarIntegrator() {};
@@ -155,8 +156,6 @@ public:
                            std::vector<int>& foundeles,
                            LINALG::SparseMatrix& dmatrixA_,
                            LINALG::SparseMatrix& mmatrixA_,
-                           LINALG::SparseMatrix& dmatrixB_,
-                           LINALG::SparseMatrix& mmatrixB_,
                            Teuchos::RCP<const DRT::Discretization> Adiscret_,
                            Teuchos::RCP<const DRT::Discretization> Bdiscret_);
 
@@ -166,8 +165,6 @@ public:
   */
   void IntegrateEleBased3D_BDis(DRT::Element& mele,
                            std::vector<int>& foundeles,
-                           LINALG::SparseMatrix& dmatrixA_,
-                           LINALG::SparseMatrix& mmatrixA_,
                            LINALG::SparseMatrix& dmatrixB_,
                            LINALG::SparseMatrix& mmatrixB_,
                            Teuchos::RCP<const DRT::Discretization> Adiscret_,
@@ -178,6 +175,10 @@ private:
   int                           ngp_;         // number of Gauss points
   Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
   std::vector<double>           weights_;     // Gauss point weights
+
+  // input parameter
+  INPAR::VOLMORTAR::DualQuad    dualquad_;     // type of quadratic weighting interpolation
+
 };
 
 }

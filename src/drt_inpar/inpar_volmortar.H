@@ -37,6 +37,14 @@ namespace INPAR
     cuttype_tessellation      ///< tessellation of volume meshes
   };
 
+  // Type weighting function for quadr. problems
+  enum DualQuad
+  {
+    dualquad_no_mod,   ///< no modification
+    dualquad_lin_mod,  ///< linear modification
+    dualquad_quad_mod  ///< quadr. modification
+  };
+
   } //namespace volmortae
 } //namespace inpar
 
