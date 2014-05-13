@@ -583,7 +583,14 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
       (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
+    MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateSegment2D(
+        SlaveElement(),
+        sxia,
+        sxib,
+        MasterElement(),
+        mxia,
+        mxib,
+        Comm());
   }
 
   // *******************************************************************
@@ -737,16 +744,8 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
     if ((int)MasterElements().size()==0)
       return false;
 
-    int nrow = SlaveElement().NumNode();
-    int ncol = (MasterElements().size())*MasterElement(0).NumNode();
-    int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+    // bool for boundary segmentation
     bool boundary_ele=false;
-
-    Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
-    Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
-    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-      scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     // *******************************************************************
     // different options for mortar integration
@@ -765,7 +764,11 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
         (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
         (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->EleBased_Integration(dseg,mseg,scseg,SlaveElement(),MasterElements(),&boundary_ele);
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateEleBased2D(
+          SlaveElement(),
+          MasterElements(),
+          &boundary_ele,
+          idiscret_.Comm());
 
       // Perform Boundary Segmentation if required
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
@@ -825,16 +828,12 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
         }
         else
         {
-          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
-          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
-          if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
+          // nothing
         }
       }
       else
       {
-        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
-        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
-        if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
+        //nothing
       }
     }
   }

@@ -85,15 +85,13 @@ public:
       Teuchos::ParameterList& params);
 
   //! @ pure virtual functions --> access per MortarIntegratorCalc
-  virtual void EleBased_Integration(
-         Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-         Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-         Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-         MORTAR::MortarElement& sele,
-         std::vector<MORTAR::MortarElement*> meles,
-         bool *boundary_ele) = 0;
+  virtual void IntegrateEleBased2D(
+      MORTAR::MortarElement& sele,
+      std::vector<MORTAR::MortarElement*> meles,
+      bool *boundary_ele,
+      const Epetra_Comm& comm) = 0;
 
-  virtual void IntegrateDerivSegment2D(
+  virtual void IntegrateSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       const Epetra_Comm& comm) = 0;
@@ -104,36 +102,21 @@ public:
        MORTAR::MortarElement& mele,
        double& mxia, double& mxib) = 0;
 
-  virtual void IntegrateDerivCell3D_EleBased(
-      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-      bool *boundary_ele) = 0;
+  virtual void IntegrateEleBased3D(
+      MORTAR::MortarElement& sele,
+      std::vector<MORTAR::MortarElement*> meles,
+      bool *boundary_ele,
+      const Epetra_Comm& comm) = 0;
 
-  virtual void IntegrateDerivCell3DAuxPlane(
+  virtual void IntegrateCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      const Epetra_Comm& comm) = 0;
 
-  virtual void IntegrateDerivCell3DAuxPlaneQuad(
+  virtual void IntegrateCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn) = 0;
-
-  virtual bool AssembleM_EleBased(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 std::vector<MORTAR::MortarElement*> meles,
-                 Epetra_SerialDenseMatrix& M_seg) = 0;
-
-  virtual bool AssembleD(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 Epetra_SerialDenseMatrix& D_seg) = 0;
-
-  virtual bool AssembleScale(const Epetra_Comm& comm,
-                     MORTAR::MortarElement& sele,
-                     Epetra_SerialDenseVector& scseg) = 0;
 
   virtual int nGP() = 0;
 
@@ -194,20 +177,18 @@ public:
   \brief Perform mortar-integration without previous segmentation -- 2D
 
   */
-  virtual void EleBased_Integration(
-         Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-         Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-         Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-         MORTAR::MortarElement& sele,
-         std::vector<MORTAR::MortarElement*> meles,
-         bool *boundary_ele);
+  virtual void IntegrateEleBased2D(
+      MORTAR::MortarElement& sele,
+      std::vector<MORTAR::MortarElement*> meles,
+      bool *boundary_ele,
+      const Epetra_Comm& comm);
 
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
          master overlap (i.e. D, M, g, LindD, LinM, Ling)
 
   */
-  virtual void IntegrateDerivSegment2D(
+  virtual void IntegrateSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       const Epetra_Comm& comm);
@@ -232,13 +213,11 @@ public:
          (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  virtual void IntegrateDerivCell3D_EleBased(
-      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-      bool *boundary_ele);
+  virtual void IntegrateEleBased3D(
+      MORTAR::MortarElement& sele,
+      std::vector<MORTAR::MortarElement*> meles,
+      bool *boundary_ele,
+      const Epetra_Comm& comm);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -246,7 +225,7 @@ public:
          using a so-called auxiliary plane
 
   */
-  virtual void IntegrateDerivCell3DAuxPlane(
+  virtual void IntegrateCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      const Epetra_Comm& comm);
@@ -257,7 +236,7 @@ public:
          using a so-called auxiliary plane with quadratic interpolation
 
   */
-  virtual void IntegrateDerivCell3DAuxPlaneQuad(
+  virtual void IntegrateCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
@@ -339,73 +318,7 @@ public:
        double& jac, double& wgt,
        double* sxi);
   //@}
-  
-  //! @name 2D and 3D assembly methods
-  
-  /*!
-  \brief Assemble D contribution of current overlap into slave nodes
 
-  */
-  virtual bool AssembleD(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 Epetra_SerialDenseMatrix& D_seg);
-  
-  /*!
-  \brief Assemble D contribution of current overlap into slave nodes
-         (special version for 3D quadratic mortar with piecewise linear LM interpolation)
-
-  */
-  virtual bool AssembleD(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 MORTAR::IntElement& sintele,
-                 Epetra_SerialDenseMatrix& D_seg);
-
-  /*!
-  \brief Assemble M contribution of current overlap into slave nodes
-
-  */
-  virtual bool AssembleM(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 MORTAR::MortarElement& mele,
-                 Epetra_SerialDenseMatrix& M_seg);
-  
-  /*!
-  \brief Assemble M contribution of current overlap into slave nodes
-         (special version for 3D quadratic mortar with piecewise linear LM interpolation)
-
-  */
-  virtual bool AssembleM(const Epetra_Comm& comm,
-                 MORTAR::IntElement& sintele,
-                 MORTAR::MortarElement& mele,
-                 Epetra_SerialDenseMatrix& M_seg);
-
-  /*!
-  \brief Assemble M contribution of current slave-master pairing for EleBased_Integration
-
-  */
-  virtual bool AssembleM_EleBased(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 std::vector<MORTAR::MortarElement*> meles,
-                 Epetra_SerialDenseMatrix& M_seg);
-
-  /*!
-  \brief Assemble Mmod contribution of current overlap into slave nodes
-
-  */
-  virtual bool AssembleMmod(const Epetra_Comm& comm,
-                    MORTAR::MortarElement& sele,
-                    MORTAR::MortarElement& mele,
-                    Epetra_SerialDenseMatrix& Mmod_seg);
-
-  /*!
-  \brief Assemble scale factor contribution of current overlap into slave nodes
-
-  */
-  virtual bool AssembleScale(const Epetra_Comm& comm,
-                     MORTAR::MortarElement& sele,
-                     Epetra_SerialDenseVector& scseg);
-
-  //@}
 private:
   Teuchos::ParameterList&       imortar_;     // merged parameter list
   INPAR::MORTAR::ShapeFcn       shapefcn_;    // lm shape function type

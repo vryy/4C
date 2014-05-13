@@ -48,6 +48,8 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+// nurbs specific
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
@@ -102,6 +104,23 @@ void mortar_dualshape_function_2D(
   const double&                            xi0,       ///< xi0 coordinate
   const double&                            xi1,       ///< xi1 coordinate
   const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  );
+
+// nurbs shape function evaluation
+template<class V>
+void mortar_nurbs_shape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,       ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  );
+
+template<class V>
+void mortar_nurbs_dualshape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,       ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
   );
 
 // ----------------------------------------------------------------------
@@ -189,6 +208,21 @@ void EvaluateShape_Displ(const double* xi, V& val,
     if (dualquad3d && !bound)     mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D_modified);
     else if (dualquad3d && bound) mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D_hierarchical);
     else                          mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D);
+    break;
+  }
+  //==================================================
+  //                     NURBS
+  //==================================================
+  case DRT::Element::nurbs2:
+  {
+    if (nnode!=2) dserror("ERROR: Inconsistency in EvluateShape");
+    mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs2);
+    break;
+  }
+  case DRT::Element::nurbs3:
+  {
+    if (nnode!=3) dserror("ERROR: Inconsistency in EvluateShape");
+    mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
     break;
   }
   // unknown case
@@ -334,6 +368,32 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
       else if (ele.Shape()==DRT::Element::quad8) mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::serendipity2D);
       else /*Shape()==quad9*/  mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D);
     }
+
+    break;
+  }
+
+  //==================================================
+  //                     NURBS
+  //==================================================
+
+  // 1D -- nurbs2
+  case DRT::Element::nurbs2:
+  {
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
+
+    if(dual) dserror("no dual shape functions provided for nurbs!");
+    else     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs2);
+
+    break;
+  }
+
+  // 1D -- nurbs3
+  case DRT::Element::nurbs3:
+  {
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
+
+    if(dual) mortar_nurbs_dualshape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
+    else     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
 
     break;
   }
@@ -1505,9 +1565,135 @@ void mortar_dualshape_function_2D(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  evaluate std. nurbs shape 1D                             farah 05/14|
+ *----------------------------------------------------------------------*/
+template<class V>
+void mortar_nurbs_shape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,       ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  )
+{
+  switch (shape)
+  {
+  //*********************************************
+  // 1D -- nurbs2
+  //*********************************************
+  case DRT::Element::nurbs2:
+  {
+    Epetra_SerialDenseVector weights(ele.NumNode());
+    for (int inode=0; inode<ele.NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (ele.Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseMatrix auxderiv(1,ele.NumNode());
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct,
+                                                auxderiv,
+                                                xi0,
+                                                ele.Knots()[0],
+                                                weights,
+                                                DRT::Element::nurbs2);
+    break;
+  }
+  //*********************************************
+  // 1D -- nurbs3
+  //*********************************************
+  case DRT::Element::nurbs3:
+  {
+    Epetra_SerialDenseVector weights(ele.NumNode());
+    for (int inode=0; inode<ele.NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (ele.Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseMatrix auxderiv(1,ele.NumNode());
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct,
+                                                auxderiv,
+                                                xi0,
+                                                ele.Knots()[0],
+                                                weights,
+                                                DRT::Element::nurbs3 );
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual nurbs shape 1D                             farah 05/14|
+ *----------------------------------------------------------------------*/
+template<class V>
+void mortar_nurbs_dualshape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,       ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  )
+{
+  switch (shape)
+  {
+  case DRT::Element::nurbs3:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    int nnodes = ele.NumNode();
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(shape);
+
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      mortar_nurbs_shape_function_1D(funct, ele, gpc[0], DRT::Element::nurbs3);
+      detg = ele.Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*funct(j)*funct(k)*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*funct(j)*detg;
+        }
+    }
+
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
+
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
+
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    mortar_nurbs_shape_function_1D(funct, ele, xi0, DRT::Element::nurbs3);
+
+    // check whether this is a 1D or 2D mortar element
+    int dim = 1;
+    // evaluate dual shape functions
+    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,dim,true);
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        valtemp[i]+=ae(i,j)*funct(j);
+
+    funct(0)=valtemp[0];
+    funct(1)=valtemp[1];
+    funct(2)=valtemp[2];
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+
+  return;
+}
+
 }//namespace UTILS
 }//namespace MORTAR
-
-
 
 #endif /* MORTAR_SHAPE_UTILS_H_ */

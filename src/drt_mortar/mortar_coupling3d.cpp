@@ -3241,7 +3241,12 @@ bool MORTAR::Coupling3d::IntegrateCells()
     if (!Quad())
     {
       // call integrator
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateCell3DAuxPlane(
+          SlaveElement(),
+          MasterElement(),
+          Cells()[i],
+          Auxn(),
+          Comm());
     }
 
     // *******************************************************************
@@ -3253,7 +3258,13 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateCell3DAuxPlaneQuad(
+          SlaveElement(),
+          MasterElement(),
+          sintref,
+          mintref,
+          Cells()[i],
+          Auxn());
     }
 
     // *******************************************************************
@@ -3269,7 +3280,13 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateCell3DAuxPlaneQuad(
+          SlaveElement(),
+          MasterElement(),
+          sintref,
+          mintref,
+          Cells()[i],
+          Auxn());
     }
 
     // *******************************************************************
@@ -3769,26 +3786,14 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
 
     if (!Quad())
     {
-      //number slave nodes
-      int nrow  = SlaveElement().NumNode();
-
-      // prepare integration of M (and possibly D) on intcells
-      int nmele = MasterElements().size();
-      int nmdof = MasterElement(0).NumNode();
-      int ncol  = nmele*nmdof;
-      int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-
       bool boundary_ele=false;
 
       //integrate D and M -- 2 Cells
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateEleBased3D(
+          SlaveElement(),
+          MasterElements(),
+          &boundary_ele,
+          idiscret_.Comm());
 
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
@@ -3838,18 +3843,12 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
         }
         else
         {
-          // assembly of intcell contributions to D and M
-          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
-          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
-          if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(Comm(),SlaveElement(),*scseg);
+          // nothing
         }
       }
       else
       {
-        // assembly of intcell contributions to D and M
-        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
-        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
-        if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(Comm(),SlaveElement(),*scseg);
+        // nothing
       }
     }
     else
@@ -3914,25 +3913,14 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
     if ((int)MasterElements().size()==0)
       return false;
 
-    //number slave nodes
-    int nrow  = SlaveElement().NumNode();
-
-    // prepare integration of M (and possibly D) on intcells
-    int nmele = MasterElements().size();
-    int nmdof = MasterElement(0).NumNode();
-    int ncol  = nmele*nmdof;
-    int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-
-    Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
-    Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
-    Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
-    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-
-
     bool boundary_ele=false;
 
     //integrate D and M -- 2 Cells
-    MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
+    MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateEleBased3D(
+        SlaveElement(),
+        MasterElements(),
+        &boundary_ele,
+        idiscret_.Comm());
 
     if (IntType()==INPAR::MORTAR::inttype_elements_BS)
     {
@@ -3966,16 +3954,12 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
       }
       else
       {
-        // assembly of intcell contributions to D and M
-        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
-        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+        //nothing
       }
     }
     else
     {
-      // assembly of intcell contributions to D and M
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
-      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+      //nothing
     }
   }
   //**********************************************************************
