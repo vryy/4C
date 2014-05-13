@@ -453,7 +453,8 @@ void FSI::Monolithic::PrepareTimeloop()
   if (Comm().MyPID() == 0)
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
-            << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
+            << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method")
+            << std::endl
             << std::right << std::setw(9) << "# step"
             << std::right << std::setw(16) << "time"
             << std::right << std::setw(16) << "time/step"
@@ -461,7 +462,7 @@ void FSI::Monolithic::PrepareTimeloop()
             << std::right << std::setw(16) << "res-norm"
             << std::right << std::setw(16) << "#liter"
             << std::right << std::setw(16) << "dt"
-            ;
+            << std::endl;
 
     (*log_) << "#\n\n";
   }
@@ -469,19 +470,20 @@ void FSI::Monolithic::PrepareTimeloop()
   WriteAdaFileHeader();
 
   // write header of energy-file
-   if (Comm().MyPID() == 0 and (not logenergy_.is_null()))
-   {
-     (*logenergy_) << "# Artificial interface energy due to temporal discretization\n"
-                   << "# num procs      = " << Comm().NumProc() << "\n"
-                   << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
-                   << std::right << std::setw(9) << "# step"
-                   << std::right << std::setw(16) << "time"
-                   << std::right << std::setw(16) << "energy/step"
-                   << std::right << std::setw(16) << "sum_of_energy"
-                   ;
+  if (Comm().MyPID() == 0 and (not logenergy_.is_null()))
+  {
+   (*logenergy_) << "# Artificial interface energy due to temporal discretization\n"
+                 << "# num procs      = " << Comm().NumProc() << "\n"
+                 << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method")
+                 << std::endl
+                 << std::right << std::setw(9) << "# step"
+                 << std::right << std::setw(16) << "time"
+                 << std::right << std::setw(16) << "energy/step"
+                 << std::right << std::setw(16) << "sum_of_energy"
+                 << std::endl;
 
-     (*logenergy_) << "#\n\n";
-   }
+   (*logenergy_) << "#\n\n";
+  }
 
 
   // check for prestressing,
