@@ -905,7 +905,7 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot
 {
   std::vector<DRT::Condition*> springdashpotcond(0);
   discret_->GetCondition("SpringDashpot", springdashpotcond);
-  if (springdashpotcond.size() && !predict)
+  if (springdashpotcond.size())
   {
   	SPRINGDASHPOT::EvaluateSpringDashpot(discret_,stiff,fint,disn,veln,psprdash);
   }
