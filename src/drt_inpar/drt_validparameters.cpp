@@ -3128,6 +3128,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&fdyn);
   BoolParameter("COMPUTE_DIVU","No","Compute divergence of velocity field at the element center",&fdyn);
+  BoolParameter("COMPUTE_EKIN","No","Compute kinetic energy at the end of each time step and write it to file.",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);

@@ -164,6 +164,20 @@ public:
       Epetra_SerialDenseVector&       elevec3           //< reference to element vector to be filled
       );
 
+  /*! \brief Calculate element mass matrix
+   *
+   *  \author mayr.mt \date 05/2014
+   */
+  virtual int CalcMassMatrix
+  (
+    DRT::ELEMENTS::Fluid*                ele,
+//    Teuchos::ParameterList&              params,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Teuchos::RCP<MAT::Material> &        mat,
+    Epetra_SerialDenseMatrix&            elemat1_epetra
+//    const DRT::UTILS::GaussIntegration & intpoints
+  );
 
   /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
    *

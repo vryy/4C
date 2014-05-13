@@ -117,6 +117,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
       return ComputeVoidFraction(ele, params, discretization, lm, elevec1);
     }
     break;
+    case FLD::calc_mass_matrix:
+    {
+      // compute element mass matrix
+      return CalcMassMatrix(ele, discretization, lm, mat, elemat1);
+    }
+    break;
     default:
       dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
     break;
@@ -221,6 +227,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
   // set element id
   eid_ = ele->Id();
 
@@ -2503,6 +2510,103 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InflowElement(DRT::Element* ele)
   return;
 }
 
+/*-----------------------------------------------------------------------------*
+ | Calculate element mass matrix                               mayr.mt 05/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMassMatrix(
+    DRT::ELEMENTS::Fluid*                ele,
+//    Teuchos::ParameterList&              params,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Teuchos::RCP<MAT::Material> &        mat,
+    Epetra_SerialDenseMatrix&            elemat1_epetra
+    )
+{
+  // set element id
+  eid_ = ele->Id();
+
+  // ---------------------------------------------------------------------------
+  // Prepare material parameters
+  // ---------------------------------------------------------------------------
+  // Since we need only the density, we use a lot of dummy values.
+
+  // create dummy matrices
+  LINALG::Matrix<nsd_, nen_> mat1(true);
+  LINALG::Matrix<nen_, 1> mat2(true);
+
+  GetMaterialParams(mat, mat1, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+  // ---------------------------------------------------------------------------
+  // Geometry
+  // ---------------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // Do ALE specific updates if necessary
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_> edispnp(true);
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+
+    // get new node positions of ALE mesh
+     xyze_ += edispnp;
+  }
+
+  // definition of matrices
+  LINALG::Matrix<nen_*nsd_,nen_*nsd_> estif_u(true);
+
+  // ---------------------------------------------------------------------------
+  // Integration loop
+  // ---------------------------------------------------------------------------
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        for (int jdim= 0; jdim<nsd_;++jdim)
+        {
+          for (int idim = 0; idim<nsd_; ++idim)
+          {
+            estif_u(nsd_*vi+idim,nsd_*ui+jdim) += funct_(vi)*funct_(ui)*fac_*densaf_;
+          } // end for (idim)
+        } // end for (jdim)
+      } // end for (vi)
+    } // end for (ui)
+  } // end of integration loop
+
+  // ---------------------------------------------------------------------------
+  // Add velocity-velocity part to matrix
+  // ---------------------------------------------------------------------------
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    const int numdof_ui = numdofpernode_*ui;
+    const int nsd_ui = nsd_*ui;
+
+    for (int jdim=0; jdim < nsd_;++jdim)
+    {
+      const int numdof_ui_jdim = numdof_ui+jdim;
+      const int nsd_ui_jdim = nsd_ui+jdim;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int numdof_vi = numdofpernode_*vi;
+        const int nsd_vi = nsd_*vi;
+
+        for (int idim=0; idim <nsd_; ++idim)
+        {
+          elemat1_epetra(numdof_vi+idim, numdof_ui_jdim) += estif_u(nsd_vi+idim, nsd_ui_jdim);
+        } // end for (idim)
+      } // end for (vi)
+    } // end for (jdim)
+  } // end for (ui)
+
+  return 0;
+}
 
 // template classes
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;

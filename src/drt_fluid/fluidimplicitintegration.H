@@ -1208,6 +1208,26 @@ private:
   ///< Print stabilization details to screen
   virtual void PrintStabilizationDetails() const;
 
+  //@}
+
+  /*! \biref Compute kinetic energy and write it to file
+   *
+   *  Kinetic energy of the system is calculated as \f$E_{kin} = \frac{1}{2}u^TMu\f$
+   *  with the velocity vector \f$u\f$ and the mass matrix \f$M\f$. Then, it is
+   *  written to an output file.
+   *
+   *  \author mayr.mt \date 05/2014
+   */
+  virtual void WriteOutputKineticEnergy();
+
+  ///< Evaluate mass matrix
+  virtual void EvaluateMassMatrix();
+
+  /// mass matrix (not involved in standard Evaluate() since it is invluded in #sysmat_)
+  Teuchos::RCP<LINALG::SparseOperator> massmat_;
+
+  /// output stream for energy-file
+  Teuchos::RCP<std::ofstream> logenergy_;
 
 }; // class FluidImplicitTimeInt
 

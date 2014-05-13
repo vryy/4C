@@ -836,6 +836,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       break;
     }
     case FLD::calc_div_u:
+    case FLD::calc_mass_matrix:
     case FLD::calc_fluid_error:
     case FLD::calc_dissipation:
     case FLD::integrate_shape:

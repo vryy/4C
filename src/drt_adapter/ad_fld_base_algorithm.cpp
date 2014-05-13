@@ -1134,6 +1134,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
   // flag for computing divergence
   fluidtimeparams->set<bool>("COMPUTE_DIVU", DRT::INPUT::IntegralValue<bool>(fdyn,"COMPUTE_DIVU"));
+  // flag for computing kinetix energy
+  fluidtimeparams->set<bool>("COMPUTE_EKIN", DRT::INPUT::IntegralValue<bool>(fdyn,"COMPUTE_EKIN"));
   // flag for computing lift and drag values
   fluidtimeparams->set<bool>("LIFTDRAG", DRT::INPUT::IntegralValue<bool>(fdyn,"LIFTDRAG"));
 

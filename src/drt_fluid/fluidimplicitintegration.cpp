@@ -109,7 +109,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   facediscret_(Teuchos::null),
   fldgrdisp_(Teuchos::null),
   velatmeshfreenodes_(Teuchos::null),
-  locsysman_(Teuchos::null)
+  locsysman_(Teuchos::null),
+  massmat_(Teuchos::null),
+  logenergy_(Teuchos::null)
 {
   return;
 }
@@ -299,7 +301,7 @@ void FLD::FluidImplicitTimeInt::Init()
   // a 'good' estimate
 
   if (not params_->get<int>("Simple Preconditioner",0) && not params_->get<int>("AMG BS Preconditioner",0)
-      && params_->get<int>("MESHTYING")== INPAR::FLUID::no_meshtying)
+      && params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
   {
     // initialize standard (stabilized) system matrix (construct its graph already)
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -542,10 +544,6 @@ void FLD::FluidImplicitTimeInt::Init()
     // checks needed to be put in the corresponding functions, so they are not listed here.
   }
 
-  // sysmat might be singular (if we have a purely Dirichlet constrained
-  // problem, the pressure mode is defined only up to a constant)
-  // in this case, we need a basis vector for the nullspace/kernel
-
   return;
 } // FluidImplicitTimeInt::Init()
 
@@ -571,14 +569,47 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
     homisoturb_forcing_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
   }
 
-  //Set general parameters and
-  //initialize Krylov space projection
-
+  //Set general parameters:
   //the following two functions are overloaded (switched off) in TimIntPoro
   SetElementGeneralFluidParameter();
   SetElementTurbulenceParameter();
 
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+
+  //initialize Krylov space projection
   InitKrylovSpaceProjection();
+
+  // ------------------------------------------------------------------------------
+  // Pre-compute mass matrix in case the user wants output of kinetic energy
+  // ------------------------------------------------------------------------------
+  if (params_->get<bool>("COMPUTE_EKIN"))
+  {
+    // write energy-file
+    {
+      std::string fileiter = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      fileiter.append(".fluidenergy");
+      logenergy_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
+
+      // write header of energy-file (if energy file is desired by user)
+      if (myrank_ == 0 and (not logenergy_.is_null()))
+      {
+        (*logenergy_) << "# Kinetic energy in fluid field\n"
+                      << "# num procs = " << Discretization()->Comm().NumProc()
+                      << std::endl
+                      << std::right << std::setw(9) << "# step"
+                      << std::right << std::setw(16) << "time"
+                      << std::right << std::setw(16) << "kinetic_energy"
+                      << std::endl;
+
+        (*logenergy_) << "#" << std::endl;
+      }
+    }
+
+    massmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMap(), 108, false, true));
+    EvaluateMassMatrix();
+  }
 
   return;
 }
@@ -620,8 +651,6 @@ void FLD::FluidImplicitTimeInt::Integrate()
 
   return;
 } // FluidImplicitTimeInt::Integrate
-
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1145,6 +1174,32 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
 } // FluidImplicitTimeInt::AssembleMatAndRHS
 
+/*----------------------------------------------------------------------------*
+ | Evaluate mass matrix                                       mayr.mt 05/2014 |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::EvaluateMassMatrix()
+{
+  massmat_->Zero();
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action", FLD::calc_mass_matrix);
+
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+
+  discret_->Evaluate(eleparams, massmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
+
+  // finalize the complete matrix
+  massmat_->Complete();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*|
  | Set Eleparams for turbulence models                          bk 12/13 |
@@ -2927,6 +2982,9 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // cavitation: void fraction
     WriteOutputCavitationVoidFraction();
+
+    if (params_->get<bool>("COMPUTE_EKIN"))
+      WriteOutputKineticEnergy();
 
     // don't write output in case of separate inflow computation
     // Sep_-Matrix needed for algebraic-multigrid filter has never been build
@@ -5853,6 +5911,36 @@ void FLD::FluidImplicitTimeInt::WriteOutputCavitationVoidFraction()
   }
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ | Compute kinetic energy and write it to file                mayr.mt 05/2014 |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::WriteOutputKineticEnergy()
+{
+  // take care of possibly changed element geometry
+  if (alefluid_)
+    EvaluateMassMatrix();
+
+  // compute kinetic energy
+  double energy = 0.0;
+  Teuchos::RCP<Epetra_Vector> mtimesu = Teuchos::rcp(new Epetra_Vector(massmat_->OperatorRangeMap(), true));
+  massmat_->Apply(*velnp_, *mtimesu);
+  velnp_->Dot(*mtimesu, &energy);
+  energy *= 0.5;
+
+  // write to file
+  if (myrank_ == 0 and (not logenergy_.is_null()))
+  {
+    (*logenergy_) << std::right << std::setw(9) << step_
+                  << std::right << std::setw(16) << time_
+                  << std::right << std::setw(16) << energy
+                  << std::endl;
+                  ;
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------------*
  | Set time step size                                         mayr.mt 09/2013 |
  *----------------------------------------------------------------------------*/

@@ -4215,10 +4215,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
           for (int idim = 0; idim<nsd_; ++idim)
           {
             estif_u(nsd_*vi+idim,nsd_*ui+jdim) += funct_(vi)*lin_resM_Du(idim*nsd_+jdim,ui);
-          } // end for (jdim)
-        }
-      } //vi
-    } // ui
+          } // end for (idim)
+        } // end for (jdim)
+      } // end for (vi)
+    } // end for (ui)
   }
   else
   {
