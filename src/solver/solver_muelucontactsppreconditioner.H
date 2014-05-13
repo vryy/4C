@@ -72,6 +72,12 @@ namespace LINALG
       //! function interprets coarse ML parameter list
       Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList);
 
+      //! function interprets ML parameter lists for creating a indefinite block diagonal level smoother
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetUzawaSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
+
+      //! function interprets ML parameter lists for creating a indefinite block diagonal level smoother
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetIndefBlockedDiagonalSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
+
       //! function interprets ML parameter lists for creating a SIMPLE level smoother
       Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
 

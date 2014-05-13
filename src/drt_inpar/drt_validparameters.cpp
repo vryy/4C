@@ -7144,20 +7144,20 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   setStringToIntegralParameter<int>(
     "ML_SMOOTHERFINE","ILU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC"),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC","IBD","Uzawa"),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14),
     &list);
 
   setStringToIntegralParameter<int>(
     "ML_SMOOTHERMED","ILU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC"),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC","IBD","Uzawa"),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14),
     &list);
 
   setStringToIntegralParameter<int>(
     "ML_SMOOTHERCOARSE","Umfpack","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC"),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC","IBD","Uzawa"),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14),
     &list);
 
   // TODO remove this

@@ -974,6 +974,28 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
+    case 13: // IBD: indefinite block diagonal preconditioner
+    {
+      smolevelsublist.set("smoother: type"                        ,"IBD");
+      smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+      smolevelsublist.set("smoother: damping factor"              ,damp);
+      Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
+      predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+      SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+    }
+    break;
+    case 14: // Uzawa: inexact Uzawa smoother
+    {
+      smolevelsublist.set("smoother: type"                        ,"Uzawa");
+      smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+      smolevelsublist.set("smoother: damping factor"              ,damp);
+      Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
+      predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+      SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+    }
+    break;
     default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
     } // switch (type)
   } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
@@ -1060,6 +1082,28 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     int type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
     if(type == 11)         mllist.set("coarse: type"                        ,"SIMPLE");
     else if(type == 12)    mllist.set("coarse: type"                        ,"SIMPLEC");
+    mllist.set("coarse: sweeps"                      ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor"              ,inparams.get<double>("ML_DAMPCOARSE"));
+    Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
+    predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+    Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
+    SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+  }
+  break;
+  case 13: // IBD: indefinite block diagonal preconditioner
+  {
+    mllist.set("coarse: type"                        ,"IBD");
+    mllist.set("coarse: sweeps"                      ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor"              ,inparams.get<double>("ML_DAMPCOARSE"));
+    Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
+    predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+    Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
+    SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+  }
+  break;
+  case 14: // Uzawa: inexact Uzawa smoother
+  {
+    mllist.set("coarse: type"                        ,"Uzawa");
     mllist.set("coarse: sweeps"                      ,mlsmotimessteps[coarse]);
     mllist.set("coarse: damping factor"              ,inparams.get<double>("ML_DAMPCOARSE"));
     Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
