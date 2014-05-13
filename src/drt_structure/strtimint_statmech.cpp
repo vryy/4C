@@ -169,7 +169,7 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
@@ -178,7 +178,7 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     else if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
@@ -187,7 +187,7 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     else if ( eot == DRT::ELEMENTS::BeamCLType::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
@@ -196,7 +196,7 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     else if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
     {
 //      //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3eb*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3eb*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 //
 //      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
@@ -205,17 +205,17 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     else if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
     }
     else if ( eot == DRT::ELEMENTS::Beam2rType::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
     }
     else if ( eot == DRT::ELEMENTS::Truss3Type::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
@@ -224,7 +224,7 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     else if ( eot == DRT::ELEMENTS::Truss3CLType::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3CL*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3CL*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions Truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)

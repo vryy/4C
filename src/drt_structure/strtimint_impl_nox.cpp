@@ -458,7 +458,7 @@ int STR::TimIntImpl::NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::
     if(divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation)
     {
       if (myrank_ == 0)
-        noxutils_->out() << "Nonlinear solver failed to converge!" << endl;
+        noxutils_->out() << "Nonlinear solver failed to converge!" << std::endl;
       return 1;
     }
     else if (divcontype_==INPAR::STR::divcont_continue)

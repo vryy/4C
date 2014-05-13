@@ -511,7 +511,7 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
   freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   // determine worst value ==> charactersitic norm
-  return max(fviscnorm, max(finertnorm, max(fintnorm, max(fextnorm, freactnorm))));
+  return std::max(fviscnorm, std::max(finertnorm, std::max(fintnorm, std::max(fextnorm, freactnorm))));
 }
 
 /*----------------------------------------------------------------------*/

@@ -563,7 +563,7 @@ namespace STR
     //! Give order of accuracy
     int MethodOrderOfAccuracy()
     {
-      return min(MethodOrderOfAccuracyDis(), MethodOrderOfAccuracyVel());
+      return std::min(MethodOrderOfAccuracyDis(), MethodOrderOfAccuracyVel());
     }
 
     //! Give local order of accuracy of displacement part

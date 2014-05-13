@@ -247,7 +247,7 @@ double STR::TimIntStatics::CalcRefNormForce()
   freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   // return char norm
-  return max(fintnorm, max(fextnorm, freactnorm));
+  return std::max(fintnorm, std::max(fextnorm, freactnorm));
 }
 
 /*----------------------------------------------------------------------*/

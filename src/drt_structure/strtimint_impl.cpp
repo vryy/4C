@@ -2492,7 +2492,7 @@ int STR::TimIntImpl::PTC()
     {
       double np; fres_->NormInf(&np);
       dti *= (np/nc);
-      dti = max(dti,0.0);
+      dti = std::max(dti,0.0);
       nc = np;
     }
     // increment equilibrium loop index
@@ -2599,7 +2599,7 @@ void STR::TimIntImpl::PrintPredictor()
     else if ( normtypefres_ == INPAR::STR::convnorm_mix )
     {
       IO::cout << "mixed res-norm "
-               << min(normfres_, normfres_/normcharforce_)
+               << std::min(normfres_, normfres_/normcharforce_)
                << IO::endl;
     }
     // default
@@ -2856,7 +2856,7 @@ void STR::TimIntImpl::PrintNewtonIterText
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_;
     break;
   case INPAR::STR::convnorm_mix :
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normfres_, normfres_/normcharforce_);
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normfres_, normfres_/normcharforce_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -2885,7 +2885,7 @@ void STR::TimIntImpl::PrintNewtonIterText
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
     break;
   case INPAR::STR::convnorm_mix :
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normchardis_);
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normdisi_, normdisi_/normchardis_);
     break;
   default:
     dserror("You should not turn up here.");

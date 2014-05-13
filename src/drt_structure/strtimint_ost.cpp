@@ -477,7 +477,7 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
   freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   // return char norm
-  return max(fviscnorm, max(finertnorm, max(fintnorm, max(fextnorm, freactnorm))));
+  return std::max(fviscnorm, std::max(finertnorm, std::max(fintnorm, std::max(fextnorm, freactnorm))));
 }
 
 /*----------------------------------------------------------------------*/
