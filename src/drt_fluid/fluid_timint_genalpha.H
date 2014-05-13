@@ -144,7 +144,7 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const;
+  virtual const double TimIntParam() const { return (1.0 - alphaF_); }
 
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}

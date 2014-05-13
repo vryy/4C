@@ -398,19 +398,6 @@ void FLD::TimIntGenAlpha::SetElementTimeParameter()
 }
 
 /*----------------------------------------------------------------------*
-| return time integration factor                               bk 12/13 |
-*-----------------------------------------------------------------------*/
-const double FLD::TimIntGenAlpha::TimIntParam() const
-{
-  double retval = 0.0;
-    // this is the interpolation weight for quantities from last time step
-    retval = 1.0 - alphaF_;
-
-  return retval;
-}
-
-
-/*----------------------------------------------------------------------*
 | extrapolate end point                                        bk 12/13 |
 *-----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::ExtrapolateEndPoint

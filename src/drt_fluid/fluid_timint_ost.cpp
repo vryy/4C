@@ -213,15 +213,3 @@ void FLD::TimIntOneStepTheta::SetElementTimeParameter()
   return;
 }
 
-/*----------------------------------------------------------------------*
-| return time integration factor                               bk 12/13 |
-*-----------------------------------------------------------------------*/
-const double FLD::TimIntOneStepTheta::TimIntParam() const
-{
-  double retval = 0.0;
-    // this is the interpolation weight for quantities from last time step
-    retval = 0.0;
-  return retval;
-}
-
-

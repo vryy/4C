@@ -230,14 +230,3 @@ void FLD::TimIntBDF2::SetElementTimeParameter()
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
-
-/*----------------------------------------------------------------------*
-| return time integration factor                               bk 12/13 |
-*-----------------------------------------------------------------------*/
-const double FLD::TimIntBDF2::TimIntParam() const
-{
-  double retval = 0.0;
-  return retval;
-}
-
-
