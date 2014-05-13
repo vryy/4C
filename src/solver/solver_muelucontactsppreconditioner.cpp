@@ -58,7 +58,7 @@
 #include <MueLu_SchurComplementFactory.hpp>
 #include <MueLu_BraessSarazinSmoother.hpp>
 #include <MueLu_SimpleSmoother.hpp>
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_Trilinos_Q3_2014
 #include <MueLu_IndefBlockedDiagonalSmoother.hpp>
 #include <MueLu_UzawaSmoother.hpp>
 #endif
@@ -815,13 +815,13 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     //return GetBraessSarazinSmootherFactory(paramList, level, AFact);
     return GetBraessSarazinSmootherFactory(smolevelsublist);
   } else if (type == "IBD") { // indefinite blocked diagonal preconditioner
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_Trilinos_Q3_2014
     return GetIndefBlockedDiagonalSmootherFactory(smolevelsublist);
 #else
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Indefinite block diagonal smoother available with Trilinos Q3/2014 or later.");
 #endif
   } else if (type == "Uzawa") { // Uzawa smoother
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_Trilinos_Q3_2014
     return GetUzawaSmootherFactory(smolevelsublist);
 #else
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Uzawa smoother available with Trilinos Q3/2014 or later.");
@@ -845,9 +845,17 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     //return GetCoarsestBraessSarazinSmootherFactory(paramList, AFact);
     return GetBraessSarazinSmootherFactory(paramList, true);  // build coarsest smoother
   } else if (type == "IBD") {
+#ifdef HAVE_Trilinos_Q3_2014
     return GetIndefBlockedDiagonalSmootherFactory(paramList, true);  // build coarsest smoother
+#else
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Indefinite block diagonal smoother available with Trilinos Q3/2014 or later.");
+#endif
   } else if (type == "Uzawa") {
+#ifdef HAVE_Trilinos_Q3_2014
     return GetUzawaSmootherFactory(paramList, true);  // build coarsest smoother
+#else
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Uzawa smoother available with Trilinos Q3/2014 or later.");
+#endif
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE parameter to SIMPLE(C) or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
@@ -858,7 +866,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 //----------------------------------------------------------------------------------
 // new version
 Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetUzawaSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse) {
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_Trilinos_Q3_2014
   std::string strCoarse = "coarse";
   if(bCoarse == false)
     strCoarse = "smoother";
@@ -971,7 +979,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 //----------------------------------------------------------------------------------
 // new version
 Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetIndefBlockedDiagonalSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse) {
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_Trilinos_Q3_2014
   std::string strCoarse = "coarse";
   if(bCoarse == false)
     strCoarse = "smoother";
