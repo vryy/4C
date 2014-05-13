@@ -128,7 +128,7 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const {return (1.0 - theta_); }
+  virtual const double TimIntParam() const {return 0.0; }
 
   /*!
   \brief return scaling factor for the residual
