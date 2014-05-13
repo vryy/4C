@@ -148,6 +148,9 @@ DRT::ELEMENTS::Beam3eb::~Beam3eb()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 {
+  os << "beam3eb ";
+  Element::Print(os);
+
   return;
 }
 

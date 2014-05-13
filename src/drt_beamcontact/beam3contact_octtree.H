@@ -15,7 +15,6 @@ Maintainer: Kei Müller
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "beam3contact.H"
 #include "beam3contactnew.H"
 #include "beam3contact_defines.H"
 
@@ -42,8 +41,7 @@ class Beam3ContactOctTree
     //!\brief Constructor
     Beam3ContactOctTree(Teuchos::ParameterList& params,
                         DRT::Discretization& discret,
-                        DRT::Discretization& searchdis,
-                        const int& dofoffset);
+                        DRT::Discretization& searchdis);
 
     //!\brief Destructor
     virtual ~Beam3ContactOctTree() {};
@@ -149,6 +147,11 @@ class Beam3ContactOctTree
      *  \param doimport (in) import flag */
     void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
 
+    /*! \brief Calculate maximal and minimal x-, y- and z-value of a solid elements nodes */
+    void CalcCornerPos(DRT::Element* element,
+                       std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
+                       LINALG::SerialDenseMatrix& coord);
+
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
 
@@ -169,9 +172,6 @@ class Beam3ContactOctTree
     
     //!\brief number of initial nodes
     int basisnodes_;
-    
-    //!\brief dof offset between discret_ and searchdis_
-    int dofoffset_;
 
     //!\brief maximum tree depth
     int maxtreedepth_;

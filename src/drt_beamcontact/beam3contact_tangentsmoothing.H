@@ -48,8 +48,6 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-#ifdef NEWBEAMCONTACT
-
 namespace CONTACT
 {
 
@@ -258,7 +256,5 @@ namespace CONTACT
   }  // namespace B3TANGENTSMOOTHING
 
 }  // namespace CONTACT
-
-#endif //#ifdef NEWBEAMCONTACT
 
 #endif  // #ifndef BEAM3CONTACT_TANGENTSMOOTHING_H

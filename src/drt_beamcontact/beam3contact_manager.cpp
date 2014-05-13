@@ -12,7 +12,6 @@ Maintainer: Christoph Meier
 *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3contact_manager.H"
-#include "beam3contact.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_octtree.H"
 #include "../drt_inpar/inpar_beamcontact.H"
@@ -26,6 +25,8 @@ Maintainer: Christoph Meier
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_contact/contact_element.H"
+#include "../drt_contact/contact_node.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -36,7 +37,8 @@ numnodalvalues_(0),
 pdiscret_(discret),
 pdiscomm_(discret.Comm()),
 alphaf_(alphaf),
-constrnorm_(0.0)
+constrnorm_(0.0),
+btsolconstrnorm_(0.0)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -48,8 +50,20 @@ constrnorm_(0.0)
   // Then, within all beam contact specific routines we will
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
+
+  // read parameter lists from DRT::Problem
+  sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
+  scontact_     = DRT::Problem::Instance()->ContactDynamicParams();
+
+  //Parameters to indicate, if beam-to-solid or beam-to-sphere contact is applied
+  btsol_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSOL");
+  btsph_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSPH");
+
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
-  cdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam contact",comm));
+  btsoldiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam to solid contact",comm));
+  dofoffsetmap_.clear();
+  std::map<int,std::vector<int> > nodedofs;
+  nodedofs.clear();
 
   // loop over all column nodes of underlying problem discret and add
   for (int i=0;i<(ProblemDiscret().NodeColMap())->NumMyElements();++i)
@@ -57,27 +71,125 @@ constrnorm_(0.0)
     DRT::Node* node = ProblemDiscret().lColNode(i);
     if (!node) dserror("Cannot find node with lid %",i);
     Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
-    ContactDiscret().AddNode(newnode);
+    if (BEAMCONTACT::BeamNode(*newnode))
+    {
+      BTSolDiscret().AddNode(newnode);
+      nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+    }
+    else
+    {
+      if(btsol_==false and btsph_==false)
+        dserror("Only beam elements are allowed in the input file as long as the flags btsol_ and btsph_ are set to false!");
+    }
   }
 
+  int maxproblemid=ProblemDiscret().ElementRowMap()->MaxAllGID();
   // loop over all column elements of underlying problem discret and add
   for (int i=0;i<(ProblemDiscret().ElementColMap())->NumMyElements();++i)
   {
     DRT::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) dserror("Cannot find element with lid %",i);
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    ContactDiscret().AddElement(newele);
+    if (BEAMCONTACT::BeamElement(*newele))
+    {
+      BTSolDiscret().AddElement(newele);
+    }
   }
+
+  //begin: determine surface elements and there nodes
+
+  std::vector<DRT::Condition*> contactconditions(0);
+  discret.GetCondition("Mortar",contactconditions);
+
+  solcontacteles_.resize(0);
+  solcontactnodes_.resize(0);
+  int ggsize = 0;
+
+   //-------------------------------------------------- process surface nodes
+   for (int j=0;j<(int)contactconditions.size();++j)
+   {
+     // get all nodes and add them
+     const std::vector<int>* nodeids = contactconditions[j]->Nodes();
+     if (!nodeids) dserror("Condition does not have Node Ids");
+     for (int k=0; k<(int)(*nodeids).size(); ++k)
+     {
+       int gid = (*nodeids)[k];
+       // do only nodes that I have in my discretization
+       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
+       DRT::Node* node = ProblemDiscret().gNode(gid);
+
+       if (!node) dserror("Cannot find node with gid %",gid);
+
+       Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),node->X(),
+                                                        node->Owner(),
+                                                        ProblemDiscret().NumDof(0,node),
+                                                        ProblemDiscret().Dof(0,node),
+                                                        false,    //all solid elements are master elements
+                                                        false));  //no "initially active" decision necessary for beam to solid contact
+
+       // note that we do not have to worry about double entries
+       // as the AddNode function can deal with this case!
+       // the only problem would have occured for the initial active nodes,
+       // as their status could have been overwritten, but is prevented
+       // by the "foundinitialactive" block above!
+       solcontactnodes_.push_back(cnode);
+       BTSolDiscret().AddNode(cnode);
+       nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+     }
+   }
+
+  //process surface elements
+  for (int j=0;j<(int)contactconditions.size();++j)
+  {
+    // get elements from condition j of current group
+    std::map<int,Teuchos::RCP<DRT::Element> >& currele = contactconditions[j]->Geometry();
+
+    // elements in a boundary condition have a unique id
+    // but ids are not unique among 2 distinct conditions
+    // due to the way elements in conditions are build.
+    // We therefore have to give the second, third,... set of elements
+    // different ids. ids do not have to be continous, we just add a large
+    // enough number ggsize to all elements of cond2, cond3,... so they are
+    // different from those in cond1!!!
+    // note that elements in ele1/ele2 already are in column (overlapping) map
+    int lsize = (int)currele.size();
+    int gsize = 0;
+    Comm().SumAll(&lsize,&gsize,1);
+
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
+    for (fool=currele.begin(); fool != currele.end(); ++fool)
+    {
+      //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
+      //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
+      //via the contactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
+      //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
+      //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
+      //discretization.
+      Teuchos::RCP<DRT::Element> ele = fool->second;
+      Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(ele->Id()+ggsize+maxproblemid+1,
+                                                              ele->Owner(),
+                                                              ele->Shape(),
+                                                              ele->NumNode(),
+                                                              ele->NodeIds(),
+                                                              false,    //all solid elements are master elements
+                                                              false));  //no nurbs allowed up to now
+
+      solcontacteles_.push_back(cele);
+      BTSolDiscret().AddElement(cele);
+    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    ggsize += gsize; // update global element counter
+  }
+  //end: determine surface elements and there nodes
 
   // build maps but do not assign dofs yet, we'll do this below
   // after shuffling around of nodes and elements (saves time)
-  ContactDiscret().FillComplete(false,false,false);
+  BTSolDiscret().FillComplete(false,false,false);
 
   // store the node and element row and column maps into this manager
-  noderowmap_ = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().NodeRowMap())));
-  elerowmap_  = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().ElementRowMap())));
-  nodecolmap_ = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().NodeColMap())));
-  elecolmap_  = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().ElementColMap())));
+  noderowmap_ = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().NodeRowMap())));
+  elerowmap_  = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().ElementRowMap())));
+  nodecolmap_ = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().NodeColMap())));
+  elecolmap_  = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().ElementColMap())));
 
   // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
@@ -88,18 +200,17 @@ constrnorm_(0.0)
   for (int i=0; i<elerowmap_->NumMyElements(); ++i)
     esdata[i] = elerowmap_->GID(i);
 
-
   // if current proc is participating it writes row IDs into (e)stproc
   std::vector<int> stproc(0);
   std::vector<int> estproc(0);
   if (noderowmap_->NumMyElements())
-    stproc.push_back(ContactDiscret().Comm().MyPID());
+    stproc.push_back(BTSolDiscret().Comm().MyPID());
   if (elerowmap_->NumMyElements())
-    estproc.push_back(ContactDiscret().Comm().MyPID());
+    estproc.push_back(BTSolDiscret().Comm().MyPID());
 
   // information how many processors participate in total
-  std::vector<int> allproc(ContactDiscret().Comm().NumProc());
-  for (int i=0;i<ContactDiscret().Comm().NumProc();++i) allproc[i] = i;
+  std::vector<int> allproc(BTSolDiscret().Comm().NumProc());
+  for (int i=0;i<BTSolDiscret().Comm().NumProc();++i) allproc[i] = i;
 
   // declaring new variables into which the info of (e)stproc on all processors is gathered
   std::vector<int> rtproc(0);
@@ -107,8 +218,8 @@ constrnorm_(0.0)
 
   // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
   // is a vector which contains the numbers of all processors which own nodes/elements.
-  LINALG::Gather<int>(stproc,rtproc,ContactDiscret().Comm().NumProc(),&allproc[0],ContactDiscret().Comm());
-  LINALG::Gather<int>(estproc,ertproc,ContactDiscret().Comm().NumProc(),&allproc[0],ContactDiscret().Comm());
+  LINALG::Gather<int>(stproc,rtproc,BTSolDiscret().Comm().NumProc(),&allproc[0],BTSolDiscret().Comm());
+  LINALG::Gather<int>(estproc,ertproc,BTSolDiscret().Comm().NumProc(),&allproc[0],BTSolDiscret().Comm());
 
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
   // numbers which are  stored on different processors in their own variables (e)sdata; thus,
@@ -117,18 +228,18 @@ constrnorm_(0.0)
   std::vector<int> erdata;
 
   // gather all gids of nodes redundantly from (e)sdata into (e)rdata
-  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],ContactDiscret().Comm());
-  LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],ContactDiscret().Comm());
+  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],BTSolDiscret().Comm());
+  LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],BTSolDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,ContactDiscret().Comm()));
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,BTSolDiscret().Comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
   allproc.clear();
 
   // build completely overlapping element map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,ContactDiscret().Comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,BTSolDiscret().Comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();
@@ -138,28 +249,35 @@ constrnorm_(0.0)
   elefullmap_  = Teuchos::rcp(new Epetra_Map(*newelecolmap));
 
   // pass new fully overlapping node and element maps to beam contact discretization
-  ContactDiscret().ExportColumnNodes(*newnodecolmap);
-  ContactDiscret().ExportColumnElements(*newelecolmap);
-
+  BTSolDiscret().ExportColumnNodes(*newnodecolmap);
+  BTSolDiscret().ExportColumnElements(*newelecolmap);
 
   // complete beam contact discretization based on the new column maps
   // (this also assign new degrees of freedom what we actually do not
   // want, thus we have to introduce a dof mapping next)
-  ContactDiscret().FillComplete(true,false,false);
+  BTSolDiscret().FillComplete(true,false,false);
 
-  // compute dof offset between problem and contact discretization
-  const Epetra_Map* pddofs = ProblemDiscret().DofRowMap();
-  const Epetra_Map* cddofs = ContactDiscret().DofRowMap();
-  if (pddofs->NumGlobalElements() != cddofs->NumGlobalElements())
-    dserror("ERROR: Inconsistency in dof mapping between the two discretizations");
-  int pdmin = pddofs->MinAllGID();
-  int cdmin = cddofs->MinAllGID();
-  dofoffset_ = cdmin - pdmin;
+  // communicate the map nodedofs to all proccs
+  DRT::Exporter ex(*(ProblemDiscret().NodeColMap()),*(BTSolDiscret().NodeColMap()),Comm());
+  ex.Export(nodedofs);
 
-  // read parameter lists from DRT::Problem
-  sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
-  scontact_     = DRT::Problem::Instance()->ContactDynamicParams();
-  
+  //Determine offset between the IDs of problem discretization and BTSol discretization
+  for (int i=0;i<(BTSolDiscret().NodeColMap())->NumMyElements();++i)
+  {
+    DRT::Node* node = BTSolDiscret().lColNode(i);
+    int nodeid = node->Id();
+    std::vector<int> btsolnodedofids = BTSolDiscret().Dof(0,node);
+    std::vector<int> originalnodedofids = nodedofs[nodeid];
+
+    if (btsolnodedofids.size() != originalnodedofids.size())
+      dserror("Number of nodal DoFs does not match!");
+
+    for (int j=0;j<(int)btsolnodedofids.size();j++)
+    {
+      dofoffsetmap_[btsolnodedofids[j]]=originalnodedofids[j];
+    }
+  }
+
   // check input parameters
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
    dserror("ERROR: The given input parameters are not for beam contact");
@@ -169,6 +287,7 @@ constrnorm_(0.0)
   // initialize contact element pairs
   pairs_.resize(0);
   oldpairs_.resize(0);
+  btsolpairs_.resize(0);
   
   // initialize input parameters
   currentpp_ = scontact_.get<double>("PENALTYPARAM");
@@ -187,18 +306,20 @@ constrnorm_(0.0)
   {
     if (!pdiscret_.Comm().MyPID())
       std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
-    tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_,pdiscret_,*cdiscret_,dofoffset_));
+
+    tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_,pdiscret_,*btsoldiscret_));
   }
   else
   {
+    if(btsol_)
+      dserror("Beam to solid contact is only implemented for the octtree contact search!");
+
     // Compute the search radius for searching possible contact pairs
     ComputeSearchRadius();
     tree_ = Teuchos::null;
     if(!pdiscret_.Comm().MyPID())
       std::cout<<"\nBrute Force Search"<<std::endl;
   }
-
-
 
   if(!pdiscret_.Comm().MyPID())
   {
@@ -224,6 +345,7 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
     os << "Beam3 Contact Discretization:" << std::endl;
   
   ProblemDiscret().Print(os);
+
   return;
 }
 
@@ -235,24 +357,25 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       const Epetra_Vector& disrow,
                                       bool newsti)
 {
+
   // map linking node numbers and current node positions
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
   currentpositions.clear();
-  
+  //extract fully overlapping displacement vector on contact discretization from
+  //displacement vector in row map format on problem discretization
+  Epetra_Vector disccol(*BTSolDiscret().DofColMap(),true);
+  ShiftDisMap(disrow, disccol);
   // update currentpositions
-  SetCurrentPositions(currentpositions,disrow);
-
-  std::vector<std::vector<DRT::Element* > > contactelementpairs;
-  contactelementpairs.clear();
-
+  SetCurrentPositions(currentpositions,disccol);
+  std::vector<std::vector<DRT::Element* > > elementpairs;
+  elementpairs.clear();
   //**********************************************************************
   // octtree search (loop over all elements and find closest pairs)
   //**********************************************************************
   if(tree_ != Teuchos::null)
   {
      double t_start = Teuchos::Time::wallTime();
-
-     contactelementpairs = tree_->OctTreeSearch(currentpositions);
+     elementpairs = tree_->OctTreeSearch(currentpositions);
 
      double t_end = Teuchos::Time::wallTime() - t_start;
      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
@@ -266,45 +389,70 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   {
     double t_start = Teuchos::Time::wallTime();
 
-    contactelementpairs = SearchPossibleContactPairsNew(currentpositions);
+    elementpairs = SearchPossibleContactPairs(currentpositions);
     double t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
     if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
       std::cout << "\nBrute Force Search: " << t_end << " seconds, "<< std::endl;
   }
 
+  std::vector<std::vector<DRT::Element* > > btsolelementpairs;
+  btsolelementpairs.clear();
+
+  //Besides beam-to-beam contact we also can handle beam-to-solid contact and beam to sphere contact(will be implemented in the future).
+  //In all cases element 1 has to be the beam element. All other element pairs (solid-solid, sphere-solid etc.)
+  //will be sorted out later.
+  for (int i=0;i<(int)elementpairs.size();i++)
+  {
+    // if ele1 is a beam element we take the pair directly
+    if(BEAMCONTACT::BeamElement(*(elementpairs[i])[0]))
+    {
+      btsolelementpairs.push_back(elementpairs[i]);
+    }
+    // if ele1 is no beam element, but ele2 is one, we have to change the order
+    else if(BEAMCONTACT::BeamElement(*(elementpairs[i])[1]))
+    {
+      std::vector<DRT::Element* > elementpairaux;
+      elementpairaux.clear();
+      elementpairaux.push_back((elementpairs[i])[1]);
+      elementpairaux.push_back((elementpairs[i])[0]);
+      btsolelementpairs.push_back(elementpairaux);
+    }
+  }
   //Determine type of applied beam elements and set the corresponding values for the member variables
   //numnodes_ and numnodaldofs_. This has only to be done once in the beginning, since beam contact
   //simulations are only possible when using beam elements of one type!
-  if (oldpairs_.size()==0 and contactelementpairs.size()>0)
-    SetElementTypeAndDistype((contactelementpairs[0])[0]);
+  if (oldpairs_.size()==0 and btsolelementpairs.size()>0)
+    SetElementTypeAndDistype((btsolelementpairs[0])[0]);
 
   //So far, all beam elements occuring in the pairs_ vector have to be of the same type.
   //This will be checked in the following lines.
-  if ((int)contactelementpairs.size()>0)
+  if ((int)btsolelementpairs.size()>0)
   {
-    const DRT::ElementType & pair1_ele1_type = ((contactelementpairs[0])[0])->ElementType();
-    for (int k=0;k<(int)contactelementpairs.size();++k)
+    //search for the first beam element in vector pairs
+    const DRT::ElementType & pair1_ele1_type = ((btsolelementpairs[0])[0])->ElementType();
+    for (int k=0;k<(int)btsolelementpairs.size();++k)
     {
-      const DRT::ElementType & ele1_type = ((contactelementpairs[k])[0])->ElementType();
-      const DRT::ElementType & ele2_type = ((contactelementpairs[k])[1])->ElementType();
+      const DRT::ElementType & ele1_type = ((btsolelementpairs[k])[0])->ElementType();
+      const DRT::ElementType & ele2_type = ((btsolelementpairs[k])[1])->ElementType();
 
-      if ( ele1_type!=pair1_ele1_type or ele2_type!=pair1_ele1_type)
+      //ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the first pair
+      if ( ele1_type!=pair1_ele1_type or (BEAMCONTACT::BeamElement(*(btsolelementpairs[k])[1]) and ele2_type!=pair1_ele1_type))
       {
         dserror("All contacting beam elements have to be of the same type (beam3eb, beam3 or beam3ii). Change your input file!");
       }
     }
   }
-
-  // Only the element pairs of contactelementpairs (found in the contact search) which have not been found in the last time step (i.e. which
+  // Only the element pairs of btsolelementpairs (found in the contact search) which have not been found in the last time step (i.e. which
   // are not in oldpairs_) will be generated as new Beam3contact instances. Pairs which already exist in oldpairs_ will simply be copied to pairs_.
-  // This procedure looks a bit circumstantial at first glance: However, it is not possible to solely use contactelementpairs
+  // This procedure looks a bit circumstantial at first glance: However, it is not possible to solely use btsolelementpairs
   // and to simply delete oldpairs_ at the end of a time step if the new gap function definition is used, since the latter needs
   // history variables of the last time step which are stored in the oldpairs_ vector.
-  for (int k=0;k<(int)contactelementpairs.size();k++)
+  // Only beam-to-beam contact pairs (not beam-to-solid or beam-to-shpere pairs) need this history information.
+  for (int k=0;k<(int)btsolelementpairs.size();k++)
   {
-    DRT::Element* ele1 = (contactelementpairs[k])[0];
-    DRT::Element* ele2 = (contactelementpairs[k])[1];
+    DRT::Element* ele1 = (btsolelementpairs[k])[0];
+    DRT::Element* ele2 = (btsolelementpairs[k])[1];
     int currid1 = ele1->Id();
     int currid2 = ele2->Id();
     bool foundlasttimestep = false;
@@ -315,7 +463,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       // pair already exists
       if ((id1 == currid1 && id2 == currid2) || (id1 == currid2 && id2 == currid1))
       {
-        //Add existing pair of last time step (storded in oldpairs_) to new pairs_ vector
+        //Add existing pair of last time step (stored in oldpairs_) to new pairs_ vector
         //So far, this is only done if the new gap function is applied.
         if (!PairAllreadyExisting(currid1,currid2) and newgapfunction_)
         {
@@ -329,20 +477,24 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     // create new contact pair and add to pairs_ if not found before
     if (!foundlasttimestep && !PairAllreadyExisting(currid1,currid2))
     {
-      #ifndef NEWBEAMCONTACT
-        //add new contact pair object
-        pairs_.push_back(Teuchos::rcp (new Beam3contact(CONTACT::Beam3contact(ProblemDiscret(),ContactDiscret(),DofOffset(),ele1,ele2))));
-      #else
+      //beam-to-beam pair
+      if(BEAMCONTACT::BeamElement(*(btsolelementpairs[k])[1]))
+      {
         //Add new contact pair objcect: The auxiliary_instance of the abstract class Beam3contactinterface is only needed here in order to call
         //the function Impl() which creates an instance of the templated class Beam3contactnew<numnodes, numnodalvalues> !
-        pairs_.push_back(CONTACT::Beam3contactinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),ContactDiscret(),DofOffset(),ele1,ele2, sbeamcontact_));
-      #endif
-      contactpairmap_[std::make_pair(currid1,currid2)] = pairs_[pairs_.size()-1];
+        pairs_.push_back(CONTACT::Beam3contactinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
+        contactpairmap_[std::make_pair(currid1,currid2)] = pairs_[pairs_.size()-1];
+      }
+      //beam-to-solid pair
+      else
+      {
+        btsolpairs_.push_back(CONTACT::Beam3tosolidcontactinterface::Impl((btsolelementpairs[k])[1]->NumNode(),numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
+      }
+
     }
   }
-
   // update element state of all pairs with current positions (already calculated in SetCurrentPositions) and current tangents (will be calculated in SetState)
-  SetState(currentpositions,disrow);
+  SetState(currentpositions,disccol);
   // At this point we have all possible contact pairs_ with updated positions
 
   //**********************************************************************
@@ -359,51 +511,13 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // from 'fc_' to 'fcold_'. This update method is called by the time
   // integration class.
   //**********************************************************************
-  
+
   // initialize global contact force vectors
   fc_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
   if (fcold_==Teuchos::null) fcold_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
-  
   // initialize contact stiffness and uncomplete global stiffness
   stiffc_ = Teuchos::rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
-
-#ifndef NEWBEAMCONTACT
-  const Teuchos::ParameterList& sbeamcontact = DRT::Problem::Instance()->BeamContactParams();
-  int beams_smoothing = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact,"BEAMS_SMOOTHING");
-  // Loop over all pairs
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
-    // only evaluate pair for those procs owning or ghosting at
-    // least one node of one of the two elements of the pair
-    int firsteleid = (pairs_[i]->Element1())->Id();
-    int secondeleid = (pairs_[i]->Element2())->Id();
-    bool firstisincolmap = ColElements()->MyGID(firsteleid);
-    bool secondisincolmap = ColElements()->MyGID(secondeleid);
-
-    // evaluate additional contact forces and stiffness
-    if (firstisincolmap || secondisincolmap)
-      pairs_[i]->PreEvaluation(beams_smoothing, currentpositions);
-  }
-
-  // Loop over all pairs
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
-    // only evaluate pair for those procs owning or ghosting at
-    // least one node of one of the two elements of the pair
-    int firsteleid = (pairs_[i]->Element1())->Id();
-    int secondeleid = (pairs_[i]->Element2())->Id();
-    bool firstisincolmap = ColElements()->MyGID(firsteleid);
-    bool secondisincolmap = ColElements()->MyGID(secondeleid);
-
-    // evaluate additional contact forces and stiffness
-    if (firstisincolmap || secondisincolmap)
-    {
-      bool newgapfunction = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_NEWGAP");
-      pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing);
-    }
-  }
-#else
   // Loop over all pairs
   for (int i=0;i<(int)pairs_.size();++i)
   {
@@ -420,12 +534,24 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_);
     }
   }
-#endif
-
+  // Loop over all pairs
+  for (int i=0;i<(int)btsolpairs_.size();++i)
+  {
+    // only evaluate pair for those procs owning or ghosting at
+    // least one node of one of the two elements of the pair
+    int firsteleid = (btsolpairs_[i]->Element1())->Id();
+    int secondeleid = (btsolpairs_[i]->Element2())->Id();
+    bool firstisincolmap = ColElements()->MyGID(firsteleid);
+    bool secondisincolmap = ColElements()->MyGID(secondeleid);
+    // evaluate additional contact forces and stiffness
+    if (firstisincolmap || secondisincolmap)
+    {
+      btsolpairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_);
+    }
+  }
   // assemble contact forces into global fres vector
   fres.Update(1.0-alphaf_,*fc_,1.0);
   fres.Update(alphaf_,*fcold_,1.0);
-
   // determine contact stiffness matrix scaling factor (new STI)
   // (this is due to the fact that in the new STI, we hand in the
   // already appropriately scaled effective stiffness matrix. Thus,
@@ -435,16 +561,31 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // therefore no special scaling needs to be applied here.)
   double scalemat = 1.0;
   if (newsti) scalemat = 1.0 - alphaf_;
-
   // assemble contact stiffness into global stiffness matrix
   stiffc_->Complete();
   stiffmatrix.Add(*stiffc_,false,scalemat,1.0);
   stiffmatrix.Complete();
+  return;
+}
 
-  // debug output
-  //std::cout << "fc:    " << std::endl << *fc_ << std::endl;
-  //std::cout << "fcold: " << std::endl << *fcold_ << std::endl;
-  //std::cout << "fres:  " << std::endl << fres << std::endl;
+/*----------------------------------------------------------------------*
+ |  Shift map of displacement vector                         meier 05/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vector& disccol)
+{
+
+  // export displacements into fully overlapping column map format
+  Epetra_Vector discrow(*BTSolDiscret().DofRowMap(),true);
+  int numbtsdofs = (*BTSolDiscret().DofRowMap()).NumMyElements();
+
+  for (int i=0;i<numbtsdofs;i++)
+  {
+    int btsolcontact_gid = (*BTSolDiscret().DofRowMap()).GID(i);
+    int problem_gid = dofoffsetmap_[btsolcontact_gid];
+    double disp = disrow[(*ProblemDiscret().DofRowMap()).LID(problem_gid)];
+    discrow.ReplaceGlobalValue(btsolcontact_gid,0,disp);
+  }
+  LINALG::Export(discrow,disccol);
 
   return;
 }
@@ -453,36 +594,27 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetCurrentPositions(std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                                                 const Epetra_Vector& disrow)
+                                                 const Epetra_Vector& disccol)
 {
   //**********************************************************************
   // get positions of all nodes (fully overlapping map) and store
   // the current results into currentpositions
   //**********************************************************************
 
-  // we need to address the nodes / dofs via the beam contact
-  // discretization, because only this is exported to full overlap
-  Epetra_Vector disbcrow(disrow);
-  disbcrow.ReplaceMap(*ContactDiscret().DofRowMap());
-
-  // export displacements into fully overlapping column map format
-  Epetra_Vector discol(*ContactDiscret().DofColMap(),true);
-  LINALG::Export(disbcrow,discol);
-
   // loop over all beam contact nodes
   for (int i=0;i<FullNodes()->NumMyElements();++i)
   {
     // get node pointer
-    const DRT::Node* node = ContactDiscret().lColNode(i);
+    const DRT::Node* node = BTSolDiscret().lColNode(i);
 
     // get GIDs of this node's degrees of freedom
-    std::vector<int> dofnode = ContactDiscret().Dof(node);
+    std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
     // nodal positions
     LINALG::Matrix<3,1> currpos;
-    currpos(0) = node->X()[0] + discol[ContactDiscret().DofColMap()->LID(dofnode[0])];
-    currpos(1) = node->X()[1] + discol[ContactDiscret().DofColMap()->LID(dofnode[1])];
-    currpos(2) = node->X()[2] + discol[ContactDiscret().DofColMap()->LID(dofnode[2])];
+    currpos(0) = node->X()[0] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[0])];
+    currpos(1) = node->X()[1] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[1])];
+    currpos(2) = node->X()[2] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[2])];
 
     // store into currentpositions
     currentpositions[node->Id()] = currpos;
@@ -495,132 +627,161 @@ void CONTACT::Beam3cmanager::SetCurrentPositions(std::map<int,LINALG::Matrix<3,1
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                                      const Epetra_Vector& disrow)
+                                      const Epetra_Vector& disccol)
 {
-  //**********************************************************************
-  // get positions of all nodes (fully overlapping map) and store
-  // the current results into currentpositions
-  //**********************************************************************
-
-  // we need to address the nodes / dofs via the beam contact
-  // discretization, because only this is exported to full overlap
-  Epetra_Vector disbcrow(disrow);
-  disbcrow.ReplaceMap(*ContactDiscret().DofRowMap());
-
-  // export displacements into fully overlapping column map format
-  Epetra_Vector discol(*ContactDiscret().DofColMap(),true);
-  LINALG::Export(disbcrow,discol);
 
   // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and adress it with the node ID
-  std::map<int,LINALG::Matrix<3,1> > currenttangents;
-  currenttangents.clear();
+    std::map<int,LINALG::Matrix<3,1> > currenttangents;
+    currenttangents.clear();
 
-  // Update of nodal tangents for Kirchhoff elements; nodal positions have already been set in SetCurrentPositions
-  // loop over all beam contact nodes
-  for (int i=0;i<FullNodes()->NumMyElements();++i)
-  {
-    // get node pointer
-    const DRT::Node* node = ContactDiscret().lColNode(i);
-
-    //get nodal tangents for Kirchhoff elements
-    if (numnodalvalues_==2)
+    // Update of nodal tangents for Kirchhoff elements; nodal positions have already been set in SetCurrentPositions
+    // loop over all beam contact nodes
+    for (int i=0;i<FullNodes()->NumMyElements();++i)
     {
-      // get GIDs of this node's degrees of freedom
-      std::vector<int> dofnode = ContactDiscret().Dof(node);
+      // get node pointer
+      DRT::Node* node = BTSolDiscret().lColNode(i);
 
-      LINALG::Matrix<3,1> currtan(true);
-      for (int i=0; i<node->Elements()[0]->NumNode();i++)
+      //get nodal tangents for Kirchhoff elements
+      if (numnodalvalues_==2 and BEAMCONTACT::BeamNode(*node))
       {
-        if (node->Elements()[0]->Nodes()[i]->Id()==node->Id())
+        // get GIDs of this node's degrees of freedom
+        std::vector<int> dofnode = BTSolDiscret().Dof(node);
+
+        LINALG::Matrix<3,1> currtan(true);
+        for (int i=0; i<node->Elements()[0]->NumNode();i++)
         {
-          const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
-          currtan(0)=((ele->Tref())[i])(0) + discol[ContactDiscret().DofColMap()->LID(dofnode[3])];
-          currtan(1)=((ele->Tref())[i])(1) + discol[ContactDiscret().DofColMap()->LID(dofnode[4])];
-          currtan(2)=((ele->Tref())[i])(2) + discol[ContactDiscret().DofColMap()->LID(dofnode[5])];
+          if (node->Elements()[0]->Nodes()[i]->Id()==node->Id())
+          {
+            const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
+            currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
+            currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
+            currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
+          }
         }
+        // store into currenttangents
+        currenttangents[node->Id()] = currtan;
       }
-      // store into currenttangents
-      currenttangents[node->Id()] = currtan;
+      //set currenttangents to zero for Reissner elements
+      else
+      {
+        for (int i=0;i<3;i++)
+          currenttangents[node->Id()](i) = 0.0;
+      }
     }
-    //set currenttangents to zero for Reissner elements
-    else
-    {
-      for (int i=0;i<3;i++)
-        currenttangents[node->Id()](i) = 0.0;
-    }
-  }
 
-  //**********************************************************************
-  // update nodal coordinates also in existing contact pairs objects
-  //**********************************************************************
-  // loop over all pairs
-  for(int i=0;i<(int)pairs_.size();++i)
-  {
-    // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
-    Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
-    // Positions: Loop over all nodes of element 1
-    for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
-    {
-      int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+    //**********************************************************************
+    // update nodal coordinates also in existing contact pairs objects
+    //**********************************************************************
+    // loop over all pairs
 
-      // store updated nodal coordinates
-      for(int n=0;n<3;n++)
-        ele1pos(n,m) = temppos(n);
-      // store updated nodal tangents
-    }
-    if (numnodalvalues_==2)
+    for(int i=0;i<(int)pairs_.size();++i)
     {
-      // Tangents: Loop over all nodes of element 1
+      // temporary matrices to store nodal coordinates of each element
+      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+      Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
+      // Positions: Loop over all nodes of element 1
       for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
       {
         int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
-
-        // store updated nodal tangents
-        for(int n=0;n<3;n++)
-          ele1pos(n+3,m) = temptan(n);
-      }
-    }
-    // Positions: Loop over all nodes of element 2
-    for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
-    {
-      int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-      // store updated nodal coordinates
-      for(int n=0;n<3;n++)
-        ele2pos(n,m) = temppos(n);
-    }
-    if (numnodalvalues_==2)
-    {
-      // Tangents: Loop over all nodes of element 2
+
+        // store updated nodal coordinates
+        for(int n=0;n<3;n++)
+          ele1pos(n,m) = temppos(n);
+        // store updated nodal tangents
+      }
+      if (numnodalvalues_==2)
+      {
+        // Tangents: Loop over all nodes of element 1
+        for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
+        {
+          int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
+          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+
+          // store updated nodal tangents
+          for(int n=0;n<3;n++)
+            ele1pos(n+3,m) = temptan(n);
+        }
+      }
+      // Positions: Loop over all nodes of element 2
       for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
       {
         int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        // store updated nodal coordinates
+        for(int n=0;n<3;n++)
+          ele2pos(n,m) = temppos(n);
+      }
+      if (numnodalvalues_==2)
+      {
+        // Tangents: Loop over all nodes of element 2
+        for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
+        {
+          int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
+            LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
 
-        // store updated nodal tangents
-          for(int n=0;n<3;n++)
-            ele2pos(n+3,m) = temptan(n);
+          // store updated nodal tangents
+            for(int n=0;n<3;n++)
+              ele2pos(n+3,m) = temptan(n);
+        }
+      }
+      // finally update nodal positions in contact pair objects
+      pairs_[i]->UpdateElePos(ele1pos,ele2pos);
+    }
+    // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
+    int smoothing = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_,"BEAMS_SMOOTHING");
+    if (smoothing != INPAR::BEAMCONTACT::bsm_none)
+    {
+      for(int i=0;i<(int)pairs_.size();++i)
+      {
+        pairs_[i]->UpdateEleSmoothTangents(currentpositions);
       }
     }
-    // finally update nodal positions in contact pair objects
-    pairs_[i]->UpdateElePos(ele1pos,ele2pos);
 
-  }
-
-#ifdef NEWBEAMCONTACT
-  // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
-  int smoothing = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_,"BEAMS_SMOOTHING");
-  if (smoothing != INPAR::BEAMCONTACT::bsm_none)
-  {
-    for(int i=0;i<(int)pairs_.size();++i)
+    // Do the same for the beam-to-solid contact pairs
+    for(int i=0;i<(int)btsolpairs_.size();++i)
     {
-      pairs_[i]->UpdateEleSmoothTangents(currentpositions);
+      int numnodessol = ((btsolpairs_[i])->Element2())->NumNode();
+      // temporary matrices to store nodal coordinates of each element
+      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+      Epetra_SerialDenseMatrix ele2pos(3,numnodessol);
+      // Positions: Loop over all nodes of element 1 (beam element)
+      for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
+      {
+        int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
+        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+        // store updated nodal coordinates
+        for(int n=0;n<3;n++)
+          ele1pos(n,m) = temppos(n);
+        // store updated nodal tangents
+      }
+      if (numnodalvalues_==2)
+      {
+        // Tangents: Loop over all nodes of element 1
+        for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
+        {
+          int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
+          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+
+          // store updated nodal tangents
+          for(int n=0;n<3;n++)
+            ele1pos(n+3,m) = temptan(n);
+        }
+      }
+      // Positions: Loop over all nodes of element 2 (solid element)
+      for(int m=0;m<(btsolpairs_[i]->Element2())->NumNode();m++)
+      {
+        int tempGID = ((btsolpairs_[i]->Element2())->NodeIds())[m];
+          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        // store updated nodal coordinates
+        for(int n=0;n<3;n++)
+          ele2pos(n,m) = temppos(n);
+      }
+
+      // finally update nodal positions in contact pair objects
+      btsolpairs_[i]->UpdateElePos(ele1pos,ele2pos);
     }
-  }
-#endif
 
   return;
 }
@@ -628,7 +789,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
 /*----------------------------------------------------------------------*
  |  search possible contact element pairs                     popp 04/10|
  *----------------------------------------------------------------------*/
-std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleContactPairsNew(std::map<int,LINALG::Matrix<3,1> >& currentpositions)
+std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleContactPairs(std::map<int,LINALG::Matrix<3,1> >& currentpositions)
 {
   //**********************************************************************
   // Steps of search for element pairs that MIGHT get into contact:
@@ -652,7 +813,7 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
   {
     // get global id, node itself and current position
     int firstgid = ColNodes()->GID(i);
-    DRT::Node* firstnode = ContactDiscret().gNode(firstgid);
+    DRT::Node* firstnode = BTSolDiscret().gNode(firstgid);
     LINALG::Matrix<3,1> firstpos = currentpositions[firstgid];
 
    // create storage for neighbouring nodes to be excluded.
@@ -662,7 +823,6 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
 
    // get the elements 'firstnode' is linked to
    DRT::Element** neighboureles = firstnode->Elements();
-
    // loop over all adjacent elements and their nodes
    for (int j=0;j<firstnode->NumElement();++j)
    {
@@ -710,7 +870,6 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
          NearNodesGIDs.push_back(secondgid);
      }
    }
-
    // AT THIS POINT WE HAVE FOUND AND STROED ALL NODES CLOSE TO FIRSTNODE BESIDES THE DIRECTLY CONNECTED NEIGHBOR NODES!
 
    //*********************************************************************
@@ -740,8 +899,7 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
    for (int j=0;j<(int)NearNodesGIDs.size();++j)
    {
      // node pointer
-     DRT::Node* tempnode = ContactDiscret().gNode(NearNodesGIDs[j]);
-
+     DRT::Node* tempnode = BTSolDiscret().gNode(NearNodesGIDs[j]);
      // getting the elements tempnode is linked to
      DRT::Element** TempEles = tempnode->Elements();
 
@@ -750,7 +908,6 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
      {
        //element pointer
        DRT::Element* ele2 = TempEles[k];
-
        // insert into element vector
        SecondElesGIDs.push_back(ele2->Id());
      }
@@ -789,7 +946,7 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
    for (int j=0;j<(int)FirstElesGIDs.size();++j)
    {
      // beam element pointer
-     DRT::Element* ele1 = ContactDiscret().gElement(FirstElesGIDs[j]);
+     DRT::Element* ele1 = BTSolDiscret().gElement(FirstElesGIDs[j]);
 
      // node ids adjacent to this element
      const int* NodesEle1 = ele1->NodeIds();
@@ -798,7 +955,7 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
      for (int k=0;k<(int)SecondElesGIDsRej.size();++k)
       {
        // get and cast a pointer on an element
-        DRT::Element* ele2 = ContactDiscret().gElement(SecondElesGIDsRej[k]);
+        DRT::Element* ele2 = BTSolDiscret().gElement(SecondElesGIDsRej[k]);
 
         // close element id
         const int* NodesEle2 = ele2->NodeIds();
@@ -842,7 +999,6 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
        }
     }
   } //LOOP 1
-
   return newpairs;
 }
 
@@ -851,7 +1007,6 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ComputeSearchRadius()
 {
-  // TODO more sophisticated criteria might be added later
   
   // some local variables
   double charactlength = 0.0;
@@ -899,31 +1054,15 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
-    DRT::Element* thisele = ContactDiscret().gElement(gid);
+    DRT::Element* thisele = BTSolDiscret().gElement(gid);
     
+    if (!BEAMCONTACT::BeamElement(*thisele))
+      dserror("The function GetMAxEleRadius is only defined for beam elements!");
 
     // compute eleradius from moment of inertia
     // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
 
-    double eleradius = 0;
-
-    const DRT::ElementType & eot = thisele->ElementType();
-
-    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-    {
-      DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
-      eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-    }
-    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-    {
-      DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<DRT::ELEMENTS::Beam3ii*>(thisele);
-      eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-    }
-    if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
-    {
-      DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<DRT::ELEMENTS::Beam3eb*>(thisele);
-      eleradius = sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
-    }
+    double eleradius = CalcEleRadius(thisele);
     
     // if current radius is larger than maximum radius -> update
     if (eleradius > maxeleradius) maxeleradius = eleradius;
@@ -942,13 +1081,16 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
-    DRT::Element* thisele = ContactDiscret().gElement(gid);
+    DRT::Element* thisele = BTSolDiscret().gElement(gid);
     
+    if (!BEAMCONTACT::BeamElement(*thisele))
+      dserror("The function GetMaxEleLength is only defined for beam elements!");
+
     // get global IDs of edge nodes and pointers
     int node0_gid = thisele->NodeIds()[0];
     int node1_gid = thisele->NodeIds()[1];
-    DRT::Node* node0 = ContactDiscret().gNode(node0_gid);
-    DRT::Node* node1 = ContactDiscret().gNode(node1_gid);
+    DRT::Node* node0 = BTSolDiscret().gNode(node0_gid);
+    DRT::Node* node1 = BTSolDiscret().gNode(node1_gid);
     
     // get coordinates of edge nodes
     std::vector<double> x_n0(3);
@@ -1003,6 +1145,11 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   pairs_.clear();
   pairs_.resize(0);
 
+  // clear potential beam-to-solid contact pairs
+  // since no history information is needed for this case, we don't have to store these pairs
+  btsolpairs_.clear();
+  btsolpairs_.resize(0);
+
   return;
 }
 
@@ -1016,6 +1163,9 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   // create filename for ASCII-file for output
   //**********************************************************************
   
+  if (btsol_)
+    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
+
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
   filename << "o/gmsh_output/";
@@ -1069,14 +1219,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     if (n<3) n=3;    // minimum is 3, else no volume is defined.
     int n_axial=N_Axial; //number of devisions of element in axial direction
 
-    // we need to address the nodes / dofs via the beam contact
-    // discretization, because only this is exported to full overlap
-    Epetra_Vector disbcrow(disrow);
-    disbcrow.ReplaceMap(*ContactDiscret().DofRowMap());
-
-    // export displacements into fully overlapping column map format
-    Epetra_Vector discol(*ContactDiscret().DofColMap(),true);
-    LINALG::Export(disbcrow,discol);
+    //extract fully overlapping displacement vector on contact discretization from
+    //displacement vector in row map format on problem discretization
+    Epetra_Vector disccol(*BTSolDiscret().DofColMap(),true);
+    ShiftDisMap(disrow, disccol);
 
     // do output to file in c-style
     FILE* fp = NULL;
@@ -1133,7 +1279,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     for (int i=0;i<ColElements()->NumMyElements();++i)
     {
       // get pointer onto current beam element
-      DRT::Element* element = ContactDiscret().lColElement(i);
+      DRT::Element* element = BTSolDiscret().lColElement(i);
 
       // write output in specific function
       const DRT::ElementType & eot = element->ElementType();
@@ -1151,8 +1297,8 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           for (int jd=0;jd<element->NumNode();++jd)
           {
             double referenceposition = ((element->Nodes())[jd])->X()[id];
-            std::vector<int> dofnode = ContactDiscret().Dof((element->Nodes())[jd]);
-            double displacement = discol[ContactDiscret().DofColMap()->LID(dofnode[id])];
+            std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[jd]);
+            double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[id])];
             coord(id,jd) =  referenceposition + displacement;
           }
         }
@@ -1196,10 +1342,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           for (int j=0;j<element->NumNode();++j)
           {
             double referenceposition = ((element->Nodes())[j])->X()[i];
-            std::vector<int> dofnode = ContactDiscret().Dof((element->Nodes())[j]);
-            double displacement = discol[ContactDiscret().DofColMap()->LID(dofnode[i])];
+            std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
+            double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
             nodalcoords(i,j) =  referenceposition + displacement;
-            nodaltangents(i,j) =  ((ele->Tref())[j])(i) + discol[ContactDiscret().DofColMap()->LID(dofnode[3+i])];
+            nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
           }
         }
 
@@ -1356,6 +1502,9 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
   for(int i=0;i<(int)pairs_.size();i++)
     pairs_[i]->Resetlmuzawa();
   
+  for(int i=0;i<(int)btsolpairs_.size();i++)
+    btsolpairs_[i]->Resetlmuzawa();
+
   return;
 }
 
@@ -1364,17 +1513,25 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
 {
+  //Remark: the value cnorm is only necessary in statmech. In the default case we have cnorm=NULL.
   // some local variables
-  int j=0;
   int dim = (int)pairs_.size();
+  int btsoldim = (int)btsolpairs_.size();
+
+  std::cout << "dim: " << dim << std::endl;
+  std::cout << "btsoldim: " << btsoldim << std::endl;
+
   // vector holding the values of the penetration relative to the radius of the beam with the smaller radius
   Epetra_SerialDenseVector gapvector(dim);
-  
+  Epetra_SerialDenseVector btsolgapvector(btsoldim);
+
   // initalize processor-local and global norms
   double locnorm = 0.0;
   double globnorm = 0.0;
-  
-  // loop over all pairs to find all gaps
+  double btsollocnorm = 0.0;
+  double btsolglobnorm = 0.0;
+
+  // First, we check some restrictions concerning the new gap function definition
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // only relevant if current pair is active
@@ -1392,74 +1549,104 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
         std::cout << "Penetration to large, choose higher penalty parameter!" << std::endl;
       }
 
-      #ifdef NEWBEAMCONTACT
-        if (pairs_[i]->GetShiftStatus() == true)
-        {
-        //In case the contact points of two beams are identical (i.e. r1=r2), the nodal coordinates of one beam are shifted by a small
-        //predefined value in order to enable evaluation of the contact pair. This makes the Newton scheme more robust. However,
-        //in the converged configuration we want to have the real nodal positions for all contact pairs!!!
-        std::cout << "Contact pair with identical contact points (i.e. r1=r2) not possible in the converged configuration!" << std::endl;
-        }
-      #endif
+      if (pairs_[i]->GetShiftStatus() == true)
+      {
+      //In case the contact points of two beams are identical (i.e. r1=r2), the nodal coordinates of one beam are shifted by a small
+      //predefined value in order to enable evaluation of the contact pair. This makes the Newton scheme more robust. However,
+      //in the converged configuration we want to have the real nodal positions for all contact pairs!!!
+      dserror("Contact pair with identical contact points (i.e. r1=r2) not possible in the converged configuration!");
+      }
+    }
+  }
+
+  // loop over all pairs to find all gaps
+  for (int i=0;i<(int)pairs_.size();++i)
+  {
+    // only relevant if current pair is active
+    if (pairs_[i]->GetContactFlag() == true)
+    {
 
 #ifdef RELCONSTRTOL
       // Retrieve beam radii
       std::vector<double> radii(2,0.0);
-      for(int k=0; k<(int)radii.size();k++)
+      for(int k=0; k<2;k++)
       {
         // get Element type
-        DRT::Element* currele = cdiscret_->gElement(pairs_[i]->Element1()->Id());
-        if(k>0)
-          currele = cdiscret_->gElement(pairs_[i]->Element2()->Id());
+        const DRT::Element* currele = pairs_[i]->Element1();
+        if(k==1)
+          currele = pairs_[i]->Element2();
 
-        const DRT::ElementType & eot = currele->ElementType();
-        if(eot == DRT::ELEMENTS::Beam3Type::Instance())
-          radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(currele))->Izz()) / M_PI));
-        else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-          radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(currele))->Izz()) / M_PI));
-        else if(eot == DRT::ELEMENTS::Beam3ebType::Instance())
-                  radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(currele))->Iyy()) / M_PI));
+        radii[k] = CalcEleRadius(currele);
+
         if(radii[k]==0.0)
           dserror("beam radius is 0! Check your element type.");
       }
 
       double smallerradius = std::min(radii[0], radii[1]);
 
-      gapvector[j] = pairs_[i]->GetGap()/smallerradius;
+      gapvector[i] = pairs_[i]->GetGap()/smallerradius;
 #else
-      gapvector[j] = pairs_[i]->GetGap();
+      gapvector[i] = pairs_[i]->GetGap();
 #endif
-      j++;
     }
   }
-  
+
+  // loop over all pairs to find all gaps
+  for (int i=0;i<(int)btsolpairs_.size();++i)
+  {
+    // only relevant if current pair is active
+    if (btsolpairs_[i]->GetContactFlag() == true)
+    {
+
+#ifdef RELCONSTRTOL
+      double radius = 0.0;
+      // get Element type
+      const DRT::Element* currele = btsolpairs_[i]->Element1();
+      radius = CalcEleRadius(currele);
+
+      if(radius==0.0)
+        dserror("beam radius is 0! Check your element type.");
+
+      btsolgapvector[i] = pairs_[i]->GetGap()/radius;
+#else
+      btsolgapvector[i] = pairs_[i]->GetGap();
+#endif
+    }
+  }
+
   // compute local constraint norm as a L-inf-norm
   locnorm = gapvector.NormInf();
-  
+  btsollocnorm = btsolgapvector.NormInf();
+
   // communicate among all procs to find the global constraint norm
   Comm().MaxAll(&locnorm,&globnorm,1);
-  
+  Comm().MaxAll(&btsollocnorm,&btsolglobnorm,1);
+
   // update penalty parameter if necessary
   // (only possible for AUGMENTED LAGRANGE strategy)
   bool updatepp = false;
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
   if (soltype==INPAR::CONTACT::solution_auglag)
       updatepp = IncreaseCurrentpp(globnorm);
-  
+
    // print results to screen
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if (Comm().MyPID()==0 && cnorm==NULL && ioparams.get<int>("STDOUTEVRY",0))
   {
     std::cout << std::endl << "*********************************************"<<std::endl;
     std::cout << "Global Constraint Norm = " << globnorm << std::endl;
+    std::cout << "Global BTS Constraint Norm = " << btsolglobnorm << std::endl;
     if (updatepp) std::cout << "Updated penalty parameter = " << currentpp_ << std::endl;
     std::cout<<"*********************************************"<<std::endl;
   }
-    
+
   // update class variable
-  if(cnorm==NULL)
+  if(cnorm==NULL) //=standard case
+  {
     constrnorm_ = globnorm;
-  else
+    btsolconstrnorm_ = btsolglobnorm;
+  }
+  else //=necessary for statmech
     *cnorm = globnorm;
   
   return; 
@@ -1485,6 +1672,9 @@ void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
   // loop over all potential contact pairs
   for (int i=0;i<(int)pairs_.size();++i)
     pairs_[i]->Updatelmuzawa(currentpp_);
+
+  for (int i=0;i<(int)btsolpairs_.size();++i)
+    btsolpairs_[i]->Updatelmuzawa(currentpp_);
     
   return;
 }
@@ -1527,6 +1717,9 @@ void CONTACT::Beam3cmanager::ResetPairs()
             "flag is on: In this case history variables of the last time step are needed"
             "and the pairs_ vector should not be deleted!");
   }
+
+  // Reset pairs vector to size zero
+  btsolpairs_.clear();
 
   return;
 }
@@ -1616,16 +1809,19 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
                                        const Epetra_Vector& dirichtoggle,
                                        const int& timestep)
 {
+
+  dserror("Reaction Forces are not implemented up to now!");
+
   // we need to address the nodes / dofs via the beam contact
   // discretization, because only this is exported to full overlap
   Epetra_Vector fintbc(fint);
-  fintbc.ReplaceMap(*ContactDiscret().DofRowMap());
+  fintbc.ReplaceMap(*BTSolDiscret().DofRowMap());
   Epetra_Vector dirichtogglebc(dirichtoggle);
-  dirichtogglebc.ReplaceMap(*ContactDiscret().DofRowMap());
+  dirichtogglebc.ReplaceMap(*BTSolDiscret().DofRowMap());
 
   // compute bearing reactions from fint via dirichtoggle
   // Note: dirichtoggle is 1 for DOFs with DBC and 0 elsewise
-  Epetra_Vector fbearing(*ContactDiscret().DofRowMap());
+  Epetra_Vector fbearing(*BTSolDiscret().DofRowMap());
   fbearing.Multiply(1.0,dirichtogglebc,fintbc,0.0);
   
   // std::stringstream for filename
@@ -1645,8 +1841,8 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
   
   // only implemented for one single node
   int i=0;  // CHOOSE YOUR NODE ID HERE!!!
-  const DRT::Node* thisnode = ContactDiscret().gNode(i);
-  const std::vector<int> DofGIDs = ContactDiscret().Dof(thisnode);
+  const DRT::Node* thisnode = BTSolDiscret().gNode(i);
+  const std::vector<int> DofGIDs = BTSolDiscret().Dof(thisnode);
   CSVcontent << i;
   
   // write reaction forces and moments
@@ -1676,26 +1872,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   Epetra_SerialDenseVector theta(3);
   Epetra_SerialDenseMatrix R(3,3);
         
-  double eleradius = 0;
-
-  // get radius of element
-  const DRT::ElementType & eot = thisele->ElementType();
-
-  if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
+  double eleradius = CalcEleRadius(thisele);
   
   // declaring variable for color of elements
   double color = 1.0;   
@@ -1851,22 +2028,8 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   Epetra_SerialDenseVector theta(3);
   Epetra_SerialDenseMatrix R(3,3);
   Epetra_SerialDenseMatrix coord(3,2);
-    
-  double eleradius = 0;
 
-  // get radius of element
-  const DRT::ElementType & eot = thisele->ElementType();
-
-    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-      {
-        const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-      }
-    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-      {
-        const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
-        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-      }
+  double eleradius = CalcEleRadius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;   
@@ -2207,7 +2370,7 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
   }
   else
   {
-    dserror("Element type not valid: only beam3, beam3ii and beam3eb is possible for beam contact!");
+    dserror("Beam element type not valid: only beam3, beam3ii and beam3eb is possible for beam contact!");
   }
 
   return;
@@ -2231,4 +2394,32 @@ bool CONTACT::Beam3cmanager::PairAllreadyExisting(int currid1, int currid2)
   }
 
   return pair_allready_existing;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate beam radius                                    meier 02/14|
+ *----------------------------------------------------------------------*/
+double CONTACT::Beam3cmanager::CalcEleRadius(const DRT::Element* ele)
+{
+  double eleradius = 0.0;
+
+  const DRT::ElementType & eot = ele->ElementType();
+
+  if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(ele);
+    eleradius =sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+  }
+  if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(ele);
+    eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+  }
+  if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(ele);
+    eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+  }
+
+  return eleradius;
 }

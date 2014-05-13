@@ -29,21 +29,20 @@ Maintainer: Christoph Meier
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
 
-#ifdef NEWBEAMCONTACT
-
 /*----------------------------------------------------------------------*
  |  constructor (public)                                meier 01/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
-CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew( const DRT::Discretization& pdiscret,
-                                                    const DRT::Discretization& cdiscret,
-                                                    const int& dofoffset,
-                                                    DRT::Element* element1,
-                                                    DRT::Element* element2,
-                                                    Teuchos::ParameterList beamcontactparams):
+CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
+                                                                     const DRT::Discretization& pdiscret,
+                                                                     const DRT::Discretization& cdiscret,
+                                                                     const std::map<int,int> dofoffsetmap,
+                                                                     DRT::Element* element1,
+                                                                     DRT::Element* element2,
+                                                                     Teuchos::ParameterList beamcontactparams):
 pdiscret_(pdiscret),
 cdiscret_(cdiscret),
-dofoffset_(dofoffset),
+dofoffsetmap_(dofoffsetmap),
 element1_(element1),
 element2_(element2),
 sgn_(1.0),
@@ -115,7 +114,7 @@ template<const int numnodes , const int numnodalvalues>
 CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(const Beam3contactnew& old):
 pdiscret_(old.pdiscret_),
 cdiscret_(old.cdiscret_),
-dofoffset_(old.dofoffset_)
+dofoffsetmap_(old.dofoffsetmap_)
 {
   dserror("ERROR: Copy constructor incomplete");
   return;
@@ -1480,7 +1479,9 @@ std::vector<int> CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetGlobalDo
   // get dofs in problem discretization via offset
   std::vector<int> pdofs((int)(cdofs.size()));
   for (int k=0;k<(int)(cdofs.size());++k)
-    pdofs[k] = cdofs[k]-DofOffset();
+  {
+    pdofs[k]=(dofoffsetmap_.find(cdofs[k]))->second;
+  }
 
   return pdofs;
 }
@@ -1661,7 +1662,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
                                                                       const int numnodalvalues,
                                                                       const DRT::Discretization& pdiscret,
                                                                       const DRT::Discretization& cdiscret,
-                                                                      const int& dofoffset,
+                                                                      const std::map<int,int> dofoffsetmap,
                                                                       DRT::Element* element1,
                                                                       DRT::Element* element2,
                                                                       Teuchos::ParameterList beamcontactparams)
@@ -1675,19 +1676,19 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
       {
         case 2:
         {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<2,1>(pdiscret,cdiscret,dofoffset,element1,element2,beamcontactparams));
+          return Teuchos::rcp (new CONTACT::Beam3contactnew<2,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
         }
         case 3:
         {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<3,1>(pdiscret,cdiscret,dofoffset,element1,element2,beamcontactparams));
+          return Teuchos::rcp (new CONTACT::Beam3contactnew<3,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
         }
         case 4:
         {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<4,1>(pdiscret,cdiscret,dofoffset,element1,element2,beamcontactparams));
+          return Teuchos::rcp (new CONTACT::Beam3contactnew<4,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
         }
         case 5:
         {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<5,1>(pdiscret,cdiscret,dofoffset,element1,element2,beamcontactparams));
+          return Teuchos::rcp (new CONTACT::Beam3contactnew<5,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
         }
         default:
           dserror("No valid template parameter for the number of nodes (numnodes = 2,3,4,5 for Reissner beams) available!");
@@ -1701,7 +1702,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
       {
         case 2:
         {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<2,2>(pdiscret,cdiscret,dofoffset,element1,element2,beamcontactparams));
+          return Teuchos::rcp (new CONTACT::Beam3contactnew<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
         }
         default:
           dserror("No valid template parameter for the number of nodes (only numnodes = 2 for Kirchhoff beams valid so far) available!");
@@ -1855,5 +1856,3 @@ template class CONTACT::Beam3contactnew<3,1>;
 template class CONTACT::Beam3contactnew<4,1>;
 template class CONTACT::Beam3contactnew<5,1>;
 template class CONTACT::Beam3contactnew<2,2>;
-
-#endif //#ifdef NEWBEAMCONTACT

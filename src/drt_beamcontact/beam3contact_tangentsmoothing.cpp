@@ -41,8 +41,6 @@ Maintainer: Christoh Meier
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
-#ifdef NEWBEAMCONTACT
-
 /*----------------------------------------------------------------------*
  |  Constructor of class B3CNeighbor                         meier 04/11|
  *----------------------------------------------------------------------*/
@@ -212,5 +210,3 @@ void CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(
 /*----------------------------------------------------------------------*
  |  end: evaluate shape functions and derivatives
  *----------------------------------------------------------------------*/
-
-#endif //#ifdef NEWBEAMCONTACT

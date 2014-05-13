@@ -2998,7 +2998,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 
         // add all new elements to contact discretization on all Procs
         if(beamcmanager!=Teuchos::null)
-          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalquaternions);
+          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->BTSolDiscret(),nodalquaternions);
 
         // add two more beam3 elements for myosin thick filament
         if(linkermodel_==statmech_linker_myosinthick)
@@ -3012,8 +3012,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 //
 //          if(beamcmanager!=Teuchos::null)
 //          {
-//            beamcmanager->ContactDiscret().CheckFilledGlobally();
-//            beamcmanager->ContactDiscret().FillComplete(true, false, false);
+//            beamcmanager->BTSolDiscret().CheckFilledGlobally();
+//            beamcmanager->BTSolDiscret().FillComplete(true, false, false);
 //          }
 //        }
       }
@@ -3026,8 +3026,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
     // synchronization for contact discretization
     if(beamcmanager!=Teuchos::null)
     {
-      beamcmanager->ContactDiscret().CheckFilledGlobally();
-      beamcmanager->ContactDiscret().FillComplete(true, false, false);
+      beamcmanager->BTSolDiscret().CheckFilledGlobally();
+      beamcmanager->BTSolDiscret().FillComplete(true, false, false);
     }
   }
 
@@ -3285,7 +3285,7 @@ void STATMECH::StatMechManager::AddSupportElements(const Epetra_Map&            
 
       // add all new elements to contact discretization on all Procs
       if(beamcmanager!=Teuchos::null)
-        AddNewCrosslinkerElement(additionalgid, addednodeids,bspotgid, addedxrefe,addedrotrefe,beamcmanager->ContactDiscret());
+        AddNewCrosslinkerElement(additionalgid, addednodeids,bspotgid, addedxrefe,addedrotrefe,beamcmanager->BTSolDiscret());
     }
   }
   return;
@@ -3743,9 +3743,9 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   // contact elements
   if(beamcmanager!=Teuchos::null)
   {
-    RemoveCrosslinkerElements(beamcmanager->ContactDiscret(),*delcrosselement,&deletedcelements_);
+    RemoveCrosslinkerElements(beamcmanager->BTSolDiscret(),*delcrosselement,&deletedcelements_);
     if(linkermodel_ == statmech_linker_myosinthick)
-      RemoveMultipleCrosslinkerElements(beamcmanager->ContactDiscret(),*additionaldelele, &deletedelements_);
+      RemoveMultipleCrosslinkerElements(beamcmanager->BTSolDiscret(),*additionaldelele, &deletedelements_);
   }
 
   // adjust crosslinker-element mapping vector
@@ -5157,17 +5157,17 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<Epetra_Vector>         
       DRT::Element* ele = dynamic_cast<DRT::Element*>(o);
       if (ele == NULL)
         dserror("Failed to build an element from the element data");
-      beamcmanager->ContactDiscret().AddElement(Teuchos::rcp(ele));
+      beamcmanager->BTSolDiscret().AddElement(Teuchos::rcp(ele));
     }
     deletedcelements_.clear();
 
     for(int i=0; i<(int)addedcelements_.size(); i++)
-      beamcmanager->ContactDiscret().DeleteElement(addedcelements_[i]);
+      beamcmanager->BTSolDiscret().DeleteElement(addedcelements_[i]);
     addedcelements_.clear();
 
     // contact discretization
-    beamcmanager->ContactDiscret().CheckFilledGlobally();
-    beamcmanager->ContactDiscret().FillComplete();
+    beamcmanager->BTSolDiscret().CheckFilledGlobally();
+    beamcmanager->BTSolDiscret().FillComplete();
   }
 
   return;
@@ -6750,7 +6750,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 
           // add all new elements to contact discretization on all Procs
           if(beamcmanager!=Teuchos::null)
-            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalquaternions);
+            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->BTSolDiscret(),nodalquaternions);
         }
       }
     }
@@ -6761,8 +6761,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 
     if(beamcmanager!=Teuchos::null)
     {
-      beamcmanager->ContactDiscret().CheckFilledGlobally();
-      beamcmanager->ContactDiscret().FillComplete(true, false, false);
+      beamcmanager->BTSolDiscret().CheckFilledGlobally();
+      beamcmanager->BTSolDiscret().FillComplete(true, false, false);
     }
 
     // reduce number of contact pairs to zero again to avoid unnecessary computations

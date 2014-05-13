@@ -1905,6 +1905,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
                                yesnotuple,yesnovalue,&beamcontact);
 
+  setStringToIntegralParameter<int>("BEAMS_BTSOL","No","decide, if also the contact between beams and solids is possible",
+                               yesnotuple,yesnovalue,&beamcontact);
+
+  setStringToIntegralParameter<int>("BEAMS_BTSPH","No","decide, if also the contact between beams and spheres is possible",
+                               yesnotuple,yesnovalue,&beamcontact);
+
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
        tuple<std::string>("None","none",
                           "Cpp", "cpp"),

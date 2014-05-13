@@ -20,8 +20,10 @@ Maintainer: Christoph Meier
 #include "Epetra_Comm.h"
 #include "beam3contact_defines.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "beam3contact.H"
 #include "beam3contactnew.H"
+#include "beam3tosolidcontact.H"
+#include "../drt_contact/contact_element.H"
+#include "../drt_contact/contact_node.H"
 
 namespace LINALG
 {
@@ -89,16 +91,10 @@ public:
   inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_; }
 
   /*!
-  \brief Get beam contact discretization
+  \brief Get beam to solid contact discretization
 
   */
-  inline DRT::Discretization& ContactDiscret() { return *cdiscret_; }
-
-  /*!
-  \brief Get offset of dofs between cdiscret and pdiscret
-
-  */
-  inline int& DofOffset() { return dofoffset_; }
+  inline DRT::Discretization& BTSolDiscret() { return *btsoldiscret_; }
 
   /*!
   \brief Get communicator
@@ -116,12 +112,8 @@ public:
   inline const Teuchos::RCP<Epetra_Map> RowElements() const { return elerowmap_; }
   inline const Teuchos::RCP<Epetra_Map> ColElements() const { return elecolmap_; }
   inline const Teuchos::RCP<Epetra_Map> FullElements() const { return elefullmap_; }
-#ifndef NEWBEAMCONTACT
-  inline const std::vector<Teuchos::RCP<Beam3contact> >& Pairs() const { return oldpairs_; }
-#else
   //template<int numnodes, int numnodalvalues>
   inline const std::vector<Teuchos::RCP<Beam3contactinterface > >& Pairs() const { return oldpairs_; }
-#endif
   inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const {return tree_; }
 
   /*!
@@ -301,11 +293,17 @@ private:
 
   //! @name member variables
 
-  //! Application of new gap function definition (true) in order to avoid crossing of slender beams or standard gap function (false)
+  //! Flag from input file indicating if the new gap function definition (true) should be applied in order to avoid crossing of slender beams (default: false)
   bool newgapfunction_;
 
-  //! Which type of tangent field smoothing has to be applied?
+  //! Flag from input file indicating which type of tangent field smoothing has to be applied? (default: none)
   int smoothing_;
+
+  //! Flag from input file indicating if beam-to-solid contact is applied or not (default: false)
+  bool btsol_;
+
+  //! Flag from input file indicating if beam-to-sphere contact is applied or not (default: false)
+  bool btsph_;
 
   //! number of nodes of applied element type
   int numnodes_;
@@ -317,13 +315,13 @@ private:
   DRT::Discretization& pdiscret_;
 
   //! contact discretization (basically a copy)
-  Teuchos::RCP<DRT::Discretization> cdiscret_;
+  Teuchos::RCP<DRT::Discretization> btsoldiscret_;
 
   //! the Comm interface of the problem discretization
   const Epetra_Comm& pdiscomm_;
 
-  //! dof offset between pdicsret and cdiscret
-  int dofoffset_;
+  //! general map that describes arbitrary dof offset between pdicsret and cdiscret
+  std::map<int,int> dofoffsetmap_;
 
   //! node and element maps
   Teuchos::RCP<Epetra_Map> noderowmap_;
@@ -336,31 +334,21 @@ private:
   //! occtree for contact search
   Teuchos::RCP<Beam3ContactOctTree> tree_;
 
-#ifndef NEWBEAMCONTACT
-  //! vector of contact pairs (pairs of elements, which might get in contact)
-  std::vector<Teuchos::RCP<Beam3contact> > pairs_;
-  //! vector of contact pairs of last time step
-  std::vector<Teuchos::RCP<Beam3contact > > oldpairs_;
-  //! vector of contact pairs stored for output (output is called after Update() which erases all pairs!)
-  std::vector<Teuchos::RCP<Beam3contact> > outputpairs_;
-#else
   //! vector of contact pairs (pairs of elements, which might get in contact)
   std::vector<Teuchos::RCP<Beam3contactinterface > > pairs_;
   //! vector of contact pairs of last time step. After Update() oldpairs_ is identical with pairs_ until a new time
   // step starts. Therefore oldpairs_ can be used for output at the end of a time step after Upadte() is called.
   std::vector<Teuchos::RCP<Beam3contactinterface > > oldpairs_;
-#endif
+  //! vector of close beam to solid contact pairs (pairs of elements, which might get in contact)
+  std::vector<Teuchos::RCP<Beam3tosolidcontactinterface > > btsolpairs_;
+  //! total vector of solid contact elements
+  std::vector<Teuchos::RCP<CONTACT::CoElement> > solcontacteles_;
+  //! total vector of solid contact elements
+  std::vector<Teuchos::RCP<CONTACT::CoNode> > solcontactnodes_;
 
-
-#ifndef NEWBEAMCONTACT
-  //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
-  // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
-  std::map<std::pair<int,int>, Teuchos::RCP<Beam3contact> > contactpairmap_;
-#else
   //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
   // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap_;
-#endif
 
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;
@@ -386,6 +374,9 @@ private:
   //! current constraint norm (violation of non-penetration condition)
   double constrnorm_;
 
+  //! current constraint norm (violation of non-penetration condition) of beam-to-solid contact pairs
+  double btsolconstrnorm_;
+
   //! current penalty parameter (might be modified within augmented Lagrange strategy)
   double currentpp_;
 
@@ -402,7 +393,7 @@ private:
   We search pairs of elements that might get in contact. Pairs of elements that are direct neighbours,
   i.e. share one node, will be rejected.
   */
-  std::vector<std::vector<DRT::Element*> > SearchPossibleContactPairsNew(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+  std::vector<std::vector<DRT::Element*> > SearchPossibleContactPairs(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   /*!
   \brief Compute the search radius
@@ -433,6 +424,11 @@ private:
   */
   void GetMaxEleRadius(double& max_ele_radius);
 
+  /*
+  \brief Calculate beam radius
+  */
+  double CalcEleRadius(const DRT::Element* ele);
+
   /*!
   \brief Set the member variables numnodes_ and numnodalvalues depending on the element type handed in!
   */
@@ -442,6 +438,11 @@ private:
   \brief Check, if pair with given element IDs is allready existing in the vector pairs_!
   */
   bool PairAllreadyExisting(int currid1, int currid2);
+
+  /*!
+  \brief Check, if current node is a beam element
+  */
+  bool BeamElement(DRT::Element& element);
 
   /*!
   \brief Get maximum element length
@@ -488,11 +489,17 @@ private:
 
 
   /*!
+  \brief Shift map of displacement vector
+
+  */
+  void ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vector& disccol);
+
+  /*!
   \brief Store current displacment state in currentpositions
 
   */
   void SetCurrentPositions(std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                           const Epetra_Vector& disrow);
+                           const Epetra_Vector& disccol);
 
   /*!
   \brief Set displacment state on contact element pair level
@@ -501,7 +508,7 @@ private:
   the current tangent vectors in case of Kirchhoff beam elements
   */
   void SetState(std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                const Epetra_Vector& disrow);
+                const Epetra_Vector& disccol);
 
   /*!
   \brief Compute coordinates for GMSH-Output for two-noded-elements

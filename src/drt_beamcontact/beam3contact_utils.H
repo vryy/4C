@@ -46,6 +46,7 @@ Maintainer: Christoph Meier
 #include "Epetra_Vector.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "Sacado.hpp"
+#include "../drt_lib/drt_discret.H"
 
 typedef Sacado::Fad::DFad<double> FAD;
 
@@ -147,6 +148,21 @@ namespace BEAMCONTACT
 
     return;
   }
+
+  /*!
+  \brief Check, if current node belongs to a beam element
+  */
+  bool BeamNode(DRT::Node& node);
+
+  /*!
+  \brief Check, if current node is a beam element
+  */
+  bool BeamElement(DRT::Element& element);
+
+  /*
+  \brief Check, if two elements share a node -> neighbor elements
+  */
+  bool ElementsShareNode(DRT::Element& element1,DRT::Element& element2);
 
 } // namespace BEAMCONTACT
 

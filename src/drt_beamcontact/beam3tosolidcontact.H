@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3contactnew.H
+\file beam3tosolidcontact.H
 
 <pre>
 Maintainer: Christoph Meier
@@ -8,8 +8,8 @@ Maintainer: Christoph Meier
             089 - 289-15262
 </pre>
 *----------------------------------------------------------------------*/
-#ifndef BEAM3CNEW_H
-#define BEAM3CNEW_H
+#ifndef BEAM3TSC_H
+#define BEAM3TSC_H
 
 #include "beam3contact_utils.H"
 #include "beam3contact_tangentsmoothing.H"
@@ -23,14 +23,12 @@ namespace CONTACT
 {
 
 /*!
- \brief contact element for contact between two 3D beam elements
-
- Refer also to the Semesterarbeit of Matthias Mayr, 2010
+ \brief contact element for contact between a 3D beam end a 2D surface (belonging to a 3D solid) element
 
  \author meier (meier@lnm.mw.tum.de)
  */
 
-class Beam3contactinterface
+class Beam3tosolidcontactinterface
 {
 public:
 
@@ -50,12 +48,12 @@ public:
   \param ele1pos (in): nodal coordinates of first element
   \param ele2pos (in): nodal coordinates of second element
   */
-  Beam3contactinterface() {}
+  Beam3tosolidcontactinterface() {}
 
   /*!
   \brief Destructor
   */
-  virtual ~Beam3contactinterface() {}
+  virtual ~Beam3tosolidcontactinterface() {}
 
   //@}
 
@@ -129,14 +127,15 @@ public:
                         const double& pp)=0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
-  static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,
-                                     const int numnodalvalues,
-                                     const DRT::Discretization& pdiscret,
-                                     const DRT::Discretization& cdiscret,
-                                     const std::map<int,int> dofoffsetmap,
-                                     DRT::Element* element1,
-                                     DRT::Element* element2,
-                                     Teuchos::ParameterList beamcontactparams);
+  static Teuchos::RCP<Beam3tosolidcontactinterface> Impl( const int numnodessol,
+                                                          const int numnodes,
+                                                          const int numnodalvalues,
+                                                          const DRT::Discretization& pdiscret,
+                                                          const DRT::Discretization& cdiscret,
+                                                          const std::map<int,int>& dofoffsetmap,
+                                                          DRT::Element* element1,
+                                                          DRT::Element* element2,
+                                                          Teuchos::ParameterList beamcontactparams);
 
   /*!
   \brief Reset Uzawa-based Lagrange multiplier
@@ -173,13 +172,13 @@ public:
   */
   virtual void UpdateEleSmoothTangents(std::map<int,LINALG::Matrix<3,1> >& currentpositions)=0;
 
-}; // class Beam3contactinterface
+}; // class Beam3tosolidcontactinterface
 
 
 
 
-template<const int numnodes , const int numnodalvalues>
-class Beam3contactnew: public Beam3contactinterface
+template<const int numnodessol, const int numnodes, const int numnodalvalues>
+class Beam3tosolidcontact: public Beam3tosolidcontactinterface
 {
 public:
 
@@ -198,23 +197,23 @@ public:
   \param ele1pos (in): nodal coordinates of first element
   \param ele2pos (in): nodal coordinates of second element
   */
-  Beam3contactnew(  const DRT::Discretization& pdiscret,
-                    const DRT::Discretization& cdiscret,
-                    const std::map<int,int> dofoffsetmap,
-                    DRT::Element* element1,
-                    DRT::Element* element2,
-                    Teuchos::ParameterList beamcontactparams);
+  Beam3tosolidcontact(    const DRT::Discretization& pdiscret,
+                          const DRT::Discretization& cdiscret,
+                          const std::map<int,int>& dofoffsetmap,
+                          DRT::Element* element1,
+                          DRT::Element* element2,
+                          Teuchos::ParameterList beamcontactparams);
 
   /*!
   \brief Copy Constructor
   Makes a deep copy of this contact element pair
   */
-  Beam3contactnew(const Beam3contactnew& old);
+  Beam3tosolidcontact(const Beam3tosolidcontact& old);
 
   /*!
   \brief Destructor
   */
-  virtual ~Beam3contactnew() {};
+  virtual ~Beam3tosolidcontact() {};
   //@}
 
 
@@ -336,7 +335,6 @@ public:
   */
   void UpdateEleSmoothTangents(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
-
   //@}
 private:
 
@@ -349,7 +347,7 @@ private:
   const DRT::Discretization& cdiscret_;
 
   //! dof offset between pdiscret and cdiscret
-  std::map<int,int> dofoffsetmap_;
+  const std::map<int,int>& dofoffsetmap_;
 
   //! first element of contact pair
   DRT::Element* element1_;
@@ -357,10 +355,8 @@ private:
   //! second element of contact pair
   DRT::Element* element2_;
 
-  //const int numnode1_ = NumNodes1(element1_);
-
   //! current node coordinates of the two elements
-  LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele1pos_;
+  LINALG::TMatrix<TYPE,3*numnodessol,1> ele1pos_;
   LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele2pos_;
 
   //! variable to check if old or modified gap function
@@ -396,7 +392,7 @@ private:
   //! flag indicating if the element nodal positions have been shifted in order to avoid r1_=r2_
   bool shiftnodalvalues_;
 
-  //! coordinates of contact point on center lines of beams
+  //! coordinates of contact points
   LINALG::TMatrix<TYPE, 3, 1> r1_;
   LINALG::TMatrix<TYPE, 3, 1> r2_;
 
@@ -575,16 +571,6 @@ private:
   */
   void CheckContactStatus(const double& pp);
 
-  /*!
-    \brief Get global dofs of a node
-
-    Internally this method first extracts the dofs of the given node
-    in the beam contact discretization (which has its own dofs) and
-    then transfers these dofs to their actual GIDs in the underlying
-    problem discretization by applying the pre-computed dofoffset_.
-    */
-    std::vector<int> GetGlobalDofs(const DRT::Node* node);
-
     /*!
       \brief These method shifts the nodal positions applied within the beam contact framework py a small pre-defined
       amount in order to enable contact evaluation in the case of two identical contact points, i.e r1=r2
@@ -605,9 +591,20 @@ private:
                                            const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
                                            const LINALG::TMatrix<TYPE, 3, 1>& r2_xi);
 
+
+    /*!
+    \brief Get global dofs of a node
+
+    Internally this method first extracts the dofs of the given node
+    in the beam contact discretization (which has its own dofs) and
+    then transfers these dofs to their actual GIDs in the underlying
+    problem discretization by applying the pre-computed dofoffset_.
+    */
+    std::vector<int> GetGlobalDofs(const DRT::Node* node);
+
   //@}
 
-}; // class Beam3contactnew
+}; // class Beam3tosolidcontact
 } // namespace CONTACT
 
-#endif  // #ifndef BEAM3CNEW_H
+#endif  // #ifndef BEAM3TSC_H

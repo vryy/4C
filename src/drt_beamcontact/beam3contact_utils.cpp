@@ -38,28 +38,88 @@ Maintainer: Christoh Meier
 *----------------------------------------------------------------------*/
 
 #include "beam3contact_utils.H"
+#include "../drt_beam3/beam3.H"
+#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3eb/beam3eb.H"
+#include "beam3contact_manager.H"
 
 
-  //Cast of FAD to double
-  double BEAMCONTACT::CastToDouble(FAD a)
+//Cast of FAD to double
+double BEAMCONTACT::CastToDouble(FAD a)
+{
+  return a.val();
+}
+
+//Cast of double to double
+double BEAMCONTACT::CastToDouble(double a)
+{
+  return a;
+}
+
+//Calculate Norm of a scalar FAD or double quantity
+double BEAMCONTACT::Norm(double a)
+{
+  return sqrt(a*a);
+}
+
+//Calculate Norm of a scalar FAD or double quantity
+FAD BEAMCONTACT::Norm(FAD a)
+{
+  return pow(a*a,0.5);
+}
+/*----------------------------------------------------------------------*
+ |  Check, if current node belongs to a beam element         meier 05/14|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::BeamNode(DRT::Node& node)
+{
+  bool beameles = false;
+  bool solideles = false;
+
+  //TODO: actually we would have to check all elements of all processors!!! Gather?
+  for (int i=0; i< (int)(node.NumElement()); i++)
   {
-    return a.val();
+    if(BeamElement(*(node.Elements())[i]))
+      beameles = true;
+    else
+      solideles = true;
   }
 
-  //Cast of double to double
-  double BEAMCONTACT::CastToDouble(double a)
+  if (beameles and solideles)
+    dserror("Beam elements and solid elements sharing the same node is currently not allowed in BACI!");
+
+  return beameles;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check, if current element is a beam element         meier 05/14|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::BeamElement(DRT::Element& element)
+{
+  const DRT::ElementType& ele_type = element.ElementType();
+
+  if (ele_type == DRT::ELEMENTS::Beam3ebType::Instance() or ele_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele_type ==DRT::ELEMENTS::Beam3iiType::Instance())
+    return true; //TODO: Print Warning, that only these three types of beam elements are supported!!!
+  else
+    return false;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check, if two elements share a node -> neighbor elements meier 05/14|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::ElementsShareNode(DRT::Element& element1,DRT::Element& element2)
+{
+  bool sharenode = false;
+
+  for (int i=0;i<element1.NumNode();i++)
   {
-    return a;
+    int id = element1.NodeIds()[i];
+
+    for (int j=0;j<element2.NumNode();j++)
+    {
+      if(id==element2.NodeIds()[j])
+        sharenode = true;
+    }
   }
 
-  //Calculate Norm of a scalar FAD or double quantity
-  double BEAMCONTACT::Norm(double a)
-  {
-    return sqrt(a*a);
-  }
-
-  //Calculate Norm of a scalar FAD or double quantity
-  FAD BEAMCONTACT::Norm(FAD a)
-  {
-    return pow(a*a,0.5);
-  }
+    return sharenode;
+}
