@@ -53,6 +53,11 @@ public:
 private:
 
   /*!
+  \brief Initiate crack into the structure if not already present
+   */
+  void InitiateCrack();
+
+  /*!
   \brief Get attached nodes for each crack tip nodes, and construct neighboring node data structure which will be
   used to calculate stress intensity factors
    */
@@ -121,6 +126,12 @@ private:
                                                    const double * coord );
 
   /*!
+  \brief Check whether the crack has completely split the structure into two, and do the operations necessary to stop the crack
+  propagation after this point
+   */
+  void CheckCompleteSplit();
+
+  /*!
   \brief When a new node is introduced into the discretization, it is mandatory to copy the conditions
   existing in old nodes into its duplicated new nodes
    */
@@ -142,6 +153,9 @@ private:
 
   //! all the nodes that defines the crack tip
   std::vector<int> tipnodes_;
+
+  //! all the nodes that are on the boundary of the domain
+  std::vector<int> boun_nodes_;
 
   //! unit normal vector at crack tip
   LINALG::Matrix<3,1> normal_;
@@ -190,8 +204,6 @@ private:
 
   //! Whether Dirichlet BC set at the crack tip nodes should be cleared
   bool clearCondns_;
-  //! value of PI
-  double PI_;
 
   int myrank_;
 
@@ -199,6 +211,20 @@ private:
   std::map<int, int> tip_phi_;
   std::map<int, int> tip_mphi_;
 
+  //! Whether crack has propagated completely to such a extent that the structure is completely split into two
+  bool strIsSplit_;
+
+  //! The Id of the first node that will added into discretization after crack propagation. This will be incremented
+  //! each time we add a new element
+  // This number is set from the input file. It should be more than the total no of nodes in all the discretization of the problem
+  // included
+  int startNewId_;
+
+  //! value of PI
+  double PI_;
+
+  //! Is crack already initiated
+  bool crackInitiated_;
 };
 
 } /* namespace CRACK */

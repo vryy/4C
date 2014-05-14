@@ -29,6 +29,21 @@ namespace UTILS{
   void UpdateThisEpetraVectorCrack( const Teuchos::RCP<DRT::Discretization>& discret, Teuchos::RCP<Epetra_Vector>& vec,
                                   const std::map<int,int>& oldnewIds );
 
+  /*!
+  \brief Return the angle of the vector that points from a to b
+   */
+  double FindAngle( const double a[3], const double b[3] );
+
+  /*!
+  \brief convert the angle calculated in the range [-pi,pi] to [0,2pi]
+   */
+  void convertAngleTo_02PI_range( double &ang );
+
+  /*!
+  \brief Returns true when the given element has given nodeid
+   */
+  bool ElementHasThisNodeId( const DRT::Element* ele, int nodeid );
+
 } /* namespace CRACK */
 } /* namespace CRACK */
 } /* namespace DRT */

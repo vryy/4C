@@ -258,6 +258,7 @@ public:
     CrackMastersurface,
     CrackSlavesurface,
     CrackInitPoints,
+    CrackBoundaryPoints,
     BioPointDirichlet,
     BioLineDirichlet,
     BioSurfaceDirichlet,

@@ -16,6 +16,7 @@ Maintainer: Sudhakar
 
 #include "propagateCrack.H"
 #include "crack_tolerance.H"
+#include "crackUtils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
@@ -39,44 +40,68 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
  clearCondns_( false ),
  myrank_( comm_.MyPID() )
 {
-
   PI_ = 22.0 / 7.0;
-
   min_angle_tol_ = MIN_PROP_ANGLE * PI_ / 180.0;
+
+  strIsSplit_ = false;
+  crackInitiated_ = false;
+
+  // get the initial crack tip nodes when analyzing propagation of an existing crack
+	DRT::Condition* boundpts = discret_->GetCondition( "CrackBoundaryPoints" );
+
+	if( boundpts == NULL )
+	  dserror( "Crack boundary nodes unspecified\n" );
+
+  const std::vector<int>* bounnodes = const_cast<std::vector<int>* >(boundpts->Nodes());
+  boun_nodes_.resize( bounnodes->size() );
+
+  for( unsigned i=0; i< bounnodes->size(); i++ )
+  {
+    int val = (*bounnodes)[i];
+    boun_nodes_[i] = val;
+  }
 
   // get the initial crack tip nodes when analyzing propagation of an existing crack
   DRT::Condition* crackpts = discret_->GetCondition( "CrackInitiationPoints" );
 
-  const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
-  tipnodes_.resize( tipnodes->size() );
-
-  for( unsigned i=0; i< tipnodes->size(); i++ )
+  if( crackpts != NULL )
   {
-    int val = (*tipnodes)[i];
-    tipnodes_[i] = val;
+    const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+    tipnodes_.resize( tipnodes->size() );
+
+    for( unsigned i=0; i< tipnodes->size(); i++ )
+    {
+      int val = (*tipnodes)[i];
+      tipnodes_[i] = val;
+    }
+
+    crackInitiated_ = true;
   }
 
-  DRT::Condition* maspts = discret_->GetCondition( "masterCrackSurface" );
-  DRT::Condition* slapts = discret_->GetCondition( "slaveCrackSurface" );
-
-  const std::vector<int>* masternodes = const_cast<std::vector<int>* >(maspts->Nodes());
-  const std::vector<int>* slavenodes = const_cast<std::vector<int>* >(slapts->Nodes());
-
-  if( masternodes->size() != slavenodes->size() )
-    dserror("There should be equal number of master and slave nodes\n");
-
-  if( masternodes->size() == 0 )
-    dserror("No master nodes defined. Are you dreaming of simulating crack initiation?\n");
-
-  for( unsigned i=0; i<masternodes->size(); i++ )
+  if( crackInitiated_  )
   {
-    cracknodes_.insert( (*masternodes)[i] );
-    cracknodes_.insert( (*slavenodes)[i] );
+    DRT::Condition* maspts = discret_->GetCondition( "masterCrackSurface" );
+    DRT::Condition* slapts = discret_->GetCondition( "slaveCrackSurface" );
 
-    // since old tip nodes are not available in the initial time step, we
-    // copy all the crack surface nodes here so that appropriate neighbors can be found
-    oldTipnodes_.insert( (*masternodes)[i] );
-    oldTipnodes_.insert( (*slavenodes)[i] );
+    const std::vector<int>* masternodes = const_cast<std::vector<int>* >(maspts->Nodes());
+    const std::vector<int>* slavenodes = const_cast<std::vector<int>* >(slapts->Nodes());
+
+    //if( masternodes->size() != slavenodes->size() )
+    //  dserror("There should be equal number of master and slave nodes\n");
+
+    if( masternodes->size() == 0 )
+      dserror("No master nodes defined. Are you dreaming of simulating crack initiation?\n");
+
+    for( unsigned i=0; i<masternodes->size(); i++ )
+    {
+      cracknodes_.insert( (*masternodes)[i] );
+      cracknodes_.insert( (*slavenodes)[i] );
+
+      // since old tip nodes are not available in the initial time step, we
+      // copy all the crack surface nodes here so that appropriate neighbors can be found
+      oldTipnodes_.insert( (*masternodes)[i] );
+      oldTipnodes_.insert( (*slavenodes)[i] );
+    }
   }
 
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
@@ -130,6 +155,8 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
     kappa_ = 3.0 - poisson_;
 
   fac_ = young_ / ( 1.0 + poisson_ ) / ( 1.0 + kappa_ );
+
+  startNewId_ = crackparam.get<int>("START_NEW_ID");
 }
 
 /*------------------------------------------------------------------------------------*
@@ -143,6 +170,10 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   tip_phi_.clear();
   tip_mphi_.clear();
   tip_bc_disp_.clear();
+
+  // Crack has already propagated that the structure is completely split into two
+  if( strIsSplit_ )
+    return;
 
   if( clearCondns_ )
   {
@@ -177,14 +208,23 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   dserror("done");*/
   /******************************************************************/
 
-  std::cout<<"tip nodes = "<<tipnodes_[0]<<"\t"<<tipnodes_[1]<<"\n";
-
   // export "displacement" to column map
   disp_col_ = LINALG::CreateVector( *discret_->DofColMap(), true );
   LINALG::Export(*displace,*disp_col_);
 
   //-------------
-  // STEP 1 : Compute stress-intensity factors at crack tip
+  // STEP 1 : Initiate crack if not already existing
+  //-------------
+  InitiateCrack();
+
+  // crack has not yet initiated. nothing more to do here
+  if( not crackInitiated_ )
+    return;
+
+  std::cout<<"tip nodes = "<<tipnodes_[0]<<"\t"<<tipnodes_[1]<<"\n";
+
+  //-------------
+  // STEP 2 : Compute stress-intensity factors at crack tip
   //-------------
   findStressIntensityFactor();
 
@@ -195,28 +235,59 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
     return;
 
   //-------------
-  // STEP 2 : Check whether propagation criterion is satisfied
+  // STEP 3 : Check whether propagation criterion is satisfied
   //-------------
   bool isProp = DoCrackPropagate();
   if( not isProp )
     return;
 
   //-------------
-  // STEP 3 : Decide crack propagation angle from stress-intensity factors
+  // STEP 4 : Decide crack propagation angle from stress-intensity factors
   //-------------
   decidePropagationAngle();
 
   //-------------
-  // STEP 4 : Update crack information
+  // STEP 5 : Update crack information
   //-------------
 
   //std::vector<int> newTip = findNewCrackTip();
   std::vector<int> newTip = findNewCrackTip1();
 
   //-------------
-  // STEP 5 : Update crack information
+  // STEP 6 : Introduced new nodes into structural discretization
   //-------------
   updateCrack( newTip );
+
+  //-------------
+  // STEP 7 : Check whether the crack has split the body completely into two
+  //-------------
+  CheckCompleteSplit();
+}
+
+/*------------------------------------------------------------------------------------*
+ * If not already present, initiate crack into the structure                sudhakar 05/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateCrack::InitiateCrack()
+{
+
+  if( crackInitiated_ )
+    return;
+
+  Teuchos::ParameterList p;
+  p.set("action","postprocess_stress");
+  p.set("stresstype","ndxyz");
+  //p.set("gpstressmap", data);
+  Epetra_MultiVector* tmp = new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true);
+
+  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(tmp);
+  p.set("poststress",nodal_stress);
+  discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (nodal_stress==Teuchos::null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  }
+
+  dserror("done");
 }
 
 /*------------------------------------------------------------------------------------*
@@ -482,6 +553,9 @@ void DRT::CRACK::PropagateCrack::findStressIntensityFactor()
   K_I_ = K_I_ / tip_phi_.size();
   K_II_ = K_II_ / tip_phi_.size();
 
+  //TODO: can we simulate mixed mode and couple it to FSI-crack interaction
+  //K_II_ = 0.0; //at the moment we simulate only K_1 mode crack
+
   std::cout<<"stress intensity factors = "<<K_I_<<"\t"<<K_II_<<"\n";
 }
 
@@ -732,7 +806,6 @@ void DRT::CRACK::PropagateCrack::decidePropagationAngle()
   double deno = K_I_ + sqrt( K_I_ * K_I_ + 8.0 * K_II_ * K_II_ );
   propAngle_ = 2.0*atan( -2.0 * K_II_ / deno );
 
-
   //propAngle_ = 0.0;
   /*********************************************************/
   /*static int k = 1;
@@ -754,12 +827,7 @@ void DRT::CRACK::PropagateCrack::decidePropagationAngle()
   // the obtained propagation angle is w.r.t normal direction
   // in order to get absolute propagation angle, add the normal angle to this
   double norm_ang = atan2( normal_(1,0), normal_(0,0) );
-  // atan2() returns values in the range (-pi,pi)
-  // in order to make comparisons we need it in range (0,2*pi)
-  if( (fabs(norm_ang) < ANGLE_TOL_ZERO) or (fabs(norm_ang - 2*PI_) < ANGLE_TOL_ZERO) )
-    norm_ang = 0.0;
-  else if( norm_ang < 0.0 )
-    norm_ang = 2 * PI_ + norm_ang;
+  DRT::CRACK::UTILS::convertAngleTo_02PI_range( norm_ang );
 
   propAngle_ += norm_ang;
 
@@ -813,7 +881,7 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
   // The procedure is same in 3D, except that there are 8 elements, and 4 gets new duplicate node
   //
 
-  int totalNodes = discret_->NumGlobalNodes(); // to decide the ids of new nodes
+  // int totalNodes = discret_->NumGlobalNodes();
 
   std::vector<double> lmtAngle = getLimitAngles( newTip );
 
@@ -828,7 +896,8 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
     {
       DRT::Node * tipnode = discret_->gNode( tipnodes_[num] );
 
-      Teuchos::RCP<DRT::Node> dupnode = Teuchos::rcp( new DRT::Node( totalNodes + num, tipnode->X(), tipnode->Owner() ) );
+      Teuchos::RCP<DRT::Node> dupnode = Teuchos::rcp( new DRT::Node( startNewId_++, tipnode->X(), tipnode->Owner() ) );
+      //Teuchos::RCP<DRT::Node> dupnode = Teuchos::rcp( new DRT::Node( totalNodes + num, tipnode->X(), tipnode->Owner() ) );
 
       oldnew_[tipnode->Id()] = dupnode->Id();
 
@@ -850,6 +919,9 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
 
   LINALG::GatherAll( oldnew_, discret_->Comm() );
   LINALG::GatherAll( delEle, discret_->Comm() );
+
+  if( delEle.size() == 0 )
+    dserror("propagated crack. but no elements found to attach new nodes. This leads to incorrect discretization\n");
 
   for( std::map<int,int>::iterator num = delEle.begin(); num != delEle.end(); num++ )
   {
@@ -1010,9 +1082,9 @@ void DRT::CRACK::PropagateCrack::AddConditions()
     // to control what nodes are added during FSI-crack problem
     // Appropriate nodes are added when building new interface after crack propagation
 
-    //DRT::Condition::ConditionType ct = cond->Type();
-    //if( ct == DRT::Condition::FSICoupling or ct == DRT::Condition::XFEMCoupling )
-    //  continue;
+     /*DRT::Condition::ConditionType ct = cond->Type();
+     if( ct == DRT::Condition::FSICoupling or ct == DRT::Condition::XFEMCoupling )
+      continue;*/
 
     for( std::map<int,int>::iterator it = oldnew_.begin(); it != oldnew_.end(); it++ )
     {
@@ -1198,12 +1270,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip()
           {
             const double * tempcord = temp1->X();
             double angl = atan2( (tempcord[1]-tipcord[1]), (tempcord[0]-tipcord[0]) );
-            // atan2() returns values in the range (-pi,pi)
-            // in order to make comparisons we need it in range (0,2*pi)
-            if( fabs(angl) < 1e-12 )
-              angl = 0.0;
-            else if( angl < 0.0 )
-              angl = 2 * PI_ + angl;
+            DRT::CRACK::UTILS::convertAngleTo_02PI_range( angl );
 
             if( fabs( angl - propAngle_ ) < diff )
             {
@@ -1224,13 +1291,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip()
           {
             const double * tempcord = temp2->X();
             double angl = atan2( (tempcord[1]-tipcord[1]), (tempcord[0]-tipcord[0]) );
-
-            // atan2() returns values in the range (-pi,pi)
-            // in order to make comparisons we need it in range (0,2*pi)
-            if( fabs(angl) < 1e-12 )
-              angl = 0.0;
-            else if( angl < 0.0 )
-              angl = 2 * PI_ + angl;
+            DRT::CRACK::UTILS::convertAngleTo_02PI_range( angl );
 
             if( fabs( angl - propAngle_ ) < diff )
             {
@@ -1504,4 +1565,174 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
     newTip.push_back( it->second );
 
   return newTip;
+}
+
+/*------------------------------------------------------------------------------------*
+ *  The tip of crack has reached the boundary of the domain                      sudhakar 12/13
+ *  This means two parts of structure are joined only along a line. In this case
+ *  we remove the connection between two portions, and allow the structure to
+ *  separate into two distinct parts
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateCrack::CheckCompleteSplit()
+{
+  // Count no of tip nodes that are fallling on the boundary
+  unsigned nodes_on_boundary = 0;
+  for( std::vector<int>::iterator itip = tipnodes_.begin(); itip != tipnodes_.end(); itip++ )
+  {
+    int tip_id = *itip;
+    if( std::find( boun_nodes_.begin(), boun_nodes_.end(), tip_id ) != boun_nodes_.end() )
+      nodes_on_boundary++;
+  }
+
+  // no nodes are falling on the boundary. Nothing to do
+  if( nodes_on_boundary == 0 )
+    return;
+
+  // This corresponds to 3D crack, or multiple cracks in 2D or 3D
+  else if( nodes_on_boundary != tipnodes_.size() )
+    dserror("Only few tip nodes are falling on the boundary. Current crack implementation does not support this\n");
+
+  std::cout<<"================splitting the body into two================\n";
+
+  // All tip nodes on the boundary. Split the structure into two parts by creating new nodes
+  // and modifying the connectivity
+
+  /*                 |\                                 |\
+                     | \                                | \
+                     |  \                               |  \            * Tip node
+                     |   \                              |   \           o new node generated to split the body
+                     \   |                               \   |
+                      \  |                                \  |
+                       \ |                                 \ |
+                        \|                                  \|
+                         *       ===============>            *
+                        /|
+                       / |                                   o
+                      /  |                                  /|
+                     /   |                                 / |
+                     |   /                                /  |
+                     |  /                                /   |
+                     | /                                 |   /
+                     |/                                  |  /
+                                                         | /
+                                                         |/
+
+                                                         */
+
+  // calculation of the direction of crack propagation vector
+  // This is different than the crack propagation angle at the moment because
+  // we propaagate crack only along the crack edges, and not on with the correct propagation angle
+
+  // map of element ids to be modified with the new node
+  // "key" contains the element id, and "value" is dummy here
+  // map is used to make sure that one element is stored only once
+  std::map<int, int> delEle;
+
+  for( unsigned num = 0; num < tipnodes_.size(); num++ )
+  {
+    int tip_id = tipnodes_[num];
+    std::map<int,int>::iterator iter_map = oldnew_.begin();
+    std::advance( iter_map, num );
+    int old_tipid1 = iter_map->first;
+    int old_tipid2 = iter_map->second;
+
+    if( discret_->HaveGlobalNode( tip_id ) )
+    {
+      DRT::Node * tipnode = discret_->gNode( tip_id );
+      const double * tipco = tipnode->X();
+
+      if( not discret_->HaveGlobalNode( old_tipid1 ) )
+        dserror("old tip id not found on this processor");
+
+      DRT::Node* oldnode = discret_->gNode( old_tipid1 );
+      const double * oldco = oldnode->X();
+      double main_angle = DRT::CRACK::UTILS::FindAngle( tipco, oldco );
+
+      // Get the elements that share the present and old tip node
+      // Only these element's connectivity needs to be modified
+      DRT::Element** ElementsPtr = tipnode->Elements();
+      int NumElement = tipnode->NumElement();
+      for (int jEle = 0; jEle < NumElement; jEle++)
+      {
+        DRT::Element* Element = ElementsPtr[jEle];
+        if( DRT::CRACK::UTILS::ElementHasThisNodeId( Element, old_tipid1 ) or
+            DRT::CRACK::UTILS::ElementHasThisNodeId( Element, old_tipid2 ) )
+        {
+          std::vector<double> cenco = Element->ElementCenterRefeCoords();
+          double cen[3];
+          for( unsigned ice=0; ice<3; ice++ )
+            cen[ice] = cenco[ice];
+
+          double angdiff = main_angle - DRT::CRACK::UTILS::FindAngle( tipco, cen );
+
+          if( fabs(angdiff) < ANGLE_TOL_ZERO )
+            dserror("vector with element centre coordinates coincides with vector with old tip node? Impossible!");
+
+          if( angdiff > 0.0 )
+            delEle[ Element->Id() ] = 0;
+        }
+      }
+      Teuchos::RCP<DRT::Node> dupnode = Teuchos::rcp( new DRT::Node( startNewId_++, tipnode->X(), tipnode->Owner() ) );
+      oldnew_[tipnode->Id()] = dupnode->Id();
+      discret_->AddNode( dupnode );
+    }
+  }
+
+  LINALG::GatherAll( oldnew_, comm_ );
+  LINALG::GatherAll( delEle, comm_ );
+
+  for( std::map<int,int>::iterator num = delEle.begin(); num != delEle.end(); num++ )
+  {
+    int eleid = num->first;
+    if( discret_->HaveGlobalElement( eleid ) )
+    {
+      bool del = false;
+      DRT::Element * ele = discret_->gElement( eleid );
+      const int * oldnodes = ele->NodeIds();
+      std::vector<int> newnodes( ele->NumNode() );
+
+      for( int i = 0; i < ele->NumNode(); i++ )
+      {
+        std::map<int, int>::iterator delnod = oldnew_.find( oldnodes[i] );
+        if( delnod != oldnew_.end() )
+        {
+          del = true;
+          newnodes[i] = delnod->second;
+        }
+        else
+          newnodes[i] = oldnodes[i];
+      }
+
+      if( not del )
+        dserror("This element should have atleast one replaceable node\n");
+
+      if( not newnodes.size() == ele->NumNode() )
+        dserror("Check the number of new nodes\n");
+
+      //-----------------
+      // modifying the nodes of an element is easy
+      // just modify the node ids of the element
+      // when fillcomplete is called the corresponding nodes will be
+      //  set through DRT::Element::BuildNodalPointers()
+      //-----------------
+      ele->SetNodeIds(newnodes.size(), &newnodes[0]);
+    }
+  }
+
+
+  AddConditions();
+  discret_->FillComplete();
+
+  //TODO: how to handle tip nodes?
+  //tipnodes_.clear();
+  for( std::map<int,int>::iterator it = oldnew_.begin(); it!= oldnew_.end(); it++ )
+  {
+    int idcheck = it->first;
+    if( std::find( tipnodes_.begin(), tipnodes_.end(), idcheck ) != tipnodes_.end() )
+      tipnodes_.push_back( it->second );
+  }
+
+  //TODO: push the newly formed nodes into tip nodes --> for fsi-crack problem
+
+  strIsSplit_ = true;
 }
