@@ -503,6 +503,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
     NodeShift<nnode,3>(params,disp);
 
+  Eint_=0.0;
+  Ekin_=0.0;
+
 #ifdef SIMPLECALC
 {
   //dimensions of freedom per node
@@ -1040,7 +1043,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
   //Uncomment the next line for the dynamic case: so far only the static case is implemented
-  //double density = 0;
+  double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this beam
   switch(currmat->MaterialType())
@@ -1050,7 +1053,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
       ym = actmat->Youngs();
       //Uncomment the next line for the dynamic case: so far only the static case is implemented
-      //density = actmat->Density();
+      density = actmat->Density();
     }
     break;
     default:
@@ -1431,16 +1434,66 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       }
     } //if (force != NULL)
 
-    //assemble massmatrix if requested
-    //calculating mass matrix (local version = global version)
-    //note: the mass matrix currently implemented is just a dummy and should not yet be used
+#ifdef ANS_BEAM3EB
+    double kappa_quad = (rxxrxx/rxrx-pow(rxrxx,2)/pow(rxrx,2))/pow(jacobi_,2);
+    Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
+    Eint_+=0.5*wgt*jacobi_*ym * Izz_ * kappa_quad;
+#endif
+
+  } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+  LINALG::Matrix<3,nnode*dofpn> N;
+  //Loop through all GP and calculate their contribution to the mass matrix
+  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  {
+    LINALG::Matrix<3,1> r_t(true);
+
+    N_i.Clear();
+    N.Clear();
+    NTilde.Clear();
+
+    //Get location and weight of GP in parameter space
+    const double xi = gausspoints.qxg[numgp][0];
+    const double wgt = gausspoints.qwgt[numgp];
+
+    #if (NODALDOFS == 2)
+      //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
+      DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
+      //end--------------------------------------------------------
+    #elif (NODALDOFS == 3)
+      dserror("massmatrix only implemented for the case NODALDOFS == 2!!!");
+    #else
+      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+    #endif
+
+    for (int i=0; i<3; ++i)
+    {
+      for (int j=0; j<nnode*NODALDOFS; ++j)
+      {
+        N(i,i+3*j) += N_i(j);
+      }
+    }
+    for (int i=0 ; i < 3 ; i++)
+    {
+      for (int j=0; j<nnode*NODALDOFS; j++)
+      {
+        r_t(i)+= N_i(j)*vel[3*j + i];
+      }
+    }
+    NTilde.MultiplyTN(N,N);
+
     if (massmatrix != NULL)
     {
       for (int i=0; i<6*nnode; i++)
-        (*massmatrix)(i,i) = 1;
-
+        for (int j=0; j<6*nnode; j++)
+        {
+          (*massmatrix)(i,j) += density*crosssec_*wgt*jacobi_*NTilde(i,j);
+        }
     }//if (massmatrix != NULL)
-  } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+    Ekin_+=0.5*wgt*jacobi_*density*crosssec_*pow(r_t.Norm2(),2.0);
+
+  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Uncomment the following line to print the elment stiffness matrix to matlab format
   /*

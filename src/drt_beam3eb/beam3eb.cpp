@@ -105,7 +105,9 @@ Iyy_(0),
 Izz_(0),
 Irr_(0),
 jacobi_(0),
-firstcall_(true)
+firstcall_(true),
+Ekin_(0.0),
+Eint_(0.0)
 {
   return;
 }
@@ -120,7 +122,9 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  Izz_(old.Izz_),
  Irr_(old.Irr_),
  jacobi_(old.jacobi_),
- Tref_(old.Tref_)
+ Tref_(old.Tref_),
+ Ekin_(old.Ekin_),
+ Eint_(old.Eint_)
 {
   return;
 }
@@ -188,6 +192,8 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
+  AddtoPack(data,Ekin_);
+  AddtoPack(data,Eint_);
 
   return;
 }
@@ -217,6 +223,8 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
+  ExtractfromPack(position,data,Ekin_);
+  ExtractfromPack(position,data,Eint_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

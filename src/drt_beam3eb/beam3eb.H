@@ -459,6 +459,8 @@ private:
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
 
+  double Ekin_;
+  double Eint_;
 
 #if NODALDOFS == 3
   //! Matrix holding the derivatives of the tangents at each node in reference configuration
