@@ -112,6 +112,13 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
+    /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
+    void Reset
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec
+    );
+
     /// initialization routine called at restart to activate the right conditions
     void Initialize
     (
@@ -262,6 +269,29 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
     );
+
+
+    //! reset when prestressing
+    void ResetStdWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec
+    );
+
+    //! reset when prestressing
+    void ResetHeartValveArterialWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec
+    );
+
+    //! reset when prestressing
+    void ResetHeartValveArterialProxDistWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec
+    );
+
   }; //class
 } //namespace
 

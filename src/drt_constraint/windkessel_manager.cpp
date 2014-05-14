@@ -395,6 +395,25 @@ void UTILS::WindkesselManager::UpdateTimeStep()
   q_->Update(1.0,*qn_,0.0);
   dq_->Update(1.0,*dqn_,0.0);
   ddq_->Update(1.0,*ddqn_,0.0);
+
+  // reset arterial pressure to initial one after each step when we have quasi-static prestressing!
+  if (pstype_ == INPAR::STR::prestress_mulf)
+  {
+    Teuchos::ParameterList p;
+    p.set("OffsetID",offsetID_);
+    Teuchos::RCP<Epetra_Vector> wkdofredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+    LINALG::Export(*wkdof_,*wkdofredundant);
+
+    wk_std_->Reset(p,wkdofredundant);
+    wk_heartvalvearterial_->Reset(p,wkdofredundant);
+    wk_heartvalvearterial_proxdist_->Reset(p,wkdofredundant);
+
+    wkdof_->Export(*wkdofredundant,*windkimpo_,Insert);
+    qm_->PutScalar(0.0);
+    dqm_->PutScalar(0.0);
+    ddqm_->PutScalar(0.0);
+  }
+
 }
 
 
@@ -472,7 +491,7 @@ void UTILS::WindkesselManager::PrintPresFlux() const
 {
   // prepare stuff for printing to screen
   // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
-  // since this is the one where mechanical equlibrium is guaranteed
+  // since this is the one where mechanical equilibrium is guaranteed
   Teuchos::RCP<Epetra_Vector> wkdofmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> dwkdofmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> vmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));

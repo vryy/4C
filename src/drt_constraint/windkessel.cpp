@@ -310,6 +310,37 @@ void UTILS::Windkessel::Evaluate(
 }
 
 /*-----------------------------------------------------------------------*
+|(public)                                                       mhv 10/13|
+|Evaluate Windkessel functions, choose the right action based on type    |
+ *-----------------------------------------------------------------------*/
+void UTILS::Windkessel::Reset(
+    Teuchos::ParameterList&        params,
+    Teuchos::RCP<Epetra_Vector>    sysvec)
+{
+
+  // choose action
+  switch (windkesseltype_)
+  {
+  case wk_std:
+    ResetStdWindkessel(params,sysvec);
+    break;
+  case wk_heartvalvearterial:
+    ResetHeartValveArterialWindkessel(params,sysvec);
+    break;
+  case wk_heartvalvearterial_proxdist:
+    ResetHeartValveArterialProxDistWindkessel(params,sysvec);
+    break;
+  case none:
+    return;
+  default:
+    dserror("Unknown Windkessel type!");
+  }
+
+
+  return;
+}
+
+/*-----------------------------------------------------------------------*
  |(private)                                                    mhv 03/14 |
  |Evaluate method for standard 4-element Windkessel,                     |
  |calling element evaluates of a condition and assembing results         |
@@ -2014,6 +2045,135 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
   }
   return;
 } // end of Initialize Windkessel
+
+
+
+// reset when prestressing
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::Windkessel::ResetStdWindkessel(
+    Teuchos::ParameterList&        params,
+    Teuchos::RCP<Epetra_Vector>    sysvec)
+{
+  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  // get the current time
+  //const double time = params.get("total time",-1.0);
+
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
+  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(windkesselcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID=cond.GetInt("id");
+    params.set("id",condID);
+
+    // global and local ID of this bc in the redundant vectors
+    int offsetID = params.get<int> ("OffsetID");
+    int gindex = condID-offsetID;
+
+    double p_0=windkesselcond_[condID]->GetDouble("p_0");
+
+    std::vector<int> colvec(1);
+    colvec[0]=gindex;
+    int err1 = sysvec->SumIntoGlobalValues(1,&p_0,&colvec[0]);
+    if (err1) dserror("SumIntoGlobalValues failed!");
+
+  }
+  return;
+} // end of reset std windkessel
+
+
+
+// reset when prestressing
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::Windkessel::ResetHeartValveArterialWindkessel(
+    Teuchos::ParameterList&        params,
+    Teuchos::RCP<Epetra_Vector>    sysvec)
+{
+  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  // get the current time
+  //const double time = params.get("total time",-1.0);
+
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
+  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(windkesselcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID=cond.GetInt("id");
+    params.set("id",condID);
+
+    // global and local ID of this bc in the redundant vectors
+    int offsetID = params.get<int> ("OffsetID");
+    int gindex = 2*condID-offsetID;
+    int gindex2 = gindex+1;
+
+    double p_ar_0=windkesselcond_[condID]->GetDouble("p_ar_0");
+
+    std::vector<int> colvec(2);
+    colvec[0]=gindex;
+    colvec[1]=gindex2;
+    int err = sysvec->ReplaceGlobalValues(1,&p_ar_0,&colvec[1]);
+    if (err) dserror("ReplaceGlobalValues failed!");
+
+  }
+  return;
+} // end of reset heart valve arterial windkessel
+
+
+// reset when prestressing
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::Windkessel::ResetHeartValveArterialProxDistWindkessel(
+    Teuchos::ParameterList&        params,
+    Teuchos::RCP<Epetra_Vector>    sysvec)
+{
+  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  // get the current time
+  //const double time = params.get("total time",-1.0);
+
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
+  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(windkesselcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID=cond.GetInt("id");
+    params.set("id",condID);
+
+    // global and local ID of this bc in the redundant vectors
+    int offsetID = params.get<int> ("OffsetID");
+    int gindex = 4*condID-offsetID;
+    int gindex2 = gindex+1;
+    int gindex3 = gindex+2;
+    int gindex4 = gindex+3;
+
+    double p_arp_0=windkesselcond_[condID]->GetDouble("p_arp_0");
+
+    std::vector<int> colvec(4);
+    colvec[0]=gindex;
+    colvec[1]=gindex2;
+    colvec[2]=gindex3;
+    colvec[3]=gindex4;
+    int err = sysvec->SumIntoGlobalValues(1,&p_arp_0,&colvec[1]);
+    if (err) dserror("SumIntoGlobalValues failed!");
+
+  }
+  return;
+} // end of reset heart valve arterial prox dist windkessel
+
+
 
 
 /*-----------------------------------------------------------------------*
