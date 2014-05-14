@@ -134,16 +134,16 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
       dserror("choose a valid method of parametrizing the material parameter field");
     break;
   }
-  ssize_ *= matman_->NumParams();
+  ssize_ *= matman_->NumVectors();
   actsize_=0;
 
   sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
   ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
 
-  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
-  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
-  step_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(), true));
-  d_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(), true));
+  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
+  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
+  step_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(), true));
+  d_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(), true));
 
 } // ACOU::InvAnalysis::InvAnalysis(...)
 
@@ -1104,18 +1104,18 @@ void ACOU::InvAnalysis::FD_GradientCheck()
   Epetra_MultiVector tempvec = Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors());
   tempvec.Update(1.0,*acou_rhs_,0.0);
 
-  int numparams = matman_->NumParams();
+  int numparams = matman_->NumVectors();
 
-  Teuchos::RCP<Epetra_MultiVector> objgradFD = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  Teuchos::RCP<Epetra_MultiVector> objgradFD = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
 
   double perturba = 1.0e-3;
   double perturbb = 1.0e-4;
 
-  Teuchos::RCP<Epetra_MultiVector> perturb = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  Teuchos::RCP<Epetra_MultiVector> perturb = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
   perturb->Update(1.0,*(matman_->GetParams()),0.0);
 
   //keep a copy of the current parameters to reset after perturbation:
-  Teuchos::RCP<Epetra_MultiVector> pcurr = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  Teuchos::RCP<Epetra_MultiVector> pcurr = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
   pcurr->Update(1.0,*(matman_->GetParams()),0.0);
 
   double pn=0.0;
@@ -1203,10 +1203,10 @@ bool ACOU::InvAnalysis::UpdateParameters()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::StoreVectors()
 {
-  if (iter_*matman_->NumParams()<=ssize_) // we have "<=" since we do not store the first run
-    actsize_+=matman_->NumParams();
+  if (iter_*matman_->NumVectors()<=ssize_) // we have "<=" since we do not store the first run
+    actsize_+=matman_->NumVectors();
 
-  Epetra_MultiVector s(*(matman_->ParamLayoutMap()), (matman_->NumParams()),true);
+  Epetra_MultiVector s(*(matman_->ParamLayoutMap()), (matman_->NumVectors()),true);
 
   //push back s
   s.Update(1.0,*(matman_->GetParams()),-1.0,*(matman_->GetParamsOld()),0.0);
@@ -1229,7 +1229,7 @@ void ACOU::InvAnalysis::ComputeDirection()
   std::vector<double> alpha;
 
   // loop steps
-  for (int i=0; i>-actsize_; i-=matman_->NumParams())
+  for (int i=0; i>-actsize_; i-=matman_->NumVectors())
   {
     double a=0.0;
     double b=0.0;
@@ -1237,7 +1237,7 @@ void ACOU::InvAnalysis::ComputeDirection()
     double bb=0.0;
 
     int ind=0;
-    for (int j=matman_->NumParams(); j>0; j--)
+    for (int j=matman_->NumVectors(); j>0; j--)
     {
       STR::INVANA::MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a,matman_->ParamLayoutMapUnique());
       STR::INVANA::MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*d_)(ind), false),&b,matman_->ParamLayoutMapUnique());
@@ -1248,7 +1248,7 @@ void ACOU::InvAnalysis::ComputeDirection()
     alpha.push_back(1/aa*bb);
 
     ind=0;
-    for (int j=matman_->NumParams(); j>0; j--)
+    for (int j=matman_->NumVectors(); j>0; j--)
     {
       (*d_)(ind)->Update(-1.0*alpha.back(), *(*ystore_)(i-j+1),1.0 );
       ind++;
@@ -1258,7 +1258,7 @@ void ACOU::InvAnalysis::ComputeDirection()
   // Some scaling of the initial hessian might come in here but has not been proven to be effective
   // altough they say so
 
-  for (int i=-actsize_+1; i<=0; i+=matman_->NumParams())
+  for (int i=-actsize_+1; i<=0; i+=matman_->NumVectors())
   {
     double a=0.0;
     double b=0.0;
@@ -1266,7 +1266,7 @@ void ACOU::InvAnalysis::ComputeDirection()
     double bb=0.0;
     double beta=0.0;
 
-    for (int j=0; j<matman_->NumParams(); j++)
+    for (int j=0; j<matman_->NumVectors(); j++)
     {
       STR::INVANA::MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a,matman_->ParamLayoutMapUnique());
       STR::INVANA::MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*d_)(j), false),&b,matman_->ParamLayoutMapUnique());
@@ -1278,7 +1278,7 @@ void ACOU::InvAnalysis::ComputeDirection()
     double alphac=alpha.back();
     alpha.pop_back();
 
-    for (int j=0; j<matman_->NumParams(); j++)
+    for (int j=0; j<matman_->NumVectors(); j++)
       (*d_)(j)->Update(alphac-beta, *(*sstore_)(i+j),1.0 );
   }
 
@@ -1302,7 +1302,7 @@ bool ACOU::InvAnalysis::LineSearch()
   double alpha = alpha_0 * ls_gd_scal_;
   double J_before = J_;
   double dotproduct = 0.0;
-  STR::INVANA::MVDotProduct(objgrad_,d_,&dotproduct,scatra_discret_->ElementRowMap());
+  STR::INVANA::MVDotProduct(objgrad_,d_,&dotproduct,matman_->ParamLayoutMapUnique());
 
   double condition = J_before + ls_c_ * alpha * dotproduct;
 

@@ -40,10 +40,10 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
 {
   Teuchos::RCP<const Epetra_Vector> phi = discret_->GetState("phi");
 
-  for (int i=0; i<discret_->NumMyColElements(); i++)
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele;
-    actele = discret_->lColElement(i);
+    actele = discret_->lRowElement(i);
     int elematid = actele->Material()->Parameter()->Id();
 
     if (paramap_.find(elematid) == paramap_.end() )
@@ -99,10 +99,10 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
 {
   Teuchos::RCP<const Epetra_Vector> phi = discret_->GetState("phi");
 
-  for (int i=0; i<discret_->NumMyColElements(); i++)
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele;
-    actele = discret_->lColElement(i);
+    actele = discret_->lRowElement(i);
     int elematid = actele->Material()->Parameter()->Id();
 
     if (paramap_.find(elematid) == paramap_.end() )

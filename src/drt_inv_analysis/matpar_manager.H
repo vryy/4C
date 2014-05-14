@@ -28,6 +28,11 @@ namespace DRT
   class Discretization;
 }
 
+namespace LINALG
+{
+  class MultiMapExtractor;
+}
+
 namespace STR
 {
 
@@ -49,9 +54,10 @@ namespace INVANA
   and beta "stiffness" in the AAA material) corresponding to one input file material.
   The layout of each vector is given by the underlying discretization's elecolmap.
 
-  <B>Optimization parameters<\B>(MatParManager::optparams_) are stored as Epetra_MultiVetor too, where the layout over
-  the columns directly corresponds to the material parameters. The row-wise layout (MatParManager::paramlayoutmap_)
-  must be given by the respective parametrizations. Access to the optimization parameters is given by access functions.
+  <B>Optimization parameters<\B>(MatParManager::optparams_) are stored as Epetra_MultiVector for historical reasons too.
+  The respective parametrizations need to take care about the mapping between optparams_ and params_
+  The row-wise layout (MatParManager::paramlayoutmap_) must be provided  by the respective parametrizations.
+  Access to the optimization parameters is given by access functions.
 
   Core functionality is the evaluation of the derivative of the residual vector wrt to the
   optimization parameters \f$ \frac{\partial \underline{R}}{\underline{p}_o}\f$ and the assembly into the gradient
@@ -104,10 +110,10 @@ namespace INVANA
     //! Return the uniqueGIDs map layout for the parameter distribution
     const Epetra_Map* ParamLayoutMapUnique(){return paramlayoutmapunique_.get();};
 
-    //! Return number of physically different parameters
-    int NumParams(){ return numparams_; };
+    //! Return number of vectors of the parameter vector layout which is possibly Epetra_MultiVector
+    virtual int NumVectors() = 0;
 
-    //! Put vector index of a given material parameter <string> into loc
+    //! Put vector index of a given material parameter <string> into loc (used for result testing)
     int GetParameterLocation(int eleid, std::string name);
 
   protected:
@@ -140,13 +146,19 @@ namespace INVANA
     //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
     std::map<int,std::vector<int> > parapos_;
 
+    //! Return number of physically different parameters
+    int NumParams(){ return numparams_; };
+
     //! set elementwise material parameters
     virtual void SetParams();
 
-    //! initialze parameter vector
+    //! initialze vector of optimization parameters ("global routine")
     void InitParams();
 
-    //! let the vector of material parameters be filled by the derived classes
+    //! initialize parameters based on parametrization ("local routine")
+    virtual void InitParameters(int parapos, double val) = 0;
+
+    //! let the vector of material parameters be filled from optimization parameters
     virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
 
     //! apply chain rule for derivation wrt the optimization parameters
@@ -161,7 +173,6 @@ namespace INVANA
   private:
 
     //! number of physically different material parameters
-    //! -> number of vectors in MatParManager::params_
     int numparams_;
 
     //! actual set of material parameters in elementwise colmap layout

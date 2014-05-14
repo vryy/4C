@@ -52,8 +52,8 @@ convcritc_(0)
   //get tolerance
   convtol_ = invap.get<double>("CONVTOL");
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(),true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(), true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumVectors(),true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumVectors(), true));
 
 }
 
@@ -86,7 +86,7 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
 
   objval_o_ = objval_;
 
-  MVNorm(GetGradient(),2,&convcritc_,discret_->ElementRowMap());
+  MVNorm(GetGradient(),2,&convcritc_,Matman()->ParamLayoutMapUnique());
 
   PrintOptStep(0,0);
 
@@ -105,7 +105,7 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
     }
 
     //get the L2-norm:
-    MVNorm(GetGradient(),2,&convcritc_,discret_->ElementRowMap());
+    MVNorm(GetGradient(),2,&convcritc_,Matman()->ParamLayoutMapUnique());
 
     //compute new direction only for runs
     p_->Update(-1.0, *GetGradient(), 0.0);
@@ -150,7 +150,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(GetGradientOld(),2,&gnorm,discret_->ElementRowMap());
+  MVNorm(GetGradientOld(),2,&gnorm,Matman()->ParamLayoutMapUnique());
 
   double tau_n=std::min(1.0, 100/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -169,7 +169,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(GetGradientOld(),p_,&dfp_o,discret_->ElementRowMap());
+    MVDotProduct(GetGradientOld(),p_,&dfp_o,Matman()->ParamLayoutMapUnique());
 
     if ( (objval_-objval_o_) < c1*tau_n*dfp_o )
     {
@@ -326,7 +326,7 @@ void STR::INVANA::StatInvAnaGradDesc::WriteRestart()
   Writer()->WriteInt("run", runc_);
 
   // write vectors with unique gids only
-  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(), Matman()->NumParams(),false));
+  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(), Matman()->NumVectors(),false));
   LINALG::Export(*(Matman()->GetParams()), *uniqueparams);
 
   Writer()->WriteVector("optimization_parameters", uniqueparams);

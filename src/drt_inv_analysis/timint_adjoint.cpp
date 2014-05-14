@@ -234,7 +234,10 @@ void STR::TimIntAdjoint::UpdateStep()
   (*disdual_)(stepn_)->Update(1.0,*disdualn_,0.0);
 
   if ( printtoscreen_ and stepn_%printtoscreen_==0 )
-    std::cout << "Finalized step " << stepn_+1 << " / " << msteps_ << std::endl;
+  {
+    if (discret_->Comm().MyPID() == 0)
+      std::cout << "Finalized step " << stepn_+1 << " / " << msteps_ << std::endl;
+  }
 
   return;
 }

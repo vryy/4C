@@ -67,26 +67,24 @@ void STR::INVANA::MatParManager::InitParams()
     switch(actmat->Parameter()->Type())
     {
       case INPAR::MAT::m_aaaneohooke:
-      {
-        std::vector<int>::const_iterator jt;
-        for (jt = it->second.begin(); jt != it->second.end(); jt++)
-        {
-          if (metaparams_)
-            (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( sqrt(2*((actmat->Parameter()->GetParameter(*jt,0))-0.1)) );
-          else
-            (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( (actmat->Parameter()->GetParameter(*jt,0)) );
-        }
-        break;
-      }
       case INPAR::MAT::m_scatra:
       {
         std::vector<int>::const_iterator jt;
         for (jt = it->second.begin(); jt != it->second.end(); jt++)
-          (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( (actmat->Parameter()->GetParameter(*jt,0)) );
+        {
+          double val = 0.0;
+          if (metaparams_)
+            val = sqrt(2*((actmat->Parameter()->GetParameter(*jt,0))-0.1));
+          else
+            val = actmat->Parameter()->GetParameter(*jt,0);
+
+          InitParameters(parapos_.at(it->first).at(jt-it->second.begin()),val);
+
+        }
         break;
       }
       default:
-        dserror("Materiall not provided by the Material Manager for Optimization");
+        dserror("Material not provided by the Material Manager for Optimization");
       break;
     }
   }
@@ -103,6 +101,9 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
   // the materials of the problem
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
+  std::cout << "STR::INVANA::MatParManager ... SETUP" << std::endl;
+  std::cout <<  "Optimizing material with ids: ";
+
   // parameters to be optimized
   std::string word2;
   std::istringstream pstream(Teuchos::getNumericStringParameter(statinvp,"PARAMLIST"));
@@ -114,7 +115,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
     matid = std::strtol(&word2[0],&pEnd,10);
     if (*pEnd=='\0') //if (matid != 0)
     {
-      std::cout <<  "matid " << matid << std::endl;
+      std::cout << matid << " ";
       actmatid = matid;
       continue;
     }
@@ -138,8 +139,9 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
     else
       dserror("Give the parameters for the respective materials");
   }
-
-  std::cout << "the number of parameters is: " << numparams_ << std::endl;
+  std::cout << "" << std::endl;
+  std::cout << "the number of different material parameters is: " << numparams_ << std::endl;
+  std::cout << "STR::INVANA::MatParManager ... END OF SETUP" << std::endl;
 
 }
 
@@ -151,18 +153,19 @@ void STR::INVANA::MatParManager::SetParams()
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
   // get the actual set of elementwise material parameters from the derived classes
-  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,false));
+  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
   FillParameters(getparams);
 
+  // export to column layout to be able to run column elements
+  LINALG::Export(*getparams,*params_);
 
+
+  Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*params_));
   if (metaparams_)
   {
     params_->PutScalar(0.1);
-    params_->Multiply(0.5,*getparams,*getparams,1.0);
+    params_->Multiply(0.5,*tmp,*tmp,1.0);
   }
-  else
-    params_->Scale(1.0,*getparams);
-
 
   //loop materials to be optimized
   std::map<int,std::vector<int> >::const_iterator curr;
@@ -228,10 +231,10 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
   // gradient dR/dp_m and postmultiply it with dp_m\dp_o
   // with R: Residual forces; p_m: material params; p_o parametrization of p_m
   // TODO: Think of a more standard baci design way!
-  for (int i=0; i<discret_->NumMyColElements(); i++)
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele;
-    actele = discret_->lColElement(i);
+    actele = discret_->lRowElement(i);
     int elematid = actele->Material()->Parameter()->Id();
 
     if (paramap_.find(elematid) == paramap_.end() )
@@ -278,7 +281,7 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()));
+      ContractGradient(dfint,val2,actele->Id(),it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 

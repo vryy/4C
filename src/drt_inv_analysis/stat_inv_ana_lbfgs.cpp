@@ -54,14 +54,14 @@ convcritc_(0)
 
   //initialize storage vectors
   ssize_=invap.get<int>("SIZESTORAGE");
-  ssize_=ssize_*Matman()->NumParams();
+  ssize_=ssize_*Matman()->NumVectors();
   actsize_=0;
 
   sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, Matman()->ParamLayoutMap(), true));
   ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, Matman()->ParamLayoutMap(), true));
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(),true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(), true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumVectors(),true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumVectors(), true));
 
 }
 
@@ -99,7 +99,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
   objval_o_ = objval_;
   error_incr_ = objval_;
 
-  MVNorm(GetGradientOld(),2,&convcritc_,discret_->ElementRowMap());
+  MVNorm(GetGradientOld(),2,&convcritc_,Matman()->ParamLayoutMapUnique());
 
   PrintOptStep(0,0);
 
@@ -118,7 +118,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     }
 
     //get the L2-norm:
-    MVNorm(GetGradient(),2,&convcritc_,discret_->ElementRowMap());
+    MVNorm(GetGradient(),2,&convcritc_,Matman()->ParamLayoutMapUnique());
 
     //compute new direction only for runs>0
     if (runc_<1)
@@ -137,7 +137,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     objval_o_=objval_;
     runc_++;
 
-    if (restartevry_ and (runc_%restartevry_ == 0))
+    if (restartevry_ and (runc_%restartevry_ == 0) and runc_)
       WriteRestart();
 
     //do some on screen printing
@@ -170,7 +170,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(GetGradientOld(),2,&gnorm,discret_->ElementRowMap());
+  MVNorm(GetGradientOld(),2,&gnorm,Matman()->ParamLayoutMapUnique());
 
   double tau_n=std::min(stepsize_, 100.0/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -190,7 +190,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(GetGradientOld(),p_,&dfp_o,discret_->ElementRowMap());
+    MVDotProduct(GetGradientOld(),p_,&dfp_o,Matman()->ParamLayoutMapUnique());
 
     if ( (objval_-objval_o_) < c1*tau_n*dfp_o )
     {
@@ -286,10 +286,10 @@ int STR::INVANA::StatInvAnaLBFGS::polymod(double e_o, double dfp, double tau_n, 
 /* store vectors*/
 void STR::INVANA::StatInvAnaLBFGS::StoreVectors()
 {
-  if (runc_*Matman()->NumParams()<=ssize_) // we have "<=" since we do not store the first run
-    actsize_+=Matman()->NumParams();
+  if (runc_*Matman()->NumVectors()<=ssize_) // we have "<=" since we do not store the first run
+    actsize_+=Matman()->NumVectors();
 
-  Epetra_MultiVector s(*(Matman()->ParamLayoutMap()), (Matman()->NumParams()),true);
+  Epetra_MultiVector s(*(Matman()->ParamLayoutMap()), (Matman()->NumVectors()),true);
 
   //push back s
   s.Update(1.0,*(Matman()->GetParams()),-1.0,*(Matman()->GetParamsOld()),0.0);
@@ -313,7 +313,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
   std::vector<double> alpha;
 
   // loop steps
-  for (int i=0; i>-actsize_; i-=Matman()->NumParams())
+  for (int i=0; i>-actsize_; i-=Matman()->NumVectors())
   {
     double a=0.0;
     double b=0.0;
@@ -321,10 +321,10 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     double bb=0.0;
 
     int ind=0;
-    for (int j=Matman()->NumParams(); j>0; j--)
+    for (int j=Matman()->NumVectors(); j>0; j--)
     {
-      MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a,discret_->ElementRowMap());
-      MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*p_)(ind), false),&b,discret_->ElementRowMap());
+      MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a,Matman()->ParamLayoutMapUnique());
+      MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*p_)(ind), false),&b,Matman()->ParamLayoutMapUnique());
       ind++;
       aa += a;
       bb += b;
@@ -332,7 +332,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     alpha.push_back(1/aa*bb);
 
     ind=0;
-    for (int j=Matman()->NumParams(); j>0; j--)
+    for (int j=Matman()->NumVectors(); j>0; j--)
     {
       (*p_)(ind)->Update(-1.0*alpha.back(), *(*ystore_)(i-j+1),1.0 );
       ind++;
@@ -342,7 +342,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
   // Some scaling of the initial hessian might come in here but has not been proven to be effective
   // altough they say so
 
-  for (int i=-actsize_+1; i<=0; i+=Matman()->NumParams())
+  for (int i=-actsize_+1; i<=0; i+=Matman()->NumVectors())
   {
     double a=0.0;
     double b=0.0;
@@ -350,10 +350,10 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     double bb=0.0;
     double beta=0.0;
 
-    for (int j=0; j<Matman()->NumParams(); j++)
+    for (int j=0; j<Matman()->NumVectors(); j++)
     {
-      MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a,discret_->ElementRowMap());
-      MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*p_)(j), false),&b,discret_->ElementRowMap());
+      MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a,Matman()->ParamLayoutMapUnique());
+      MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*p_)(j), false),&b,Matman()->ParamLayoutMapUnique());
       aa += a;
       bb += b;
     }
@@ -362,7 +362,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     double alphac=alpha.back();
     alpha.pop_back();
 
-    for (int j=0; j<Matman()->NumParams(); j++)
+    for (int j=0; j<Matman()->NumVectors(); j++)
       (*p_)(j)->Update(alphac-beta, *(*sstore_)(i+j),1.0 );
   }
 
@@ -377,7 +377,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 {
   double stepincr;
-  MVNorm(step_,0,&stepincr,discret_->ElementRowMap());
+  MVNorm(step_,0,&stepincr,Matman()->ParamLayoutMapUnique());
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -396,8 +396,8 @@ void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 /* print final results*/
 void STR::INVANA::StatInvAnaLBFGS::Summarize()
 {
-  std::cout << "the final vector of parameters: " << std::endl;
-  std::cout << *(Matman()->GetParams()) << std::endl;
+  //std::cout << "the final vector of parameters: " << std::endl;
+  //std::cout << *(Matman()->GetParams()) << std::endl;
   return;
 }
 
@@ -424,16 +424,18 @@ void STR::INVANA::StatInvAnaLBFGS::ReadRestart(int run)
 
   actsize_ = reader.ReadInt("storage_size");
 
-  Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMap(),actsize_,false));
-  reader.ReadMultiVector(storage,"sstore");
-  for (int i=actsize_-1; i>=0; i--)
-    sstore_->UpdateSteps(*(*storage)(i));
+  if (actsize_>0)
+  {
+    Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMap(),actsize_,false));
+    reader.ReadMultiVector(storage,"sstore");
+    for (int i=actsize_-1; i>=0; i--)
+      sstore_->UpdateSteps(*(*storage)(i));
 
-  storage->Scale(0.0);
-  reader.ReadMultiVector(storage,"ystore");
-  for (int i=actsize_-1; i>=0; i--)
-    ystore_->UpdateSteps(*(*storage)(i));
-
+    storage->Scale(0.0);
+    reader.ReadMultiVector(storage,"ystore");
+    for (int i=actsize_-1; i>=0; i--)
+      ystore_->UpdateSteps(*(*storage)(i));
+  }
   return;
 }
 
@@ -450,26 +452,29 @@ void STR::INVANA::StatInvAnaLBFGS::WriteRestart()
   Writer()->WriteInt("run", runc_);
 
   // write vectors with unique gids only
-  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(), Matman()->NumParams(),false));
+  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMapUnique()), Matman()->NumVectors(),false));
   LINALG::Export(*(Matman()->GetParams()), *uniqueparams);
 
   Writer()->WriteVector("optimization_parameters", uniqueparams);
 
-
   Writer()->WriteInt("storage_size", actsize_);
-  //write sstore
-  Teuchos::RCP<Epetra_MultiVector> uniquestorage = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(),actsize_,false));
-  for (int i=0; i<actsize_; i++)
-    LINALG::Export(*(*sstore_)(-i),*(*uniquestorage)(i));
+  //only write vectors if something is there to be written
+  if (actsize_>0)
+  {
+    //write sstore
+    Teuchos::RCP<Epetra_MultiVector> uniquestorage = Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMapUnique()),actsize_,false));
+    for (int i=0; i<actsize_; i++)
+      LINALG::Export(*(*sstore_)(-i),*(*uniquestorage)(i));
 
-  Writer()->WriteVector("sstore", uniquestorage);
+    Writer()->WriteVector("sstore", uniquestorage);
 
-  // write ystore
-  uniquestorage->Scale(0.0);
-  for (int i=0; i<actsize_; i++)
-    LINALG::Export(*(*ystore_)(-i),*(*uniquestorage)(i));
+    // write ystore
+    uniquestorage->Scale(0.0);
+    for (int i=0; i<actsize_; i++)
+      LINALG::Export(*(*ystore_)(-i),*(*uniquestorage)(i));
 
-  Writer()->WriteVector("ystore", uniquestorage);
+    Writer()->WriteVector("ystore", uniquestorage);
+  }
 
   return;
 }

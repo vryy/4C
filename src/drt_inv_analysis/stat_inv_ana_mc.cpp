@@ -261,7 +261,7 @@ int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_partic
   std::vector<double> my_position(my_particle.GetSizeOfPosition(),0.0);
 
   // the matman needs this format:
-  Epetra_MultiVector mypos(*(Matman()->ParamLayoutMap()),Matman()->NumParams(),true);
+  Epetra_MultiVector mypos(*(Matman()->ParamLayoutMap()),Matman()->NumVectors(),true);
 
   // get position vector
   if(eval_prop_pos)

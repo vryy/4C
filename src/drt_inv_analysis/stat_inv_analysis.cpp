@@ -179,8 +179,8 @@ regweight_(0.0)
   objval_o_ = 1.0e16;
   error_incr_ = 1.0e16;
 
-  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
-  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
+  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
 
 
 }
@@ -332,17 +332,17 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradientFD()
   // we need to keep this!
   double objval0 = objval_;
 
-  int numparams = matman_->NumParams();
+  int numparams = matman_->NumVectors();
   int numele = discret_->ElementColMap()->NumMyElements();
 
   double perturba = 1.0e-6;
   double perturbb = 1.0e-12;
 
-  Teuchos::RCP<Epetra_MultiVector> perturb = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
+  Teuchos::RCP<Epetra_MultiVector> perturb = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumVectors(),true));
   perturb->Update(1.0,*(matman_->GetParams()),0.0);
 
   //keep a copy of the current parameters to reset after perturbation:
-  Teuchos::RCP<Epetra_MultiVector> pcurr = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
+  Teuchos::RCP<Epetra_MultiVector> pcurr = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumVectors(),true));
   pcurr->Update(1.0,*(matman_->GetParams()),0.0);
 
   // keep a copy of the current displacements correspnding to pcurr:
@@ -388,7 +388,7 @@ void STR::INVANA::StatInvAnalysis::EvaluateError()
   if (havereg_)
   {
     double val = 0.0;
-    STR::INVANA::MVNorm(matman_->GetParams(),2,&val,discret_->ElementRowMap());
+    STR::INVANA::MVNorm(matman_->GetParams(),2,&val,matman_->ParamLayoutMapUnique());
     objval_ += 0.5*regweight_*val*val;
   }
 }
@@ -398,7 +398,7 @@ void STR::INVANA::StatInvAnalysis::EvaluateError()
 double STR::INVANA::StatInvAnalysis::GetGrad2Norm()
 {
   double res;
-  STR::INVANA::MVNorm(objgrad_,2,&res,discret_->ElementRowMap());
+  STR::INVANA::MVNorm(objgrad_,2,&res,matman_->ParamLayoutMapUnique());
   return res;
 }
 

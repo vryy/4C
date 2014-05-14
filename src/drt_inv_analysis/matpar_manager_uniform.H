@@ -41,25 +41,45 @@ namespace INVANA
 
     void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
 
+    void InitParameters(int parapos, double val);
+
     void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int parapos);
 
     void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint);
 
   public:
 
-    //! Constructor
+    //! constructor
     MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
-    //!destructor
+    //! destructor
     ~MatParManagerUniform(){};
+
+    int NumVectors(){return NumParams();};
+
   };
 
   class MatParManagerPerElement  : public MatParManager
   {
 
+  private:
+
+    //! Map Extractor to extract Blocks of parameters of the parameter vector according to the value in paramap_
+    Teuchos::RCP<LINALG::MultiMapExtractor> paramapextractor_;
+
+    //! the two following 'maps' are processor specific: each proc has its own
+    //! map keeping correspondence between params in the parameter vector (parameter LID in optparams_) and
+    //! eleids (i.e gids of the discretizations ele layout)
+    std::vector<int> paramsLIDtoeleGID_;
+
+    //! map keeping correspondence between eleid (GID) + parameter block id and parameter LID
+    std::map< int, std::vector<int> > eleGIDtoparamsLID_;
+
   protected:
 
     void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
+
+    void InitParameters(int parapos, double val);
 
     void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int parapos);
 
@@ -68,11 +88,14 @@ namespace INVANA
 
   public:
 
-    //! Constructor
+    //! constructor
     MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret);
 
-    //!destructor
+    //! destructor
     ~MatParManagerPerElement(){};
+
+    int NumVectors(){return 1;};
+
   };
 
 }
