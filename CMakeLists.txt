@@ -120,7 +120,7 @@ if (HAVE_Trilinos_Q3_2014)
   add_definitions("-DHAVE_Trilinos_Q3_2013")
   add_definitions("-DHAVE_Trilinos_Q1_2014")
   add_definitions("-DHAVE_Trilinos_Q3_2014")
-endif (HAVE_Trilinos_Q1_2014)
+endif (HAVE_Trilinos_Q3_2014)
 
 option (HAVE_Trilinos_Q1_2014 "Turn on experimental code which is available with Q1/2014" OFF)
 if (HAVE_Trilinos_Q1_2014)
