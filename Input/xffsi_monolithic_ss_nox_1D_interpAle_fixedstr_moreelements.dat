@@ -1,5 +1,5 @@
 //
-// Maintainer: Shadan Shahmiri
+// Maintainer: Shadan Shahmiri, Raffaela Kruse
 //
 // necessary defines: D_FLUID3 BINIO
 //
@@ -7,208 +7,70 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+Monolithic XFFSI (w. NOX): Pseudo 1D example.
+Prescribed inflow velocity of u(t)=t^2. The structure is fixed at the dry end.
+Expecting linear pressure field along the channel.
+FSI interface: 1st order interpolation, structuresplit
+Fluid-fluid coupling: background fluid-sided, stress-based
+Monolithic XFFSI approach: fixed ALE
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      10
-//NODES                         48
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid_FSI
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMALEDIS                       0
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_GID                      No
-OUTPUT_BIN                      Yes
-FILESTEPS                       1
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-STRUCT_DISP                     Yes
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  No
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  No
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                1
-ALPHA_F                         1.00
-ALPHA_M                         1.00
-CONVCHECK                       L_2_norm
-CONVTOL                         1e-07
-INITIALFIELD zero_field //field_by_function
-ITEMAX                          10
+CONVFORM                        convective
+INITIALFIELD                    zero_field
 LIFTDRAG                        No
-MAXTIME                         50
 NONLINITER                      Newton
-NUMSTEP                         10000
-RESTARTEVRY                     20
+NUMSTEP                         1
+PHYSICAL_TYPE                   Incompressible
 SIMPLER                         no
-STARTFUNCNO                     2
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.4
-NONLINEARBC                     no
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
+PREDICTOR                       steady_state
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
-SUPG                            yes//yes
-GRAD_DIV no// yes//
+SUPG                            yes
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen//Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha//OneStepTheta
-TIMESTEP                        1
-NUMSTEP                         200
-MAXTIME                         5.0
+DYNAMICTYP                      GenAlpha
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-DAMPING                         No
-M_DAMP                          0.000001
-K_DAMP                          0.00001
 PREDICT                         ConstDisVelAcc
-NORM_DISP                       Rel
-NORM_RESF                       Rel
-NORMCOMBI_RESFDISP              And
-TOLDISP                         1.0E-08
-TOLRES                          1.0E-08
-TOLCONSTR                       1.0E-06
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-MAXITER                         100
-LINEAR_SOLVER                   2
------------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin                      // classic_lin
-TIMESTEP                        1
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
 TIMESTEP                        0.4
 NUMSTEP                         4
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
 SECONDORDER                     No
+-----------------------------------------------------------------ALE DYNAMIC
+ALE_TYPE                        incr_lin                      // classic_lin
+LINEAR_SOLVER                   1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
-ITEMAX                          100
+ITEMAX                          15
 CONVTOL                         1.0E-7
 BASETOL                         1.0E-8
-PRECONDREUSE                    1000
-SHAPEDERIVATIVES                no
-//NORM_RESF                     Abs
-//NORM_INC                      Abs
+PRECONDREUSE                    0
+SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
-NAME                            Ale_Solver
-SOLVER                  Aztec_MSR//   UMFPACK//
-AZOUTPUT                        50                               // output every so often, 0 no output
-AZSOLVE                       GMRES//  CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                       ILU//   ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      4.0                             // fill-in for ILUT
-//IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-8                          // tolerance in unscaled residual
-AZITER                          1000                            // max iterations
-AZSUB                           400                             // size of krylov space for gmres
-AZOMEGA                         1.0                             // unused
-AZGRAPH                         1                               // unused
-AZPOLY                          5                               // polynomial order for Neumann
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                         // none sym infnorm scaling of the system
-AZCONV                          AZ_noscaled                     // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                10000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                Umfpack                      // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED              Umfpack                 // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE            Umfpack                      // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                             // damping fine grid
-ML_DAMPMED                      1.0                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
---------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                 Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50           // output every so often, 0 no output
-AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                         ILU// ML //ILU //MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1            // how often to recompute some preconditioners
-IFPACKGFILL                     4            // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08      // tolerance in unscaled residual
-AZCONV                          AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000         // max iterations
-AZSUB                           1000           // size of krylov space for gmres
-IFPACKOVERLAP                   0            // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                10000  //2500    // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3            // ML max number of levels
-ML_COARSEN                      UC           // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27           // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0          // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU          // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU          // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack      // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 0        // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2         // damping fine grid
-ML_DAMPMED                      0.2         // damping med grids
-ML_DAMPCOARSE                   1.0          // damping coarse grid
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Solver
-SOLVER                      Aztec_MSR//    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50           // output every so often, 0 no output
-AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU//MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1            // how often to recompute some preconditioners
-IFPACKGFILL                     4            // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08      // tolerance in unscaled residual
-AZCONV                          AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000         // max iterations
-AZSUB                           10000           // size of krylov space for gmres
-IFPACKOVERLAP                   0            // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                10000  //2500    // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3            // ML max number of levels
-ML_COARSEN                      UC           // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27           // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0          // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU          // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU          // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack      // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 0        // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2         // damping fine grid
-ML_DAMPMED                      0.2         // damping med grids
-ML_DAMPCOARSE                   1.0          // damping coarse grid
+SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT               yes
-GMSH_SOL_OUT                   yes 
-GMSH_DISCRET_OUT               yes
-GMSH_CUT_OUT                   no
-GMSH_EOS_OUT                   no
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
-MONOLITHIC_XFFSI_APPROACH      xffsi_fixedALE_interpolation //xffsi_full_newton //xffsi_fixedALE_interpolation xffsi_fixedALE_partitioned 
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY            BoundaryTypeNitsche
-COUPLING_STRATEGY         embedded_sided_coupling
-//VISC_STAB_FAC                 1.0
+EMBEDDED_BOUNDARY               BoundaryTypeSigma
+COUPLING_STRATEGY               xfluid_sided_coupling
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
-GHOST_PENALTY_STAB              Yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50 NUE 0.4 DENS 2.0 THEXPANS 0.0
@@ -216,67 +78,49 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50 NUE 0.4 DENS 2.0 THEXPANS 0.0
 SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t*t t1 0.0 t2 20
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0 t1 0.0 t2 0.4
-CURVE2 on EXPR FUNC 0.1*(cos(2.0*pi*t/3.0)) t1 0.5 t2 30 // x-oscilation
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE3 on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0)) t1 0.02 t2 30// y-oscillation
-----------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE4 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung ale
-----------------------------------------------------------------------CURVE5
-CURVE5                          on EXPR FUNC 0 t1 0.0 t2 0.01 
-CURVE5                          on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung str 
-----------------------------------------------------------------------CURVE6
-CURVE6                          on EXPR FUNC 0 t1 0.0 t2 0.01 //y-bewegung str 
-CURVE6                          on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30 //y-bewegung str 
-----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (-1/0.25)*(1/0.65)*(-0.25-x)*(0.65-x)
-----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-y)*(y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
-----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
+NDPOINT                         3
 NDLINE                          0
-NDSURF                          5
+NDSURF                          6
 NDVOL                           4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          1
+DPOINT                          3
 // bgFluid inflow
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.1 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+// fluid fsi
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+// str fsi
+E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // str dirichlet
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            3
 // bgfluid volume
-E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // embedded volume
-E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// embedded volume
-E 3 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// structure volume
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // embedded volume
-E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           1
+DSURF                           2
+// fluid fsi
 E 1 - 1
+// structure fsi
+E 5 - 1
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
-//                              xfem
+// xfem
 E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           1
-//                              xfem
-E 2 - 1
+// fluid fluid
+E 3 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
 // embedded volume
@@ -286,6 +130,14 @@ NODE 1 DNODE 1
 NODE 2 DNODE 1
 NODE 3 DNODE 1
 NODE 4 DNODE 1
+NODE 33 DNODE 2
+NODE 34 DNODE 2
+NODE 35 DNODE 2
+NODE 36 DNODE 2
+NODE 49 DNODE 3
+NODE 50 DNODE 3
+NODE 51 DNODE 3
+NODE 52 DNODE 3
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 33 DSURFACE 1
@@ -308,6 +160,10 @@ NODE 45 DSURFACE 4
 NODE 46 DSURFACE 4
 NODE 47 DSURFACE 4
 NODE 48 DSURFACE 4
+NODE 49 DSURFACE 5
+NODE 50 DSURFACE 5
+NODE 51 DSURFACE 5
+NODE 52 DSURFACE 5
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
@@ -345,10 +201,6 @@ NODE 33 DVOL 2
 NODE 34 DVOL 2
 NODE 35 DVOL 2
 NODE 36 DVOL 2
-NODE 33 DVOL 3
-NODE 34 DVOL 3
-NODE 35 DVOL 3
-NODE 36 DVOL 3
 NODE 37 DVOL 3
 NODE 38 DVOL 3
 NODE 39 DVOL 3
@@ -361,6 +213,10 @@ NODE 45 DVOL 3
 NODE 46 DVOL 3
 NODE 47 DVOL 3
 NODE 48 DVOL 3
+NODE 49 DVOL 3
+NODE 50 DVOL 3
+NODE 51 DVOL 3
+NODE 52 DVOL 3
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -9.0000000000000002e-01 -2.9999999999999999e-01 2.9999999999999999e-01
 NODE 2 COORD -9.0000000000000002e-01 -2.9999999999999999e-01 -2.9999999999999999e-01
@@ -410,8 +266,12 @@ NODE 45 COORD 2.6000000000000001e+00 -2.9999999999999999e-01 2.9999999999999999e
 NODE 46 COORD 2.6000000000000001e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
 NODE 47 COORD 2.6000000000000001e+00 2.9999999999999999e-01 -2.9999999999999999e-01
 NODE 48 COORD 2.6000000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-01
+NODE 49 COORD 1.3999999999999999e+00 -2.9999999999999999e-01 2.9999999999999999e-01
+NODE 50 COORD 1.3999999999999999e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
+NODE 51 COORD 1.3999999999999999e+00 2.9999999999999999e-01 -2.9999999999999999e-01
+NODE 52 COORD 1.3999999999999999e+00 2.9999999999999999e-01 2.9999999999999999e-01
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 33 34 35 36 37 38 39 40 MAT 2 KINEM nonlinear EAS mild
+1 SOLIDH8 HEX8 49 50 51 52 37 38 39 40 MAT 2 KINEM nonlinear EAS mild
 2 SOLIDH8 HEX8 37 38 39 40 41 42 43 44 MAT 2 KINEM nonlinear EAS mild
 3 SOLIDH8 HEX8 41 42 43 44 45 46 47 48 MAT 2 KINEM nonlinear EAS mild
 --------------------------------------------------------------FLUID ELEMENTS
@@ -427,18 +287,18 @@ NODE 48 COORD 2.6000000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 8 QUANTITY velx VALUE 2.56000000000018602e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 1.39249475982732882e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 1.39787076137591573e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 9 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY pressure VALUE  1.39249475982732669e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 1.39787076137591431e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 15 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 15 QUANTITY pressure VALUE 1.37989475982770333e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 15 QUANTITY pressure VALUE 1.38527076137599163e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE  1.37989475982770671e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 1.38527076137599359e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 10 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 1.39249475982732971e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 1.39787076137591448e+01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 1.37569476137807811e+01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.92000000000006360e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE 1.92000000000006360e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE 6.30897164475963668e-02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
