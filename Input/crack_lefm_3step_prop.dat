@@ -1,25 +1,14 @@
-//
-// Maintainer: Sudhakar
-// sudhakar@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15257
-//
-// ----------------------------------------------
-// This is one of the basic tests for LEFM based crack propagation
-// In this test, crack propagates 3 increments
-// Used to check node addition, initializing dof corresponds to new nodes
-// ----------------------------------------------
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus 
 ------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    10
-//NODES       38
+//ELEMENTS    8
+//NODES       32
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Crack
+PROBLEMTYP                      Crack 
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -61,34 +50,65 @@ ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
 ----------------------------------------------------------------CRACK
 CRACK_MODEL			lefm
-CRITICAL_K1			5000
-CRITICAL_K2			5000
+CRITICAL_K1			10//5000
+CRITICAL_K2			10//5000
 THICKNESS_ASSUMPTION		plane_strain
 GMSH_OUT			no
+START_NEW_ID			32
 -----------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK
+SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                               // output every so often, 0 no output
+AZSOLVE                         CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         10                              // how often to recompute some preconditioners
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      1.0                             // fill-in for ILUT
+IFPACKGFILL                     0                               // graph fill for ILU
+AZTOL                           1.0E-3                          // tolerance in unscaled residual
+AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                            // max iterations
+AZSUB                           25                              // size of krylov space for gmres
+AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                               // unused
+AZPOLY                          5                               // polynomial order for Neumann
+IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          infnorm                         // none sym infnorm scaling of the system
+ML_PRINT                        0                               // ML print-out level (0-10)
+ML_MAXCOARSESIZE                1                               // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     2                               // ML max number of levels
+ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 Chebychev                       // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  Chebychev                       // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     1.0                             // damping fine grid
+ML_DAMPMED                      1.0                             // damping med grids
+ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1
-MAT 2 ELAST_CoupNeoHooke YOUNG 2e8 NUE 0.30
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
+MAT 2 ELAST_CoupNeoHooke YOUNG 5000.0 NUE 0.20
 -----------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0 t1 0.0 t2 20000000
+CURVE1 on EXPR FUNC t/0.025 t1 0.0 t2 0.025
+CURVE1 on EXPR FUNC 1.0 t1 0.025 t2 28.0
+
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  3
+NDPOINT 2
+NDLINE  2
 NDSURF  2
 NDVOL   1
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE  2
+DLINE  1
 // pos_force
-E 1 - 1 0 1 0 0 0 0  0.0 800.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
-// neg_force
-E 2 - 1 0 1 0 0 0 0  0.0 -800.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+E 1 - 1 0 1 0 0 0 0  0.0 10.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // zero_disp
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // zero_z-disp
@@ -105,16 +125,31 @@ E 2 - 1
 DPOINT 1
 // crack_tip
 E 1 - 1
+--------------------------------------DESIGN CRACK BOUNDARY POINTS
+DPOINT 1
+E 2 - 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    3 DNODE 1
 NODE    7 DNODE 1
+NODE    17 DNODE 2
+NODE    18 DNODE 2
+NODE    19 DNODE 2
+NODE    20 DNODE 2
+NODE    31 DNODE 2
+NODE    32 DNODE 2
 -----------------------------------------------DLINE-NODE TOPOLOGY
-NODE    27 DLINE 1
-NODE    30 DLINE 1
+NODE    23 DLINE 1
+NODE    26 DLINE 1
 NODE    1 DLINE 2
+NODE    2 DLINE 2
 NODE    5 DLINE 2
-NODE    22 DLINE 3
-NODE    24 DLINE 3
+NODE    6 DLINE 2
+NODE    9 DLINE 2
+NODE    11 DLINE 2
+NODE    13 DLINE 2
+NODE    15 DLINE 2
+NODE    17 DLINE 2
+NODE    19 DLINE 2
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    3 DSURFACE 1
 NODE    4 DSURFACE 1
@@ -122,8 +157,8 @@ NODE    7 DSURFACE 1
 NODE    8 DSURFACE 1
 NODE    3 DSURFACE 2
 NODE    7 DSURFACE 2
-NODE    25 DSURFACE 2
-NODE    28 DSURFACE 2
+NODE    21 DSURFACE 2
+NODE    24 DSURFACE 2
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE    1 DVOL 1
 NODE    2 DVOL 1
@@ -157,69 +192,55 @@ NODE    29 DVOL 1
 NODE    30 DVOL 1
 NODE    31 DVOL 1
 NODE    32 DVOL 1
-NODE    33 DVOL 1
-NODE    34 DVOL 1
-NODE    35 DVOL 1
-NODE    36 DVOL 1
-NODE    37 DVOL 1
-NODE    38 DVOL 1
 -------------------------------------------------------NODE COORDS
 NODE 1  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
 NODE 2  	COORD	1.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
 NODE 3  	COORD	1.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
 NODE 4  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 5  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
-NODE 6  	COORD	1.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
-NODE 7  	COORD	1.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
-NODE 8  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 5  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	2.5000000000000000e-01	
+NODE 6  	COORD	1.0000000000000000e+00	0.0000000000000000e+00	2.5000000000000000e-01	
+NODE 7  	COORD	1.0000000000000000e+00	1.0000000000000000e+00	2.5000000000000000e-01	
+NODE 8  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	2.5000000000000000e-01	
 NODE 9  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
 NODE 10  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 11  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
-NODE 12  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 11  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	2.5000000000000000e-01	
+NODE 12  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	2.5000000000000000e-01	
 NODE 13  	COORD	3.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
 NODE 14  	COORD	3.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 15  	COORD	3.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
-NODE 16  	COORD	3.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 15  	COORD	3.0000000000000000e+00	0.0000000000000000e+00	2.5000000000000000e-01	
+NODE 16  	COORD	3.0000000000000000e+00	1.0000000000000000e+00	2.5000000000000000e-01	
 NODE 17  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
 NODE 18  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 19  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
-NODE 20  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
-NODE 21  	COORD	5.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 22  	COORD	5.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 23  	COORD	5.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
-NODE 24  	COORD	5.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
-NODE 25  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 26  	COORD	1.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 27  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 28  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
-NODE 29  	COORD	1.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
-NODE 30  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
-NODE 31  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 32  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
-NODE 33  	COORD	3.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 34  	COORD	3.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
-NODE 35  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 36  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
-NODE 37  	COORD	5.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 38  	COORD	5.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+NODE 19  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	2.5000000000000000e-01	
+NODE 20  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	2.5000000000000000e-01	
+NODE 21  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 22  	COORD	1.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 23  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 24  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	2.5000000000000000e-01	
+NODE 25  	COORD	1.0000000000000000e+00	2.0000000000000000e+00	2.5000000000000000e-01	
+NODE 26  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	2.5000000000000000e-01	
+NODE 27  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 28  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	2.5000000000000000e-01	
+NODE 29  	COORD	3.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 30  	COORD	3.0000000000000000e+00	2.0000000000000000e+00	2.5000000000000000e-01	
+NODE 31  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 32  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	2.5000000000000000e-01	
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none
    3 SOLIDH8 HEX8  9 13 14 10 11 15 16 12    MAT 1 KINEM nonlinear EAS none
    4 SOLIDH8 HEX8  13 17 18 14 15 19 20 16    MAT 1 KINEM nonlinear EAS none
-   5 SOLIDH8 HEX8  17 21 22 18 19 23 24 20    MAT 1 KINEM nonlinear EAS none
-   6 SOLIDH8 HEX8  25 3 26 27 28 7 29 30    MAT 1 KINEM nonlinear EAS none
-   7 SOLIDH8 HEX8  3 10 31 26 7 12 32 29    MAT 1 KINEM nonlinear EAS none
-   8 SOLIDH8 HEX8  10 14 33 31 12 16 34 32    MAT 1 KINEM nonlinear EAS none
-   9 SOLIDH8 HEX8  14 18 35 33 16 20 36 34    MAT 1 KINEM nonlinear EAS none
-   10 SOLIDH8 HEX8  18 22 37 35 20 24 38 36    MAT 1 KINEM nonlinear EAS none
+   5 SOLIDH8 HEX8  21 3 22 23 24 7 25 26    MAT 1 KINEM nonlinear EAS none
+   6 SOLIDH8 HEX8  3 10 27 22 7 12 28 25    MAT 1 KINEM nonlinear EAS none
+   7 SOLIDH8 HEX8  10 14 29 27 12 16 30 28    MAT 1 KINEM nonlinear EAS none
+   8 SOLIDH8 HEX8  14 18 31 29 16 20 32 30    MAT 1 KINEM nonlinear EAS none
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE 9.05742160587590632e-05 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE -3.23371831737618765e-05 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE -3.14962059381008064e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 33 QUANTITY dispy VALUE 8.31731620250588874e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 33 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
 ---------------------------------------------------------------END
 // END
