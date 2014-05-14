@@ -125,8 +125,6 @@ DRT::ELEMENTS::TopOptImpl<distype>::TopOptImpl()
 funct_(true),
 deriv_(true),
 derxy_(true),
-efluidvel_(true),
-eadjointvel_(true),
 eadjointpres_(true),
 fluidvelint_(true),
 adjointvelint_(true),
@@ -134,6 +132,8 @@ fluidvelxy_(true),
 adjointvelxy_(true),
 adjointpresxy_(true),
 adjointconvvel_(true),
+fluidvelint_old_(true),
+adjointvelint_old_(true),
 tau_(true),
 poroint_(0.0),
 intpoints_( distype ),
@@ -248,6 +248,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
 {
   double& densint = constraints[0]; // integrated density
 
+  LINALG::Matrix<nsd_,nen_> evel(true);
+
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
@@ -276,32 +278,32 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
           if (optiparams_->IsStationary())
             timestep=1; // just one stationary time step 1
 
-          efluidvel_ = efluidvel.find(timestep)->second;
+          evel = efluidvel.find(timestep)->second;
 
-          fluidvelint_.Multiply(efluidvel_,funct_);
-          fluidvelxy_.MultiplyNT(efluidvel_,derxy_);
+          fluidvelint_.Multiply(evel,funct_);
+          fluidvelxy_.MultiplyNT(evel,derxy_);
 
           // weighting of the timesteps
           // if stationary, we have the second case with theta = 1, so all is ok
-          double timefac = 0.0;
+          double objfac = 0.0;
           if (timestep==0) // first time step -> factor 1-theta (old sol at first time step)
-            timefac = 1.0 - optiparams_->Theta();
+            objfac = 1.0 - optiparams_->ThetaObj();
           else if (timestep==optiparams_->NumTimesteps()) // last time step -> factor theta (new sol at last time step)
-            timefac = optiparams_->Theta();
+            objfac = optiparams_->ThetaObj();
           else // all other time steps -> factor 1-theta as old sol, factor theta as new sol -> overall factor 1
-            timefac = 1.0;
+            objfac = 1.0;
 
           if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
-            value -= timefac*edens.Dot(funct_)*edens.Dot(funct_);
+            value -= objfac*edens.Dot(funct_)*edens.Dot(funct_);
           else // standard case
           {
-            value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
+            value += objfac*poroint_*fluidvelint_.Dot(fluidvelint_);
 
             for (int idim=0;idim<nsd_;idim++)
             {
               for (int jdim=0;jdim<nsd_;jdim++)
               {
-                value += timefac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+                value += objfac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
               }
             }
           }
@@ -453,6 +455,16 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
+  LINALG::Matrix<nsd_,nen_> evel(true);
+
+  const double timefac = optiparams_->Theta();
+  const double timefac_old = 1.0-optiparams_->Theta();
+
+  // dissipation in objective present?
+  double dissipation_fac = 0.0;
+  if (optiparams_->ObjDissipationTerm())
+    dissipation_fac = optiparams_->ObjDissipationFac();
+
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
@@ -464,12 +476,6 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
     EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
     EvalPorosityAtIntPoint(edens);
-
-    // dissipation in objective present?
-    double dissipation_fac = 0.0;
-    if (optiparams_->ObjDissipationTerm())
-      dissipation_fac = optiparams_->ObjDissipationFac();
-
 
     switch (optiparams_->TimeIntScheme())
     {
@@ -492,38 +498,59 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         if (efluidvels.find(timestep)==efluidvels.end())
           dserror("Fluid solution of time step %i not found!",timestep);
 
-        efluidvel_ = efluidvels.find(timestep)->second;
-        eadjointvel_ = eadjointvels.find(timestep)->second;
+        evel = efluidvels.find(timestep)->second;
+        fluidvelint_.Multiply(evel,funct_);
 
-        fluidvelint_.Multiply(efluidvel_,funct_);
-        adjointvelint_.Multiply(eadjointvel_,funct_);
+        evel = eadjointvels.find(timestep)->second;
+        adjointvelint_.Multiply(evel,funct_);
+        adjointvelxy_.MultiplyNT(evel,derxy_);
+
+        if (optiparams_->IsStationary()==false)
+        {
+          if (timestep>1)
+          {
+            evel = efluidvels.find(timestep)->second;
+            fluidvelint_old_.Multiply(evel,funct_);
+
+            evel = eadjointvels.find(timestep)->second;
+            adjointvelint_old_.Multiply(evel,funct_); // TODO required???
+          }
+          else
+          {
+            fluidvelint_old_.Clear();
+            adjointvelint_old_.Clear();
+          }
+        }
 
         CalcStabParameter(fac_);
 
-        double timefac = 0.0;
-        if (timestep==0)                                timefac = 1.0 - optiparams_->Theta();
-        else if (timestep==optiparams_->NumTimesteps()) timefac = optiparams_->Theta();
-        else                                            timefac = 1.0;
+        double objfac = 0.0;
+        if (timestep==0)                                objfac = 1.0 - optiparams_->ThetaObj();
+        else if (timestep==optiparams_->NumTimesteps()) objfac = optiparams_->ThetaObj();
+        else                                            objfac = 1.0;
 
         if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
-          value -= timefac*dissipation_fac*2*edens.Dot(funct_);
+          value -= objfac*dissipation_fac*2*edens.Dot(funct_);
         else // standard case
         {
-          value += timefac*(
-              dissipation_fac*fluidvelint_.Dot(fluidvelint_)+fluidvelint_.Dot(adjointvelint_));
+          value += objfac*dissipation_fac*fluidvelint_.Dot(fluidvelint_); // dissipation part, zero if not used
 
-          if (optiparams_->PSPG())
+          if (timestep>0)
           {
-            eadjointpres_ = eadjointpress.find(timestep)->second;
-            adjointpresxy_.Multiply(derxy_,eadjointpres_);
-            value+=timefac*(tau_(1)*fluidvelint_.Dot(adjointpresxy_)); // adjoint part
-          }
+            value +=timefac*adjointvelint_.Dot(fluidvelint_)+timefac_old*adjointvelint_.Dot(fluidvelint_old_);
 
-          if (optiparams_->SUPG())
-          {
-            adjointvelxy_.MultiplyNT(eadjointvel_,derxy_);
-            adjointconvvel_.Multiply(adjointvelxy_,fluidvelint_);
-            value+=timefac*(optiparams_->Density()*tau_(0)*fluidvelint_.Dot(adjointconvvel_)); // adjoint part
+            if (optiparams_->PSPG())
+            {
+              eadjointpres_ = eadjointpress.find(timestep)->second;
+              adjointpresxy_.Multiply(derxy_,eadjointpres_);
+              value+=timefac*(tau_(1)*fluidvelint_.Dot(adjointpresxy_)); // adjoint part
+            }
+
+            if (optiparams_->SUPG())
+            {
+              adjointconvvel_.Multiply(adjointvelxy_,fluidvelint_);
+              value+=timefac*(optiparams_->Density()*tau_(0)*fluidvelint_.Dot(adjointconvvel_)); // adjoint part
+            }
           }
         }
       }

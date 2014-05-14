@@ -64,6 +64,7 @@ public:
   INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
   double Time() {return time_;}
   double Dt() {return dt_;}
+  double ThetaObj() {return theta_obj_;}
   double Theta() {return theta_;}
   double OmTheta() {return omtheta_;}
   double ThetaPre() {return theta_pre_;}
@@ -125,6 +126,8 @@ private:
   double time_;
   //! time-step length
   double dt_;
+  //! factor for right-hand side due to one-step-theta time-integration scheme of objective function
+  double theta_obj_;
   //! factor for left-hand side due to one-step-theta time-integration scheme
   double theta_;
   //! factor for right-hand side due to one-step-theta time-integration scheme

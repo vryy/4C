@@ -1144,6 +1144,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
   eleparams.set("theta_div",theta_div_);
   eleparams.set("omtheta_div",omtheta_div_);
 
+  eleparams.set("theta_obj",params_->get<double>("theta_obj"));
+
   // set scheme-specific element parameters and vector values
   if ((timealgo_==INPAR::FLUID::timeint_stationary) ||
       (timealgo_==INPAR::FLUID::timeint_one_step_theta))

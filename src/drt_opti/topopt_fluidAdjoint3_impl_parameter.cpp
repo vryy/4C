@@ -56,6 +56,7 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   timealgo_(INPAR::FLUID::timeint_one_step_theta),
   time_(-1.0),
   dt_(0.0),
+  theta_obj_(0.0),
   theta_(0.0),
   omtheta_(0.0),
   theta_pre_(0.0),
@@ -206,6 +207,9 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
   if (not is_stationary_)
   {
     dt_           = params.get<double>("dt");
+
+    theta_obj_    = params.get<double>("theta_obj");
+
     theta_        = params.get<double>("theta");
     omtheta_      = params.get<double>("omtheta");
     theta_pre_    = params.get<double>("theta_pre");
@@ -215,6 +219,8 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
   }
   else // is_stationary == true
   {
+    theta_obj_ = 1.0;
+
     dt_ = theta_ = theta_pre_ = theta_div_ =1.0;
     omtheta_ = omtheta_pre_ = omtheta_div_ = 0.0;
   }
@@ -231,12 +237,14 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
 
   double TOL = 1.0e-14;
   if (dt_ < 0.0 or time_ < -TOL
+      or theta_obj_ < 0.0 or theta_obj_ > 1.0
       or theta_ < 0.0 or omtheta_ < 0.0
       or theta_pre_ < 0.0 or omtheta_pre_ < 0.0
       or theta_div_ < 0.0 or omtheta_div_ < 0.0)
   {
     std::cout<<"dt_: "<<dt_<<std::endl;
     std::cout<<"time_ "<<time_<<std::endl;
+    std::cout<<"theta_obj_ "<<theta_obj_<<std::endl;
     std::cout<<"theta_ "<<theta_<<std::endl;
     std::cout<<"omtheta_ "<<omtheta_<<std::endl;
     std::cout<<"theta_pre_ "<<theta_pre_<<std::endl;
@@ -299,6 +307,8 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   std::cout << "|    time:    " << time_ << std::endl;
   //! time-step length
   std::cout << "|    time step:    " << dt_ << std::endl;
+  //! factor for right-hand side due to one-step-theta time-integration scheme of objective function
+  std::cout << "|    theta_obj:    " << theta_obj_ << std::endl;
   //! factor for left-hand side due to one-step-theta time-integration scheme
   std::cout << "|    theta:    " << theta_ << std::endl;
   //! factor for right-hand side due to one-step-theta time-integration scheme

@@ -5379,6 +5379,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,
       "control parameters for the optimizer of a topology optimization problem");
 
+  DoubleParameter("THETA",0.5,"theta for temporal integration of objective function",&topoptoptimizer);
   IntParameter("MAX_ITER",100,"Maximal number of optimization steps",&topoptoptimizer);
   IntParameter("MAX_GRAD_ITER",100,"Maximal number of optimization steps containing the gradient",&topoptoptimizer);
   IntParameter("MAX_INNER_ITER",20,"Maximal number of inner optimization steps",&topoptoptimizer);

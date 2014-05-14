@@ -66,6 +66,7 @@ public:
   const INPAR::FLUID::TauType TauType() {return whichtau_;}
   const double Dt() {return dt_;}
   const int NumTimesteps() {return max_timesteps_;}
+  const double ThetaObj() {return theta_obj_;}
   const double Theta() {return theta_;}
   const double ThetaPre() {return theta_pre_;}
   const double ThetaDiv() {return theta_div_;}
@@ -124,6 +125,8 @@ private:
   double dt_;
   /// maximal number of time steps
   int max_timesteps_;
+  /// theta in one-step-theta scheme for objective function
+  double theta_obj_;
   /// theta in one-step-theta scheme
   double theta_;
   /// theta for pressure terms in one-step-theta scheme

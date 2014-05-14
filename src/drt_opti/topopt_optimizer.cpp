@@ -477,6 +477,8 @@ void TOPOPT::Optimizer::ImportFlowParams(
   opti_ele_params.set("dissipation_fac",fluidParams_->get<double>("DISSIPATION_FAC"));
   opti_ele_params.set("pres_drop_fac",fluidParams_->get<double>("PRESSURE_DROP_FAC"));
 
+  opti_ele_params.set("theta_obj",params_.sublist("TOPOLOGY OPTIMIZER").get<double>("THETA"));
+
   opti_ele_params.set("vol_bd",params_.sublist("TOPOLOGY OPTIMIZER").get<double>("VOLUME_BOUNDARY"));
 
   opti_ele_params.set<INPAR::TOPOPT::OptiCase>("opti_case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));

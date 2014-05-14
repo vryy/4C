@@ -257,10 +257,6 @@ private:
 
   //! @name flow data
 
-  /// fluid velocity of one time step
-  LINALG::Matrix<nsd_,nen_> efluidvel_;
-  /// adjoint velocity of one time step
-  LINALG::Matrix<nsd_,nen_> eadjointvel_;
   /// adjoint pressure of one time step
   LINALG::Matrix<nen_,1> eadjointpres_;
 
@@ -277,6 +273,11 @@ private:
   LINALG::Matrix<nsd_,1> adjointpresxy_;
   /// convective adjoint velocity of one time step
   LINALG::Matrix<nsd_,1> adjointconvvel_;
+
+  /// fluid velocity of last time step at gauss point
+  LINALG::Matrix<nsd_,1> fluidvelint_old_;
+  /// adjoint velocity of last time step at gauss point
+  LINALG::Matrix<nsd_,1> adjointvelint_old_;
 
   //! the stabilisation parameters -> it is a (3,1) vector for 2D and 3D
   LINALG::Matrix<3,1> tau_;  //@}

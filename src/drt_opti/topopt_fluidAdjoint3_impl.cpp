@@ -2277,6 +2277,11 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
 
   if (fldAdPara_->TestCase() == INPAR::TOPOPT::adjointtest_no)
   {
+    double objfac = fac_*fldAdPara_->Dt();
+    if (abs(fldAdPara_->Time())<1.0e-10)      objfac *= 1.0 - fldAdPara_->ThetaObj(); // time 0
+    else if (fldAdPara_->IsInitInstatStep())  objfac *= fldAdPara_->ThetaObj(); // time T
+    else                                      objfac *= 1.0;
+
     if (fldAdPara_->ObjDissipationTerm())
     {
       const double dissipation = fldAdPara_->ObjDissipationFac();
@@ -2288,10 +2293,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
        */
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        value = 2*timefacfac*dissipation*reacoeff_*fluidvelint_(idim);
-
-        if ((fldAdPara_->IsStationary()==false) and (fldAdPara_->IsInitInstatStep()==false))
-          value += 2*timefacfacrhs*dissipation*reacoeff_*fluidvelint_old_(idim);
+        value = 2*objfac*dissipation*reacoeff_*fluidvelint_(idim);
 
         for (int vi=0; vi<nen_; ++vi)
         {
@@ -2309,10 +2311,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
       {
         for (int jdim = 0; jdim<nsd_; ++jdim)
         {
-          value = 2*timefacfac*fldAdPara_->Viscosity()*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
-
-          if ((fldAdPara_->IsStationary()==false) and (fldAdPara_->IsInitInstatStep()==false))
-            value += 2*timefacfacrhs*fldAdPara_->Viscosity()*(fluidvelxy_old_(idim,jdim)+fluidvelxy_old_(jdim,idim));
+          value = 2*objfac*fldAdPara_->Viscosity()*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
 
           for (int vi=0;vi<nen_; ++vi)
           {
@@ -2872,12 +2871,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
 
 
   LINALG::Matrix<nsd_,1> momres(true);
-    momres.Update(1.0,fluidgradp_,reacoeff_,fluidvelint_);
-    momres.Update(fldAdPara_->Density(),conv_fluidvel,-2.0*fldAdPara_->Viscosity(),fluidvisc_,1.0);
-    momres.Update(-fldAdPara_->Density(),fluidbodyforce_,1.0);
+  momres.Update(1.0,fluidgradp_,reacoeff_,fluidvelint_);
+  momres.Update(fldAdPara_->Density(),conv_fluidvel,-2.0*fldAdPara_->Viscosity(),fluidvisc_,1.0);
+  momres.Update(-fldAdPara_->Density(),fluidbodyforce_,1.0);
 
-    if (fldAdPara_->IsStationary()==false)
-    {
+  if (fldAdPara_->IsStationary()==false)
+  {
       const double fac1 = fldAdPara_->Density()/(fldAdPara_->Dt()*fldAdPara_->Theta());
       const double fac2 = fldAdPara_->OmTheta()/fldAdPara_->Theta();
 
@@ -2885,7 +2884,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
       momres.Update(fac2,fluidgradp_old_,fac2*reacoeff_,fluidvelint_old_,1.0);
       momres.Update(fac2*fldAdPara_->Density(),conv_fluidvel_old,-2.0*fac2*fldAdPara_->Viscosity(),fluidvisc_old_,1.0);
       momres.Update(-fldAdPara_->Density()*fac2,fluidbodyforce_new_,1.0);
-    }
+  }
 
 
   for (int ui=0; ui<nen_; ++ui)

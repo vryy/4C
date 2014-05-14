@@ -226,6 +226,9 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointCase>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(adjointfdyn,"TESTCASE"));
 
   // ------------------------------------ test case for optimization routine
+  fluidadjointtimeparams->set<double>("theta_obj",prbdyn.sublist("TOPOLOGY OPTIMIZER").get<double>("THETA"));
+
+  // ------------------------------------ test case for optimization routine
   fluidadjointtimeparams->set<int>("opti testcase",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(prbdyn.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
 
   // -------------------------- potential nonlinear boundary conditions

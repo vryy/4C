@@ -55,6 +55,7 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   whichtau_(INPAR::FLUID::tau_not_defined),
   dt_(-1.0),
   max_timesteps_(-1),
+  theta_obj_(-1.0),
   theta_(-1.0),
   theta_pre_(-1.0),
   theta_div_(-1.0),
@@ -154,6 +155,8 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
   //----------------------------------------------------------------------
   if (not is_stationary_)
   {
+    theta_obj_ = params.get<double>("theta_obj");
+
     dt_ = params.get<double>("dt");
     max_timesteps_ = params.get<int>("maxtimesteps");
     theta_ = params.get<double>("theta");
@@ -162,6 +165,8 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
   }
   else
   {
+    theta_obj_ = 1.0;
+
     dt_ = theta_ = theta_pre_ = theta_div_ = 1.0;
     max_timesteps_ = 1;
   }
@@ -218,6 +223,8 @@ void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
   std::cout << "|    time step:    " << dt_ << std::endl;
   /// maximal number of time steps
   std::cout << "|    maximal number of time steps:     " << max_timesteps_ << std::endl;
+  /// theta for objective integration
+  std::cout << "|    theta_obj:     " << theta_obj_ << std::endl;
   /// theta
   std::cout << "|    theta:     " << theta_ << std::endl;
   /// theta for pressure terms
