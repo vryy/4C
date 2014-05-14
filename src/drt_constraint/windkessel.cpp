@@ -2079,7 +2079,7 @@ void UTILS::Windkessel::ResetStdWindkessel(
 
     std::vector<int> colvec(1);
     colvec[0]=gindex;
-    int err1 = sysvec->SumIntoGlobalValues(1,&p_0,&colvec[0]);
+    int err1 = sysvec->ReplaceGlobalValues(1,&p_0,&colvec[0]);
     if (err1) dserror("SumIntoGlobalValues failed!");
 
   }
@@ -2166,7 +2166,7 @@ void UTILS::Windkessel::ResetHeartValveArterialProxDistWindkessel(
     colvec[1]=gindex2;
     colvec[2]=gindex3;
     colvec[3]=gindex4;
-    int err = sysvec->SumIntoGlobalValues(1,&p_arp_0,&colvec[1]);
+    int err = sysvec->ReplaceGlobalValues(1,&p_arp_0,&colvec[1]);
     if (err) dserror("SumIntoGlobalValues failed!");
 
   }
