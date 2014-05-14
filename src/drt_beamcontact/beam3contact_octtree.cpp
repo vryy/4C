@@ -450,19 +450,22 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
       }
       else
       {
-        CalcCornerPos(element, currentpositions, coord);
-
+        //for solid elements only axis-aligned bounding boxes are possible
         switch(boundingbox_)
         {
+          case Beam3ContactOctTree::axisaligned:
+            CalcCornerPos(element, currentpositions, coord);
+          break;
           case Beam3ContactOctTree::cyloriented:
             dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
           break;
           case Beam3ContactOctTree::spherical:
             dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
           break;
+          default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+          break;
         }
       }
-
       // build bounding box according to given type
       switch(boundingbox_)
       {
