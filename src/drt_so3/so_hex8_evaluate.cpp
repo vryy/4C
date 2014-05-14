@@ -588,29 +588,29 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
 
         if (pstype_==INPAR::STR::prestress_mulf)
-            {
-              // get Jacobian mapping wrt to the stored configuration
-              LINALG::Matrix<3,3> invJdef;
-              prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
-              // get derivatives wrt to last spatial configuration
-              LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
-              N_xyz.Multiply(invJdef,derivs[gp]);
+        {
+          // get Jacobian mapping wrt to the stored configuration
+          LINALG::Matrix<3,3> invJdef;
+          prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+          // get derivatives wrt to last spatial configuration
+          LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+          N_xyz.Multiply(invJdef,derivs[gp]);
 
-              // build multiplicative incremental defgrd
-              defgrd.MultiplyTT(xdisp,N_xyz);
-              defgrd(0,0) += 1.0;
-              defgrd(1,1) += 1.0;
-              defgrd(2,2) += 1.0;
+          // build multiplicative incremental defgrd
+          defgrd.MultiplyTT(xdisp,N_xyz);
+          defgrd(0,0) += 1.0;
+          defgrd(1,1) += 1.0;
+          defgrd(2,2) += 1.0;
 
-              // get stored old incremental F
-              LINALG::Matrix<3,3> Fhist;
-              prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+          // get stored old incremental F
+          LINALG::Matrix<3,3> Fhist;
+          prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
 
-              // build total defgrd = delta F * F_old
-              LINALG::Matrix<3,3> Fnew;
-              Fnew.Multiply(defgrd,Fhist);
-              defgrd = Fnew;
-            }
+          // build total defgrd = delta F * F_old
+          LINALG::Matrix<3,3> Fnew;
+          Fnew.Multiply(defgrd,Fhist);
+          defgrd = Fnew;
+        }
         else
           // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
           defgrd.MultiplyTT(xcurr,N_XYZ);
