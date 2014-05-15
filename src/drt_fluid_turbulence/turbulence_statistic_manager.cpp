@@ -1134,8 +1134,7 @@ namespace FLD
                                                 Teuchos::RCP<Epetra_Vector>     velnp,
                                                 Teuchos::RCP<Epetra_Vector>     force,
                                                 Teuchos::RCP<Epetra_Vector>     phi,
-                                                Teuchos::RCP<const DRT::DofSet> stddofset,
-                                                Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp /*= Teuchos::null */ // needed for 'bubbly_channel_flow'
+                                                Teuchos::RCP<const DRT::DofSet> stddofset
 )
   {
     // sampling takes place only in the sampling period
@@ -1154,11 +1153,10 @@ namespace FLD
           dserror("need statistics_channel_multiphase_ to do a time sample for a turbulent channel flow");
 
         if (velnp == Teuchos::null        or force == Teuchos::null
-            or stddofset == Teuchos::null or discretmatchingvelnp == Teuchos::null
-            or phi == Teuchos::null)
+            or stddofset == Teuchos::null or phi == Teuchos::null)
             dserror("The multi phase channel statistics need a current velnp, force, stddofset, discretmatchingvelnp, phinp.");
 
-        statistics_channel_multiphase_->DoTimeSample(velnp, force, stddofset, discretmatchingvelnp, phi);
+        statistics_channel_multiphase_->DoTimeSample(velnp, force, stddofset, phi);
         break;
       }
       case combust_oracles:

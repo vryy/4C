@@ -3545,10 +3545,6 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
     // set element volume
     vol = wquad*det;
 
-    // compute global first derivatives
-    derxy.Multiply(xji,deriv);
-
-
     // adopt integration points and weights for gauss point evaluation of B
     if (fldpara->BGp())
     {

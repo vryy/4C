@@ -46,8 +46,8 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::calc_fluid_beltrami_error;
   else if (action == "calc_nitsche_error")
     act = Combust3::calc_nitsche_error;
-  else if (action == "calc_turbulence_statistics")
-    act = Combust3::calc_turbulence_statistics;
+  else if (action == "calc_void_fraction")
+    act = Combust3::calc_void_fraction;
   else if (action == "calc_fluid_box_filter")
     act = Combust3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
@@ -524,38 +524,26 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       COMBUST::callIntegrateShape(assembly_type, this, ih_, *eleDofManager_, mystate, elemat1, elevec1);
     }
     break;
-    case calc_turbulence_statistics:
+    case calc_void_fraction:
     {
       // omitting check for 3-Dimensionality, since combust is implemented in 3D only.
 
       // do nothing if you do not own this element
       if(this->Owner() == discretization.Comm().MyPID())
       {
-        // --------------------------------------------------
-        // extract velocities and pressure from the global distributed vectors
-
-        // velocity and pressure values (n+1)
-        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1,converged)");
-        if (velnp==Teuchos::null)
-          dserror("Cannot get state vector 'velnp'");
-
-        std::vector<double> mysol (lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
-
-        // integrate mean values
         const DiscretizationType distype = this->Shape();
-
+        // integrate mean values
         switch(distype)
         {
         case DRT::Element::hex8:
-          calc_volume_fraction(discretization, mysol, params);
+          calc_volume_fraction(discretization, params);
           break;
         default:
           dserror("Unknown element type for mean value evaluation\n");
           break;
         }
       }
-    } // end of case calc_turbulence_statistics
+    } // end of case calc_void_fraction
     break;
     default:
       dserror("Unknown type of action for Combust3");
@@ -806,7 +794,6 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3::calc_volume_fraction(
   DRT::Discretization&       discretization,
-  const std::vector<double>& solution      ,
   Teuchos::ParameterList&    params
   )
 {

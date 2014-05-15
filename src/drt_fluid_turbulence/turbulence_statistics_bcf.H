@@ -121,21 +121,13 @@ public:
       Teuchos::RCP<const Epetra_Vector> stdvelnp                            ,
       Teuchos::RCP<const Epetra_Vector> stdforce                            ,
       Teuchos::RCP<const DRT::DofSet>   stddofset            = Teuchos::null,
-      Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp = Teuchos::null,
       Teuchos::RCP<const Epetra_Vector> phinp                = Teuchos::null);
 
 
   /*!
-  \brief Compute in plane means of u,u^2 etc. (integral version)
-
-  The averages here are calculated by integration.
-
-  The calculated value is added to the sum**,sumsq** variables in the
-  component corresponding to the plane.
-
-  Further documentation is provided in the element subroutines
+  \brief computation fo void fraction for two-phase flows
   */
-  void EvaluateIntegralMeanValuesInPlanes();
+  void EvaluateVoidFraction();
 
   /*!
   \brief Compute in plane means of u,u^2 etc. (nodal quantities)
@@ -238,9 +230,6 @@ private:
   //! vector of squared velocities and pressures
   Teuchos::RCP<Epetra_Vector>                 pointsquaredvelnp_;
 
-  //! pointer to the full velnp. Must match the discretization
-  Teuchos::RCP<const Epetra_Vector>           fullvelnp_;
-
   //! pointer to the phinp vector. This is a dirty hack!!!
   Teuchos::RCP<const Epetra_Vector>           phinp_;
 
@@ -265,9 +254,6 @@ private:
 
   //! number of phases
   size_t                                     numphase_;
-
-  //! number of elements in sample plane
-  int                                        numele_;
 
   //! number of nodes in sample plane
   int                                        numnode_;
@@ -295,7 +281,8 @@ private:
   Teuchos::RCP<Epetra_SerialDenseMatrix>      boundingbox_;
 
   //! viscosity to calculate l_tau, y+ etc.
-  std::vector<double>                        visc_;
+  std::vector<double>                        dens_;
+  std::vector<double>                        visc_; // KINEMATIK!!!!!!!!!!!!!!!
 
   //! maps the global material ids to the position in
   //  the vectors which belongs to that material

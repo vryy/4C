@@ -2583,8 +2583,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
           velnp_out,
           trueresidual_out,
           phinp_,
-          standarddofset_,
-          state_.velnp_);
+          standarddofset_);
     }
 
     if (write_visualization_data)

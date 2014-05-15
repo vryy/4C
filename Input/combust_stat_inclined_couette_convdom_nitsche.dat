@@ -10,7 +10,12 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+ IMPORTANT:
+ This test is not tested in the nightly test runs, since is requires a number
+ of combustion spectific define flag introduced by Florian. We do not want to
+ delete this test since it is based on a simple analytical solution. With respect
+ to a future incorporation of the functionality of the combustion code into
+ the standard fluid code, it might be helpful to ensure a proper reimplementation.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        60
 NODES                           154

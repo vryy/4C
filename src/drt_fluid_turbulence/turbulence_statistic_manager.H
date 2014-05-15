@@ -151,8 +151,7 @@ public:
                     Teuchos::RCP<Epetra_Vector>     velnp,
                     Teuchos::RCP<Epetra_Vector>     force,
                     Teuchos::RCP<Epetra_Vector>     phi,
-                    Teuchos::RCP<const DRT::DofSet> stddofset,
-                    Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp = Teuchos::null // needed for 'bubbly_channel_flow'
+                    Teuchos::RCP<const DRT::DofSet> stddofset
                     );
 
   /*!

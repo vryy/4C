@@ -282,7 +282,7 @@ private:
           calc_fluid_stationary_systemmat_and_residual,
           calc_fluid_beltrami_error,
           calc_nitsche_error,
-          calc_turbulence_statistics,
+          calc_void_fraction,
           calc_fluid_box_filter,
           calc_smagorinsky_const,
           store_xfem_info,
@@ -352,7 +352,6 @@ private:
          */
         void calc_volume_fraction(
           DRT::Discretization&       discretization,
-          const std::vector<double>& solution,
           Teuchos::ParameterList&    params
           );
 

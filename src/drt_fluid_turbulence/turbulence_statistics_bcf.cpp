@@ -33,9 +33,6 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   //----------------------------------------------------------------------
   // switches, control parameters, material parameters
 
-  // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
-
   // get the plane normal direction from the parameterlist
   {
     std::string plainstring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
@@ -58,17 +55,12 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     }
   }
 
-  // this should not happen, but it does not hurt to check anyways
-  if(physicaltype_ == INPAR::FLUID::loma)
-  {
-    dserror("Loma not supported by the multi phase channel flow");
-  }
-
   //--------------------------------------------------------------
   // get the number and the viscosities of the fluids
   {
     // iterate over all fluids and get fluid viscosity from
     // material definition --- for computation of ltau
+    dens_.clear();
     visc_.clear();
     matidtoindex_ = Teuchos::rcp(new std::map<int, int>);
     matidtoindex_->clear();
@@ -78,17 +70,20 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     {
       Teuchos::RCP<const MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(id);
       if (mat == Teuchos::null)
-	dserror("Could not find material Id %d", id);
+        dserror("Could not find material Id %d", id);
       else
       {
-	if (mat->Type() == INPAR::MAT::m_fluid)
-	{
-	  const MAT::PAR::Parameter* matparam = mat->Parameter();
-	  const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(matparam);
-	  visc_.push_back(actmat->viscosity_);
-	  (*matidtoindex_)[actmat->Id()] = index;
-	  index++;
-	}
+        if (mat->Type() == INPAR::MAT::m_fluid)
+        {
+          const MAT::PAR::Parameter* matparam = mat->Parameter();
+          const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(matparam);
+          // we need the kinematic viscosity here
+          dens_.push_back(actmat->density_);
+          double visc = actmat->viscosity_/actmat->density_;
+          visc_.push_back(visc);
+          (*matidtoindex_)[actmat->Id()] = index;
+          index++;
+        }
       }
     }
     numphase_ = visc_.size();
@@ -111,11 +106,11 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   // allocate array for bounding box
   //
-  //	      |  x  |  y  |  z
-  //	------+-----+-----+-----
-  //	  min |     |	  |
-  //	------+-----+-----+-----
-  //	  max |     |	  |
+  //       |  x  |  y  |  z
+  // ------+-----+-----+-----
+  //   min |     |     |
+  // ------+-----+-----+-----
+  //   max |     |     |
   //
   //
   boundingbox_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(2,3));
@@ -408,7 +403,6 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   Teuchos::RCP<const Epetra_Vector> stdvelnp,
   Teuchos::RCP<const Epetra_Vector> stdforce,
   Teuchos::RCP<const DRT::DofSet>   stddofset,
-  Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp,
   Teuchos::RCP<const Epetra_Vector> phinp)
 {
   // we have an additional sample
@@ -419,7 +413,7 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   //===============================================
   // we cannot keep them as xfem constantly changes
   // the vector distribution
-  stddofset_	= stddofset;
+  stddofset_ = stddofset;
   const Epetra_Map* dofrowmap = stddofset_->DofRowMap();
 
   //----------------------------------------------------------------------
@@ -440,22 +434,10 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   //----------------------------------------------------------------------
   // create pointer to velnp as member so we do not have to pass it around.
   // the pointer will be reset after the sample has been taken!!!
-  stdvelnp_	= stdvelnp;
+  stdvelnp_ = stdvelnp;
 
   pointsquaredvelnp_ = LINALG::CreateVector(*dofrowmap);
   pointsquaredvelnp_->Multiply(1.0,*stdvelnp_,*stdvelnp_,0.0);
-
-  if (discretmatchingvelnp != Teuchos::null)
-  {
-    fullvelnp_ = discretmatchingvelnp;
-  }
-  else
-  {
-    // if a discretmatching velnp was not provided one could try the
-    // stdvelnp, but this will most likely fail
-    // fullvelnp_ = stdvelnp;
-    dserror("The multi phase turbulence statistics object needs a velnp that matches the one of the discretization.");
-  }
 
   if (phinp != Teuchos::null)
   {
@@ -463,7 +445,7 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   }
   else
   {
-    dserror("Hack! The multi phase turbulence statistics object needs a phinp.");
+    dserror("The multi phase turbulence statistics object needs a phinp.");
   }
 
 
@@ -472,8 +454,8 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   //==========================================================
 
   //----------------------------------------------------------------------
-  // loop planes and calculate integral means in each plane in EvalIntMeanValInPlanes
-  this->EvaluateIntegralMeanValuesInPlanes();
+  // loop planes and calculate void fraction
+  this->EvaluateVoidFraction();
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
@@ -562,7 +544,7 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   // clean up pointers to velnp, etc.
   //=================================================
 
-  stddofset_	     = Teuchos::null;
+  stddofset_     = Teuchos::null;
 
   toggleu_.clear();
   togglev_.clear();
@@ -570,7 +552,6 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
 
   stdvelnp_     = Teuchos::null;
   pointsquaredvelnp_ = Teuchos::null;
-  fullvelnp_     = Teuchos::null;
 
   phinp_     = Teuchos::null;
 
@@ -579,9 +560,9 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
 
 
 /*----------------------------------------------------------------------*
-  Compute in plane means of u,u^2 etc. (integral version)
+  Compute void fraction in homogeneous planes
  -----------------------------------------------------------------------*/
-void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
+void COMBUST::TurbulenceStatisticsBcf::EvaluateVoidFraction()
 {
 
   //----------------------------------------------------------------------
@@ -591,7 +572,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_turbulence_statistics");
+  eleparams.set("action","calc_void_fraction");
 
   // choose what to assemble
   eleparams.set("assemble matrix 1",false);
@@ -604,11 +585,11 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   eleparams.set("normal direction to homogeneous plane",dim_);
   eleparams.set("coordinate vector for hom. planes",nodeplanes_);
 
-  // set size of vectors
+  // set size of vectors, i.e., nodeplanes_->size()
   const int size = sumvol_[0]->size();
 
   // generate processor local result vectors
-  std::vector<Teuchos::RCP<std::vector<double> > > locvol( numphase_);
+  std::vector<Teuchos::RCP<std::vector<double> > > locvol(numphase_);
   std::vector<Teuchos::RCP<std::vector<double> > > globvol(numphase_);
 
   for (size_t i = 0; i < numphase_; i++)
@@ -632,13 +613,8 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
 
   eleparams.set("count processed elements", &locprocessedeles);
 
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("u and p (n+1,converged)", fullvelnp_);
-
   // call loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  discret_->ClearState();
 
 
   //----------------------------------------------------------------------
@@ -653,8 +629,6 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   // the sums are divided by the layers area to get the area average
 
   {
-    discret_->Comm().SumAll(&locprocessedeles, &numele_, 1);
-
     for(size_t i = 0; i < sumvol_[0]->size()-1; ++i) // the last plane is empty by definition
     {
       double fullvolplane = 0.0;
@@ -672,7 +646,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   }
 
   return;
-}// TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
+}// TurbulenceStatisticsBcf::EvaluateVoidFraction()
 
 
 /*----------------------------------------------------------------------*
@@ -713,22 +687,18 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
       if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
       {
          std::vector<int> dof = stddofset_->Dof(node);
-         double      one = 1.0;
+         double one = 1.0;
          int  index = -1;
 
-         // This is a dirty hack.  The statistics channel should  not know
-         // anything about  the combust specific phi.  There ought to be a
-         // method to let either the node decide to which phase it belongs
-         // or to ask the discretization or similar.
-         // Perhaps a node condition?
+         // check phase
+         // use phi as phase indicator function
          const int lid = phinp_->Map().LID(node->Id());
          if (lid < 0)
            dserror("Node %i is not on this proc.", node->Id());
-         if ((*phinp_)[lid] < 0 )
+         if ((*phinp_)[lid] < 0.0 )
            index = 1;
          else
            index = 0;
-         // end hack
 
          toggleu_[index]->ReplaceGlobalValues(1,&one,&(dof[0]));
          togglev_[index]->ReplaceGlobalValues(1,&one,&(dof[1]));
@@ -911,20 +881,6 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
     for (size_t j = 0; j < numphase_; j++)
     {
       (*(sumvol_[j]))[i] /= numsamp_;
-
-//(*(sumu_[j])  )[i] /=numsamp_;
-//(*(sumv_[j])  )[i] /=numsamp_;
-//(*(sumw_[j])  )[i] /=numsamp_;
-//(*(sump_[j])  )[i] /=numsamp_;
-//
-//(*(sumuv_[j]) )[i] /=numsamp_;
-//(*(sumuw_[j]) )[i] /=numsamp_;
-//(*(sumvw_[j]) )[i] /=numsamp_;
-//
-//(*(sumsqu_[j]))[i] /=numsamp_;
-//(*(sumsqv_[j]))[i] /=numsamp_;
-//(*(sumsqw_[j]))[i] /=numsamp_;
-//(*(sumsqp_[j]))[i] /=numsamp_;
     }
   }
 
@@ -935,10 +891,10 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       const double numsamp = ((*(pointsumnode_[j]))[i]);
       if(numsamp > 0.0)
       {
-         (*(pointsumu_[j]))[i]	/= numsamp;
-         (*(pointsumv_[j]))[i]	/= numsamp;
-         (*(pointsumw_[j]))[i]	/= numsamp;
-         (*(pointsump_[j]))[i]	/= numsamp;
+         (*(pointsumu_[j]))[i] /= numsamp;
+         (*(pointsumv_[j]))[i] /= numsamp;
+         (*(pointsumw_[j]))[i] /= numsamp;
+         (*(pointsump_[j]))[i] /= numsamp;
 
          (*(pointsumsqu_[j]))[i] /= numsamp;
          (*(pointsumsqv_[j]))[i] /= numsamp;
@@ -967,14 +923,14 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
     }
   }
   // there are two Dirichlet boundaries
-  area*=2;
+  area*=2.0;
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
 
   // ltau is used to compute y+
   std::vector<double> ltau(numphase_);
-  if	  (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
+  if (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     if(abs(sumforceu_)< 1.0e-12)
     {
@@ -982,17 +938,17 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
     }
 
     for (size_t i = 0; i < numphase_; i++)
-      ltau[i] = visc_[i]/sqrt(sumforceu_/area);
+      ltau[i] = visc_[i]/sqrt(sumforceu_/area/dens_[i]);
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
     for (size_t i = 0; i < numphase_; i++)
-      ltau[i] = visc_[i]/sqrt(sumforcev_/area);
+      ltau[i] = visc_[i]/sqrt(sumforcev_/area/dens_[i]);
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
     for (size_t i = 0; i < numphase_; i++)
-      ltau[i] = visc_[i]/sqrt(sumforcew_/area);
+      ltau[i] = visc_[i]/sqrt(sumforcew_/area/dens_[i]);
   }
   else
   {
@@ -1025,14 +981,14 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
          }
       }
 
-      (*log) << "# Material ID  	 : ";
+      (*log) << "# Material ID   : ";
       (*log) << "   " << std::setw(11) << std::setprecision(1) << matid;
       (*log) << &std::endl;
 
       (*log) << "# (u_tau)^2 = tau_W/rho : ";
-      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/area;
-      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/area;
-      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/area;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/area/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/area/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/area/dens_[j];
       (*log) << &std::endl;
 
 
@@ -1081,10 +1037,8 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
 
 
 /*----------------------------------------------------------------------*
-
       Compute a time average of the mean values over all steps
        of the sampling period so far. Dump the result to file.
-
   ----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 {
@@ -1114,20 +1068,20 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 
   // ltau is used to compute y+
   std::vector<double> ltau(numphase_);
-  if	  (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
+  if (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     for (size_t i = 0; i < numphase_; i++)
-      ltau[i] = visc_[i]/sqrt(sumforceu_/(area*numsamp_));
+      ltau[i] = visc_[i]/sqrt(sumforceu_/(area*numsamp_)/dens_[i]);
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
     for (size_t i = 0; i < numphase_; i++)
-      ltau[i] = visc_[i]/sqrt(sumforcev_/(area*numsamp_));
+      ltau[i] = visc_[i]/sqrt(sumforcev_/(area*numsamp_)/dens_[i]);
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
     for (size_t i = 0; i < numphase_; i++)
-      ltau[i] = visc_[i]/sqrt(sumforcew_/(area*numsamp_));
+      ltau[i] = visc_[i]/sqrt(sumforcew_/(area*numsamp_)/dens_[i]);
   }
   else
   {
@@ -1161,20 +1115,20 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
          }
       }
 
-      (*log) << "# Material ID  	 : ";
+      (*log) << "# Material ID     : ";
       (*log) << "   " << std::setw(11) << std::setprecision(1) << matid;
       (*log) << &std::endl;
 
       (*log) << "# (u_tau)^2 = tau_W/rho : ";
-      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_);
-      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_);
-      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_);
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_)/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_)/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_)/dens_[j];
       (*log) << &std::endl;
 
-      (*log) << "#     y	    y+   volfraction";
-      (*log) << "	    umean	  vmean 	wmean	      pmean";
-      (*log) << "	 mean u^2      mean v^2      mean w^2	  mean p^2";
-      (*log) << "      mean u*v      mean u*w	   mean v*w    no. samp";
+      (*log) << "#     y      y+   volfraction";
+      (*log) << "    umean    vmean    wmean       pmean";
+      (*log) << "    mean u^2      mean v^2      mean w^2    mean p^2";
+      (*log) << "      mean u*v      mean u*w     mean v*w    no. samp";
       (*log) << "\n";
 
       (*log) << std::scientific;
@@ -1230,9 +1184,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 
 
 /*----------------------------------------------------------------------*
-
-		  Reset sums and number of samples to 0
-
+  Reset sums and number of samples to 0
   ----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::ClearStatistics()
 {
