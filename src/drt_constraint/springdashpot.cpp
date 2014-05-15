@@ -95,7 +95,7 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
 
           switch(shape)
           {
-          case DRT::Element::tri3 or DRT::Element::quad4:
+          case DRT::Element::tri3:
             apernode = a / element->NumNode();
           break;
           case DRT::Element::tri6:
@@ -119,6 +119,8 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
             if (i==5) apernode = int_N_edgemidnode * a / weight;
           }
           break;
+          case DRT::Element::quad4:
+            apernode = a / element->NumNode();
           case DRT::Element::quad8:
           {
             //integration of shape functions over parameter element surface
