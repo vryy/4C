@@ -80,13 +80,102 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
           LINALG::Assemble(refnodalnormals,elevector,lm,lmowner);
         }
 
+        DRT::Element::DiscretizationType shape = element->Shape();
+
         double a = eparams.get("area",-1.0);
 
         // loop over all nodes of the element that share the area
         // do only contribute to my own row nodes
-        const double apernode = a / element->NumNode();
+        double apernode = 0.;
         for (int i=0; i<element->NumNode(); ++i)
         {
+          /* here we have to take care to assemble the right stiffness to the nodes!!! (mhv 05/2014):
+          we do some sort of "manual" gauss integration here since we have to pay attention to assemble
+          the correct stiffness in case of quadratic surface elements*/
+
+          switch(shape)
+          {
+          case DRT::Element::tri3 or DRT::Element::quad4:
+            apernode = a / element->NumNode();
+          break;
+          case DRT::Element::tri6:
+          {
+            //integration of shape functions over parameter element surface
+            double int_N_cornernode = 0.;
+            double int_N_edgemidnode = 1./6.;
+
+            int numcornernode = 3;
+            int numedgemidnode = 3;
+
+            double weight = numcornernode * int_N_cornernode + numedgemidnode * int_N_edgemidnode;
+
+            //corner nodes
+            if (i==0) apernode = int_N_cornernode * a / weight;
+            if (i==1) apernode = int_N_cornernode * a / weight;
+            if (i==2) apernode = int_N_cornernode * a / weight;
+            //edge mid nodes
+            if (i==3) apernode = int_N_edgemidnode * a / weight;
+            if (i==4) apernode = int_N_edgemidnode * a / weight;
+            if (i==5) apernode = int_N_edgemidnode * a / weight;
+          }
+          break;
+          case DRT::Element::quad8:
+          {
+            //integration of shape functions over parameter element surface
+            double int_N_cornernode = -1./3.;
+            double int_N_edgemidnode = 4./3.;
+
+            int numcornernode = 4;
+            int numedgemidnode = 4;
+
+            double weight = numcornernode * int_N_cornernode + numedgemidnode * int_N_edgemidnode;
+
+            //corner nodes
+            if (i==0) apernode = int_N_cornernode * a / weight;
+            if (i==1) apernode = int_N_cornernode * a / weight;
+            if (i==2) apernode = int_N_cornernode * a / weight;
+            if (i==3) apernode = int_N_cornernode * a / weight;
+            //edge mid nodes
+            if (i==4) apernode = int_N_edgemidnode * a / weight;
+            if (i==5) apernode = int_N_edgemidnode * a / weight;
+            if (i==6) apernode = int_N_edgemidnode * a / weight;
+            if (i==7) apernode = int_N_edgemidnode * a / weight;
+          }
+          break;
+          case DRT::Element::quad9:
+          {
+            //integration of shape functions over parameter element surface
+            double int_N_cornernode = 1./9.;
+            double int_N_edgemidnode = 4./9.;
+            double int_N_centermidnode = 16./9.;
+
+            int numcornernode = 4;
+            int numedgemidnode = 4;
+            int numcentermidnode = 1;
+
+            double weight = numcornernode * int_N_cornernode + numedgemidnode * int_N_edgemidnode + numcentermidnode * int_N_centermidnode;
+
+            //corner nodes
+            if (i==0) apernode = int_N_cornernode * a / weight;
+            if (i==1) apernode = int_N_cornernode * a / weight;
+            if (i==2) apernode = int_N_cornernode * a / weight;
+            if (i==3) apernode = int_N_cornernode * a / weight;
+            //edge mid nodes
+            if (i==4) apernode = int_N_edgemidnode * a / weight;
+            if (i==5) apernode = int_N_edgemidnode * a / weight;
+            if (i==6) apernode = int_N_edgemidnode * a / weight;
+            if (i==7) apernode = int_N_edgemidnode * a / weight;
+            //center mid node
+            if (i==8) apernode = int_N_centermidnode * a / weight;
+          }
+          break;
+          case DRT::Element::nurbs9:
+            dserror("Not yet implemented for Nurbs! To do: Apply the correct weighting of the area per node!");
+          break;
+          default:
+              dserror("shape type unknown!\n");
+          }
+
           int gid = element->Nodes()[i]->Id();
           if (!dis->NodeRowMap()->MyGID(gid)) continue;
           nodalarea[dis->NodeRowMap()->LID(gid)] += apernode;
