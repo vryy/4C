@@ -76,8 +76,8 @@ namespace ELASTIC
       //@{
       void SetC(const double c) { c_ = c; }
       void SetBeta(const double beta) { beta_ = beta; }
-      void SetYoungs(const double c) { c_ = c; }
-      void SetNue(const double beta) { beta_ = beta; }
+      void SetYoungs(const double c) { c_ = c; }        // ToDo Are we sure, that SetYoungs() has to set c_ instead of youngs_?
+      void SetNue(const double beta) { beta_ = beta; }  // ToDo Are we sure, that SetNue() has to set beta_ instead of nue_?
       //@}
 
     };  // class CoupNeoHooke
@@ -95,12 +95,9 @@ namespace ELASTIC
   /// model. The Parameters read in are the Young's modulus and the Poisson's
   /// ratio.
   ///
-  ///
-  ///
-  ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = c(I_{\boldsymbol{C}}-3)+\frac c {\beta} (J^{-2\beta}-1)
+  ///   \Psi = c(I_{\boldsymbol{C}}-3)+\frac {c}{\beta} (J^{-2\beta}-1)
   ///\f]
   ///
   /// with
@@ -108,13 +105,9 @@ namespace ELASTIC
   ///   \beta = \frac {\nu}{1-2\nu}
   ///\f]
   ///
-  ///
-  /// \f$ c=\frac {\mu} 2 = \frac {\text{Young's modulus}}{4(1-\nu)} \f$
+  /// \f$ c=\frac {\mu}{2} = \frac {\text{Young's modulus}}{4(1+\nu)} \f$
   /// and \f$\mu\f$ and \f$\nu\f$ beeing the shear modulus
   /// and the Poisson's ratio, respectivly.
-  ///
-  ///
-  ///
   ///
   /// [1] Holzapfel, G. A., Nonlinear Solid Mechanics, 2002
   ///

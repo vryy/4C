@@ -55,8 +55,10 @@ void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
   const double c = params_->c_;
   const double beta = params_->beta_;
 
-  // strain energy psi = c / beta * (I3^{-beta} - 1) + c * (I1 - 3)
-  double psiadd = (c/beta) * (pow(prinv(2),-beta)-1.) + c*(prinv(0)-3.);
+  // strain energy: psi = c / beta * (I3^{-beta} - 1) + c * (I1 - 3)
+  double psiadd = c * (prinv(0) - 3.);
+  if (beta != 0) // take care of possible division by zero in case or Poisson's ratio nu = 0.0
+    psiadd += (c / beta) * (pow(prinv(2), -beta) - 1.);
 
   // add to overall strain energy
   psi += psiadd;
