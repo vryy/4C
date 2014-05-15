@@ -121,6 +121,7 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
           break;
           case DRT::Element::quad4:
             apernode = a / element->NumNode();
+          break;
           case DRT::Element::quad8:
           {
             //integration of shape functions over parameter element surface
