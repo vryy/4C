@@ -1322,16 +1322,19 @@ namespace LINALG
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
-    typename std::map<int,std::map<int, std::vector<T> > >::const_iterator curr;
-    for (curr=datamap.begin(); curr != datamap.end(); ++curr)
+    typename std::map<int,std::map<int, std::vector<T> > >::const_iterator curr1;
+    typename std::map<int, std::vector<T> >::const_iterator curr2;
+    typename std::vector<T>::const_iterator curr3;
+    for (curr1=datamap.begin(); curr1 != datamap.end(); ++curr1)
     {
-      const std::map<int, std::vector<T> >& innercurr = curr->second;
-      typename std::map<int, std::vector<T> >::const_iterator inneriter;
-      for(inneriter=innercurr.begin(); inneriter != innercurr.end(); ++inneriter)
+      const std::map<int, std::vector<T> >& data = curr1->second;
+      for (curr2=data.begin(); curr2 != data.end(); ++curr2)
       {
-        std::vector<T> get = inneriter->second;
-        //rdata[inneriter->first].push_back(inneriter->second.begin(),inneriter->second.end());
-        rdata[inneriter->first] = get;
+        const std::vector<T>& vectordata = curr2->second;
+        for (curr3=vectordata.begin(); curr3 != vectordata.end(); ++curr3)
+        {
+          rdata[curr2->first].push_back(*curr3);
+        }
       }
     }
     return;
