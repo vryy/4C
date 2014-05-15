@@ -32,21 +32,11 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   int owner
   )
 : DRT::Element(id,owner),
-  stab_s_(-1.),
-  cpl_(-1.),
-  last_plastic_defgrd_inverse_(Teuchos::null),
-  last_alpha_isotropic_(Teuchos::null),
-  last_alpha_kinematic_(Teuchos::null),
-  activity_state_(Teuchos::null),
   KbbInv_(Teuchos::null),
   Kbd_(Teuchos::null),
   fbeta_(Teuchos::null),
-  DalphaK_last_iter_(Teuchos::null),
-  KbbInvHill_(Teuchos::null),
-  KbdHill_(Teuchos::null),
-  fbetaHill_(Teuchos::null),
-  mDLp_last_iter_(Teuchos::null),
-  deltaAlphaI_(Teuchos::null),
+  dDp_last_iter_(Teuchos::null),
+  plspintype_(plspin),
   KaaInv_(Teuchos::null),
   Kad_(Teuchos::null),
   feas_(Teuchos::null),
@@ -129,17 +119,16 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   AddtoPack(data,wgt_);
 
   // parameters
-  AddtoPack(data,stab_s_);
-  AddtoPack(data,cpl_);
   AddtoPack(data,(int)fbar_);
 
   // plasticity stuff
   int histsize=0;
-  if (last_plastic_defgrd_inverse_!=Teuchos::null)
-      histsize=last_plastic_defgrd_inverse_->size();
+  if (dDp_last_iter_!=Teuchos::null)
+      histsize=dDp_last_iter_->size();
   AddtoPack(data,histsize);
-  bool Hill=(bool)(mDLp_last_iter_!=Teuchos::null);
-  AddtoPack(data,(int)Hill);
+
+  // plastic spin type
+  AddtoPack(data,(int)plspintype_);
 
   // EAS element technology
   AddtoPack(data,(int)eastype_);
@@ -154,16 +143,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   // history at each Gauss point
   if (histsize!=0)
     for (int i=0; i<histsize; i++)
-    {
-      AddtoPack(data,last_plastic_defgrd_inverse_->at(i));
-      AddtoPack(data,last_alpha_isotropic_->at(i));
-      AddtoPack(data,last_alpha_kinematic_->at(i));
-      AddtoPack(data,(int)activity_state_->at(i));
-      if (Hill)
-        AddtoPack(data,mDLp_last_iter_->at(i));
-      else
-        AddtoPack(data,DalphaK_last_iter_->at(i));
-    }
+        AddtoPack(data,dDp_last_iter_->at(i));
 
   return;
 }  // Pack()
@@ -209,13 +189,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
   numgpt_=wgt_.size();
 
   // paramters
-  ExtractfromPack(position,data,stab_s_);
-  ExtractfromPack(position,data,cpl_);
   fbar_=(bool)ExtractInt(position,data);
 
    int histsize=ExtractInt(position,data);
 
-   bool Hill=(bool)ExtractInt(position,data);
+   // plastic spin type
+   plspintype_=static_cast<PlSpinType>(ExtractInt(position,data));
 
    // EAS element technology
    eastype_=static_cast<EASType>(ExtractInt(position,data));
@@ -239,53 +218,16 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      KaaInv_                             =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,neas_));
      Kad_                                =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,numdofperelement_));
      feas_                               =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-     Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(histsize,Epetra_SerialDenseMatrix(5,neas_)));
+     Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(histsize,Epetra_SerialDenseMatrix(plspintype_,neas_)));
      alpha_eas_                          =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      alpha_eas_last_timestep_            =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      alpha_eas_delta_over_last_timestep_ =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
    }
 
-   // initialize plastic history data
-   last_plastic_defgrd_inverse_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgpt_));
-   last_alpha_isotropic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<1,1> >(numgpt_));
-   last_alpha_kinematic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgpt_));
-   activity_state_              = Teuchos::rcp( new std::vector<bool>(numgpt_));
-
-   // initialize yield function specific stuff
-   if (Hill)
-   {
-     LINALG::Matrix<8,8> tmp88(true);
-     LINALG::Matrix<8,numdofperelement_> tmp8x(true);
-     LINALG::Matrix<8,1> tmp81(true);
-     KbbInvHill_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<8,8> >(numgpt_,tmp88));
-     KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >(numgpt_,tmp8x));
-     fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-     mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_));
-     deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>(numgpt_,0.));
-
-     // don't need
-     DalphaK_last_iter_     = Teuchos::null;
-     KbbInv_                = Teuchos::null;
-     Kbd_                   = Teuchos::null;
-     fbeta_                 = Teuchos::null;
-   }
-   else // von Mises
-   {
-     LINALG::Matrix<5,5> tmp55(true);
-     LINALG::Matrix<5,numdofperelement_> tmp5x(true);
-     LINALG::Matrix<5,1> tmp51(true);
-     KbbInv_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<5,5> >(numgpt_,tmp55));
-     Kbd_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<5,numdofperelement_> >(numgpt_,tmp5x));
-     fbeta_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-     DalphaK_last_iter_           = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_));
-
-     // don't need
-     mDLp_last_iter_        = Teuchos::null;
-     deltaAlphaI_           = Teuchos::null;
-     KbbInvHill_            = Teuchos::null;
-     KbdHill_               = Teuchos::null;
-     fbetaHill_             = Teuchos::null;
-   }
+     KbbInv_                      = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_)));
+     Kbd_                         = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_)));
+     fbeta_                       = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
+     dDp_last_iter_               = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
 
    if (eastype_!=soh8p_easnone)
    {
@@ -295,16 +237,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    }
 
    for (int i=0; i<histsize; i++)
-    {
-      ExtractfromPack(position,data,(*last_plastic_defgrd_inverse_)[i]);
-      ExtractfromPack(position,data,(*last_alpha_isotropic_)[i]);
-      ExtractfromPack(position,data,(*last_alpha_kinematic_)[i]);
-      (*activity_state_)[i]=(bool)(ExtractInt(position,data));
-      if (Hill)
-        ExtractfromPack(position,data,(*mDLp_last_iter_)[i]);
-      else
-        ExtractfromPack(position,data,(*DalphaK_last_iter_)[i]);
-    }
+     ExtractfromPack(position,data,(*dDp_last_iter_)[i]);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -334,16 +267,6 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   DRT::INPUT::LineDefinition* linedef
   )
 {
-  // read number of material model
-  int material = 0;
-  linedef->ExtractInt("MAT",material);
-
-  SetMaterial(material);
-
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(numgpt_, linedef);
-
-
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
 
@@ -454,6 +377,19 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     }
   }
 
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+
+  SetMaterial(material);
+
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(numgpt_, linedef);
+  if (HavePlasticSpin())
+    plspintype_=plspin;
+  else
+    plspintype_=zerospin;
+
   // EAS
   if (linedef->HaveNamed("EAS"))
   {
@@ -484,47 +420,12 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   LINALG::Matrix<3,3> id2(true);
   for (int i=0; i<3; i++) id2(i,i)=1.;
   LINALG::Matrix<1,1> tmp11(true);
-  // allocate plastic history variables
-  last_plastic_defgrd_inverse_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgpt_,id2));
-  last_alpha_isotropic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<1,1> >(numgpt_,tmp11));
-  last_alpha_kinematic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgpt_,tmp33));
-  activity_state_              = Teuchos::rcp( new std::vector<bool>(numgpt_,false));
 
-  // hill plasticity related stuff
-  if (HaveHillPlasticity())
-  {
-    LINALG::Matrix<8,8> tmp88(true);
-    LINALG::Matrix<8,numdofperelement_> tmp8x(true);
-    LINALG::Matrix<8,1> tmp81(true);
-    KbbInvHill_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<8,8> >(numgpt_,tmp88));
-    KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >(numgpt_,tmp8x));
-    fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-    mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-    deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>(numgpt_,0.));
-
-    // don't need
-    DalphaK_last_iter_     = Teuchos::null;
-    KbbInv_                = Teuchos::null;
-    Kbd_                   = Teuchos::null;
-    fbeta_                 = Teuchos::null;
-  }
-  else //von-Mises
-  {
-    LINALG::Matrix<5,5> tmp55(true);
-    LINALG::Matrix<5,numdofperelement_> tmp5x(true);
-    LINALG::Matrix<5,1> tmp51(true);
-    KbbInv_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<5,5> >(numgpt_,tmp55));
-    Kbd_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<5,numdofperelement_> >(numgpt_,tmp5x));
-    fbeta_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-    DalphaK_last_iter_           = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-
-    // don't need
-    mDLp_last_iter_        = Teuchos::null;
-    deltaAlphaI_           = Teuchos::null;
-    KbbInvHill_            = Teuchos::null;
-    KbdHill_               = Teuchos::null;
-    fbetaHill_             = Teuchos::null;
-  }
+  // plasticity related stuff
+  KbbInv_                      = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_)));
+  Kbd_                         = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_)));
+  fbeta_                       = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
+  dDp_last_iter_               = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
 
   return true;
 
@@ -602,12 +503,23 @@ void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string,int>& name
 template<DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
+  // Put the owner of this element into the file (use base class method for this)
+  if (DRT::Element::VisData(name,data))
+    return true;
+
+  // get plastic hyperelastic material
+     MAT::PlasticElastHyper* plmat = NULL;
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
+  else
+    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
+
   if (name == "accumulatedstrain")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
     double tmp=0.;
     for (int gp=0; gp<numgpt_; gp++)
-      tmp+= AccumulatedStrain(gp);
+      tmp+= plmat->AccumulatedStrain(gp);
     data[0] = tmp/numgpt_;
   }
   if (name == "plastic_zone")
@@ -617,30 +529,15 @@ bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::ve
     if ((int)data.size()!=1) dserror("size mismatch");
     for (int gp=0; gp<numgpt_; gp++)
     {
-      if (AccumulatedStrain(gp)!=0.) plastic_history=true;
-      if (activity_state_->at(gp)==true) curr_active=true;
+      if (plmat->AccumulatedStrain(gp)!=0.) plastic_history=true;
+      if (plmat->Active(gp))                curr_active=true;
     }
     data[0] = plastic_history+curr_active;
   }
 
-  return true;
+  return false;
 
 }  // VisData()
-
-/*----------------------------------------------------------------------*
- | return if there is hill plasticity                       seitz 09/13 |
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Plast<distype>::HaveHillPlasticity()
-{
-  // get plastic hyperelastic material
-     MAT::PlasticElastHyper* plmat = NULL;
-     if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
-       plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
-     else
-       dserror("so3_ssn_plast elements only with PlasticElastHyper material");
-     return (bool)plmat->HaveHillPlasticity();
-}
 
 /*----------------------------------------------------------------------*
  | read relevant parameters from paramter list              seitz 01/14 |
@@ -648,13 +545,11 @@ bool DRT::ELEMENTS::So3_Plast<distype>::HaveHillPlasticity()
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams)
 {
-  cpl_=plparams->get<double>("SEMI_SMOOTH_CPL");
-  stab_s_=plparams->get<double>("STABILIZATION_S");
+  double cpl=plparams->get<double>("SEMI_SMOOTH_CPL");
+  double s=plparams->get<double>("STABILIZATION_S");
+  static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s,cpl);
   if (eastype_!=soh8p_easnone)
     plparams->get<int>("have_EAS")=1;
-
-  if (HaveHillPlasticity() && eastype_!=soh8p_easnone)
-    dserror("no EAS for Hill-plasticity yet");
 
   return;
 }
@@ -758,6 +653,23 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
         (*(expolstresses(j)))[lid] += nodalstresses(i,j)/myadjele;
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ | Have plastic spin                                        seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
+{
+  // get plastic hyperelastic material
+  MAT::PlasticElastHyper* plmat = NULL;
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
+  else
+    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
+
+  return plmat->HavePlasticSpin();
 }
 
 #include "so3_ssn_plast_fwd.hpp"

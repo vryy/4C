@@ -17,11 +17,9 @@ created by pre_exodus
 - return-mapping method for finite strain von Mises plasticity
 - nonlinear isotropic hardening
 - quasi-static
-- ptc solver
+- full newton solver
 - EAS-9 element technology to avoid volumetric locking
-- reduced max-time to 4.2 instead of 7 (otherwise step size too large)
 - body is given in [mm], used units [mm,kg]
-- increased yield stress for test case to enable larger time steps
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    96
 //NODES       171
@@ -45,9 +43,9 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-TIMESTEP                        0.7
+TIMESTEP                        0.5
 NUMSTEP                         200000
-MAXTIME                         4.2 // 7.0
+MAXTIME                         7.0 
 DAMPING                         Yes
 M_DAMP                          0.1
 K_DAMP                          0.1
@@ -552,11 +550,11 @@ NODE 171  	COORD	0.0000000000000000e+00	6.4129999999999994e+00	1.333350000000000
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12 NAME ux_top_in
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_top_in
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 4.2 TOLERANCE 1.0e-12 NAME uz_top_in
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -6.45216628294569688e-02 TOLERANCE 1.0e-12 NAME ux_top_out
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-12 NAME uz_top_in
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -6.15422965435354213e-02 TOLERANCE 1.0e-12 NAME ux_top_out
 STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_top_out
-STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 4.2 TOLERANCE 1.0e-12 NAME uz_top_out
-STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -7.95136268608440999e-01 TOLERANCE 1.0e-12 NAME ux_neck
+STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-12 NAME uz_top_out
+STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -1.78473811175913810e+00 TOLERANCE 1.0e-12 NAME ux_neck
 STRUCTURE DIS structure NODE 80 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_neck
 STRUCTURE DIS structure NODE 80 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12 NAME uz_neck
 ---------------------------------------------------------------END

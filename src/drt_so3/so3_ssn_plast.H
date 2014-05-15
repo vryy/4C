@@ -281,6 +281,13 @@ namespace ELEMENTS
                           //!< (for Solid Hex8)
     };
 
+    //! number of plastic variables at each gauss point
+    enum PlSpinType
+    {
+      zerospin=5, //!< 5 parameters for zero plastic spin (symmetric traceless tensor)
+      plspin=8,   //!< 8 parameters for zero plastic spin (non-symmetric traceless tensor)
+    };
+
     //! vector of inverses of the jacobian in material frame
     std::vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
     //! determinant of Jacobian in material frame
@@ -309,67 +316,8 @@ namespace ELEMENTS
         const int MyPID  // processor id
         );
 
-    //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
-    virtual void nln_stiffmass_hill(
-        std::vector<int>&              lm,             // location matrix
-        std::vector<double>&           disp,           // current displacements
-        std::vector<double>&           residual,       // current residual displ
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
-        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
-        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
-        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
-        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
-        const INPAR::STR::StressType   iostress,  // stress output option
-        const INPAR::STR::StrainType   iostrain,  // strain output option
-        const int MyPID  // processor id
-        );
-
-    //! Calculate linear stiffness and mass matrix
-    virtual void lin_stiffmass(
-        std::vector<int>&              lm,             // location matrix
-        std::vector<double>&           disp,           // current displacements
-        std::vector<double>&           residual,       // current residual displ
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
-        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
-        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
-        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
-        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
-        const INPAR::STR::StressType   iostress,  // stress output option
-        const INPAR::STR::StrainType   iostrain,  // strain output option
-        const int MyPID  // processor id
-        );
-
-    //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
-    virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
-
-    //! calculate the derivative of the exponential of a symmetric 3x3 matrix
-    virtual void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
-
-    //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
-    virtual void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
-
-    // index notation:
-    // Dexp_ijkl += 0.5*fac* (A_ik*B_lj + B_ik*A_lj + A_jk*B_li + B_jk*A_li)
-    // A and B symmetric!
-    virtual void AddToSymMatrixExponentialDeriv(const double fac,
-        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp);
-
-    // index notation:
-    // Dexp_ijkl += fac*( A_ik * B_lj )
-    // A and B non-symmetric!
-    virtual void AddToMatrixExponentialDeriv(const double fac,
-        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp);
-
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
-    virtual void UpdatePlasticDeformation_nln();
-
-    // Add plastic increment of converged state to plastic history for nonlinear kinematics and Hill plasticity
-    virtual void UpdatePlasticDeformationHill_nln();
-
-    // Add plastic increment of converged state to plastic history for nonlinear kinematics
-    virtual void UpdatePlasticDeformation_lin();
+    virtual void UpdatePlasticDeformation_nln(PlSpinType spintype);
 
     //@}
 
@@ -385,11 +333,6 @@ namespace ELEMENTS
       LINALG::Matrix<numstr_,numdofperelement_>* boplin,
       LINALG::Matrix<nsd_,nen_>* N_XYZ
       );
-
-    // return the accumulated plastic strain at given gp
-    virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp)(0);}
-
-    virtual bool HaveHillPlasticity() ;
 
     /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
     /// todo: Unfortunately, there is no universal extrapolation function in all base elements,
@@ -411,6 +354,9 @@ namespace ELEMENTS
         const LINALG::Matrix<nen_,nsd_>& xrefe)    // material element coords
     ;
 
+
+    //! @name plasticity related stuff
+
     /*! \brief Calculate the deformation gradient that is consistent
      *         with modified (e.g. EAS) GL strain tensor.
      *         Expensive (two polar decomposition), but required, if
@@ -425,65 +371,65 @@ namespace ELEMENTS
                               LINALG::Matrix<6,1> glstrain_mod,
                               LINALG::Matrix<3,3>& defgrd_mod);
 
-    //! @name plasticity related stuff
+    template<int spintype>
+    void CondensePlasticity(
+        const LINALG::Matrix<nsd_,nsd_>& defgrd,
+        const LINALG::Matrix<nsd_,nsd_>& deltaLp,
+        const LINALG::Matrix<numstr_,numdofperelement_>& bop,
+        const LINALG::Matrix<numstr_,1>& RCG,
+        const int MyPID,
+        const double detJ_w,
+        const int gp,
+        Teuchos::ParameterList& params,
+        LINALG::Matrix<numdofperelement_,1>* force,
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix,
+        int& num_active_gp,
+        double& lp_res,
+        Epetra_SerialDenseMatrix* M=NULL,
+        Epetra_SerialDenseMatrix* Kda=NULL,
+        const double* f_bar_factor=NULL,
+        const LINALG::Matrix<numdofperelement_,1>* htensor=NULL
+        );
+
+    template<int spintype>
+    void RecoverPlasticity(
+        const LINALG::Matrix<numdofperelement_,1>& res_d,
+        const INPAR::STR::PredEnum& pred,
+        const int gp,
+        const int MyPID,
+        LINALG::Matrix<3,3>& deltaLp,
+        double& lp_inc,
+        bool recover,
+        Epetra_SerialDenseVector* delta_alpha_eas=NULL
+        );
+
+    virtual bool HavePlasticSpin();
 
     //@}
 
 
     // algoirthmic parameters
-    double stab_s_;
-    double cpl_;
     bool fbar_;
 
     static const int VOIGT3X3SYM_[3][3];
     static const int VOIGT3X3NONSYM_[3][3];
 
-    // plastic history variables ******************************************
-    // inverse plastic deformation gradient for each Gauss point at last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_plastic_defgrd_inverse_;
 
-    // accumulated plastic strain for each Gauss point at last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > last_alpha_isotropic_;
-
-    // accumulated plastic strain for each Gauss point at last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_alpha_kinematic_;
-
-    // classification, if the Gauss point is currently in the active (true) or inactive (false) set
-    Teuchos::RCP<std::vector<bool> > activity_state_;
-
-    // Hill plasticity ********************************************
-    // here we have 5 scalar plastic variables at each time step
-    // (symmetric, traceless 3x3 matrix)
+    // plasticity ********************************************
     // Kbb^-1 at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<LINALG::Matrix<5,5> > > KbbInv_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > KbbInv_;
 
     // Kbd at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<LINALG::Matrix<5,numdofperelement_> > > Kbd_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > Kbd_;
 
     // f_b at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > fbeta_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > fbeta_;
 
     // plastic increment at each Gauss point at last Newton iteration
     // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
-    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_iter_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dDp_last_iter_;
 
-    // Hill plasticity ********************************************
-    // here we have 8 scalar plastic variables at each time step
-    // (non-symmetric, traceless 3x3 matrix)
-    // Kbb^-1 at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<LINALG::Matrix<8,8> > > KbbInvHill_;
-
-    // Kbd at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<LINALG::Matrix<8,numdofperelement_> > > KbdHill_;
-
-    // f_b at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > fbetaHill_;
-
-    // plastic increment at each Gauss point at last Newton iteration
-    Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_iter_;
-
-    // accumulated plastic strain increment for each Gauss point
-    Teuchos::RCP<std::vector<double> > deltaAlphaI_;
+    PlSpinType       plspintype_;
 
     // EAS element technology ************************************
     Teuchos::RCP<Epetra_SerialDenseMatrix> KaaInv_;

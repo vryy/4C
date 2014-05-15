@@ -825,6 +825,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening");
     AddNamedReal(m,"KINHARD","linear kinematic hardening modulus");
 
+    // optional pastic spin parameter
+    AddNamedReal(m,"PL_SPIN_CHI","Plastic spin coupling parameter chi (often called eta)",true);
+
     // optional Hill yield parameters
     AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",true);
     AddNamedReal(m,"rY_22","relative yield stress in fiber2-direction (Y_22/Y_0)",true);
@@ -832,7 +835,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"rY_12","relative shear yield stress in 12-direction (Y_12/Y_0)",true);
     AddNamedReal(m,"rY_23","relative shear yield stress in 23-direction (Y_23/Y_0)",true);
     AddNamedReal(m,"rY_13","relative shear yield stress in 13-direction (Y_13/Y_0)",true);
-    AddNamedReal(m,"PL_SPIN_ETA","Plastic spin coupling parameter eta",true);
 
     AppendMaterialDefinition(matlist,m);
   }

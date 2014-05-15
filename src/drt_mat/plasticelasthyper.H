@@ -21,6 +21,8 @@ Maintainer: Alexander Seitz
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "elasthyper.H"
 
+#define AS_CONVERGENCE_TOL 1.e-12
+
 // forward declaration due to avoid header definition
 namespace MAT
 {
@@ -92,7 +94,9 @@ namespace MAT
       const double rY_12_;
       const double rY_23_;
       const double rY_13_;
-      const double plspin_eta_;
+      const double plspin_chi_;
+      double cpl_;
+      double stab_s_;
       // plastic material parameters ************************************
 
       /// create material instance of matching type with my parameters
@@ -198,34 +202,63 @@ private:
     /// linear kinematic hardening modulus
     virtual double Kinhard() const { return params_->kinhard_;}
 
+    /// complementarity parameter
+    virtual double cpl() const { return params_->cpl_;}
+
+    /// stabilization parameter
+    virtual double s() const { return params_->stab_s_;}
+
     /// a shear modulus equivalent
     virtual double ShearMod() const;
 
-    /// a shear modulus equivalent
-    virtual bool HaveHillPlasticity() const {return (params_->rY_11_!=0.); }
+    /// plastic spin unequal zero
+    virtual bool HavePlasticSpin() const
+    {return (params_->plspin_chi_!=0. && (params_->kinhard_!=0 || params_->rY_11_!=0.));}
 
-    /// plastic anisotropy tensor
-    virtual LINALG::Matrix<5,5> PlAniso() const {return *PlAniso_; }
+    /// plastic spin parameter chi
+    virtual double PlSpinChi() const {return params_->plspin_chi_; }
 
-    /// inverse plastic anisotropy tensor
-    virtual LINALG::Matrix<5,5> InvPlAniso() const {return *InvPlAniso_; }
+    /// evaluate quantities for elastic stiffness matrix
+    /// in consideration of plastic history/deformation
+    virtual void EvaluateElast(const LINALG::Matrix<3,3>*defgrd,
+                               const LINALG::Matrix<3,3>* deltaLp,
+                               Teuchos::ParameterList& params,
+                               LINALG::Matrix<6,1>* pk2,
+                               LINALG::Matrix<6,6>* cmat,
+                               const int gp);
 
-    /// plastic spin eta
-    virtual double PlSpinEta() const {return params_->plspin_eta_; }
+    /// evaluate everything needed for the condensation of the plastic deformation
+    /// at element level. (with zero plastic spin)
+    virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
+        const LINALG::Matrix<3,3>* deltaDp,///< inverse plastic deformation gradient
+        Teuchos::ParameterList& params,///< Container for additional information
+        LINALG::Matrix<6,6>* dPK2dDp, ///< derivative of PK2 w.r.t. F_p^{-1}
+        LINALG::Matrix<6,1>* NCP,      ///< NCP function
+        LINALG::Matrix<6,6>* dNCPdC,   ///< derivative of NCP function w.r.t. RCG
+        LINALG::Matrix<6,6>* dNCPdDp,///< derivative of NCP function w.r.t. deltaLp
+        bool* active,                  ///< gauss point is active
+        bool* elast,                   ///< gauss point needs condensation if it is not elast
+        bool* as_converged,
+        const int gp                ///< gauss point
+        );
+
+    /// evaluate everything needed for the condensation of the plastic deformation
+    /// at element level. (with plastic spin)
+    virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
+        const LINALG::Matrix<3,3>* deltaLp,///< inverse plastic deformation gradient
+        Teuchos::ParameterList& params,///< Container for additional information
+        LINALG::Matrix<6,9>* dPK2dLp, ///< derivative of PK2 w.r.t. F_p^{-1}
+        LINALG::Matrix<9,1>* NCP,      ///< NCP function
+        LINALG::Matrix<9,6>* dNCPdC,   ///< derivative of NCP function w.r.t. RCG
+        LINALG::Matrix<9,9>* dNCPdLp,///< derivative of NCP function w.r.t. deltaLp
+        bool* active,                  ///< gauss point is active
+        bool* elast,                   ///< gauss point needs condensation if it is not elast
+        bool* as_converged,
+        const int gp                ///< gauss point
+        );
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
-                          const LINALG::Matrix<3,3>* invpldefgrd, ///< inverse plastic deformation gradient
-                          Teuchos::ParameterList& params,   ///< Container for additional information
-                          LINALG::Matrix<6,1>* PK2stress,   ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat_ref,    ///< Constitutive matrix
-                          LINALG::Matrix<6,9>* dPK2dFpinv,   ///< derivative of PK2 w.r.t. F_p^{-1}
-                          LINALG::Matrix<3,3>* MandelStress, ///< Mandel stress tensor
-                          LINALG::Matrix<6,6>* dMdC,         ///< derivative of Mandel stress w.r.t. C
-                          LINALG::Matrix<6,9>* dMdFpinv,      ///< derivative of Mandel stress w.r.t. F_p^{-1}
-                          const int eleGID);                ///< Element GID
-
-    /// hyperelastic stress response plus elasticity tensor
+    /// (pure virtual in material base class. Not allowed here)
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
                           const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
                           Teuchos::ParameterList& params,     ///< Container for additional information
@@ -234,13 +267,19 @@ private:
                           const int eleGID)                    ///< Element GID
     {dserror("PlasticHyperElast cannot be called by standard evaluate routine"); return;}
 
+    /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
+    /// setup plastic orthotropy tensor H
     virtual void SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef);
 
+    /// update sumands
     virtual void Update()
     {dserror("Elastic summands in PlasticHyperElast are not allowed to have internal variables"
         "that would need an Update-routine!");};
+
+    /// update plastic history variables
+    virtual void UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp);
 
     /// return if isotropic not splitted formulation
     virtual bool IsotropicPrincipal() const { return isoprinc_;}
@@ -260,11 +299,23 @@ private:
     /// Return whether the material requires the deformation gradient for its evaluation
     virtual bool NeedsDefgrd() { return true; };
 
+    /// get plastic algorithm parameters
+    virtual void GetParams(int s, int cpl){params_->stab_s_=s;params_->cpl_=cpl;};
+
+    /// return accumulated plastic strain at GP
+    virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp);}
+
+    /// is this GP active
+    virtual bool Active(int gp) { return (*activity_state_)[gp];}
+
   protected:
+
     /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluatePlastKinQuant(
+    virtual void EvaluateKinQuantPlast(
         const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<3,3>* invpldefgrd,
+        const LINALG::Matrix<3,3>* deltaLp,
+        const int gp,
+        LINALG::Matrix<3,3>& invpldefgrd,
         LINALG::Matrix<6,1>& Cpi,
         LINALG::Matrix<6,1>& CpiCCpi,
         LINALG::Matrix<6,1>& ircg,
@@ -280,8 +331,18 @@ private:
         LINALG::Matrix<3,3>& FpiTC,
         LINALG::Matrix<9,1>& CFpiCe,
         LINALG::Matrix<3,3>& CeFpiTC,
-        LINALG::Matrix<3,1>& prinv
-    );
+        LINALG::Matrix<3,1>& prinv);
+
+    virtual void EvaluateKinQuantElast(
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<3,3>* deltaLp,
+        const int gp,
+        LINALG::Matrix<6,1>& Cpi,
+        LINALG::Matrix<6,1>& CpiCCpi,
+        LINALG::Matrix<6,1>& ircg,
+        LINALG::Matrix<3,1>& prinv);
+
+    virtual double NormStressLike(const LINALG::Matrix<6,1>& stress);
 
     /// convert non-symmetric 2-tensor to 9x1 vector
     void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
@@ -314,14 +375,12 @@ private:
     /// in index notation this does:
     /// dMdC_abCD += fac*( A_Ca*B_Db + A_Da*B_Cb + A_Db*B_Ca + A_Cb*B_Da )
     /// result has minor symmetries but no major symmetry
-    // Symmetric w.r.t. A,B
+    /// Symmetric w.r.t. A,B
     void AddtodMdC_gamma2(LINALG::Matrix<6,6>& dMdC,
         LINALG::Matrix<3,3> A, LINALG::Matrix<3,3> B, double fac);
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
     virtual void EvaluateIsotropicPrincPlast(
-        LINALG::Matrix<6,1>& stressisoprinc,
-        LINALG::Matrix<6,6>& cmatisoprinc,
         LINALG::Matrix<6,9>& dPK2dFpinvIsoprinc,
         LINALG::Matrix<3,3>& MandelStressIsoprinc,
         LINALG::Matrix<6,6>& dMdCisoprinc,
@@ -346,6 +405,47 @@ private:
         LINALG::Matrix<8,1> delta
         );
 
+    /// calculates the isotropic stress and elasticity tensor for coupled configuration
+    virtual void EvaluateIsotropicPrincElast(
+        LINALG::Matrix<6,1>& stressisoprinc,
+        LINALG::Matrix<6,6>& cmatisoprinc,
+        LINALG::Matrix<6,1> Cpi,
+        LINALG::Matrix<6,1> CpiCCpi,
+        LINALG::Matrix<6,1> ircg,
+        LINALG::Matrix<3,1> gamma,
+        LINALG::Matrix<8,1> delta
+        );
+
+    virtual void EvaluateNCP(const LINALG::Matrix<3,3>* mStr,
+                             const LINALG::Matrix<6,6>* dMdC,
+                             const LINALG::Matrix<6,9>* dMdFpinv,
+                             const LINALG::Matrix<6,9>* dPK2dFpinv,
+                             const LINALG::Matrix<3,3>* deltaDp,
+                             const int gp,
+                             LINALG::Matrix<6,1>* NCP,
+                             LINALG::Matrix<6,6>* dNCPdC,
+                             LINALG::Matrix<6,6>* dNCPdDp,
+                             LINALG::Matrix<6,6>* dPK2dDp,
+                             bool* active,
+                             bool* elast,
+                             bool* as_converged
+    );
+
+    virtual void EvaluateNCPandSpin(const LINALG::Matrix<3,3>* mStr,
+                             const LINALG::Matrix<6,6>* dMdC,
+                             const LINALG::Matrix<6,9>* dMdFpinv,
+                             const LINALG::Matrix<6,9>* dPK2dFpinv,
+                             const LINALG::Matrix<3,3>* deltaLp,
+                             const int gp,
+                             LINALG::Matrix<9,1>* NCP,
+                             LINALG::Matrix<9,6>* dNCPdC,
+                             LINALG::Matrix<9,9>* dNCPdLp,
+                             LINALG::Matrix<6,9>* dPK2dLp,
+                             bool* active,
+                             bool* elast,
+                             bool* as_converged
+    );
+
     /// calculate principal invariants
     virtual void InvariantsPrincipal(
       LINALG::Matrix<3,1>& prinv,  ///< principal invariants
@@ -358,6 +458,27 @@ private:
       const LINALG::Matrix<3,1>& prinv  ///< principal invariants
       );
 
+    //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
+    virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
+
+    //! calculate the derivative of the exponential of a symmetric 3x3 matrix
+    virtual void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
+
+    //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
+    virtual void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
+
+    // index notation:
+    // Dexp_ijkl += 0.5*fac* (A_ik*B_lj + B_ik*A_lj + A_jk*B_li + B_jk*A_li)
+    // A and B symmetric!
+    virtual void AddToSymMatrixExponentialDeriv(const double fac,
+        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp);
+
+    /// index notation:
+    /// Dexp_ijkl += fac*( A_ik * B_lj )
+    /// A and B non-symmetric!
+    virtual void AddToMatrixExponentialDeriv(const double fac,
+        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp);
+
     /// Flags to specify the formulations
     bool isoprinc_;
     bool isomod_;
@@ -367,11 +488,8 @@ private:
 
     /// @name Voigt index arrays
     //@{
-    static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
-    static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
-    static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
-                                     ///< by [3*i+j] for any i,j=0,1,2
     static const int VOIGT3X3_[3][3];
+    static const int VOIGT3X3NONSYM_[3][3];
 
     //@}
 
@@ -381,11 +499,25 @@ private:
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
-    // plastic anisotropy tensor for Hill-plasticity
-    // as there is only a dependency on the deviatoric stress, we use the reduced matrix
-    // notation S=[S_11 S_22 S_12 S_23 S_13]
-    Teuchos::RCP<LINALG::Matrix<5,5> > PlAniso_;
-    Teuchos::RCP<LINALG::Matrix<5,5> > InvPlAniso_;
+    /// plastic anisotropy tensor for Hill-plasticity
+    /// Von Mises plasticity is included for H = H^-1 = P_dev
+    LINALG::Matrix<6,6> PlAniso_full_;
+    LINALG::Matrix<6,6> InvPlAniso_full_;
+
+    /// inverse plastic deformation gradient for each Gauss point at last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_plastic_defgrd_inverse_;
+
+    /// accumulated plastic strain for each Gauss point at last converged state
+    Teuchos::RCP<std::vector<double > > last_alpha_isotropic_;
+
+    /// accumulated plastic strain for each Gauss point at last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_alpha_kinematic_;
+
+    /// classification, if the Gauss point is currently in the active (true) or inactive (false) set
+    Teuchos::RCP<std::vector<bool> > activity_state_;
+
+    /// isotropic hardening increment over this time step
+    Teuchos::RCP<std::vector<double> > delta_alpha_i_;
 
   };
 
