@@ -36,9 +36,6 @@ Maintainer: Markus Gitterle
 #include "../drt_mat/structporo.H"
 
 /*----------------------------------------------------------------------*/
-// namespaces
-using namespace LINALG; // our linear algebra
-
 
 /*----------------------------------------------------------------------*
  | Constitutive matrix C and stresses (private)                mgit 05/07|
@@ -65,7 +62,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   /*--------------------------- call material law -> get tangent modulus--*/
   switch(material->MaterialType())
   {
-  case INPAR::MAT::m_stvenant:/*----------------------- linear elastic ---*/
+    case INPAR::MAT::m_stvenant:/*----------------------- linear elastic ---*/
     {
       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(material.get());
       double ym = actmat->Youngs();
@@ -418,11 +415,10 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       dserror("Invalid type of material law for wall element");
       break;
     }
-  } // switch(material->mattyp)
+  } // switch(material->MaterialType())
 
   return;
 }  // DRT::ELEMENTS::Wall1::w1_call_matgeononl
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -434,12 +430,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(
 {
   // make 3d equivalent of Green-Lagrange strain
   LINALG::Matrix<6,1> gl(false);
-  gl(0) = strain(0);            // E_{11}
-  gl(1) = strain(1);            // E_{22}
-  gl(2) = 0.0;                  // E_{33}
-  gl(3) = strain(2)+strain(3);  // 2*E_{12}=E_{12}+E_{21}
-  gl(4) = 0.0;                  // 2*E_{23}
-  gl(5) = 0.0;                  // 2*E_{31}
+  GreenLagrangePlane3d(strain,gl);
 
   // call 3d stress response
   LINALG::Matrix<6,1> pk2(true);  // must be zerofied!!!
@@ -528,7 +519,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(
   }
   else
   {
-    dserror("dimension reduction type wtype_=%d is not available", wtype_);
+    dserror("Dimension reduction type wtype_=%d is not available.", wtype_);
   }
 
   // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
@@ -584,9 +575,8 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1:: EnergyInternal(
+double DRT::ELEMENTS::Wall1::EnergyInternal(
   Teuchos::RCP<const MAT::Material> material,
-  const double& fac,
   Teuchos::ParameterList& params,
   const Epetra_SerialDenseVector& Ev
 )
@@ -594,29 +584,58 @@ double DRT::ELEMENTS::Wall1:: EnergyInternal(
   // switch material type
   switch (material->MaterialType())
   {
-  case INPAR::MAT::m_stvenant :  // linear elastic
-  {
-    Epetra_SerialDenseMatrix Cm(Wall1::numnstr_,Wall1::numnstr_);  // elasticity matrix
-    Epetra_SerialDenseMatrix Sm(Wall1::numnstr_,Wall1::numnstr_);  // 2nd PK stress matrix
-    w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material,params);
-    Epetra_SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
-    Sv(0) = Sm(0,0);
-    Sv(1) = Sm(1,1);
-    Sv(2) = Sv(3) = Sm(0,2);
-    return fac * 0.5 * Sv.Dot(Ev);
-  }
-  break;
-  default :
-    dserror("Illegal typ of material for this element");
-    return 0;
+    case INPAR::MAT::m_stvenant :  // linear elastic
+    {
+      Epetra_SerialDenseMatrix Cm(Wall1::numnstr_,Wall1::numnstr_);  // elasticity matrix
+      Epetra_SerialDenseMatrix Sm(Wall1::numnstr_,Wall1::numnstr_);  // 2nd PK stress matrix
+      w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material,params);
+      Epetra_SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
+      Sv(0) = Sm(0,0);
+      Sv(1) = Sm(1,1);
+      Sv(2) = Sv(3) = Sm(0,2);
+      return 0.5 * Sv.Dot(Ev);
+    }
     break;
-  }
+    case INPAR::MAT::m_neohooke:
+    {
+      dserror("Not implemented for material type INPAR::MAT::m_neohooke. "
+          "This material type should go away, anyway.");
+    }
+    break;
+    case INPAR::MAT::m_elasthyper:
+    {
+      // transform the 2d Green-Lagrange strains into 3d notation
+      LINALG::Matrix<6,1> glstrain(true);
+      GreenLagrangePlane3d(Ev, glstrain);
+
+      // strain energy
+      double psi = 0.0;
+
+      // call material for evaluation of strain energy function
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material(), true);
+      so3mat->StrainEnergy(glstrain, psi);
+
+      return psi;
+    }
+    break;
+    default:
+    {
+      dserror("Illegal type of material for this element");
+      return 0.0;
+    }
+    break;
+  } // end of switch (material->MaterialType())
+
+  dserror("You should never end up here, since all possible cases should be "
+      "covered by the material selection.");
+
+  return 0.0;
 }
 
 /*-----------------------------------------------------------------------------*
 | deliver kinetic energy                                            bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1:: EnergyKinetic(
+double DRT::ELEMENTS::Wall1::EnergyKinetic(
   const Epetra_SerialDenseMatrix& mass,
   const std::vector<double>& vel
 )

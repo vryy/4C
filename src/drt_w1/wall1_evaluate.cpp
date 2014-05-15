@@ -36,10 +36,6 @@ Maintainer: Markus Gitterle
 #include "../drt_potential/drt_potential_manager.H"
 
 /*----------------------------------------------------------------------*/
-// namespaces
-using namespace LINALG; // our linear algebra
-using POTENTIAL::PotentialManager; // potential manager
-
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
@@ -643,8 +639,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     break;
     case Wall1::calc_potential_stiff:
     {
-      Teuchos::RCP<PotentialManager> potentialmanager =
-        params.get<Teuchos::RCP<PotentialManager> >("pot_man",Teuchos::null);
+      Teuchos::RCP<POTENTIAL::PotentialManager> potentialmanager =
+        params.get<Teuchos::RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
       if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in Wall1 Volume available");
 
@@ -1986,7 +1982,7 @@ void DRT::ELEMENTS::Wall1::Energy(
     }
 
     // internal/strain energy
-    if (energies) (*energies)(0) += EnergyInternal(material, fac, params, Ev);
+    if (energies) (*energies)(0) += fac * EnergyInternal(material, params, Ev);
   }  // end loop Gauss points
 
   // bye

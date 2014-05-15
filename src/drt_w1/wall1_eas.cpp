@@ -32,8 +32,6 @@ Maintainer: Markus Gitterle
 #include "../drt_mat/stvenantkirchhoff.H"
 
 /*----------------------------------------------------------------------*/
-// namespaces
-using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       mgit 01/08|

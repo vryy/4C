@@ -660,10 +660,15 @@ protected:
     Teuchos::ParameterList& params ///< element parameter list
   );
 
+  /// Map plane Green-Lagrange strains to 3d
+  void GreenLagrangePlane3d(
+    const Epetra_SerialDenseVector& glplane,  ///< 2d version of GL strain (Voigt notation)
+    LINALG::Matrix<6,1>& gl3d ///< 3d version of GL strain (Voigt notation)
+  );
+
   /// Internal/strain energy
   double EnergyInternal(
     Teuchos::RCP<const MAT::Material> material,  ///< element material
-    const double& fac,  ///< integration factor
     Teuchos::ParameterList& params,///< element parameter list
     const Epetra_SerialDenseVector& Ev  ///< Green-Lagrange strain vector
   );

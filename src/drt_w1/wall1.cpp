@@ -478,4 +478,19 @@ void DRT::ELEMENTS::Wall1::w1_expol
   }
 }
 
+/*-----------------------------------------------------------------------------*
+| Map plane Green-Lagrange strains to 3d                       mayr.mt 05/2014 |
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::GreenLagrangePlane3d(const Epetra_SerialDenseVector& glplane,
+                                                LINALG::Matrix<6,1>& gl3d)
+{
+  gl3d(0) = glplane(0);             // E_{11}
+  gl3d(1) = glplane(1);             // E_{22}
+  gl3d(2) = 0.0;                    // E_{33}
+  gl3d(3) = glplane(2)+glplane(3);  // 2*E_{12}=E_{12}+E_{21}
+  gl3d(4) = 0.0;                    // 2*E_{23}
+  gl3d(5) = 0.0;                    // 2*E_{31}
+
+  return;
+}
 
