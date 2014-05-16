@@ -24,7 +24,10 @@ MAT::PAR::ScatraGrowthScd::ScatraGrowthScd(
   )
 : Parameter(matdata),
   diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-  strdensity_(matdata->GetDouble("STRDENSITY"))
+  strdensity_(matdata->GetDouble("STRDENSITY")),
+  rearate_(matdata->GetDouble("REARATE")),
+  satcoeff_(matdata->GetDouble("SATCOEFF")),
+  sourcemass_(matdata->Get<std::string>("SOURCEMASS"))
 {
 }
 
@@ -111,14 +114,28 @@ void MAT::ScatraGrowthScd::Unpack(const std::vector<char>& data)
 double MAT::ScatraGrowthScd::ComputeReactionCoeff(const double csnp, const double theta, const double dtheta, const double detFe) const
 {
   double strdensity = params_->strdensity_;
-  double reacoeff = strdensity*3.0*dtheta/theta/csnp/detFe;
+  const double rearate = params_->rearate_;
+  const double satcoeff = params_->satcoeff_;
+  const std::string* sourcemass =params_->sourcemass_;
+  double reacoeff;
+
+  if (*sourcemass == "Standard")
+    reacoeff = strdensity*3.0*dtheta/theta/csnp/detFe;
+  else if (*sourcemass == "MonodBased")
+    reacoeff = rearate/(satcoeff+csnp);
+
+  else
+    dserror ("The chosen source mass term is not implemented");
 
   return reacoeff;
 }
 
 double MAT::ScatraGrowthScd::ComputeReactionCoeffDeriv(const double csnp, const double theta, const double thetaold, const double dt) const //Ableitung des gesamten reaction-term nach der conc
 {
-  const double reacoeffderiv = 0.0; // no linearisation implemented
+//  const double reacoeffderiv = 0.0; // no linearisation implemented
+  const double rearate = params_->rearate_;
+  const double satcoeff = params_->satcoeff_;
+  const double reacoeffderiv = -1.0*rearate/pow((satcoeff+csnp),2);
 
   return reacoeffderiv;
 }

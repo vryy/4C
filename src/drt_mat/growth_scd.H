@@ -45,6 +45,8 @@ namespace MAT
 
       /// @name material parameters
       //@{
+      /// substrate uptake rate coefficient
+      const double rearate_;
       /// saturation coefficient for concentration dependent growth law
       const double satcoeff_;
       //@}

@@ -1411,6 +1411,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AddNamedReal(m,"STARTTIME","start growth after this time");
      AddNamedReal(m,"ENDTIME","end growth after this time");
      AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+     AddNamedReal(m,"REARATE","substrate uptake rate coefficient");
      AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
      AddNamedString(m,"GROWTHCOUPL","Coupling between stress dependent growth and reaction dependent growth","ScaleConc", true);
 
@@ -1498,6 +1499,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*----------------------------------------------------------------------*/
   // biofilm modeling (convection-diffusion-reaction equation)
+  // it contains a non-linear reaction term following the Monod Kinetic of the form rearate*phi/(satcoeff+phi)
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_biofilm",
@@ -1657,6 +1659,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
    // nutrient diffusion modeling (diffusion-reaction equation). Contains a growth-dependent
    //reaction-term of the form 3*theta^2*time_derivative_theta*structure_density that is coupled with
    // scalar dependent growth law via 'theta'
+   // and a non-linear reaction term following the Monod Kinetic of the form rearate*phi/(satcoeff+phi)
    {
      Teuchos::RCP<MaterialDefinition> m
        = Teuchos::rcp(new MaterialDefinition("MAT_Scatra_GrowthScd",
@@ -1665,6 +1668,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
      AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
      AddNamedReal(m,"STRDENSITY","density of structure material");
+     AddNamedReal(m,"REARATE","substrate uptake rate coefficient",0.0);
+     AddNamedReal(m,"SATCOEFF","substrate saturation coefficient",0.0);
+     AddNamedString(m,"SOURCEMASS","source mass term","Standard", true);
 
      // AddNamedString(m,"KINETICS","Substrate consumption kinetics (SimpleMonod)","SimpleMonod");
      AppendMaterialDefinition(matlist,m);

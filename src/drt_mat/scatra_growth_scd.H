@@ -47,8 +47,14 @@ namespace MAT
      const double diffusivity_;
      /// densitiy of structure material
      const double strdensity_;
-
+     /// substrate uptake rate coefficient
+     const double rearate_;
+     /// substrate saturation coefficient
+     const double satcoeff_;
       //@}
+
+     /// source mass term
+     const std::string* sourcemass_;
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();

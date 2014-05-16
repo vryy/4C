@@ -33,6 +33,7 @@ MAT::PAR::GrowthScd::GrowthScd(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Growth(matdata),
+  rearate_(matdata->GetDouble("REARATE")),
   satcoeff_(matdata->GetDouble("SATCOEFF")),
   growthcoupl_(matdata->Get<std::string>("GROWTHCOUPL"))
 {
@@ -268,16 +269,17 @@ void MAT::GrowthScd::EvaluateGrowthFunction
   stressgrowthfunc = growthfunc;
 
   // parameters
+  const double rearate = params_->rearate_;
   const double satcoeff = params_->satcoeff_;
   const std::string* growthcoupl =params_->growthcoupl_;
 
   if (*growthcoupl == "ScaleConc")
     // scale with concentration dependent factor
-    growthfunc = concentration_/(satcoeff+concentration_) * growthfunc;
+    growthfunc = rearate * concentration_/(satcoeff+concentration_) * growthfunc;
 
   else if (*growthcoupl == "StressRed")
     // reduce the growth due to scalar transport because of the presence of stresses (biofilm)
-   growthfunc = concentration_/(satcoeff+concentration_) - abs(growthfunc);
+   growthfunc = rearate * concentration_/(satcoeff+concentration_) - abs(growthfunc);
 
   else
     dserror ("The chosen coupling law between stress dependent growth and reaction dependent growth is not implemented");
@@ -301,15 +303,18 @@ void MAT::GrowthScd::EvaluateGrowthFunctionDerivTheta
   Growth::EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta,traceM,theta,Cdach,cmatelastic);
 
   // parameters
+  const double rearate = params_->rearate_;
   const double satcoeff = params_->satcoeff_;
   const std::string* growthcoupl =params_->growthcoupl_;
 
   if (*growthcoupl == "ScaleConc")
-    dgrowthfunctheta = concentration_/(satcoeff+concentration_) * dgrowthfunctheta;
+    dgrowthfunctheta = rearate * concentration_/(satcoeff+concentration_) * dgrowthfunctheta;
 
   if (*growthcoupl == "StressRed")
-    dgrowthfunctheta = - abs(stressgrowthfunc) / stressgrowthfunc * dgrowthfunctheta;
-
+  {
+    if (stressgrowthfunc==0.0) dgrowthfunctheta = 0.0;
+    else dgrowthfunctheta = - abs(stressgrowthfunc) / stressgrowthfunc * dgrowthfunctheta;
+  }
   return;
 }
 
@@ -330,16 +335,19 @@ void MAT::GrowthScd::EvaluateGrowthFunctionDerivC
   Growth::EvaluateGrowthFunctionDerivC(dgrowthfuncdC,traceM,theta,C,S,cmat);
 
   // parameters
+  const double rearate = params_->rearate_;
   const double satcoeff = params_->satcoeff_;
   const std::string* growthcoupl =params_->growthcoupl_;
 
   if (*growthcoupl == "ScaleConc")
     // scale with concentration dependent factor
-    dgrowthfuncdC.Scale(concentration_/(satcoeff+concentration_));
+    dgrowthfuncdC.Scale(rearate * concentration_/(satcoeff+concentration_));
 
   if (*growthcoupl == "StressRed")
-    dgrowthfuncdC.Scale(- abs(stressgrowthfunc) / stressgrowthfunc);
-
+  {
+    if (stressgrowthfunc==0) dgrowthfuncdC.Scale(0.0);
+    else dgrowthfuncdC.Scale(- abs(stressgrowthfunc) / stressgrowthfunc);
+  }
   return;
 }
 
