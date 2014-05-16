@@ -758,15 +758,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
     DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
 
-    // test this new variant
-    LINALG::Matrix<numstr_,numdofperelement_> cdpldc;
-    LINALG::Matrix<numstr_,numstr_> pdev;
-    for (int i=0; i<3; i++)
-      for (int j=0; j<3; j++)
-        if (i==j) pdev(i,j) = 2./3.;
-        else      pdev(i,j) = -1./3.;
-    for (int i=3; i<numstr_; i++) pdev(i,i) = 1.;
-
     /* get the inverse of the Jacobian matrix which looks like:
      **            [ x_,r  y_,r  z_,r ]^-1
      **     J^-1 = [ x_,s  y_,s  z_,s ]
