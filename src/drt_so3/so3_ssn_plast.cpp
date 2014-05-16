@@ -416,11 +416,6 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   // initialize EAS data
   EasInit();
 
-  LINALG::Matrix<3,3> tmp33(true);
-  LINALG::Matrix<3,3> id2(true);
-  for (int i=0; i<3; i++) id2(i,i)=1.;
-  LINALG::Matrix<1,1> tmp11(true);
-
   // plasticity related stuff
   KbbInv_                      = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_)));
   Kbd_                         = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_)));
