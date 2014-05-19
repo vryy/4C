@@ -223,12 +223,18 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   stepinc_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
 
-
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
   if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
   //--------------------------------------------------------------------------------------
+
+  // kruse 07.05. create maps here, just to have
+  // build a merged map from fluid-fluid dbc-maps
+  std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
+  dbcmaps.push_back(dbcmaps_->CondMap());
+  dbcmaps.push_back(xfluid_.aledbcmaps_->CondMap());
+  fluidfluiddbcmaps_ = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
 }
 
 // -------------------------------------------------------------------
@@ -237,31 +243,31 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateNitschepar()
 {
 	Teuchos::ParameterList params;
 
-    // set action for elements
-    params.set<int>("action",FLD::evaluate_nitsche_par);
+  // set action for elements
+  params.set<int>("action",FLD::evaluate_nitsche_par);
 
-    params.set<double>("nitsche_evp_fac",xfluid_.nitsche_evp_fac_);
+  params.set<double>("nitsche_evp_fac",xfluid_.nitsche_evp_fac_);
 
-    Teuchos::RCP<Epetra_Vector> embboundarydispnp = LINALG::CreateVector(*(xfluid_.embboundarydis_->DofRowMap()),true);
-    LINALG::Export(*(xfluid_.aledispnp_),*(embboundarydispnp));
+  Teuchos::RCP<Epetra_Vector> embboundarydispnp = LINALG::CreateVector(*(xfluid_.embboundarydis_->DofRowMap()),true);
+  LINALG::Export(*(xfluid_.aledispnp_),*(embboundarydispnp));
 
-    xfluid_.embboundarydis_->SetState("dispnp", embboundarydispnp);
+  xfluid_.embboundarydis_->SetState("dispnp", embboundarydispnp);
 
-    std::map<int,double>  boundaryeleidtobeta;
-    xfluid_.nitschepar_ =  Teuchos::rcp(new std::map<int,double> (boundaryeleidtobeta));
-    params.set<Teuchos::RCP<std::map<int,double > > >("nitschepar", xfluid_.nitschepar_);
+  std::map<int,double>  boundaryeleidtobeta;
+  xfluid_.nitschepar_ =  Teuchos::rcp(new std::map<int,double> (boundaryeleidtobeta));
+  params.set<Teuchos::RCP<std::map<int,double > > >("nitschepar", xfluid_.nitschepar_);
 
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrixA;
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrixB;
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrixA;
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrixB;
 
-    // Evaluate the general eigen value problem Ax = lambda Bx for local for the elements of embboundarydis
-    xfluid_.embboundarydis_->EvaluateCondition(params,
-    		                                   systemmatrixA,
-    		                                   systemmatrixB,
-    		  	  	  	  	  	  	  	  	   Teuchos::null,
-    		  	  	  	  	  	  	  	  	   Teuchos::null,
-    		  	  	  	  	  	  	  	  	   Teuchos::null,
-    		  	  	  	  	  	  	  	  	   "XFEMCoupling");
+  // Evaluate the general eigen value problem Ax = lambda Bx for local for the elements of embboundarydis
+  xfluid_.embboundarydis_->EvaluateCondition(params,
+                                         systemmatrixA,
+                                         systemmatrixB,
+                                         Teuchos::null,
+                                         Teuchos::null,
+                                         Teuchos::null,
+                                         "XFEMCoupling");
 
 	// gather the information form all processors
 	Teuchos::RCP<std::map<int,double> > nitschepar_tmp = params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar");
@@ -2230,7 +2236,6 @@ void FLD::XFluidFluid::Init()
     CreateBoundaryEmbeddedMap();
   }
 
-
   // store a dofset with the complete fluid unknowns
   dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
   dofset_out_->Reset();
@@ -3401,6 +3406,7 @@ void FLD::XFluidFluid::Evaluate(
     stepinc_bg_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc_bg, 0.0);
     stepinc_emb_tmp->Update(1.0, *aleveln_, 1.0, *stepinc_emb, 0.0);
 
+    // Apply DBCs to stepinc
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), stepinc_bg_tmp );
     aledbcmaps_->InsertCondVector(aledbcmaps_->ExtractCondVector(alevelnp_), stepinc_emb_tmp );
 
@@ -3901,12 +3907,38 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
   {
     // set the embedded state vectors to the new ale displacement
     // before updating the vectors of the old time step
-    IO::cout << "Interpolate the embedded state vectors ... " << IO::endl;
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnp_, alevelnp_, aledispnp_, disp);
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , aleveln_ , aleveln_ , aledispnp_, disp);
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnp_, aleaccnp_, aledispnp_, disp);
-  }
 
+    IO::cout << "Interpolate the embedded state vectors ... " << IO::endl;
+
+    if (embdis_->Comm().NumProc() == 1)
+    {
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnp_, alevelnp_, aledispnp_, disp);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , aleveln_ , aleveln_ , aledispnp_, disp);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnp_, aleaccnp_, aledispnp_, disp);
+    }
+    else
+    {
+      // export the vectors to the column distribution map
+      // kruse 07.05.: We have to export here again! Does not work in parallel otherwise!!!
+      Teuchos::RCP<Epetra_Vector> alevelnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> alevelncol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> alevelnmcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aleaccncol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aleaccnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aledispcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aledispnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+
+      LINALG::Export(*alevelnp_,*alevelnpcol);
+      LINALG::Export(*aleveln_,*alevelncol);
+      LINALG::Export(*aleaccnp_,*aleaccnpcol);
+      LINALG::Export(*disp,*aledispcol);
+      LINALG::Export(*aledispnp_,*aledispnpcol);
+      // end kruse 07.05.
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnpcol, alevelnpcol, aledispnpcol, disp);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , alevelncol , alevelncol , aledispnpcol, disp);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnpcol, aleaccnpcol, aledispnpcol, disp);
+    }
+  }
 }//SetBgStateVectors()
 
 // -------------------------------------------------------------------
@@ -4250,9 +4282,18 @@ void FLD::XFluidFluid::Output()
       // else copy the right nodes
       const std::vector<int> gdofs_current(bgdis_->Dof(xfemnode));
 
-      if(gdofs_current.size() == 0); // cout << "no dofs available->hole" << endl;
-      else if(gdofs_current.size() == gdofs_original.size()); //cout << "same number of dofs available" << endl;
-      else if(gdofs_current.size() > gdofs_original.size());  //cout << "more dofs available->decide" << endl;
+      if(gdofs_current.size() == 0)
+      {
+        // IO::cout << "no dofs available->hole" << IO::endl;
+      }
+      else if(gdofs_current.size() == gdofs_original.size())
+      {
+        //IO::cout << "same number of dofs available" << IO::endl;
+      }
+      else if(gdofs_current.size() > gdofs_original.size())
+      {
+        //IO::cout << "more dofs available->decide" << IO::endl;
+      }
       else IO::cout << "decide which dofs can be copied and which have to be set to zero" << IO::endl;
 
 
@@ -5780,18 +5821,20 @@ void FLD::XFluidFluid::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condeleme
                                       const LINALG::MultiMapExtractor& shapederivdomainmaps,
                                       const LINALG::MultiMapExtractor& shapederivrangemaps)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
+  // no shapederivatives active
+  if (! params_->get<bool>("shape derivatives"))
+    return;
 
-  // if we never build the matrix nothing will be done
-  // here we initialize the shapederivates..
-  if (params_->get<bool>("shape derivatives"))
-  {
-    // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(shapederivdomainmaps,shapederivrangemaps,108,false,true));
-    mat->SetCondElements(condelements);
-    shapederivatives_ = mat;
-  }
-  return;
+  // here we initialize the shapederivates
+  // some remarks: in case of monolithic fluid-fluid fsi the passed map extractors contain
+  // background fluid dof. that's ok, as the entire matrix is first set to zero before we reach
+  // the evaluation loop for subsequent embedded elements. there is no chance to accidentally
+  // manipulate a background fluid entry...
+  // kruse, 05/2014
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(shapederivdomainmaps,shapederivrangemaps,108,false,true));
+  mat->SetCondElements(condelements);
+  shapederivatives_ = mat;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -5831,40 +5874,43 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidFluid::ExtrapolateEndPoint
 /*------------------------------------------------------------------------------------------------*
 | Creates a block matrix from the fluid system matrix. (Splitting into inner and FSI DOFs)
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(Teuchos::RCP<Epetra_Map> innermap,
-		Teuchos::RCP<Epetra_Map> condmap,Teuchos::RCP<LINALG::MapExtractor> maps)
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
+    const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
+    Teuchos::RCP<Epetra_Map> innermap,
+    Teuchos::RCP<Epetra_Map> condmap)
 {
-	//Map of fluid FSI DOFs: condmap
-	//Map of inner fluid DOFs: innermap
+  //Map of fluid FSI DOFs: condmap
+  //Map of inner fluid DOFs: innermap
 
-	//Get the fluid-fluid system matrix as sparse matrix
-	Teuchos::RCP<LINALG::SparseMatrix> sparsesysmat=SystemMatrix();
+  //Get the fluid-fluid system matrix as sparse matrix
+  Teuchos::RCP<LINALG::SparseMatrix> sparsesysmat = SystemMatrix();
 
-	//F_{II}
-	Teuchos::RCP<LINALG::SparseMatrix> fii;
-	//F_{I\Gamma}
-	Teuchos::RCP<LINALG::SparseMatrix> fig;
-	//F_{\GammaI}
-	Teuchos::RCP<LINALG::SparseMatrix> fgi;
-	//F_{\Gamma\Gamma}
-	Teuchos::RCP<LINALG::SparseMatrix> fgg;
+  //F_{II}
+  Teuchos::RCP<LINALG::SparseMatrix> fii;
+  //F_{I\Gamma}
+  Teuchos::RCP<LINALG::SparseMatrix> fig;
+  //F_{\GammaI}
+  Teuchos::RCP<LINALG::SparseMatrix> fgi;
+  //F_{\Gamma\Gamma}
+  Teuchos::RCP<LINALG::SparseMatrix> fgg;
 
-	//Filling the empty block matrix with entries from sparsesysmat:
-	LINALG::SplitMatrix2x2(sparsesysmat,condmap,innermap,condmap,innermap,fgg,fgi,fig,fii);
+  // The method expects non-const objects
+  // Filling the empty block matrix with entries from sparsesysmat:
+  LINALG::SplitMatrix2x2(sparsesysmat,condmap,innermap,condmap,innermap,fgg,fgi,fig,fii);
 
-	blockmat_=Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*maps,*maps,108,false,true));
+  blockmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*fsiextractor,*fsiextractor,108,false,true));
 
-	blockmat_->Assign(0,0,View,*fii);
-	blockmat_->Assign(0,1,View,*fig);
-	blockmat_->Assign(1,0,View,*fgi);
-	blockmat_->Assign(1,1,View,*fgg);
+  blockmat_->Assign(0,0,View,*fii);
+  blockmat_->Assign(0,1,View,*fig);
+  blockmat_->Assign(1,0,View,*fgi);
+  blockmat_->Assign(1,1,View,*fgg);
 
-	blockmat_->Complete();
+  blockmat_->Complete();
 
-	if ( blockmat_ == Teuchos::null )
-		dserror("Empty block system matrix! Assembly went terribly wrong!");
+  if ( blockmat_ == Teuchos::null )
+    dserror("Creation of fluid block matrix failed.");
 
-	return blockmat_;
+  return blockmat_;
 }
 
 /*------------------------------------------------------------------------------------------------*

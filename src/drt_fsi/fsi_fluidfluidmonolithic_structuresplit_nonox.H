@@ -1,9 +1,20 @@
+/*!----------------------------------------------------------------------
+\file fsi_fluidfluidmonolithic_structuresplit_nonox.H
+\brief Control routine for monolithic fluid-fluid-fsi (structuresplit)
+using XFEM
 
+<pre>
+Maintainer:  Shadan Shahmiri
+             shahmiri@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15265
+</pre>
 
-#ifndef FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_H
-#define FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_H
+*----------------------------------------------------------------------*/
 
-#include "../drt_inpar/inpar_xfem.H"
+#ifndef FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_NONOX_H
+#define FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_NONOX_H
+
 #include "fsi_monolithic_nonox.H"
 
 // forward declarations
@@ -25,9 +36,8 @@ namespace FSI
 namespace FSI
 {
 
-  /// monolithic Fluid-Fluid FSI algorithm Structure Split
+  /// monolithic Fluid-Fluid FSI algorithm (structuresplit)
   /*!
-
     Here the structural matrix is split whereas the fluid matrix is taken as
     it is.
 
@@ -39,8 +49,10 @@ namespace FSI
     friend class FSI::FSIResultTest;
 
   public:
+
+    /// constructor
     explicit FluidFluidMonolithicStructureSplitNoNOX(const Epetra_Comm& comm,
-                                                const Teuchos::ParameterList& timeparams);
+                                                     const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 
@@ -55,19 +67,19 @@ namespace FSI
     */
     virtual void SetupSystem();
 
-    void SetupNewSystem();
+  protected:
 
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
     virtual void SetupRHS(Epetra_Vector& f, bool firstcall);
 
-    /// setup composed system matrix from field solvers
-    //void SetupSystemMatrixold(LINALG::BlockSparseMatrixBase& mat);
-
+    /// setup composed system block matrix
     virtual void SetupSystemMatrix();
-
     //@}
+
+    /// create merged map of DOF in the final system from all fields
+    virtual void CreateCombinedDofRowMap();
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
@@ -78,40 +90,57 @@ namespace FSI
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
+    /// create merged map with Dirichlet-constrained DOF from all fields
     virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
-    // newton for xfem
-    virtual void Newton();
-
-  protected:
-
-    /// extract the three field vectors from a given composed vector
-    /*!
-      We are dealing with NOX here, so we get absolute values. x is the sum of
-      all increments up to this point.
-
-      \param x  (i) composed vector that contains all field vectors
-      \param sx (o) structural displacements
-      \param fx (o) fluid velocities and pressure
-      \param ax (o) ale displacements
-     */
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! In analogy to NOX, x is step increment \f$\Delta x\f$
+    //! that brings us from \f$t^{n}\f$ to \f$t^{n+1}\f$:
+    //! \f$x^{n+1} = x^{n} + \Delta x\f$
+    //!
+    //! Iteration increments, that are needed internally in the single fields,
+    //! have to be computed somewhere else.
+    //!
+    //! \param x  (i) composed vector that contains all field vectors
+    //! \param sx (o) structural displacements
+    //! \param fx (o) fluid velocities and pressure
+    //! \param ax (o) ale displacements
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                      Teuchos::RCP<const Epetra_Vector>& sx,
                                      Teuchos::RCP<const Epetra_Vector>& fx,
                                      Teuchos::RCP<const Epetra_Vector>& ax);
 
-    virtual void Update();
-
-    virtual void ReadRestart(int step);
-
-    virtual void Output();
-
-    virtual void PrepareTimeStep();
-
+    /// compute the Lagrange multiplier (FSI stresses) for the current time step
     virtual void RecoverLagrangeMultiplier();
 
-    virtual void BuildCovergenceNorms();
+    /// compute the residual and incremental norms required for convergence check
+    virtual void BuildConvergenceNorms();
 
+    /// read restart data
+    virtual void ReadRestart(int step);
+
+    /// output of fluid, structure & ALE-quantities and Lagrange multiplier
+    virtual void Output();
+
+    /*!
+     * In case of a change in the fluid DOF row maps during the Newton loop (full Newton approach),
+     * reset vectors accordingly.
+     * \author kruse
+     * \date 05/14
+     */
+    virtual void HandleFluidDofMapChangeInNewton();
+
+    /*!
+     * Determine a change in fluid DOF map
+     * \param (in) : DOF map of fluid increment vector
+     * \return : true, in case of a mismatch between map of increment vector
+     * and inner fluid DOF map after evaluation
+     * \author kruse
+     * \date 05/14
+     */
+    virtual bool HasFluidDofMapChanged(
+        const Epetra_BlockMap& fluidincrementmap);
 
   private:
 
@@ -150,22 +179,6 @@ namespace FSI
 
     //@}
 
-    /// additional ale residual to avoid incremental ale errors
-    Teuchos::RCP<Epetra_Vector> aleresidual_;
-
-    /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
-
-    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> xfluidfluidsplitter_;
-
-    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
-
-    int currentstep_;
-
-    int relaxing_ale_every_;
-
-    bool relaxing_ale_;
-
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
@@ -173,37 +186,30 @@ namespace FSI
     // lambda lives at the slave side (here at stucture)
     Teuchos::RCP<Epetra_Vector> lambda_;
 
-    //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current NOX iteration \f$i+1\f$
+    //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration \f$i+1\f$
     //Teuchos::RCP<const Epetra_Vector> fgcur_;
 
-    //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous NOX iteration \f$i\f$
+    //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous iteration \f$i\f$
     //Teuchos::RCP<const Epetra_Vector> fgpre_;
 
-    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddiinc_;
 
-    //! inner displacement solution of the structure at previous NOX iteration
+    //! inner displacement solution of the structure at previous iteration
     Teuchos::RCP<const Epetra_Vector> solipre_;
 
-    //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;
 
-    //! interface displacement solution of the structure at previous NOX iteration
+    //! interface displacement solution of the structure at previous iteration
     Teuchos::RCP<const Epetra_Vector> solgpre_;
 
-    //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
+    //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> sgicur_;
 
-    //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    //Teuchos::RCP<const LINALG::SparseMatrix> sgipre_;
-
-    //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
+    //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> sggcur_;
-
-    //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    //Teuchos::RCP<const LINALG::SparseMatrix> sggpre_;
-
-
+    //@}
   };
 }
 

@@ -7,12 +7,14 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Monolithic XFFSI (w.NOX): Pseudo 1D example.
-Prescribed inflow velocity of u(t)=t^2. The structure is fixed at the dry end.
+Monolithic XFFSI: Pseudo 1D example.
+Prescribed inflow velocity of u(t)=t^2. 
+The structure is fixed at the dry end. 
 Expecting linear pressure field along the channel.
 FSI interface: 1st order interpolation, structuresplit
 Fluid-fluid coupling: background fluid-sided, stress-based
-Monolithic XFFSI approach: fixed ALE
+Monolithic XFFSI approach: 
+fluid-fluid interface not fixed during Newton iteration
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -34,10 +36,10 @@ PREDICTOR                       steady_state
 STABTYPE                        edge_based                    
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no
-SUPG                            no 
+PSPG                            no //yes
+SUPG                            no //yes
 VSTAB                           no_vstab
-GRAD_DIV                        no
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -65,15 +67,11 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         6
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
+COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
-CONVTOL                         1.0E-7
-BASETOL                         1.0E-3
-PRECONDREUSE                    0
-SHAPEDERIVATIVES                No
+SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
@@ -83,7 +81,7 @@ COUPLING_STRATEGY               xfluid_sided_coupling
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
+MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.4 DENS 2.0 THEXPANS 0.0
@@ -101,7 +99,7 @@ DPOINT                          3
 // bgFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 // fluid fsi
-E 2 - NUMDOF 4 ONOFF 0 1 1  0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
 // str fsi
 E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -129,9 +127,7 @@ DSURF                           1
 // xfem
 E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           1
-//                              fluidfluid
-E 4 - 1
+DSURF                           0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
 // embedded volume

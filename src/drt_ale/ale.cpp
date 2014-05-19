@@ -561,7 +561,8 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
         coupling == fsi_iter_mortar_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
         coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
-        coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
+        coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox or
+        coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
     {
         dirichletcond = false;
     }

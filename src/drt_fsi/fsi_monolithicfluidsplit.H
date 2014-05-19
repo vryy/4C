@@ -187,7 +187,6 @@ namespace FSI
 
     //@}
 
-
   protected:
 
     /// setup solver for global block system
@@ -220,8 +219,6 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector>& ax  ///< ale displacements
     );
 
-  private:
-
     /*! \brief Create the combined DOF row map for the FSI problem
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
@@ -230,6 +227,21 @@ namespace FSI
      *  \author mayr.mt \date 05/2014
      */
     virtual void CreateCombinedDofRowMap();
+
+    /*! set the Lagrange multiplier (e.g. after restart, to be called from subclass)
+     *  \author kruse
+     *  \date 05/2014
+     */
+    virtual void SetLambda(Teuchos::RCP<Epetra_Vector> lambdanew)
+    {
+    #ifdef DEBUG
+      if (lambdanew == Teuchos::null || ! lambdanew->Map().SameAs(lambda_->Map()))
+        dserror("Attempting to assign invalid vector to lambda.");
+    #endif
+      lambda_ = lambdanew;
+    }
+
+  private:
 
     /*! \brief Setup the Dirichlet map extractor
      *

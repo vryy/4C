@@ -196,7 +196,7 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
     );
 
-  private:
+  protected:
 
     /*! \brief Create the combined DOF row map for the FSI problem
      *

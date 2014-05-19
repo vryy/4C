@@ -69,6 +69,7 @@ COUPALGO                        iter_fluidfluid_monolithicfluidsplit
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 SHAPEDERIVATIVES                yes
+ITEMAX                          7
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL

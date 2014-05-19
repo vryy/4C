@@ -1,4 +1,22 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_monolithic_nonox.cpp
+\brief Base class for monolithic fluid-fluid-fsi algorithm
+ using XFEM (without NOX)
 
+<pre>
+Maintainer: Shadan Shahmiri
+            shahmiri@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
+
+            Raffaela Kruse
+            kruse@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_NONOX_H
 #define FSI_MONOLITHIC_NONOX_H
@@ -9,13 +27,7 @@
 #include "fsi_monolithic.H"
 
 #include "../drt_inpar/inpar_fsi.H"
-
-namespace LINALG
-{
-  class SparseMatrix;
-  class MapExtractor;
-}
-
+#include "../drt_inpar/inpar_xfem.H"
 
 namespace FSI
 {
@@ -29,7 +41,9 @@ namespace FSI
                           public FSI::MonolithicInterface
   {
     friend class FSI::UTILS::MonolithicDebugWriter;
+
   public:
+
     explicit MonolithicNoNOX(const Epetra_Comm& comm,
                              const Teuchos::ParameterList& timeparams);
 
@@ -49,42 +63,82 @@ namespace FSI
     ReadMesh is called), the dofmaps for the blocks might get invalid.
 
     */
-    virtual void SetupSystem() = 0;
+    virtual void SetupSystem();
 
     /// outer level FSI time loop
     void Timeloop();
 
-    /// Newton Raphson
-    virtual void Newton();
+  protected:
 
-    bool Converged();
+    /// time update
+    /// recover the Lagrange multiplier and relax ALE (if requested)
+    void Update();
 
-    virtual void BuildCovergenceNorms() = 0;
+    /// start a new time step
+    void PrepareTimeStep();
 
-    void LinearSolve();
+    /// output of fluid, structure & ALE-quantities and Lagrange multiplier
+    virtual void Output() = 0;
 
-    /// do new time step
-    //virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+    void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
+        );
 
+    //! @name Apply current field state to system
 
-     //! @name Apply current field state to system
-
-    /// setup composed right hand side from field solvers
-    //virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
+    //! setup composed right hand side from field solvers
+    //!
+    //! The RHS consists of three contributions from:
+    //! 1) the single fields residuals
+    //! 2) the Lagrange multiplier field lambda_
+    //! 3) terms in the first nonlinear iteration
+    virtual void SetupRHS(
+        Epetra_Vector& f,     ///< empty rhs vector (to be filled)
+        bool firstcall        ///< indicates whether this is the first nonlinear iteration or not
+    ) = 0;
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix() = 0;
-
-    /// Combined dirichlet condition maps
-    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap() = 0;
-
     //@}
 
-    /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
-        );
+    /// create merged map of DOF in the final system from all fields
+    virtual void CreateCombinedDofRowMap() = 0;
+
+    /// Newton Raphson
+    virtual void Newton();
+
+    /// test for convergence
+    bool Converged();
+
+    /// compute the residual and incremental norms required for convergence check
+    virtual void BuildConvergenceNorms() = 0;
+
+    void LinearSolve();
+
+    /// create merged map with Dirichlet-constrained DOF from all fields
+    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap() = 0;
+
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! In analogy to NOX, x is step increment \f$\Delta x\f$
+    //! that brings us from \f$t^{n}\f$ to \f$t^{n+1}\f$:
+    //! \f$x^{n+1} = x^{n} + \Delta x\f$
+    //!
+    //! Iteration increments, that are needed internally in the single fields,
+    //! have to be computed somewhere else.
+    //!
+    //! \param x  (i) composed vector that contains all field vectors
+    //! \param sx (o) structural displacements
+    //! \param fx (o) fluid velocities and pressure
+    //! \param ax (o) ale displacements
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+                                     Teuchos::RCP<const Epetra_Vector>& sx,
+                                     Teuchos::RCP<const Epetra_Vector>& fx,
+                                     Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+
+    /// compute the Lagrange multiplier (FSI stresses) for the current time step
+    virtual void RecoverLagrangeMultiplier() = 0;
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig ) = 0;
@@ -115,28 +169,12 @@ namespace FSI
 
     //@}
 
-  protected:
-
-    /// extract the three field vectors from a given composed vector
-    /*!
-      We are dealing with NOX here, so we get absolute values. x is the sum of
-      all increments up to this point.
-
-      \param x  (i) composed vector that contains all field vectors
-      \param sx (o) structural displacements
-      \param fx (o) fluid velocities and pressure
-      \param ax (o) ale displacements
-     */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                     Teuchos::RCP<const Epetra_Vector>& sx,
-                                     Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax) = 0;
-
     //! @name Access methods for subclasses
 
-
-    /// full monolithic dof row map
+    /// get full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
+
+    //@}
 
     /// set full monolithic dof row map
     /*!
@@ -149,12 +187,28 @@ namespace FSI
     /// extractor to communicate between full monolithic map and block maps
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
-    //@}
-
     /// setup list with default parameters
     void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
-    Teuchos::RCP<Epetra_Map> fullmap_;
+    /*!
+     * In case of a change in the fluid DOF row maps during the Newton loop (full Newton approach),
+     * reset vectors accordingly.
+     * \author kruse
+     * \date 05/14
+     */
+    virtual void HandleFluidDofMapChangeInNewton() = 0;
+
+    /*!
+     * Determine a change in fluid DOF map
+     * \param (in) : DOF map of fluid increment vector
+     * \return : true, in case of a mismatch between map of increment vector
+     * and inner fluid DOF map after evaluation
+     * \author kruse
+     * \date 05/14
+     */
+    virtual bool HasFluidDofMapChanged(
+        const Epetra_BlockMap& fluidincrementmap) = 0;
+
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;   //!< block system matrix
 
@@ -214,7 +268,26 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> zeros_;     //!< a zero vector of full length
     Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
 
+    /// additional ALE residual to avoid incremental ALE errors
+    Teuchos::RCP<Epetra_Vector> aleresidual_;
+
+    /// the monolithic xffsi approach
+    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
+
+    /// ALE-relaxation flag
+    bool relaxing_ale_;
+
+    /// timestep when to relax the ale
+    int relaxing_ale_every_;
+
   private:
+
+    /*!
+     * Check whether input parameters are appropriate
+     * \author kruse
+     * \date 05/14
+     */
+    void ValidateParameters();
 
     /// dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;

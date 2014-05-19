@@ -7,12 +7,14 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Monolithic XFFSI (w.NOX): Pseudo 1D example.
-Prescribed inflow velocity of u(t)=t^2. The structure is fixed at the dry end.
+Monolithic XFFSI: Pseudo 1D example.
+Prescribed inflow velocity of u(t)=t^2. The structure is free at the dry
+surface and pushed by the flow.
 Expecting linear pressure field along the channel.
 FSI interface: 1st order interpolation, structuresplit
 Fluid-fluid coupling: background fluid-sided, stress-based
-Monolithic XFFSI approach: fixed ALE
+Monolithic XFFSI approach: 
+fluid-fluid interface not fixed during Newton iteration
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -34,10 +36,10 @@ PREDICTOR                       steady_state
 STABTYPE                        edge_based                    
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no
-SUPG                            no 
+PSPG                            no //yes
+SUPG                            no //yes
 VSTAB                           no_vstab
-GRAD_DIV                        no
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -65,15 +67,11 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         6
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
+COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
-CONVTOL                         1.0E-7
-BASETOL                         1.0E-3
-PRECONDREUSE                    0
-SHAPEDERIVATIVES                No
+SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
@@ -83,10 +81,10 @@ COUPLING_STRATEGY               xfluid_sided_coupling
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
+MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.4 DENS 2.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
@@ -101,13 +99,13 @@ DPOINT                          3
 // bgFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 // fluid fsi
-E 2 - NUMDOF 4 ONOFF 0 1 1  0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
 // str fsi
 E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-// str dirichlet
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// free structure in x
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // bgfluid volume
@@ -128,10 +126,6 @@ E 5 - 1
 DSURF                           1
 // xfem
 E 2 - 1
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           1
-//                              fluidfluid
-E 4 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
 // embedded volume
@@ -254,23 +248,23 @@ NODE 36 COORD 1.3500000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 5.27334972292164039e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 2.81010749143529726e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 5.27334972292164039e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 2.81010749143529903e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 5.27334972292164039e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 2.81010749143529592e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 5.27983972292154959e+01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.87500749143528811e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 5.27983972292154959e+01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 2.87500749143529299e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 5.21383972292155349e+01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 2.21500749143528397e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 5.14783972292155667e+01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 1.55500749143533579e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE 9.10000000000045078e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-6
-FSI NODE 33 QUANTITY lambdax VALUE 4.63305575062940367e+00 TOLERANCE 1e-8
-FSI NODE 33 QUANTITY lambday VALUE 3.60425000000016693e+00 TOLERANCE 1e-8
-FSI NODE 33 QUANTITY lambdaz VALUE -3.60425000000016693e+00 TOLERANCE 1e-8
+FSI NODE 33 QUANTITY lambdax VALUE 1.39950674487038462e-01 TOLERANCE 1e-8
+FSI NODE 33 QUANTITY lambday VALUE 4.66511001004418432e-02 TOLERANCE 1e-8
+FSI NODE 33 QUANTITY lambdaz VALUE -4.66511000240792603e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

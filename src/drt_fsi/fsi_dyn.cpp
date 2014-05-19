@@ -36,6 +36,7 @@ Maintainer: Matthias Mayr
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 #include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 #include "fsi_fluidfluidmonolithic_structuresplit.H"
+#include "fsi_fluidfluidmonolithic_fluidsplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
@@ -676,6 +677,33 @@ void fluid_fluid_fsi_drt()
     case fsi_iter_fluidfluid_monolithicstructuresplit_nox:
     {
       Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm,fsidyn));
+
+      // now do the coupling setup an create the combined dofmap
+      fsi->SetupSystem();
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      // here we go...
+      fsi->Timeloop(fsi);
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      // create fsi specific result test
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      DRT::Problem::Instance()->AddFieldTest(fsitest);
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(*comm);
+
+      break;
+    }
+    case fsi_iter_fluidfluid_monolithicfluidsplit_nox:
+    {
+      Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(*comm,fsidyn));
 
       // now do the coupling setup an create the combined dofmap
       fsi->SetupSystem();

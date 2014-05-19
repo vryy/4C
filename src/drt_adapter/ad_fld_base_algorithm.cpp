@@ -479,6 +479,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
         coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox or
+        coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox or
         coupling == fsi_iter_xfem_monolithic)
     {
       // No explicit predictor for these monolithic FSI schemes, yet.
@@ -618,7 +619,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit 	or
           coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
-          coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
+          coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox or
+          coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
       {
         dirichletcond = false;
       }
@@ -728,7 +730,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       bool monolithicfluidfluidfsi;
       if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit
          or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
-         or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
+         or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox
+         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
         monolithicfluidfluidfsi = true;
       else
         monolithicfluidfluidfsi = false;

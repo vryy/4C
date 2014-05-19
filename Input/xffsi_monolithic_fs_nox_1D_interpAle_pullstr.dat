@@ -1,85 +1,48 @@
 //
-// Maintainer: Shadan Shahmiri
+// Maintainer: Shadan Shahmiri, Raffaela Kruse
 //
-// necessary defines: D_FLUID3 BINIO
+// necessary defines: D_FLUID3 CCADISCRET BINIO QHULL
 //
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-monolithic_structure_split: 1D example
-The structure is free at the end.
-The velocity fuction is t*t st the fsi nodes
-->linear pressure field
+Monolithic XFFSI (w. NOX): Pseudo 1D example.
+Prescribed structural movement of d(t)=t^3 at dry end of structure.
+Expecting linear pressure field p(x,t)=-6tx+p_0, velocity u(x,t)=u(t)=3*t^2.
+FSI interface: 1st order interpolation, fluidsplit
+Fluid-fluid coupling: background fluid-sided, stress-based
+Monolithic XFFSI approach: fixed ALE
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      6
-//NODES                         36
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid_FSI
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMALEDIS                       0
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_GID                      No
-OUTPUT_BIN                      Yes
-FILESTEPS                       1
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-STRUCT_DISP                     Yes
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  No
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  No
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                1
-ALPHA_F                         1.00
-ALPHA_M                         1.00
-CONVCHECK                       L_2_norm
-CONVTOL                         1e-07
-INITIALFIELD zero_field //field_by_function
-ITEMAX                          5
+CONVFORM                        convective
+INITIALFIELD                    zero_field
 LIFTDRAG                        No
-MAXTIME                         50
 NONLINITER                      Newton
-NUMSTEP                         10000
-RESTARTEVRY                     20
+NUMSTEP                         1
+PHYSICAL_TYPE                   Incompressible
 SIMPLER                         no
-STARTFUNCNO                     2
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        1
-NONLINEARBC                     no
 LINEAR_SOLVER                   1
+PREDICTOR                       steady_state
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+STABTYPE                        residual_based
+TDS                             quasistatic
+TRANSIENT                       no_transient
+PSPG                            yes
+SUPG                            yes
+GRAD_DIV                        no
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha//OneStepTheta
-TIMESTEP                        1
-NUMSTEP                         200
-MAXTIME                         5.0
+DYNAMICTYP                      GenAlpha
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-DAMPING                         No
-M_DAMP                          0.000001
-K_DAMP                          0.00001
 PREDICT                         ConstDisVelAcc
-NORM_DISP                       Rel
-NORM_RESF                       Rel
-NORMCOMBI_RESFDISP              And
-TOLDISP                         1.0E-08
-TOLRES                          1.0E-08
-TOLCONSTR                       1.0E-06
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-MAXITER                         100
 LINEAR_SOLVER                   1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
@@ -88,114 +51,116 @@ GAMMA                           0.611//0.5
 ALPHA_M                         0.333//0.5
 ALPHA_F                         0.444//0.5
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin                      // classic_lin
-TIMESTEP                        1
+ALE_TYPE                        incr_lin
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
 TIMESTEP                        0.1
 NUMSTEP                         6
-RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit
+RESTARTEVRY                     7
+COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nox
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
-CONVTOL                         1.0E-6
+CONVTOL                         1.0E-7
 BASETOL                         1.0E-3
 PRECONDREUSE                    0
-SHAPEDERIVATIVES                No
+SHAPEDERIVATIVES                no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK//Aztec_MSR            // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               BoundaryTypeSigma            
 COUPLING_STRATEGY               xfluid_sided_coupling
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation  // xffsi_full_newton//
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t*t t1 0.0 t2 100.0
+CURVE1 on EXPR FUNC t*t*t t1 0.0 t2 100.0
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
+NDPOINT                         2
 NDLINE                          0
-NDSURF                          6
+NDSURF                          5
 NDVOL                           4
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          1
-//                              bgFluid_inflow
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          2
+// fluid fsi
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+// str fsi
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-//                              fluid_surfaces_fsi
-//E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-//                              str_dirichlet
-E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// str dirichlet
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
-//                              bgfluid_volume
+// bgfluid volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//                              embedded_volume
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// embedded volume
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
-//                              embedded_volume
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// embedded volume
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
-//                              fluid_surfaces_fsi
-E 1 - 1 fluid conforming
-//                              str_surfaces_fsi
-E 2 - 1 structure conforming
+// fluid fsi
+E 1 - 1
+// str fsi 
+E 4 - 1
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
-//                              xfem
-E 3 - 1
+// xfem
+E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           1
-//                              fluidfluid
-E 4 - 1
+// fluid fluid
+E 5 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
-//                              embedded_volume
+// embedded volume
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 1 DNODE 1
-NODE 2 DNODE 1
-NODE 3 DNODE 1
-NODE 4 DNODE 1
+NODE 25 DNODE 1
+NODE 26 DNODE 1
+NODE 27 DNODE 1
+NODE 28 DNODE 1
+NODE 33 DNODE 2
+NODE 34 DNODE 2
+NODE 35 DNODE 2
+NODE 36 DNODE 2
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 25 DSURFACE 1
 NODE 26 DSURFACE 1
 NODE 27 DSURFACE 1
 NODE 28 DSURFACE 1
-NODE 29 DSURFACE 2
-NODE 30 DSURFACE 2
-NODE 31 DSURFACE 2
-NODE 32 DSURFACE 2
-NODE 17 DSURFACE 3
-NODE 18 DSURFACE 3
-NODE 19 DSURFACE 3
-NODE 20 DSURFACE 3
-NODE 25 DSURFACE 3
-NODE 26 DSURFACE 3
-NODE 27 DSURFACE 3
-NODE 28 DSURFACE 3
-NODE 17 DSURFACE 4
-NODE 18 DSURFACE 4
-NODE 19 DSURFACE 4
-NODE 20 DSURFACE 4
-NODE 33 DSURFACE 5
-NODE 34 DSURFACE 5
-NODE 35 DSURFACE 5
-NODE 36 DSURFACE 5
+NODE 17 DSURFACE 2
+NODE 18 DSURFACE 2
+NODE 19 DSURFACE 2
+NODE 20 DSURFACE 2
+NODE 25 DSURFACE 2
+NODE 26 DSURFACE 2
+NODE 27 DSURFACE 2
+NODE 28 DSURFACE 2
+NODE 29 DSURFACE 3
+NODE 30 DSURFACE 3
+NODE 31 DSURFACE 3
+NODE 32 DSURFACE 3
+NODE 33 DSURFACE 4
+NODE 34 DSURFACE 4
+NODE 35 DSURFACE 4
+NODE 36 DSURFACE 4
+NODE 17 DSURFACE 5
+NODE 18 DSURFACE 5
+NODE 19 DSURFACE 5
+NODE 20 DSURFACE 5
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
@@ -254,16 +219,16 @@ NODE 25 COORD 1.3500000000000001e+00 -2.9999999999999999e-01 2.9999999999999999e
 NODE 26 COORD 1.3500000000000001e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
 NODE 27 COORD 1.3500000000000001e+00 2.9999999999999999e-01 -2.9999999999999999e-01
 NODE 28 COORD 1.3500000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-01
-NODE 29 COORD 1.3500000000000001e+00 -2.9999999999999999e-01 2.9999999999999999e-01
-NODE 30 COORD 1.3500000000000001e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
-NODE 31 COORD 1.3500000000000001e+00 2.9999999999999999e-01 -2.9999999999999999e-01
-NODE 32 COORD 1.3500000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-01
-NODE 33 COORD 1.9500000000000002e+00 -2.9999999999999999e-01 2.9999999999999999e-01
-NODE 34 COORD 1.9500000000000002e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
-NODE 35 COORD 1.9500000000000002e+00 2.9999999999999999e-01 -2.9999999999999999e-01
-NODE 36 COORD 1.9500000000000002e+00 2.9999999999999999e-01 2.9999999999999999e-01
+NODE 29 COORD 1.9500000000000002e+00 -2.9999999999999999e-01 2.9999999999999999e-01
+NODE 30 COORD 1.9500000000000002e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
+NODE 31 COORD 1.9500000000000002e+00 2.9999999999999999e-01 -2.9999999999999999e-01
+NODE 32 COORD 1.9500000000000002e+00 2.9999999999999999e-01 2.9999999999999999e-01
+NODE 33 COORD 1.3500000000000001e+00 -2.9999999999999999e-01 2.9999999999999999e-01
+NODE 34 COORD 1.3500000000000001e+00 -2.9999999999999999e-01 -2.9999999999999999e-01
+NODE 35 COORD 1.3500000000000001e+00 2.9999999999999999e-01 -2.9999999999999999e-01
+NODE 36 COORD 1.3500000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-01
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 29 30 31 32 33 34 35 36 MAT 2 KINEM nonlinear EAS mild
+1 SOLIDH8 HEX8 33 34 35 36 29 30 31 32 MAT 2 KINEM nonlinear EAS mild
 --------------------------------------------------------------FLUID ELEMENTS
 2 FLUID3 HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 3 3 3 CA No
 3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 1 NA Euler GP 3 3 3 CA No
@@ -274,24 +239,24 @@ NODE 36 COORD 1.9500000000000002e+00 2.9999999999999999e-01 2.9999999999999999e-
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 2.81010749268171489e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 2.81010749268171622e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 2.81010749268170823e+00 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.87500749268132783e+00 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 2.87500749268133493e+00 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 2.21500749268393538e+00 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 1.55500749268651384e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 29 QUANTITY dispx VALUE 9.10000000000045078e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-6
-FSI NODE 29 QUANTITY lambdax VALUE 1.39950674587873969e-01 TOLERANCE 1e-8
-FSI NODE 29 QUANTITY lambday VALUE 4.66511001436157452e-02 TOLERANCE 1e-8
-FSI NODE 29 QUANTITY lambdaz VALUE -4.66511002970702512e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 8 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY pressure VALUE -3.59997880460353015e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY pressure VALUE -3.59997880460352881e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY pressure VALUE -3.59997880460352926e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE -3.79797349616608182e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE -3.79797349616608226e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE -5.59796289667775326e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 9.09996321090908888e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE -7.39795229718940739e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE 2.15998619160625183e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 2.15998619160625016e-01 TOLERANCE 1e-6
+FSI NODE 25 QUANTITY lambdax VALUE -6.65815706978402755e-01 TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambday VALUE 6.53806394324034645e-01 TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambdaz VALUE -6.53806394324034756e-01TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

@@ -1,24 +1,33 @@
+/*!----------------------------------------------------------------------
+\file fsi_fluidfluidmonolithic_fluidsplit_nonox.H
+\brief Control routine for monolithic fluid-fluid-fsi (fluidsplit)
+using XFEM
+
+<pre>
+Maintainer: Shadan Shahmiri
+            shahmiri@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
+
+            Raffaela Kruse
+            kruse@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #ifndef FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_
 #define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_
 
-
-
-#include "../drt_inpar/inpar_xfem.H"
-//Parent class MonolithicNoNOX
 #include "fsi_monolithic_nonox.H"
 
-
-
-/********************************************************************/
 namespace ADAPTER
 {
 	class Coupling;
 	class FluidFluidFSI;
 }
 
-/********************************************************************/
-
-//UTILS for matrix transformations
 namespace FSI
 {
 	namespace UTILS
@@ -27,172 +36,156 @@ namespace FSI
 		class MatrixColTransform;
 		class MatrixRowColTransform;
 	}
-
 }
-
-/********************************************************************/
-
 
 namespace FSI
 {
-//rk
-///Monolithic fluid-fluid FSI with Fluid-Split
-/*!
-  Background fluid, embedded fluid & structure.
-  Split of the (embedded) fluid matrix, while the structure matrix remains
-  unmodified.
- */
-
+  /// Monolithic fluid-fluid FSI algorithm (fluidsplit)
+  /*!
+   * Split of the fluid matrix, while the structure matrix remains
+   * unmodified / condensation of interface fluid velocities.
+   */
 	class FluidFluidMonolithicFluidSplitNoNOX : public MonolithicNoNOX
 	{
-
-	friend class FSI::FSIResultTest;
+	  friend class FSI::FSIResultTest;
 
 	public:
 
-	    explicit FluidFluidMonolithicFluidSplitNoNOX(const Epetra_Comm& comm,const Teuchos::ParameterList& timeparams);
+	  /// constructor
+	  explicit FluidFluidMonolithicFluidSplitNoNOX(const Epetra_Comm& comm,
+	                                               const Teuchos::ParameterList& timeparams);
 
-
-	    /// Initialize, read parameters and create global DOF row map
+	  /// initialize, read parameters and create merged DOF row map
 		virtual void SetupSystem();
 
-	    /// Setup composed system block matrix
-		virtual void SetupSystemMatrix();
+	protected:
 
-		/// Repeat setup, if maps have changed
-		void SetupNewSystem();
+    //! @name Apply current field state to system
 
-		/// Setup composed RHS-vector
-		virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false);
+    //! setup composed right hand side from field solvers
+    //!
+    //! The RHS consists of three contributions from:
+    //! 1) the single fields residuals
+    //! 2) the Lagrange multiplier field lambda_
+    //! 3) terms in the first nonlinear iteration
+    virtual void SetupRHS(
+        Epetra_Vector& f,     ///< empty rhs vector (to be filled)
+        bool firstcall=false  ///< indicates whether this is the first nonlinear iteration or not
+    );
 
-		/// Call IntialGuess() on all fields
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix();
+    //@}
+
+    /// create merged map of DOF in the final system from all fields
+		virtual void CreateCombinedDofRowMap();
+
+		/// initial guess for subsequent fields
 		virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig );
 
-		/// Create map containing the DOFs with Dirichlet-BCs from all fields!
-	    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+		/// create merged Dirichlet map from single field maps
+	  virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
-		/// Newton-Loop
+		/// Newton loop
 		virtual void Newton();
 
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! In analogy to NOX, x is step increment \f$\Delta x\f$
+    //! that brings us from \f$t^{n}\f$ to \f$t^{n+1}\f$:
+    //! \f$x^{n+1} = x^{n} + \Delta x\f$
+    //!
+    //! Iteration increments, that are needed internally in the single fields,
+    //! have to be computed somewhere else.
+    //!
+    //! \param x  (i) composed vector that contains all field vectors
+    //! \param sx (o) structural displacements
+    //! \param fx (o) fluid velocities and pressure
+    //! \param ax (o) ale displacements
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+                                     Teuchos::RCP<const Epetra_Vector>& sx,
+                                     Teuchos::RCP<const Epetra_Vector>& fx,
+                                     Teuchos::RCP<const Epetra_Vector>& ax);
 
-	protected:
-	    /// extract the three field vectors from a given composed vector
-	    /*
-	      \param x  (i) composed vector that contains all field vectors
-	      \param sx (o) structural displacements
-	      \param fx (o) fluid velocities and pressure
-	      \param ax (o) ale displacements
-	     */
-	    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-	                                     Teuchos::RCP<const Epetra_Vector>& sx,
-	                                     Teuchos::RCP<const Epetra_Vector>& fx,
-	                                     Teuchos::RCP<const Epetra_Vector>& ax);
+    /// compute the Lagrange multiplier (FSI stresses) for the current time step
+    virtual void RecoverLagrangeMultiplier();
 
-	    /// Time Update: recover the Lagrange multiplier and relax ALE (where required)
-	    virtual void Update();
+    /// compute the residual and incremental norms required for convergence check
+    virtual void BuildConvergenceNorms();
 
-	    virtual void PrepareTimeStep();
+    /// read restart data
+    virtual void ReadRestart(int step);
 
-	    /// Compute the Lagrange multiplier (FSI stresses) for the current time step
-	    virtual void RecoverLagrangeMultiplier();
+    /// output of fluid, structure & ALE-quantities and Lagrange multiplier
+    virtual void Output();
 
-	    // Compute the residual and incremental norms required for convergence check
-	    virtual void BuildCovergenceNorms();
+    /*!
+     * In case of a change in the fluid DOF row maps during the Newton loop (full Newton approach),
+     * reset vectors accordingly.
+     * \author kruse
+     * \date 05/14
+     */
+    virtual void HandleFluidDofMapChangeInNewton();
 
-	    virtual void ReadRestart(int step);
-
-	    virtual void Output();
-
+    /*!
+     * Determine a change in fluid DOF map
+     * \param (in) : DOF map of fluid increment vector
+     * \return : true, in case of a mismatch between map of increment vector
+     * and inner fluid DOF map after evaluation
+     * \author kruse
+     * \date 05/14
+     */
+    virtual bool HasFluidDofMapChanged(
+        const Epetra_BlockMap& fluidincrementmap);
 
 	private:
 
-	    /// build block vector from field vectors
-	    void SetupVector(Epetra_Vector &f,
-	                     Teuchos::RCP<const Epetra_Vector> sv,
-	                     Teuchos::RCP<const Epetra_Vector> fv,
-	                     Teuchos::RCP<const Epetra_Vector> av,
-	                     double fluidscale);
+    /// build block vector from field vectors
+    void SetupVector(Epetra_Vector &f,
+                     Teuchos::RCP<const Epetra_Vector> sv,
+                     Teuchos::RCP<const Epetra_Vector> fv,
+                     Teuchos::RCP<const Epetra_Vector> av,
+                     double fluidscale);
 
 
-	    //F_\Gamma_\Gamma
-	    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
+    /// @name Matrix block transform objects
+    /// Handle row and column map exchange for matrix blocks
 
-	    //Teuchos::RCP<UTILS::MatrixRowTransform> fmggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform>  fggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform>     fgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>     figtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>     aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>     fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform>  fmgitransform_;
+    //@}
 
-	    //F_\Gamma_I
-	    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
-	    //F_I_\Gamma
-	    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
+    /// @name Recovery of Lagrange multiplier at the end of each time step
 
-	    //F^G_\Gamma_I
-	    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
-	    //F^G_I_I
-	    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    //@{
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the fluid)
+    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> lambda_;
 
-	    //A_I_\Gamma
-	    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fggcurr_;
 
+    //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fgicurr_;
 
-	    //additional ALE residual to avoid incremental ALE errors
-	    Teuchos::RCP<Epetra_Vector> aleresidual_;
+    //! block \f$F^G_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmggcurr_;
 
-	    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    //! block \f$F^G_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmgicurr_;
 
-	    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> xfluidfluidsplitter_;
-
-
-	    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
-
-	    //ALE-relaxation algorithm applied?
-	    bool relaxing_ale_;
-
-	    //In case of ALE-relaxation, the time step interval
-	    //between relaxation has to be specified
-	    int relaxing_ale_every_;
-
-	    int currentstep_;
-
-	    //Lagrange multiplier
-	    Teuchos::RCP<Epetra_Vector> lambda_;
-
-
-	    //Fluid matrices: f
-	    //Moving fluid matrices: fm
-	    //g: \Gamma (FSI interface)
-	    //i: I (internal field)
-	    //curr: current
-
-	    Teuchos::RCP<const LINALG::SparseMatrix> fggcurr_;
-	    Teuchos::RCP<const LINALG::SparseMatrix> fgicurr_;
-	    Teuchos::RCP<const LINALG::SparseMatrix> fmggcurr_;
-	    Teuchos::RCP<const LINALG::SparseMatrix> fmgicurr_;
-
-	    //Current RHS @ the interface for LM-recovery
-	   // Teuchos::RCP<Epetra_Vector> fgcurr_;
-
-	   // not needed here, it is needed for the implementation with nox
-	   // to get the iteration increment in ExtractFliedVectors
-	   //Inner fluid increment sum
-	   //Teuchos::RCP<const Epetra_Vector>  solipre_;
-	   //Inner ALE increment sum
-	   //Teuchos::RCP<const Epetra_Vector>  solialepre_;
-	   //Structural interface displacement increment sum
-       //Teuchos::RCP<const Epetra_Vector>  solgpre_;
-
-
-       //Inner ale displacement increment
-	   Teuchos::RCP<Epetra_Vector>  ddialeinc_;
-	   //Interface displacement increment
-	   Teuchos::RCP<Epetra_Vector>  ddginc_;
-	   //Inner fluid velocity increment
-	   Teuchos::RCP<Epetra_Vector>  duiinc_;
-
-
-
-
+    //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector>  ddialeinc_;
+    //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector>  ddginc_;
+    //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector>  duiinc_;
+    //@}
 	};
-
 }
-
 
 #endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_ */

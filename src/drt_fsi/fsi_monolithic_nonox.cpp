@@ -1,6 +1,4 @@
 
-
-
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
@@ -11,19 +9,29 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
+
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+
+#include "../drt_inpar/inpar_ale.H"
+
 #include "../drt_structure/stru_aux.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
+
+#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+
 #include "../drt_ale/ale.H"
 
 /*----------------------------------------------------------------------*/
 // constructor (public)
 /*----------------------------------------------------------------------*/
 FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
-                            const Teuchos::ParameterList& timeparams)
+                                      const Teuchos::ParameterList& timeparams)
   : MonolithicBase(comm,timeparams),
     zeros_(Teuchos::null)
 {
@@ -67,8 +75,69 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
   TOL_VEL_INC_L2_  = fsimono.get<double>("TOL_VEL_INC_L2");
   TOL_VEL_INC_INF_ = fsimono.get<double>("TOL_VEL_INC_INF");
   // set tolerances for nonlinear solver
+
+  // validate parameters for monolithic approach
+  ValidateParameters();
 }
 
+void FSI::MonolithicNoNOX::SetupSystem()
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+
+  // structure to fluid
+
+  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
+                                *FluidField().Discretization(),
+                                 FluidField().Interface()->FSICondMap(),
+                                "FSICoupling",
+                                 ndim);
+
+  // structure to ale
+
+  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
+                                *AleField().Discretization(),
+                                 AleField().Interface()->FSICondMap(),
+                                "FSICoupling",
+                                 ndim);
+
+  // fluid to ale at the interface
+
+  icoupfa.SetupConditionCoupling(*FluidField().Discretization(),
+                                   FluidField().Interface()->FSICondMap(),
+                                   *AleField().Discretization(),
+                                   AleField().Interface()->FSICondMap(),
+                                   "FSICoupling",
+                                   ndim);
+
+  // In the following we assume that both couplings find the same dof
+  // map at the structural side. This enables us to use just one
+  // interface dof map for all fields and have just one transfer
+  // operator from the interface map to the full field map.
+  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
+    dserror("structure interface dof maps do not match");
+
+  if (coupsf.MasterDofMap()->NumGlobalElements()==0)
+    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+
+  // the fluid-ale coupling always matches
+  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+
+  coupfa.SetupCoupling(*FluidField().Discretization(),
+                       *AleField().Discretization(),
+                       *fluidnodemap,
+                       *alenodemap,
+                        ndim);
+
+  FluidField().SetMeshMap(coupfa.MasterDofMap());
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::Timeloop()
@@ -135,7 +204,7 @@ void FSI::MonolithicNoNOX::Newton()
 
     // build residual and incremental norms
     // for now use for simplicity only L2/Euclidian norm
-    BuildCovergenceNorms();
+    BuildConvergenceNorms();
 
     // print stuff
     PrintNewtonIter();
@@ -159,10 +228,9 @@ void FSI::MonolithicNoNOX::Newton()
   else if (iter_ >= itermax_)
   {
 	IO::cout << IO::endl;
-    IO::cout << " Newton unconverged in "<< iter_ << " iterations " <<  IO::endl;
+    IO::cout << "  Newton unconverged in "<< iter_ << " iterations " <<  IO::endl;
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -193,6 +261,7 @@ bool FSI::MonolithicNoNOX::Converged()
       break;
   default:
       dserror("Cannot check for convergence of residual values!");
+      break;
   }
 
   // structural, fluid and ale residual forces
@@ -216,6 +285,7 @@ bool FSI::MonolithicNoNOX::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
+    break;
   }
 
   // combined
@@ -271,70 +341,74 @@ void FSI::MonolithicNoNOX::LinearSolve()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
-   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
-   Teuchos::RCP<const Epetra_Vector> sx;
-   Teuchos::RCP<const Epetra_Vector> fx;
-   Teuchos::RCP<const Epetra_Vector> ax;
+  Teuchos::RCP<const Epetra_Vector> sx;
+  Teuchos::RCP<const Epetra_Vector> fx;
+  Teuchos::RCP<const Epetra_Vector> ax;
 
-   if (not firstcall_)
+  // Save the inner fluid map that includes the background fluid DOF in order to
+  // determine a change.
+  const Epetra_BlockMap fluidincrementmap = Extractor().ExtractVector(x,1)->Map();
+
+  if (not firstcall_)
+  {
+   // structure, ale and fluid fields expects the step increment. So
+   // we add all of the increments together to build the step
+   // increment.
+   //
+   // The update of the latest increment with iteration increments:
+   // x^n+1_i+1 = x^n+1_i + iterinc
+   //
+   // The update of the latest increment with step increment:
+   // x^n+1_i+1 = x^n     + stepinc
+
+   x_sum_->Update(1.0,*x,1.0);
+
+   ExtractFieldVectors(x_sum_,sx,fx,ax);
+
+   if (sdbg_!=Teuchos::null)
    {
-     // structure, ale and fluid fields expects the step increment. So
-     // we add all of the increments together to build the step
-     // increment.
-     //
-     // The update of the latest increment with iteration increments:
-     // x^n+1_i+1 = x^n+1_i + iterinc
-     //
-     // The update of the latest increment with step increment:
-     // x^n+1_i+1 = x^n     + stepinc
-
-     x_sum_->Update(1.0,*x,1.0);
-
-     ExtractFieldVectors(x_sum_,sx,fx,ax);
-
-     if (sdbg_!=Teuchos::null)
-     {
-       sdbg_->NewIteration();
-       sdbg_->WriteVector("x",*StructureField()->Interface()->ExtractFSICondVector(sx));
-     }
+     sdbg_->NewIteration();
+     sdbg_->WriteVector("x",*StructureField()->Interface()->ExtractFSICondVector(sx));
    }
+  }
 
-   // Call all fileds evaluate method and assemble rhs and matrices
+  // Call all fileds evaluate method and assemble rhs and matrices
 
-   {
-     Epetra_Time ts(Comm());
-     StructureField()->Evaluate(sx);
-     //IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
-   }
+  {
+   Epetra_Time ts(Comm());
+   StructureField()->Evaluate(sx);
+   //IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
+  }
 
-   {
-     // ALE field expects the sum of all increments and not the
-     // latest increment. It adds the sum of all increments to the
-     // displacement of the last time step. So we need to build the
-     // sum of all increments and give it to ALE.
+  {
+   // ALE field expects the sum of all increments and not the
+   // latest increment. It adds the sum of all increments to the
+   // displacement of the last time step. So we need to build the
+   // sum of all increments and give it to ALE.
 
-     Epetra_Time ta(Comm());
-     AleField().Evaluate(ax);
-   }
+   Epetra_Time ta(Comm());
+   AleField().Evaluate(ax);
+  }
 
-   // transfer the current ale mesh positions to the fluid field
-   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().WriteAccessDispnp());
-   FluidField().ApplyMeshDisplacement(fluiddisp);
+  // transfer the current ale mesh positions to the fluid field
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().WriteAccessDispnp());
+  FluidField().ApplyMeshDisplacement(fluiddisp);
 
-   {
-     Epetra_Time tf(Comm());
-     FluidField().Evaluate(fx);
-     //IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
-   }
+  {
+   Epetra_Time tf(Comm());
+   FluidField().Evaluate(fx);
+   //IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+  }
 
-
+  if (HasFluidDofMapChanged(fluidincrementmap))
+    HandleFluidDofMapChangeInNewton();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap_,maps);
+  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  blockrowdofmap_.Setup(*fullmap,maps);
 }
 
 /*----------------------------------------------------------------------*/
@@ -444,6 +518,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   switch ( normtypeinc_ )
@@ -462,6 +537,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   // add solution time
@@ -500,6 +576,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
     break;
   default:
     dserror("You should not turn up here.");
+    break;
  }
 
   switch ( normtypeinc_ )
@@ -523,6 +600,98 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 }
 
+void FSI::MonolithicNoNOX::ValidateParameters()
+{
+  // Extract parameter list XFLUID_DYNAMIC
+  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
+
+  monolithic_approach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
+               (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
+
+  // Should ALE-relaxation be carried out?
+  relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
+  if (relaxing_ale_)
+  {
+    // Get no. of steps, after which ALE field should be relaxed
+    relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
+  }
+  // Extract parameter list ALE_DYNAMIC
+  const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
+  // Get the ALE-type index, defining the underlying ALE-algorithm
+  int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
+
+  // Just ALE algorithm type 'incremental linear' and 'springs' supports ALE relaxation
+  if ( (aletype!=INPAR::ALE::incr_lin and aletype!=INPAR::ALE::springs)
+      and monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton)
+    dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicNoNOX::Update()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::Update");
+
+  // ALE relaxation flag
+  bool aleupdate=false;
+
+  // In case of ale relaxation: Check, if the current step is an ale relaxation step!
+  if (relaxing_ale_)
+    if (Step() % relaxing_ale_every_ == 0) aleupdate=true;
+
+  // In case of ALE relaxation
+  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
+  {
+    // Set the old state of ALE displacement before relaxation
+    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
+  }
+
+  RecoverLagrangeMultiplier();
+
+  // In case of ALE relaxation
+  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
+  {
+    if (Comm().MyPID() == 0)
+      IO::cout << "Relaxing ALE!" << IO::endl;
+    // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
+    // to obtain the true ALE displacement
+    AleField().SolveAleXFluidFluidFSI();
+    // Now apply the ALE-displacement to the (embedded) fluid and update the
+    // grid velocity
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
+  }
+
+  // update subsequent fields
+  StructureField()->Update();
+  FluidField().Update();
+  AleField().Update();
+
+  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
+  {
+    // Build the ALE-matrix after the update
+    AleField().BuildSystemMatrix(false);
+    // Create new ALE interface residual
+    aleresidual_=Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap(),true));
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicNoNOX::PrepareTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::PrepareTimeStep");
+
+  IncrementTimeAndStep();
+  PrintHeader();
+
+  StructureField()->PrepareTimeStep();
+  FluidField().PrepareTimeStep();
+  AleField().PrepareTimeStep();
+
+  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton )
+    CreateCombinedDofRowMap();
+}

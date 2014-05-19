@@ -347,12 +347,6 @@ namespace FLD
       );
 
     void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
-                        const LINALG::MultiMapExtractor& domainmaps,
-                        const LINALG::MultiMapExtractor& rangemaps,
-                        bool splitmatrix);
-
-
-   void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
                        const LINALG::MultiMapExtractor& shapederivdomainmaps,
                        const LINALG::MultiMapExtractor& shapederivrangemaps);
 
@@ -383,7 +377,7 @@ namespace FLD
 
     Teuchos::RCP<const Epetra_Map>PressureRowMap() { return state_->fluidfluidvelpressplitter_.CondMap(); }
     Teuchos::RCP<const Epetra_Map>VelocityRowMap() { return state_->fluidfluidvelpressplitter_.OtherMap(); }
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ return shapederivatives_; }
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
@@ -405,9 +399,10 @@ namespace FLD
     void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     ///Return system matrix as block matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(Teuchos::RCP<Epetra_Map> innermap,
-    															  Teuchos::RCP<Epetra_Map> condmap,
-    															  Teuchos::RCP<LINALG::MapExtractor> fsiale);
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(
+        const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
+        Teuchos::RCP<Epetra_Map> innermap,
+        Teuchos::RCP<Epetra_Map> condmap);
 
     //Return embedded fluid discretization writer
     const Teuchos::RCP<IO::DiscretizationWriter>& EmbDiscWriter() { return emboutput_; }

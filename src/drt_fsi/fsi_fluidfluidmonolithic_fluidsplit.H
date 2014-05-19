@@ -1,0 +1,66 @@
+/*------------------------------------------------------*/
+/*!
+\file fsi_fluidfluidmonolithic_fluidsplit.H
+\brief Control routine for monolithic fluid-fluid-fsi (fluidsplit)
+ using XFEM and NOX.
+
+<pre>
+Maintainer: Raffaela Kruse
+            kruse@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
+*/
+/*------------------------------------------------------*/
+
+#ifndef FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_
+#define FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_
+
+#include "fsi_monolithicfluidsplit.H"
+#include "../drt_inpar/inpar_xfem.H"
+
+namespace FSI
+{
+  /// monolithic hybrid FSI algorithm with overlapping interface equations
+	/*!
+	 * Monolithic fluid-fluid FSI with structure-handled interface motion, employing XFEM and NOX.
+	 * Fluid interface velocities are condensed.
+	 * \author kruse
+	 * \date 05/14
+	 */
+	class FluidFluidMonolithicFluidSplit : public MonolithicFluidSplit
+	{
+    friend class FSI::FSIResultTest;
+
+	public:
+
+    /// constructor
+		explicit FluidFluidMonolithicFluidSplit(const Epetra_Comm& comm,
+                                            const Teuchos::ParameterList& timeparams);
+
+    /// update subsequent fields, recover the Lagrange multiplier and relax the ALE-mesh
+    virtual void Update();
+
+    /// start a new time step
+    virtual void PrepareTimeStep();
+
+    /// output routine accounting for Lagrange multiplier at the interface
+    virtual void Output();
+
+    /// read restart data (requires distinguation between fluid discretizations)
+    virtual void ReadRestart(int step);
+
+	private:
+
+    /// setup of extractor for merged Dirichlet maps
+    void SetupDBCMapExtractor();
+
+    /// flag, that indicates ALE-relaxation
+    bool relaxing_ale_;
+
+    /// number of timesteps in between ALE-relaxation
+    int relaxing_ale_every_;
+	};
+}
+
+#endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_ */

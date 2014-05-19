@@ -1,3 +1,4 @@
+
 #ifndef FLUID_UTILS_MAPEXTRACTOR_H
 #define FLUID_UTILS_MAPEXTRACTOR_H
 
@@ -33,6 +34,19 @@ namespace UTILS
 
     /// setup the whole thing
     void Setup(const DRT::Discretization& dis, bool withpressure = false, bool overlapping = false);
+
+    /*!
+     * \brief setup from an existing extractor
+     * By calling this setup version we create a map extractor from
+     * (1) an existing map extractor and
+     * (2) a DOF-map from another discretization, which is appended to othermap.
+     * We need this in the context of XFFSI.
+     * \param (in) additionalothermap : map of additional unconditioned DOF
+     * \param (in) extractor : extractor, from which the conditions are cloned
+     * \author kruse
+     * \date 05/2014
+     */
+    void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap, const FLD::UTILS::MapExtractor& extractor);
 
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;

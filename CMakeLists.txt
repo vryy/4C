@@ -915,6 +915,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_fluidfluidmonolithic_structuresplit_nonox.cpp
   src/drt_fsi/fsi_fluidfluidmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp  
+  src/drt_fsi/fsi_fluidfluidmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_mortarmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_mortarmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_nox_aitken.cpp
