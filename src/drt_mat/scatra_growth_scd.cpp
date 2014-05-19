@@ -117,7 +117,7 @@ double MAT::ScatraGrowthScd::ComputeReactionCoeff(const double csnp, const doubl
   const double rearate = params_->rearate_;
   const double satcoeff = params_->satcoeff_;
   const std::string* sourcemass =params_->sourcemass_;
-  double reacoeff;
+  double reacoeff = 0.;
 
   if (*sourcemass == "Standard")
     reacoeff = strdensity*3.0*dtheta/theta/csnp/detFe;
