@@ -99,6 +99,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   lastfluxoutputstep_(-1),
   outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
+  output_state_matlab_(DRT::INPUT::IntegralValue<int>(*params,"MATLAB_STATE_OUTPUT")),
   time_   (0.0),
   maxtime_  (params->get<double>("MAXTIME")),
   step_   (0),
@@ -1323,6 +1324,12 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
 
   }
 
+  if ( (step_ != 0) and (output_state_matlab_) )
+      {
+        ostringstream filename;
+        filename << "Result_Step" << step_ << ".m";
+        LINALG::PrintVectorInMatlabFormat(filename.str(),*phinp_);
+      }
   // NOTE:
   // statistics output for normal fluxes at boundaries was already done during Update()
 

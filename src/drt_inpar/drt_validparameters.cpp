@@ -4631,6 +4631,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("OUTINTEGRREAC","No","Output of integral reaction values",&scatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&scatradyn);
 
+  BoolParameter("MATLAB_STATE_OUTPUT","No","Do you want to write the state solution to Matlab file?",&scatradyn);
+
   setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
                                tuple<std::string>(
                                  "convective",

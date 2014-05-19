@@ -815,6 +815,9 @@ protected:
   //! boolean to write Gmsh postprocessing files (input parameter)
   const bool outputgmsh_;
 
+  //! boolean to write state vectore to matlab file (input parameter)
+  const bool output_state_matlab_;
+
   /*========================================================================*/
   //! @name Time, time-step, and iteration variables
   /*========================================================================*/
