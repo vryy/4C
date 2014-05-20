@@ -249,6 +249,18 @@ namespace STR
 	  /// update all the field vectors to account for new node introduced by crack
     void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew );
 
+    //! Build total residual vector and effective tangential stiffness
+    //! matrix in case of nonlinear, rotational inertia effects
+    void BuildResStiffNLMassRot( Teuchos::RCP<Epetra_Vector> fres_,
+                                 Teuchos::RCP<Epetra_Vector> fextn_,
+                                 Teuchos::RCP<Epetra_Vector> fintn_,
+                                 Teuchos::RCP<Epetra_Vector> finertn_,
+                                 Teuchos::RCP<LINALG::SparseOperator> stiff_,
+                                 Teuchos::RCP<LINALG::SparseOperator> mass_);
+
+  //!Check, if there are solely beam elements in the whole discretization
+  bool SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis);
+
   protected:
 
     //! equal operator is NOT wanted

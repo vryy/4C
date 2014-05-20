@@ -171,7 +171,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     // create parameter list
     Teuchos::ParameterList params;
 
-  if (!HaveNonlinearMass())
+  if (HaveNonlinearMass()==INPAR::STR::ml_none)
   {
     // set initial internal force vector
     ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_,params);
@@ -182,9 +182,15 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     double timeintfac_vel=gamma_*(*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params,beta_,gamma_,alphaf_,alpham_);
 
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams);
+
+    if (HaveNonlinearMass()==INPAR::STR::ml_rotations and !SolelyBeam3Elements(actdis))
+    {
+      dserror("Multiplicative Gen-Alpha time integration scheme only implemented for beam3ii elements so far!");
+    }
+
   }
 
   // have a nice day
@@ -262,7 +268,7 @@ void STR::TimIntGenAlpha::PredictConstAcc()
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate residual force and its stiffness, ie derivative
+/* evaluate residual force and its stiffness, i.e. derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
 void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
@@ -302,12 +308,16 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
   fintn_->PutScalar(0.0);
   // build new internal forces and stiffness
-  if (!HaveNonlinearMass())
+  if (HaveNonlinearMass()==INPAR::STR::ml_none)
   {
     ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_,params);
   }
   else
   {
+
+    if (pred_ != INPAR::STR::pred_constdis)
+      dserror("Only the predictor PredictConstDisConsistVelAcc() allowed for dynamic beam3ii simulations!!!");
+
     //If we have nonlinear inertia forces, the corresponding contributions are computed together with the internal forces
     finertn_->PutScalar(0.0);
     mass_->Zero();
@@ -327,7 +337,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
     double timintfac_dis=beta_*(*dt_)[0]*(*dt_)[0];
     double timintfac_vel=gamma_*(*dt_)[0];
-    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_,params);
+    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_,params,beta_,gamma_,alphaf_,alpham_);
   }
 
   // add forces and stiffness due to constraints
@@ -356,17 +366,17 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
   // ************************** (3) INERTIAL FORCES ***************************
 
-  // build new internal forces and stiffness
-  if (!HaveNonlinearMass())
+  // build new inertia forces and stiffness
+  if (HaveNonlinearMass()==INPAR::STR::ml_none)
   {
-    // build new internal forces and stiffness
+    // build new inertia forces and stiffness
     finertm_->PutScalar(0.0);
-    // inertial forces #finertm_
+    // inertia forces #finertm_
     mass_->Multiply(false, *accm_, *finertm_);
   }
   else
   {
-    // total inertial mid-forces F_{inert;n+1-alpha_m} ----> TR-like
+    // total inertia mid-forces F_{inert;n+1-alpha_m} ----> TR-like
     // F_{inert;n+1-alpha_m} := (1.-alpham) * F_{inert;n+1} + alpha_m * F_{inert;n}
     finertm_->Update(1.-alpham_, *finertn_, alpham_, *finert_, 0.0);
   }
@@ -379,27 +389,37 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
     damp_->Multiply(false, *velm_, *fviscm_);
   }
 
-  // build residual
-  //    Res = M . A_{n+1-alpha_m}
-  //        + C . V_{n+1-alpha_f}
-  //        + F_{int;n+1-alpha_f}
-  //        - F_{ext;n+1-alpha_f}
-  fres_->Update(-1.0, *fextm_, 0.0);
-  fres_->Update( 1.0, *fintm_, 1.0);
-  fres_->Update( 1.0, *finertm_, 1.0);
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  //build residual and tangent matrix for standard case
+  if (HaveNonlinearMass()!=INPAR::STR::ml_rotations)
   {
-    fres_->Update(1.0, *fviscm_, 1.0);
-  }
+    // build residual
+    //    Res = M . A_{n+1-alpha_m}
+    //        + C . V_{n+1-alpha_f}
+    //        + F_{int;n+1-alpha_f}
+    //        - F_{ext;n+1-alpha_f}
+    fres_->Update(-1.0, *fextm_, 0.0);
+    fres_->Update( 1.0, *fintm_, 1.0);
+    fres_->Update( 1.0, *finertm_, 1.0);
+    if (damping_ == INPAR::STR::damp_rayleigh)
+    {
+      fres_->Update(1.0, *fviscm_, 1.0);
+    }
 
-  // build tangent matrix : effective dynamic stiffness matrix
-  //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
-  //                + (1 - alpha_f)*y/(beta*dt) C
-  //                + (1 - alpha_f) K_{T}
-  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.-alphaf_);
-  if (damping_ == INPAR::STR::damp_rayleigh)
+    // build tangent matrix : effective dynamic stiffness matrix
+    //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
+    //                + (1 - alpha_f)*y/(beta*dt) C
+    //                + (1 - alpha_f) K_{T}
+
+    stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.-alphaf_);
+    if (damping_ == INPAR::STR::damp_rayleigh)
+    {
+      stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
+    }
+  }
+  //build residual vector and tangent matrix if a multiplicative Gen-Alpha scheme for rotations is applied
+  else
   {
-    stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
+    BuildResStiffNLMassRot(fres_, fextn_, fintn_, finertn_, stiff_, mass_);
   }
 
   // apply forces and stiffness due to contact / meshtying ----> TR-like
@@ -426,7 +446,16 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax(Teuchos::ParameterList
   EvaluateForceStiffResidual(params);
 
   // overwrite the residual forces #fres_ with interface load
-  fres_->Update(-1+alphaf_, *fifc_, 0.0);
+  if (HaveNonlinearMass()!=INPAR::STR::ml_rotations)
+  {
+    //standard case
+    fres_->Update(-1+alphaf_, *fifc_, 0.0);
+  }
+  else
+  {
+    //Remark: In the case of an multiplicative Gen-Alpha time integration scheme, all forces are evaluated at the end point n+1.
+    fres_->Update(-1.0, *fifc_, 0.0);
+  }
 
   // oh gosh
   return;
@@ -745,8 +774,56 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
     double timeintfac_vel=gamma_*(*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params,beta_,gamma_,alphaf_,alpham_);
 
     NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
   }
+}
+
+/*---------------------------------------------------------------------------------------------*
+ * Build total residual vector and effective tangential stiffness                    meier 05/14
+ * matrix in case of nonlinear, rotational inertia effects
+ *---------------------------------------------------------------------------------------------*/
+void STR::TimIntGenAlpha::BuildResStiffNLMassRot( Teuchos::RCP<Epetra_Vector> fres_,
+                                                  Teuchos::RCP<Epetra_Vector> fextn_,
+                                                  Teuchos::RCP<Epetra_Vector> fintn_,
+                                                  Teuchos::RCP<Epetra_Vector> finertn_,
+                                                  Teuchos::RCP<LINALG::SparseOperator> stiff_,
+                                                  Teuchos::RCP<LINALG::SparseOperator> mass_)
+{
+  // build residual
+  //    Res = F_{inert;n+1}
+  //        + F_{int;n+1}
+  //        - F_{ext;n+1}
+  //Remark: In the case of an multiplicative Gen-Alpha time integration scheme, all forces are evaluated at the end point n+1.
+  fres_->Update(-1.0, *fextn_, 0.0);
+  fres_->Update( 1.0, *fintn_, 1.0);
+  fres_->Update( 1.0, *finertn_, 1.0);
+
+  // build tangent matrix : effective dynamic stiffness matrix
+  //    K_{Teffdyn} = M
+  //                + K_{T}
+  //Remark: So far, all time integration pre-factors (only necessary for the mass matrix since internal forces are evaluated at n+1)
+  //are already considered at element level (see, e.g., beam3ii_evaluate.cpp). Therefore, we don't have to apply them here.
+  stiff_->Add(*mass_, false, 1.0 , 1.0);
+}
+
+/*---------------------------------------------------------------------------------------------*
+ * Check, if there are solely beam elements in the whole discretization              meier 05/14
+ *---------------------------------------------------------------------------------------------*/
+bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis)
+{
+  bool solelybeameles=true;
+
+  for (int i=0;i<actdis->NumMyRowNodes();i++)
+  {
+    DRT::Node* node = actdis->lColNode(i);
+    int numdof = actdis->NumDof(node);
+
+    //So far we simply check, if we have 6 DoFs per node, which is only true for beam elements
+    if (numdof != 6)
+      solelybeameles=false;
+  }
+
+  return solelybeameles;
 }

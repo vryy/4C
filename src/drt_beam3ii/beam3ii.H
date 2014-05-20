@@ -32,6 +32,8 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+//#define FDCHECKINERTIA //comment this out in order to perform a finite difference check of the linearization of nonlinear inertia forces
+
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
@@ -344,7 +346,8 @@ public:
 
 
       //Get the applied integrationpoints for exact integration of mass matrix
-      DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,lobattointegration));
+      //TODO: DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,lobattointegration));
+      DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
 
       //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
       std::vector<LINALG::Matrix<1,nnode> > I(nnode-1);
@@ -370,6 +373,20 @@ public:
       //exact Gauss integration requires as many integration points as nodes
       Qconvmass_.resize(nnode);
       Qnewmass_.resize(nnode);
+      wconvmass_.resize(nnode);
+      wnewmass_.resize(nnode);
+      aconvmass_.resize(nnode);
+      anewmass_.resize(nnode);
+      rttconvmass_.resize(nnode);
+      rttnewmass_.resize(nnode);
+      rttmodconvmass_.resize(nnode);
+      rttmodnewmass_.resize(nnode);
+      rtconvmass_.resize(nnode);
+      rtnewmass_.resize(nnode);
+      dispconvmass_.resize(nnode);
+      dispnewmass_.resize(nnode);
+      amodconvmass_.resize(nnode);
+      amodnewmass_.resize(nnode);
 
       //evaluate basis functions
       evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
@@ -398,6 +415,20 @@ public:
         Qconvmass_[numgp].PutScalar(0);
         Qconvmass_[numgp] += Qnewmass_[numgp];
 
+        wconvmass_[numgp].PutScalar(0);
+        wnewmass_[numgp].PutScalar(0);
+        aconvmass_[numgp].PutScalar(0);
+        anewmass_[numgp].PutScalar(0);
+        amodconvmass_[numgp].PutScalar(0);
+        amodnewmass_[numgp].PutScalar(0);
+        rttconvmass_[numgp].PutScalar(0);
+        rttnewmass_[numgp].PutScalar(0);
+        rttmodconvmass_[numgp].PutScalar(0);
+        rttmodnewmass_[numgp].PutScalar(0);
+        rtconvmass_[numgp].PutScalar(0);
+        rtnewmass_[numgp].PutScalar(0);
+        dispconvmass_[numgp].PutScalar(0);
+        dispnewmass_[numgp].PutScalar(0);
 
       }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 
@@ -575,7 +606,34 @@ private:
   std::vector<LINALG::Matrix<4,1> > Qconvmass_;
   //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
   std::vector<LINALG::Matrix<4,1> > Qnewmass_;
-
+  //! spatial angular velocity vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > wconvmass_;
+  //! current spatial angular velocity vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > wnewmass_;
+  //! spatial angular acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > aconvmass_;
+  //! current spatial angular acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > anewmass_;
+  //! modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodconvmass_;
+  //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodnewmass_;
+  //! translational acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttconvmass_;
+  //! current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttnewmass_;
+  //! modified translational acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttmodconvmass_;
+  //! modified current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttmodnewmass_;
+  //! translational velocity vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rtconvmass_;
+  //! current translational velocity vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rtnewmass_;
+  //! translational displacement vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > dispconvmass_;
+  //! current translational displacement vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > dispnewmass_;
   //!rotation angle displacement at nodes; relates to the end of the preceeding time step
   std::vector<LINALG::Matrix<3,1> > dispthetaconv_;
   //!rotation angle displacement at nodes; relates to the end of the preceeding iteration step
@@ -591,7 +649,6 @@ private:
 
   //!node J for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
   int nodeJ_;
-
 
   //! cross section area
   double crosssec_;
@@ -616,6 +673,18 @@ private:
 
   //! Vector holding value of Jacobi determinant jacobi at nodes
   std::vector<double> jacobinode_;
+
+  //! kinetic energy of element
+  double Ekin_;
+
+  //! internal (elastic) energy of element
+  double Eint_;
+
+  //! angular momentum of the element
+  LINALG::Matrix<3,1> L_;
+
+  //! linear momentum of the element
+  LINALG::Matrix<3,1> P_;
 
   //! @name methods for initilization of the element
 
@@ -789,26 +858,33 @@ private:
     //auxiliary matrices for storing intermediate results
     LINALG::Matrix<3,3> auxmatrix;
     auxmatrix.PutScalar(0);
+    LINALG::Matrix<3,3> auxmatrix2;
+    auxmatrix2.PutScalar(0);
 
     //make sure that Itildeprime has proper dimensions
     Itilde.resize(nnode);
 
-    //compute squared brackets term in (3.18), Jelenic 1999v
+    //compute squared brackets term in (3.18), Jelenic 1999
     LINALG::Matrix<3,3> squaredbrackets;
     squaredbrackets.PutScalar(0);
     for(int node=0; node<nnode; ++node)
     {
+      auxmatrix.Clear();
+
       auxmatrix = LARGEROTATIONS::Tmatrix(Psili[node]);
       auxmatrix.Scale(funct(node));
-      squaredbrackets -= auxmatrix;
+      auxmatrix2.Update(-1.0,auxmatrix,1.0);
     }
+
+    squaredbrackets.Multiply(LARGEROTATIONS::Tinvmatrix(Psil),auxmatrix2);
+
     for(int i=0; i<3; i++)
       squaredbrackets(i,i) += 1;
 
     //loop through all nodes i
     for (int node=0; node<nnode; ++node)
     {
-
+    
       //compute rightmost term in curley brackets in (3.18), Jelenic 1999
       Itilde[node].PutScalar(0);
       Itilde[node].Multiply(LARGEROTATIONS::Tinvmatrix(Psil),LARGEROTATIONS::Tmatrix(Psili[node]));
@@ -1004,12 +1080,22 @@ private:
 
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>
-  void b3_nlnstiffmass(Teuchos::ParameterList& params,
+  void b3_nlnstiffmass( Teuchos::ParameterList& params,
+                        std::vector<double>&      acc,
                         std::vector<double>&      vel,
                         std::vector<double>&      disp,
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
-                        Epetra_SerialDenseVector* force);
+                        Epetra_SerialDenseVector* force,
+                        Epetra_SerialDenseVector* inertia_force);
+
+  //!finite difference check of linearization of nonlinear inertia forces
+  template<int nnode>
+  void b3_nlnmass_fdcheck(Teuchos::ParameterList& params,
+                          std::vector<double>&      acc,
+                          LINALG::Matrix<6*nnode,1>& inertia_force_xplusdx,
+                          int& column,
+                          const double& delta);
 
   //!calculation of elastic energy
   template<int nnode>

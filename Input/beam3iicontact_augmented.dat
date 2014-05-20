@@ -56,6 +56,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         25
+MASSLIN				            rotations
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5
@@ -224,8 +225,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.28918175114224631e-01 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 7.49553210742393006e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.65304792569279990e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.33728217168159058e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.07863911595744083e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.64748449939758945e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

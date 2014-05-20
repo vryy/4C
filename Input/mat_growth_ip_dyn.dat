@@ -56,7 +56,7 @@ DYNAMICTYP                      OneStepTheta //Statics OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
-MASSLIN                         yes//yes no
+MASSLIN                         standard//standard no
 MAXITER                         50
 MAXTIME                         100.0
 MINITER                         0

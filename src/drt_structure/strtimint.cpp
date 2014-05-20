@@ -409,7 +409,7 @@ void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
   mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   if (damping_ != INPAR::STR::damp_none)
   {
-    if (!HaveNonlinearMass())
+    if (HaveNonlinearMass()==INPAR::STR::ml_none)
     {
       damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
     }
@@ -2751,7 +2751,11 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
   Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
   Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
   Teuchos::RCP<LINALG::SparseOperator> mass,  //!< mass matrix
-  Teuchos::ParameterList& params  //!< parameters from nonlinear solver
+  Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
+  const double beta, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+  const double gamma, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+  const double alphaf, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+  const double alpham //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
 )
 {
     //dis->Print(std::cout);
@@ -2766,6 +2770,14 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
 
     params.set("timintfac_dis", timintfac_dis);
     params.set("timintfac_vel", timintfac_vel);
+
+    if (HaveNonlinearMass()==INPAR::STR::ml_rotations)
+    {
+      params.set("rot_beta", beta);
+      params.set("rot_gamma", gamma);
+      params.set("rot_alphaf", alphaf);
+      params.set("rot_alpham", alpham);
+    }
 
     // set plasticity data
     if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(params);
@@ -2794,10 +2806,10 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
 
 /*----------------------------------------------------------------------*/
 /* check wether we have nonlinear inertia forces or not */
-bool STR::TimInt::HaveNonlinearMass()
+int STR::TimInt::HaveNonlinearMass()
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  bool masslin = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "MASSLIN");
+  int masslin = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
 }
@@ -2806,8 +2818,9 @@ bool STR::TimInt::HaveNonlinearMass()
 /* check whether the initial conditions are fulfilled */
 void STR::TimInt::NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
                                             Teuchos::RCP<Epetra_Vector> dis,
-                                            const Teuchos::RCP<Epetra_Vector> vel,
-                                            const Teuchos::RCP<Epetra_Vector> acc)
+                                            Teuchos::RCP<Epetra_Vector> vel,
+                                            Teuchos::RCP<Epetra_Vector> acc,
+                                            const Teuchos::ParameterList* sdynparams)
 {
   double fextnorm;
   fext->Norm2(&fextnorm);
@@ -2825,7 +2838,16 @@ void STR::TimInt::NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
     dserror("Initial configuration does not fulfill equilibrium, check your initial external forces, velocities and accelerations!!!");
 
   if ((dispnorm > 1.0e-14) or (velnorm > 1.0e-14) or (accnorm > 1.0e-14))
-    dserror("Nonlinear inertia terms (input flag 'MASSLIN' set to 'yes') are only possible for vanishing initial displacements, velocities and accelerations so far!!!");
+    dserror("Nonlinear inertia terms (input flag 'MASSLIN' not set to 'none') are only possible for vanishing initial displacements, velocities and accelerations so far!!!");
+
+  if(HaveNonlinearMass()==INPAR::STR::ml_rotations and DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdynparams,"PREDICT") != INPAR::STR::pred_constdis)
+    dserror("Only constant displacement consistent velocity and acceleration predictor possible for multiplicative Genalpha time integration!");
+
+  if(sdynparams!=NULL)
+  {
+    if(HaveNonlinearMass()==INPAR::STR::ml_rotations and DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdynparams,"DYNAMICTYP") != INPAR::STR::dyna_genalpha)
+      dserror("Nonlinear inertia forces for rotational DoFs only implemented for GenAlpha time integration so far!");
+  }
 
   return;
 }
@@ -2893,7 +2915,10 @@ int STR::TimInt::Integrate()
   // time loop
   // (NOTE: popp 03/2010: we have to add eps to avoid the very
   // awkward effect that the time loop stops one step too early)
-  double eps = 1.0e-12;
+  double eps = 1.0e-8;
+  if ((*dt_)[0] < eps)
+    dserror("Time step is smaller than the total time tolerance eps! Enhance time step size or reduce the tolerance!");
+
   while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) and (not nonlinsoldiv) )
   {
     // prepare contact for new time step

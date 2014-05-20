@@ -489,18 +489,23 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
       Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
       Teuchos::RCP<LINALG::SparseOperator> mass,  //!< mass matrix
-      Teuchos::ParameterList& params  //!< parameters from nonlinear solver
+      Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
+      const double beta=1000.0,
+      const double gamma=1000.0,
+      const double alphaf=1000.0,
+      const double alpham=1000.0
     );
 
 
     //! Return bool indicating if we have nonlinear inertia forces
-    bool HaveNonlinearMass();
+    int HaveNonlinearMass();
 
     //! check wether the initial conditions are fulfilled */
     void NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
                                    Teuchos::RCP<Epetra_Vector> dis,
                                    Teuchos::RCP<Epetra_Vector> vel,
-                                   Teuchos::RCP<Epetra_Vector> acc
+                                   Teuchos::RCP<Epetra_Vector> acc,
+                                   const Teuchos::ParameterList* sdynparams=NULL
                                   );
 
     //! Evaluate ordinary internal force

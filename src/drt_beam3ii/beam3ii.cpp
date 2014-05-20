@@ -175,7 +175,11 @@ Izz_(0),
 Irr_(0),
 jacobi_(0),
 jacobimass_(0),
-jacobinode_(0)
+jacobinode_(0),
+Ekin_(0.0),
+Eint_(0.0),
+L_(0.0),
+P_(0.0)
 {
   return;
 }
@@ -191,6 +195,18 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Qnew_(old.Qnew_),
  Qconvmass_(old.Qconvmass_),
  Qnewmass_(old.Qnewmass_),
+ wconvmass_(old.wconvmass_),
+ wnewmass_(old.wnewmass_),
+ aconvmass_(old.aconvmass_),
+ anewmass_(old.anewmass_),
+ amodconvmass_(old.amodconvmass_),
+ amodnewmass_(old.amodnewmass_),
+ rttconvmass_(old.rttconvmass_),
+ rttnewmass_(old.rttnewmass_),
+ rttmodconvmass_(old.rttmodconvmass_),
+ rttmodnewmass_(old.rttmodnewmass_),
+ rtconvmass_(old.rtconvmass_),
+ rtnewmass_(old.rtnewmass_),
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
@@ -204,7 +220,11 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Irr_(old.Irr_),
  jacobi_(old.jacobi_),
  jacobimass_(old.jacobimass_),
- jacobinode_(old.jacobinode_)
+ jacobinode_(old.jacobinode_),
+ Ekin_(old.Ekin_),
+ Eint_(old.Eint_),
+ L_(old.L_),
+ P_(old.P_)
 {
   return;
 }
@@ -298,14 +318,28 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<4,1>(data,Qold_);
   AddtoPack<4,1>(data,Qconvmass_);
   AddtoPack<4,1>(data,Qnewmass_);
+  AddtoPack<3,1>(data,wconvmass_);
+  AddtoPack<3,1>(data,wnewmass_);
+  AddtoPack<3,1>(data,aconvmass_);
+  AddtoPack<3,1>(data,anewmass_);
+  AddtoPack<3,1>(data,rttconvmass_);
+  AddtoPack<3,1>(data,rttnewmass_);
+  AddtoPack<3,1>(data,rtconvmass_);
+  AddtoPack<3,1>(data,rtnewmass_);
   AddtoPack<3,1>(data,dispthetaconv_);
   AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack<3,1>(data,dispthetanew_);
   AddtoPack<3,1>(data,kapparef_);
-
   AddtoPack(data,eps_);
   AddtoPack(data,f_);
-
+  AddtoPack(data,Ekin_);
+  AddtoPack(data,Eint_);
+  AddtoPack<3,1>(data,L_);
+  AddtoPack<3,1>(data,P_);
+  AddtoPack<3,1>(data,amodnewmass_);
+  AddtoPack<3,1>(data,amodconvmass_);
+  AddtoPack<3,1>(data,rttmodnewmass_);
+  AddtoPack<3,1>(data,rttmodconvmass_);
 
   return;
 }
@@ -344,13 +378,28 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<4,1>(position,data,Qold_);
   ExtractfromPack<4,1>(position,data,Qconvmass_);
   ExtractfromPack<4,1>(position,data,Qnewmass_);
+  ExtractfromPack<3,1>(position,data,wconvmass_);
+  ExtractfromPack<3,1>(position,data,wnewmass_);
+  ExtractfromPack<3,1>(position,data,aconvmass_);
+  ExtractfromPack<3,1>(position,data,anewmass_);
+  ExtractfromPack<3,1>(position,data,rttconvmass_);
+  ExtractfromPack<3,1>(position,data,rttnewmass_);
+  ExtractfromPack<3,1>(position,data,rtconvmass_);
+  ExtractfromPack<3,1>(position,data,rtnewmass_);
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);
   ExtractfromPack<3,1>(position,data,kapparef_);
-
   ExtractfromPack(position,data,eps_);
   ExtractfromPack(position,data,f_);
+  ExtractfromPack(position,data,Ekin_);
+  ExtractfromPack(position,data,Eint_);
+  ExtractfromPack<3,1>(position,data,L_);
+  ExtractfromPack<3,1>(position,data,P_);
+  ExtractfromPack<3,1>(position,data,amodnewmass_);
+  ExtractfromPack<3,1>(position,data,amodconvmass_);
+  ExtractfromPack<3,1>(position,data,rttmodnewmass_);
+  ExtractfromPack<3,1>(position,data,rttmodconvmass_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

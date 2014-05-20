@@ -151,6 +151,13 @@ namespace INPAR
       control_arc2  ///< arclength Crisfield control
     };
 
+    /// have inertia forces to be linearized?
+    enum MassLin
+    {
+      ml_none,  ///< constant mass matrix
+      ml_standard,  ///< nonlinear inertia terms, translational DoFs
+      ml_rotations  ///< nonlinear inertia terms, rotational DoFs
+    };
 
     /// type of solution techniques
     enum NonlinSolTech

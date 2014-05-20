@@ -136,10 +136,22 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       std::vector<double> myvel(lm.size());
+      std::vector<double> myacc(lm.size());
       if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
         Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      }
+
+      if(act == Beam3ii::calc_struct_nlnstiffmass or act == Beam3ii::calc_struct_nlnstifflmass)
+      {
+        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+
+        Teuchos::RCP<const Epetra_Vector> acc  = discretization.GetState("acceleration");
+        if (acc==Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
+        DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
       }
 
       const int nnode = NumNode();
@@ -150,7 +162,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     	  {
   	  		case 2:
   	  		{
-  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
   	  			break;
   	  		}
   	  		default:
@@ -163,7 +175,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     	  {
   	  		case 2:
   	  		{
-  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
   	  			lumpmass<2>(&elemat2);
   	  			break;
   	  		}
@@ -177,7 +189,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     	  {
   	  		case 2:
   	  		{
-  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
   	  			break;
   	  		}
   	  		default:
@@ -191,7 +203,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     	  {
   	  		case 2:
   	  		{
-  	  			b3_nlnstiffmass<2>(params,myvel,mydisp,NULL,NULL,&elevec1);
+  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
   	  			break;
   	  		}
   	  		default:
@@ -363,6 +375,13 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
        * status of the beam at the end of the time step has to be stored*/
       Qconv_ = Qnew_;
       Qconvmass_ = Qnewmass_;
+      wconvmass_ = wnewmass_;
+      aconvmass_ = anewmass_;
+      amodconvmass_ = amodnewmass_;
+      rttconvmass_ = rttnewmass_;
+      rttmodconvmass_ = rttmodnewmass_;
+      rtconvmass_ = rtnewmass_;
+      dispconvmass_ = dispnewmass_;
       dispthetaconv_ = dispthetanew_;
     }
     break;
@@ -449,6 +468,9 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
+  // funct is related to the 6 "funct" fields after the val field of the Neumann condition
+  // in the input file; funct gives the number of the function defined in the section FUNCT
+  const std::vector<int>* functions = condition.Get<std::vector<int> >("funct");
 
   //integration loops
   for (int numgp=0; numgp<intpoints.nquad; ++numgp)
@@ -456,9 +478,19 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
     //integration points in parameter space and weights
     const double xi = intpoints.qxg[numgp][0];
     const double wgt = intpoints.qwgt[numgp];
-
     //evaluation of shape funcitons at Gauss points
     DRT::UTILS::shape_function_1D(funct,xi,distype);
+
+    //position vector at the gauss point at reference configuration needed for function evaluation
+    std::vector<double> X_ref(3,0.0);
+    //calculate coordinates of corresponding Guass point in reference configuration
+    for (int node=0;node<NumNode();node++)
+    {
+      for (int dof=0;dof<3;dof++)
+      {
+        X_ref[dof]+=funct[node]*Nodes()[node]->X()[dof];
+      }
+    }
 
     double fac=0;
     fac = wgt * jacobi_[numgp];
@@ -469,13 +501,27 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
     // loop the dofs of a node
     for (int dof=0; dof<numdf; ++dof)
       ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
-
+    double functionfac = 1.0;
+    int functnum = -1;
 
     //sum up load components
-    for (int node=0; node<NumNode(); ++node)
-      for (int dof=0; dof<numdf; ++dof)
-        elevec1[node*numdf+dof] += funct[node] *ar[dof];
+    for (int dof=0; dof<6; ++dof)
+    {
+      if (functions) functnum = (*functions)[dof];
+      else functnum = -1;
 
+      if (functnum>0)
+      {
+        // evaluate function at the position of the current node       --> dof here correct?
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+      }
+      else functionfac = 1.0;
+
+      for (int node=0; node<NumNode(); ++node)
+      {
+        elevec1[node*numdf+dof] += funct[node] *ar[dof] *functionfac;
+      }
+    }
   } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
 
   return 0;
@@ -601,6 +647,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
 {
   //initialize energies (only one kind of energy computed here
   (*intenergy)(0) = 0.0;
+  Eint_=0.0;
 
   bool calcenergy = false;
   if(params.isParameter("energyoftype")==false) calcenergy = true;
@@ -697,11 +744,13 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
 void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
+                                            std::vector<double>&      acc,
                                             std::vector<double>&      vel,
                                             std::vector<double>&      disp,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
-                                            Epetra_SerialDenseVector* force)
+                                            Epetra_SerialDenseVector* force,
+                                            Epetra_SerialDenseVector* inertia_force)
 {
 
   //const double t_tot = Teuchos::Time::wallTime();
@@ -752,8 +801,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   LINALG::Matrix<3,3> cn;
   LINALG::Matrix<3,3> cm;
 
-
-
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
   NodeShift<nnode,3>(params,disp);
@@ -764,6 +811,12 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   {
     /*rotation increment relative to configuration in last iteration step is difference between current rotation
      *entry in displacement vector minus rotation entry in displacement vector in last iteration step*/
+
+    //This shift is necessary, since our beam formulation and the corresponding linearization is based on multiplicative
+    //increments, while in BACI (Newtonfull()) the displacement of the last iteration and the rotation increment
+    //of the current iteration are added in an additive manner. This step is reversed in the next two lines in order
+    //to recover the multiplicative rotation increment between the last and the current Newton step. This also
+    //means that dispthetanew_ has no physical meaning since it is the additive sum of non-additive rotation increments(meier, 03.2014)
     for(int i=0; i<3; i++)
       dispthetanew_[node](i) = disp[6*node+3+i];
 
@@ -783,7 +836,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   //integration points for elasticity (underintegration) and mass matrix (exact integration)
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
   DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
-
 
   //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
   evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
@@ -927,16 +979,339 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         }
 
     }
+  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
-    //calculating mass matrix (local version = global version)
-    //note: the mass matrix currently implemented is just a dummy and should not yet be used
-    if (massmatrix != NULL)
+
+  //calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
+  //finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
+  //needed for the inertia terms of geometrically exact beams has to be based on multiplicative rotation angle increments between two successive time
+  //steps. Since BACI does all displacement updates in an additive manner, the global vector of rotational displacements has no physical meaning and,
+  //consequently the global velocity and acceleration vectors resulting from the BACI time integration schemes have no physical meaning, too. Therefore,
+  //a mass matrix in combination with this global acceleration vector is meaningless from a physical point of view. For these reasons, we have to apply
+  //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha time integration in combination
+  //with a constdisvelacc predictor. (Christoph Meier, 04.14)
+
+  double beta = params.get<double>("rot_beta",1000);
+
+  if (massmatrix != NULL and inertia_force != NULL)
+  {
+
+    if(beta < 999)
     {
+      double gamma = params.get<double>("rot_gamma",1000);
+      double alpha_f = params.get<double>("rot_alphaf",1000);
+      double alpha_m = params.get<double>("rot_alpham",1000);
+      double dt = params.get<double>("delta time",1000);
+      bool materialintegration=true;
+      double diff_factor_vel = gamma/(beta*dt);
+      double diff_factor_acc = (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f));
+
+      LINALG::Matrix<3,3> Lambdanewmass(true);
+      LINALG::Matrix<3,3> Lambdaconvmass(true);
+
+      //first of all we get the material law
+      Teuchos::RCP<const MAT::Material> currmat = Material();
+      double rho = 0;
+
+      //assignment of material parameters; only St.Venant material is accepted for this beam
+      switch(currmat->MaterialType())
+      {
+        case INPAR::MAT::m_stvenant:// only linear elastic material supported
+        {
+          const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+          rho = actmat->Density();
+        }
+        break;
+        default:
+          dserror("unknown or improper type of material law");
+        break;
+      }
+
+      //tensor of mass moments of inertia
+      LINALG::Matrix<3,3> Jp(true);
+      Jp(0,0)=Iyy_+Izz_;
+      Jp(1,1)=Iyy_;
+      Jp(2,2)=Izz_;
+      Jp.Scale(rho);
+
+      //Calculate current displacement at gauss points (needed for element intern time integration)
+      for (int gp=0; gp<gausspointsmass.nquad; gp++)//loop through Gauss points
+      {
+        for (int i=0; i<3; ++i)
+        {
+          dispnewmass_[gp](i) = 0.0;
+          for (int node=0; node<nnode; ++node)
+          {
+            dispnewmass_[gp](i) += disp[6*node+i]*Imass[gp](node);
+          }
+        }
+      }
+
+      Ekin_=0.0;
+      L_=0.0;
+      P_=0.0;
+
+      for (int gp=0; gp<gausspointsmass.nquad; gp++)//loop through Gauss points
+      {
+
+        //weight of GP in parameter space
+        const double wgtmass = gausspointsmass.qwgt[gp];
+
+        LINALG::Matrix<3,3> Jp_bar(Jp);
+        Jp_bar.Scale(diff_factor_acc);
+        LINALG::Matrix<3,3> Jp_bartest(Jp);
+        Jp_bartest.Scale(diff_factor_acc);
+        LINALG::Matrix<3,1> dL(true);
+
+        Lambdanewmass.Clear();
+        Lambdaconvmass.Clear();
+        //compute current and old triad at Gauss point
+        LARGEROTATIONS::quaterniontotriad(Qnewmass_[gp],Lambdanewmass);
+        LARGEROTATIONS::quaterniontotriad(Qconvmass_[gp],Lambdaconvmass);
+
+        //rotation between last converged position and current position expressend as a quaternion
+        LINALG::Matrix<4,1>  deltaQ(true);
+        LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(Qconvmass_[gp]),Qnewmass_[gp],deltaQ);
+
+        //spatial rotation between last converged position and current position expressed as a three element rotation vector
+        LINALG::Matrix<3,1> deltatheta(true);
+        LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
+
+        //compute material counterparts of spatial vectors
+        LINALG::Matrix<3,1> deltaTHETA(true);
+        LINALG::Matrix<3,1> Wconvmass(true);
+        LINALG::Matrix<3,1> Wnewmass(true);
+        LINALG::Matrix<3,1> Aconvmass(true);
+        LINALG::Matrix<3,1> Anewmass(true);
+        LINALG::Matrix<3,1> Amodconvmass(true);
+        LINALG::Matrix<3,1> Amodnewmass(true);
+        deltaTHETA.MultiplyTN(Lambdanewmass,deltatheta);
+        Wconvmass.MultiplyTN(Lambdaconvmass,wconvmass_[gp]);
+        Aconvmass.MultiplyTN(Lambdaconvmass,aconvmass_[gp]);
+        Amodconvmass.MultiplyTN(Lambdaconvmass,amodconvmass_[gp]);
+
+        //update angular velocities and accelerations according to Newmark time integration scheme either in
+        //material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)) or in spatial description
+        //(for testing purposes, not recommended by Jelenic). In the predictor step of the time integration the following
+        //formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration predictor.
+        //This fact has to be reflected in a consistent manner by the choice of the predictor in the input file:
+        //TODO: Check Predictor!!!
+        if (materialintegration)
+        {
+          for (int i=0;i<3;i++)
+          {
+            Anewmass(i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltaTHETA(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*Wconvmass(i)      \
+                          -alpha_f/(1.0-alpha_f)*Aconvmass(i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*Amodconvmass(i);
+
+            Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Amodconvmass(i);
+
+
+            Amodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*Anewmass(i) + alpha_f*Aconvmass(i) - alpha_m*Amodconvmass(i));
+          }
+          wnewmass_[gp].Multiply(Lambdanewmass,Wnewmass);
+          anewmass_[gp].Multiply(Lambdanewmass,Anewmass);
+          amodnewmass_[gp].Multiply(Lambdanewmass,Amodnewmass);
+        }
+        else
+        {
+          for (int i=0;i<3;i++)
+          {
+            wnewmass_[gp](i)=gamma/(beta*dt)*deltatheta(i)+(1-gamma/beta)*wconvmass_[gp](i)+dt*(1-gamma/(2*beta))*amodconvmass_[gp](i);
+
+            anewmass_[gp](i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltatheta(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*wconvmass_[gp](i)      \
+                          -alpha_f/(1.0-alpha_f)*aconvmass_[gp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*amodconvmass_[gp](i);
+
+            amodnewmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*anewmass_[gp](i) + alpha_f*aconvmass_[gp](i) - alpha_m*amodconvmass_[gp](i) );
+          }
+          Wnewmass.MultiplyTN(Lambdanewmass,wnewmass_[gp]);
+          Anewmass.MultiplyTN(Lambdanewmass,anewmass_[gp]);
+          Amodnewmass.MultiplyTN(Lambdanewmass,amodnewmass_[gp]);
+        }
+
+        LINALG::Matrix<3,1> deltar(true);
+        for (int i=0;i<3;i++)
+        {
+          deltar(i)=dispnewmass_[gp](i)-dispconvmass_[gp](i);
+        }
+        for (int i=0;i<3;i++)
+        {
+          rttnewmass_[gp](i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltar(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*rtconvmass_[gp](i)      \
+                        -alpha_f/(1.0-alpha_f)*rttconvmass_[gp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*rttmodconvmass_[gp](i);
+
+          rtnewmass_[gp](i)=gamma/(beta*dt)*deltar(i)+(1-gamma/beta)*rtconvmass_[gp](i)+dt*(1-gamma/(2*beta))*rttmodconvmass_[gp](i);
+
+
+          rttmodnewmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*rttnewmass_[gp](i) + alpha_f*rttconvmass_[gp](i) - alpha_m*rttmodconvmass_[gp](i) );
+        }
+
+        //spin matrix of the material angular velocity, i.e. S(W)
+        LINALG::Matrix<3,3> SWnewmass(true);
+        LARGEROTATIONS::computespin(SWnewmass,Wnewmass);
+        LINALG::Matrix<3,1> Jp_Wnewmass(true);
+        LINALG::Matrix<3,1> auxvector1(true);
+        LINALG::Matrix<3,1> Pi_t(true);
+        Jp_Wnewmass.Multiply(Jp,Wnewmass);
+        for (int i=0;i<3;i++)
+          for (int j=0;j<3;j++)
+            auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
+
+        Pi_t.Multiply(Lambdanewmass,auxvector1);
+        LINALG::Matrix<3,1> r_tt(true);
+        LINALG::Matrix<3,1> r_t(true);
+        LINALG::Matrix<3,1> r(true);
+        LINALG::Matrix<3,1> r_test(true);
+        for (int i=0; i<3; ++i)
+          for (int node=0; node<nnode; ++node)
+          {
+            //r_tt(i) += acc[6*node+i]*Imass[gp](node);
+            //r_t(i) += vel[6*node+i]*Imass[gp](node);
+            r(i) += (Nodes()[node]->X()[i]+disp[6*node+i])*Imass[gp](node);
+            r_test(i) += Nodes()[node]->X()[i]*Imass[gp](node);
+          }
+
+        for (int i=0; i<3; ++i)
+        {
+          r_tt(i) = rttnewmass_[gp](i);
+          r_t(i) =  rtnewmass_[gp](i);
+          r_test(i) += dispnewmass_[gp](i);
+        }
+
+        LINALG::Matrix<3,3> S_r(true);
+        LARGEROTATIONS::computespin(S_r,r);
+        dL.Multiply(S_r,r_t);
+        dL.Scale(rho*crosssec_);
+        LINALG::Matrix<3,1> Lambdanewmass_Jp_Wnewmass(true);
+        Lambdanewmass_Jp_Wnewmass.Multiply(Lambdanewmass,Jp_Wnewmass);
+        dL.Update(1.0,Lambdanewmass_Jp_Wnewmass,1.0);
+        for (int i=0;i<3;i++)
+        {
+          L_(i)+=wgtmass*jacobimass_[gp]*dL(i);
+          P_(i)+=wgtmass*jacobimass_[gp]*rho*crosssec_*r_t(i);
+        }
+
+
+        LINALG::Matrix<3,3> S_Pit(true);
+        LARGEROTATIONS::computespin(S_Pit,Pi_t);
+        LINALG::Matrix<3,3> SJpWnewmass(true);
+        LARGEROTATIONS::computespin(SJpWnewmass,Jp_Wnewmass);
+        LINALG::Matrix<3,3> SWnewmass_Jp(true);
+        SWnewmass_Jp.Multiply(SWnewmass,Jp);
+        Jp_bar.Update(diff_factor_vel,SWnewmass_Jp,1.0);
+        Jp_bar.Update(-diff_factor_vel,SJpWnewmass,1.0);
+
+        LINALG::Matrix<3,3> Tmatrix(true);
+        Tmatrix=LARGEROTATIONS::Tmatrix(deltatheta);
+
+        LINALG::Matrix<3,3> Lambdanewmass_Jpbar(true);
+        Lambdanewmass_Jpbar.Multiply(Lambdanewmass, Jp_bar);
+        LINALG::Matrix<3,3> LambdaconvmassT_Tmatrix(true);
+        LambdaconvmassT_Tmatrix.MultiplyTN(Lambdaconvmass, Tmatrix);
+        LINALG::Matrix<3,3> Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix(true);
+        Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix.Multiply(Lambdanewmass_Jpbar, LambdaconvmassT_Tmatrix);
+        LINALG::Matrix<3,3> auxmatrix1(true);
+        auxmatrix1.Update(-1.0,S_Pit,1.0);
+        auxmatrix1.Update(1.0,Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix,1.0);
+
+        //inertia forces
+        for (int i=0;i<nnode;i++)
+        {
+          for (int j=0;j<3;j++)
+          {
+            //translational contribution
+            (*inertia_force)(6*i+j)  += jacobimass_[gp]*wgtmass*rho*crosssec_*Imass[gp](i)*r_tt(j);
+            //rotational contribution
+            (*inertia_force)(6*i+j+3)+= jacobimass_[gp]*wgtmass*Imass[gp](i)*Pi_t(j);
+          }
+        }
+
+        //linearization of inertia forces
+        for (int j=0;j<nnode;j++)
+        {
+          //translational contribution
+          for (int i=0;i<nnode;i++)
+          {
+            for (int k=0;k<3;k++)
+              (*massmatrix)(6*i+k,6*j+k)+=diff_factor_acc*jacobimass_[gp]*wgtmass*rho*crosssec_*Imass[gp](i)*Imass[gp](j);
+          }
+
+          //rotational contribution
+          LINALG::Matrix<3,3> auxmatrix2(true);
+          auxmatrix2.Multiply(auxmatrix1,Itildemass[gp][j]);
+          for (int i=0;i<nnode;i++)
+          {
+            for (int k=0;k<3;k++)
+            {
+              for (int l=0;l<3;l++)
+              {
+                (*massmatrix)(6*i+3+k,6*j+3+l)+=jacobimass_[gp]*wgtmass*Imass[gp](i)*auxmatrix2(k,l);
+              }
+            }
+          }
+        }
+
+        //Calculation of kinetic energy
+        LINALG::Matrix<1,1> ekinrot(true);
+        LINALG::Matrix<1,1> ekintrans(true);
+        ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
+        ekintrans.MultiplyTN(r_t,r_t);
+        Ekin_+=0.5*(ekinrot.Norm2() + rho*crosssec_*ekintrans.Norm2())*jacobimass_[gp]*wgtmass;
+
+        Jp_Wnewmass.Multiply(Jp,Wnewmass);
+
+      }//for (int gp=0; gp<gausspointsmass.nquad; gp++)
+
+      //This multiplication inverts the multiplication with (1-alpha_m)/(beta*dt^2) [alpha_m is already assumed to be zero in our implementation]
+      //which is done later on in strtimint_genalpha.cpp. This is necessary, since the time integration factors have allready been considered
+      //in the calcualtion of the mass matrix above.
+
+      #ifdef FDCHECKINERTIA
+        LINALG::Matrix<6*nnode,6*nnode> massmatrix_fd(true);
+        for (int i=0;i<6*nnode;i++)
+        {
+          LINALG::Matrix<6*nnode,1> inertia_force_xplusdx(true);
+          const double delta = 1.0e-8;
+
+          b3_nlnmass_fdcheck<nnode>(params,acc, inertia_force_xplusdx, i, delta);
+
+          for (int j=0;j<6*nnode;j++)
+          {
+            massmatrix_fd(j,i)=(inertia_force_xplusdx(j)-(*inertia_force)(j))/delta;
+          }
+          if (i<3 or (i>5 and i<9))
+          for (int j=0;j<6*nnode;j++)
+          {
+            massmatrix_fd(j,i)=massmatrix_fd(j,i)/(beta*dt*dt);
+          }
+        }
+        std::cout << "massmatrix: " << std::endl;
+        for (int i=0;i<6*nnode;i++)
+        {
+          for (int j=0;j<6*nnode;j++)
+          {
+            std::cout << std::scientific << std::setprecision(4) << std::setw(12) << (*massmatrix)(i,j) << "  ";
+          }
+          std::cout << std::endl;
+        }
+
+        std::cout << "massmatrix_fd: " << std::endl;
+        for (int i=0;i<6*nnode;i++)
+        {
+          for (int j=0;j<6*nnode;j++)
+          {
+            std::cout << std::scientific << std::setprecision(4) << std::setw(12) << massmatrix_fd(i,j) << "  ";
+          }
+          std::cout << std::endl;
+        }
+      #endif
+    }
+    else
+    {
+      //This is a dummy mass matrix which is necessary for statmech simulations
       for (int i=0; i<6*nnode; i++)
         (*massmatrix)(i,i) = 1;
+    }
 
-    }//if (massmatrix != NULL)
-  }
+  }//if (massmatrix != NULL)
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
   if(gausspoints.nquad==1 && params.get<std::string>("internalforces","no")=="yes" && force != NULL)
@@ -968,6 +1343,235 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 //    fprintf(fp,filecontent.str().c_str());
 //    fclose(fp);
 //  }
+
+  return;
+
+} // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
+
+/*------------------------------------------------------------------------------------------------------------*
+ | finite difference check of linearization of inertia terms (private)                             meier 04/14|
+ *-----------------------------------------------------------------------------------------------------------*/
+template<int nnode>
+void DRT::ELEMENTS::Beam3ii::b3_nlnmass_fdcheck(Teuchos::ParameterList& params,
+                                                std::vector<double>&      acc,
+                                                LINALG::Matrix<6*nnode,1>& inertia_force_xplusdx,
+                                                int& column,
+                                                const double& delta)
+{
+
+  dserror("adapt b3_nlnmass_fdcheck to new class variables such as dispnewmass_ etc before using it!!!");
+
+  //This finite difference check is only implemented for two-noded elements so far!!!
+  if (nnode > 2)
+    dserror("This finite difference check is only implemented for two-noded elements so far!!!");
+
+  LINALG::Matrix<3,1> delta_angle_node1(true);
+  LINALG::Matrix<3,1> delta_angle_node2(true);
+  LINALG::Matrix<6*nnode,1> delta_acc(true);
+
+  if (column<3 or (column>=6 and column<9))
+  {
+    delta_acc(column)=delta;
+  }
+  else if (column<6 and column>=3)
+  {
+    delta_angle_node1(column-3)=delta;
+  }
+  else if (column<12 and column >=9)
+  {
+    delta_angle_node2(column-9)=delta;
+  }
+  else dserror("Anything went wrong in the if-else-condition above!!!");
+
+  //Set disturbed nodal triad orientations and translational accelerations
+  LINALG::Matrix<4,1> delta_Q_node1(true);
+  LINALG::Matrix<4,1> delta_Q_node2(true);
+  LARGEROTATIONS::angletoquaternion(delta_angle_node1, delta_Q_node1);
+  LARGEROTATIONS::angletoquaternion(delta_angle_node2, delta_Q_node2);
+
+  //Store backups of class variables
+  LINALG::Matrix<4,1> Qnewbackup_node1(Qnew_[0]);
+  LINALG::Matrix<4,1> Qnewbackup_node2(Qnew_[1]);
+  std::vector<LINALG::Matrix<3,1> > wnewmassbackup(wnewmass_);
+  std::vector<LINALG::Matrix<3,1> > anewmassbackup(anewmass_);
+  std::vector<LINALG::Matrix<3,1> > amodnewmassbackup(amodnewmass_);
+
+  //Calculate disturbed quaternions and accelerations
+  LARGEROTATIONS::quaternionproduct(Qnew_[0],delta_Q_node1,Qnew_[0]);
+  LARGEROTATIONS::quaternionproduct(Qnew_[1],delta_Q_node2,Qnew_[1]);
+  Qnew_[0].Scale(1.0/Qnew_[0].Norm2());
+  Qnew_[1].Scale(1.0/Qnew_[1].Norm2());
+  for (int i=0;i<6*nnode;i++)
+  {
+    acc[i]+=delta_acc(i);
+  }
+
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  std::vector<LINALG::Matrix<1,nnode> > I(nnode-1);
+
+  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
+  std::vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
+
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
+
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
+
+  //vector with rotation matrices at nnode-1 Gauss points for elasticity
+  std::vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
+
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
+  std::vector<LINALG::Matrix<1,nnode> > Imass(nnode);
+
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
+
+  //integration points for elasticity (underintegration) and mass matrix (exact integration)
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+  DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
+
+  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
+
+  double beta = params.get<double>("beam3ii_beta");
+  double gamma = params.get<double>("beam3ii_gamma");
+  double dt = params.get<double>("delta time");
+  bool materialintegration=true;
+
+  LINALG::Matrix<3,3> Lambdanewmass(true);
+  LINALG::Matrix<3,3> Lambdaconvmass(true);
+
+  //first of all we get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double rho = 0;
+
+  //assignment of material parameters; only St.Venant material is accepted for this beam
+  switch(currmat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      rho = actmat->Density();
+    }
+    break;
+    default:
+      dserror("unknown or improper type of material law");
+    break;
+  }
+
+  //tensor of mass moments of inertia
+  LINALG::Matrix<3,3> Jp(true);
+  Jp(0,0)=Iyy_+Izz_;
+  Jp(1,1)=Iyy_;
+  Jp(2,2)=Izz_;
+  Jp.Scale(rho);
+
+  for (int gp=0; gp<gausspointsmass.nquad; gp++)//loop through Gauss points
+  {
+
+    Lambdanewmass.Clear();
+    Lambdaconvmass.Clear();
+    //compute current and old triad at Gauss point
+    LARGEROTATIONS::quaterniontotriad(Qnewmass_[gp],Lambdanewmass);
+    LARGEROTATIONS::quaterniontotriad(Qconvmass_[gp],Lambdaconvmass);
+
+    //rotation between last converged position and current position expressend as a quaternion
+    LINALG::Matrix<4,1>  deltaQ(true);
+    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(Qconvmass_[gp]),Qnewmass_[gp],deltaQ);
+
+    //spatial rotation between last converged position and current position expressed as a three element rotation vector
+    LINALG::Matrix<3,1> deltatheta(true);
+    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
+
+    //compute material counterparts of spatial vectors
+    LINALG::Matrix<3,1> deltaTHETA(true);
+    LINALG::Matrix<3,1> Wconvmass(true);
+    LINALG::Matrix<3,1> Wnewmass(true);
+    LINALG::Matrix<3,1> Aconvmass(true);
+    LINALG::Matrix<3,1> Anewmass(true);
+    deltaTHETA.MultiplyTN(Lambdanewmass,deltatheta);
+    Wconvmass.MultiplyTN(Lambdaconvmass,wconvmass_[gp]);
+    Aconvmass.MultiplyTN(Lambdaconvmass,aconvmass_[gp]);
+
+    //update angular velocities and accelerations according to Newmark time integration scheme either in
+    //material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)) or in spatial description:
+    if (materialintegration)
+    {
+      for (int i=0;i<3;i++)
+      {
+        Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Aconvmass(i);
+        Anewmass(i)=1.0/(beta*dt*dt)*(deltaTHETA(i)-dt*Wconvmass(i)-dt*dt*(0.5-beta)*Aconvmass(i));
+      }
+      wnewmass_[gp].Multiply(Lambdanewmass,Wnewmass);
+      anewmass_[gp].Multiply(Lambdanewmass,Anewmass);
+    }
+    else
+    {
+      for (int i=0;i<3;i++)
+      {
+        wnewmass_[gp](i)=gamma/(beta*dt)*deltatheta(i)+(1-gamma/beta)*wconvmass_[gp](i)+dt*(1-gamma/(2*beta))*aconvmass_[gp](i);
+        anewmass_[gp](i)=1.0/(beta*dt*dt)*(deltatheta(i)-dt*wconvmass_[gp](i)-dt*dt*(0.5-beta)*aconvmass_[gp](i));
+      }
+      Wnewmass.MultiplyTN(Lambdanewmass,wnewmass_[gp]);
+      Anewmass.MultiplyTN(Lambdanewmass,anewmass_[gp]);
+    }
+
+    //spin matrix of the material angular velocity, i.e. S(W)
+    LINALG::Matrix<3,3> SWnewmass(true);
+    LARGEROTATIONS::computespin(SWnewmass,Wnewmass);
+    LINALG::Matrix<3,1> Jp_Wnewmass(true);
+    LINALG::Matrix<3,1> auxvector1(true);
+    LINALG::Matrix<3,1> Pi_t(true);
+    Jp_Wnewmass.Multiply(Jp,Wnewmass);
+    for (int i=0;i<3;i++)
+      for (int j=0;j<3;j++)
+        auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
+
+    Pi_t.Multiply(Lambdanewmass,auxvector1);
+    LINALG::Matrix<3,1> r_tt(true);
+    for (int i=0; i<3; ++i)
+      for (int node=0; node<nnode; ++node)
+      {
+        r_tt(i) += acc[6*node+i]*Imass[gp](node);
+      }
+
+    //weight of GP in parameter space
+    const double wgtmass = gausspointsmass.qwgt[gp];
+
+    //inertia forces
+    for (int i=0;i<nnode;i++)
+    {
+      for (int j=0;j<3;j++)
+      {
+        //translational contribution
+        inertia_force_xplusdx(6*i+j)  += jacobimass_[gp]*wgtmass*rho*crosssec_*Imass[gp](i)*r_tt(j);
+        //rotational contribution
+        inertia_force_xplusdx(6*i+j+3)+= jacobimass_[gp]*wgtmass*Imass[gp](i)*Pi_t(j);
+      }
+    }
+
+  }//for (int gp=0; gp<gausspointsmass.nquad; gp++)
+
+  //Set nodal accelerations and quaternions back to their initial values
+  Qnew_[0].Update(1.0,Qnewbackup_node1,0.0);
+  Qnew_[1].Update(1.0,Qnewbackup_node2,0.0);
+  for (int i=0;i<6*nnode;i++)
+    acc[i]-=delta_acc(i);
+
+  //Set all class variables back to their initial values (for some of them this is done in evaluatebasisfunctionsandtriads<nnode>(...))
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
+  wnewmass_.clear();
+  wnewmass_.push_back(wnewmassbackup[0]);
+  wnewmass_.push_back(wnewmassbackup[1]);
+  anewmass_.clear();
+  anewmass_.push_back(anewmassbackup[0]);
+  anewmass_.push_back(anewmassbackup[1]);
+  amodnewmass_.clear();
+  amodnewmass_.push_back(amodnewmassbackup[0]);
+  amodnewmass_.push_back(amodnewmassbackup[1]);
+
+
   return;
 
 } // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
@@ -1378,7 +1982,6 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma);
 
-
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   std::vector<double> jacobi(jacobimass_);
 
@@ -1573,8 +2176,7 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList& params,
   }
 
 
-
-  //now start with evaluatoin of force vectors and stiffness matrices
+  //now start with evaluation of force vectors and stiffness matrices
 
 
 

@@ -1249,6 +1249,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 		  //m= density*crosssec* integraloverxi [N_t*N]
      	massmatrixgp.MultiplyTN(density*crosssec_,N,N);
 
+      std::cout <<" Warning: Incorrect mass matrix implementation. This beam element is only applicable to static problems so far!" << std::endl;
+     	//According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant finite element
+     	//for statics and dynamics, 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as needed
+     	//for the inertia terms of geometrically exact beams has to be based on multiplicative rotation angle increments between two successive time
+     	//steps. Since BACI does all displacement updates in an additive manner, the global vector of rotational displacements has no physical meaning and,
+     	//consequently the global velocity and acceleration vectors resulting from the BACI time integration schemes have no physical meaning, too. Therefore,
+     	//a mass matrix in combination with this global acceleration vector is meaningless from a physical point of view. (Christoph Meier, 04.14)
+
    	  for (int i=0; i<6*nnode; i++)
    	  {
    		  for (int j=0; j<nnode; j++)
@@ -1260,7 +1268,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
    			  //the rotations. The Irr_ comes from calculations considering
    			  //the moment created by a rotation theta and refers to the assumed direction
    			  //Note: This is an approximation for the rotational values around t2 and t3. For exact
-   			  //one would have to differntiate again.
+   			  //one would have to differentiate again.
    		  }
    	  }
 

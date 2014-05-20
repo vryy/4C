@@ -138,7 +138,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
     // Check, if initial residuum really vanishes for acc_ = 0
     ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
 
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0),&sdynparams);
   }
 
 
