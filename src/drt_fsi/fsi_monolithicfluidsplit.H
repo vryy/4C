@@ -234,10 +234,10 @@ namespace FSI
      */
     virtual void SetLambda(Teuchos::RCP<Epetra_Vector> lambdanew)
     {
-    #ifdef DEBUG
-      if (lambdanew == Teuchos::null || ! lambdanew->Map().SameAs(lambda_->Map()))
-        dserror("Attempting to assign invalid vector to lambda.");
-    #endif
+#ifdef DEBUG
+      if (lambdanew == Teuchos::null || ! lambdanew->Map().PointSameAs(lambda_->Map()))
+        dserror("Map failure! Attempting to assign invalid vector to lambda_.");
+#endif
       lambda_ = lambdanew;
     }
 

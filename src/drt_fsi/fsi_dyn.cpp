@@ -74,7 +74,6 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_discret_xfem.H"
 
-
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/
@@ -121,7 +120,6 @@ void fluid_ale_drt()
   DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField().CreateFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 }
-
 
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on XFEM in DRT
@@ -195,7 +193,6 @@ void fluid_xfem_drt()
 
 
 }
-
 
 /*----------------------------------------------------------------------*/
 // entry point for Fluid-Fluid based  on XFEM in DRT
@@ -849,7 +846,6 @@ void fluid_freesurf_drt()
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 // entry point for FSI using ALE in DRT
 /*----------------------------------------------------------------------*/
@@ -875,11 +871,11 @@ void fsi_ale_drt()
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
 
   // create ale elements if the ale discretization is empty
-  if (aledis->NumGlobalNodes()==0) // empty ale discretization
+  if (aledis->NumGlobalNodes() == 0) // empty ale discretization
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
   }
-  else  // filled ale discretization
+  else  // filled ale discretization (i.e. read from input file)
   {
     if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
       dserror("Fluid and ALE nodes have the same node numbers. "
@@ -887,157 +883,154 @@ void fsi_ale_drt()
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
-  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
-  case fsi_pseudo_structureale:
-  {
-    // pseudo FSI problem used to find starting configuration
-
-    Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
+    case fsi_pseudo_structureale:
     {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
+      // pseudo FSI problem used to find starting configuration
+
+      Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->Timeloop();
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
+      break;
     }
-
-    fsi->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
-    break;
-  }
-  case fsi_iter_monolithicfluidsplit:
-  case fsi_iter_monolithicstructuresplit:
-  case fsi_iter_lung_monolithicstructuresplit:
-  case fsi_iter_lung_monolithicfluidsplit:
-  case fsi_iter_constr_monolithicfluidsplit:
-  case fsi_iter_constr_monolithicstructuresplit:
-  case fsi_iter_mortar_monolithicstructuresplit:
-  case fsi_iter_mortar_monolithicfluidsplit:
-  {
-    // monolithic solver settings
-    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-
-    Teuchos::RCP<FSI::Monolithic> fsi;
-
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy
-      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
-
-    // call constructor to initialize the base class
-    if (coupling==fsi_iter_monolithicfluidsplit)
+    case fsi_iter_monolithicfluidsplit:
+    case fsi_iter_monolithicstructuresplit:
+    case fsi_iter_lung_monolithicstructuresplit:
+    case fsi_iter_lung_monolithicfluidsplit:
+    case fsi_iter_constr_monolithicfluidsplit:
+    case fsi_iter_constr_monolithicstructuresplit:
+    case fsi_iter_mortar_monolithicstructuresplit:
+    case fsi_iter_mortar_monolithicfluidsplit:
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fsidyn));
+      // monolithic solver settings
+      const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
+      Teuchos::RCP<FSI::Monolithic> fsi;
+
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy
+        = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+
+      // call constructor to initialize the base class
+      if (coupling==fsi_iter_monolithicfluidsplit)
+      {
+        fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_monolithicstructuresplit)
+      {
+        fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_lung_monolithicstructuresplit)
+      {
+        fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_lung_monolithicfluidsplit)
+      {
+        fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_constr_monolithicfluidsplit)
+      {
+        fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_constr_monolithicstructuresplit)
+      {
+        fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_mortar_monolithicstructuresplit)
+      {
+        fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_mortar_monolithicfluidsplit)
+      {
+        fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm, fsidyn));
+      }
+      else
+      {
+        dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d", coupling, linearsolverstrategy);
+      }
+
+      // read the restart information, set vectors and variables ---
+      // be careful, dofmaps might be changed here in a Redistribute call
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        fsi->ReadRestart(restart);
+      }
+
+      // now do the coupling setup an create the combined dofmap
+      fsi->SetupSystem();
+
+      // here we go...
+      fsi->Timeloop(fsi);
+
+      // calculate errors in comparison to analytical solution
+      fsi->FluidField().CalculateError();
+
+      // create result tests for single fields
+      DRT::Problem::Instance()->AddFieldTest(fsi->AleField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+      // create fsi specific result test
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
     }
-    else if (coupling==fsi_iter_monolithicstructuresplit)
+    default:
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fsidyn));
+      // Any partitioned algorithm.
+
+      Teuchos::RCP<FSI::Partitioned> fsi;
+
+      INPAR::FSI::PartitionedCouplingMethod method =
+        DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
+
+      if (method==INPAR::FSI::DirichletNeumannSlideale)
+        fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
+      else if (method==INPAR::FSI::DirichletNeumann)
+        fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+      else
+        dserror("unsupported partitioned FSI scheme");
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->Timeloop(fsi);
+
+      // create result tests for single fields
+      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
     }
-    else if (coupling==fsi_iter_lung_monolithicstructuresplit)
-    {
-      fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_lung_monolithicfluidsplit)
-    {
-      fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_constr_monolithicfluidsplit)
-    {
-      fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_constr_monolithicstructuresplit)
-    {
-      fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_mortar_monolithicstructuresplit)
-    {
-      fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_mortar_monolithicfluidsplit)
-    {
-      fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm,fsidyn));
-    }
-    else
-    {
-      dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
-    }
-
-    // read the restart information, set vectors and variables ---
-    // be careful, dofmaps might be changed here in a Redistribute call
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
-    {
-      fsi->ReadRestart(restart);
-    }
-
-    // now do the coupling setup an create the combined dofmap
-    fsi->SetupSystem();
-
-    // here we go...
-    fsi->Timeloop(fsi);
-
-    // calculate errors in comparison to analytical solution
-    fsi->FluidField().CalculateError();
-
-    // create result tests for single fields
-    DRT::Problem::Instance()->AddFieldTest(fsi->AleField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-    // create fsi specific result test
-    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-    DRT::Problem::Instance()->AddFieldTest(fsitest);
-
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(comm);
-
-    break;
-  }
-  default:
-  {
-    // Any partitioned algorithm.
-
-    Teuchos::RCP<FSI::Partitioned> fsi;
-
-    INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
-
-    if (method==INPAR::FSI::DirichletNeumannSlideale)
-      fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
-    else if (method==INPAR::FSI::DirichletNeumann)
-      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-    else
-      dserror("unsupported partitioned FSI scheme");
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
-    {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
-    }
-
-    fsi->Timeloop(fsi);
-
-    // create result tests for single fields
-    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(comm);
-
-    break;
-  }
   }
 
   Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
-
-
-
 
 /*----------------------------------------------------------------------*/
 // entry point for FSI using XFEM in DRT
