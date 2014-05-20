@@ -637,7 +637,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   {
     //element coordinate derivatives at centroid
     LINALG::Matrix<3,nen_> N_rst_0(false);
-    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, DRT::Element::hex8);
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
     //inverse jacobian matrix at centroid
     LINALG::Matrix<3,3> invJ_0(false);

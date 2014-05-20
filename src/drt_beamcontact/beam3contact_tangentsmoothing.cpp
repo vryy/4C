@@ -182,17 +182,17 @@ void CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(
 
   if (node==nnode)
   {
-    DRT::UTILS::shape_function_1D_deriv1(deriv1, -1 + 2/(nnode-1), distype);
+    DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0/(nnode-1), distype);
   }
   else
   {
     if (node==1)
     {
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1, distype);
+      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0, distype);
     }
     else
     {
-      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1 + node*2/(nnode-1), distype);
+      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + node*2.0/(nnode-1), distype);
     }
   }
 

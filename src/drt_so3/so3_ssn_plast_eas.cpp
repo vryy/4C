@@ -63,7 +63,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasSetup(
 {
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
   LINALG::Matrix<nsd_,nen_> df0;
-  DRT::UTILS::shape_function_3D_deriv1(df0, 0, 0, 0, DRT::Element::hex8);
+  DRT::UTILS::shape_function_3D_deriv1(df0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0;

@@ -1639,7 +1639,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
     LINALG::Matrix<nsd_,nen_> N_XYZ_0(false);
     //element coordinate derivatives at centroid
     LINALG::Matrix<nsd_,nen_> N_rst_0(false);
-    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, DRT::Element::hex8);
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
     //inverse jacobian matrix at centroid
     LINALG::Matrix<nsd_,nsd_> invJ_0(false);
@@ -1987,7 +1987,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
     LINALG::Matrix<nsd_,nen_> N_XYZ_0(false);
     //element coordinate derivatives at centroid
     LINALG::Matrix<nsd_,nen_> N_rst_0(false);
-    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, DRT::Element::hex8);
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
 
     //inverse jacobian matrix at centroid
     LINALG::Matrix<nsd_,nsd_> invJ_0(false);

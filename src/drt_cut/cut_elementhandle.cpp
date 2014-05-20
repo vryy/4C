@@ -1094,7 +1094,7 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
       side_lsvs( i ) = n->LSV();
     }
 
-    DRT::UTILS::shape_function_2D( side_funct, 0, 0, DRT::Element::quad8 );
+    DRT::UTILS::shape_function_2D( side_funct, 0.0, 0.0, DRT::Element::quad8 );
     xyz.Multiply( side_xyze, side_funct );
     lsv.Multiply( side_lsvs, side_funct );
 
@@ -1131,7 +1131,7 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   }
 
   LINALG::Matrix<20,1> funct;
-  DRT::UTILS::shape_function_3D( funct, 0, 0, 0, DRT::Element::hex20 );
+  DRT::UTILS::shape_function_3D( funct, 0.0, 0.0, 0.0, DRT::Element::hex20 );
 
   xyz.Multiply( xyze, funct );
   lsv.Multiply( lsvs, funct );

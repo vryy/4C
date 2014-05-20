@@ -59,7 +59,7 @@ GEO::CUT::Quad4SideHandle::Quad4SideHandle( Mesh & mesh, int sid, const std::vec
   // create middle node
 
   LINALG::Matrix<4,1> funct;
-  DRT::UTILS::shape_function_2D( funct, 0, 0, DRT::Element::quad4 );
+  DRT::UTILS::shape_function_2D( funct, 0.0, 0.0, DRT::Element::quad4 );
 
   LINALG::Matrix<3,1> xyz;
   xyz.Multiply( xyze, funct );
@@ -175,7 +175,7 @@ GEO::CUT::Quad8SideHandle::Quad8SideHandle( Mesh & mesh, int sid, const std::vec
     // create middle node
 
     LINALG::Matrix<8,1> funct;
-    DRT::UTILS::shape_function_2D( funct, 0, 0, DRT::Element::quad8 );
+    DRT::UTILS::shape_function_2D( funct, 0.0, 0.0, DRT::Element::quad8 );
 
     LINALG::Matrix<3,1> xyz;
     xyz.Multiply( xyze, funct );
