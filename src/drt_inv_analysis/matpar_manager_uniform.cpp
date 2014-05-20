@@ -64,13 +64,14 @@ void STR::INVANA::MatParManagerUniform::InitParameters(int parapos, double val)
 void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                                          double val,
                                                          int elepos,
-                                                         int parapos)
+                                                         int paraposglobal,
+                                                         int paraposlocal)
 {
   // only row elements contribute
   if (not discret_->ElementRowMap()->MyGID(elepos)) return;
 
-  // no every proc should get this
-  int success = dfint->SumIntoGlobalValue(0,parapos,val);
+  // every proc can do the 'product rule' on his own since the uniformly ditributed optparams are kept redudantly
+  int success = dfint->SumIntoGlobalValue(0,paraposglobal,val);
   if (success!=0) dserror("gid %d is not on this processor", elepos);
 }
 
@@ -80,6 +81,7 @@ void STR::INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVec
   double val=0.0;
   for (int i=0; i<dfint->NumVectors(); i++)
   {
+    val = 0.0;
     discret_->Comm().SumAll((*dfint)(i)->Values(),&val,1);
     dfint->ReplaceGlobalValue(0,i,val);
   }
@@ -193,12 +195,13 @@ void STR::INVANA::MatParManagerPerElement::InitParameters(int parapos, double va
 void STR::INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                                             double val,
                                                             int elepos,
-                                                            int parapos)
+                                                            int paraposglobal,
+                                                            int paraposlocal)
 {
   if (eleGIDtoparamsLID_.find(elepos) == eleGIDtoparamsLID_.end())
     dserror("proc %d, ele %d not in this map", discret_->Comm().MyPID(), elepos);
 
-  int plid = eleGIDtoparamsLID_[elepos].at(parapos);
+  int plid = eleGIDtoparamsLID_[elepos].at(paraposlocal);
   int success = dfint->SumIntoMyValue(plid,0,val);
   if (success!=0) dserror("gid %d is not on this processor", plid);
 }

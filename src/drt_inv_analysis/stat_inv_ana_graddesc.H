@@ -53,6 +53,9 @@ private:
   //! Print step
   void PrintOptStep(double stepsize, int numsteps);
 
+  //! Print line search step
+  void PrintLSStep(double stepsize, int numsteps);
+
   //! step size for the gradient scheme
   double stepsize_;
 

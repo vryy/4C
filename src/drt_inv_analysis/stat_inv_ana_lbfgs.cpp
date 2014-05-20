@@ -113,7 +113,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
 
     if (success == 1)
     {
-      std::cout << " Line Search Break Down" << std::endl;
+      std::cout << " Line Search Break Down with current stepsize " << tauopt << std::endl;
       break;
     }
 
@@ -137,11 +137,11 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     objval_o_=objval_;
     runc_++;
 
-    if (restartevry_ and (runc_%restartevry_ == 0) and runc_)
-      WriteRestart();
-
     //do some on screen printing
     PrintOptStep(tauopt, numsteps);
+
+    if (restartevry_ and (runc_%restartevry_ == 0) and runc_)
+      WriteRestart();
   }
 
   Summarize();
@@ -205,7 +205,9 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
     else
       success=polymod(objval_o_,dfp_o,tau_n,objval_,blow,bhigh,tau_l,e_l,tauopt);
 
-    if (success==1) return 1;
+    // repeat if cubic model fails
+    if (success==1)
+      success=polymod(objval_o_, dfp_o,tau_n,objval_,blow,bhigh,tauopt);
 
     e_l=objval_;
     tau_l=tau_n;
@@ -214,6 +216,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
     // next step based on proposed tauopt;
     step_->Update(tau_n, *p_, 0.0);
 
+    PrintLSStep(tau_l,i);
 
     Matman()->ResetParams();
     i++;
@@ -245,7 +248,7 @@ int STR::INVANA::StatInvAnaLBFGS::polymod(double e_o, double dfp, double tau_n, 
   double lleft=tau_n*blow;
   double lright=tau_n*bhigh;
 
-  *tauopt=-dfp/(2*tau_n*(e_n-e_o-dfp));
+  *tauopt=-(dfp*tau_n*tau_n)/(2*(e_n-e_o-dfp*tau_n));
   if (*tauopt < lleft) *tauopt = lleft;
   if (*tauopt > lright) *tauopt = lright;
 
@@ -373,7 +376,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 }
 
 /*----------------------------------------------------------------------*/
-/* print final results*/
+/* print optimization step */
 void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 {
   double stepincr;
@@ -381,12 +384,27 @@ void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 
   if (discret_->Comm().MyPID()==0)
   {
-    printf("OPTIMIZATION STEP %3d | ", runc_);
-    printf("Objective function: %10.8e | ", objval_o_);
-    printf("Gradient : %10.8e | ", convcritc_);
+    printf("STEP %3d | ", runc_);
+    printf("Objfunc: %10.8e | ", objval_);
+    printf("Gradnorm2: %10.8e | ", convcritc_);
     printf("ErrorIncr: %10.8e | ", error_incr_);
-    printf("StepIncr: %10.8e | ", stepincr);
-    printf("stepsize : %10.8e | LSsteps %2d\n", tauopt, numsteps);
+    printf("dp: %10.8e | ", stepincr);
+    printf("dt: %10.8e | LSsteps %2d\n", tauopt, numsteps);
+    fflush(stdout);
+  }
+
+}
+
+/*----------------------------------------------------------------------*/
+/* print line search step */
+void STR::INVANA::StatInvAnaLBFGS::PrintLSStep(double tauopt, int numstep)
+{
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    printf("   LINE SEARCH STEP %3d | ", numstep);
+    printf("Objective function: %10.8e | ", objval_);
+    printf("stepsize : %10.8e\n", tauopt);
     fflush(stdout);
   }
 

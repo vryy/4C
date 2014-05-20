@@ -184,11 +184,16 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
     else
       success=polymod(objval_o_,dfp_o,tau_n,objval_,blow,bhigh,tau_l,e_l,tauopt);
 
-    if (success==1) return 1;
+    // repeat if cubic model fails
+    if (success==1)
+      success=polymod(objval_o_, dfp_o,tau_n,objval_,blow,bhigh,tauopt);
 
     e_l=objval_;
     tau_l=tau_n;
     tau_n=*tauopt;
+
+    PrintLSStep(tau_l,i);
+
     Matman()->ResetParams();
     i++;
 
@@ -274,6 +279,21 @@ void STR::INVANA::StatInvAnaGradDesc::PrintOptStep(double tauopt, int numsteps)
   printf("Gradient : %10.8e | ", convcritc_);
   printf("stepsize : %10.8e | LSsteps %2d\n", tauopt, numsteps);
   fflush(stdout);
+
+}
+
+/*----------------------------------------------------------------------*/
+/* print line search step */
+void STR::INVANA::StatInvAnaGradDesc::PrintLSStep(double tauopt, int numstep)
+{
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    printf("   LINE SEARCH STEP %3d | ", numstep);
+    printf("Objective function: %10.8e | ", objval_);
+    printf("stepsize : %10.8e\n", tauopt);
+    fflush(stdout);
+  }
 
 }
 

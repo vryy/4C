@@ -43,7 +43,7 @@ namespace INVANA
 
     void InitParameters(int parapos, double val);
 
-    void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int parapos);
+    void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
 
     void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint);
 
@@ -81,7 +81,7 @@ namespace INVANA
 
     void InitParameters(int parapos, double val);
 
-    void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int parapos);
+    void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
 
     //! nothing to be done in case of elementwise parameters
     void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint){return;}

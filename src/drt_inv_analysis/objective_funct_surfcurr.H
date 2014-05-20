@@ -156,10 +156,13 @@ private:
   std::map<int, std::vector<int> > facetdofmap_;
 
   //! squared scale of the kernel
-   double sigmaW2_;
+  double sigmaW2_;
 
-   //! structural integrity component of the target current, which can be preevalauted
-   double structinttarget_;
+  //! scaling of the objective function?
+  bool scaling_;
+
+  //! structural integrity component of the target current, which can be preevalauted
+  double structinttarget_;
 
   //! set up maps to hold each facets gid
   const Epetra_Map SetupConditionMap(DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis);

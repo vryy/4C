@@ -44,8 +44,11 @@ private:
   //! final print out of the results
   void Summarize();
 
-  //! Print step
+  //! Print optimization step
   void PrintOptStep(double stepsize, int numsteps);
+
+  //! Print line search step
+  void PrintLSStep(double stepsize, int numsteps);
 
   //! store new vector quantities
   void StoreVectors();

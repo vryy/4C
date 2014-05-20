@@ -17,6 +17,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_io/io_control.H"
 #include "Epetra_MultiVector.h"
 #include "../linalg/linalg_utils.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "matpar_manager.H"
 
@@ -147,6 +148,8 @@ targetmapred_(Teuchos::null)
   double sigmaW = statinvp.get<double>("KERNELSCALE");
   if (sigmaW<0.0) dserror("you need to choose a proper scale (KERNELSCALE) at which to evaluate the current");
   sigmaW2_=sigmaW*sigmaW;
+
+  scaling_ = DRT::INPUT::IntegralValue<bool>(statinvp, "OBJECTIVEFUNCTSCAL");
 
   // generate map of boundary elements of source and target
   sourcemap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(sourcecond_, sourcedis_)));
@@ -692,6 +695,14 @@ double STR::INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
   val+=Convolute(normal_s_,center_s_,normal_s_,center_s_);
   val-=2*Convolute(normal_s_,center_s_,normal_t_,center_t_);
 
+  //scaling by number of surface elements in source and target
+  if (scaling_)
+  {
+    double fac = normal_s_.size()+normal_t_.size();
+    sourcedis_->Comm().Broadcast(&fac,1,0);
+    val=val/fac;
+  }
+
   return val;
 }
 
@@ -743,8 +754,16 @@ void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra
 //  if (err)
 //    dserror("Gradient distribution failed");
 
+  //scaling
+  double fac=1.0;
+  if (scaling_)
+  {
+   fac = normal_s_.size()+normal_t_.size();
+   sourcedis_->Comm().Broadcast(&fac,1,0);
+  }
+
   // set into the gradient (update here, since there migth be other pairs of surfaces which contribute)
-  (*gradient)(vind)->Update(1.0,*tempdist,1.0);
+  (*gradient)(vind)->Update(1.0/fac,*tempdist,1.0);
 
 }
 

@@ -1073,7 +1073,7 @@ void ACOU::InvAnalysis::CalculateGradient()
     psi = CalculateNonconformRhsvec(adjoint_phi_0_);
 
   scatra_discret_->SetState("psi",psi);
-  matman_->Evaluate(0.0,objgrad_);
+  matman_->Evaluate(0.0,objgrad_,true);
 
   if(alpha_ != 0.0)
     objgrad_->Update(alpha_,*(matman_->GetParams()),1.0);

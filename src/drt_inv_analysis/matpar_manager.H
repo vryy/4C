@@ -81,7 +81,7 @@ namespace INVANA
     virtual ~MatParManager() { ; };
 
     //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-    virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
+    virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
 
     //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
     void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
@@ -165,7 +165,8 @@ namespace INVANA
     virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                   double val,
                                   int elepos,
-                                  int parapos) = 0;
+                                  int paraposglobal,
+                                  int paraposlocal) = 0;
 
     //! "consolidate" chain rule application among procs
     virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;

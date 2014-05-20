@@ -1335,6 +1335,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::STR::stat_inv_obj_surfcurr),
                                     &statinvp);
 
+  // scaling of objective function
+  BoolParameter("OBJECTIVEFUNCTSCAL","No","want scaling of objective function?", &statinvp);
+
   // monitorfile to provide measurements
   StringParameter("MONITORFILE","none.monitor",
                   "filename of file containing measured displacements",

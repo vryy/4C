@@ -296,13 +296,16 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradient()
   zeros->Scale(0.0);
 
   //loop the time steps
+  bool sumaccrosprocs = false;
   for (int j=0; j<msteps_; j++)
   {
     discret_->SetState(0, "displacement", Teuchos::rcp((*dis_)(j),false));
     discret_->SetState(0, "residual displacement", zeros);
     discret_->SetState(0, "dual displacement", Teuchos::rcp((*disdual_)(j),false));
 
-    matman_->Evaluate((*time_)[j], objgrad_);
+    if (j==msteps_-1) sumaccrosprocs = true;
+
+    matman_->Evaluate((*time_)[j], objgrad_, sumaccrosprocs);
   }
 
   if (havereg_)

@@ -101,8 +101,11 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
   // the materials of the problem
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
-  std::cout << "STR::INVANA::MatParManager ... SETUP" << std::endl;
-  std::cout <<  "Optimizing material with ids: ";
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::cout << "STR::INVANA::MatParManager ... SETUP" << std::endl;
+    std::cout <<  "Optimizing material with ids: ";
+  }
 
   // parameters to be optimized
   std::string word2;
@@ -115,7 +118,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
     matid = std::strtol(&word2[0],&pEnd,10);
     if (*pEnd=='\0') //if (matid != 0)
     {
-      std::cout << matid << " ";
+      if (discret_->Comm().MyPID()==0) std::cout << matid << " ";
       actmatid = matid;
       continue;
     }
@@ -139,9 +142,12 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
     else
       dserror("Give the parameters for the respective materials");
   }
-  std::cout << "" << std::endl;
-  std::cout << "the number of different material parameters is: " << numparams_ << std::endl;
-  std::cout << "STR::INVANA::MatParManager ... END OF SETUP" << std::endl;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::cout << "" << std::endl;
+    std::cout << "the number of different material parameters is: " << numparams_ << std::endl;
+  }
 
 }
 
@@ -220,7 +226,7 @@ void STR::INVANA::MatParManager::ResetParams()
 /*----------------------------------------------------------------------*/
 /* evaluate gradient based on dual solution                  keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
@@ -281,13 +287,14 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint,val2,actele->Id(),it-actparams.begin());
+      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 
   }//loop elements
 
-  Consolidate(dfint);
+  if (consolidate)
+    Consolidate(dfint);
 }
 
 /*----------------------------------------------------------------------*/

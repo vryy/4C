@@ -36,7 +36,7 @@ ACOU::PatMatParManagerPerElement::PatMatParManagerPerElement(Teuchos::RCP<DRT::D
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
   Teuchos::RCP<const Epetra_Vector> phi = discret_->GetState("phi");
 
@@ -85,17 +85,19 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()));
+      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 
   }//loop elements
 
-  Consolidate(dfint);
+  if (consolidate)
+    Consolidate(dfint);
+
   return;
 }
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
   Teuchos::RCP<const Epetra_Vector> phi = discret_->GetState("phi");
 
@@ -144,13 +146,14 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()));
+      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 
   }//loop elements
 
-  Consolidate(dfint);
+  if (consolidate)
+    Consolidate(dfint);
 
   return;
 }
