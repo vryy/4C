@@ -112,6 +112,17 @@ bool DRT::UTILS::DirichletSelector::SelectDofs( DRT::Node* node, std::set<int> &
   return found;
 }
 
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::MultiConditionSelector::MultiConditionSelector()
+:
+    overlapping_(false)
+{}
+
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
@@ -153,6 +164,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
 
   extractor.Setup(fullmap,maps);
 }
+
 
 
 /*----------------------------------------------------------------------*/

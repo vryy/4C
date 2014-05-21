@@ -178,6 +178,7 @@ namespace UTILS
   class MultiConditionSelector
   {
   public:
+    MultiConditionSelector ();
 
     /// add a new ConditionSelector
     /*!
