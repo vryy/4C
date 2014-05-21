@@ -1111,20 +1111,20 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       if (HavePlasticSpin())
       {
         if (fbar_)
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,NULL,NULL,&f_bar_factor,&htensor);
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,NULL,NULL,&f_bar_factor,&htensor);
         else if (eastype_!=soh8p_easnone)
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda);
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda);
         else
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res);
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
       else
       {
         if (fbar_)
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,NULL,NULL,&f_bar_factor,&htensor);
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,NULL,NULL,&f_bar_factor,&htensor);
         else if (eastype_!=soh8p_easnone)
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda);
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda);
         else
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,RCG,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res);
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
     }// plastic modifications
   } // gp loop
@@ -1177,7 +1177,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     const LINALG::Matrix<nsd_,nsd_>& defgrd,
     const LINALG::Matrix<nsd_,nsd_>& deltaLp,
     const LINALG::Matrix<numstr_,numdofperelement_>& bop,
-    const LINALG::Matrix<numstr_,1>& RCG,
+    const LINALG::Matrix<numstr_,1>* RCG,
     const int MyPID,
     const double detJ_w,
     const int gp,
@@ -1227,7 +1227,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     break;
   case plspin:
     voigt_red(0,0)=voigt_red(1,1)=voigt_red(3,2)=voigt_red(4,3)=voigt_red(5,4)=voigt_red(6,5)=voigt_red(7,6)=voigt_red(8,7)=1.;
-//    dserror("not yet");
     break;
   default:
     dserror("Don't know what to do with plastic spin type %d", spintype);
@@ -1288,6 +1287,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   case soh8p_easfull:
     LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,spintype>(1.,Kab.A(),detJ_w,M->A(),dpk2db.A());
     break;
+  case soh8p_eassosh8:
+    LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_eassosh8,numstr_,spintype>(1.,Kab.A(),detJ_w,M->A(),dpk2db.A());
+    break;
   default:
     dserror("Don't know what to do with EAS type %d", eastype_);
     break;
@@ -1306,8 +1308,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     LINALG::Matrix<spintype+1,numdofperelement_> dNCPdd;
     if (fbar_)
     {
+      if (RCG==NULL) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
       LINALG::Matrix<spintype+1,1> tmp61;
-      tmp61.Multiply(.5,dncpdc,RCG);
+      tmp61.Multiply(.5,dncpdc,(*RCG));
       dNCPdd.MultiplyNT((*f_bar_factor)*(*f_bar_factor)*2./3.,tmp61,*htensor,0.);
       dNCPdd.Multiply((*f_bar_factor)*(*f_bar_factor),dncpdc,bop,1.);
     }
@@ -1332,6 +1335,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
       case soh8p_easfull:
         LINALG::DENSEFUNCTIONS::multiply<double,spintype+1,numstr_,soh8p_easfull>(0.,tmp.A(),1.,dncpdc.A(),M->A());
         LINALG::DENSEFUNCTIONS::multiplyTN<double,spintype,numstr_,soh8p_easfull>(0.,Kba_->at(gp).A(),1.,voigt_red.A(),tmp.A());
+        break;
+      case soh8p_eassosh8:
+        LINALG::DENSEFUNCTIONS::multiply<double,spintype+1,numstr_,soh8p_eassosh8>(0.,tmp.A(),1.,dncpdc.A(),M->A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,spintype,numstr_,soh8p_eassosh8>(0.,Kba_->at(gp).A(),1.,voigt_red.A(),tmp.A());
         break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
@@ -1398,6 +1405,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,spintype,1>
           (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
         break;
+      case soh8p_eassosh8:
+        LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,soh8p_eassosh8>
+          (1.,Kda->A(),-1.,KdbKbb.A(),Kba_->at(gp).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,spintype>
+          (0.,tmp.A(),1.,Kab.A(),KbbInv_->at(gp).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,numdofperelement_>
+          (1.,Kad_->A(),-1.,tmp.A(),Kbd_->at(gp).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,soh8p_eassosh8>
+          (1.,KaaInv_->A(),-1.,tmp.A(),Kba_->at(gp).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,1>
+          (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
+        break;
       case soh8p_easnone:
         // do nothing
         break;
@@ -1430,6 +1449,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
         break;
       case soh8p_easfull:
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,spintype,1>
+          (1.,feas_->A(),-1.,Kab.A(),(*dDp_last_iter_)[gp].A());
+        break;
+      case soh8p_eassosh8:
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,1>
           (1.,feas_->A(),-1.,Kab.A(),(*dDp_last_iter_)[gp].A());
         break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
@@ -1506,6 +1529,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
         case soh8p_easfull:
           LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
           LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
+          break;
+        case soh8p_eassosh8:
+          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
+          LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
           break;
         case soh8p_easnone:
           break;

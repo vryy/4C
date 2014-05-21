@@ -21,6 +21,8 @@
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_mat/plasticelasthyper.H"
+#include "so_surface.H"
+#include "so_line.H"
 
 
 /*----------------------------------------------------------------------*
@@ -83,6 +85,106 @@ const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,
 template<DRT::Element::DiscretizationType distype>
 const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3NONSYM_[3][3] = {{0,3,5},{6,1,4},{8,7,2}};
 
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex27:
+    return 0;
+    break;
+  default:
+    dserror("unknown distpye for So3_Plast");
+    break;
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex27:
+    return 6;
+    break;
+  default:
+    dserror("unknown distpye for So3_Plast");
+    break;
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex27:
+    return 12;
+    break;
+  default:
+    dserror("unknown distpye for So3_Plast");
+    break;
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So3_Plast<distype>::Lines()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So3_Plast<distype>::Surfaces()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new surface elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So3_Plast<distype>::Volumes()
+{
+  std::vector<Teuchos::RCP<Element> > volumes(1);
+  volumes[0]= Teuchos::rcp(this, false);
+  return volumes;
+}
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 07/13 |

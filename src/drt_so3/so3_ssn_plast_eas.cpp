@@ -28,14 +28,11 @@
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
 {
-  if (eastype_==soh8p_easnone)
-    neas_=0;
-  else if (eastype_==soh8p_easmild)
-    neas_=9;
-  else if (eastype_==soh8p_easfull)
-    neas_=21;
-  else
+  if (eastype_!=soh8p_easnone && eastype_!=soh8p_easmild &&
+      eastype_!=soh8p_easfull && eastype_!=soh8p_eassosh8)
     dserror("unknown EAS type for so3_ssn_plast");
+  else
+    neas_=eastype_;
 
   if (eastype_!=soh8p_easnone)
   {
@@ -193,6 +190,37 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasSetup(
     }
       // return adress of just evaluated matrix
       *M_GP = &M_full;            // return adress of static object to target of pointer
+  }
+  else if (eastype_==soh8p_eassosh8)
+  {
+    static std::vector<Epetra_SerialDenseMatrix> M_sosh8(numgpt_);
+    static bool M_sosh8_eval;
+    /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
+     ** consisting of 7 modes, based on
+     **            r 0 0   0 0 0  0
+     **            0 s 0   0 0 0  0
+     **    M =     0 0 t   0 0 rt st
+     **            0 0 0   r s 0  0
+     **            0 0 0   0 0 0  0
+     **            0 0 0   0 0 0  0
+     */
+    if (!M_sosh8_eval) // if true M already evaluated
+    {
+      // fill up M at each gp
+      for (int i=0; i<numgpt_; ++i) {
+      M_sosh8[i].Shape(numstr_,neas_);
+      M_sosh8[i](0,0) = xsi_.at(i)(0);
+      M_sosh8[i](1,1) = xsi_.at(i)(1);
+      M_sosh8[i](2,2) = xsi_.at(i)(2); M_sosh8[i](2,5) = xsi_.at(i)(0)*xsi_.at(i)(2); M_sosh8[i](2,6) = xsi_.at(i)(1)*xsi_.at(i)(2);
+
+      M_sosh8[i](3,3) = xsi_.at(i)(0); M_sosh8[i](3,4) = xsi_.at(i)(1);
+    }
+
+      M_sosh8_eval = true;  // now the array is filled statically
+    }
+    // return adress of just evaluated matrix
+    *M_GP = &M_sosh8;            // return adress of static object to target of pointer
+
   }
   else
     dserror("this EAS type not yet implemented");

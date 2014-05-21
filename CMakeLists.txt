@@ -779,6 +779,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_ssn_plast_evaluate.cpp
   src/drt_so3/so3_ssn_plast_eletypes.cpp
   src/drt_so3/so3_ssn_plast_eas.cpp
+  src/drt_so3/so3_ssn_plast_sosh8.cpp
 )
 set(OBJS_DRT_ELCH
   src/drt_elch/elch_algorithm.cpp

@@ -63,6 +63,12 @@ namespace ELEMENTS
     //! Makes a deep copy of a Element
     So3_Plast(const So3_Plast& old);
 
+    //! Deep copy this instance of Solid3 and return pointer to the copy
+    //!
+    //! The Clone() method is used from the virtual base class Element in cases
+    //! where the type of the derived class is unknown and a copy-ctor is needed
+    DRT::Element* Clone() const;
+
     //! Destructor
     virtual ~So3_Plast(){};
 
@@ -86,12 +92,6 @@ namespace ELEMENTS
 
 
     //! @name Acess methods
-
-    //! Deep copy this instance of Solid3 and return pointer to the copy
-    //!
-    //! The Clone() method is used from the virtual base class Element in cases
-    //! where the type of the derived class is unknown and a copy-ctor is needed
-    DRT::Element* Clone() const;
 
     //! Return unique ParObject id
     //!
@@ -136,6 +136,38 @@ namespace ELEMENTS
      //! return element shape
      virtual DiscretizationType Shape() const {return distype;};
 
+     /*!
+     \brief Return number of volumes of this element
+     */
+     virtual int NumVolume() const ;
+
+     /*!
+     \brief Return number of surfaces of this element
+     */
+     virtual int NumSurface() const ;
+
+     /*!
+     \brief Return number of lines of this element
+     */
+     virtual int NumLine() const ;
+
+     /*!
+     \brief Get vector of Teuchos::RCPs to the lines of this element
+
+     */
+     virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+
+     /*!
+     \brief Get vector of Teuchos::RCPs to the surfaces of this element
+
+     */
+     virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
+
+     /*!
+     \brief Get vector of Teuchos::RCPs to the volumes of this element
+
+     */
+     virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
     //@}
 
     //! @name Input and Creation
@@ -269,6 +301,8 @@ namespace ELEMENTS
     enum EASType  // with meaningful value for matrix size info
     {
       soh8p_easnone = 0,  //!< no EAS i.e. displacement based with tremendous locking
+      soh8p_eassosh8 = 7,  //!< related to Solid-Shell, 7 parameters to alleviate
+                          //!< in-plane (membrane) locking and main modes for Poisson-locking
       soh8p_easmild = 9,  //!< 9 parameters consisting of modes to alleviate
                          //!< shear locking (bending) and main incompressibility modes
                          //!< (for Solid Hex8)
@@ -369,12 +403,22 @@ namespace ELEMENTS
                               LINALG::Matrix<6,1> glstrain_mod,
                               LINALG::Matrix<3,3>& defgrd_mod);
 
+
+    /*! \brief Evaluate the NCP function and the linearization
+     *         and condense the additional degrees of freedom
+     *         into the stiffness matrix block.
+     *         Required data from the element evaluate is handed in,
+     *         with potential EAS matrices or F-bar linearizations.
+     *         The template argument "spinype" decides, if
+     *         the additional evolution equation for the plastic
+     *         spin is linearized and solved for.
+     */
     template<int spintype>
     void CondensePlasticity(
         const LINALG::Matrix<nsd_,nsd_>& defgrd,
         const LINALG::Matrix<nsd_,nsd_>& deltaLp,
         const LINALG::Matrix<numstr_,numdofperelement_>& bop,
-        const LINALG::Matrix<numstr_,1>& RCG,
+        const LINALG::Matrix<numstr_,1>* RCG,
         const int MyPID,
         const double detJ_w,
         const int gp,
@@ -389,6 +433,13 @@ namespace ELEMENTS
         const LINALG::Matrix<numdofperelement_,1>* htensor=NULL
         );
 
+    /*! \brief Recover the condensed additional degrees of freedom.
+     *         Required data from the element evaluate is handed in,
+     *         with potential EAS matrices.
+     *         The template argument "spinype" decides, if
+     *         the additional dofs for the plastic
+     *         spin have to be recovered.
+     */
     template<int spintype>
     void RecoverPlasticity(
         const LINALG::Matrix<numdofperelement_,1>& res_d,
@@ -401,6 +452,9 @@ namespace ELEMENTS
         Epetra_SerialDenseVector* delta_alpha_eas=NULL
         );
 
+
+    /*! \brief Return if plastic spin is solved for.
+     */
     virtual bool HavePlasticSpin();
 
     //@}

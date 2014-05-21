@@ -208,8 +208,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(
 }  // Create()
 
 
-/*----------------------------------------------------------------------*
-| build an instance of Plast type                         seitz 07/13 |
+/*---------------------------------------------------------------------*
+|                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27PlastType::SetupElementDefinition(
  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >& definitions
