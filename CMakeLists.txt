@@ -2021,9 +2021,9 @@ set(SUPPORT_LIBRARIES
 # filter framework
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
 add_library(filter_common ${OBJS_FILTER_COMMON})
-add_library(post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
-add_library(post_drt_gid ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
-add_library(post_drt_vtu ${OBJS_POST_DRT_VTU})
+add_library(post_drt_ensight_lib ${OBJS_POST_DRT_ENSIGHT})
+add_library(post_drt_gid_lib ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
+add_library(post_drt_vtu_lib ${OBJS_POST_DRT_VTU})
 
 # linear algebra objects
 #add_library(linalg SHARED ${OBJS_LINALG})
@@ -2076,7 +2076,7 @@ set(FILTER_LIBRARIES
   drt_comm
   ${LIBRARIES})
 
-target_link_libraries (post_processor post_drt_ensight post_drt_gid post_drt_vtu ${FILTER_LIBRARIES})
+target_link_libraries (post_processor post_drt_ensight_lib post_drt_gid_lib post_drt_vtu_lib ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
@@ -2086,6 +2086,9 @@ target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 
 ADD_CUSTOM_TARGET(baci DEPENDS ${baciname}) 
 ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor) 
+ADD_CUSTOM_TARGET(post_drt_ensight DEPENDS post_processor)
+ADD_CUSTOM_TARGET(post_drt_vtu DEPENDS post_processor)
+ADD_CUSTOM_TARGET(post_drt_gid DEPENDS post_processor)
 ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post) 
 ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test) 
 
