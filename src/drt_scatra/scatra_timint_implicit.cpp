@@ -1326,7 +1326,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
 
   if ( (step_ != 0) and (output_state_matlab_) )
       {
-        ostringstream filename;
+        std::ostringstream filename;
         filename << "Result_Step" << step_ << ".m";
         LINALG::PrintVectorInMatlabFormat(filename.str(),*phinp_);
       }
