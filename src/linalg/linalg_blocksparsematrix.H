@@ -266,7 +266,7 @@ class BlockSparseMatrixBase : public SparseOperator
                                              const BlockSparseMatrixBase& B, bool transB,
                                              bool explicitdirichlet,
                                              bool savegraph,
-                                             bool completeoutput = true);
+                                             bool completeoutput);
 
 private:
 

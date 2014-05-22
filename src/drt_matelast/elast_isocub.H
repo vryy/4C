@@ -13,7 +13,7 @@ Maintainer: Sophie Rausch
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOCUB_H_
-#define ELAST_IOSCUB_H_
+#define ELAST_ISOCUB_H_
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"

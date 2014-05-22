@@ -118,7 +118,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   // check on which fields time adaptivity should be based on
   //----------------------------------------------------------------------------
-  if (not DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(sada,"KIND") == INPAR::STR::timada_kind_none)
+  if (not (DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(sada,"KIND") == INPAR::STR::timada_kind_none))
     isadastructure_ = true;
 
   if (not (DRT::INPUT::IntegralValue<int>(fsiada, "AUXINTEGRATORFLUID") == INPAR::FSI::timada_fld_none))

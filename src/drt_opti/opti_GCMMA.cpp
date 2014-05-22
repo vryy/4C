@@ -1044,7 +1044,7 @@ bool OPTI::GCMMA::InnerConvergence(
   if (outer_iter_==0)
     return true;
 
-  if ((inner_iter_==max_inner_iter_))
+  if (inner_iter_==max_inner_iter_)
   {
     if (discret_->Comm().MyPID()==0)
       printf("WARNING: inner GCMMA optimization loop did not converge\n");

@@ -47,7 +47,7 @@ public:
             const LINALG::Matrix<3,1> & xyz )
       :px_( xyz )
   {
-    if( not nodes.size() == numNodesElement )
+    if( not (nodes.size() == numNodesElement) )
       dserror( "nodes for this element are not correct\n" );
 
     for ( int i=0; i<numNodesElement; ++i )

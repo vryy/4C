@@ -435,7 +435,7 @@ class SparseMatrix : public SparseMatrixBase
     */
     friend Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
                                                const SparseMatrix& B, bool transB,
-                                               bool completeoutput = true);
+                                               bool completeoutput);
 
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
@@ -464,7 +464,7 @@ class SparseMatrix : public SparseMatrixBase
                                                const SparseMatrix& B, bool transB,
                                                bool explicitdirichlet,
                                                bool savegraph,
-                                               bool completeoutput = true);
+                                               bool completeoutput);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
@@ -494,7 +494,7 @@ class SparseMatrix : public SparseMatrixBase
                                                  const SparseMatrix& B, bool transB,
                                                  bool explicitdirichlet,
                                                  bool savegraph,
-                                                 bool completeoutput = true);
+                                                 bool completeoutput);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
@@ -518,7 +518,7 @@ class SparseMatrix : public SparseMatrixBase
     */
     friend Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
                                                  const SparseMatrix& B,
-                                                 bool complete = true);
+                                                 bool complete);
 
 
     /*!
@@ -579,14 +579,14 @@ class SparseMatrix : public SparseMatrixBase
   /// matrix matrix multiplication
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
                                       const SparseMatrix& B, bool transB,
-                                      bool completeoutput);
+                                      bool completeoutput = false);
 
   /// matrix matrix multiplication with explicitly defined flags
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
                                       const SparseMatrix& B, bool transB,
                                       bool explicitdirichlet,
                                       bool savegraph,
-                                      bool completeoutput);
+                                      bool completeoutput = false);
 
   /// merge 2x2 system
   Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii,

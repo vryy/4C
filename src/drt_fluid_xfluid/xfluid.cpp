@@ -4115,7 +4115,7 @@ void FLD::XFluid::TimeUpdate()
     {
       eleparams.set("gamma"  ,theta_);
     }
-    else if((timealgo_==INPAR::FLUID::timeint_bdf2))
+    else if (timealgo_==INPAR::FLUID::timeint_bdf2)
     {
       eleparams.set("gamma"  ,1.0);
     }

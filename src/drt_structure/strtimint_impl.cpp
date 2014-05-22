@@ -262,13 +262,13 @@ void STR::TimIntImpl::Predict()
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if ( (pred_ == INPAR::STR::pred_constvel))
+  else if ( pred_ == INPAR::STR::pred_constvel)
   {
     PredictConstVelConsistAcc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if ( (pred_ == INPAR::STR::pred_constacc))
+  else if ( pred_ == INPAR::STR::pred_constacc)
   {
     PredictConstAcc();
     normdisi_ = 1.0e6;
