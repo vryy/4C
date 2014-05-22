@@ -105,22 +105,6 @@ public:
   int Lid() const { return lid_; }
 
   /*!
-  \brief Get vector of ptrs to nodes
-
-  The pointers to the nodes are usually built in
-  DRT::Discretization::FillComplete. A standalone
-  element that has not been added to a discretization
-  (or the discretization has not been called FillComplete),
-  such as is the case here, does not have pointers to nodes,
-  unless we explicitly define them. Thus, we hand them in
-  to the constructur here and overload the base class method
-  Nodes() such that the user-provided nodes are used first!
-
-  */
-  virtual DRT::Node** Nodes()
-  { if (quadnode_.size()) return &quadnode_[0]; else return NULL;}
-
-  /*!
   \brief Get shape type of parent element
 
   */
@@ -146,7 +130,6 @@ protected:
   IntElement(const IntElement& old);
 
   int                               lid_;        // local IntElement id
-  std::vector<DRT::Node*>           quadnode_;   // explicit node pointers
   DRT::Element::DiscretizationType  parshape_;   // shape of parent element
 
 }; //class IntElement

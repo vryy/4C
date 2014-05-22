@@ -66,10 +66,8 @@ parshape_(parshape)
     if (nodes[i]->Id()!=nodeids[i])
       dserror("ERROR: IntElement: Inconsistency Nodes and NodeIds!");
 
-  // store given nodes into class variable
-  quadnode_.resize((int)nodes.size());
-  for (int i=0;i<(int)nodes.size();++i)
-    quadnode_[i] = nodes[i];
+  if (numnode > 0)
+    BuildNodalPointers(&nodes[0]);
 
   // as discretization is already evaluated, compute area
   // (data container has to be initialized first)
