@@ -298,14 +298,20 @@ ENDIF(Git_EXECUTABLE)
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
 set(BOOST_INCLUDEDIR,${BOOST_INCLUDEDIR})
-set(Boost_NO_SYSTEM_PATHS ${BOOST_EXCLUDE_SYSTEM_PATHS} )
+
+# This is needed on kaiser to enforce the usage of the non-system boost libraries
+option (USE_NO_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
+#message("USE_NO_SYSTEM_PATHS: ${USE_NO_SYSTEM_PATHS}")
+if (USE_NO_SYSTEM_PATHS)
+  set(Boost_NO_SYSTEM_PATHS ON )
+endif(USE_NO_SYSTEM_PATHS)
 
 FIND_PACKAGE( Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
-  #message("Found Boost: ${Boost_INCLUDE_DIRS}")
-  #message("Boost libraries: ${Boost_LIBRARIES}")
-  #message("Boost libraries: ${Boost_LIBRARY_DIRS}")
+  message("Found Boost: ${Boost_INCLUDE_DIRS}")
+  message("Boost libraries: ${Boost_LIBRARIES}")
+  message("Boost libraries: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS}) 
   set(LIBRARIES
