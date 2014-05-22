@@ -219,7 +219,7 @@ public:
   \brief Update velaf_ for GenAlpha
 
   */
-  virtual void UpdateVelafGenAlpha() {return;}
+  virtual void UpdateVelafGenAlpha() {}
 
   /*!
   \brief Insert Womersley condition
@@ -252,19 +252,25 @@ public:
   \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
-  virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams){return;}
+  virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) {}
+
+  /*!
+  \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
+
+  */
+  virtual void ClearStateAssembleMatAndRHS() { discret_->ClearState(); }
 
   /*!
   \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
-  virtual void SetCustomEleParamsApplyNonlinearBoundaryConditions(Teuchos::ParameterList& eleparams) {return;}
+  virtual void SetCustomEleParamsApplyNonlinearBoundaryConditions(Teuchos::ParameterList& eleparams) {}
 
   /*!
   \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
-  virtual void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) {return;}
+  virtual void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) {}
 
   /*!
   \brief Prepare calculation of acceleration
@@ -276,7 +282,7 @@ public:
   \brief Additional function for RedModels in LinearRelaxationSolve
 
   */
-  virtual void CustomSolve(Teuchos::RCP<Epetra_Vector> relax){return;}
+  virtual void CustomSolve(Teuchos::RCP<Epetra_Vector> relax){}
 
   /*!
   \brief Call statistics manager (special case in TimIntLoma)

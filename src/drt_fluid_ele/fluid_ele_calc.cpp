@@ -1540,7 +1540,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
 
 /*----------------------------------------------------------------------*
- |  compute body force at element nodes (private)              vg 10/11 |
+ |  compute body force at element nodes (protected)            vg 10/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
@@ -1548,6 +1548,22 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
   LINALG::Matrix<nsd_,nen_>&          ebofoaf,
   LINALG::Matrix<nsd_,nen_> &         eprescpgaf,
   LINALG::Matrix<nen_,1>&             escabofoaf)
+{
+  BodyForce(ele, fldparatimint_->Time(), fldpara_->PhysicalType(), ebofoaf, eprescpgaf, escabofoaf);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  compute body force at element nodes (public)               vg 10/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(DRT::ELEMENTS::Fluid*              ele,
+                                                     const double                       time,
+                                                     const INPAR::FLUID::PhysicalType   physicaltype,
+                                                     LINALG::Matrix<nsd_,nen_> &        ebofoaf,
+                                                     LINALG::Matrix<nsd_,nen_> &        eprescpgaf,
+                                                     LINALG::Matrix<nen_,1> &           escabofoaf)
 {
   std::vector<DRT::Condition*> myneumcond;
 
@@ -1578,9 +1594,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
     if (curvenum >= 0)
     {
       // time factor (negative time indicating error)
-      if (fldparatimint_->Time() >= 0.0)
-           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(fldparatimint_->Time());
-      else dserror("Negative time in bodyforce calculation: time = %f", fldparatimint_->Time());
+      if (time >= 0.0)
+           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      else dserror("Negative time in bodyforce calculation: time = %f", time);
     }
     else curvefac = 1.0;
 
@@ -1614,7 +1630,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
           // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
                                                                              (ele->Nodes()[jnode])->X(),
-                                                                             fldparatimint_->Time(),
+                                                                             time,
                                                                              NULL);
         }
         else functionfac = 1.0;
@@ -1633,7 +1649,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
 
   // get nodal values of scatra bodyforce for variable-density flow
   // at low Mach number
-  if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+  if (physicaltype == INPAR::FLUID::loma)
   {
     std::vector<DRT::Condition*> myscatraneumcond;
 
@@ -1662,9 +1678,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
       if (curvenum >= 0)
       {
         // time factor (negative time indicating error)
-        if (fldparatimint_->Time() >= 0.0)
-             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(fldparatimint_->Time());
-        else dserror("Negative time in bodyforce calculation: time = %f", fldparatimint_->Time());
+        if (time >= 0.0)
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        else dserror("Negative time in bodyforce calculation: time = %f", time);
       }
       else curvefac = 1.0;
 

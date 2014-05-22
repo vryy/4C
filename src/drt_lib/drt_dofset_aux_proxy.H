@@ -45,10 +45,11 @@ class DofSetAuxProxy : public DofSetProxy
 public:
 
   ///Constructor
-  explicit DofSetAuxProxy(DofSet* dofset, int numdofpernode, int numdofperelement, bool uniqueGIDs)
+  explicit DofSetAuxProxy(DofSet* dofset, int numdofpernode, int numdofperelement, int numdofperface, bool uniqueGIDs)
   : DofSetProxy(dofset),
     numauxdofpernode_(numdofpernode),
     numauxdofperelement_(numdofperelement),
+    numauxdofperface_(numdofperface),
     uniqueGIDs_(uniqueGIDs)
   {
     return;
@@ -92,12 +93,21 @@ protected:
     return numauxdofperelement_;
   }
 
+  /// get number of element dofs for this element
+  virtual int NumDofPerFace( const Element & element ) const
+  {
+    return numauxdofperface_;
+  }
+
 private:
   ///number of dofs per node of auxiliary dofset
   const int numauxdofpernode_;
 
   ///number of dofs per element of auxiliary dofset
   const int numauxdofperelement_;
+
+  ///number of dofs per element of auxiliary dofset
+  const int numauxdofperface_;
 
   ///bool indicating if the auxiliary dofs should get unique global IDs
   //(can be set to false, if the auxiliary dofs never appear in a global map)

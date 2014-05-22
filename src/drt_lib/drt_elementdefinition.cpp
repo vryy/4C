@@ -99,6 +99,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"FLUID");
   PrintElementLines(stream,"FLUID2");
   PrintElementLines(stream,"FLUID3");
+  PrintElementLines(stream,"FLUIDHDG");
   PrintElementLines(stream,"FLUIDIMMERSED");
   PrintElementLines(stream,"MEFLUID");
 

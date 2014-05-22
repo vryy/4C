@@ -16,6 +16,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #define FLUID_ELE_CALC_H
 
 #include "fluid_ele_interface.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 // forward declarations
 namespace FLD
@@ -26,6 +27,10 @@ namespace FLD
   class TDSEleData;
 }
 
+namespace MAT
+{
+  class Material;
+}
 
 namespace DRT
 {
@@ -239,6 +244,19 @@ public:
       Epetra_SerialDenseVector&            elevec1,
       const DRT::UTILS::GaussIntegration & intpoints2);
 
+  /*!
+   \brief Evaluates the analytic solution in the given point
+   */
+  static void EvaluateAnalyticSolutionPoint (
+      const LINALG::Matrix<nsd_,1> &xyzint,
+      const double                  t,
+      const INPAR::FLUID::CalcError calcerr,
+      const Teuchos::RCP<MAT::Material> &mat,
+      LINALG::Matrix<nsd_,1>            &u,
+      double                            &p,
+      LINALG::Matrix<nsd_,nsd_>         &dervel
+      );
+
   /// Evaluate the element
   /*!
     Generic virtual interface function. Called via base pointer.
@@ -413,6 +431,17 @@ public:
                                        const std::vector<int> &   lm,
                                        Epetra_SerialDenseVector&  elevec1_epetra
     ) {dserror("Implemented in derived xfem class!"); return;}
+
+  /// calculate body force from nodal conditions. Static function interface to allow
+  /// for its use in FluidEleCalcHDG.
+  static void BodyForce(DRT::ELEMENTS::Fluid*              ele,         //< pointer to element
+                        const double                       time,        //< current time
+                        const INPAR::FLUID::PhysicalType   physicaltype,//< physical type
+                        LINALG::Matrix<nsd_,nen_> &        ebofoaf,     //< body force at nodes
+                        LINALG::Matrix<nsd_,nen_> &        eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
+                        LINALG::Matrix<nen_,1> &           escabofoaf   //< scatra body force at nodes
+  );
+
 
 protected:
   /// private Constructor since we are a Singleton.

@@ -220,9 +220,9 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     const int ndofperelement_thermo  = 0;
     const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
     const int ndofperelement_struct = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_thermo ,ndofperelement_thermo,true ) != 1)
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_thermo, ndofperelement_thermo, 0, true ) != 1)
       dserror("unexpected dof sets in structure field");
-    if (thermdis->BuildDofSetAuxProxy(ndofpernode_struct,ndofperelement_struct,true) != 1)
+    if (thermdis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
       dserror("unexpected dof sets in thermo field");
 
     //call AssignDegreesOfFreedom also for auxiliary dofsets

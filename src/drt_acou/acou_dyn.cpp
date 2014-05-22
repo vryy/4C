@@ -89,7 +89,7 @@ void acoustics_drt()
   // set degrees of freedom in the discretization
   //  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
   //  acoudishdg->AddDofSet(secondary);
-  acoudishdg->BuildDofSetAuxProxy(0,elementndof,false);
+  acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
 
   // call fill complete on acoustical discretization
   if (not acoudishdg->Filled() || not acoudishdg->HaveDofs()) acoudishdg->FillComplete();

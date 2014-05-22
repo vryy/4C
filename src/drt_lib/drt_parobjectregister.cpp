@@ -29,6 +29,7 @@
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_hdg.H"
 #include "../drt_combust/combust3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
@@ -172,6 +173,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::FluidType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidTypeImmersed::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroEleType::Instance().Name() << " "
+    << DRT::ELEMENTS::FluidHDGType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::MeshfreeFluidType::Instance().Name() << " "
@@ -301,6 +303,8 @@ std::string DRT::ParObjectList()
 #endif
 
     ;
+
+  std::cout << s.str() << std::endl;
   return s.str();
 }
 

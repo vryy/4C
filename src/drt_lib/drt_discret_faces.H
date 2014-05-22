@@ -233,6 +233,7 @@ public:
   \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
   virtual const Epetra_Map* FaceRowMap() const;
+
   /*!
   \brief Get map associated with the distribution of elements including ghosted faces
          (Filled()==true prerequisite)

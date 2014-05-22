@@ -1,0 +1,472 @@
+/*!----------------------------------------------------------------------
+\file fluid_ele_calc_hdg.H
+
+\brief main file containing routines for calculation of HDG fluid element
+
+
+*----------------------------------------------------------------------*/
+
+#ifndef FLUID_ELE_CALC_HDG_H
+#define FLUID_ELE_CALC_HDG_H
+
+
+#include "fluid_ele_interface.H"
+#include "fluid_ele_hdg.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_fem_general/drt_utils_polynomial.H"
+
+
+
+namespace DRT
+{
+
+namespace ELEMENTS
+{
+
+  /// Fluid element implementation
+  /*!
+
+    \author kronbichler
+    \date 05/13
+  */
+  template<DRT::Element::DiscretizationType distype>
+  class FluidEleCalcHDG : public FluidEleInterface
+  {
+  public:
+    //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
+    static const unsigned int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    //! number of space dimensions
+    static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    //! number of scalar dofs per cell (quad/hex assumption right now)
+    static const unsigned int ndofs_ = DRT::UTILS::FixedPower<DRT::ELEMENTS::FluidHDG::degree+1,nsd_>::value;
+
+    //! number of scalar dofs per face (quad/hex assumption right now)
+    static const unsigned int nfdofs_ = DRT::UTILS::FixedPower<DRT::ELEMENTS::FluidHDG::degree+1,nsd_-1>::value;
+
+    ///! number of faces on element
+    static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
+
+
+    virtual int IntegrateShapeFunction(
+        DRT::ELEMENTS::Fluid*     ele,
+        DRT::Discretization&      discretization,
+        const std::vector<int>&   lm,
+        Epetra_SerialDenseVector& elevec1,
+        const DRT::UTILS::GaussIntegration & intpoints)
+    {dserror("Not implemented!"); return 1;}
+
+    virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid*                             ele,
+                                           DRT::Discretization&                              discretization,
+                                           const std::vector<int>&                           lm            ,
+                                           Epetra_SerialDenseVector&                         elevec1,
+                                           const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                           std::string&                                      VCellGaussPts,
+                                           const GEO::CUT::plain_volumecell_set &            cells)
+    {dserror("Not implemented!"); return 1;};
+
+
+    /// Evaluate supporting methods of the element
+    /*!
+      Interface function for supporting methods of the element
+     */
+    virtual int EvaluateService(
+      DRT::ELEMENTS::Fluid*     ele,
+      Teuchos::ParameterList&   params,
+      Teuchos::RCP<MAT::Material> & mat,
+      DRT::Discretization&      discretization,
+      std::vector<int>&         lm,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
+
+    /*!
+      \brief calculate dissipation of various terms (evaluation of turbulence models)
+    */
+    virtual int CalcDissipation(Fluid*                     ele,
+                                Teuchos::ParameterList&    params,
+                                DRT::Discretization&       discretization,
+                                std::vector<int>&          lm,
+                                Teuchos::RCP<MAT::Material> mat)
+    {dserror("Not implemented!"); return 1;}
+
+    /// Evaluate element ERROR
+    /*!
+        general function to compute the error (analytical solution) for particular problem type
+     */
+    virtual int ComputeError(
+        DRT::ELEMENTS::Fluid*         ele,
+        Teuchos::ParameterList&       params,
+        Teuchos::RCP<MAT::Material>&  mat,
+        DRT::Discretization&          discretization,
+        std::vector<int>&             lm,
+        Epetra_SerialDenseVector&     elevec);
+
+    virtual int ComputeError(
+        DRT::ELEMENTS::Fluid*         ele,
+        Teuchos::ParameterList&       params,
+        Teuchos::RCP<MAT::Material>&  mat,
+        DRT::Discretization&          discretization,
+        std::vector<int>&             lm,
+        Epetra_SerialDenseVector&     elevec,
+        const DRT::UTILS::GaussIntegration&)
+    { return ComputeError(ele, params, mat, discretization, lm, elevec); }
+
+    /// projection of function field
+    virtual int ProjectField(DRT::ELEMENTS::Fluid*                ele,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material>&         mat,
+                             DRT::Discretization&                 discretization,
+                             std::vector<int>&                    lm,
+                             Epetra_SerialDenseVector&            elevec1,
+                             Epetra_SerialDenseVector&            elevec2);
+
+    /*! \brief Interpolates an HDG solution to the element nodes for output
+     */
+    virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid*                ele,
+                                           DRT::Discretization&                 discretization,
+                                           Epetra_SerialDenseVector&            elevec1);
+
+    /// Evaluate the element
+    /*!
+      Generic virtual interface function. Called via base pointer.
+     */
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*         ele,
+                         DRT::Discretization &         discretization,
+                         const std::vector<int> &      lm,
+                         Teuchos::ParameterList&       params,
+                         Teuchos::RCP<MAT::Material> & mat,
+                         Epetra_SerialDenseMatrix&     elemat1_epetra,
+                         Epetra_SerialDenseMatrix&     elemat2_epetra,
+                         Epetra_SerialDenseVector&     elevec1_epetra,
+                         Epetra_SerialDenseVector&     elevec2_epetra,
+                         Epetra_SerialDenseVector&     elevec3_epetra,
+                         bool                          offdiag = false);
+
+    /// Evaluate the element at specified gauss points
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*                ele,
+                         DRT::Discretization &                discretization,
+                         const std::vector<int> &             lm,
+                         Teuchos::ParameterList&              params,
+                         Teuchos::RCP<MAT::Material> &        mat,
+                         Epetra_SerialDenseMatrix&            elemat1_epetra,
+                         Epetra_SerialDenseMatrix&            elemat2_epetra,
+                         Epetra_SerialDenseVector&            elevec1_epetra,
+                         Epetra_SerialDenseVector&            elevec2_epetra,
+                         Epetra_SerialDenseVector&            elevec3_epetra,
+                         const DRT::UTILS::GaussIntegration & intpoints,
+                         bool                                 offdiag = false);
+
+    virtual int ComputeErrorInterface(
+        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+        DRT::Discretization &                                               dis,               ///< background discretization
+        const std::vector<int> &                                            lm,                ///< element local map
+        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+        Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+        DRT::Discretization &                                               cutdis,            ///< cut discretization
+        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+        Teuchos::ParameterList&                                             params,            ///< parameter list
+        const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
+    ){dserror("Not implemented!"); return 1;}
+
+    virtual int ComputeErrorInterfacefluidfluidcoupling(
+        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+        DRT::Discretization &                                               dis,               ///< background discretization
+        const std::vector<int> &                                            lm,                ///< element local map
+        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+        Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+        DRT::Discretization &                                               cutdis,            ///< cut discretization
+        DRT::Discretization &                                               embdis,            ///< embedded discretization
+        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+        Teuchos::ParameterList&                                             params,            ///< parameter list
+        const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
+        std::map<int,int> &                                                 boundary_emb_gid_map
+    ){dserror("Not implemented!"); return 1;}
+
+    /// Evaluate the XFEM cut element
+    virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid*                             ele,
+                             DRT::Discretization &                             discretization,
+                             const std::vector<int> &                          lm,
+                             Teuchos::ParameterList&                           params,
+                             Teuchos::RCP<MAT::Material> &                     mat,
+                             Epetra_SerialDenseMatrix&                         elemat1_epetra,
+                             Epetra_SerialDenseMatrix&                         elemat2_epetra,
+                             Epetra_SerialDenseVector&                         elevec1_epetra,
+                             Epetra_SerialDenseVector&                         elevec2_epetra,
+                             Epetra_SerialDenseVector&                         elevec3_epetra,
+                             const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                             std::string&                                      VCellGaussPts,
+                             const GEO::CUT::plain_volumecell_set &            cells,
+                             bool                                              offdiag = false
+    ) {dserror("Not implemented!"); return 1;}
+
+    virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid *                                         ele,
+                                       DRT::Discretization &                                             dis,
+                                       const std::vector<int> &                                          lm,
+                                       const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
+                                       DRT::Discretization &                                             cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
+                                       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
+                                       Teuchos::ParameterList&                                           params,
+                                       Epetra_SerialDenseMatrix&                                         elemat1_epetra,
+                                       Epetra_SerialDenseVector&                                         elevec1_epetra,
+                                       Epetra_SerialDenseMatrix&                                         Cuiui,
+                                       std::string&                                                      VCellGaussPts,
+                                       const GEO::CUT::plain_volumecell_set &                            cells,
+                                       bool                                                              fluidfluidcoupling
+      ) {dserror("Not implemented!"); return;}
+
+    virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                            ele,
+                                             DRT::Discretization &                                             dis,
+                                             const std::vector<int> &                                          lm,
+                                             DRT::Discretization &                                             cutdis,
+                                             const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
+                                             const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                             std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
+                                             Teuchos::ParameterList&                                           params,
+                                             Epetra_SerialDenseMatrix&                                         elemat1_epetra,
+                                             Epetra_SerialDenseVector&                                         elevec1_epetra,
+                                             Epetra_SerialDenseMatrix&                                         Cuiui,
+                                             const GEO::CUT::plain_volumecell_set&                             vcSet,
+                                             bool                                                              fluidfluidcoupling
+      ) {dserror("Not implemented!"); return;}
+
+    virtual void ElementXfemInterfaceNIT2(
+                                       DRT::ELEMENTS::Fluid *                                            ele,
+                                       DRT::Discretization &                                             dis,
+                                       const std::vector<int> &                                          lm,
+                                       DRT::Discretization &                                             cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
+                                       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
+                                       Teuchos::ParameterList&                                           params,
+                                       DRT::Discretization &                                             alediscret,
+                                       std::map<int,int> &                                               boundary_emb_gid_map,
+                                       Epetra_SerialDenseMatrix&                                         elemat1_epetra,
+                                       Epetra_SerialDenseVector&                                         elevec1_epetra,
+                                       Epetra_SerialDenseMatrix&                                         Cuiui,
+                                       const GEO::CUT::plain_volumecell_set&                             vcSet
+      ) {dserror("Not implemented!"); return;}
+
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *               ele,
+                                         DRT::Discretization &                dis,
+                                         const std::vector<int> &             lm,
+                                         Epetra_SerialDenseVector&            elevec1_epetra,
+                                         const DRT::UTILS::GaussIntegration & intpoints
+      ) {dserror("Not implemented!"); return;}
+
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *     ele,
+                                         DRT::Discretization &      dis,
+                                         const std::vector<int> &   lm,
+                                         Epetra_SerialDenseVector&  elevec1_epetra
+      ) {dserror("Not implemented!"); return;}
+
+    virtual ~FluidEleCalcHDG() {}
+
+    /// Singleton access method
+    static FluidEleCalcHDG<distype> * Instance( bool create=true );
+
+    /// called upon destruction
+    virtual void Done();
+
+  private:
+    /// private Constructor since we are a Singleton.
+    FluidEleCalcHDG();
+
+    /// holds shape values on the present element and all the faces
+    struct ShapeValues
+    {
+      static const unsigned int nen_    = FluidEleCalcHDG<distype>::nen_;
+      static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+      static const unsigned int nsd_    = FluidEleCalcHDG<distype>::nsd_;
+      static const unsigned int ndofs_  = FluidEleCalcHDG<distype>::ndofs_;
+      static const unsigned int nfdofs_ = FluidEleCalcHDG<distype>::nfdofs_;
+      static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
+
+      ShapeValues ();
+
+      void Evaluate            (const DRT::Element &ele);
+      void EvaluateFace        (const DRT::Element &ele,
+                                const unsigned int  face);
+
+      /// underlying polynomial space for element interior, created in constructor
+      const DRT::UTILS::LagrangeBasis<nsd_> polySpace_;
+
+      /// underlying polynomial space for faces
+      const DRT::UTILS::LagrangeBasis<nsd_-1> polySpaceFace_;
+
+      LINALG::Matrix<nen_,ndofs_>   funct;   /// values of mapping shape functions on all quadrature points
+      LINALG::Matrix<nfn_,nfdofs_>  functF;  /// values of mapping shape functions on all face quadrature points
+      LINALG::Matrix<nsd_,nen_>     deriv;   /// gradients of mapping shape functions
+      LINALG::Matrix<nsd_-1,nfn_>   derivF;  /// gradients of mapping shape functions on face
+      LINALG::Matrix<nsd_-1,nsd_-1> metricTensor; /// metric tensor on face
+      LINALG::Matrix<nsd_,1>        normal;  /// normal vector
+      LINALG::Matrix<nsd_,ndofs_>   xyzreal; /// coordinates of quadrature points in real space
+      LINALG::Matrix<nsd_,nfdofs_>  xyzFreal;/// coordinates of face quadrature points in real space
+
+      Epetra_SerialDenseMatrix      shfunct; /// evaluated HDG shape functions on all quadrature points
+      Epetra_SerialDenseVector      shfunctAvg;/// average of shfunctF on cell
+      Epetra_SerialDenseMatrix      shderiv; /// evaluated HDG shape function gradients in unit coordinates
+      Epetra_SerialDenseMatrix      shderxy; /// evaluated HDG shape function gradients in real coordinates
+      Epetra_SerialDenseMatrix      shfunctF;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
+      Epetra_SerialDenseMatrix      shfunctFNoPermute;///evaluated shape functions for HDG face polynomials in natural ordering
+      std::vector<Epetra_SerialDenseMatrix> shfunctI;/// evaluated shape functions on face for interior HDG polynomials
+      Epetra_SerialDenseMatrix      normals; /// normal vectors on a single face for all quadrature points
+
+      LINALG::Matrix<nsd_,1>        xsi;     /// quadrature points
+      LINALG::Matrix<nsd_-1,1>      xsiF;    /// face quadrature points
+      LINALG::Matrix<nsd_,nsd_>     xjm;     /// Jacobi matrix of transformation
+      LINALG::Matrix<nsd_,nsd_>     xji;     /// inverse of Jacobi matrix of transformation
+      LINALG::Matrix<nsd_,nen_>     xyze;    /// element nodes
+      LINALG::Matrix<nsd_,nfn_>     xyzeF;   /// face nodes
+      Epetra_SerialDenseVector      jfac;    /// Jacobian determinant times quadrature weight
+      Epetra_SerialDenseVector      jfacF;   /// face Jacobian determinant times quadrature weight
+
+      std::vector<std::vector<int> > faceNodeOrder; /// numbering of nodes belonging to faces
+
+      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_;
+      Teuchos::RCP<DRT::UTILS::GaussPoints> fquadrature_;
+    };
+
+    /// local solver that inverts local problem on an element and can solve with various vectors
+    struct LocalSolver
+    {
+      static const unsigned int nsd_    = FluidEleCalcHDG<distype>::nsd_;
+      static const unsigned int ndofs_  = FluidEleCalcHDG<distype>::ndofs_;
+      static const unsigned int nfdofs_ = FluidEleCalcHDG<distype>::nfdofs_;
+      static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
+
+      LocalSolver (const ShapeValues &shapeValues);
+
+      void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
+                                   const std::vector<double>        & valnp,
+                                   const std::vector<double>        & valn,
+                                   const double                       avgPressure,
+                                   const LINALG::Matrix<nsd_,nen_>  & ebodyforce);
+
+      void ComputeFaceResidual(const int                           face,
+                               const Teuchos::RCP<MAT::Material> & mat,
+                               const std::vector<double>         & val,
+                               const std::vector<double>         & traceval,
+                               Epetra_SerialDenseVector          & eleVec);
+
+      void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
+                                   const bool                         evaluateOnlyNonlinear);
+
+      void ComputeFaceMatrices(const int                          face,
+                               const Teuchos::RCP<MAT::Material>& mat,
+                               const bool                         evaluateOnlyNonlinear,
+                               Epetra_SerialDenseMatrix         & elemat);
+
+      // inverts the velocity gradient matrix and puts its contribution into the velocity matrix
+      // (pre-factorization). Should only be done once per element even if multiple velocities are used
+      void EliminateVelocityGradient (Epetra_SerialDenseMatrix &elemat);
+
+      // solves the local problem, including factorization of the matrix
+      void SolveResidual();
+
+      // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
+      // the element matrix for the trace and similarly for the residuals
+      void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
+                             Epetra_SerialDenseVector &elevec);
+
+      const bool stokes;
+
+      // convention: we sort the entries in the matrices the following way:
+      // first come the velocity gradients, then the velocities, and finally the pressure
+      // we also build the matrix in a block-fashion, keeping the dofs for individual components
+      // closest to each other. I.e. the blocks are in 2D for g_00, g_01, g_10, g_11, v_0, v_1, p
+      // and similarly for 3D
+
+      const ShapeValues        &shapes_; /// evaluated shape values
+
+      double                    stabilization[nfaces_]; /// stabilization parameters
+
+      Epetra_SerialDenseMatrix  uuMat;     /// terms for block with velocity and pressure (constant ones)
+      Epetra_SerialDenseMatrix  uuMatFinal;/// terms for block with velocity and pressure (including convection and stabilization)
+      Epetra_SerialDenseMatrix  ugMat;     /// coupling between velocity and velocity gradient (not fully stored)
+      Epetra_SerialDenseMatrix  guMat;     /// evaluated divergence of velocity gradient and velocity (not fully stored)
+
+      Epetra_SerialDenseMatrix  gfMat;     /// evaluated coupling between velocity gradient and trace
+      Epetra_SerialDenseMatrix  fgMat;     /// evaluated coupling between trace and velocity gradient
+      Epetra_SerialDenseMatrix  ufMat;     /// evaluated coupling between velocity and trace
+      Epetra_SerialDenseMatrix  fuMat;     /// evaluated coupling between trace and velocity
+
+      Epetra_SerialDenseMatrix  massPart;  /// temporary matrix for mass matrix on all quadrature points
+      Epetra_SerialDenseMatrix  gradPart;  /// temporary matrix for gradient matrix on all quadrature points
+      Epetra_SerialDenseMatrix  uPart;     /// temporary matrix for convection
+
+      Epetra_SerialDenseMatrix  massMat;   /// local mass matrix (will be inverted during init)
+      Epetra_SerialDenseMatrix  uuconv;    /// convection matrix
+      Epetra_SerialDenseMatrix  tmpMat;    /// matrix holding temporary results
+      Epetra_SerialDenseMatrix  tmpMatGrad;/// matrix holding temporary results
+
+      Epetra_SerialDenseMatrix  trMat;     /// temporary matrix for trace assembly
+      Epetra_SerialDenseMatrix  trMatAvg;  /// temporary matrix for trace assembly
+
+      Epetra_SerialDenseMatrix  velnp;     /// velocities evaluated on all quadrature points
+      Epetra_SerialDenseMatrix  fvelnp;    /// trace velocities evaluated on all face quadrature points
+
+      Epetra_SerialDenseVector  gRes;      /// residual vector on velocity gradients
+      Epetra_SerialDenseVector  upRes;     /// residual vector on velocity and pressure
+      Epetra_SerialDenseVector  gUpd;      /// update vector for velocity gradients
+      Epetra_SerialDenseVector  upUpd;     /// update vector for velocity and pressure
+
+      std::vector<int>          pivots;    /// pivots for factorization of matrices
+
+      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_; //! pointer to parameter list
+      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameterTimInt> fldparatimint_; //! pointer to time parameter list
+    };
+
+    /// reads from global vectors
+    void ReadGlobalVectors(const DRT::Element     & ele,
+                           DRT::Discretization    & discretization,
+                           const std::vector<int> & lm,
+                           const bool               updateLocally);
+
+    // writes the updated solution vector to the secondary vector stored in the discretization
+    void UpdateSecondarySolution(const DRT::Element     & ele,
+                                 DRT::Discretization    & discretization,
+                                 const Epetra_SerialDenseVector &updateG,
+                                 const Epetra_SerialDenseVector &updateUp);
+
+    void EvaluateVelocity(const int start_func,
+                          const INPAR::FLUID::InitialField initfield,
+                          const double (&xyz)[nsd_],
+                          double (&u)[nsd_]) const;
+
+    void EvaluateAll(const int start_func,
+                     const INPAR::FLUID::InitialField initfield,
+                     const double (&xyz)[nsd_],
+                     double (&u)[nsd_],
+                     double (&grad)[nsd_][nsd_],
+                     double  &p) const;
+
+    /// local data object
+    ShapeValues shapes_;
+
+    /// local solver object
+    LocalSolver localSolver_;
+
+    LINALG::Matrix<nsd_,nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
+    LINALG::Matrix<nsd_,nen_> eprescpgaf_;  /// pressure gradient body force
+    LINALG::Matrix<nen_,1>    escabofoaf_;  /// scalar body force for loma
+
+
+    std::vector<double> traceVal_;    /// extracted values from trace solution vector at n+alpha_f
+    std::vector<double> interiorVal_; /// extracted local values (velocity gradients, velocities, pressure) at n+alpha_f
+    std::vector<double> interiorAcc_; /// extracted local accelerations at n+alpha_f
+  };
+}
+}
+
+#endif

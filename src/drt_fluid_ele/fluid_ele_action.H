@@ -58,7 +58,9 @@ enum Action {
     set_general_adjoint_parameter,
     set_adjoint_time_parameter,
     calc_volume,
-    ImmersedFSIForceEvaluation
+    ImmersedFSIForceEvaluation,
+    project_fluid_field,
+    interpolate_hdg_to_node
 }; // enum Action
 
 /*--------------------------------------------------------------------------

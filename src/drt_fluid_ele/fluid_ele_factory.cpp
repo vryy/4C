@@ -22,6 +22,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_poro_p1.H"
 #include "fluid_ele_calc_poro_p2.H"
 #include "fluid_ele_calc_xfem.H"
+#include "fluid_ele_calc_hdg.H"
 
 #include "../drt_meshfree_discret/meshfree_fluid_cell_interface.H"
 
@@ -121,6 +122,8 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
   else if (problem == "poro_p2")
     return DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance();
+  else if (problem == "hdg")
+    return DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 

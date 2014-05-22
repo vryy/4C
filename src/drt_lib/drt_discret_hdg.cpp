@@ -20,6 +20,7 @@ Maintainer: Martin Kronbichler
 #include "drt_exporter.H"
 #include "drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name,
                                           Teuchos::RCP<Epetra_Comm> comm)
@@ -148,7 +149,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
     Epetra_SerialDenseMatrix elemat1, elemat2;
     std::vector<int> dummy;
     Teuchos::ParameterList initParams;
-    //initParams.set<int>("action", 500); // TODO: Introduce a general action type that is valid for all problems
+    initParams.set<int>("action", FLD::project_fluid_field); // TODO: Introduce a general action type that is valid for all problems
     if (funct != NULL) {
       Teuchos::Array<int> functarray(*funct);
       initParams.set("funct",functarray);

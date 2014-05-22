@@ -627,30 +627,6 @@ public:
   }
 
   /*!
-  \brief Get number of degrees of freedom per surface
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  Usually, a standard finite element would not have surface degrees of
-  freedom and would therefore return zero here.
-
-  \note Face degrees of freedom mentioned here are dofs that are supposed
-        to be visible at the global system level. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-        The DRT::Discretization will use this method to determine how many degrees
-        of freedom it should include in the degree of freedom row and column map
-        for the global system of equations.
-  */
-  virtual int NumDofPerFace(const unsigned face,
-                            const unsigned nds) const
-  {
-    if (nds==0)
-      return NumDofPerFace(face);
-    return 0;
-  }
-  
-  /*!
   \brief Get number of degrees of freedom per face
 
   The element decides how many element degrees of freedom it has.

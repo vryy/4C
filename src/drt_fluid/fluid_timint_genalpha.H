@@ -187,10 +187,6 @@ protected:
   */
   virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velaf_;};
 
-
-private:
-
-
   /// time factors for generalized-alpha time integration
   double alphaM_;
   double alphaF_;

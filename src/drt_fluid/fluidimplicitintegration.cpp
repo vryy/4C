@@ -178,7 +178,8 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
-  FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
+  if (velpressplitter_.NumMaps() == 0)
+    FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
   // if the pressure map is empty, the user obviously specified a wrong
   // number of space dimensions in the input file
   if (velpressplitter_.CondMap()->NumGlobalElements()<1)
@@ -916,8 +917,12 @@ void FLD::FluidImplicitTimeInt::Solve()
         if (fluid_infnormscaling_!= Teuchos::null)
           fluid_infnormscaling_->ScaleSystem(sysmat_, *residual_);
 
-        // solve the system
-        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, projector_);
+        bool resetSolver = (itnum == 1);
+        if (step_%10 != 0 && (uprestart_ == 0 || step_%uprestart_!=1) && step_>3)
+          resetSolver = false;
+
+         // solve the system
+        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,resetSolver, projector_);
 
         // unscale solution
         if (fluid_infnormscaling_!= Teuchos::null)
@@ -1003,7 +1008,7 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 
 /*----------------------------------------------------------------------*
  | call elements to calculate system matrix/rhs and assemble   vg 02/09 |
- | overloaded in TimIntRedModels                               bk 12/13|
+ | overloaded in TimIntRedModels                               bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 {
@@ -1047,6 +1052,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //set additional pseudo-porosity field for topology optimization
   //set thermodynamic pressures
   //set parameters for poro
+  //set parameters for HDG
   SetCustomEleParamsAssembleMatAndRHS(eleparams);
 
   discret_->SetState("hist" ,hist_ );
@@ -1098,7 +1104,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
-  discret_->ClearState();
+  ClearStateAssembleMatAndRHS();
 
   //----------------------------------------------------------------------
   // add potential edge-based stabilization terms
@@ -2545,7 +2551,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
  |  accn_  = (velnp_-veln_) / (dt)                                      |
  |                                                                      |
  |                                                           gammi 04/07|
- |  overloaded in TimIntRedModels                              bk 12/13|
+ |  overloaded in TimIntRedModels                              bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
@@ -2834,8 +2840,6 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   EvaluateDivU();
 
-
-  return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
 /*----------------------------------------------------------------------*
@@ -4299,10 +4303,12 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
           DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
           " ----------" << std::endl;
         std::cout << "| relative L_2 velocity error norm:     " << (*relerror)[0] << std::endl;
-        std::cout << "| relative L_2 velocity pressure norm:  " << (*relerror)[1] << std::endl;
-        std::cout << "| absolute H_1 velocity error norm:     " << (*relerror)[2] << std::endl;
+        std::cout << "| relative L_2 pressure error norm:     " << (*relerror)[1] << std::endl;
+        if ((*relerror)[2] != 0.0)
+          std::cout << "| relative H_1 velocity error norm:     " << (*relerror)[2] << std::endl;
         std::cout << "--------------------------------------------------------------------" << std::endl << std::endl;
-        std::cout << "H1 velocity scaling  " << sqrt((*errors)[5]) << std::endl;
+        if ((*relerror)[2] != 0.0)
+          std::cout << "H1 velocity scaling  " << sqrt((*errors)[5]) << std::endl;
       }
 
       // print last error in a seperate file

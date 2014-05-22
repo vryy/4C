@@ -570,10 +570,10 @@ Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, bool uniqueGIDs)
+int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, int numdofperface, bool uniqueGIDs)
 {
   Teuchos::RCP<DofSetAuxProxy> dofsetauxproxy =
-      Teuchos::rcp(new DofSetAuxProxy(&*dofsets_[0],numdofpernode,numdofperelement,uniqueGIDs));
+      Teuchos::rcp(new DofSetAuxProxy(&*dofsets_[0],numdofpernode,numdofperelement,numdofperface,uniqueGIDs));
 
   return AddDofSet(dofsetauxproxy);
 }

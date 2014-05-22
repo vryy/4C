@@ -51,7 +51,7 @@ void FLD::TimIntGenAlpha::Init()
   FLD::FluidImplicitTimeInt::Init();
 
   // starting algorithm only for af-generalized-alpha so far
-  // -> check for time-integration scheme and reasonability of number of steps
+  // -> check for time-integration scheme and reasonable number of steps
   if (numstasteps_ > 0)
   {
     if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
@@ -123,7 +123,7 @@ void FLD::TimIntGenAlpha::SetTheta()
     {
       if (myrank_==0)
       {
-        std::cout<<"Starting algorithm for Af_GenAlpha active."
+        std::cout<<"Starting algorithm for Af_GenAlpha active. "
             <<"Performing step "<<step_ <<" of "<<numstasteps_
             <<" Backward Euler starting steps"<<std::endl;
       }

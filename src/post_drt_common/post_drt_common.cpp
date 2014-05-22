@@ -144,7 +144,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
 
   if (spatial_approx_!="Nurbs" and
       spatial_approx_!="Polynomial" and
-      spatial_approx_!="Meshfree")
+      spatial_approx_!="Meshfree" and
+      spatial_approx_!="HDG")
   {
     dserror("unknown type of spatial approximation '%s'", spatial_approx_.c_str());
   }
@@ -1104,7 +1105,7 @@ PostField PostProblem::getfield(MAP* field_info)
 
   Teuchos::RCP<DRT::Discretization> dis;
 
-  if(spatial_approx_=="Polynomial" or spatial_approx_=="Meshfree")
+  if(spatial_approx_=="Polynomial" or spatial_approx_=="Meshfree" or spatial_approx_=="HDG")
   {
     if(problemtype_==prb_combust)
     {

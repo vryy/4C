@@ -1090,11 +1090,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->SetWriter(Teuchos::rcp(new IO::MeshfreeDiscretizationWriter(fluiddis)));
     }
+    else if(distype == "HDG")
+    {
+      fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid",reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+    }
     else if(distype == "Nurbs")
     {
       fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
 
-      // create discretization writer - in constructor set into and owned by corresponding discret
+      // create discretization writer - in constructor set ingto and owned by corresponding discret
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
     }
     else
@@ -1113,6 +1120,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
     fluidelementtypes.insert("MEFLUID");
+    fluidelementtypes.insert("FLUIDHDG");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 

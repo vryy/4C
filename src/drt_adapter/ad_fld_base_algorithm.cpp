@@ -44,6 +44,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fluid/fluid_timint_red_bdf2.H"
 #include "../drt_fluid/fluid_timint_red_ost.H"
 #include "../drt_fluid/fluid_timint_red_stat.H"
+#include "../drt_fluid/fluid_timint_hdg.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
@@ -641,7 +642,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_scatra:
     case prb_cavitation:
     {
-      if(timeint == INPAR::FLUID::timeint_stationary)
+      // HDG implements all time stepping schemes within gen-alpha
+      if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+        fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
+      else if(timeint == INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_one_step_theta)
         fluid_ = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));

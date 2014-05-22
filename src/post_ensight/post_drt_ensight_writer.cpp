@@ -497,7 +497,8 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   Teuchos::RCP<Epetra_Map> proc0map;
 
   if(field_->problem()->SpatialApproximation()=="Polynomial"
-     or field_->problem()->SpatialApproximation()=="Meshfree")
+     or field_->problem()->SpatialApproximation()=="Meshfree"
+     or field_->problem()->SpatialApproximation()=="HDG")
   {
     WriteCoordinatesForPolynomialShapefunctions(
       geofile,dis,proc0map);
@@ -1648,7 +1649,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
       );
   }
   else if(field_->problem()->SpatialApproximation()=="Polynomial" or
-          field_->problem()->SpatialApproximation()=="Meshfree")
+          field_->problem()->SpatialApproximation()=="Meshfree" or
+          field_->problem()->SpatialApproximation()=="HDG")
   {
     //------------------------------------------------------
     // each processor provides its result values for proc 0
@@ -1697,6 +1699,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
     err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
 
     //---------------
     // write results
