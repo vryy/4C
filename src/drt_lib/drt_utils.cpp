@@ -191,13 +191,13 @@ void DRT::UTILS::EquateValuesAtTheseNodes( Epetra_Vector& vec,
     {
       DRT::Node * oldnode = dis->gNode( original );
 
-      if( not oldnode->Owner() == dis->Comm().MyPID() )
+      if( not (oldnode->Owner() == dis->Comm().MyPID() ) )
         dserror( "Both nodes should be owned by the same processor" );
 
       const std::vector<int> dof_new = dis->Dof( newnode );
       const std::vector<int> dof_old = dis->Dof( oldnode );
 
-      if( not dof_new.size() == dof_old.size() )
+      if( not (dof_new.size() == dof_old.size() ) )
         dserror( "Both nodes should have same number of DOFs" );
 
       const int lid_new = vec.Map().LID(dof_new[0]);

@@ -1083,10 +1083,8 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
         //loop dimensions with respect to columns
         for(int l=0; l<ndim; l++)
         {
-          if(fforce != NULL)
             fforce(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
 
-          if(fstiffmatrix != NULL)
             //loop over all column nodes
             for (int j=0; j<fnnode; j++)
             {
