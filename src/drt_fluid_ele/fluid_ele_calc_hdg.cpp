@@ -363,11 +363,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
     {
       const double fac = shapes_.jfac(q);
       const double sqrtfac = std::sqrt(fac);
-      double xyz[nsd_];
+      LINALG::Matrix<nsd_,1> xyz(false);
       for (unsigned int d=0; d<nsd_; ++d)
-        xyz[d] = shapes_.xyzreal(d,q);
-      double u[nsd_];
-      double grad[nsd_][nsd_];
+        xyz(d) = shapes_.xyzreal(d,q);
+      LINALG::Matrix<nsd_,1>    u(false);
+      LINALG::Matrix<nsd_,nsd_> grad(false);
       double p;
       dsassert(initfield != NULL && start_func != NULL,
                "initfield or startfuncno not set for initial value");
@@ -380,9 +380,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
         for (unsigned int d=0; d<nsd_; ++d)
           for (unsigned int e=0; e<nsd_; ++e)
-            localMat(i,d*nsd_+e) += shapes_.shfunct(i,q) * grad[d][e] * fac;
+            localMat(i,d*nsd_+e) += shapes_.shfunct(i,q) * grad(d,e) * fac;
         for (unsigned int d=0; d<nsd_; ++d)
-          localMat(i,nsd_*nsd_+d) += shapes_.shfunct(i,q) * u[d] * fac;
+          localMat(i,nsd_*nsd_+d) += shapes_.shfunct(i,q) * u(d) * fac;
         localMat(i,nsd_*nsd_+nsd_) += shapes_.shfunct(i,q) * p * fac;
       }
 
@@ -424,10 +424,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
     for (unsigned int q=0; q<nfdofs_; ++q) {
       const double fac = shapes_.jfacF(q);
-      double xyz[nsd_];
+      LINALG::Matrix<nsd_,1> xyz(false);
       for (unsigned int d=0; d<nsd_; ++d)
-        xyz[d] = shapes_.xyzFreal(d,q);
-      double u[nsd_];
+        xyz(d) = shapes_.xyzFreal(d,q);
+      LINALG::Matrix<nsd_,1> u(false);
       if (initfield != NULL)
         EvaluateVelocity(*start_func, INPAR::FLUID::InitialField(*initfield), xyz, u);
       else {
@@ -438,7 +438,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
             continue;
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
-            u[d] = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(d, xyz, *time,
+            u(d) = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(d, xyz.A(), *time,
                                                                          &discretization);
         }
       }
@@ -450,7 +450,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
           mass(i,j) += shapes_.shfunctF(i,q) * shapes_.shfunctF(j,q) * fac;
 
         for (unsigned int d=0; d<nsd_; ++d)
-          trVec(i,d) += shapes_.shfunctF(i,q) * u[d] * fac;
+          trVec(i,d) += shapes_.shfunctF(i,q) * u(d) * fac;
       }
     }
 
@@ -549,11 +549,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int start_func,
     const INPAR::FLUID::InitialField initfield,
-    const double (&xyz)[nsd_],
-    double (&u)[nsd_]) const
+    const LINALG::Matrix<nsd_,1>  &xyz,
+    LINALG::Matrix<nsd_,1>        &u) const
 {
   // pass on dummy entries (costs a little but will not be significant)
-  double grad[nsd_][nsd_];
+  LINALG::Matrix<nsd_,nsd_> grad(true);
   double p;
   EvaluateAll(start_func, initfield, xyz, u, grad, p);
 }
@@ -564,10 +564,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int start_f
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int start_func,
     const INPAR::FLUID::InitialField initfield,
-    const double (&xyz)[nsd_],
-    double (&u)[nsd_],
-    double (&grad)[nsd_][nsd_],
-    double  &p) const
+    const LINALG::Matrix<nsd_,1>    &xyz,
+    LINALG::Matrix<nsd_,1>          &u,
+    LINALG::Matrix<nsd_,nsd_>       &grad,
+    double                          &p) const
 {
   switch (initfield)
   {
@@ -579,39 +579,39 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int start_func,
     // set constants for analytical solution
     const double a = M_PI/4.0;
     const double d = M_PI/2.0;
-    u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
-                  exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
-    u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
-                  exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
-    u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
-                  exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
+    u(0) = -a * ( std::exp(a*xyz(0)) * std::sin(a*xyz(1) + d*xyz(2)) +
+                  std::exp(a*xyz(2)) * std::cos(a*xyz(0) + d*xyz(1)) );
+    u(1) = -a * ( std::exp(a*xyz(1)) * std::sin(a*xyz(2) + d*xyz(0)) +
+                  std::exp(a*xyz(0)) * std::cos(a*xyz(1) + d*xyz(2)) );
+    u(2) = -a * ( std::exp(a*xyz(2)) * std::sin(a*xyz(0) + d*xyz(1)) +
+                  std::exp(a*xyz(1)) * std::cos(a*xyz(2) + d*xyz(0)) );
 
-    grad[0][0] = -a * ( a * exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) -
-                        a * exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) );
-    grad[0][1] = -a * ( a * exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) -
-                        d * exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) );
-    grad[0][2] = -a * ( d * exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) +
-                        a * exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
-    grad[1][0] = -a * ( d * exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) +
-                        a * exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
-    grad[1][1] = -a * ( a * exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) -
-                        a * exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) );
-    grad[1][2] = -a * ( a * exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) -
-                        d * exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) );
-    grad[2][0] = -a * ( a * exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) -
-                        d * exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) );
-    grad[2][1] = -a * ( d * exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) +
-                        a * exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
-    grad[2][2] = -a * ( a * exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) -
-                        a * exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) );
+    grad(0,0) = -a * ( a * std::exp(a*xyz(0)) * std::sin(a*xyz(1) + d*xyz(2)) -
+                        a * std::exp(a*xyz(2)) * std::sin(a*xyz(0) + d*xyz(1)) );
+    grad(0,1) = -a * ( a * std::exp(a*xyz(0)) * std::cos(a*xyz(1) + d*xyz(2)) -
+                        d * std::exp(a*xyz(2)) * std::sin(a*xyz(0) + d*xyz(1)) );
+    grad(0,2) = -a * ( d * std::exp(a*xyz(0)) * std::cos(a*xyz(1) + d*xyz(2)) +
+                        a * std::exp(a*xyz(2)) * std::cos(a*xyz(0) + d*xyz(1)) );
+    grad(1,0) = -a * ( d * std::exp(a*xyz(1)) * std::cos(a*xyz(2) + d*xyz(0)) +
+                        a * std::exp(a*xyz(0)) * std::cos(a*xyz(1) + d*xyz(2)) );
+    grad(1,1) = -a * ( a * std::exp(a*xyz(1)) * std::sin(a*xyz(2) + d*xyz(0)) -
+                        a * std::exp(a*xyz(0)) * std::sin(a*xyz(1) + d*xyz(2)) );
+    grad(1,2) = -a * ( a * std::exp(a*xyz(1)) * std::cos(a*xyz(2) + d*xyz(0)) -
+                        d * std::exp(a*xyz(0)) * std::sin(a*xyz(1) + d*xyz(2)) );
+    grad(2,0) = -a * ( a * std::exp(a*xyz(2)) * std::cos(a*xyz(0) + d*xyz(1)) -
+                        d * std::exp(a*xyz(1)) * std::sin(a*xyz(2) + d*xyz(0)) );
+    grad(2,1) = -a * ( d * std::exp(a*xyz(2)) * std::cos(a*xyz(0) + d*xyz(1)) +
+                        a * std::exp(a*xyz(1)) * std::cos(a*xyz(2) + d*xyz(0)) );
+    grad(2,2) = -a * ( a * std::exp(a*xyz(2)) * std::sin(a*xyz(0) + d*xyz(1)) -
+                        a * std::exp(a*xyz(1)) * std::sin(a*xyz(2) + d*xyz(0)) );
 
     p = -a*a/2.0 *
-      ( exp(2.0*a*xyz[0])
-        + exp(2.0*a*xyz[1])
-        + exp(2.0*a*xyz[2])
-        + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
-        + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
-        + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
+      ( std::exp(2.0*a*xyz(0))
+        + std::exp(2.0*a*xyz(1))
+        + std::exp(2.0*a*xyz(2))
+        + 2.0 * std::sin(a*xyz(0) + d*xyz(1)) * std::cos(a*xyz(2) + d*xyz(0)) * std::exp(a*(xyz(1)+xyz(2)))
+        + 2.0 * std::sin(a*xyz(1) + d*xyz(2)) * std::cos(a*xyz(0) + d*xyz(1)) * std::exp(a*(xyz(2)+xyz(0)))
+        + 2.0 * std::sin(a*xyz(2) + d*xyz(0)) * std::cos(a*xyz(1) + d*xyz(2)) * std::exp(a*(xyz(0)+xyz(1)))
         );
   }
   break;

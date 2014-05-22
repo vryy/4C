@@ -441,15 +441,15 @@ namespace ELEMENTS
 
     void EvaluateVelocity(const int start_func,
                           const INPAR::FLUID::InitialField initfield,
-                          const double (&xyz)[nsd_],
-                          double (&u)[nsd_]) const;
+                          const LINALG::Matrix<nsd_,1>  &xyz,
+                          LINALG::Matrix<nsd_,1>        &u) const;
 
     void EvaluateAll(const int start_func,
                      const INPAR::FLUID::InitialField initfield,
-                     const double (&xyz)[nsd_],
-                     double (&u)[nsd_],
-                     double (&grad)[nsd_][nsd_],
-                     double  &p) const;
+                     const LINALG::Matrix<nsd_,1>    &xyz,
+                     LINALG::Matrix<nsd_,1>          &u,
+                     LINALG::Matrix<nsd_,nsd_>       &grad,
+                     double                          &p) const;
 
     /// local data object
     ShapeValues shapes_;
