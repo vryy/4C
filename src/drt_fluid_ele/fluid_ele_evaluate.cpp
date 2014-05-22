@@ -168,82 +168,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           true);
     }
     break;
-    case FLD::calc_turbulence_statistics:
-    {
-      if (nsd == 3)
-      {
-        // do nothing if you do not own this element
-        if(this->Owner() == discretization.Comm().MyPID())
-        {
-          // --------------------------------------------------
-          // extract velocity and pressure from global
-          // distributed vectors
-          // --------------------------------------------------
-          // velocity and pressure values (n+1)
-          Teuchos::RCP<const Epetra_Vector> velnp
-          = discretization.GetState("u and p (n+1,converged)");
-          if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
-
-          // extract local values from the global vectors
-          std::vector<double> mysol  (lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
-
-          std::vector<double> mydisp(lm.size());
-          if(is_ale_)
-          {
-            // get most recent displacements
-            Teuchos::RCP<const Epetra_Vector> dispnp
-            =
-                discretization.GetState("dispnp");
-
-            if (dispnp==Teuchos::null)
-            {
-              dserror("Cannot get state vectors 'dispnp'");
-            }
-
-            DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
-          }
-
-          // integrate mean values
-          const DiscretizationType distype = this->Shape();
-
-          switch (distype)
-          {
-          case DRT::Element::hex8:
-          {
-            FLD::f3_calc_means<8>(this,discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::hex20:
-          {
-            FLD::f3_calc_means<20>(this,discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::hex27:
-          {
-            FLD::f3_calc_means<27>(this,discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::nurbs8:
-          {
-            FLD::f3_calc_means<8>(this,discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::nurbs27:
-          {
-            FLD::f3_calc_means<27>(this,discretization,mysol,mydisp,params);
-            break;
-          }
-          default:
-          {
-            dserror("Unknown element type for mean value evaluation\n");
-          }
-          }
-        }
-      } // end if (nsd == 3)
-      else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
-    }
-    break;
     case FLD::calc_turbscatra_statistics:
     {
       if(nsd == 3)
@@ -843,6 +767,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_divop:
     case FLD::calc_mat_deriv_u_and_rot_u:
     case FLD::void_fraction_gaussian_integration:
+    case FLD::calc_turbulence_statistics:
     {
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,
                                                                        params,

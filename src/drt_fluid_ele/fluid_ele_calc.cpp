@@ -746,6 +746,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     }
     default:
       dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+      break;
     }
 
     if (isale) convvelint_.Multiply(-1.0,egridv,funct_,1.0);
@@ -778,7 +779,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     //----------------------------------------------------------------------
     //  evaluation of various values at integration point:
@@ -840,6 +841,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     }
     default:
       dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+      break;
     }
 
     // (ALE case handled implicitly here using the (potential
@@ -1690,86 +1692,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter(
   // use one-point Gauss rule
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_stab(DRT::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
-  // coordinates of the current integration point
-  const double* gpcoord = (intpoints_stab.IP().qxg)[0];
-  for (int idim=0;idim<nsd_;idim++)
-  {
-    xsi_(idim) = gpcoord[idim];
-  }
-  const double wquad = intpoints_stab.IP().qwgt[0];
-
-  if(not isNurbs_)
-  {
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-    if (is_higher_order_ele_)
-    {
-      // get the second derivatives of standard element at current GP
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-    }
-  }
-  else
-  {
-    if (is_higher_order_ele_)
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
-      (funct_  ,
-          deriv_  ,
-          deriv2_ ,
-          xsi_    ,
-          myknots_,
-          weights_,
-          distype );
-    else
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv
-      (funct_  ,
-          deriv_  ,
-          xsi_    ,
-          myknots_,
-          weights_,
-          distype );
-  }
-
-  // compute Jacobian matrix and determinant
-  // actually compute its transpose....
-  /*
-    +-            -+ T      +-            -+
-    | dx   dx   dx |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dr   dr   dr |
-    |              |        |              |
-    | dy   dy   dy |        | dx   dy   dz |
-    | --   --   -- |   =    | --   --   -- |
-    | dr   ds   dt |        | ds   ds   ds |
-    |              |        |              |
-    | dz   dz   dz |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dt   dt   dt |
-    +-            -+        +-            -+
-   */
-
-  // get Jacobian matrix and determinant
-  xjm_.MultiplyNT(deriv_,xyze_);
-  det_ = xji_.Invert(xjm_);
-
-  // check for degenerated elements
-  if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
-
-  // compute integration factor
-  fac_ = wquad*det_;
-
-  // compute global first derivates
-  derxy_.Multiply(xji_,deriv_);
-
-  //--------------------------------------------------------------
-  //             compute global second derivatives
-  //--------------------------------------------------------------
-  if (is_higher_order_ele_)
-  {
-    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
-  }
-  else derxy2_.Clear();
+  EvalShapeFuncAndDerivsAtIntPoint((intpoints_stab.IP().qxg)[0],intpoints_stab.IP().qwgt[0]);
 
   return;
 }
@@ -1780,11 +1703,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    DRT::UTILS::GaussIntegration::iterator & iquad  // actual integration point
+    const double* gpcoord,  // actual integration point (coords)
+    double gpweight// actual integration point (weight)
 )
 {
-  // coordinates of the current integration point
-  const double* gpcoord = iquad.Point();
   for (int idim=0;idim<nsd_;idim++)
   {
      xsi_(idim) = gpcoord[idim];
@@ -1849,7 +1771,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
 
   // compute integration factor
-  fac_ = iquad.Weight()*det_;
+  fac_ = gpweight*det_;
 
   // compute global first derivates
   derxy_.Multiply(xji_,deriv_);

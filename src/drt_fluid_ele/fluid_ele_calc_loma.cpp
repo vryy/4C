@@ -419,7 +419,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // get convective velocity at integration point
     // (including grid velocity in ALE case,

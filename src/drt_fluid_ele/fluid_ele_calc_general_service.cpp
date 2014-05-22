@@ -123,6 +123,19 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
       return CalcMassMatrix(ele, discretization, lm, mat, elemat1);
     }
     break;
+    case FLD::calc_turbulence_statistics:
+    {
+      if (nsd_ == 3)
+      {
+        //it is quite expensive to calculate second order derivatives, since a matrix has to be inverted...
+        //so let's save time here
+        is_higher_order_ele_=false;
+        return CalcChannelStatistics(ele,params,discretization,lm,mat);
+      } // end if (nsd == 3)
+      else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
+      return 1;
+    }
+    break;
     default:
       dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
     break;
@@ -200,7 +213,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     for (int ui=0; ui<nen_; ++ui) // loop rows  (test functions)
     {
@@ -244,7 +257,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     for (int nodes = 0; nodes < nen_; nodes++) // loop over nodes
     {
@@ -666,7 +679,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -1398,7 +1411,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     //---------------------------------------------------------------
     // evaluate shape functions and derivatives at integration point
     //---------------------------------------------------------------
-    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -2562,7 +2575,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMassMatrix(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -2607,6 +2620,662 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMassMatrix(
 
   return 0;
 }
+
+/*-----------------------------------------------------------------------------*
+ | Calculate channel statistics                                     bk 05/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
+    DRT::ELEMENTS::Fluid*                ele,
+    Teuchos::ParameterList&              params,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Teuchos::RCP<MAT::Material> &        mat
+    )
+{
+  //moved here from fluid_ele_evaluate_utils,  f3_calc_means()
+
+  /*!
+    \brief calculate spatial mean values for channel flow
+    (requires wall parallel layers of elements)
+
+                                                             gammi 07/07
+
+    <pre>
+
+    this method assumes that each 2 dimensional integration element
+    in the homogeneous plane is parallel to the wall!!!
+
+    The necessary element integration is done in here. The element
+    is cut into two (HEX8) or three (quadratic elements) planes (plus
+    additional planes for visualisation purposes, defined by planes
+    vector), the spatial functions (velocity, pressure etc.) are
+    integrated over this plane and this element contribution is added
+    to a processor local vector (see formulas below for a exact
+    description of the output).
+    It is assumed that the sampling planes are distributed equidistant
+    in the element. The result is normalized by the area afterwards
+
+
+                       ^ normdirect       integration plane
+                       |                /
+                       |               /
+                       |
+                 +-----|-------------+
+                /|     |            /|
+               / |     |           / |
+              /  |     |          /  |
+             /   |     |         /   |
+            /    +-----|--------/----+ ---- additional integration
+           /    /|     |       /    /|      plane (for quadratic elements)
+          /    / |     |      /    / |
+         +-------------------+    /  |
+         |   /   |     *-----|---+------------>
+         |  /    +----/------|--/----+         inplanedirect[1]
+         | /    /    /       | /    /
+         |/    /    /        |/    /   \
+         +---------+---------+    /     \
+         |   /    /          |   /       integration plane
+         |  /    /           |  /
+         | /    /            | /
+         |/    /             |/
+         +----/--------------+
+             /
+            /   inplanedirect[0]
+
+
+    Example for a mean value evaluation:
+
+           1.0       /                     1.0      /
+    _               |                              |            detJ
+    u = -------- *  | u(x,y,z) dx dz =  -------- * | u(r,s,t) * ---- dr ds
+        +---        |                   +---       |             h
+         \         / A                   \        /  [-1:1]^2     y
+         / area                          / area
+        +---                            +---                    +--+
+                                                               Jacobi-
+                                                             determinant
+                                                              computed
+                                                           from 3d mapping
+                                                         h  is the (constant)
+                                                          y
+                                                        height of the element
+
+    The method computes:
+                        _             _             _             _
+               numele * u  , numele * v  , numele * w  , numele * p
+                        ___           ___           ___           ___
+                         ^2            ^2            ^2            ^2
+    and        numele * u  , numele * v  , numele * w  , numele * p
+
+                        _ _           _ _           _ _
+    as well as  numele * u*v, numele * u*w, numele * v*w
+
+
+    as well as numele and the element area.
+    All results are communicated via the parameter list!
+
+    </pre>
+
+   */
+
+  // --------------------------------------------------
+  // extract velocity and pressure from global
+  // distributed vectors
+  // --------------------------------------------------
+  // velocity and pressure values (n+1)
+  Teuchos::RCP<const Epetra_Vector> velnp
+  = discretization.GetState("u and p (n+1,converged)");
+  if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
+
+  // extract local values from the global vectors
+  std::vector<double> mysol  (lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
+  // get view of solution and subgrid-viscosity vector
+  LINALG::Matrix<4*nen_,1> sol(&(mysol[0]),true);
+
+  // the plane normal tells you in which plane the integration takes place
+  const int normdirect = params.get<int>("normal direction to homogeneous plane");
+
+  // the vector planes contains the coordinates of the homogeneous planes (in
+  // wall normal direction)
+  Teuchos::RCP<std::vector<double> > planes = params.get<Teuchos::RCP<std::vector<double> > >("coordinate vector for hom. planes");
+
+  // get the pointers to the solution vectors
+  Teuchos::RCP<std::vector<double> > sumarea= params.get<Teuchos::RCP<std::vector<double> > >("element layer area");
+
+  Teuchos::RCP<std::vector<double> > sumu   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity u");
+  Teuchos::RCP<std::vector<double> > sumv   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity v");
+  Teuchos::RCP<std::vector<double> > sumw   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity w");
+  Teuchos::RCP<std::vector<double> > sump   = params.get<Teuchos::RCP<std::vector<double> > >("mean pressure p");
+
+  Teuchos::RCP<std::vector<double> > sumsqu = params.get<Teuchos::RCP<std::vector<double> > >("mean value u^2");
+  Teuchos::RCP<std::vector<double> > sumsqv = params.get<Teuchos::RCP<std::vector<double> > >("mean value v^2");
+  Teuchos::RCP<std::vector<double> > sumsqw = params.get<Teuchos::RCP<std::vector<double> > >("mean value w^2");
+  Teuchos::RCP<std::vector<double> > sumuv  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uv");
+  Teuchos::RCP<std::vector<double> > sumuw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uw");
+  Teuchos::RCP<std::vector<double> > sumvw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value vw");
+  Teuchos::RCP<std::vector<double> > sumsqp = params.get<Teuchos::RCP<std::vector<double> > >("mean value p^2");
+
+  // get node coordinates of element
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // Do ALE specific updates if necessary
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_> edispnp(true);
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+
+    // get new node positions of ALE mesh
+     xyze_ += edispnp;
+
+     for (int inode=0; inode<nen_; inode++)
+     {
+       if(abs(edispnp(normdirect,inode))>1e-6)
+       {
+         dserror("no sampling possible if homogeneous planes are not conserved\n");
+       }
+     }
+
+  }
+
+  if(distype == DRT::Element::hex8
+     ||
+     distype == DRT::Element::hex27
+     ||
+     distype == DRT::Element::hex20)
+  {
+    double min = xyze_(normdirect,0);
+    double max = xyze_(normdirect,0);
+
+    // set maximum and minimum value in wall normal direction
+    for(int inode=0;inode<nen_;inode++)
+    {
+      if(min > xyze_(normdirect,inode))
+      {
+        min=xyze_(normdirect,inode);
+      }
+      if(max < xyze_(normdirect,inode))
+      {
+         max=xyze_(normdirect,inode);
+      }
+    }
+
+    // determine the ids of the homogeneous planes intersecting this element
+    std::set<int> planesinele;
+    for(unsigned nplane=0;nplane<planes->size();++nplane)
+    {
+    // get all available wall normal coordinates
+      for(int nn=0;nn<nsd_;++nn)
+      {
+        if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
+        {
+          planesinele.insert(nplane);
+         }
+      }
+    }
+
+    // remove lowest layer from planesinele to avoid double calculations. This is not done
+    // for the first level (index 0) --- if deleted, shift the first integration point in
+    // wall normal direction
+    // the shift depends on the number of sampling planes in the element
+    double shift=0;
+
+    // set the number of planes which cut the element
+    const int numplanesinele = planesinele.size();
+
+    if(*planesinele.begin() != 0)
+    {
+      // this is not an element of the lowest element layer
+      planesinele.erase(planesinele.begin());
+
+      shift=2.0/(static_cast<double>(numplanesinele-1));
+    }
+    else
+    {
+      // this is an element of the lowest element layer. Increase the counter
+      // in order to compute the total number of elements in one layer
+      int* count = params.get<int*>("count processed elements");
+
+      (*count)++;
+    }
+
+    // determine the orientation of the rst system compared to the xyz system
+    int elenormdirect=-1;
+    bool upsidedown =false;
+    // the only thing of interest is how normdirect is oriented in the
+    // element coordinate system
+    if(xyze_(normdirect,4)-xyze_(normdirect,0)>2e-9)
+    {
+      // t aligned
+      elenormdirect =2;
+      std::cout << "upsidedown false" <<&std::endl;
+    }
+    else if (xyze_(normdirect,3)-xyze_(normdirect,0)>2e-9)
+    {
+      // s aligned
+      elenormdirect =1;
+    }
+    else if (xyze_(normdirect,1)-xyze_(normdirect,0)>2e-9)
+    {
+      // r aligned
+      elenormdirect =0;
+    }
+    else if(xyze_(normdirect,4)-xyze_(normdirect,0)<-2e-9)
+    {
+      std::cout << xyze_(normdirect,4)-xyze_(normdirect,0) << &std::endl;
+      // -t aligned
+      elenormdirect =2;
+      upsidedown =true;
+      std::cout << "upsidedown true" <<&std::endl;
+    }
+    else if (xyze_(normdirect,3)-xyze_(normdirect,0)<-2e-9)
+    {
+      // -s aligned
+      elenormdirect =1;
+      upsidedown =true;
+    }
+    else if (xyze_(normdirect,1)-xyze_(normdirect,0)<-2e-9)
+    {
+      // -r aligned
+      elenormdirect =0;
+      upsidedown =true;
+    }
+    else
+    {
+      dserror("cannot determine orientation of plane normal in local coordinate system of element");
+    }
+    std::vector<int> inplanedirect;
+    {
+      std::set <int> inplanedirectset;
+      for(int i=0;i<3;++i)
+      {
+         inplanedirectset.insert(i);
+      }
+      inplanedirectset.erase(elenormdirect);
+
+      for(std::set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      {
+        inplanedirect.push_back(*id);
+      }
+    }
+
+    // get the quad9 gaussrule for the in plane integration
+    DRT::UTILS::GaussIntegration intpoints( DRT::Element::quad9 );
+//    const DRT::UTILS::IntegrationPoints2D  intpoints(DRT::UTILS::intrule_quad_9point);
+
+    // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
+    // (now we allow even more)
+    double layershift=0;
+
+    // loop all levels in element
+    for(std::set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    {
+      // reset temporary values
+      double area=0;
+
+      double ubar=0;
+      double vbar=0;
+      double wbar=0;
+      double pbar=0;
+
+      double usqbar=0;
+      double vsqbar=0;
+      double wsqbar=0;
+      double uvbar =0;
+      double uwbar =0;
+      double vwbar =0;
+      double psqbar=0;
+
+      // get the integration point in wall normal direction
+      double e[3];
+
+      e[elenormdirect]=-1.0+shift+layershift;
+      if(upsidedown)
+      {
+        e[elenormdirect]*=-1;
+      }
+
+      // start loop over integration points in layer
+//      for (int iquad=0;iquad<intpoints.nquad;iquad++)
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+      {
+        // get the other gauss point coordinates
+        for(int i=0;i<2;++i)
+        {
+          e[inplanedirect[i]]=iquad.Point()[i];
+        }
+
+        const double* econst=e;
+
+        // evaluate shape functions and derivatives at integration point
+        EvalShapeFuncAndDerivsAtIntPoint(econst,iquad.Weight());
+
+        // we assume that every plane parallel to the wall is preserved
+        // hence we can compute the jacobian determinant of the 2d cutting
+        // element by replacing max-min by one on the diagonal of the
+        // jacobi matrix (the two non-diagonal elements are zero)
+        if(xjm_(normdirect,normdirect)<0)
+        {
+          xjm_(normdirect,normdirect)=-1.0;
+        }
+        else
+        {
+          xjm_(normdirect,normdirect)= 1.0;
+        }
+
+        //get local copy of determinant/ adjusted to plane integration
+        const double det =
+          xjm_(0,0)*xjm_(1,1)*xjm_(2,2)
+          +
+          xjm_(0,1)*xjm_(1,2)*xjm_(2,0)
+          +
+          xjm_(0,2)*xjm_(1,0)*xjm_(2,1)
+          -
+          xjm_(0,2)*xjm_(1,1)*xjm_(2,0)
+          -
+          xjm_(0,0)*xjm_(1,2)*xjm_(2,1)
+          -
+          xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+
+        // check for degenerated elements
+        if (det <= 0.0)
+        {
+          dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+        }
+
+#ifdef DEBUG
+    // check whether this gausspoint is really inside the desired plane
+    {
+      double x[3];
+      x[0]=0;
+      x[1]=0;
+      x[2]=0;
+      for(int inode=0;inode<nen_;inode++)
+      {
+        x[0]+=funct_(inode)*xyze_(0,inode);
+        x[1]+=funct_(inode)*xyze_(1,inode);
+        x[2]+=funct_(inode)*xyze_(2,inode);
+      }
+
+      if(abs(x[normdirect]-(*planes)[*id])>2e-9)
+      {
+        dserror("Mixing up element cut planes during integration");
+      }
+    }
+#endif
+
+        //interpolated values at gausspoints
+        double ugp=0;
+        double vgp=0;
+        double wgp=0;
+        double pgp=0;
+
+        // the computation of this jacobian determinant from the 3d
+        // mapping is based on the assumption that we do not deform
+        // our elements in wall normal direction!
+        const double fac=det*iquad.Weight();
+
+        // increase area of cutting plane in element
+        area += fac;
+
+        for(int inode=0;inode<nen_;inode++)
+        {
+          int finode=inode*4;
+
+          ugp  += funct_(inode)*sol(finode++);
+          vgp  += funct_(inode)*sol(finode++);
+          wgp  += funct_(inode)*sol(finode++);
+          pgp  += funct_(inode)*sol(finode  );
+        }
+
+        // add contribution to integral
+
+        double dubar  = ugp*fac;
+        double dvbar  = vgp*fac;
+        double dwbar  = wgp*fac;
+        double dpbar  = pgp*fac;
+
+        ubar   += dubar;
+        vbar   += dvbar;
+        wbar   += dwbar;
+        pbar   += dpbar;
+
+        usqbar += ugp*dubar;
+        vsqbar += vgp*dvbar;
+        wsqbar += wgp*dwbar;
+        uvbar  += ugp*dvbar;
+        uwbar  += ugp*dwbar;
+        vwbar  += vgp*dwbar;
+        psqbar += pgp*dpbar;
+      } // end loop integration points
+
+      // add increments from this layer to processor local vectors
+      (*sumarea)[*id] += area;
+
+      (*sumu   )[*id] += ubar;
+      (*sumv   )[*id] += vbar;
+      (*sumw   )[*id] += wbar;
+      (*sump   )[*id] += pbar;
+
+      (*sumsqu )[*id] += usqbar;
+      (*sumsqv )[*id] += vsqbar;
+      (*sumsqw )[*id] += wsqbar;
+      (*sumuv  )[*id] += uvbar;
+      (*sumuw  )[*id] += uwbar;
+      (*sumvw  )[*id] += vwbar;
+      (*sumsqp )[*id] += psqbar;
+
+      // jump to the next layer in the element.
+      // in case of an hex8 element, the two coordinates are -1 and 1(+2)
+      // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
+
+      layershift+=2.0/(static_cast<double>(numplanesinele-1));
+    }
+  }
+  else if(distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
+  {
+    // get size of planecoords
+    int size = planes->size();
+
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    if(nurbsdis == NULL)
+    {
+      dserror("we need a nurbs discretisation for nurbs elements\n");
+    }
+
+    // get nurbs dis' element numbers
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+
+    // use size of planes and mele to determine number of layers
+    int numsublayers=(size-1)/nele_x_mele_x_lele[1];
+
+    // get the knotvector itself
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+    DRT::Node**   nodes = ele->Nodes();
+
+    // get gid, location in the patch
+    int gid = ele->Id();
+
+    std::vector<int> ele_cart_id(3);
+
+    int npatch = -1;
+
+    knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
+    if(npatch!=0)
+    {
+      dserror("expected single patch nurbs problem for calculating means");
+    }
+
+    bool zero_size = false;
+    zero_size = knots->GetEleKnots(myknots_,gid);
+
+    // if we have a zero sized element due to a interpolated
+    // point --- exit here
+    if(zero_size)
+    {
+      return 0;
+    }
+
+    for (int inode=0; inode<nen_; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+    =
+    dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+      weights_(inode) = cp->W();
+    }
+
+    // there's one additional plane for the last element layer
+    int endlayer=0;
+    if(ele_cart_id[1]!=nele_x_mele_x_lele[1]-1)
+    {
+      endlayer=numsublayers;
+    }
+    else
+    {
+      endlayer=numsublayers+1;
+    }
+
+    // loop layers in element
+    for(int rr=0;rr<endlayer;++rr)
+    {
+      // set gauss point coordinates
+      double gp[3];
+      gp[1]=-1.0+rr*2.0/((double)numsublayers);
+
+      // get the quad9 gaussrule for the in plane integration
+      DRT::UTILS::GaussIntegration intpoints( DRT::Element::quad9 );
+
+      // reset temporary values
+      double area=0;
+
+      double ubar=0;
+      double vbar=0;
+      double wbar=0;
+      double pbar=0;
+
+      double usqbar=0;
+      double vsqbar=0;
+      double wsqbar=0;
+      double uvbar =0;
+      double uwbar =0;
+      double vwbar =0;
+      double psqbar=0;
+
+
+      // start loop over integration points in layer
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+      {
+
+        // get the other gauss point coordinates
+        gp[0]=iquad.Point()[0];
+        gp[2]=iquad.Point()[1];
+
+        const double* gpconst=gp;
+        EvalShapeFuncAndDerivsAtIntPoint(gpconst,iquad.Weight());
+
+        // we assume that every plane parallel to the wall is preserved
+        // hence we can compute the jacobian determinant of the 2d cutting
+        // element by replacing max-min by one on the diagonal of the
+        // jacobi matrix (the two non-diagonal elements are zero)
+        if(xjm_(normdirect,normdirect)<0)
+        {
+          xjm_(normdirect,normdirect)=-1.0;
+        }
+        else
+        {
+          xjm_(normdirect,normdirect)= 1.0;
+        }
+
+        const double det =
+          xjm_(0,0)*xjm_(1,1)*xjm_(2,2)
+          +
+          xjm_(0,1)*xjm_(1,2)*xjm_(2,0)
+          +
+          xjm_(0,2)*xjm_(1,0)*xjm_(2,1)
+          -
+          xjm_(0,2)*xjm_(1,1)*xjm_(2,0)
+          -
+          xjm_(0,0)*xjm_(1,2)*xjm_(2,1)
+          -
+          xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+
+        // check for degenerated elements
+        if (det <= 0.0)
+        {
+          dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+        }
+
+        //interpolated values at gausspoints
+        double ugp=0;
+        double vgp=0;
+        double wgp=0;
+        double pgp=0;
+
+        // the computation of this jacobian determinant from the 3d
+        // mapping is based on the assumption that we do not deform
+        // our elements in wall normal direction!
+        const double fac=det*iquad.Weight();
+
+        // increase area of cutting plane in element
+        area += fac;
+
+        for(int inode=0;inode<nen_;inode++)
+        {
+          ugp += funct_(inode)*sol(inode*4  );
+          vgp += funct_(inode)*sol(inode*4+1);
+          wgp += funct_(inode)*sol(inode*4+2);
+          pgp += funct_(inode)*sol(inode*4+3);
+        }
+
+        // add contribution to integral
+        ubar   += ugp*fac;
+        vbar   += vgp*fac;
+        wbar   += wgp*fac;
+        pbar   += pgp*fac;
+
+        usqbar += ugp*ugp*fac;
+        vsqbar += vgp*vgp*fac;
+        wsqbar += wgp*wgp*fac;
+        uvbar  += ugp*vgp*fac;
+        uwbar  += ugp*wgp*fac;
+        vwbar  += vgp*wgp*fac;
+        psqbar += pgp*pgp*fac;
+      } // end loop integration points
+
+
+      // add increments from this layer to processor local vectors
+      (*sumarea)[ele_cart_id[1]*numsublayers+rr] += area;
+
+      (*sumu   )[ele_cart_id[1]*numsublayers+rr] += ubar;
+      (*sumv   )[ele_cart_id[1]*numsublayers+rr] += vbar;
+      (*sumw   )[ele_cart_id[1]*numsublayers+rr] += wbar;
+      (*sump   )[ele_cart_id[1]*numsublayers+rr] += pbar;
+
+      (*sumsqu )[ele_cart_id[1]*numsublayers+rr] += usqbar;
+      (*sumsqv )[ele_cart_id[1]*numsublayers+rr] += vsqbar;
+      (*sumsqw )[ele_cart_id[1]*numsublayers+rr] += wsqbar;
+      (*sumuv  )[ele_cart_id[1]*numsublayers+rr] += uvbar;
+      (*sumuw  )[ele_cart_id[1]*numsublayers+rr] += uwbar;
+      (*sumvw  )[ele_cart_id[1]*numsublayers+rr] += vwbar;
+      (*sumsqp )[ele_cart_id[1]*numsublayers+rr] += psqbar;
+    }
+
+  }
+  else
+  {
+    dserror("Unknown element type for mean value evaluation\n");
+  }
+
+  return 0;
+}
+
 
 // template classes
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;

@@ -367,7 +367,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -2232,7 +2232,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
     for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
     {
       // evaluate shape functions and derivatives at integration point
-      my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+      my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
       MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
     }
   }
@@ -2246,7 +2246,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
         for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
         {
           // evaluate shape functions and derivatives at integration point
-          my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+          my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
           MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
         }
       }
@@ -2259,7 +2259,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
         for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
         {
           // evaluate shape functions and derivatives at integration point
-          my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+          my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
           MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
         }
       }
@@ -2289,11 +2289,11 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
           //----------------------------------------------------------------------
           for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
           {
-            my::EvalShapeFuncAndDerivsAtIntPoint( quadint );
+            my::EvalShapeFuncAndDerivsAtIntPoint( quadint.Point(), quadint.Weight() );
             MSH_EvaluateMatrices( evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhsTemp );
           }
 
-          my::EvalShapeFuncAndDerivsAtIntPoint( iquad );
+          my::EvalShapeFuncAndDerivsAtIntPoint( iquad.Point(),iquad.Weight() );
           bK_ss.MultiplyNT( my::funct_, my::funct_ );
 
           invbK_ss.Update( iquad.Weight(), invbK_ssTemp, 1.0 );
@@ -4015,7 +4015,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
      // Summe über alle Knoten
      for(int ui=0; ui<my::nen_; ++ui)

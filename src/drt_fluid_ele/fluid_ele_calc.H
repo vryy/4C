@@ -179,6 +179,18 @@ public:
 //    const DRT::UTILS::GaussIntegration & intpoints
   );
 
+  /*! \brief Calculate channel statistics
+   *
+   *  \author bk \date 05/2014
+   */
+  virtual int CalcChannelStatistics(
+      DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Teuchos::RCP<MAT::Material> &        mat
+      );
+
   /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
    *
    *   \author ghamm
@@ -539,7 +551,8 @@ protected:
   void EvalShapeFuncAndDerivsAtEleCenter();
 
   //! brief evaluate shape functions and their derivatives at integration point
-  void EvalShapeFuncAndDerivsAtIntPoint(DRT::UTILS::GaussIntegration::iterator & iquad    ///< actual integration point
+  void EvalShapeFuncAndDerivsAtIntPoint(const double* gpcoords,      ///< actual integration point (coords)
+                                        double gpweight     ///< actual integration point (weight)
                                         );
 
 

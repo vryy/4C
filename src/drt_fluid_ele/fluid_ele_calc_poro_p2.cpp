@@ -726,7 +726,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
     //const double det0 = my::SetupMaterialDerivatives();

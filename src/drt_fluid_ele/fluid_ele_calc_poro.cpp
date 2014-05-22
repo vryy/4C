@@ -1289,7 +1289,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
    {
      // evaluate shape functions and derivatives at integration point
-     my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+     my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
      const double det0 = SetupMaterialDerivatives();
 
@@ -1836,7 +1836,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     lin_resM_Dus.Clear();
 
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
     const double det0 = SetupMaterialDerivatives();
@@ -5416,7 +5416,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     //-----------------------------------auxilary variables for computing the porosity
     porosity_=0.0;
@@ -5535,7 +5535,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)

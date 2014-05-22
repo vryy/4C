@@ -714,7 +714,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     lin_resM_Dphi.Clear();
 
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
     const double det0 = my::SetupMaterialDerivatives();
