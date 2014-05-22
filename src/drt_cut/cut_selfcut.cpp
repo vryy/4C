@@ -1750,7 +1750,7 @@ void GEO::CUT::SelfCut::WallGmsh(const std::string & name)
       throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
-    int cutsideselfcutposition = -0.5;
+    double cutsideselfcutposition = -0.5;
     for (int i = 0; i < cutsidetype; ++i)
     {
       if (i > 0)
@@ -2158,7 +2158,7 @@ void GEO::CUT::SelfCut::SCmgmGmsh(const std::string & name)
       throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
-    int cutsideselfcutposition = -0.5;
+    double cutsideselfcutposition = -0.5;
     for (int i = 0; i < cutsidetype; ++i)
     {
       if (i > 0)
@@ -2583,7 +2583,7 @@ void GEO::CUT::SelfCut::ErrorGmsh(const std::string & name, Side & cutside)
       throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
-    int cutsideselfcutposition = -0.5;
+    double cutsideselfcutposition = -0.5;
     for (int i = 0; i < cutsidetype; ++i)
     {
       if (i > 0)

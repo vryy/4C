@@ -1234,7 +1234,7 @@ void XFEM::SemiLagrange::findNearProcs(
         }
       }
 
-      if (!data->node_.Owner()==myrank_ and data->counter_==0)
+      if (data->node_.Owner()!=myrank_ and data->counter_==0)
         dserror("something wrong");
 
       for (size_t i=0;i<eles.size();i++)
@@ -1699,7 +1699,7 @@ void XFEM::SemiLagrange::exportIterDataNew(
    *--------------------------------------*/
   if (!procDone)
   {
-    DRT::PackBuffer dataSend[numproc_];
+    std::vector<DRT::PackBuffer> dataSend(numproc_);
 
     // fill vectors with the data
     for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -1792,7 +1792,7 @@ void XFEM::SemiLagrange::exportIterDataNew(
     clearState(TimeIntData::nextSL_);
     clearState(TimeIntData::initfailedSL_);
 
-    std::vector<char> dataRecv[numproc_];
+    std::vector<std::vector<char> > dataRecv(numproc_);
 
     for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
     {

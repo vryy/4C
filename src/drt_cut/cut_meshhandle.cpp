@@ -107,8 +107,8 @@ void GEO::CUT::MeshHandle::CreateElementSides(Element & element)
       elementsidenodeids.insert(elementsidenodeid);
       sidenodeids.push_back(elementsidenodeid);
     }
-    std::map<plain_int_set, LinearSideHandle >::iterator i = elementlinearsides_.find(elementsidenodeids);
-    if ( i==elementlinearsides_.end() )
+    std::map<plain_int_set, LinearSideHandle >::iterator j = elementlinearsides_.find(elementsidenodeids);
+    if ( j==elementlinearsides_.end() )
     {
       if(elementsidenodeids.size()==3)
       {

@@ -609,7 +609,7 @@ void GEO::CUT::Node::SelfCutPosition( Point::PointPosition pos )
     if(selfcutposition_ == Point::oncutsurface) return;
 
     // change position for points just in case of undecided node and do not change oncutsurface nodes
-    if( (selfcutposition_ == Point::undecided) )
+    if( selfcutposition_ == Point::undecided )
     {
     	selfcutposition_ = pos;
       if ( pos==Point::outside or pos==Point::inside )

@@ -115,7 +115,7 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
     {
       MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
       if ( not params ) dserror("Cannot cast material parameters");
-      if ( not params->nummat_ == 1 ) dserror("At the moment, not possible");
+      if ( params->nummat_ != 1 ) dserror("At the moment, not possible");
       int matid = (*(params->matids_))[0];
 
       const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(matid)->second;
@@ -948,7 +948,7 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
       if( not del )
         dserror("This element should have atleast one replaceable node\n");
 
-      if( not newnodes.size() == ele->NumNode() )
+      if( newnodes.size() != static_cast<std::size_t>(ele->NumNode()) )
         dserror("Check the number of new nodes\n");
 
 #if 1
@@ -1308,7 +1308,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip()
     oldnew_tip[tipid] = gnewtip;
   }
 
-  if( not tipnodes_.size() == oldnew_tip.size() )
+  if( tipnodes_.size() != oldnew_tip.size() )
     dserror("for each node, we should have a new tip node\n");
 
   std::vector<int> newTip;
@@ -1557,7 +1557,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
   LINALG::GatherAll( tip_bc_disp_, comm_ );
 
 
-  if( not tipnodes_.size() == oldnew_tip.size() )
+  if( tipnodes_.size() != oldnew_tip.size() )
     dserror("for each node, we should have a new tip node\n");
 
   std::vector<int> newTip;
@@ -1706,7 +1706,7 @@ void DRT::CRACK::PropagateCrack::CheckCompleteSplit()
       if( not del )
         dserror("This element should have atleast one replaceable node\n");
 
-      if( not newnodes.size() == ele->NumNode() )
+      if( newnodes.size() != static_cast<std::size_t>(ele->NumNode()) )
         dserror("Check the number of new nodes\n");
 
       //-----------------
