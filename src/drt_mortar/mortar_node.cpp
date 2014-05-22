@@ -68,6 +68,7 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
     lm()[i]=0.0;
     lmold()[i]=0.0;
     lmuzawa()[i]=0.0;
+    GetScale()=1.0;
   }
 
   return;
