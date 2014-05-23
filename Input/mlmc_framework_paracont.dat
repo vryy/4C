@@ -612,7 +612,7 @@ NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 // standard AAA material parametersa
-MAT 1 MAT_Struct_AAANeoHookeStopro YOUNG 1.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7 SIGMA 2.6 CORRLENGTH 25.0
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7 SIGMA 2.6 CORRLENGTH 25.0
 MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 1.0e-7
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.3200072

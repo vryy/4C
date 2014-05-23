@@ -144,7 +144,7 @@ NONGAUSSPARAM2                  0.920457
 WRITESTATS                      1000
 CALC_METHOD                     FFT
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_AAANeoHookeStopro YOUNG 0.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 0.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (0.5*sin(-3.1415927*0.5+t*3.14152927*t)+0.5) t1 0.0 t2 20.0
 ----------------------------------------------------------------------CURVE3
