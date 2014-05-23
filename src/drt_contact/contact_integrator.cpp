@@ -3857,7 +3857,7 @@ void inline CONTACT::CoIntegrator::GP_DM(
             double prod = lmval[j]*sval[k]*jac*wgt;
 
             // dof to dof
-            if ((jdof==kdof))
+            if (jdof==kdof)
             {
               if (snode->IsOnBound())
               {
@@ -4030,7 +4030,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
             double prod = lmval[j]*sval[k]*jac*wgt;
 
             // dof to dof
-            if ((jdof==kdof))
+            if (jdof==kdof)
             {
               if (snode->IsOnBound())
               {
@@ -4097,7 +4097,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
             double prod = lmintval[j]*sval[k]*jac*wgt;
 
             // dof to dof
-            if ((jdof==kdof))
+            if (jdof==kdof)
             {
               if (snode->IsOnBound())
               {

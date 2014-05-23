@@ -335,7 +335,7 @@ static const char * level_desc[] = {
 static const char * GetStateDesc(post_state i)
 {
   static int last = sizeof(level_desc)/sizeof(level_desc[0]) - 1;
-  return (i<0 || i >= last) ? level_desc[last] : level_desc[i];
+  return (i >= last) ? level_desc[last] : level_desc[i];
 }
 
 static int GP_number_check = 0;   /* number of gauss points to be written */

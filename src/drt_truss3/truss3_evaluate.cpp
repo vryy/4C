@@ -546,7 +546,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
       dserror("Unknown type kintype_ for Truss3");
     break;
   }
-  if(params.get<std::string>("internalforces","no")=="yes" && DummyForce != NULL)
+  if(params.get<std::string>("internalforces","no")=="yes")
     f_ = Teuchos::rcp(new Epetra_SerialDenseVector(DummyForce));
 
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
@@ -684,30 +684,23 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
   }
 
   //computing global internal forces
-  if (DummyForce != NULL)
-  {
-    for (int i=0; i<6; ++i)
-      DummyForce(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
-  }
+  for (int i=0; i<6; ++i)
+    DummyForce(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
 
   //computing linear stiffness matrix
-  if (DummyStiffMatrix != NULL)
+  for (int i=0; i<3; ++i)
   {
-    for (int i=0; i<3; ++i)
-    {
-      //stiffness entries for first node
-      DummyStiffMatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
-      DummyStiffMatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
-      //stiffness entries for second node
-      DummyStiffMatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
-      DummyStiffMatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
-    }
-
-    for (int i=0; i<6; ++i)
-      for (int j=0; j<6; ++j)
-        DummyStiffMatrix(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-
+    //stiffness entries for first node
+    DummyStiffMatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
+    DummyStiffMatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
+    //stiffness entries for second node
+    DummyStiffMatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
+    DummyStiffMatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
   }
+
+  for (int i=0; i<6; ++i)
+    for (int j=0; j<6; ++j)
+      DummyStiffMatrix(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
 
 
   //calculating mass matrix
@@ -794,28 +787,24 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1,6>&   
   double forcescalar=(ym*crosssec_*epsilon)/lcurr;
 
   //computing global internal forces
-  if (DummyForce != NULL)
-    for (int i=0; i<6; ++i)
-     DummyForce(i) = forcescalar * aux(i);
+  for (int i=0; i<6; ++i)
+    DummyForce(i) = forcescalar * aux(i);
 
 
   //computing linear stiffness matrix
-  if (DummyStiffMatrix != NULL)
+  for (int i=0; i<3; ++i)
   {
-    for (int i=0; i<3; ++i)
-    {
-        //stiffness entries for first node
-        DummyStiffMatrix(i,i)    =  forcescalar;
-        DummyStiffMatrix(i,3+i)  = -forcescalar;
-        //stiffness entries for second node
-        DummyStiffMatrix(i+3,i+3)=  forcescalar;
-        DummyStiffMatrix(i+3,i)  = -forcescalar;
-    }
-
-    for (int i=0; i<6; ++i)
-      for (int j=0; j<6; ++j)
-        DummyStiffMatrix(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
+    //stiffness entries for first node
+    DummyStiffMatrix(i,i)    =  forcescalar;
+    DummyStiffMatrix(i,3+i)  = -forcescalar;
+    //stiffness entries for second node
+    DummyStiffMatrix(i+3,i+3)=  forcescalar;
+    DummyStiffMatrix(i+3,i)  = -forcescalar;
   }
+
+  for (int i=0; i<6; ++i)
+    for (int j=0; j<6; ++j)
+      DummyStiffMatrix(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
 
   //calculating mass matrix.
   if (massmatrix != NULL)
@@ -1006,21 +995,19 @@ inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(Teuchos::ParameterList
         //loop over columns of matrix t_{\par} \otimes t_{\par}
         for(int l=0; l<ndim; l++)
         {
-          if(DummyForce != NULL)
-            DummyForce(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
+          DummyForce(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
 
-          if(DummyStiffMatrix != NULL)
-            //loop over all column nodes
-            for (int j=0; j<nnode; j++)
-            {
-              DummyStiffMatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
-              /* This part of the code is important, only if there exist a background velocity.
-               * Uncomment this if there is background velocity
+          //loop over all column nodes
+          for (int j=0; j<nnode; j++)
+          {
+            DummyStiffMatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
+            /* This part of the code is important, only if there exist a background velocity.
+             * Uncomment this if there is background velocity
                DummyStiffMatrix(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
-               */
-              DummyStiffMatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
-              DummyStiffMatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
-            }
+             */
+            DummyStiffMatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
+            DummyStiffMatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
+          }
         }
   }
 
@@ -1091,16 +1078,14 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&   
         //loop dimensions with respect to columns
         for(int l=0; l<ndim; l++)
         {
-          if(DummyForce != NULL)
-            DummyForce(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0))-sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
+          DummyForce(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0))-sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
 
-          if(DummyStiffMatrix != NULL)
-            //loop over all column nodes
-            for (int j=0; j<nnode; j++)
-            {
-              DummyStiffMatrix(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
-              DummyStiffMatrix(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
-            }
+          //loop over all column nodes
+          for (int j=0; j<nnode; j++)
+          {
+            DummyStiffMatrix(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+            DummyStiffMatrix(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+          }
         }
   }
 

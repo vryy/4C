@@ -12,7 +12,7 @@ Created on: Mar 4, 2013
 </pre>
 
 *---------------------------------------------------------------------------*/
-#ifndef SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_h_
+#ifndef SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_H_
 #define SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_H_
 
 #include "AztecOO_StatusTestResNorm.h"

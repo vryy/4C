@@ -556,7 +556,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
   }
 
   // internal force vector stored by class variable before application of stochastic excitations
-  if(params.get<std::string>("internalforces","no")=="yes" && fforce != NULL)
+  if(params.get<std::string>("internalforces","no")=="yes")
     f_ = Teuchos::rcp(new Epetra_SerialDenseVector(fforce));
 
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
@@ -681,31 +681,25 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(LINALG::Matrix<6,1>& fdisp,
   }
 
   //computing global internal forces
-  if (fforce != NULL)
+  for (int i=0; i<6; ++i)
   {
-    for (int i=0; i<6; ++i)
-    {
-      fforce(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
-    }
+    fforce(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
   }
 
   //computing linear stiffness matrix
-  if (fstiffmatrix != NULL)
+  for (int i=0; i<3; ++i)
   {
-    for (int i=0; i<3; ++i)
-    {
-        //stiffness entries for first node
-        fstiffmatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
-        fstiffmatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
-        //stiffness entries for second node
-        fstiffmatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
-        fstiffmatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
-    }
+    //stiffness entries for first node
+    fstiffmatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
+    fstiffmatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
+    //stiffness entries for second node
+    fstiffmatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
+    fstiffmatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
+  }
 
-    for (int i=0; i<6; ++i)
-      for (int j=0; j<6; ++j)
-        fstiffmatrix(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-   }
+  for (int i=0; i<6; ++i)
+    for (int j=0; j<6; ++j)
+      fstiffmatrix(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
 
   //calculating consistent mass matrix
   if (massmatrix != NULL)
@@ -790,28 +784,24 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(const LINALG::Matrix<6,1>& 
   double forcescalar=(ym*crosssec_*epsilon)/lcurr;
 
   //computing global internal forces
-  if (force != NULL)
-    for (int i=0; i<6; ++i)
-     force(i) = forcescalar * aux(i);
+  for (int i=0; i<6; ++i)
+    force(i) = forcescalar * aux(i);
 
 
   //computing linear stiffness matrix
-  if (stiffmatrix != NULL)
+  for (int i=0; i<3; ++i)
   {
-    for (int i=0; i<3; ++i)
-    {
-        //stiffness entries for first node
-        stiffmatrix(i,i)    =  forcescalar;
-        stiffmatrix(i,3+i)  = -forcescalar;
-        //stiffness entries for second node
-        stiffmatrix(i+3,i+3)=  forcescalar;
-        stiffmatrix(i+3,i)  = -forcescalar;
-    }
-
-    for (int i=0; i<6; ++i)
-      for (int j=0; j<6; ++j)
-        stiffmatrix(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
+    //stiffness entries for first node
+    stiffmatrix(i,i)    =  forcescalar;
+    stiffmatrix(i,3+i)  = -forcescalar;
+    //stiffness entries for second node
+    stiffmatrix(i+3,i+3)=  forcescalar;
+    stiffmatrix(i+3,i)  = -forcescalar;
   }
+
+  for (int i=0; i<6; ++i)
+    for (int j=0; j<6; ++j)
+      stiffmatrix(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
 
   //calculating consistent mass matrix
   if (massmatrix != NULL)
@@ -1000,21 +990,19 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
         //loop over columns of matrix t_{\par} \otimes t_{\par}
         for(int l=0; l<ndim; l++)
         {
-          if(fforce != NULL)
-            fforce(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
+          fforce(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
 
-          if(fstiffmatrix != NULL)
-            //loop over all column nodes
-            for (int j=0; j<fnnode; j++)
-            {
-              fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*((k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
-              /* This part of the code is important, only if there exist a background velocity.
-               * Uncomment this if there is background velocity
+          //loop over all column nodes
+          for (int j=0; j<fnnode; j++)
+          {
+            fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*((k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
+            /* This part of the code is important, only if there exist a background velocity.
+             * Uncomment this if there is background velocity
               fstiffmatrix(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
-              */
-              fstiffmatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
-              fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
-            }
+             */
+            fstiffmatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
+            fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
+          }
         }
   }
 
