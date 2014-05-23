@@ -130,8 +130,6 @@ private:
   bool reduced_output_;
 
 
-
-
 public:
   //! \brief Standard constructor
   GenRandomField(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret);

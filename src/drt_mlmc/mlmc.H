@@ -130,6 +130,9 @@ private:
   //! brief global deterministic value that is used instead of random field for parameter continuation
   double cont_blend_value_;
 
+  //! brief how many times do half the stepsize in parameter continuation before we give up
+  int cont_num_maxtrials_;
+
   //! brief flag to reduce output to files as well as stdout
   bool reduced_output_;
 
@@ -365,9 +368,6 @@ public:
   //! \brief routine to assign material parameters to each element based on random field
   void SetupStochMat(unsigned int random_seed);
 
-  //! \brief routine to assign material parameters to each element based on random field
-  void SetupStochMat2(unsigned int random_seed);
-
   // Setup Material Parameters in each element based on deterministic value
   void SetupStochMatDet(double value);
 
@@ -444,6 +444,10 @@ public:
 
    //! brief compute maximum value as well as some quantile of some quantity (over all procs)
    void ComputePeakAndQuantile(Teuchos::RCP<std::vector <double > >  values , std::vector <int>* corresponding_ele_ids,Teuchos::RCP<std::pair<int, double> > peak,Teuchos::RCP<std::pair<int, double> > quantile99);
+
+
+   //! brief compute maximum value as well as some quantile of some quantity (over all procs)
+   void SetupRF(int myswitch);
 
   // #########################################################################
   // ##     functions needed for Multilevel Monte Carlo only                ##

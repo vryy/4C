@@ -1523,6 +1523,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&mlmcp);
   DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&mlmcp);
   DoubleParameter("CONTBLENDVALUE",1.5,"Use this values for parameter continuation",&mlmcp);
+  IntParameter("CONTNUMMAXTRIALS",4,"Half stepsize CONTNUMMAXTRIALS times before giving up",&mlmcp);
   setStringToIntegralParameter<int>("PARAMETERCONTINUATION","NO",
                                      "Numerical continuation to avoid full nonlinear solution",
                                      yesnotuple,yesnovalue,&mlmcp);
