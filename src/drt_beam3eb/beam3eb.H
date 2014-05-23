@@ -232,6 +232,11 @@ public:
     return Izz_;
   }
 
+  const double& GetJacobi() const
+  {
+    return jacobi_;
+  }
+
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */

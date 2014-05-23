@@ -154,7 +154,7 @@ public:
 
   */
   void Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-                const Epetra_Vector& disrow, bool newsti = false);
+                const Epetra_Vector& disrow, Teuchos::ParameterList beamcontactparams, bool newsti = false);
 
   /*!
   \brief Update beam contact
@@ -356,6 +356,9 @@ private:
   //! parameter list for general contact options
   Teuchos::ParameterList scontact_;
 
+  //! parameter list for structural dynamic options
+  Teuchos::ParameterList sstructdynamic_;
+
   //! search radius
   double searchradius_;
 
@@ -382,6 +385,8 @@ private:
 
   //! current Uzawa iteration index (for augmented Lagrange strategy)
   int uzawaiter_;
+
+  double maxgap_;
 
   //@}
 
@@ -522,6 +527,13 @@ private:
 
   */
   void GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
+                    const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+
+  /*!
+  \brief Compute coordinates for GMSH-Output for four-noded-elements
+
+  */
+  void GMSH_4_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
                     const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
   /*!

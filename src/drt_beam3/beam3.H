@@ -210,6 +210,11 @@ public:
   */
   const double& Irr() const { return Irr_;}
 
+  /*!
+  \brief Get jacobi_ factor of first gauss point
+  */
+  const double& GetJacobi() const { return jacobi_[0];}
+
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}
 

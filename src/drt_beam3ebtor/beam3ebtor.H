@@ -290,6 +290,27 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
+  /*!
+  \brief get moment of intertia of area Iyy_
+  */
+  const double Iyy() const
+  {
+    return Iyy_;
+  }
+
+  /*!
+  \brief get nodal tangents in reference configuration
+  */
+  std::vector<LINALG::Matrix<3,1> > Tref() const
+  {
+    return Tref_;
+  }
+
+  /*!
+   \brief Get centerline position at given parameter coordinate xi
+  */
+  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
+
 
   //@}
 
@@ -334,6 +355,8 @@ private:
 
   //! Variable holding the constant Jacobi determinant jacobi of the element
   double jacobi_;
+
+  double factor_;
 
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;

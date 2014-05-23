@@ -869,11 +869,15 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
     // contact / meshtying modifications need -fres
     fresm->Scale(-1.0);
 
+    // create empty parameter list
+    Teuchos::ParameterList beamcontactparams;
+    beamcontactparams.set("iter", iter_);
+
     // make contact / meshtying modifications to lhs and rhs
     // (set boolean flag 'newsti' to true, which activates
     // sclaing of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
-    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis,true);
+    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis,beamcontactparams,true);
 
     // scaling back
     fresm->Scale(-1.0);

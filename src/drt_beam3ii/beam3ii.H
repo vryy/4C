@@ -203,6 +203,11 @@ public:
   const double& Irr() const { return Irr_;}
 
   /*!
+  \brief Get jacobi_ factor of first gauss point
+  */
+  const double& GetJacobi() const { return jacobi_[0];}
+
+  /*!
   \brief Get current nodal triads as quaternions
   */
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}

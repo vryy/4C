@@ -24,13 +24,14 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
 
 /*----------------------------------------------------------------------*
- |  constructor (public)                                meier 01/14|
+ |  constructor (public)                                     meier 01/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
@@ -51,11 +52,23 @@ lmuzawa_(0.0),
 gap_(0.0),
 gap_original_(0.0),
 contactflag_(false),
+oldcontactflag_(false),
 elementscolinear_(false),
 elementscrossing_(false),
 shiftnodalvalues_(false),
 xi1_(0.0),
-xi2_(0.0)
+xi2_(0.0),
+xi1_old_(0.0),
+xi2_old_(0.0),
+pp_(0.0),
+fp_(0.0),
+basicstiff_(false),
+ptcpoint_(0.0),
+ptcpointold_(0.0),
+resnorm_(1.0),
+resnormold_(1.0),
+iter_(0),
+beamendcontactopened_(false)
 {
   for (int i=0;i<3;i++)
   {
@@ -85,21 +98,27 @@ xi2_(0.0)
   if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3iiType::Instance() )
     dserror("Tangent smoothing only implemented for beams of type beam3 and beam3ii!");
 
-  //In case of tangent smoothing for both elements the 2 direct neighbor elements are determined and saved in the B3CNeighbor-Class
-  //variables neighbors1_ and neighbors2_
-  if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp)
+  //For both elements the 2 direct neighbor elements are determined and saved in the B3CNeighbor-Class
+  //variables neighbors1_ and neighbors2_. The neighbors are not only necessary for tangent smoothing
+  //but also in order to determine the vector normalold_ of the neighbor, which is needed to perform
+  //sliding contact (with changing active pairs) for slender beams.
   {
     neighbors1_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element1);
     neighbors2_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element2);
   }
-  else
-  {
-    neighbors1_=Teuchos::null;
-    neighbors2_=Teuchos::null;
-  }
 
   if (element1->ElementType() != element2->ElementType())
     dserror("The class beam3contact only works for contact pairs of the same beam element type!");
+
+  #ifdef ONLYBASICSTIFF
+    basicstiff_ = true;
+  #endif
+
+  #ifdef PTCCONTACTPOINT
+    ptcpointold_=PTCCONTACTPOINT;
+  #endif
+
+
 
   return;
 }
@@ -129,7 +148,9 @@ dofoffsetmap_(old.dofoffsetmap_)
 template<const int numnodes , const int numnodalvalues>
 bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMatrix& stiffmatrix,
                                                                    Epetra_Vector& fint,
-                                                                   const double& pp)
+                                                                   const double& pp,
+                                                                   std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap,
+                                                                   Teuchos::ParameterList beamcontactparams)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -148,8 +169,16 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::Spars
   //**********************************************************************
   // (1) Closest Point Projection (CPP)
   //**********************************************************************
-
   ClosestPointProjection();
+
+  //If the contact opens ones at an boundary element, the contactflag_ is set to false for the whole Newton step
+  #ifdef CHECKBOUNDARYCONTACT
+    CheckBoundaryContact();
+  #endif
+
+  //Parameters needed for controlling of reduced/enhanced stiffness
+  resnorm_ = beamcontactparams.get<double>("resnorm",-1.0);
+  iter_ = beamcontactparams.get<int>("iter",-1);
 
   //**********************************************************************
   // (2) Compute some auxiliary quantities
@@ -173,13 +202,8 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::Spars
   LINALG::TMatrix<TYPE, 3, 1> delta_r(true);                          // = r1-r2
   TYPE norm_delta_r= 0.0;                                             // = g
 
-  // Calculate normal vector for all neighbor elements in order to have the quantity normal_old_ available
-  // in the next time step. This is necessary in order to avoid an undetected crossing of the beams when a beam
-  // element of one physical beam slides across the boundary node of two adjacent beam elements on the second physical beam
-
-  // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element: It has proven useful that NEIGHBORTOL ca. 3,
-  //since the sum of |xi1| and |xi2| has to be larger than three for a contact pair consisting of element i and element i+2 of the same physical beam!
-  if ((BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi1_)) + BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi2_))) < NEIGHBORTOL && !elementscolinear_ && !elementscrossing_)
+  // Check if the CPP found for this contact pair is really on the considered element, i.e. xi \in [-1;1]
+  if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi1_)) < (1.0 + XIETATOL) && BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi2_)) < (1.0 + XIETATOL))
   {
     // update shape functions and their derivatives
     GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, xi1_, xi2_);
@@ -191,42 +215,63 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::Spars
       r1_(i)=r1(i);
       r2_(i)=r2(i);
     }
-
     // call function to compute scaled normal and gap of contact point and store this quantities in the corresponding
     // class variables. The auxiliary variables delta_r and norm_delta_r might be useful for later applications.
-    ComputeNormal(delta_r, norm_delta_r);
+    ComputeNormal(delta_r, norm_delta_r, contactpairmap);
+    // call function to evaluate contact status
+    CheckContactStatus(pp);
+
+    //If one beam has passed the end of the second beam the contact has to be opened
+    if (beamendcontactopened_)
+      contactflag_ = false;
+
   }
   else
   {
     contactflag_ = false;
-    return false;
+    return (false);
   }
-
-  // Check if the CPP found for this contact pair is really on the considered element, i.e. xi \in [-1;1]
-  if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi1_)) < (1.0 + XIETATOL) && BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi2_)) < (1.0 + XIETATOL))
-  {
-    //std::cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << std::endl;
-  }
-  else
-  {
-    contactflag_ = false;
-    return false;
-  }
-
-  // call function to evaluate contact status
-  CheckContactStatus(pp);
 
   //**********************************************************************
   // (3) Compute contact forces and stiffness
   //**********************************************************************
 
+  //Set class variables
+  pp_=pp;
+  if (contactflag_)
+  {
+    #ifndef QUADPENALTY
+      //linear penalty force law
+      fp_=lmuzawa_ - pp*gap_;
+    #else
+      //quadratic penalty force law
+      fp_=lmuzawa_ - pp*gap_*gap_;
+    #endif
+  }
+  else
+  {
+    fp_=0.0;
+  }
+
+#ifdef MAXFORCE
+  //If a maximum penalty force is defined, we regularize the penalty force and apply a secant penalty parameter
+  if(fp_ > MAXFORCE)
+  {
+    std::cout << "Maximal force reached: penalty force has been regularized!" << std::endl;
+    fp_ = MAXFORCE;
+    pp_ = MAXFORCE / BEAMCONTACT::Norm(gap_);
+  }
+#endif
+
   // call function to evaluate and assemble contact forces
   EvaluateFcContact(pp, &fint, N1, N2);
-
   // call function to evaluate and assemble contact stiffness
   EvaluateStiffcContact(pp,norm_delta_r,delta_r,stiffmatrix,r1,r2,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi,N1_xixi,N2_xixi);
+  //iterative update at the end of Newton step
+  ptcpointold_=ptcpoint_;
+  resnormold_=resnorm_;
 
-  return true;
+  return (true);
 }
 /*----------------------------------------------------------------------*
  |  end: Evaluate the element
@@ -276,7 +321,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact( cons
     {
       for (int j=0;j<3;++j)
       {
-        fc1(i) +=  sgn_*N1(j,i)*normal_(j)*(lmuzawa_ - pp*gap_);
+        fc1(i) +=  sgn_*N1(j,i)*normal_(j)*fp_;
       }
     }
 
@@ -300,7 +345,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact( cons
     {
       for (int j=0;j<3;++j)
       {
-        fc2(i) +=  -sgn_*N2(j,i)*normal_(j)*(lmuzawa_ - pp*gap_);
+        fc2(i) +=  -sgn_*N2(j,i)*normal_(j)*fp_;
       }
     }
 
@@ -389,6 +434,18 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
                                                                                const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xixi,
                                                                                const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xixi)
 {
+  bool completestiff = true;
+
+  #ifdef MAXFORCE
+    if (fp_ > MAXFORCE and basicstiff_)
+      completestiff=false;
+  #endif
+
+  #ifdef MAXGAP
+    if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(gap_)) > MAXGAP and basicstiff_)
+      completestiff=false;
+  #endif
+
   // get dimensions for vectors fc1 and fc2
   const int dim1 = 3*numnodes*numnodalvalues;
   const int dim2 = 3*numnodes*numnodalvalues;
@@ -406,12 +463,19 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
   std::vector<int>  lmcol2(dim1+dim2);
 
   // flag indicating assembly
-  bool DoNotAssemble = false;
+  bool DoNotAssemble = true;
+
+  // bool indicating if contact stiffness should also be applied in the inactive case
+  bool inactivestiff = false;
+  #ifdef INACTIVESTIFF
+    if(iter_==0)
+      inactivestiff = true;
+  #endif
 
   //**********************************************************************
   // evaluate contact stiffness for active pairs
   //**********************************************************************
-  if (contactflag_)
+  if (contactflag_ or inactivestiff)
   {
 
     // node ids of both elements
@@ -432,13 +496,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     ComputeLinXiAndLinEta(delta_xi,delta_eta,delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
 
     #ifdef FADCHECKS
-      cout << "delta_xi: " << endl;
+    std::cout << "delta_xi: " << std::endl;
       for (int i=0;i<dim1+dim2;i++)
-        cout << delta_xi(i).val() << "  ";
-      cout << endl << "delta_eta: " << endl;
+        std::cout << delta_xi(i).val() << "  ";
+      std::cout << std::endl << "delta_eta: " << std::endl;
       for (int i=0;i<dim1+dim2;i++)
-        cout << delta_eta(i).val() << "  ";
-      cout << endl;
+        std::cout << delta_eta(i).val() << "  ";
+      std::cout << std::endl;
       FADCheckLinXiAndLinEta(delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
     #endif
 
@@ -507,119 +571,137 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
       }
     }
 
-    //********************************************************************
-    // evaluate contact stiffness
-    // (1) stiffc1 of first element
-    //********************************************************************
+    //*************Begin of standard linearization**************************
+    //The full contact stiffness is only applied if the contact flag is true
+    if (contactflag_)
+    {
+      DoNotAssemble = false;
 
-    //********************************************************************
-    // part I
-    //********************************************************************
-    LINALG::TMatrix<TYPE,dim1,1> N1T_normal(true);
-    for (int i=0;i<3;i++)
-    {
-      for (int j=0;j<dim1;j++)
-      {
-        N1T_normal(j)+=N1(i,j)*normal_(i);
-      }
-    }
+      //********************************************************************
+      // evaluate contact stiffness
+      // (1) stiffc1 of first element
+      //********************************************************************
 
-    for (int i=0;i<dim1;i++)
-    {
-      for (int j=0;j<dim1+dim2;j++)
+      //********************************************************************
+      // part I
+      //********************************************************************
+      LINALG::TMatrix<TYPE,dim1,1> N1T_normal(true);
+      for (int i=0;i<3;i++)
       {
-        stiffc1(i,j) = -sgn_* pp * N1T_normal(i) * delta_gap(j);
-      }
-    }
-    //********************************************************************
-    // part II
-    //********************************************************************
-    for  (int i=0;i<3;i++)
-    {
-      for (int j=0;j<dim1;j++)
-      {
-        for (int k=0;k<dim1+dim2;k++)
+        for (int j=0;j<dim1;j++)
         {
-            stiffc1(j,k) += sgn_*(lmuzawa_ - pp*gap_)*N1(i,j)*delta_n(i,k);
+          N1T_normal(j)+=N1(i,j)*normal_(i);
         }
       }
-    }
-    //********************************************************************
-    // part III
-    //********************************************************************
-    LINALG::TMatrix<TYPE,dim1,1> N1xiT_normal(true);
-    for (int i=0;i<3;i++)
-    {
-      for (int j=0;j<dim1;j++)
+      for (int i=0;i<dim1;i++)
       {
-        N1xiT_normal(j) += N1_xi(i,j)*normal_(i);
-      }
-    }
-
-    for (int i=0;i<dim1;i++)
-    {
-      for (int j=0;j<dim1+dim2;j++)
-      {
-        stiffc1(i,j) += sgn_*(lmuzawa_ - pp*gap_)*N1xiT_normal(i)*delta_xi(j);
-      }
-    }
-    //********************************************************************
-    // evaluate contact stiffness
-    // (2) stiffc2 of second element
-    //********************************************************************
-
-    //********************************************************************
-    // part I
-    //********************************************************************
-    LINALG::TMatrix<TYPE,dim2,1> N2T_normal(true);
-    for (int i=0;i<3;i++)
-    {
-      for (int j=0;j<dim2;j++)
-      {
-        N2T_normal(j)+=N2(i,j)*normal_(i);
-      }
-    }
-
-    for (int i=0;i<dim2;i++)
-    {
-      for (int j=0;j<dim1+dim2;j++)
-      {
-        stiffc2(i,j) = sgn_* pp * N2T_normal(i) * delta_gap(j);
-      }
-    }
-    //********************************************************************
-    // part II
-    //********************************************************************
-    for  (int i=0;i<3;i++)
-    {
-      for (int j=0;j<dim2;j++)
-      {
-        for (int k=0;k<dim1+dim2;k++)
+        for (int j=0;j<dim1+dim2;j++)
         {
-            stiffc2(j,k) += -sgn_*(lmuzawa_ - pp*gap_)*N2(i,j)*delta_n(i,k);
+          stiffc1(i,j) = -sgn_* pp_ * N1T_normal(i) * delta_gap(j);
         }
       }
-    }
-    //********************************************************************
-    // part III
-    //********************************************************************
-    LINALG::TMatrix<TYPE,dim1,1> N2xiT_normal(true);
-    for (int i=0;i<3;i++)
-    {
-      for (int j=0;j<dim2;j++)
+      #ifdef QUADPENALTY
+        stiffc1.Scale(-2*gap_);
+      #endif
+
+      if (completestiff)
       {
-        N2xiT_normal(j) += N2_xi(i,j)*normal_(i);
+        //********************************************************************
+        // part II
+        //********************************************************************
+        for  (int i=0;i<3;i++)
+        {
+          for (int j=0;j<dim1;j++)
+          {
+            for (int k=0;k<dim1+dim2;k++)
+            {
+                stiffc1(j,k) += sgn_*fp_*N1(i,j)*delta_n(i,k);
+            }
+          }
+        }
+        //********************************************************************
+        // part III
+        //********************************************************************
+        LINALG::TMatrix<TYPE,dim1,1> N1xiT_normal(true);
+        for (int i=0;i<3;i++)
+        {
+          for (int j=0;j<dim1;j++)
+          {
+            N1xiT_normal(j) += N1_xi(i,j)*normal_(i);
+          }
+        }
+
+        for (int i=0;i<dim1;i++)
+        {
+          for (int j=0;j<dim1+dim2;j++)
+          {
+            stiffc1(i,j) += sgn_*fp_*N1xiT_normal(i)*delta_xi(j);
+          }
+        }
       }
+      //********************************************************************
+      // evaluate contact stiffness
+      // (2) stiffc2 of second element
+      //********************************************************************
+
+      //********************************************************************
+      // part I
+      //********************************************************************
+      LINALG::TMatrix<TYPE,dim2,1> N2T_normal(true);
+      for (int i=0;i<3;i++)
+      {
+        for (int j=0;j<dim2;j++)
+        {
+          N2T_normal(j)+=N2(i,j)*normal_(i);
+        }
+      }
+      for (int i=0;i<dim2;i++)
+      {
+        for (int j=0;j<dim1+dim2;j++)
+        {
+          stiffc2(i,j) = sgn_* pp_ * N2T_normal(i) * delta_gap(j);
+        }
+      }
+      #ifdef QUADPENALTY
+        stiffc2.Scale(-2*gap_);
+      #endif
+      if (completestiff)
+      {
+        //********************************************************************
+        // part II
+        //********************************************************************
+        for  (int i=0;i<3;i++)
+        {
+          for (int j=0;j<dim2;j++)
+          {
+            for (int k=0;k<dim1+dim2;k++)
+            {
+                stiffc2(j,k) += -sgn_*fp_*N2(i,j)*delta_n(i,k);
+            }
+          }
+        }
+        //********************************************************************
+        // part III
+        //********************************************************************
+        LINALG::TMatrix<TYPE,dim1,1> N2xiT_normal(true);
+        for (int i=0;i<3;i++)
+        {
+          for (int j=0;j<dim2;j++)
+          {
+            N2xiT_normal(j) += N2_xi(i,j)*normal_(i);
+          }
+        }
+
+        for (int i=0;i<dim2;i++)
+        {
+          for (int j=0;j<dim1+dim2;j++)
+          {
+            stiffc2(i,j) += -sgn_*fp_*N2xiT_normal(i)*delta_eta(j);
+          }
+        }
     }
 
-    for (int i=0;i<dim2;i++)
-    {
-      for (int j=0;j<dim1+dim2;j++)
-      {
-        stiffc2(i,j) += -sgn_*(lmuzawa_ - pp*gap_)*N2xiT_normal(i)*delta_eta(j);
-      }
-    }
-
+    // automatic differentiation for debugging
     #ifdef AUTOMATICDIFF
       LINALG::TMatrix<TYPE, dim1, 1> fc1_FAD(true);
       LINALG::TMatrix<TYPE, dim2, 1> fc2_FAD(true);
@@ -634,27 +716,158 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
         for (int i=0;i<dim2;i++)
           stiffc2_FAD(i,j) = -(fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
       }
+    #endif
+    } //if(contactflag_)
+    //*************End of standard linearization****************************
 
+    //Additional application of first stiffness contribution with arbitrary scaling (also possible in the inactive case)
+    #ifdef PTCCONTACT
+      if(inactivestiff and !contactflag_)
+      {
+        DoNotAssemble = false;
+        double ptc = PTCCONTACT;
+        //********************************************************************
+        // PTC for element 1 (similar to part I of original stiffness)
+        //********************************************************************
+        LINALG::TMatrix<TYPE,dim1,1> N1T_normal(true);
+        for (int i=0;i<3;i++)
+        {
+          for (int j=0;j<dim1;j++)
+          {
+            N1T_normal(j)+=N1(i,j)*normal_(i);
+          }
+        }
+        for (int i=0;i<dim1;i++)
+        {
+          for (int j=0;j<dim1+dim2;j++)
+          {
+            stiffc1(i,j) += sgn_* ptc * N1T_normal(i) * delta_gap(j);
+          }
+        }
+        //********************************************************************
+        // PTC for element 2 (similar to part I of original stiffness)
+        //********************************************************************
+        LINALG::TMatrix<TYPE,dim2,1> N2T_normal(true);
+        for (int i=0;i<3;i++)
+        {
+          for (int j=0;j<dim2;j++)
+          {
+            N2T_normal(j)+=N2(i,j)*normal_(i);
+          }
+        }
+        for (int i=0;i<dim2;i++)
+        {
+          for (int j=0;j<dim1+dim2;j++)
+          {
+            stiffc2(i,j) += -sgn_* ptc * N2T_normal(i) * delta_gap(j);
+          }
+        }
+      }
     #endif
 
-  } //if(contactflag_)
+  } //if(contactflag_ or inactivestiff)
 
-  //**********************************************************************
-  // no stiffness for inactive pairs
-  //**********************************************************************
-  else
-  {
-     // set flag to avoid assembly
-    DoNotAssemble = true;
+  //Additional damping stiffness at contact point
+  #ifdef PTCCONTACTPOINT
+    //define a rule how to decrease the additional damping during the iterations
+    if (iter_ == 0)
+    {
+      ptcpoint_=PTCCONTACTPOINT;
+    }
+    else if (iter_ < 15)
+    {
+      //fixed decrease
+      ptcpoint_=0.01*ptcpointold_;
+      //decrease proportional to residuum norm
+      //if (resnorm_<0.0)
+      //  dserror("resnorm_ has not been red in correctly!");
+      //ptcpoint_=resnorm_/resnormold_*ptcpointold_;
+    }
+    else
+    {
+      ptcpoint_=0.0;
+    }
 
-    // compute stiffness
-    for (int i=0;i<dim1;i++)
-      for (int j=0;j<dim1+dim2;j++)
-        stiffc1(i,j) = 0;
-    for (int i=0;i<dim2;i++)
-      for (int j=0;j<dim1+dim2;j++)
-        stiffc2(i,j) = 0;
-  }
+    //********************************************************************
+    // PTCPOINT for element 1
+    //********************************************************************
+    //alternative 1): Only force in normal direction
+//    if (contactflag_)
+//    {
+//      DoNotAssemble = false;
+//      LINALG::TMatrix<TYPE,dim1,1> N1T_normal(true);
+//      for (int i=0;i<3;i++)
+//      {
+//        for (int j=0;j<dim1;j++)
+//        {
+//          N1T_normal(j)+=N1(i,j)*normal_(i);
+//        }
+//      }
+//      for (int i=0;i<dim1;i++)
+//      {
+//        for (int j=0;j<dim1;j++)
+//        {
+//          stiffc1(i,j) += ptcpoint_ * N1T_normal(i) * N1T_normal(j);
+//        }
+//      }
+//    }
+    //alternative 2): Force in three space directions
+    if (contactflag_)
+    {
+      DoNotAssemble = false;
+      for (int i=0;i<dim1;i++)
+      {
+        for (int j=0;j<dim1;j++)
+        {
+          for (int k=0;k<3;k++)
+          {
+            stiffc1(i,j) += ptcpoint_ * N1(k,i)*N1(k,j);
+          }
+        }
+      }
+    }
+
+    //********************************************************************
+    // PTCPOINT for element 2
+    //********************************************************************
+    //alternative 1): Only force in normal direction
+//    if (contactflag_)
+//    {
+//      DoNotAssemble = false;
+//      LINALG::TMatrix<TYPE,dim2,1> N2T_normal(true);
+//      for (int i=0;i<3;i++)
+//      {
+//        for (int j=0;j<dim2;j++)
+//        {
+//          N2T_normal(j)+=N2(i,j)*normal_(i);
+//        }
+//      }
+//      for (int i=0;i<dim2;i++)
+//      {
+//        for (int j=dim1;j<dim1+dim2;j++)
+//        {
+//          stiffc2(i,j) += ptcpoint_ * N2T_normal(i) * N2T_normal(j);
+//        }
+//      }
+//    }
+
+    //alternative 2): Force in three space directions
+    if (contactflag_)
+    {
+      DoNotAssemble = false;
+      for (int i=0;i<dim2;i++)
+      {
+        for (int j=0;j<dim2;j++)
+        {
+          for (int k=0;k<3;k++)
+          {
+            stiffc2(i,j) += ptcpoint_ * N2(k,i)*N2(k,j);
+          }
+        }
+      }
+    }
+  #endif
+
 
   //**********************************************************************
   // assemble contact stiffness
@@ -677,8 +890,6 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     stiffmatrix.Assemble(0,stiffcontact1,lmrow1,lmrowowner1,lmcol1);
     stiffmatrix.Assemble(0,stiffcontact2,lmrow2,lmrowowner2,lmcol2);
 
-//    cout << "Steifigkeitsmatrix: " << (*(stiffmatrix.EpetraMatrix())) << endl;
-//    cout << "test: " << (*(stiffmatrix.EpetraMatrix()))[0,0] << endl;
   }
 
   return;
@@ -821,8 +1032,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGap(LINALG::T
 
   // compute linearization of gap
   for (int i=0;i<3;i++)
+  {
     for (int j=0;j<dim1+dim2;j++)
+    {
       delta_gap(j) +=  sgn_*delta_r(i) * auxiliary_matrix1(i,j)/norm_delta_r;
+    }
+  }
 
   return;
 }
@@ -906,9 +1121,44 @@ template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection()
 {
 
-  // local variables for element coordinates
-  TYPE eta1=0.0;
-  TYPE eta2=0.0;
+  TYPE eta1 = 0.0;
+  TYPE eta2 = 0.0;
+
+  //Calculate initial values for eta1 and eta2. This initial guess is based on an assumed linear node interpolation
+  //The definitions of b_1, b_2, t_1 and t_2 are according to the paper "ON CONTACT BETWEEN THREE-DIMENSIONAL BEAMS UNDERGOING LARGE DEFLECTIONS" of
+  //Wriggers and Zavarise (1997)
+  LINALG::TMatrix<TYPE,3,1> b_1(true);
+  LINALG::TMatrix<TYPE,3,1> b_2(true);
+  LINALG::TMatrix<TYPE,3,1> t_1(true);
+  LINALG::TMatrix<TYPE,3,1> t_2(true);
+
+  //This procedure also works for higher order Reissner beams, since the boundary node still
+  //has the ID=2 and takes the second place in the ele1pos_/ele2pos_ vectors
+  for (int i=0; i<3; i++)
+  {
+    b_1(i)=ele1pos_(i)+ele1pos_(3*numnodalvalues+i);
+    b_2(i)=ele2pos_(i)+ele2pos_(3*numnodalvalues+i);
+    t_1(i)=-ele1pos_(i)+ele1pos_(3*numnodalvalues+i);
+    t_2(i)=-ele2pos_(i)+ele2pos_(3*numnodalvalues+i);
+  }
+
+  double denom=(BEAMCONTACT::ScalarProduct(t_2,t_2)*BEAMCONTACT::ScalarProduct(t_1,t_1)-BEAMCONTACT::ScalarProduct(t_2,t_1)*BEAMCONTACT::ScalarProduct(t_2,t_1))/(BEAMCONTACT::ScalarProduct(t_2,t_2)*BEAMCONTACT::ScalarProduct(t_1,t_1));
+
+  if(denom>PARALLELTOL)
+  {
+    // local variables for element coordinates
+    TYPE aux1 = BEAMCONTACT::ScalarProduct(BEAMCONTACT::DiffVector(b_1,b_2),t_2);
+    aux1 = aux1 * BEAMCONTACT::ScalarProduct(t_1,t_2);
+    TYPE aux2 = BEAMCONTACT::ScalarProduct(BEAMCONTACT::DiffVector(b_2,b_1),t_1);
+    aux2 = aux2 * BEAMCONTACT::ScalarProduct(t_2,t_2);
+    eta1 = (aux1+aux2)/(BEAMCONTACT::ScalarProduct(t_2,t_2)*BEAMCONTACT::ScalarProduct(t_1,t_1)-BEAMCONTACT::ScalarProduct(t_2,t_1)*BEAMCONTACT::ScalarProduct(t_2,t_1));
+
+    aux1 = BEAMCONTACT::ScalarProduct(BEAMCONTACT::DiffVector(b_2,b_1),t_1);
+    aux1 = aux1 * BEAMCONTACT::ScalarProduct(t_1,t_2);
+    aux2 = BEAMCONTACT::ScalarProduct(BEAMCONTACT::DiffVector(b_1,b_2),t_2);
+    aux2 = aux2 * BEAMCONTACT::ScalarProduct(t_1,t_1);
+    eta2 = (aux1+aux2)/(BEAMCONTACT::ScalarProduct(t_2,t_2)*BEAMCONTACT::ScalarProduct(t_1,t_1)-BEAMCONTACT::ScalarProduct(t_2,t_1)*BEAMCONTACT::ScalarProduct(t_2,t_1));
+  }
 
   // vectors for shape functions and their derivatives
   LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1(true);        // = N1
@@ -966,8 +1216,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
     // update coordinates and derivatives of contact points
     ComputeCoordsAndDerivs(r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
     // compute delta_r=r1-r2
-    for(int i=0;i<3;i++)
-      delta_r(i)=r1(i)-r2(i);
+    for(int j=0;j<3;j++)
+      delta_r(j)=r1(j)-r2(j);
 
     // compute norm of difference vector to scale the equations
     // (this yields better conditioning)
@@ -993,7 +1243,6 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
         ShiftNodalPositions();
         shiftnodalvalues_=true;
         continue;
-
       }
       else
       {
@@ -1007,10 +1256,17 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
     CONTACT::B3TANGENTSMOOTHING::ComputeTangentsAndDerivs<numnodes,numnodalvalues>(t2, t2_xi, nodaltangentssmooth2_, N2, N2_xi);
 
     // evaluate f at current eta1, eta2
+    //TODO: It would be a good a idea to scale the orthogonality condition with 1/element_length when an absolute
+    //residual norm is used as local CPP convergence criteria, since r_xi scales with element_length
     EvaluateOrthogonalityCondition(f, delta_r, norm_delta_r, r1_xi, r2_xi, t1, t2);
 
+    double jacobi1 = 1.0;
+    double jacobi2 = 1.0;
+    jacobi1 =  GetJacobi(element1_);
+    jacobi2 =  GetJacobi(element2_);
+
     // compute the scalar residuum
-    residual = BEAMCONTACT::VectorNorm<2>(f);
+    residual = f(0)*f(0)/(jacobi1*jacobi1) + f(1)*f(1)/(jacobi2*jacobi2);
 
     // check if Newton iteration has converged
     if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL) break;
@@ -1023,7 +1279,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
     if (elementscolinear_) break;
 
     #ifdef FADCHECKS
-      cout << "df: " << df << endl;
+    std::cout << "df: " << df << std::endl;
       BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
       FADCheckLinOrthogonalityCondition(delta_r,r1_xi,r2_xi);
     #endif
@@ -1055,6 +1311,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
   #endif
 
   return;
+
 }
 /*----------------------------------------------------------------------*
 |  end: Closest point projection
@@ -1372,7 +1629,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateLinOrthogonalit
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMatrix<TYPE,3,1>& delta_r,
-                                                                       TYPE& norm_delta_r)
+                                                                       TYPE& norm_delta_r,
+                                                                       std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap)
 {
   // compute non-unit normal
   for (int i=0;i<3;i++) delta_r(i) = r1_(i)-r2_(i);
@@ -1397,6 +1655,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(LINALG::T
       normal_old_(i) = normal_(i);
     }
     firstcall_ = false;
+  }
+
+  // In Case, the contact happend on the neighbor element pair in the last time step, we have not calculated normal_old for this
+  // element in the last time step. In this case, we take normal_old from the neighbor element!
+  if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi1_old_)) > 1.0 or BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(xi2_old_)) > 1.0)
+  {
+    GetNeighborNormalOld(contactpairmap);
   }
 
   //Calculation of element radius via moment of inertia (only valid for beams with circular cross section!!!)
@@ -1458,8 +1723,23 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckContactStatus(cons
 {
   // check contact condition valid for both pure penalty
   // (lmuzawa = 0) and augmented lagrange (lmuzawa != 0)
-  if (lmuzawa_ - pp * gap_ > 0) contactflag_ = true;
-  else                          contactflag_ = false;
+#ifndef QUADPENALTY
+  //linear penalty force law
+  if (lmuzawa_ - pp * gap_ > 0)
+  {
+    contactflag_ = true;
+  }
+  else
+    contactflag_ = false;
+#else
+  //quadratic penalty force law
+  if (lmuzawa_ - pp*gap_*gap_ > 0)
+  {
+    contactflag_ = true;
+  }
+  else
+    contactflag_ = false;
+#endif
 
   return;
 }
@@ -1524,6 +1804,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ShiftNormal()
 {
   for (int j=0;j<3;j++)
         normal_old_(j) = normal_(j);
+
+  xi1_old_ = xi1_;
+  xi2_old_ = xi2_;
+
+  beamendcontactopened_ = false;
+  oldcontactflag_ = contactflag_;
 
 }
 /*----------------------------------------------------------------------*
@@ -1617,11 +1903,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateEleSmoothTangents
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Shift Nodal positions (public)                           meier 02/14|
+ |  Shift Nodal positions in case of crossing (public)       meier 02/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ShiftNodalPositions()
 {
+  std::cout << "shift" << std::endl;
+
   //Reissner beams
   if (numnodalvalues == 1)
   {
@@ -1657,6 +1945,110 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ShiftNodalPositions()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Get normalold_ from neighbor element pair (public)       meier 03/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap)
+{
+  int id1 = -1;
+  int id2 = -1;
+
+  //This method is based on the assumption, that in each pair the element with the lower global ID is element1_
+
+  if (xi1_old_ < -1.0)
+  {
+    if (neighbors1_->GetLeftNeighbor()!=NULL)
+      id1 = neighbors1_->GetLeftNeighbor()->Id();
+  }
+  else if (xi1_old_ > 1.0)
+  {
+    if (neighbors1_->GetRightNeighbor()!=NULL)
+      id1 = neighbors1_->GetRightNeighbor()->Id();
+  }
+  else
+    id1=element1_ ->Id();
+
+  if (xi2_old_ < -1.0)
+  {
+    if (neighbors2_->GetLeftNeighbor()!=NULL)
+      id1 = neighbors2_->GetLeftNeighbor()->Id();
+  }
+  else if (xi2_old_ > 1.0)
+  {
+    if (neighbors2_->GetRightNeighbor()!=NULL)
+      id1 = neighbors2_->GetRightNeighbor()->Id();
+  }
+  else
+    id2=element2_ ->Id();
+
+  //One ID being -1 means, that no boundary element has been found. Consequently, the considered beam element is a boundary element
+  //and no sensible information for normal_old is available. In this case we take normal_ as initialization.
+  if (id1 == -1 or id2 == -1)
+  {
+    std::cout << "Warning: No neighbor available in order to calculated normal_old_!" << std::endl;
+    for (int i=0;i<3;i++)
+      normal_old_(i)=normal_(i);
+  }
+
+  //If we can find a corresponding neighbor element pair, we take the normal vector of the last time step from this pair.
+  if(contactpairmap.find(std::make_pair(id1,id2))!=contactpairmap.end())
+  {
+    if (id1<id2)
+      normal_old_=contactpairmap[std::make_pair(id1,id2)]->GetNormalOld();
+    else
+      normal_old_=contactpairmap[std::make_pair(id2,id1)]->GetNormalOld();
+  }
+
+  return;
+}
+
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckBoundaryContact()
+{
+
+  //If the considered element has no neighbor (-> boundary element) and the corresponding
+  //parameter coordinate has exceeded the end of the physical beam, the contact is deactivated
+  //for this pair for the complete time step!!!
+  if (neighbors1_->GetLeftNeighbor()== NULL and xi1_ < -1.0)
+    beamendcontactopened_=true;
+  if (neighbors1_->GetRightNeighbor()== NULL and xi1_ > 1.0)
+    beamendcontactopened_=true;
+  if (neighbors2_->GetLeftNeighbor()== NULL and xi2_ < -1.0)
+    beamendcontactopened_=true;
+  if (neighbors2_->GetRightNeighbor()== NULL and xi2_ > 1.0)
+    beamendcontactopened_=true;
+
+  return;
+}
+
+template<const int numnodes , const int numnodalvalues>
+double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetJacobi(DRT::Element* element1)
+{
+  double jacobi = 1.0;
+  const DRT::ElementType & eot1 = element1->ElementType();
+
+  //The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
+  //the jacobi_ factor corresponding to the first gauss point of the beam element
+  if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
+  {
+    jacobi = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1))->GetJacobi();
+  }
+  else if (eot1 == DRT::ELEMENTS::Beam3Type::Instance())
+  {
+    jacobi = (static_cast<DRT::ELEMENTS::Beam3*>(element1))->GetJacobi();
+  }
+  else if (eot1 == DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    jacobi = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1))->GetJacobi();
+  }
+  else
+  {
+    std::cout << "Warning: No valid jacobi weight in CPP supported by applied beam element!!!" << std::endl;
+  }
+
+  return jacobi;
+}
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl( const int numnodes,
                                                                       const int numnodalvalues,
@@ -1795,9 +2187,9 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
     // compute D = L^-1 * B
     D.Multiply(L_inv, B);
 
-    cout << "linxi and lineta: " << endl;
+    std::cout << "linxi and lineta: " << std::endl;
 
-    cout << D << endl;
+    std::cout << D << std::endl;
 
     return;
   }
@@ -1839,9 +2231,9 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
       }
     }
 
-    cout << "df: " << endl;
+    std::cout << "df: " << std::endl;
 
-    cout << df << endl;
+    std::cout << df << std::endl;
 
     return;
   }

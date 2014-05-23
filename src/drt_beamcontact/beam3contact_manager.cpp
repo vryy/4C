@@ -16,6 +16,7 @@ Maintainer: Christoph Meier
 #include "beam3contact_octtree.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -25,6 +26,8 @@ Maintainer: Christoph Meier
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3ebtor/beam3ebtor.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
 
@@ -54,6 +57,7 @@ btsolconstrnorm_(0.0)
   // read parameter lists from DRT::Problem
   sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
   scontact_     = DRT::Problem::Instance()->ContactDynamicParams();
+  sstructdynamic_ = DRT::Problem::Instance()->StructuralDynamicParams();
 
   //Parameters to indicate, if beam-to-solid or beam-to-sphere contact is applied
   btsol_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSOL");
@@ -355,6 +359,7 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       Epetra_Vector& fres,
                                       const Epetra_Vector& disrow,
+                                      Teuchos::ParameterList beamcontactparams,
                                       bool newsti)
 {
 
@@ -468,7 +473,11 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
         if (!PairAllreadyExisting(currid1,currid2) and newgapfunction_)
         {
           pairs_.push_back(oldpairs_[m]);
-          contactpairmap_[std::make_pair(id1,id2)] = pairs_[pairs_.size()-1];
+          if (id1<id2)
+            contactpairmap_[std::make_pair(id1,id2)] = pairs_[pairs_.size()-1];
+          else
+            contactpairmap_[std::make_pair(id2,id1)] = pairs_[pairs_.size()-1];
+
           foundlasttimestep = true;
         }
         break;
@@ -483,7 +492,11 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
         //Add new contact pair objcect: The auxiliary_instance of the abstract class Beam3contactinterface is only needed here in order to call
         //the function Impl() which creates an instance of the templated class Beam3contactnew<numnodes, numnodalvalues> !
         pairs_.push_back(CONTACT::Beam3contactinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
-        contactpairmap_[std::make_pair(currid1,currid2)] = pairs_[pairs_.size()-1];
+
+        if (currid1<currid2)
+          contactpairmap_[std::make_pair(currid1,currid2)] = pairs_[pairs_.size()-1];
+        else
+          contactpairmap_[std::make_pair(currid2,currid1)] = pairs_[pairs_.size()-1];
       }
       //beam-to-solid pair
       else
@@ -496,7 +509,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // update element state of all pairs with current positions (already calculated in SetCurrentPositions) and current tangents (will be calculated in SetState)
   SetState(currentpositions,disccol);
   // At this point we have all possible contact pairs_ with updated positions
-
   //**********************************************************************
   // evalutation of contact pairs
   //**********************************************************************
@@ -511,10 +523,10 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // from 'fc_' to 'fcold_'. This update method is called by the time
   // integration class.
   //**********************************************************************
-
   // initialize global contact force vectors
   fc_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
   if (fcold_==Teuchos::null) fcold_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
+
   // initialize contact stiffness and uncomplete global stiffness
   stiffc_ = Teuchos::rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
@@ -531,7 +543,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_);
+      pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,contactpairmap_,beamcontactparams);
     }
   }
   // Loop over all pairs
@@ -549,22 +561,37 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       btsolpairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_);
     }
   }
-  // assemble contact forces into global fres vector
-  fres.Update(1.0-alphaf_,*fc_,1.0);
-  fres.Update(alphaf_,*fcold_,1.0);
-  // determine contact stiffness matrix scaling factor (new STI)
-  // (this is due to the fact that in the new STI, we hand in the
-  // already appropriately scaled effective stiffness matrix. Thus,
-  // the additional contact stiffness terms must be equally scaled
-  // here, as well. In the old STI, the complete scaling operation
-  // is done after contact evaluation within the time integrator,
-  // therefore no special scaling needs to be applied here.)
-  double scalemat = 1.0;
-  if (newsti) scalemat = 1.0 - alphaf_;
-  // assemble contact stiffness into global stiffness matrix
-  stiffc_->Complete();
-  stiffmatrix.Add(*stiffc_,false,scalemat,1.0);
-  stiffmatrix.Complete();
+
+  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_,"MASSLIN") != INPAR::STR::ml_rotations)
+  {
+    // assemble contact forces into global fres vector
+    fres.Update(1.0-alphaf_,*fc_,1.0);
+    fres.Update(alphaf_,*fcold_,1.0);
+    // determine contact stiffness matrix scaling factor (new STI)
+    // (this is due to the fact that in the new STI, we hand in the
+    // already appropriately scaled effective stiffness matrix. Thus,
+    // the additional contact stiffness terms must be equally scaled
+    // here, as well. In the old STI, the complete scaling operation
+    // is done after contact evaluation within the time integrator,
+    // therefore no special scaling needs to be applied here.)
+    double scalemat = 1.0;
+    if (newsti) scalemat = 1.0 - alphaf_;
+    // assemble contact stiffness into global stiffness matrix
+    stiffc_->Complete();
+    stiffmatrix.Add(*stiffc_,false,scalemat,1.0);
+    stiffmatrix.Complete();
+  }
+  else
+  {
+    // assemble contact forces into global fres vector
+    fres.Update(1.0,*fc_,1.0);
+
+    // assemble contact stiffness into global stiffness matrix
+    stiffc_->Complete();
+    stiffmatrix.Add(*stiffc_,false,1.0,1.0);
+    stiffmatrix.Complete();
+  }
+
   return;
 }
 
@@ -650,9 +677,16 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
         LINALG::Matrix<3,1> currtan(true);
         for (int i=0; i<node->Elements()[0]->NumNode();i++)
         {
-          if (node->Elements()[0]->Nodes()[i]->Id()==node->Id())
+          if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and  node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebType::Instance() )
           {
             const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
+            currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
+            currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
+            currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
+          }
+          else if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebtorType::Instance() )
+          {
+            const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(node->Elements()[0]);
             currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
             currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
             currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
@@ -1144,6 +1178,8 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   // clear potential contact pairs
   pairs_.clear();
   pairs_.resize(0);
+  
+  contactpairmap_.clear();
 
   // clear potential beam-to-solid contact pairs
   // since no history information is needed for this case, we don't have to store these pairs
@@ -1163,6 +1199,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   // create filename for ASCII-file for output
   //**********************************************************************
   
+  //Only write out put every OUTPUTEVERY^th step
+  if (timestep%OUTPUTEVERY!=0)
+    return;
+
   if (btsol_)
     dserror("GmshOutput not implemented for beam-to-solid contact so far!");
 
@@ -1264,6 +1304,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     fclose(fp);
 
     fp = fopen(filename.str().c_str(), "w");
+    //fp = fopen(filename.str().c_str(), "a");
 
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Step T" << timestep;
@@ -1315,6 +1356,12 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           case 3:
           {
             GMSH_3_noded(n,coord,element,gmshfilecontent);
+            break;
+          }
+          // 4-noded beam element (quadratic interpolation)
+          case 4:
+          {
+            GMSH_4_noded(n,coord,element,gmshfilecontent);
             break;
           }
           // 4- or 5-noded beam element (higher-order interpolation)
@@ -1374,6 +1421,56 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           dserror("Only 2-noded Kirchhoff elements possible so far!");
         }
         GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+      }
+      else if (eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
+      {
+        // this cast is necessary in order to use the method ->Tref()
+        const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(element);
+        // prepare storage for nodal coordinates
+        int nnodes = element->NumNode();
+        LINALG::SerialDenseMatrix nodalcoords(3,nnodes);
+        LINALG::SerialDenseMatrix nodaltangents(3,nnodes);
+        LINALG::SerialDenseMatrix coord(3,n_axial);
+
+        // compute current nodal positions
+        for (int i=0;i<3;++i)
+        {
+          for (int j=0;j<element->NumNode();++j)
+          {
+            double referenceposition = ((element->Nodes())[j])->X()[i];
+            std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
+            double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
+            nodalcoords(i,j) =  referenceposition + displacement;
+            nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+          }
+        }
+
+        if (nnodes ==2)
+        {
+          LINALG::Matrix<12,1> disp_totlag(true);
+          for (int i=0;i<3;i++)
+          {
+            disp_totlag(i)=nodalcoords(i,0);
+            disp_totlag(i+6)=nodalcoords(i,1);
+            disp_totlag(i+3)=nodaltangents(i,0);
+            disp_totlag(i+9)=nodaltangents(i,1);
+          }
+          //Calculate axial positions within the element by using the Hermite interpolation of Kirchhoff beams
+          for (int i=0;i<n_axial;i++)
+          {
+            double xi=-1.0 + i*2.0/(n_axial -1); // parameter coordinate of position vector on beam centerline
+            LINALG::Matrix<3,1> r = ele->GetPos(xi, disp_totlag); //position vector on beam centerline
+
+            for (int j=0;j<3;j++)
+              coord(j,i)=r(j);
+          }
+        }
+        else
+        {
+          dserror("Only 2-noded Kirchhoff elements possible so far!");
+        }
+        GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+        //GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
       }
       else
       {
@@ -1488,7 +1585,8 @@ void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
 
   // now redo Evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
-  Evaluate(stiffmatrix,fres,disrow,newsti);
+  Teuchos::ParameterList beamcontactparams;
+  Evaluate(stiffmatrix,fres,disrow,beamcontactparams,newsti);
 
   return;
 }
@@ -1546,7 +1644,9 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
         //case the sign of the normal vector normal_ has to be inverted at the end of the time step, since this quantity is stored in normal_old_ afterwards.
         //Otherwise the contact force would be applied in the wrong direction and the beams could cross!
         pairs_[i]->InvertNormal();
-        std::cout << "Penetration to large, choose higher penalty parameter!" << std::endl;
+        Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+        if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
+          std::cout << "Warning: Penetration to large, choose higher penalty parameter!" << std::endl;
       }
 
       if (pairs_[i]->GetShiftStatus() == true)
@@ -1607,9 +1707,9 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
       if(radius==0.0)
         dserror("beam radius is 0! Check your element type.");
 
-      btsolgapvector[i] = pairs_[i]->GetGap()/radius;
+      btsolgapvector[i] = btsolpairs_[i]->GetGap()/radius;
 #else
-      btsolgapvector[i] = pairs_[i]->GetGap();
+      btsolgapvector[i] = btsolpairs_[i]->GetGap();
 #endif
     }
   }
@@ -2185,6 +2285,203 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 }
 
 /*----------------------------------------------------------------------*
+ |  Compute gmsh output for 3-noded elements (private)       meier 04/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
+                                          const Epetra_SerialDenseMatrix& allcoord,
+                                          const DRT::Element* thisele,
+                                          std::stringstream& gmshfilecontent)
+{
+  // some local variables
+  Epetra_SerialDenseMatrix prism(3,6);
+  Epetra_SerialDenseVector axis(3);
+  Epetra_SerialDenseVector radiusvec1(3);
+  Epetra_SerialDenseVector radiusvec2(3);
+  Epetra_SerialDenseVector auxvec(3);
+  Epetra_SerialDenseVector theta(3);
+  Epetra_SerialDenseMatrix R(3,3);
+  Epetra_SerialDenseMatrix coord(3,2);
+
+  double eleradius = 0;
+
+  // get radius of element
+  const DRT::ElementType & eot = thisele->ElementType();
+
+    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
+      {
+        const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
+        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
+    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+      {
+        const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
+        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
+
+  // declaring variable for color of elements
+  double color = 1.0;
+  for (int i=0;i<(int)pairs_.size();++i)
+  {
+    // abbreviations
+    int id1 = (pairs_[i]->Element1())->Id();
+    int id2 = (pairs_[i]->Element2())->Id();
+    bool active = pairs_[i]->GetContactFlag();
+
+    // if element is memeber of an active contact pair, choose different color
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0;
+  }
+
+  // computation of coordinates starts here
+  // first, the prisms between node 1 and 3 will be computed.
+  // afterwards the prisms between nodes 3 and 2 will follow
+  for (int i=0;i<3;++i)
+  {
+    // prisms between node 1 and node 3
+    if (i==0)
+    {
+      for (int j=0;j<3;++j)
+      {
+        coord(j,0) = allcoord(j,0);
+        coord(j,1) = allcoord(j,2);
+      }
+    }
+
+    // prisms between node 3 and node 4
+    else if (i==1)
+    {
+      for (int j=0;j<3;++j)
+      {
+        coord(j,0) = allcoord(j,2);
+        coord(j,1) = allcoord(j,3);
+      }
+    }
+
+    // prisms between node 4 and node 2
+    else if (i==2)
+    {
+      for (int j=0;j<3;++j)
+      {
+        coord(j,0) = allcoord(j,3);
+        coord(j,1) = allcoord(j,1);
+      }
+    }
+
+    // compute three dimensional angle theta
+    for (int j=0;j<theta.Length();++j)
+      axis[j] = coord(j,1) - coord(j,0);
+    double norm_axis = axis.Norm2();
+    for (int j=0;j<axis.Length();++j)
+      theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+
+    // Compute rotation matrix R
+    TransformAngleToTriad(theta,R);
+
+    // Now the first prism will be computed via two radiusvectors, that point from each of
+    // the nodes to two points on the beam surface. Further prisms will be computed via a
+    // for-loop, where the second node of the previous prism is used as the first node of the
+    // next prism, whereas the central points (=nodes) stay  identic for each prism. The
+    // second node will be computed by a rotation matrix and a radiusvector.
+
+    // compute radius vector for first surface node of first prims
+    for (int j=0;j<3;++j) auxvec[j] = coord(j,0) + norm_axis;
+
+    // radiusvector for point on surface
+    radiusvec1[0] = auxvec[1]*axis[2] - auxvec[2]*axis[1];
+    radiusvec1[1] = auxvec[2]*axis[0] - auxvec[0]*axis[2];
+    radiusvec1[2] = auxvec[0]*axis[1] - auxvec[1]*axis[0];
+
+    // initialize all prism points to nodes
+    for (int j=0;j<3;++j)
+    {
+      prism(j,0) = coord(j,0);
+      prism(j,1) = coord(j,0);
+      prism(j,2) = coord(j,0);
+      prism(j,3) = coord(j,1);
+      prism(j,4) = coord(j,1);
+      prism(j,5) = coord(j,1);
+    }
+
+    // get first point on surface for node1 and node2
+    for (int j=0;j<3;++j)
+    {
+      prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+      prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+    }
+
+    // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+    radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
+
+    // get second point on surface for node1 and node2
+    for(int j=0;j<3;j++)
+    {
+      prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+      prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+    }
+
+    // now first prism is built -> put coordinates into filecontent-stream
+    // Syntax for gmsh input file
+    // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
+    // SI( coordinates of the six corners ){colors}
+    gmshfilecontent << "SI("<< std::scientific;
+    gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
+    gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
+    gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
+    gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
+    gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
+    gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
+    gmshfilecontent << "){" << std::scientific;
+    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
+
+    // now the other prisms will be computed
+    for (int sector=0;sector<n-1;++sector)
+    {
+      // initialize for next prism
+      // some nodes of last prims can be taken also for the new next prism
+      for (int j=0;j<3;++j)
+      {
+        prism(j,1)=prism(j,2);
+        prism(j,4)=prism(j,5);
+        prism(j,2)=prism(j,0);
+        prism(j,5)=prism(j,3);
+      }
+
+      // old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+      for (int j=0;j<3;++j)
+      {
+        radiusvec1[j] = radiusvec2[j];
+        radiusvec2[j] = 0.0;
+      }
+
+      // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+      radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
+
+      // get second point on surface for node1 and node2
+      for (int j=0;j<3;++j)
+      {
+        prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+        prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+      }
+
+      // put coordinates into filecontent-stream
+      // Syntax for gmsh input file
+      // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
+      // SI( coordinates of the six corners ){colors}
+      gmshfilecontent << "SI("<< std::scientific;
+      gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
+      gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
+      gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
+      gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
+      gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
+      gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
+      gmshfilecontent << "){" << std::scientific;
+      gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
@@ -2211,6 +2508,11 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   {
     const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(thisele);
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+  }
+  else if ( eot == DRT::ELEMENTS::Beam3ebtorType::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(thisele);
+    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
 
   // declaring variable for color of elements
@@ -2364,13 +2666,13 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
   {
     numnodalvalues_ = 1;
   }
-  else if (ele1_type ==DRT::ELEMENTS::Beam3ebType::Instance())
+  else if (ele1_type ==DRT::ELEMENTS::Beam3ebType::Instance() or ele1_type ==DRT::ELEMENTS::Beam3ebtorType::Instance())
   {
     numnodalvalues_ = 2;
   }
   else
   {
-    dserror("Beam element type not valid: only beam3, beam3ii and beam3eb is possible for beam contact!");
+    dserror("Element type not valid: only beam3, beam3ii, beam3eb and beam3ebtor is possible for beam contact!");
   }
 
   return;
@@ -2420,6 +2722,12 @@ double CONTACT::Beam3cmanager::CalcEleRadius(const DRT::Element* ele)
     const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(ele);
     eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
   }
+  if(eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
+  {
+    const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(ele);
+    eleradius = sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
+  }
+
 
   return eleradius;
 }

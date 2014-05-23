@@ -107,6 +107,19 @@ namespace BEAMCONTACT
   }
 
   /*!
+  \brief Calculate difference of two FAD or double vectors
+  */
+  template<typename type>
+  LINALG::TMatrix<type,3,1> DiffVector(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
+  {
+    LINALG::TMatrix<type,3,1> c(true);
+    for (int i=0;i<3;i++)
+      c(i)=a(i)-b(i);
+
+    return c;
+  }
+
+  /*!
   \brief Calculate signum function of FAD or double quantity
   */
   template<typename type>

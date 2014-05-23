@@ -108,6 +108,8 @@ public:
 
   virtual const Epetra_SerialDenseVector GetX2()=0;
 
+  virtual LINALG::TMatrix<TYPE, 3, 1> GetNormalOld()=0;
+
   /*!
     \Check, if there is a difference between the result of the new and old gap definition, i.e. if the beams centerlines have already crossed or not.
   */
@@ -126,7 +128,9 @@ public:
   */
   virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                         Epetra_Vector& fint,
-                        const double& pp)=0;
+                        const double& pp,
+                        std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap,
+                        Teuchos::ParameterList beamcontactparams)=0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
   static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,
@@ -282,6 +286,8 @@ public:
     return r2;
   };
 
+  LINALG::TMatrix<TYPE, 3, 1> GetNormalOld() {return normal_old_;};
+
   /*!
   \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
   */
@@ -300,7 +306,9 @@ public:
   */
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint,
-                const double& pp);
+                const double& pp,
+                std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap,
+                Teuchos::ParameterList beamcontactparams);
 
   /*!
   \brief Reset Uzawa-based Lagrange multiplier
@@ -387,6 +395,9 @@ private:
   //! flag indicating contact (active/inactive)
   bool contactflag_;
 
+  //! flag indicating if contact was active in the last time step
+  bool oldcontactflag_;
+
   //! flag indicating if elements are collinear or not
   bool elementscolinear_;
 
@@ -404,6 +415,10 @@ private:
   TYPE xi1_;
   TYPE xi2_;
 
+  //! parameter values of contact point of last time step
+  TYPE xi1_old_;
+  TYPE xi2_old_;
+
   //! normal vector of current time step
   LINALG::TMatrix<TYPE, 3, 1>  normal_;
 
@@ -419,6 +434,25 @@ private:
   //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
   LINALG::Matrix<3*numnodes,1> nodaltangentssmooth1_;
   LINALG::Matrix<3*numnodes,1> nodaltangentssmooth2_;
+
+  //! current penalty parameter
+  TYPE pp_;
+  //! scalar value of current contact force, standard case: fp_ = pp_ * gap_
+  TYPE fp_;
+
+  bool basicstiff_;
+
+  TYPE ptcpoint_;
+
+  TYPE ptcpointold_;
+
+  TYPE resnorm_;
+
+  TYPE resnormold_;
+
+  int iter_;
+
+  bool beamendcontactopened_;
 
   //@}
 
@@ -568,7 +602,8 @@ private:
   \brief Compute normal vector and gap function at contact point
   */
   void ComputeNormal(LINALG::TMatrix<TYPE,3,1>& delta_r,
-                     TYPE& norm_delta_r);
+                     TYPE& norm_delta_r,
+                     std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap);
 
   /*!
   \brief Check, if we have contact or not (gap < 0 ???)
@@ -586,10 +621,15 @@ private:
     std::vector<int> GetGlobalDofs(const DRT::Node* node);
 
     /*!
-      \brief These method shifts the nodal positions applied within the beam contact framework py a small pre-defined
+      \brief These method shifts the nodal positions applied within the beam contact framework by a small pre-defined
       amount in order to enable contact evaluation in the case of two identical contact points, i.e r1=r2
     */
     void ShiftNodalPositions();
+
+    /*!
+      \brief Get the vector normal_old_ from the neighbor element
+    */
+    void GetNeighborNormalOld(std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap);
 
     void FADCheckLinXiAndLinEta(const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
@@ -604,6 +644,16 @@ private:
     void FADCheckLinOrthogonalityCondition(const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
                                            const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
                                            const LINALG::TMatrix<TYPE, 3, 1>& r2_xi);
+
+    /*!
+      \brief Check, if the current contact point is at one of the two ends of a physical beam
+    */
+    void CheckBoundaryContact();
+
+    /*!
+      \brief Get jacobi factor of beam element
+    */
+    double GetJacobi(DRT::Element* element1);
 
   //@}
 

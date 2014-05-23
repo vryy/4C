@@ -41,8 +41,8 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
-TIMESTEP                        0.5
-NUMSTEP                         2
+TIMESTEP                        0.2
+NUMSTEP                         5
 MAXTIME                         1
 DAMPING                         Material
 M_DAMP                          0
@@ -84,8 +84,8 @@ NDVOL                           0
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                         3
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0  CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 3 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 0.0 -0.455 0.0 0.0 0.0 0.0 CURVE none 1 none   none none none FUNCT 0 0 0 0 0 0
-E 4 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 0.0 -0.455 0.0 0.0 0.0 0.0 CURVE none 1 none   none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 0.0 -0.155 0.0 0.0 0.0 0.0 CURVE none 1 none   none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 0.0 -0.155 0.0 0.0 0.0 0.0 CURVE none 1 none   none none none FUNCT 0 0 0 0 0 0
 // Durchdringung: -0.055
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
@@ -118,8 +118,8 @@ NODE 8 COORD  0.7000000000000e+00 0.000000000000000e+00 -0.000000000000000e+00
 NODE 9 COORD  0.8000000000000e+00 0.00000000000000e+00 -0.000000000000000e+00
 NODE 10 COORD 0.9000000000000e+00 0.000000000000000e+00 -0.000000000000000e+00
 NODE 11 COORD 1.0000000000000e+00 0.00000000000000e+00 -0.000000000000000e+00
-NODE 12 COORD  0.4  0.4000000000000e+00 -0.5e+00
-NODE 13 COORD  0.4  0.4000000000000e+00  0.5e+00
+NODE 12 COORD  0.4  0.1000000000000e+00 -0.5e+00
+NODE 13 COORD  0.4  0.1000000000000e+00  0.5e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 BEAM3EB LIN2  1  2 MAT 1 CROSS 0.00000001 MOMIN 8.3333333333e-18 MOMINPOL 1.6666666666e-17
 2 BEAM3EB LIN2  2  3 MAT 1 CROSS 0.00000001 MOMIN 8.3333333333e-18 MOMINPOL 1.6666666666e-17
@@ -137,7 +137,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE -1.61271268433469742e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -1.71521808988257835e-01 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE -1.61271268433469742e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -1.71521808988257835e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
