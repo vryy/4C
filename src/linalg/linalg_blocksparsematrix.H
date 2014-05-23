@@ -477,7 +477,7 @@ Teuchos::RCP<BlockSparseMatrixBase> Multiply(const BlockSparseMatrixBase& A, boo
                                              const BlockSparseMatrixBase& B, bool transB,
                                              bool explicitdirichlet,
                                              bool savegraph,
-                                             bool completeoutput);
+                                             bool completeoutput = true);
 
 Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > BlockMatrix2x2(
     SparseMatrix& A00,
