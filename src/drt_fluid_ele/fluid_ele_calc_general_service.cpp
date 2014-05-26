@@ -127,13 +127,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
     {
       if (nsd_ == 3)
       {
-        //it is quite expensive to calculate second order derivatives, since a matrix has to be inverted...
-        //so let's save time here
-        is_higher_order_ele_=false;
-        return CalcChannelStatistics(ele,params,discretization,lm,mat);
+        if(ele->Owner() == discretization.Comm().MyPID())
+        {
+          //it is quite expensive to calculate second order derivatives, since a matrix has to be inverted...
+          //so let's save time here
+          is_higher_order_ele_=false;
+          return CalcChannelStatistics(ele,params,discretization,lm,mat);
+        }
       } // end if (nsd == 3)
       else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
-      return 1;
+      return 0;
     }
     break;
     default:
@@ -2862,7 +2865,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
     {
       // t aligned
       elenormdirect =2;
-      std::cout << "upsidedown false" <<&std::endl;
     }
     else if (xyze_(normdirect,3)-xyze_(normdirect,0)>2e-9)
     {
@@ -2876,11 +2878,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
     }
     else if(xyze_(normdirect,4)-xyze_(normdirect,0)<-2e-9)
     {
-      std::cout << xyze_(normdirect,4)-xyze_(normdirect,0) << &std::endl;
       // -t aligned
       elenormdirect =2;
       upsidedown =true;
-      std::cout << "upsidedown true" <<&std::endl;
     }
     else if (xyze_(normdirect,3)-xyze_(normdirect,0)<-2e-9)
     {
@@ -2950,7 +2950,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
       }
 
       // start loop over integration points in layer
-//      for (int iquad=0;iquad<intpoints.nquad;iquad++)
       for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
       {
         // get the other gauss point coordinates
@@ -2968,13 +2967,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
         // hence we can compute the jacobian determinant of the 2d cutting
         // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
-        if(xjm_(normdirect,normdirect)<0)
+        if(xjm_(elenormdirect,normdirect)<0)
         {
-          xjm_(normdirect,normdirect)=-1.0;
+          xjm_(elenormdirect,normdirect)=-1.0;
         }
         else
         {
-          xjm_(normdirect,normdirect)= 1.0;
+          xjm_(elenormdirect,normdirect)= 1.0;
         }
 
         //get local copy of determinant/ adjusted to plane integration
@@ -3154,6 +3153,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
       endlayer=numsublayers+1;
     }
 
+
+
+    //!!see below for more information in green!!
+    //this is dangerous because we don't check anywhere, if the wall normal points in y direction.
+    //please make this more general!
+    //we don't have a test case for this routine either
+    dserror("Warning: Nurbs channel statistics work only if the element wall normal points in y direction.");
+
+
     // loop layers in element
     for(int rr=0;rr<endlayer;++rr)
     {
@@ -3186,6 +3194,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
       {
 
         // get the other gauss point coordinates
+        //here we assume that the element wall normal points in y direction
         gp[0]=iquad.Point()[0];
         gp[2]=iquad.Point()[1];
 
@@ -3196,6 +3205,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
         // hence we can compute the jacobian determinant of the 2d cutting
         // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
+
+        //here we still have the bug with the element normal directions
+        //but we have to find out the element wall normal first to correct it
+        //this part of the code works only if all the normals point in y direction!
+        //please change the following lines to xjm_(elenormdirect,normdirect)
+        //but you have to get elenormdirect first...
         if(xjm_(normdirect,normdirect)<0)
         {
           xjm_(normdirect,normdirect)=-1.0;

@@ -313,8 +313,8 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
         // hence we can compute the jacobian determinant of the 2d cutting
         // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
-        if (xjm(normdirect,normdirect)<0) xjm(normdirect,normdirect)=-1.0;
-        else                              xjm(normdirect,normdirect)= 1.0;
+        if (xjm(elenormdirect,normdirect)<0) xjm(elenormdirect,normdirect)=-1.0;
+        else                              xjm(elenormdirect,normdirect)= 1.0;
 
         const double det =
           xjm(0,0)*xjm(1,1)*xjm(2,2)
@@ -705,8 +705,8 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
         // hence we can compute the jacobian determinant of the 2d cutting
         // element by replacing max-min by one on the diagonal of the
         // jacobi matrix (the two non-diagonal elements are zero)
-        if (xjm(normdirect,normdirect)<0) xjm(normdirect,normdirect)=-1.0;
-        else                              xjm(normdirect,normdirect)= 1.0;
+        if (xjm(elenormdirect,normdirect)<0) xjm(elenormdirect,normdirect)=-1.0;
+        else                              xjm(elenormdirect,normdirect)= 1.0;
 
         const double det =
           xjm(0,0)*xjm(1,1)*xjm(2,2)
