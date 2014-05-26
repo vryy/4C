@@ -164,7 +164,8 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
  * This calculates stress intensity factor (K), and if it is  higher than
  * the critical value, crack is introduced into discretization
  *------------------------------------------------------------------------------------*/
-void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_Vector>& displace )
+void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_Vector>& displace,
+                                                      Teuchos::RCP<std::vector<char> >& strdata )
 {
   oldnew_.clear();
   tip_phi_.clear();
@@ -181,33 +182,6 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
     return;
   }
 
-  /******************************************************************/
-  // check to see map can be gatheredall
-  /*std::map<int,std::vector<double> > check;
-  std::vector<double> ol;
-  for( unsigned i=0;i<3;i++ )
-    ol.push_back(myrank_+i);
-
-  check[myrank_] = ol;
-
-  LINALG::GatherAll( check, comm_ );
-
-  if( myrank_ == 0 )
-  {
-    for( std::map<int,std::vector<double> >::iterator it = check.begin(); it != check.end(); it++ )
-    {
-      int id = it->first;
-      std::vector<double> aa = it->second;
-      std::cout<<"id = "<<id<<"\t values = ";
-      for( unsigned i=0; i< aa.size(); i++ )
-        std::cout<<aa[i]<<"\t";
-      std::cout<<"\n";
-    }
-  }
-
-  dserror("done");*/
-  /******************************************************************/
-
   // export "displacement" to column map
   disp_col_ = LINALG::CreateVector( *discret_->DofColMap(), true );
   LINALG::Export(*displace,*disp_col_);
@@ -215,7 +189,7 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   //-------------
   // STEP 1 : Initiate crack if not already existing
   //-------------
-  InitiateCrack();
+  InitiateCrack( strdata );
 
   // crack has not yet initiated. nothing more to do here
   if( not crackInitiated_ )
@@ -267,27 +241,91 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
 /*------------------------------------------------------------------------------------*
  * If not already present, initiate crack into the structure                sudhakar 05/14
  *------------------------------------------------------------------------------------*/
-void DRT::CRACK::PropagateCrack::InitiateCrack()
+void DRT::CRACK::PropagateCrack::InitiateCrack( Teuchos::RCP<std::vector<char> >& strdata )
 {
 
   if( crackInitiated_ )
     return;
 
+  if( strdata == Teuchos::null )
+  {
+    dserror( "stress data is empty!" );
+  }
+
+  //TODO: Is this row or column map? which is right? check!
+  const Epetra_Map* elemap = discret_->ElementRowMap();
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+  std::vector<char>::size_type position=0;
+
+  for (int i=0;i<elemap->NumMyElements();++i)
+  {
+    Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    DRT::ParObject::ExtractfromPack(position, *strdata, *gpstress);
+    (*mapdata)[elemap->GID(i)]=gpstress;
+  }
+
+  const Epetra_Map& elecolmap = *(discret_->ElementColMap());
+  DRT::Exporter ex( *elemap, elecolmap, comm_ );
+  ex.Export(*mapdata);
+
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
   Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
-  //p.set("gpstressmap", data);
-  Epetra_MultiVector* tmp = new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true);
-
-  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(tmp);
+  p.set("gpstressmap", mapdata);
+  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,6,true));
   p.set("poststress",nodal_stress);
   discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (nodal_stress==Teuchos::null)
   {
-    dserror("vector containing element center stresses/strains not available");
+    dserror("vector containing nodal stresses/strains not available");
   }
 
-  dserror("done");
+  double max_str = 0.0;
+  std::vector<int >node_no;
+
+  const int numnodes = discret_->NumMyRowNodes();
+
+  for (int i=0;i<numnodes;++i)
+  {
+    Epetra_SerialDenseMatrix eigenvec(3,3);
+    Epetra_SerialDenseVector eigenval(3);
+
+    int this_node = noderowmap->GID(i);
+    if( std::find( boun_nodes_.begin(), boun_nodes_.end(), this_node ) == boun_nodes_.end() )
+      continue;
+
+    eigenvec(0,0) = (*((*nodal_stress)(0)))[i];
+    eigenvec(0,1) = (*((*nodal_stress)(3)))[i];
+    eigenvec(0,2) = (*((*nodal_stress)(5)))[i];
+    eigenvec(1,0) = eigenvec(0,1);
+    eigenvec(1,1) = (*((*nodal_stress)(1)))[i];
+    eigenvec(1,2) = (*((*nodal_stress)(4)))[i];
+    eigenvec(2,0) = eigenvec(0,2);
+    eigenvec(2,1) = eigenvec(1,2);
+    eigenvec(2,2) = (*((*nodal_stress)(2)))[i];
+
+    LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+
+    //calculate von-mises stress
+    /*double von_mis = pow( (eigenval(0)-eigenval(1)), 2 ) +
+                     pow( (eigenval(1)-eigenval(2)), 2 ) +
+                     pow( (eigenval(2)-eigenval(0)), 2 ) ;
+
+    von_mis = von_mis * 0.5;*/
+
+    double von_mis = fabs( eigenval(0) );
+
+    if( von_mis > max_str )
+    {
+      max_str = von_mis;
+      node_no.clear();
+      node_no.push_back( this_node );
+    }
+    else if( fabs(von_mis - max_str) < 1e-12 )
+      node_no.push_back( this_node );
+  }
 }
 
 /*------------------------------------------------------------------------------------*
@@ -1554,6 +1592,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
     oldnew_tip[tipid] = gnewtip;
   }
 
+  //TODO: This is not used until now. Check and remove it (sudhakar 05/14)
   LINALG::GatherAll( tip_bc_disp_, comm_ );
 
 

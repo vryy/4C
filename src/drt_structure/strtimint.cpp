@@ -3270,7 +3270,7 @@ bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
   if( not isCrack_ )
     return false;
 
-  propcrack_->propagateOperations( displace );
+  propcrack_->propagateOperations( displace, stressdata_ );
 
   if (not discret_->Filled() || not discret_->HaveDofs())
   {
@@ -3339,6 +3339,9 @@ std::map<int,int> STR::TimInt::getOldNewCrackNodes()
   return propcrack_->GetOldNewNodeIds();
 }
 
+/*------------------------------------------------------------------------------------*
+ * Return the current crack tip nodes                                         sudhakar 03/14
+ *------------------------------------------------------------------------------------*/
 std::vector<int> STR::TimInt::GetCrackTipNodes()
 {
   if( not isCrack_ )

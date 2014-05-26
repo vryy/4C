@@ -24,6 +24,8 @@ Maintainer: Sudhakar
 #include "../drt_crack/InsertCohesiveElements.H"
 #include "../drt_crack/dcohesive.H"
 
+#include "../linalg/linalg_utils.H"
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FSICrackingStructure::FSICrackingStructure
@@ -204,6 +206,21 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
       tip_nodes[nid2] = displ;
     }
   }
+
+  // TODO: This has not been checked in parallel
+  // Now it is mandatory to distribute all the nodes and elements to all processors
+  const Epetra_Map noderowmap = *boundary_dis->NodeRowMap();
+  const Epetra_Map elemrowmap = *boundary_dis->ElementRowMap();
+
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
+
+  // redistribute nodes and elements to column (ghost) map
+  boundary_dis->ExportColumnNodes(nodecolmap);
+  boundary_dis->ExportColumnElements(elemcolmap);
+
+  boundary_dis->FillComplete();
 }
 
 /*------------------------------------------------------------------------------------*
@@ -295,5 +312,19 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
   boundary_dis->FillComplete();
 
   tip_nodes.clear();
+
+  // Now it is mandatory to distribute all the nodes and elements to all processors
+  const Epetra_Map noderowmap = *boundary_dis->NodeRowMap();
+  const Epetra_Map elemrowmap = *boundary_dis->ElementRowMap();
+
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
+
+  // redistribute nodes and elements to column (ghost) map
+  boundary_dis->ExportColumnNodes(nodecolmap);
+  boundary_dis->ExportColumnElements(elemcolmap);
+
+  boundary_dis->FillComplete();
 }
 

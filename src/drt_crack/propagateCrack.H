@@ -38,7 +38,8 @@ public:
   /*!
   \brief Perform all the operations related to crack propagation
    */
-  void propagateOperations( Teuchos::RCP<const Epetra_Vector>& displace );
+  void propagateOperations( Teuchos::RCP<const Epetra_Vector>& displace,
+                            Teuchos::RCP<std::vector<char> >& strdata );
 
   /*!
   \brief Return the map of old_node_id and the duplicated new_node_id
@@ -55,7 +56,7 @@ private:
   /*!
   \brief Initiate crack into the structure if not already present
    */
-  void InitiateCrack();
+  void InitiateCrack( Teuchos::RCP<std::vector<char> >& strdata );
 
   /*!
   \brief Get attached nodes for each crack tip nodes, and construct neighboring node data structure which will be
