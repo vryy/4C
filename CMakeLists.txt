@@ -321,6 +321,19 @@ if (Boost_FOUND)
   # Pass the version to baci
   add_definitions("-DBOOST_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
   add_definitions("-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}")
+  
+  # check Boost_LIBRARY_DIRS against Boost_INCLUDE_DIRS
+  GET_FILENAME_COMPONENT(MYLIBPATH ${Boost_LIBRARY_DIRS} PATH)
+  GET_FILENAME_COMPONENT(MYINCLUDEPATH ${Boost_INCLUDE_DIRS} PATH)
+  string(COMPARE EQUAL "${MYLIBPATH}" "${MYINCLUDEPATH}" result)
+  if(NOT result)
+    message("WW ***********************************************************************")
+    message("WW Warning: Paths for Boost library and include headers are inconsistent!")
+    message("WW Warning: Please consult the CMakeLists.txt maintainer.")
+    message("WW ***********************************************************************")
+  endif()
+  
+  
 else()
  message(FATAL_ERROR ${Boost_ERROR_REASON})
 endif()
