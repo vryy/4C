@@ -303,6 +303,9 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   vn_->PutScalar(0.0);
   vn_->Export(*vnredundant,*windkimpo_,Add);
 
+  // no flux within the time-step when we have quasi-static prestressing: thus set volume at t_{n+1} to initial volume
+  if (pstype_ == INPAR::STR::prestress_mulf) vn_->Update(1.0,*v_,0.0);
+
   // solution and volume at generalized mid-point
   wkdofm_->Update(theta, *wkdofn_, 1.-theta, *wkdof_, 0.0);
   vm_->Update(theta, *vn_, 1.-theta, *v_, 0.0);
@@ -329,13 +332,6 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
 
   // end of Windkessel time integration: now we have values for wkdofm_, dwkdofm_, qm_, dqm, ddqm and can proceed
 
-  // no flux within the time-step when we have quasi-static prestressing!
-  if (pstype_ == INPAR::STR::prestress_mulf)
-  {
-    qm_->PutScalar(0.0);
-    dqm_->PutScalar(0.0);
-    ddqm_->PutScalar(0.0);
-  }
 
   LINALG::Export(*wkdofm_,*wkdofmredundant);
   LINALG::Export(*dwkdofm_,*dwkdofmredundant);
@@ -378,6 +374,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   // no flux, thus no change of vol w.r.t. displacements when prestressing
   if (pstype_ == INPAR::STR::prestress_mulf) mat_dwindk_dd_->Zero();
 
+
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
   LINALG::Export(*wkdofn_,*wkdofnredundant);
@@ -409,9 +406,6 @@ void UTILS::WindkesselManager::UpdateTimeStep()
     wk_heartvalvearterial_proxdist_->Reset(p,wkdofredundant);
 
     wkdof_->Export(*wkdofredundant,*windkimpo_,Insert);
-    qm_->PutScalar(0.0);
-    dqm_->PutScalar(0.0);
-    ddqm_->PutScalar(0.0);
   }
 
 }
