@@ -700,7 +700,12 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
     /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
      *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
     if(params.isParameter("PERIODLENGTH"))
+    {
+      std::cout<<"=========================StatMech"<<std::endl;
       NodeShift<nnode,3>(params,disp);
+    }
+    else
+      std::cout<<"=========================No StatMech"<<std::endl;
 
     //integration points for elasticity (underintegration) and mass matrix (exact integration)
     DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
@@ -803,7 +808,8 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<nnode,3>(params,disp);
+  if(params.isParameter("PERIODLENGTH"))
+    NodeShift<nnode,3>(params,disp);
 
 
   //Compute current nodal triads

@@ -500,7 +500,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
   // Only for statmech problems
-  if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
+  if(params.isParameter("PERIODLENGTH"))
     NodeShift<nnode,3>(params,disp);
 
   Eint_=0.0;

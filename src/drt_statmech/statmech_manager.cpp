@@ -5350,6 +5350,10 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
      linkermodel_ == statmech_linker_myosinthick || networktype_ == statmech_network_casimir ||
      DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_viscoelasticity)
     params.set<std::string>("internalforces","yes");
+
+  // adds information on the used time integration
+  params.set<std::string>("DYNAMICTYP", DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP"));
+
   return;
 }
 

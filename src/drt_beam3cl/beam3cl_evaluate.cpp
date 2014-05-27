@@ -827,7 +827,8 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
 
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<nnode,3>(params,disp);
+  if(params.isParameter("PERIODLENGTH"))
+    NodeShift<nnode,3>(params,disp);
   //Compute current nodal triads of the four real nodes
   UpdateRealNodalTriads<nnode>(disp); // -> q1, q2,q3,q4
   // calculate interpolated displacements and velocities of the two fictive nodes
