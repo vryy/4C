@@ -175,32 +175,32 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_3D(
 
 #define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
 
-#define derxjm_001(ui) (deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2))
-#define derxjm_002(ui) (deriv_(1, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(1, 1))
+#define derxjm_001(ui) (deriv_(2, ui)*xjm_1_2 - deriv_(1, ui)*xjm_2_2)
+#define derxjm_002(ui) (deriv_(1, ui)*xjm_2_1 - deriv_(2, ui)*xjm_1_1)
 
-#define derxjm_100(ui) (deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2))
-#define derxjm_102(ui) (deriv_(2, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(2, 0))
+#define derxjm_100(ui) (deriv_(1, ui)*xjm_2_2 - deriv_(2, ui)*xjm_1_2)
+#define derxjm_102(ui) (deriv_(2, ui)*xjm_1_0 - deriv_(1, ui)*xjm_2_0)
 
-#define derxjm_200(ui) (deriv_(2, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(2, 1))
-#define derxjm_201(ui) (deriv_(1, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(1, 0))
+#define derxjm_200(ui) (deriv_(2, ui)*xjm_1_1 - deriv_(1, ui)*xjm_2_1)
+#define derxjm_201(ui) (deriv_(1, ui)*xjm_2_0 - deriv_(2, ui)*xjm_1_0)
 
-#define derxjm_011(ui) (deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2))
-#define derxjm_012(ui) (deriv_(2, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(2, 1))
+#define derxjm_011(ui) (deriv_(0, ui)*xjm_2_2 - deriv_(2, ui)*xjm_0_2)
+#define derxjm_012(ui) (deriv_(2, ui)*xjm_0_1 - deriv_(0, ui)*xjm_2_1)
 
-#define derxjm_110(ui) (deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2))
-#define derxjm_112(ui) (deriv_(0, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(0, 0))
+#define derxjm_110(ui) (deriv_(2, ui)*xjm_0_2 - deriv_(0, ui)*xjm_2_2)
+#define derxjm_112(ui) (deriv_(0, ui)*xjm_2_0 - deriv_(2, ui)*xjm_0_0)
 
-#define derxjm_210(ui) (deriv_(0, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(0, 1))
-#define derxjm_211(ui) (deriv_(2, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(2, 0))
+#define derxjm_210(ui) (deriv_(0, ui)*xjm_2_1 - deriv_(2, ui)*xjm_0_1)
+#define derxjm_211(ui) (deriv_(2, ui)*xjm_0_0 - deriv_(0, ui)*xjm_2_0)
 
-#define derxjm_021(ui) (deriv_(1, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(1, 2))
-#define derxjm_022(ui) (deriv_(0, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(0, 1))
+#define derxjm_021(ui) (deriv_(1, ui)*xjm_0_2 - deriv_(0, ui)*xjm_1_2)
+#define derxjm_022(ui) (deriv_(0, ui)*xjm_1_1 - deriv_(1, ui)*xjm_0_1)
 
-#define derxjm_120(ui) (deriv_(0, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(0, 2))
-#define derxjm_122(ui) (deriv_(1, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(1, 0))
+#define derxjm_120(ui) (deriv_(0, ui)*xjm_1_2 - deriv_(1, ui)*xjm_0_2)
+#define derxjm_122(ui) (deriv_(1, ui)*xjm_0_0 - deriv_(0, ui)*xjm_1_0)
 
-#define derxjm_220(ui) (deriv_(1, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(1, 1))
-#define derxjm_221(ui) (deriv_(0, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(0, 0))
+#define derxjm_220(ui) (deriv_(1, ui)*xjm_0_1 - deriv_(0, ui)*xjm_1_1)
+#define derxjm_221(ui) (deriv_(0, ui)*xjm_1_0 - deriv_(1, ui)*xjm_0_0)
 
   const double vderiv_0_0   = vderiv_(0, 0);
   const double vderiv_0_1   = vderiv_(0, 1);
@@ -211,6 +211,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_3D(
   const double vderiv_2_0   = vderiv_(2, 0);
   const double vderiv_2_1   = vderiv_(2, 1);
   const double vderiv_2_2   = vderiv_(2, 2);
+
+  const double xjm_0_0   = xjm_(0, 0);
+  const double xjm_0_1   = xjm_(0, 1);
+  const double xjm_0_2   = xjm_(0, 2);
+  const double xjm_1_0   = xjm_(1, 0);
+  const double xjm_1_1   = xjm_(1, 1);
+  const double xjm_1_2   = xjm_(1, 2);
+  const double xjm_2_0   = xjm_(2, 0);
+  const double xjm_2_1   = xjm_(2, 1);
+  const double xjm_2_2   = xjm_(2, 2);
 
   {
     const double convvelint_0 = convvelint_(0);
@@ -317,24 +327,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_3D(
     const double v = timefacfac*visceff_/det_;
     for (int ui=0; ui<nen_; ++ui)
     {
-      const double ui_derxjm_001 = (deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2));
-      const double ui_derxjm_002 = (deriv_(1, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(1, 1));
-      const double ui_derxjm_100 = (deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2));
-      const double ui_derxjm_102 = (deriv_(2, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(2, 0));
-      const double ui_derxjm_200 = (deriv_(2, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(2, 1));
-      const double ui_derxjm_201 = (deriv_(1, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(1, 0));
-      const double ui_derxjm_011 = (deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2));
-      const double ui_derxjm_012 = (deriv_(2, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(2, 1));
-      const double ui_derxjm_110 = (deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2));
-      const double ui_derxjm_112 = (deriv_(0, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(0, 0));
-      const double ui_derxjm_210 = (deriv_(0, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(0, 1));
-      const double ui_derxjm_211 = (deriv_(2, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(2, 0));
-      const double ui_derxjm_021 = (deriv_(1, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(1, 2));
-      const double ui_derxjm_022 = (deriv_(0, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(0, 1));
-      const double ui_derxjm_120 = (deriv_(0, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(0, 2));
-      const double ui_derxjm_122 = (deriv_(1, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(1, 0));
-      const double ui_derxjm_220 = (deriv_(1, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(1, 1));
-      const double ui_derxjm_221 = (deriv_(0, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(0, 0));
+      const double ui_derxjm_001 = (deriv_(2, ui)*xjm_1_2 - deriv_(1, ui)*xjm_2_2);
+      const double ui_derxjm_002 = (deriv_(1, ui)*xjm_2_1 - deriv_(2, ui)*xjm_1_1);
+      const double ui_derxjm_100 = (deriv_(1, ui)*xjm_2_2 - deriv_(2, ui)*xjm_1_2);
+      const double ui_derxjm_102 = (deriv_(2, ui)*xjm_1_0 - deriv_(1, ui)*xjm_2_0);
+      const double ui_derxjm_200 = (deriv_(2, ui)*xjm_1_1 - deriv_(1, ui)*xjm_2_1);
+      const double ui_derxjm_201 = (deriv_(1, ui)*xjm_2_0 - deriv_(2, ui)*xjm_1_0);
+      const double ui_derxjm_011 = (deriv_(0, ui)*xjm_2_2 - deriv_(2, ui)*xjm_0_2);
+      const double ui_derxjm_012 = (deriv_(2, ui)*xjm_0_1 - deriv_(0, ui)*xjm_2_1);
+      const double ui_derxjm_110 = (deriv_(2, ui)*xjm_0_2 - deriv_(0, ui)*xjm_2_2);
+      const double ui_derxjm_112 = (deriv_(0, ui)*xjm_2_0 - deriv_(2, ui)*xjm_0_0);
+      const double ui_derxjm_210 = (deriv_(0, ui)*xjm_2_1 - deriv_(2, ui)*xjm_0_1);
+      const double ui_derxjm_211 = (deriv_(2, ui)*xjm_0_0 - deriv_(0, ui)*xjm_2_0);
+      const double ui_derxjm_021 = (deriv_(1, ui)*xjm_0_2 - deriv_(0, ui)*xjm_1_2);
+      const double ui_derxjm_022 = (deriv_(0, ui)*xjm_1_1 - deriv_(1, ui)*xjm_0_1);
+      const double ui_derxjm_120 = (deriv_(0, ui)*xjm_1_2 - deriv_(1, ui)*xjm_0_2);
+      const double ui_derxjm_122 = (deriv_(1, ui)*xjm_0_0 - deriv_(0, ui)*xjm_1_0);
+      const double ui_derxjm_220 = (deriv_(1, ui)*xjm_0_1 - deriv_(0, ui)*xjm_1_1);
+      const double ui_derxjm_221 = (deriv_(0, ui)*xjm_1_0 - deriv_(1, ui)*xjm_0_0);
 
       {
         const double v0 = - vderiv_0_0*(xji_10*ui_derxjm_100 + xji_10*ui_derxjm_100 + xji_20*ui_derxjm_200 + xji_20*ui_derxjm_200)
