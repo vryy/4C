@@ -230,31 +230,31 @@ private:
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
-        const LINALG::Matrix<3,3>* deltaDp,///< inverse plastic deformation gradient
-        Teuchos::ParameterList& params,///< Container for additional information
-        LINALG::Matrix<6,6>* dPK2dDp, ///< derivative of PK2 w.r.t. F_p^{-1}
-        LINALG::Matrix<6,1>* NCP,      ///< NCP function
-        LINALG::Matrix<6,6>* dNCPdC,   ///< derivative of NCP function w.r.t. RCG
-        LINALG::Matrix<6,6>* dNCPdDp,///< derivative of NCP function w.r.t. deltaLp
-        bool* active,                  ///< gauss point is active
-        bool* elast,                   ///< gauss point needs condensation if it is not elast
-        bool* as_converged,
-        const int gp                ///< gauss point
+        const LINALG::Matrix<3,3>* deltaDp,///< symmetric part of plastic flow increment
+        Teuchos::ParameterList& params,    ///< Container for additional information
+        LINALG::Matrix<6,6>* dPK2dDp,      ///< derivative of PK2 w.r.t. F_p^{-1}
+        LINALG::Matrix<6,1>* NCP,          ///< NCP function
+        LINALG::Matrix<6,6>* dNCPdC,       ///< derivative of NCP function w.r.t. RCG
+        LINALG::Matrix<6,6>* dNCPdDp,      ///< derivative of NCP function w.r.t. deltaLp
+        bool* active,                      ///< gauss point is active
+        bool* elast,                       ///< gauss point needs condensation if it is not elast
+        bool* as_converged,                ///< convergence of active set (false, if as has changed)
+        const int gp                       ///< gauss point
         );
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
-        const LINALG::Matrix<3,3>* deltaLp,///< inverse plastic deformation gradient
-        Teuchos::ParameterList& params,///< Container for additional information
-        LINALG::Matrix<6,9>* dPK2dLp, ///< derivative of PK2 w.r.t. F_p^{-1}
-        LINALG::Matrix<9,1>* NCP,      ///< NCP function
-        LINALG::Matrix<9,6>* dNCPdC,   ///< derivative of NCP function w.r.t. RCG
-        LINALG::Matrix<9,9>* dNCPdLp,///< derivative of NCP function w.r.t. deltaLp
-        bool* active,                  ///< gauss point is active
-        bool* elast,                   ///< gauss point needs condensation if it is not elast
-        bool* as_converged,
-        const int gp                ///< gauss point
+        const LINALG::Matrix<3,3>* deltaLp,///< plastic deformation gradient (non-symmetric)
+        Teuchos::ParameterList& params,    ///< Container for additional information
+        LINALG::Matrix<6,9>* dPK2dLp,      ///< derivative of PK2 w.r.t. F_p^{-1}
+        LINALG::Matrix<9,1>* NCP,          ///< NCP function
+        LINALG::Matrix<9,6>* dNCPdC,       ///< derivative of NCP function w.r.t. RCG
+        LINALG::Matrix<9,9>* dNCPdLp,      ///< derivative of NCP function w.r.t. deltaLp
+        bool* active,                      ///< gauss point is active
+        bool* elast,                       ///< gauss point needs condensation if it is not elast
+        bool* as_converged,                ///< convergence of active set (false, if as has changed)
+        const int gp                       ///< gauss point
         );
 
     /// hyperelastic stress response plus elasticity tensor
