@@ -781,14 +781,16 @@ void LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
 void LINALG::SparseMatrix::Complete()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete");
-  if (sysmat_->Filled()) return;
 
+  // for FE_Matrix we need to gather non-local entries, independent whether matrix is filled or not
   if(matrixtype_ == FE_MATRIX)
   {
     // false indicates here that FillComplete() is not called within GlobalAssemble()
     int err = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->GlobalAssemble(false);
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d",err);
   }
+
+  if (sysmat_->Filled()) return;
 
   int err = sysmat_->FillComplete(true);
   if(err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
@@ -809,14 +811,16 @@ void LINALG::SparseMatrix::Complete()
 void  LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete(domain,range)");
-  if (sysmat_->Filled()) return;
 
+  // for FE_Matrix we need to gather non-local entries, independent whether matrix is filled or not
   if(matrixtype_ == FE_MATRIX)
   {
     // false indicates here that FillComplete() is not called within GlobalAssemble()
     int err = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->GlobalAssemble(domainmap,rangemap,false);
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d",err);
   }
+
+  if (sysmat_->Filled()) return;
 
   int err = sysmat_->FillComplete(domainmap,rangemap,true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
