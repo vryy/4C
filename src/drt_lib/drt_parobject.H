@@ -360,6 +360,36 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : std::map<std::vector<T>, int>
+  */
+  template<typename T>
+  static void AddtoPack(PackBuffer& data, const std::map<std::vector<T>, int >& stuff)
+  {
+
+    int numentries = (int) stuff.size();
+    AddtoPack(data,numentries);
+
+    // iterator
+    typename std::map<std::vector<T>, int >::const_iterator colcurr;
+
+    int i=0;
+    for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
+    {
+      AddtoPack(data,colcurr->first);
+      AddtoPack(data,colcurr->second);
+      ++i;
+    }
+
+    if(i!=numentries)
+      dserror("Something wrong with number of elements");
+
+    return;
+  }
+
+  /*!
+  \brief Add stuff to the end of a char vector data
+
   This method is an overload of the above template for set<int>
   \param data (in/out) : char string stuff shall be added to
   \param stuff (in)    : set<int> that get's added to stuff
@@ -605,7 +635,7 @@ public:
 
   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
   \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : std::map<int, std::set<int> > to extract from data
+  \param stuff (out)       : std::map<int, std::vector<T> > to extract from data
 
   */
   template<typename T>
@@ -626,6 +656,39 @@ public:
 
       //add to map
       stuff.insert(std::pair<int,std::vector<T> >(keys,values));
+
+    }
+
+    return;
+  }
+
+  /*!
+  \brief Extract stuff from a map<std::vector<>, int >
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : std::map<std::vector<T>, int > to extract from data
+
+  */
+  template<typename T>
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<std::vector<T>, int >& stuff)
+  {
+
+    int numentries = 0;
+    ExtractfromPack(position,data,numentries);
+
+    stuff.clear();
+
+    for(int i=0;i<numentries;i++)
+    {
+      std::vector<T> keys;
+      int values;
+
+      ExtractfromPack(position,data,keys);
+      ExtractfromPack(position,data,values);
+
+      //add to map
+      stuff.insert(std::pair<std::vector<T>, int>(keys,values));
 
     }
 

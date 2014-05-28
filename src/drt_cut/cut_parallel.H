@@ -88,6 +88,11 @@ public:
   void distributeMyReceivedNodePositionData();
 
   /*!
+  \brief set received node positions for node and distribute it to facets, vcs ...
+   */
+  void setPositionForNode(const Node* n, const Point::PointPosition& pos);
+
+  /*!
   \brief Export dofset data for volumecells to neighbor proc and receive data from previous proc
    */
   void exportDofSetData();
@@ -166,7 +171,14 @@ public:
 
   GEO::CUT::MeshIntersection & meshintersection_;
 
+  //! map of node-Id and current node-Pos index
   std::map<int,int> curr_undecidedNodePos_;
+
+  /*!
+  \brief map of shadow-nodes (identified via boundary nodes of quad8 sides and the 20 nodes of the hex20 element for inner center node)
+   and current node-Pos index
+   */
+  std::map<plain_int_set, int> curr_undecidedNodePos_shadow_;
 
   Teuchos::RCP<std::vector<GEO::CUT::MeshIntersection::DofSetData> > dofSetData_;
 

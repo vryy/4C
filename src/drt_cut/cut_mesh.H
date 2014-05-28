@@ -217,7 +217,8 @@ public:
   void FindFacetPositions();
 
   /// Check if there are nodes whose position is undecided (often the case in parallel), return whether undecided node positions available
-  bool CheckForUndecidedNodePositions( std::map<int,int> & undecided_node );
+  bool CheckForUndecidedNodePositions( std::map<int,int> &            undecided_node,
+                                       std::map<plain_int_set, int> & undecided_shadow_nodes);
 
 
   /*========================================================================*/
@@ -306,6 +307,13 @@ public:
 
   /// Returns the node with given id
   Node* GetNode( int nid ) const;
+
+  /*!
+  \brief Returns the unique shadow node
+  identified by given nids of a quad8 boundary side or all nodes of hex20 element
+  for the inner shadow node
+   */
+  Node* GetNode( const plain_int_set & nids ) const;
 
   /*!
   \brief If node with the given id exists return the node, else create a new node with
@@ -505,7 +513,8 @@ private:
   std::list<Teuchos::RCP<BoundaryCell> > boundarycells_;
   std::list<Teuchos::RCP<IntegrationCell> > integrationcells_;
 
-  /// nodes by unique id
+  /// nodes by unique id, contains also shadow nodes with negative node-Ids
+  /// Remark: the negative nids of shadow nodes are not unique over processors!
   std::map<int, Teuchos::RCP<Node> > nodes_;
 
   /// edges by set of nodal ids
@@ -521,6 +530,10 @@ private:
   std::map<int, Teuchos::RCP<Element> > elements_;
 
   /// internally generated nodes by nodal ids of element nodes
+  /// there is at most one unique shadow node for each 2D side element (no for quad9 side, one for quad8 side, no for tri6 side, no for linear elements and so on)
+  /// it is the center node of a quad8 side in case of a hex20 element, the eight nodes are used as key for the boundary shadow node
+  /// the inner center node of hex20 element is a (kind of) unique inner! shadow node
+  /// and is stored using all 20 nodes of the hex20 element as key for the map
   std::map<plain_int_set, Node*> shadow_nodes_;
 
   /// internally generated element (quadratic to linear conversation)

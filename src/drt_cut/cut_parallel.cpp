@@ -62,14 +62,9 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
   //----------------------------------------------------------
 
 
-  // check if there are undecided node positions on this proc
-  mesh_.CheckForUndecidedNodePositions(curr_undecidedNodePos_);
-
-
-
   int counter = 0; // loop counter to avoid infinite loops
 
-  while(true) // loop as long as all procs finished with decided node positions for all their nodes
+  while(true) // loop as long as not all procs finished with decided node positions for all their nodes
   {
     counter += 1;
 
@@ -77,7 +72,7 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
     if(counter > numproc_+10) dserror("number of rounds for exchanging data in CommunicateNodePositions > numproc_+10");
 
     // check if there are undecided node positions on this proc
-    bool undecided_nodes = mesh_.CheckForUndecidedNodePositions(curr_undecidedNodePos_);
+    bool undecided_nodes = mesh_.CheckForUndecidedNodePositions(curr_undecidedNodePos_, curr_undecidedNodePos_shadow_);
 
     // no undecided node positions -> procDone=true
     // undecided node positions -> procDone=false
@@ -207,13 +202,40 @@ void GEO::CUT::Parallel::exportNodePositionData()
     //---------------------------------------------------------------------------------------------------------------
     // send current node position map to next proc and receive a new map from previous proc
     {
+      // copy from sorted_vector to std::vector
+      // sorting wont be changed during copying
+      std::map<std::vector<int>, int > tmp_curr_undecidedNodePos_shadow;
+      tmp_curr_undecidedNodePos_shadow.clear();
+
+      //--------------------
+      // copy from std::map<plain_int_set, int> -> std::map<std::vector<int>, int>
+      for(std::map<plain_int_set, int >::iterator it=curr_undecidedNodePos_shadow_.begin();
+          it != curr_undecidedNodePos_shadow_.end(); it++)
+      {
+        std::vector<int> tmp_vec;
+        tmp_vec.clear();
+
+        for(plain_int_set::const_iterator vec_it=(it->first).begin();
+            vec_it!=(it->first).end(); vec_it++)
+        {
+          tmp_vec.push_back(*vec_it);
+        }
+
+        tmp_curr_undecidedNodePos_shadow.insert(std::pair<std::vector<int>, int>(tmp_vec, it->second));
+      }
+      //--------------------
+
+
       DRT::PackBuffer dataSend; // data to be sent
 
       DRT::ParObject::AddtoPack(dataSend,curr_undecidedNodePos_);
+      DRT::ParObject::AddtoPack(dataSend,tmp_curr_undecidedNodePos_shadow);
 
       dataSend.StartPacking();
 
       DRT::ParObject::AddtoPack(dataSend,curr_undecidedNodePos_);
+      DRT::ParObject::AddtoPack(dataSend,tmp_curr_undecidedNodePos_shadow);
+
 
       std::vector<char> dataRecv;
       sendData(dataSend,dest,source,dataRecv);
@@ -223,11 +245,31 @@ void GEO::CUT::Parallel::exportNodePositionData()
 
       // clear vector that should be filled
       curr_undecidedNodePos_.clear();
+      curr_undecidedNodePos_shadow_.clear();
+      tmp_curr_undecidedNodePos_shadow.clear();
 
       // unpack received data
       while (posinData < dataRecv.size())
       {
         DRT::ParObject::ExtractfromPack(posinData,dataRecv, curr_undecidedNodePos_);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv, tmp_curr_undecidedNodePos_shadow);
+
+        //--------------------
+        // copy from std::map<std::vector<int>, int> -> std::map<plain_int_set, int>
+        for(std::map<std::vector<int>, int >::iterator it=tmp_curr_undecidedNodePos_shadow.begin();
+            it != tmp_curr_undecidedNodePos_shadow.end(); it++)
+        {
+          GEO::CUT::plain_int_set tmp_set;
+          for(std::vector<int>::const_iterator vec_it=(it->first).begin();
+              vec_it!=(it->first).end(); vec_it++)
+          {
+            tmp_set.insert(*vec_it);
+          }
+
+          curr_undecidedNodePos_shadow_.insert(std::pair<plain_int_set, int>(tmp_set, it->second));
+        }
+        //--------------------
+
       }
 
       discret_.Comm().Barrier(); // processors wait for each other
@@ -273,6 +315,44 @@ void GEO::CUT::Parallel::exportNodePositionData()
     } // end iteration map
 
     //---------------------------------------------------------------------------------------------------------------
+    // do the same for shadow nodes in case of quadratic elements
+    // find node positions for received shadow! nodes and set position if possible
+    for(std::map<plain_int_set,int>::iterator it=curr_undecidedNodePos_shadow_.begin(); it!=curr_undecidedNodePos_shadow_.end(); it++)
+    {
+      const plain_int_set & nids = it->first;
+      int pos = it->second;
+
+      // find the shadow node on current proc (uniquely identified with other nodes of element boundary or element itself)
+      Node* n = mesh_.GetNode(nids);
+
+      if(n!=NULL) // node on this proc found
+      {
+        Point* p = n->point();
+
+        Point::PointPosition my_pos = p->Position();
+
+
+        if( (pos == Point::undecided) and (my_pos != Point::undecided))
+        {
+          // set the new position
+          it->second = my_pos;
+        }
+        // both position are undecided
+        else if( (pos == Point::undecided) and (my_pos == Point::undecided) )
+        {
+          // no gain in information
+        }
+        else if( (pos != Point::undecided) and (my_pos != Point::undecided)
+                  and (pos != my_pos) )
+        { // only an additional check for not unique node positions
+          dserror("current position on myproc and received position for shadow node are set, but not equal");
+        }
+      }
+
+    } // end iteration map
+
+    //---------------------------------------------------------------------------------------------------------------
+
 
   } // end loop over procs
 
@@ -297,33 +377,65 @@ void GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
     // find the node on current proc (remark: this node has to be on this proc, it's the original source proc)
     Node* n = mesh_.GetNode(nid);
 
+    // set the node position for the node and distribute it to facets, vcs ...
     if(n!=NULL)
     {
-      Point* p = n->point();
-
-      // set the new position for this point and distribute the information via facets and volumecells
-      if(received_pos!=Point::undecided)
-      {
-        //std::cout << "reset the position for node " << nid << std::endl;
-        p->Position(received_pos);
-      }
-
-      if( received_pos==Point::outside or received_pos==Point::inside )
-      {
-        // The nodal position is already known. Set it to my facets. If the
-        // facets are already set, this will not have much effect anyway. But on
-        // multiple cuts we avoid unset facets this way.
-        const plain_facet_set & facets = p->Facets();
-        for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
-        {
-          Facet * f = *i;
-          f->Position( received_pos );
-        }
-      }
-
+      setPositionForNode(n, received_pos);
     }
     else dserror(" this node should be available on its original proc that asked other procs for nodepositions");
 
+  }
+
+  //--------------------------------------------------------------------------------------------------
+  // do the same for shadow nodes in case of quadratic elements
+
+  // distribute the received data for myproc
+  for(std::map<plain_int_set,int>::iterator it=curr_undecidedNodePos_shadow_.begin(); it != curr_undecidedNodePos_shadow_.end(); it++)
+  {
+    const plain_int_set & nids = it->first;
+    Point::PointPosition received_pos = (Point::PointPosition)it->second;
+
+    // find the shadow node on current proc (remark: this node has to be on this proc, it's the original source proc)
+    Node* n = mesh_.GetNode(nids);
+
+    // set the node position for the node and distribute it to facets, vcs ...
+    if(n!=NULL)
+    {
+      setPositionForNode(n, received_pos);
+    }
+    else dserror(" this shadow node should be available on its original proc that asked other procs for nodepositions");
+
+  }
+
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ * set received node positions for node and distribute it to facets, vcs ...         schott 05/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::Parallel::setPositionForNode(const Node* n, const Point::PointPosition& pos)
+{
+
+  Point* p = n->point();
+
+  // set the new position for this point and distribute the information via facets and volumecells
+  if(pos!=Point::undecided)
+  {
+    //std::cout << "reset the position for node " << nid << std::endl;
+    p->Position(pos);
+  }
+
+  if( pos==Point::outside or pos==Point::inside )
+  {
+    // The nodal position is already known. Set it to my facets. If the
+    // facets are already set, this will not have much effect anyway. But on
+    // multiple cuts we avoid unset facets this way.
+    const plain_facet_set & facets = p->Facets();
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    {
+      Facet * f = *i;
+      f->Position( pos );
+    }
   }
 
   return;

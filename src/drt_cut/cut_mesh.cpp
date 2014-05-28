@@ -1089,7 +1089,8 @@ void GEO::CUT::Mesh::FindFacetPositions()
 /*-------------------------------------------------------------------------------*
  | fill the vector with nids of nodes with undecided position,       schott 03/12 |
  *-------------------------------------------------------------------------------*/
-bool GEO::CUT::Mesh::CheckForUndecidedNodePositions( std::map<int, int> & undecided_nodes )
+bool GEO::CUT::Mesh::CheckForUndecidedNodePositions( std::map<int, int> &           undecided_nodes,
+                                                     std::map<plain_int_set, int> & undecided_shadow_nodes)
 {
   // return whether undecided node positions available
   bool undecided_node_positions = false;
@@ -1109,10 +1110,43 @@ bool GEO::CUT::Mesh::CheckForUndecidedNodePositions( std::map<int, int> & undeci
 
       if(n->Id() < 0)
       {
-        throw std::runtime_error( "node with node-Id <0 found" );
+        // continue for shadow nodes, shadow nodes will be handled afterwards
+        continue;
       }
       // insert pair of nid and undecided PointPosition
       undecided_nodes.insert(std::pair<int,int>(n->Id(), pos));
+
+      // set undecided_node_positions to true
+      undecided_node_positions = true;
+    }
+
+  }
+
+  //----------------------------------
+  // do the same for possible shadow nodes
+  //----------------------------------
+
+  // find nodes with undecided node positions for shadow nodes of e.g. hex20 elements
+  for ( std::map<plain_int_set, Node* >::iterator i=shadow_nodes_.begin(); i!=shadow_nodes_.end(); ++i )
+  {
+    Node * n = &*i->second;
+    Point * p = n->point();
+    Point::PointPosition pos = p->Position();
+
+    // check for undecided position
+    if ( pos==Point::undecided )
+    {
+
+      if(n->Id() >= 0)
+      {
+        throw std::runtime_error( "this cannot be a shadow node, a shadow node should have negative nid" );
+      }
+
+      // for hex20 elements, boundary shadow nodes are identified by the eight side-nids of the quad8 side
+      // the inner shadow node is identified by the 20 nodes of the hex20 element
+
+      // insert pair of sorted node-Ids of side or element to identify the unique shadow node and undecided PointPosition
+      undecided_shadow_nodes.insert(std::pair<plain_int_set, int>(i->first, pos));
 
       // set undecided_node_positions to true
       undecided_node_positions = true;
@@ -2072,6 +2106,22 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid ) const
   return NULL;
 }
 
+/*-------------------------------------------------------------------------------------*
+    Returns the unique shadow node
+    identified by given nids of a quad8 boundary side or all nodes of hex20 element
+    for the inner shadow node
+    Remark: Do not identify a shadow node via its Id, since it is not unique over processors
+ *-------------------------------------------------------------------------------------*/
+GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const plain_int_set & nids ) const
+{
+  std::map<plain_int_set, Node*>::const_iterator i=shadow_nodes_.find( nids );
+  if ( i != shadow_nodes_.end() )
+  {
+    return &*i->second;
+  }
+  return NULL;
+}
+
 
 /*-------------------------------------------------------------------------------------*
     If node with the given id exists return the node, else create a new node with
@@ -2139,7 +2189,10 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, Point * p, double lsv )
 
 
 /*-------------------------------------------------------------------------------------*
- * ?
+ * GetNode routine for shadow nodes (e.g. center nodes of hex20 element),
+ * find the unique shadow node (if existent) using the eight quad8 nodes of a quad8 side as key
+ * in case of a boundary center node, and use the 20 nodes of the hex20 element to identify the
+ * inner shadow/center node of the hex20 element
  *-------------------------------------------------------------------------------------*/
 GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const plain_int_set & nids, const double * xyz, double lsv )
 {
@@ -2153,6 +2206,8 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const plain_int_set & nids, const doubl
   {
     throw std::runtime_error( "shadow node already exists" );
   }
+
+  // Remark: the nid of a shadow node is not unique over processors, consequently numbered with negative integers on each proc
   Node * n = GetNode( nid, xyz, lsv );
   shadow_nodes_[nids] = n;
   return n;
