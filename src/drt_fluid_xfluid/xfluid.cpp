@@ -149,13 +149,17 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // * this enables to do the evaluate loop over just row elements instead of col elements
   // * time consuming assemble for cut elements is done only once on a unique row processor
   // REMARK: call the SparseMatrix: * explicitdirichlet = true (is used in ApplyDirichlet, false uses Epetra memory based operations
-  //                                                            that are not ensured to be always compatible with baci)
-  //                                * savegraph = false ( the matrix graph (pattern for non-zero entries) can change ) do not store this graph
-  //                                * with FE_MATRIX flag
-  //TODO: for edgebased approaches the number of connections between rows and cols should be increased
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,81+54,true,false,LINALG::SparseMatrix::FE_MATRIX));
-
-
+  //                                                            that are not compatible with the FE-Matrix)
+  //                                * savegraph = true/false: To save the graph (pattern for non-zero entries) leads to a speedup in the assembly of the matrix
+  //                                    for subsequent assemblies.
+  //                                    However, do not use the savegraph-option when the matrix graph can change during the usage of
+  //                                    this object of SparseMatrix or use the Reset()-function instead of Zero().
+  //                                    For XFEM-problems, the matrix graph changes between timesteps, however,
+  //                                    then a new state class and sparsematrix is created, otherwise a Reset()-function has to be called instead
+  //                                    of the Zero()-function. We are using the save-graph option.
+  // * the estimate of the number of nonzero entries is adapted to hex8 elements with 8 adjacent elements around a node
+  //   + edge-based couplings component-wise v_x->u_x, v_y->u_y, v_z->u_z, q->p
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,81+54,true,true,LINALG::SparseMatrix::FE_MATRIX));
 
 
   // -------------------------------------------------------------------
@@ -277,7 +281,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   }
 
   xfluid_.boundarydofrowmap_ = xfluid_.boundarydis_->DofRowMap();
-
+//TODO: set the savegraph flag to true, analog in Xfluidfluid
   C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
   C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
   C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
@@ -298,7 +302,13 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate" );
 
-  sysmat_->Zero();
+  // create a new sysmat with reusing the old graph (without the DBC modification) when savegraph-flag is switched on
+  // for the first iteration we need to create a new matrix without reusing the graph as the matrix could have been used
+  // for another assembly (e.g. time integration)
+  if(itnum == 1)
+    sysmat_->Reset();
+  else
+    sysmat_->Zero();
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
@@ -923,6 +933,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     //-------------------------------------------------------------------------------
     // finalize the complete matrix
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
+    // and calls a FillComplete for the first run. For further Newton-steps then the optimized FEAssemble routine is used
+    // for speedup.
     sysmat_->Complete();
 
   }
@@ -1995,7 +2007,13 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::GradientPenalty" );
 
-  sysmat_->Zero();
+  // create a new sysmat with reusing the old graph (without the DBC modification) when savegraph-flag is switched on
+  // for the first iteration we need to create a new matrix without reusing the graph as the matrix could have been used
+  // for another assembly
+  if(itnum == 1)
+    sysmat_->Reset();
+  else
+    sysmat_->Zero();
 
   // add Neumann loads
   residual_->PutScalar(0.0);
@@ -3365,7 +3383,7 @@ void FLD::XFluid::PrepareNonlinearSolve()
   // -------------------------------------------------------------------
   INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUID_BOUNDARY");
 
-  if(INPAR::XFEM::XFluidStationaryBoundary != xfluid_mov_bound)
+  if(xfluid_mov_bound != INPAR::XFEM::XFluidStationaryBoundary)
     CutAndSetStateVectors();
 
   // -------------------------------------------------------------------
