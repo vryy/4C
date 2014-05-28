@@ -959,7 +959,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
       {
         // the first vc representing the set
         GEO::CUT::VolumeCell* vc = (*cellset_it)[0];
-        int peid = vc->ParentElement()->Id();
+        int peid = vc->ParentElement()->GetParentId();
 
         if(!discret_->HaveGlobalElement(peid)) dserror("element %d for averaging not on proc %d", peid, myrank_);
 
@@ -1360,7 +1360,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
       {
         // the first vc representing the set
         GEO::CUT::VolumeCell* vc = (*cellset_it)[0];
-        int peid = vc->ParentElement()->Id();
+        int peid = vc->ParentElement()->GetParentId();
 
         if(!discret_->HaveGlobalElement(peid)) dserror("element %d for averaging not on proc %d", peid, myrank_);
 

@@ -2321,11 +2321,11 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
       on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
-    case DRT::Element::quad8:
-    {
-//        on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
-      break;
-    }
+//    case DRT::Element::quad8:
+//    {
+//      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//      break;
+//    }
 //      case DRT::Element::quad9:
 //      {
 //        on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
@@ -2356,11 +2356,11 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
       on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
-    case DRT::Element::quad8:
-    {
-      //      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
-      break;
-    }
+//    case DRT::Element::quad8:
+//    {
+//      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//      break;
+//    }
 //      case DRT::Element::quad9:
 //      {
 //        //      on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);

@@ -66,15 +66,15 @@ public:
 
   //! constructor
   explicit XFluidTimeInt(
-      const Teuchos::RCP<DRT::Discretization> dis,                               /// discretization
-      const Teuchos::RCP<XFEM::FluidWizard>   wizard_old,                        /// fluid wizard at t^n
-      const Teuchos::RCP<XFEM::FluidWizard>   wizard_new,                        /// fluid wizard at t^(n+1)
-      const Teuchos::RCP<XFEM::FluidDofSet>   dofset_old,                        /// dofset at t^n
-      const Teuchos::RCP<XFEM::FluidDofSet>   dofset_new,                        /// dofset at t^(n+1)
-      const Teuchos::ParameterList&           params,                            /// parameter list
-      INPAR::XFEM::XFluidTimeIntScheme        xfluid_timintapproach,             /// xfluid_timintapproch
-      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
-      int                                     step                               /// global time step
+      const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
+      const Teuchos::RCP<XFEM::FluidWizard>                          wizard_old,             /// fluid wizard at t^n
+      const Teuchos::RCP<XFEM::FluidWizard>                          wizard_new,             /// fluid wizard at t^(n+1)
+      const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
+      const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
+      const Teuchos::ParameterList&                                  params,                 /// parameter list
+      const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
+      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
+      const int                                                      step                    /// global time step
   );
 
   //! destructor
@@ -84,17 +84,17 @@ public:
   }
 
   /// set and print reconstruction status for nodes
-  void SetAndPrintStatus(bool screenout);
+  void SetAndPrintStatus(const bool screenout);
 
 
   /// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction
   void TransferDofsToNewMap(
-      const Epetra_Map&                       olddofrowmap,                     /// dof row map w.r.t old interface position
-      const Epetra_Map&                       olddofcolmap,                     /// dof col map w.r.t old interface position
-      std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,               /// row map based vectors w.r.t old interface position
-      std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
-      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method, /// reconstruction map for nodes and its dofsets
-      Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
+      const Epetra_Map&                                        olddofrowmap,        /// dof row map w.r.t old interface position
+      const Epetra_Map&                                        olddofcolmap,        /// dof col map w.r.t old interface position
+      const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+      const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,     /// reconstruction map for nodes and its dofsets
+      const Teuchos::RCP<std::set<int> >                       dbcgids              /// set of dof gids that must not be changed by ghost penalty reconstruction
       );
 
 
@@ -113,75 +113,75 @@ public:
   );
 
   /// all surrounding elements uncut?
-  bool UncutEles(GEO::CUT::Node* n);
+  bool UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizard> wizard);
 
   /// find all ghost dofsets around this node and its std-dofset
   void FindSurroundingGhostDofsets(
-      std::map<int,std::vector<int> >& ghostDofsets,   /// surrounding ghost dofsets to be filled
-      DRT::Node*                       node,           /// node
-      int                              nds_new         /// dofset of node used for finding the surrounding ghost dofs
+      std::map<int,std::vector<int> >&       ghostDofsets,   /// surrounding ghost dofsets to be filled
+      const DRT::Node*                       node,           /// node
+      const int                              nds_new         /// dofset of node used for finding the surrounding ghost dofs
   );
 
   /// copy dofs from old vectors to new vector for all row vectors
   void CopyDofs(
-      DRT::Node*                                 node,               /// drt node
-      const int                                  nds_new,            /// nodal dofset at t^(n+1)
-      const int                                  nds_old,            /// nodal dofset at t^n
-      INPAR::XFEM::XFluidTimeInt                 method,               /// reconstruction method
-      std::vector<Teuchos::RCP<Epetra_Vector> >&          newRowStateVectors, /// row map based state vectors at t^(n+1)
-      std::vector<Teuchos::RCP<const Epetra_Vector> >&    oldRowStateVectors, /// row map based state vectors at t^n
-      Teuchos::RCP<std::set<int> >               dbcgids             /// set of DBC global ids
+      const DRT::Node*                                          node,               /// drt node
+      const int                                                 nds_new,            /// nodal dofset at t^(n+1)
+      const int                                                 nds_old,            /// nodal dofset at t^n
+      const INPAR::XFEM::XFluidTimeInt                          method,             /// reconstruction method
+      const std::vector<Teuchos::RCP<Epetra_Vector> >&          newRowStateVectors, /// row map based state vectors at t^(n+1)
+      const std::vector<Teuchos::RCP<const Epetra_Vector> >&    oldRowStateVectors, /// row map based state vectors at t^n
+      const Teuchos::RCP<std::set<int> >                        dbcgids             /// set of DBC global ids
   );
 
   /// mark nodal dofs of vector w.r.t new interface position for reconstruction
   void MarkDofs(
-      DRT::Node*                          node,                 /// drt node
-      const int                           nds_new,              /// nodal dofset at t^(n+1)
-      std::vector<Teuchos::RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
-      INPAR::XFEM::XFluidTimeInt          method,               /// reconstruction method
-      Teuchos::RCP<std::set<int> >        dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
+      const DRT::Node*                                   node,                 /// drt node
+      const int                                          nds_new,              /// nodal dofset at t^(n+1)
+      const std::vector<Teuchos::RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
+      const INPAR::XFEM::XFluidTimeInt                   method,               /// reconstruction method
+      const Teuchos::RCP<std::set<int> >                 dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
   );
 
   /// mark one specific nodal dofset with used for export
   void MarkDofsForExport(
-      int                        nid,         /// node id
-      int                        dofset,      /// ghost dofset number
-      INPAR::XFEM::XFluidTimeInt method       /// reconstruction method used for marking the nodal dofset
+      const int                        nid,         /// node id
+      const int                        dofset,      /// ghost dofset number
+      const INPAR::XFEM::XFluidTimeInt method       /// reconstruction method used for marking the nodal dofset
       );
 
   /// set the reconstruction method for current nodal dofset, return if set
   bool SetReconstrMethod(
-      DRT::Node*                     node,                 /// drt node
-      const int                      nds_new,              /// nodal dofset at t^(n+1)
-      INPAR::XFEM::XFluidTimeInt     method                /// which type of reconstruction method
+      const DRT::Node*                     node,                 /// drt node
+      const int                            nds_new,              /// nodal dofset at t^(n+1)
+      const INPAR::XFEM::XFluidTimeInt     method                /// which type of reconstruction method
   );
 
   /// find the standard dofset, return the dofset number of std dofset
   int FindStdDofSet(
-      GEO::CUT::Node*                                                               node,          /// cut node
+      const GEO::CUT::Node*                                                         node,          /// cut node
       const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cell_sets  /// dofcellsets of node
   );
 
   /// is this node a standard or ghost node w.r.t current set
   bool Is_Std_CellSet(
-      GEO::CUT::Node*                                  node,     /// cut node
+      const GEO::CUT::Node*                                           node,     /// cut node
       const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&  cell_set  /// set of volumecells
   );
 
   /// identify cellsets at time t^n with cellsets at time t^(n+1)
   void IdentifyOldSets(
-      int &                                                          nds_old,            /// set identified nodal dofset at t^n
-      std::vector<int> &                                             identified_sides,   /// set identified using sides (side-Ids)
+      int &                                                          nds_old,                           /// set identified nodal dofset at t^n
+      std::vector<int> &                                             identified_sides,                  /// set identified using sides (side-Ids)
       const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new        /// dofcellset at t^(n+1) which has to be identified
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new                       /// dofcellset at t^(n+1) which has to be identified
   );
 
   /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
   bool CheckChangingSide(
       bool&                                                          changed_side,        /// did the node change the side ?
       std::vector<int> &                                             identified_sides,    /// side Id of identified side
-      GEO::CUT::Node *                                               n_old,               /// node w.r.t to old wizard
-      GEO::CUT::Node *                                               n_new,               /// node w.r.t to new wizard
+      const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+      const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
       const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_old,        /// dofcellset at t^n
       const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new         /// dofcellset at t^(n+1)
   );
@@ -189,20 +189,20 @@ public:
   /// check if the node is within the space time side
   template<DRT::Element::DiscretizationType side_distype, DRT::Element::DiscretizationType space_time_distype>
   bool WithinSpaceTimeSide(
-      bool&                   within_space_time_side,    /// within the space time side
-      GEO::CUT::SideHandle*   side_old,                  /// side w.r.t old interface
-      GEO::CUT::SideHandle*   side_new,                  /// side w.r.t new interface
-      LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
+      bool&                         within_space_time_side,    /// within the space time side
+      GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
+      GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+      const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
   );
 
   /// check the volume of the space time side, distorted space-time side ?
   template<DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
-  bool CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time>&  xyze_st );
+  bool CheckSTSideVolume( const LINALG::Matrix<3,numnode_space_time>&  xyze_st );
 
   /// export data about reconstruction method to neighbor proc and receive data from previous proc
   void ExportMethods(
-      std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
-      Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
+      const std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
+      const Teuchos::RCP<std::set<int> >                     dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
   );
 
   /*!
