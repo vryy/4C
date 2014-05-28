@@ -1926,36 +1926,36 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
         {
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
           LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          //LINALG::Matrix<numnodes,1> funct;
           LINALG::Matrix<2,numnodes> deriv;
-          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
-          //x.Multiply( xyze, funct );
           break;
         }
         case DRT::Element::tri3:
         {
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
           LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          //LINALG::Matrix<numnodes,1> funct;
           LINALG::Matrix<2,numnodes> deriv;
-          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
           DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
-          //x.Multiply( xyze, funct );
           break;
         }
         case DRT::Element::quad8:
         {
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
           LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          //LINALG::Matrix<numnodes,1> funct;
           LINALG::Matrix<2,numnodes> deriv;
-          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
           DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>( xyze, deriv, metrictensor, drs, &normal );
-          //x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::quad9:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          LINALG::Matrix<2,numnodes> deriv;
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad9 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>( xyze, deriv, metrictensor, drs, &normal );
           break;
         }
         default:
@@ -3022,7 +3022,8 @@ void FLD::XFluid::PrintStabilizationParams()
             def_tau != "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt" and
             def_tau != "Shakib_Hughes_Codina_wo_dt" and
             def_tau != "Codina_wo_dt" and
-            def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt")
+            def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt" and
+            def_tau != "Hughes_Franca_Balestra_wo_dt")
         {
           dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
         }
@@ -3703,15 +3704,6 @@ void FLD::XFluid::Solve()
 
      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1, projector_);
 
-     if(gmsh_debug_out_)
-      {
-        const Epetra_Map* colmap = discret_->DofColMap();
-        Teuchos::RCP<Epetra_Vector> output_col_incvel = LINALG::CreateVector(*colmap,false);
-
-        LINALG::Export(*state_->incvel_,*output_col_incvel);
-
-        state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_icnr", step_, itnum, output_col_incvel );
-      }
 
       // unscale solution
       if (fluid_infnormscaling_!= Teuchos::null)
@@ -3721,6 +3713,17 @@ void FLD::XFluid::Solve()
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
+    }
+    
+
+    if(gmsh_debug_out_)
+    {
+      const Epetra_Map* colmap = discret_->DofColMap();
+      Teuchos::RCP<Epetra_Vector> output_col_incvel = LINALG::CreateVector(*colmap,false);
+
+      LINALG::Export(*state_->incvel_,*output_col_incvel);
+
+      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_icnr", step_, itnum, output_col_incvel );
     }
 
     // -------------------------------------------------------------------
@@ -4633,8 +4636,8 @@ void FLD::XFluid::TransferDofsBetweenSteps(
     Teuchos::RCP<std::set<int> >            dbcgids                            /// set of dof gids that must not be changed by ghost penalty reconstruction
 )
 {
-  bool print_status = true;
-  bool reconstruct_method_output = false;
+  const bool print_status = true;
+  const bool reconstruct_method_output = false;
 
   xfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidTimeInt(dis,
       wizard_old,
@@ -5915,7 +5918,7 @@ void FLD::XFluid::SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
   }
   else
   {
-    dserror("ComputeInterfaceDisplacement should not be called for stationary time integration");
+    dserror("SetInterfaceDisplacement should not be called for stationary time integration");
   }
 
 }
