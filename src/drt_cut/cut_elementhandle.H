@@ -175,6 +175,8 @@ public:
     : element_( e ),
       cells_set_ ( false )
   {
+    // set also the parent element Id which is trivial the same as the element Id
+    element_->ParentId(e->Id());
   }
 
   virtual bool IsCut() { return element_->IsCut(); }

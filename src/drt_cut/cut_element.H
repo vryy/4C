@@ -49,7 +49,7 @@ public:
       n->Register( this );
       points_.push_back( n->point() );
     }
-    parent_id_ = 0;
+    parent_id_ = -1; // initialize with non-reasonable negtive element Id
 
     // shadow elements are initialized separately
     isShadow_ = false;
@@ -313,7 +313,7 @@ public:
   void integrateSpecificFunctionsTessellation();
 
   /*!
-  \brief Assign the subelement his parent id
+  \brief Assign the subelement his parent id (equal to the subelement id eid_ for linear elements)
    */
   void ParentId( int id )
   {
@@ -321,7 +321,7 @@ public:
   }
 
   /*!
-  \brief Gets the parent id of the subelement
+  \brief Gets the parent id of the subelement (equal to the sub-element id eid_ for linear elements)
    */
   int GetParentId()
   {
@@ -377,7 +377,14 @@ private:
 
   bool FindCutLines( Mesh & mesh, Side & side, Side & other );
 
+  /// element Id of the linear element (sub-element for quadratic elements)
   int eid_;
+
+  /*!
+  \brief element Id of the original quadratic/linear element
+  Remark: for time integration and parallel cut it is necessary that parent_id is set also for linear elements (then eid_=parent_id_)
+  */
+  int parent_id_;
 
   bool active_;
 
@@ -393,9 +400,6 @@ private:
   plain_facet_set facets_;
 
   plain_volumecell_set cells_;
-
-  /// if it is a subelement, this is the element of the parent element
-  int parent_id_;
 
   /// For originally linear elements, this just stores the corner points. However, if this linear element is derived from
   // a Quadratic element, then this contains the corner points of quad element.
