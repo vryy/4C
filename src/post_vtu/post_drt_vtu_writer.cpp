@@ -33,43 +33,64 @@ Maintainer: Martin Kronbichler
 
 
 
+namespace
+{
+  template <typename T>
+  class make_vector {
+  public:
+    make_vector<T>& operator<< (const T& val) {
+      data_.push_back(val);
+      return *this;
+    }
+    operator std::vector<T>() const {
+      return data_;
+    }
+  private:
+    std::vector<T> data_;
+  };
+}
+
 /*----------------------------------------------------------------------*/
 /*
- \brief Converts between our element types and the VTK numbers
+ \brief Converts between our element types and the VTK numbers and the respective numbering of degrees of freedom
  */
 /*----------------------------------------------------------------------*/
-uint8_t vtk_element_types [DRT::Element::max_distype] =
+std::pair<uint8_t,std::vector<int> > vtk_element_types [DRT::Element::max_distype] =
 {
     // the VTK element types are from the documentation of vtkCellType,
     // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html
     // this list must be kept in sync with the element types since we use this
     // for index translation
-    0,  // dis_none
-    9,  // quad4
-    23, // quad8
-    28, // quad9
-    5,  // tri3
-    22, // tri6
-    12, // hex8
-    25, // hex20
-    29, // hex27
-    10, // tet4
-    24, // tet10
-    13, // wedge6
-    26, // wedge15
-    14, // pyramid5
-    3,  // line2
-    21, // line3
-    21, // line4 -> mapped onto line3
-    21, // line5 -> mapped onto line3
-    21, // line6 -> mapped onto line3
-    1,  // point1
-    static_cast<uint8_t>(-1), // nurbs2, not yet implemented
-    static_cast<uint8_t>(-1), // nurbs3, not yet implemented
-    static_cast<uint8_t>(-1), // nurbs4, not yet implemented
-    static_cast<uint8_t>(-1), // nurbs9, not yet implemented
-    static_cast<uint8_t>(-1), // nurbs8, not yet implemented
-    static_cast<uint8_t>(-1)  // nurbs27, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (0, std::vector<int>()),                                                    // dis_none
+    std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 2 << 3),                                // quad4
+    std::pair<uint8_t,std::vector<int> > (23, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // quad8
+    std::pair<uint8_t,std::vector<int> > (28, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8),      // quad9
+    std::pair<uint8_t,std::vector<int> > (5, make_vector<int>() << 0 << 1 << 2),                                     // tri3
+    std::pair<uint8_t,std::vector<int> > (22, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5),                     // tri6
+    std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // hex8
+    std::pair<uint8_t,std::vector<int> > (25, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex20
+                                          << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15),
+    std::pair<uint8_t,std::vector<int> > (29, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex27
+                                          << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15
+                                          << 24 << 22 << 21 << 23 << 20 << 25 << 26),
+    std::pair<uint8_t,std::vector<int> > (10, make_vector<int>() << 0 << 1 << 2 << 3),                               // tet4
+    std::pair<uint8_t,std::vector<int> > (24, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9), // tet10
+    std::pair<uint8_t,std::vector<int> > (13, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5),                     // wedge6
+    std::pair<uint8_t,std::vector<int> > (26, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // wedge15
+                                          << 12 << 13 << 14 << 9 << 10 << 11),
+    std::pair<uint8_t,std::vector<int> > (14, make_vector<int>() << 0 << 1 << 2 << 3 << 4), // pyramid5
+    std::pair<uint8_t,std::vector<int> > (3, make_vector<int>() << 0 << 1),                 // line2
+    std::pair<uint8_t,std::vector<int> > (21, make_vector<int>() << 0 << 1 << 2),           // line3
+    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line4 -> mapped onto line3
+    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line5 -> mapped onto line3
+    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line6 -> mapped onto line3
+    std::pair<uint8_t,std::vector<int> > (1, std::vector<int>()),  // point1
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs2, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs3, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs4, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs9, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs8, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>())  // nurbs27, not yet implemented
 };
 
 
@@ -416,11 +437,12 @@ VtuWriter::WriteGeo()
   int outNodeId = 0;
   for (int e=0; e<dis->NumMyRowElements(); ++e) {
     const DRT::Element* ele = dis->lRowElement(e);
-    celltypes.push_back(vtk_element_types[ele->Shape()]);
+    celltypes.push_back(vtk_element_types[ele->Shape()].first);
+    const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
     const DRT::Node* const* nodes = ele->Nodes();
     for (int n=0; n<ele->NumNode(); ++n) {
       for (int d=0; d<3; ++d)
-        coordinates.push_back(nodes[n]->X()[d]);
+        coordinates.push_back(nodes[numbering[n]]->X()[d]);
     }
     outNodeId += ele->NumNode();
     celloffset.push_back(outNodeId);
@@ -649,11 +671,12 @@ VtuWriter::WriteDofResultStep(
   std::vector<int> nodedofs;
   for (int e=0; e<dis->NumMyRowElements(); ++e) {
     const DRT::Element* ele = dis->lRowElement(e);
+    const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
     for (int n=0; n<ele->NumNode(); ++n) {
       nodedofs.clear();
 
       // local storage position of desired dof gid
-      dis->Dof(ele->Nodes()[n], nodedofs);
+      dis->Dof(ele->Nodes()[numbering[n]], nodedofs);
 
       for (int d=0; d<numdf; ++d) {
         const int lid = ghostedData->Map().LID(nodedofs[d+from]+offset);
@@ -723,13 +746,14 @@ VtuWriter::WriteNodalResultStep(
 
   for (int e=0; e<dis->NumMyRowElements(); ++e) {
     const DRT::Element* ele = dis->lRowElement(e);
+    const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
     for (int n=0; n<ele->NumNode(); ++n) {
 
       for (int idf=0; idf<numdf; ++idf)
         {
           Epetra_Vector* column = (*ghostedData)(idf);
 
-          int lid = ghostedData->Map().LID(ele->Nodes()[n]->Id());
+          int lid = ghostedData->Map().LID(ele->Nodes()[numbering[n]]->Id());
 
           if (lid > -1)
             solution.push_back((*column)[lid]);
