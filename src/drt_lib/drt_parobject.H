@@ -61,7 +61,7 @@ namespace DRT
 This class is used to pack information usually stored in a class in a vector<char>.
 This vector<char> can then be used to communicate the contents of a class and to
 read/write binary io. Every class derived from ParObject must basically implement
-the Pack and the Unpack method. There are several methods (mpst of them template specializations)
+the Pack and the Unpack method. There are several methods (most of them template specializations)
 to ease the work of packing/unpacking<br><br>
 Here is an example:
 \code
@@ -112,7 +112,7 @@ Some remarks:
 
 - The size of data ( data.size() ) must 'fit' exactly
 
-- A class should pack everything it needs to be exatcly recreated on a different processor.
+- A class should pack everything it needs to be exactly recreated on a different processor.
   this specifically holds for classes used in a Discretization where data might be shifted around processors.
 
 - Every object that carefully implements ParObject can very easily be communicated using the Exporter.
@@ -137,13 +137,19 @@ int, int*
 double, double*
 float, float*
 string
-vector<char>  // especially useful to pack other packs into a pack, e.g. a class packing its own base class
-vector<int>
-vector<double>
+template<typename T, typename U>
+  std::vector<T>  // especially useful to pack other packs into a pack, e.g. a class packing its own base class
+  std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class packing its own base class
+  std::set<T>
+  LINALG::Matrix<T,U>
+  std::vector<LINALG::Matrix<T,U> >
 Epetra_SerialDenseMatrix
+Epetra_SerialDenseVector
+LINALG::SerialDenseMatrix
+
 \endcode
 
-Note that trying to pack an unsupported type of data (such as e.g. map<key,T> ) might compile and link but will
+Note that trying to pack an unsupported type of data (such as e.g. std::list<T> ) might compile and link but will
 result in the most (or least) funny behavior. Also, this type of bug might be extremely hard to find....
 <br><br>
 Of course, you are welcome to add more specializations to the existing AddtoPack and ExtractfromPack templates.
@@ -255,93 +261,37 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
-  This method is an overload of the above template for vector<int>
+  This method is templated for std::vector<T>
   \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : vector<int> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::vector<int>& stuff);
-
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for vector<double>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : vector<double> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::vector<double>& stuff);
-
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for vector<char>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : vector<char> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::vector<char>& stuff);
-
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for map<int,double>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : map<int,int> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::map<int,int> & stuff);
-
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for map<int,double>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : map<int,double> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::map<int,double> & stuff);
-
-  //																														nagler 07/2012
-  /*!																													
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for map<int,double>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : map<std::string, int> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::map<std::string,int> & stuff);
-
-  //                                                            ghamm 11/2012
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for map<int,double>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : std::map<int, std::set<int> > that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::map<int, std::set<int> > & stuff);
-  
-  //                                                            sudhakar 02/2014
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for map<int,double>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : std::map<int, std::set<int> > that get's added to stuff
+  \param stuff (in)    : std::vector<T> that get's added to stuff
 
   */
   template<typename T>
-  static void AddtoPack(PackBuffer& data, const std::map<int, std::vector<T> >& stuff)
+  static void AddtoPack(PackBuffer& data, const std::vector<T>& stuff)
+  {
+    int numele = stuff.size();
+    AddtoPack(data,numele);
+    AddtoPack(data,&stuff[0],numele*sizeof(T));
+    return;
+  }
+
+  /*!
+  \brief Add stuff to the end of a char vector data
+
+  This method is templated for std::map<T,U>
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : std::map<T,U> that get's added to stuff
+
+  */
+  template<typename T, typename U>
+  static void AddtoPack(PackBuffer& data, const std::map<T,U> & stuff)
   {
 
     int numentries = (int) stuff.size();
     AddtoPack(data,numentries);
 
-    // iterator
-    typename std::map<int,std::vector<T> >::const_iterator colcurr;
+		// iterator
+    typename std::map<T,U>::const_iterator colcurr;
 
     int i=0;
     for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
@@ -360,42 +310,33 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
+  This method is templated for std::set<T>
   \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : std::map<std::vector<T>, int>
+  \param stuff (in)    : std::set<T> that get's added to stuff
+
   */
   template<typename T>
-  static void AddtoPack(PackBuffer& data, const std::map<std::vector<T>, int >& stuff)
+  static void AddtoPack(PackBuffer& data, const std::set<T> & stuff)
   {
 
     int numentries = (int) stuff.size();
     AddtoPack(data,numentries);
 
     // iterator
-    typename std::map<std::vector<T>, int >::const_iterator colcurr;
+    typename std::set<T>::const_iterator colcurr;
 
     int i=0;
     for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
     {
-      AddtoPack(data,colcurr->first);
-      AddtoPack(data,colcurr->second);
+      AddtoPack(data,*colcurr);
       ++i;
     }
 
     if(i!=numentries)
       dserror("Something wrong with number of elements");
 
-    return;
+     return;
   }
-
-  /*!
-  \brief Add stuff to the end of a char vector data
-
-  This method is an overload of the above template for set<int>
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : set<int> that get's added to stuff
-
-  */
-  static void AddtoPack(PackBuffer& data, const std::set<int> & stuff);
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -547,99 +488,36 @@ public:
   /*!
   \brief Extract stuff from a char vector data and increment position
 
-  This method is an overload of the above template for stuff of type vector<int>
+  This method is templated for stuff of type std::vector<T>
 
   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
   \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : vector<int> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<int>& stuff);
-
-  /*!
-  \brief Extract stuff from a char vector data and increment position
-
-  This method is an overload of the above template for stuff of type vector<double>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : vector<double> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<double>& stuff);
-
-  /*!
-  \brief Extract stuff from a char vector data and increment position
-
-  This method is an overload of the above template for stuff of type vector<char>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : vector<char> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<char>& stuff);
-
-  /*!
-  \brief Extract stuff from a map
-
-  This method is an overload of the above template for stuff of type map<int,int>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : map<int,int> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,int>& stuff);
-
-  /*!
-  \brief Extract stuff from a map
-
-  This method is an overload of the above template for stuff of type map<int,double>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : map<int,double> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,double>& stuff);
-
-  /*!
-  \brief Extract stuff from a map
-
-  This method is an overload of the above template for stuff of type map<std::string,int>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : map<int,double> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<std::string,int>& stuff);
-
-  /*!
-  \brief Extract stuff from a map
-
-  This method is an overload of the above template for stuff of type map<std::string,int>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : std::map<int, std::set<int> > to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int, std::set<int> >& stuff);
-
-  /*!
-  \brief Extract stuff from a map<int, std::vector<> >
-
-  This method is an overload of the above template for stuff of type map<std::string,int>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : std::map<int, std::vector<T> > to extract from data
+  \param stuff (out)       : std::vector<T> to extract from data
 
   */
   template<typename T>
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,std::vector<T> >& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<T>& stuff)
+  {
+    int dim = 0;
+    ExtractfromPack(position,data,dim);
+    stuff.resize(dim);
+    int size = dim*sizeof(T);
+    ExtractfromPack(position,data,&stuff[0],size);
+    return;
+  }
+
+  /*!
+  \brief Extract stuff from a char vector data and increment position
+
+  This method is templated for stuff of type std::map<T,U>
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : std::map<T,U> to extract from data
+
+  */
+  template<typename T, typename U>
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<T,U>& stuff)
   {
 
     int numentries = 0;
@@ -649,29 +527,30 @@ public:
 
     for(int i=0;i<numentries;i++)
     {
-      int keys;
-      std::vector<T> values;
-      ExtractfromPack(position,data,keys);
-      ExtractfromPack(position,data,values);
+      T first;
+      U second;
+      ExtractfromPack(position,data,first);
+      ExtractfromPack(position,data,second);
 
       //add to map
-      stuff.insert(std::pair<int,std::vector<T> >(keys,values));
-
+      stuff.insert (std::pair<T,U>(first,second));
     }
 
     return;
   }
 
   /*!
-  \brief Extract stuff from a map<std::vector<>, int >
+  \brief Extract stuff from a char vector data and increment position
+
+  This method is templated for stuff of type std::set<T>
 
   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
   \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : std::map<std::vector<T>, int > to extract from data
+  \param stuff (out)       : std::set<T> to extract from data
 
   */
   template<typename T>
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<std::vector<T>, int >& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::set<T>& stuff)
   {
 
     int numentries = 0;
@@ -681,31 +560,15 @@ public:
 
     for(int i=0;i<numentries;i++)
     {
-      std::vector<T> keys;
-      int values;
+      T value;
+      ExtractfromPack(position,data,value);
 
-      ExtractfromPack(position,data,keys);
-      ExtractfromPack(position,data,values);
-
-      //add to map
-      stuff.insert(std::pair<std::vector<T>, int>(keys,values));
-
+      //add to set
+      stuff.insert(value);
     }
 
     return;
   }
-
-  /*!
-  \brief Extract stuff from a set
-
-  This method is an overload of the above template for stuff of type set<int>
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : set<int> to extract from data
-
-  */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::set<int>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
