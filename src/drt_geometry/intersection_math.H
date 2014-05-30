@@ -124,6 +124,28 @@ namespace GEO
         );
 
 
+    /*!
+    \brief computes the cross product of two LINALG::TMatrix<T,3,1> a x b
+    \param a (in) : arbitrary vector
+    \param b (in) : arbitrary vector
+    \return cross product of two LINALG::TMatrix<T,3,1> a x b
+    */
+    template<typename T>
+    LINALG::TMatrix<T,3,1> computeCrossProductT(
+        const LINALG::TMatrix<T,3,1>& a,
+        const LINALG::TMatrix<T,3,1>& b
+        )
+    {
+        LINALG::TMatrix<T,3,1> c;
+
+        c(0) = a(1)*b(2) - a(2)*b(1);
+        c(1) = a(2)*b(0) - a(0)*b(2);
+        c(2) = a(0)*b(1) - a(1)*b(0);
+
+        return c;
+    }
+
+
   
 /*-------------------------------------------------------------------*
 | 	VON MIR GESCHRIEBEN                                             |

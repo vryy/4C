@@ -436,10 +436,26 @@ namespace PARTICLE
       const double dt
       );
 
-    /// computes time to collision between a particle and and an element for hard sphere
-    /// particles (templated on distype of element)
+    /// computes time to collision between a particle and an element for hard sphere
+    /// particles: searches hierarchically element, edges, corners
+    void ComputeCollisionOfParticleWithWall(
+        DRT::Element* wallele,
+        const Epetra_SerialDenseMatrix& xyze_current,
+        const Epetra_SerialDenseMatrix& xyze_final,
+        const LINALG::Matrix<3,1>& particle_pos,
+        const LINALG::Matrix<3,1>& particle_vel,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wall_pos,
+        LINALG::Matrix<3,1>& wall_vel,
+        const double remaining_dt,
+        const double dt);
+
+    /// computes time to collision between a particle and an element for hard sphere
+    /// particles (templated on distype of element) using FAD
     template<DRT::Element::DiscretizationType DISTYPE>
-    void ComputeCollisionOfParticleWithElementT(
+    void ComputeCollisionOfParticleWithElementT_FAD(
+        DRT::Element* wallele,
         const Epetra_SerialDenseMatrix& xyze_n,
         const Epetra_SerialDenseMatrix& xyze_final,
         const LINALG::Matrix<3,1>& position,
@@ -449,11 +465,12 @@ namespace PARTICLE
         LINALG::Matrix<3,1>& wall_pos,
         LINALG::Matrix<3,1>& wall_vel,
         const double remaining_dt,
-        const double dt);
+        const double dt,
+        bool& checkedges);
 
-    /// computes time to collision between a particle and and an element for hard sphere particles
+    /// computes time to collision between a particle and an element for hard sphere particles
     void ComputeCollisionOfParticleWithElement(
-        const DRT::Element::DiscretizationType distype,
+        DRT::Element* wallele,
         const Epetra_SerialDenseMatrix& xyze_current,
         const Epetra_SerialDenseMatrix& xyze_final,
         const LINALG::Matrix<3,1>& position,
@@ -462,6 +479,65 @@ namespace PARTICLE
         double& timetocollision,
         LINALG::Matrix<3,1>& wall_pos,
         LINALG::Matrix<3,1>& wall_vel,
+        const double remaining_dt,
+        const double dt,
+        bool& checkedges);
+
+    /// computes time to collision between a particle and a line for hard sphere
+    /// particles (templated on distype of line)
+    template<DRT::Element::DiscretizationType DISTYPE>
+    void ComputeCollisionOfParticleWithLineT(
+        const Epetra_SerialDenseMatrix& xyze_line_n,
+        const Epetra_SerialDenseMatrix& xyze_line_final,
+        const LINALG::Matrix<3,1>& particle_pos,
+        const LINALG::Matrix<3,1>& particle_vel,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wallcollpoint_pos,
+        LINALG::Matrix<3,1>& wallcollpoint_vel,
+        bool& checkcorners);
+
+    /// computes time to collision between a particle and a line for hard sphere
+    /// particles (templated on distype of line) using FAD
+    template<DRT::Element::DiscretizationType DISTYPE>
+    void ComputeCollisionOfParticleWithLineT_FAD(
+        const Epetra_SerialDenseMatrix& xyze_line_n,
+        const Epetra_SerialDenseMatrix& xyze_line_final,
+        const LINALG::Matrix<3,1>& particle_pos,
+        const LINALG::Matrix<3,1>& particle_vel,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wallcollpoint_pos,
+        LINALG::Matrix<3,1>& wallcollpoint_vel,
+        const double remaining_dt,
+        const double dt,
+        bool& checkcorners);
+
+    /// computes time to collision between a particle and a line for hard sphere particles
+    void ComputeCollisionOfParticleWithLine(
+        const DRT::Element::DiscretizationType distype,
+        const Epetra_SerialDenseMatrix& xyze_line_n,
+        const Epetra_SerialDenseMatrix& xyze_line_final,
+        const LINALG::Matrix<3,1>& particle_pos,
+        const LINALG::Matrix<3,1>& particle_vel,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wallcollpoint_pos,
+        LINALG::Matrix<3,1>& wallcollpoint_vel,
+        const double remaining_dt,
+        const double dt,
+        bool& checkcorners);
+
+    /// computes time to collision between a particle and a corner of an element
+    void ComputeCollisionOfParticleWithCorner(
+        const Epetra_SerialDenseMatrix& xyze_corner_n,
+        const Epetra_SerialDenseMatrix& xyze_corner_np,
+        const LINALG::Matrix<3,1>& particle_pos,
+        const LINALG::Matrix<3,1>& particle_vel,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wallcollpoint_pos,
+        LINALG::Matrix<3,1>& wallcollpoint_vel,
         const double remaining_dt,
         const double dt);
 

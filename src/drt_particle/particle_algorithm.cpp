@@ -109,11 +109,11 @@ void PARTICLE::Algorithm::Timeloop()
     // particle time step is solved
     Integrate();
 
-    // transfer particles into their correct bins
-    TransferParticles();
-
     // calculate stresses, strains, energies
     PrepareOutput();
+
+    // transfer particles into their correct bins
+    TransferParticles();
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
@@ -251,6 +251,16 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
+  // rough safety check whether bin size is large enough for proper contact detection
+  {
+    double maxvel = 0.0;
+    particles_->Veln()->MaxValue(&maxvel);
+    double maxrad = 0.0;
+    particles_->Radius()->MaxValue(&maxrad);
+    if(maxrad + maxvel*Dt() > cutoff_radius_)
+      dserror("Particles travel more than one bin per time step. Increase bin size or reduce step size");
+  }
+
   CalculateAndApplyForcesToParticles();
 
   Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
