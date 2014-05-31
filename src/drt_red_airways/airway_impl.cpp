@@ -775,13 +775,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   else if(ele->Type() == "ConvectiveViscoElasticRLC")
   {
 #if 0
-      cout<<"I: "      <<I<<endl;
-      cout<<"C: "      <<C<<endl;
-      cout<<"R: "      <<R<<endl;
-      cout<<"Rconv: "  <<Rconv<<endl;
-      cout<<"Rvisc: "  <<Rvis<<endl;
-      cout<<"Pext_n: " <<pextn<<endl;
-      cout<<"Pext_np: "<<pextnp<<endl;
+      std::out<<"I: "      <<I<<std::endl;
+      std::cout<<"C: "      <<C<<std::endl;
+      std::cout<<"R: "      <<R<<std::endl;
+      std::cout<<"Rconv: "  <<Rconv<<std::endl;
+      std::cout<<"Rvisc: "  <<Rvis<<std::endl;
+      std::cout<<"Pext_n: " <<pextn<<std::endl;
+      std::cout<<"Pext_np: "<<pextnp<<std::endl;
 #endif
   }
   else
@@ -1487,7 +1487,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         }
         std::stringstream returnedBCwithId;
         returnedBCwithId << returnedBC <<"_" << ID;
-        cout<<"COND ["<<ID<<"] Returning at time "<<time<<" "<<returnedBC<<"= "<<BC3d<<endl;
+        std::cout<<"COND ["<<ID<<"] Returning at time "<<time<<" "<<returnedBC<<"= "<<BC3d<<std::endl;
         // -----------------------------------------------------------------
         // Check whether the coupling wrapper has already initialized this
         // map else wise we will have problems with parallelization, that's
