@@ -77,9 +77,9 @@ E 2 - pressure 1.0 2 0
  2 RED_AIRWAY LINE2 2 3 MAT 1 ElemSolvingType NonLinear TYPE Resistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
  3 RED_AIRWAY LINE2 2 4 MAT 1 ElemSolvingType NonLinear TYPE Resistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
  4 RED_AIRWAY LINE2 2 5 MAT 1 ElemSolvingType NonLinear TYPE Resistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
- 5 RED_ACINUS LINE2 3 6 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711 Area 0.1
- 6 RED_ACINUS LINE2 4 7 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711 Area 0.1
- 7 RED_ACINUS LINE2 5 8 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711 Area 0.1
+ 5 RED_ACINUS LINE2 3 6 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711 E1_0 6449.0  E1_LIN 33557.7 E1_EXP 6.5158 TAU 47.9892 Area 0.1
+ 6 RED_ACINUS LINE2 4 7 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711 E1_0 6449.0  E1_LIN 33557.7 E1_EXP 6.5158 TAU 47.9892 Area 0.1
+ 7 RED_ACINUS LINE2 5 8 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711 E1_0 6449.0  E1_LIN 33557.7 E1_EXP 6.5158 TAU 47.9892 Area 0.1
  8 RED_ACINAR_INTER_DEP LINE2 6 7 MAT 2
  9 RED_ACINAR_INTER_DEP LINE2 7 8 MAT 2
 10 RED_ACINAR_INTER_DEP LINE2 8 6 MAT 2

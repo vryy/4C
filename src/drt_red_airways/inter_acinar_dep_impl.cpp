@@ -80,6 +80,8 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   Teuchos::RCP<MAT::Material> mat)
 {
+
+#if 0
   double N0 = double(ele->Nodes()[0]->NumElement());
   double N1 = double(ele->Nodes()[1]->NumElement());
   elemat1_epetra(0,0) =  1.0/(N0-1.0);
@@ -87,6 +89,16 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   elemat1_epetra(1,0) = -1.0/(N1-1.0);
   elemat1_epetra(1,1) =  1.0/(N1-1.0);
   elevec1_epetra.Scale(0.0);
+#else
+  // Get the vector with inter-acinar linkers
+  Teuchos::RCP<const Epetra_Vector> ial  = discretization.GetState("intr_ac_link");
+
+  // extract local values from the global vectors
+  std::vector<double> myial(lm.size());
+  DRT::UTILS::ExtractMyValues(*ial,myial,lm);
+
+  Sysmat (myial, elemat1_epetra, elevec1_epetra);
+#endif
 
   return 0;
 }
@@ -101,6 +113,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
   Teuchos::ParameterList&                params,
   DRT::Discretization&                   discretization,
   std::vector<int>&                      lm,
+  Epetra_SerialDenseVector&              n_intr_acn_l,
   Teuchos::RCP<const MAT::Material>      material)
 {
 
@@ -114,6 +127,13 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
     int    gid = ele->Id();
     double val = -2.0;
     generations->ReplaceGlobalValues(1,&val,&gid);
+
+    // In this element,
+    // each node of an inter acinar linker has one linker.
+    // Final sum of linkers for each node is automatically evaluated
+    // during the assembly process.
+    n_intr_acn_l(0) = 1.0;
+    n_intr_acn_l(1) = 1.0;
   }
 
 }//InterAcinarDepImpl::Initial
@@ -124,17 +144,25 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
-  RedInterAcinarDep*                       ele,
-  Epetra_SerialDenseVector&                epnp,
-  Epetra_SerialDenseVector&                epn,
-  Epetra_SerialDenseVector&                epnm,
+  std::vector<double>&                     ial,
   Epetra_SerialDenseMatrix&                sysmat,
-  Epetra_SerialDenseVector&                rhs,
-  Teuchos::RCP<const MAT::Material>        material,
-  Teuchos::ParameterList &                          params,
-  double                                   time,
-  double                                   dt)
+  Epetra_SerialDenseVector&                rhs)
 {
+  // Get the number of inter_acinar linkers on the 1st node (N0)
+  double N0 = ial[0];
+  // Get the number of inter_acinar linkers on the 2nd node (N1)
+  double N1 = ial[1];
+  if (N0 > 0)
+  {
+  sysmat(0,0) =  1.0/(N0);
+  sysmat(0,1) = -1.0/(N0);
+  }
+  if (N1 > 0)
+  {
+  sysmat(1,0) = -1.0/(N1);
+  sysmat(1,1) =  1.0/(N1);
+  }
+  rhs.Scale(0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -231,7 +259,15 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
           {
             functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
           }
-          BCin += functionfac;
+
+          // get curve2
+          int curve2num = -1;
+          double curve2fac = 1.0;
+          if (curve) curve2num = (*curve)[1];
+          if (curve2num>=0 )
+            curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
+
+          BCin += functionfac*curve2fac;
 
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
@@ -273,7 +309,6 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             const double TLCnp= lungVolumenp/TLC;
 
             double Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
-
             BCin += Pp_np;
           }
 

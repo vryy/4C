@@ -160,8 +160,14 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   Teuchos::RCP<ART::ArtNetExplicitTimeInt> artnetexplicit
     =
     Teuchos::rcp(new ART::ArtNetExplicitTimeInt(actdis,*solver,arterytimeparams,*output),false);
-  // initial field from restart or calculated by given function
 
+  // Initialize state save vectors
+  if (CoupledTo3D)
+  {
+    artnetexplicit->InitSaveState();
+  }
+
+  // initial field from restart or calculated by given function
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart && !CoupledTo3D)
   {

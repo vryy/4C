@@ -152,6 +152,13 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit
     =
     Teuchos::rcp(new AIRWAY::RedAirwayImplicitTimeInt(actdis,*solver,airwaystimeparams,*output));
+
+  // Initialize state save vectors
+  if (CoupledTo3D)
+  {
+    airwayimplicit->InitSaveState();
+  }
+
   // initial field from restart or calculated by given function
 
   const int restart = DRT::Problem::Instance()->Restart();

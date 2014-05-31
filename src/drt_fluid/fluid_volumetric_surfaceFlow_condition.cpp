@@ -1764,7 +1764,8 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
   // Bessel functions of order 0 (order==false) or 1 (order==true) are calculated for
   // a given argument z
 
-  const int end = 70;
+//  const int end = 50;
+  int end = 1;
   std::complex<double> J(0.0,0.0);
   std::complex<double> Jmine(0.0,0.0);
   double fac = 1.0;
@@ -1779,6 +1780,24 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
     alpha = 1;
   }
 
+  //--------------------------------------------------------------------
+  // Find max a converged truncation of the Bessel series
+  // by finding S_n/S_0 < TOL
+  // where TOL = 1E-16
+  // and S_0 and S_n are defined as J = sum (S_m) for m=0...n
+  //--------------------------------------------------------------------
+  const double tol  = 1e-16;
+  std::complex<double> error= std::complex<double>(10.0*tol);
+  double facN = 1.0;
+  double facA = 1.0;
+  do
+  {
+    facN *= double(end);
+    facA *= double(end+alpha);
+    error = pow(-std::complex<double>(0.25)*z*z,double(end))/(std::complex<double> (facN)*std::complex<double> (facA));
+    end += 1;
+  }  while (std::abs(error)>tol);
+
   for(int m=0;m<end;m++)
   {
     double fac   = 1.0;
@@ -1792,19 +1811,20 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
       gamma *= (double)(k);
     }
 
+
     Jmine += std::pow(z*std::complex<double>(0.5),double(alpha))
       *  pow(-std::complex<double>(0.25)*z*z,double(m))
       /(std::complex<double> (fac) * std::complex<double> (gamma));
-
   }
-#if 1
+
+
   // Bessel function of the first kind and order 0
   if(order==false)
   {
     for(int m=0;m<end;m++)
     {
       for(int k=2;k<=m;k++)
-	fac *= (double)(k);
+        fac *= (double)(k);
       J += (std::complex<double>)((double)(std::pow(-1.0,(double)(m)))/std::pow(fac,2.0))*
       pow((z/(std::complex<double>)(2.0)),(std::complex<double>)(2*m));
       fac = 1.0;
@@ -1818,18 +1838,18 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
     for(int m=0;m<end;m++)
     {
       for(int k=2;k<=m;k++)
-	fac *= (double)(k);
+        fac *= (double)(k);
       J += (std::complex<double>)((std::pow(-1.0,(double)(m)))/((double)(m+1)*std::pow(fac,2.0)))*
       std::pow((z/std::complex<double>(2.0)),(std::complex<double>)(2*m+1));
       fac = 1.0;
     }
   }
-#endif
 
   if (fabs(real(Jmine)-  real(J))>0.001*fabs(real(J)) || fabs(imag(Jmine)- imag(J))>0.001*fabs(imag(J)))
   {
     dserror("J(%d) problems... [%f,%f]\t[%f,%f]",alpha,real(Jmine),imag(Jmine),real(J),imag(J));
   }
+
 
   return J;
 }

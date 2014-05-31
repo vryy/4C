@@ -107,6 +107,10 @@ public:
 
   virtual void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & ) = 0;
 
+  virtual void SaveState( ) = 0;
+
+  virtual void LoadState( ) = 0;
+
   /*!
   \brief compute TimeUpdate
   */
@@ -167,17 +171,27 @@ public:
     Fluid_couplingWrapperBase ( dis_3D, dis_redD, output, dt_3d, dt_rm),
     reduced_D_time_integ_(time_intg)
     { }
-    
+
   void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & params )
     {
       reduced_D_time_integ_->Integrate(true,params);
     }
 
+  void SaveState()
+  {
+    reduced_D_time_integ_->SaveState();
+  }
+
+  void LoadState()
+  {
+    reduced_D_time_integ_->LoadState();
+  }
+
   void TimeUpdate()
     {
       reduced_D_time_integ_->TimeUpdate();
     }
-  
+
   ~Fluid_couplingWrapper (){};
 private:
   //! Reduced-D artery network time integration
@@ -283,6 +297,10 @@ protected:
   void TimeUpdate() {}
 
   void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & params ){}
+
+  void SaveState( ) {};
+
+  void LoadState( ) {};
 
 private:
   /*!

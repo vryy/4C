@@ -231,12 +231,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 {
   const int   myrank  = discretization.Comm().MyPID();
 
-  Teuchos::RCP<Epetra_Vector> p0np    = params.get<Teuchos::RCP<Epetra_Vector> >("p0np");
-  Teuchos::RCP<Epetra_Vector> p0n     = params.get<Teuchos::RCP<Epetra_Vector> >("p0n");
-  Teuchos::RCP<Epetra_Vector> p0nm    = params.get<Teuchos::RCP<Epetra_Vector> >("p0nm");
+  Teuchos::RCP<Epetra_Vector> p0np      = params.get<Teuchos::RCP<Epetra_Vector> >("p0np");
+  Teuchos::RCP<Epetra_Vector> p0n       = params.get<Teuchos::RCP<Epetra_Vector> >("p0n");
+  Teuchos::RCP<Epetra_Vector> p0nm      = params.get<Teuchos::RCP<Epetra_Vector> >("p0nm");
+  Teuchos::RCP<Epetra_Vector> elemArea0 = params.get<Teuchos::RCP<Epetra_Vector> >("elemArea0");
 
   Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
-  Teuchos::RCP<Epetra_Vector> a_bc          = params.get<Teuchos::RCP<Epetra_Vector> >("acini_bc");
 
   // REMOVED_FOR_UPGRADE  Teuchos::RCP<Epetra_Vector> a_volume      = params.get<Teuchos::RCP<Epetra_Vector> >("acini_volume");
   Teuchos::RCP<Epetra_Vector> a_e_volume    = params.get<Teuchos::RCP<Epetra_Vector> >("acini_e_volume");
@@ -417,17 +417,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     ele->getParams("Area",A);
     double V=A*L;
     elemVolume->ReplaceGlobalValues(1,&V,&gid);
-  }
-
-  for (int i = 0; i<2; i++)
-  {
-    if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
-    {
-      // find the acinus condition
-      int    gid = ele->Id();
-      double val = 1.0;
-      a_bc->ReplaceGlobalValues(1,&val,&gid);
-    }
+    elemArea0->ReplaceGlobalValues(1,&A,&gid);
   }
 
 }//AirwayImpl::Initial
@@ -494,7 +484,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   // get element information
   double Ao     = 0.0;
   double A      = 0.0;
-  double An     = 0.0;
+  //double An     = 0.0;
   double velPow = 0.0;
 
   ele->getParams("Area",Ao);
@@ -504,18 +494,24 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   if (ele->ElemSolvingType() == "Linear")
   {
     A = Ao;
-    An= Ao;
+//    An= Ao;
   }
   else if (ele->ElemSolvingType() == "NonLinear")
   {
     A = params.get<double>("volnp")/L;
-    An= params.get<double>("voln")/L;
+//    An= params.get<double>("voln")/L;
   }
   else
   {
     dserror("[%s] is not a defined ElemSolvingType of a RED_AIRWAY element",ele->ElemSolvingType().c_str());
   }
 
+  // Get airway branch length
+  double l_branch = 0.0;
+  ele->getParams("BranchLength",l_branch);
+
+  if (l_branch < 0.0)
+    l_branch = L;
   // evaluate Poiseuille resistance
   double Rp = 2.0*(2.0+velPow)*PI*visc*L/(pow(A,2));
 
@@ -533,7 +529,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // Pedley et al (1970)
     //-----------------------------------------------------------------
     double gamma = 0.327;
-    R  = gamma* (sqrt(Re * 2.0*sqrt(A/M_PI)/L)) * Rp;
+    R  = gamma* (sqrt(Re * 2.0*sqrt(A/M_PI)/l_branch)) * Rp;
 
     //-----------------------------------------------------------------
     // Correct any resistance smaller than Poiseuille's one
@@ -542,7 +538,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //    {
     //      R = Rp;
     //    }
-    double alfa = sqrt(2.0*sqrt(A/M_PI)/L);
+    double alfa = sqrt(2.0*sqrt(A/M_PI)/l_branch);
+
     double Rep  = 1.0/((gamma*alfa)*(gamma*alfa));
     double k    = 0.50;
     double st   = 1.0/(1.0+exp(-2*k*(Re-Rep)));
@@ -589,7 +586,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // resistance evaluated using Pedley's model from :
     // Pedley et al (1970)
     //-----------------------------------------------------------------
-    R  = gamma* (sqrt(Re * 2.0*sqrt(A/M_PI)/L)) * Rp;
+    R  = gamma* (sqrt(Re * 2.0*sqrt(A/M_PI)/l_branch)) * Rp;
 
     //-----------------------------------------------------------------
     // Correct any resistance smaller than Poiseuille's one
@@ -597,6 +594,89 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     if (R < Rp)
     {
       R = Rp;
+    }
+  }
+  else if (ele->Resistance() == "Cont_Pedley")
+  {
+    //-----------------------------------------------------------------
+    // resistance evaluated using Pedley's model from :
+    // Pedley et al (1970)
+    //-----------------------------------------------------------------
+    double gamma  = 0.327;
+    double D      = sqrt(A/M_PI)*2.0;
+    double Rel    = (l_branch/D)*(1.0/(gamma*gamma));
+    double lambda = 1.2;
+    double Ret    = lambda*Rel;
+
+    //-----------------------------------------------------------------
+    // Correct any resistance smaller than Poiseuille's one
+    //-----------------------------------------------------------------
+    if (Re >= Ret)
+      R  = gamma* (sqrt(Re * 2.0*sqrt(A/M_PI)/l_branch)) * Rp;
+    else
+    {
+      double St  = gamma*sqrt((D/l_branch)*Ret);
+      double bRe = 2.0*St/(St-1.0);
+      double aRe = (St-1.0)/pow(Ret,bRe);
+      R  = (aRe*pow(Re,bRe)+1.0)*Rp;
+    }
+
+  }
+  else if (ele->Resistance() == "Generation_Dependent_Cont_Pedley")
+  {
+    //-----------------------------------------------------------------
+    // Gamma is taken from Ertbruggen et al
+    //-----------------------------------------------------------------
+    double gamma = 0.327;
+    switch(generation)
+    {
+    case 0:
+      gamma = 0.162;
+      break;
+    case 1:
+      gamma = 0.239;
+      break;
+    case 2:
+      gamma = 0.244;
+      break;
+    case 3:
+      gamma = 0.295;
+      break;
+    case 4:
+      gamma = 0.175;
+      break;
+    case 5:
+      gamma = 0.303;
+      break;
+    case 6:
+      gamma = 0.356;
+      break;
+    case 7:
+      gamma = 0.566;
+      break;
+    default:
+      gamma = 0.327;
+    }
+    //-----------------------------------------------------------------
+    // resistance evaluated using Pedley's model from :
+    // Pedley et al (1970)
+    //-----------------------------------------------------------------
+    double D      = sqrt(A/M_PI)*2.0;
+    double Rel    = (l_branch/D)*(1.0/(gamma*gamma));
+    double lambda = 1.2;
+    double Ret    = lambda*Rel;
+
+    //-----------------------------------------------------------------
+    // Correct any resistance smaller than Poiseuille's one
+    //-----------------------------------------------------------------
+    if (Re >= Ret)
+      R  = gamma* (sqrt(Re * 2.0*sqrt(A/M_PI)/l_branch)) * Rp;
+    else
+    {
+      double St  = gamma*sqrt((D/l_branch)*Ret);
+      double bRe = 2.0*St/(St-1.0);
+      double aRe = (St-1.0)/pow(Ret,bRe);
+      R  = (aRe*pow(Re,bRe)+1.0)*Rp;
     }
   }
   else if (ele->Resistance() == "Reynolds")
@@ -607,294 +687,102 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   {
     dserror("[%s] is not a defined resistance model",ele->Resistance().c_str());
   }
+  //------------------------------------------------------------
+  // get airway compliance
+  //------------------------------------------------------------
+  double Ew, tw, nu;
+  // Get element compliance
+  ele->getParams("WallElasticity",Ew);
+  ele->getParams("WallThickness",tw);
+  ele->getParams("PoissonsRatio",nu);
+  double C = 2.0*sqrt(A)*Ao*L/(Ew*tw*sqrt(M_PI)/(1.0-nu*nu));
 
+  //------------------------------------------------------------
+  // get airway viscous resistance
+  //------------------------------------------------------------
+  double Ts, phis;
+  // define 0D airway components
+  ele->getParams("ViscousPhaseShift",phis);
+  ele->getParams("ViscousTs",Ts);
+  double gammas = Ts*tan(phis)*(Ew*tw*sqrt(M_PI)/(1.0-nu*nu))/(4.0*M_PI);
+  double Rvis = gammas/(Ao*sqrt(Ao)*L);
+
+  //------------------------------------------------------------
+  // get airway inductance
+  //------------------------------------------------------------
+  double I = dens*L/Ao;
+
+  //------------------------------------------------------------
+  // get airway convective resistance
+  //------------------------------------------------------------
+  // get Poiseuille resistance with parabolic profile
+  double Rp2nd = 2.0*(2.0+2.0)*PI*visc*L/(pow(A,2));
+  // get the power of velocity profile for the currently used resistance
+  double gamma = 4.0/(Rp2nd/R) - 2.0;
+  // get the Coriolis coefficient
+  double alpha = (2.0+gamma)/(1.0+gamma);
+  double Rconv = 2.0*alpha*dens*(qout_np-qin_np)/(A*A);
+
+  //------------------------------------------------------------
+  // get airway external pressure
+  //------------------------------------------------------------
+  double pextn  = 0.0;
+  double pextnp = 0.0;
+
+  // loop over all nodes
+  // pext is the average pressure over the nodes
+  for(int i = 0; i<ele->NumNode(); i++)
+  {
+    double pextVal = 0.0;
+    // get Pext at time step n
+    this->GetCurveValAtCond(pextVal,
+                            ele->Nodes()[i],
+                            "RedAirwayPrescribedExternalPressure",
+                            "boundarycond",
+                            "ExternalPressure",
+                            time-dt);
+    pextn += pextVal/double(ele->NumNode());
+
+    // get Pext at time step n+1e
+    this->GetCurveValAtCond(pextVal,
+                            ele->Nodes()[i],
+                            "RedAirwayPrescribedExternalPressure",
+                            "boundarycond",
+                            "ExternalPressure",
+                            time);
+    pextnp+= pextVal/double(ele->NumNode());
+  }
   if(ele->Type() == "Resistive")
   {
-
-    //------------------------------------------------------------
-    //               Calculate the System Matrix
-    //------------------------------------------------------------
-
-    sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
-    sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
-
-    rhs(0) = 0.0;
-    rhs(1) = 0.0;
-
+    C = 0.0; I = 0.0; Rconv = 0.0; Rvis = 0.0;
   }
   else if(ele->Type() == "InductoResistive")
   {
-
+    C = 0.0; Rconv = 0.0; Rvis = 0.0;
   }
   else if(ele->Type() == "ComplientResistive")
   {
-    // get element information
-    double Ew, tw, nu;
-    ele->getParams("WallElasticity",Ew);
-    ele->getParams("WallThickness",tw);
-    ele->getParams("PoissonsRatio",nu);
-
-    //------------------------------------------------------------
-    // get airway external pressure
-    //------------------------------------------------------------
-    double pextn  = 0.0;
-    double pextnp = 0.0;
-
-    // loop over all nodes
-    // pext is the average pressure over the nodes
-    for(int i = 0; i<ele->NumNode(); i++)
-    {
-      double pextVal = 0.0;
-      // get Pext at time step n
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time-dt);
-      pextn += pextVal/double(ele->NumNode());
-
-      // get Pext at time step n+1
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time);
-      pextnp+= pextVal/double(ele->NumNode());
-    }
-
-    // find Capacitance C
-    //    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-    const double C = 2.0*sqrt(A)*Ao*L/(Ew*tw*sqrt(M_PI)/(1.0-nu*nu));
-
-    //------------------------------------------------------------
-    //               Calculate the System Matrix
-    //------------------------------------------------------------
-    sysmat(0,0) = -1.0/R - C/dt ; sysmat(0,1) =  1.0/R ;
-    sysmat(1,0) =  1.0/R        ; sysmat(1,1) = -1.0/R ;
-
-    //------------------------------------------------------------
-    //               Calculate the right hand side
-    //------------------------------------------------------------
-     rhs(0) = -epn(0)*C/dt - (pextnp-pextn)*C/dt;
-     rhs(1) = 0.0;
+    I = 0.0; Rconv = 0.0; Rvis = 0.0;
   }
   else if(ele->Type() == "RLC")
   {
-    // get element information
-    double Ew, tw, nu;
-    ele->getParams("WallElasticity",Ew);
-    ele->getParams("WallThickness",tw);
-    ele->getParams("PoissonsRatio",nu);
-
-    // find Capacitance C
-//    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-    const double C = 2.0*sqrt(A)*Ao*L/(Ew*tw*sqrt(M_PI)/(1.0-nu*nu));
-
-    // find Inductance I
-    const double I = dens*L/A;
-    //------------------------------------------------------------
-    // get airway external pressure
-    //------------------------------------------------------------
-    double pextn  = 0.0;
-    double pextnp = 0.0;
-
-    // loop over all nodes
-    // pext is the average pressure over the nodes
-    for(int i = 0; i<ele->NumNode(); i++)
-    {
-      double pextVal = 0.0;
-      // get Pext at time step n
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time-dt);
-      pextn += pextVal/double(ele->NumNode());
-
-      // get Pext at time step n+1
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time);
-      pextnp+= pextVal/double(ele->NumNode());
-    }
-
-    // Implcit integration
-    double kQoutnp = (I/dt+R);
-
-    sysmat(0,0) =-C/dt-1.0/kQoutnp ; sysmat(0,1) =  1.0/kQoutnp;
-    sysmat(1,0) = 1.0/kQoutnp      ; sysmat(1,1) = -1.0/kQoutnp;
-
-    rhs(0) =  I*qout_n/(dt*kQoutnp) - C*(pextnp-pextn)/dt - C*epn(0)/dt;
-    rhs(1) = -I*qout_n/(dt*kQoutnp);
+    Rconv = 0.0; Rvis = 0.0;
   }
   else if(ele->Type() == "ViscoElasticRLC")
   {
-    // get element information
-    double Ew, tw, nu, Ts, phis;
-    ele->getParams("WallElasticity",Ew);
-    ele->getParams("WallThickness",tw);
-    ele->getParams("PoissonsRatio",nu);
-    ele->getParams("ViscousPhaseShift",phis);
-    ele->getParams("ViscousTs",Ts);
-
-    // find Capacitance C
-//    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-    const double C = 2.0*sqrt(A)*Ao*L/(Ew*tw*sqrt(M_PI)/(1.0-nu*nu));
-
-    // The viscous part is currently fixed to the ratio obtained from Figure 2
-    // in:
-    // Viscoelastic and dynamic nonlinear properties of airway smooth muscle
-    // tissue: roles of mechanical force and the cytoskeleton
-    // Satoru Ito, Arnab Majumdar, Hiroaki Kume, Kaoru Shimokata, Keiji
-    // Naruse, Kenneth R. Lutchen, Dimitrije Stamenovic and Béla Suki
-    // Am J Physiol Lung Cell Mol Physiol 290:L1227-L1237, 2006. First published 13 January 2006;
-    // const double Rvsc = (1.0/C)*(1.25/9.0);
-
-//    const double Rv = (1.0/(2*PI*C))*(0.2);
-    double gammas = Ts*tan(phis)*(Ew*tw*sqrt(M_PI)/(1.0-nu*nu))/(4.0*M_PI);
-    A = Ao;
-    An= Ao;
-    const double Rv = gammas/(A*sqrt(A)*L);
-    const double Rvn= gammas/(An*sqrt(An)*L);
-//    const double Rv = gammas/(Ao*sqrt(Ao)*L);
-//    const double Rvn= gammas/(Ao*sqrt(Ao)*L);
-
-    // find Inductance I
-    const double I = dens*L/A;
-    //------------------------------------------------------------
-    // get airway external pressure
-    //------------------------------------------------------------
-    double pextn  = 0.0;
-    double pextnp = 0.0;
-
-    // loop over all nodes
-    // pext is the average pressure over the nodes
-    for(int i = 0; i<ele->NumNode(); i++)
-    {
-      double pextVal = 0.0;
-      // get Pext at time step n
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time-dt);
-      pextn += pextVal/double(ele->NumNode());
-
-      // get Pext at time step n+1
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time);
-      pextnp+= pextVal/double(ele->NumNode());
-    }
-
-
-    // Implcit integration
-    double kQoutnp = (I/dt+R);
-    double kQinnp  = (Rv*C/dt+1.0);
-    // double kQinnp  = (C*Rvsc/dt+1.0);
-    sysmat(0,0) =-C/(dt*kQinnp) - 1.0/kQoutnp; sysmat(0,1) =  1.0/kQoutnp;
-    sysmat(1,0) = 1.0/kQoutnp                ; sysmat(1,1) = -1.0/kQoutnp;
-
-//    double rhs0n = qin_n*(C*Rvsc/dt) + qout_n*(-C*Rvsc/dt+kQinnp*I/(kQoutnp*dt)) - C*(pextnp-pextn)/dt - C*epnp(0)/dt;
-    rhs(0) = qout_n*(-C*Rvn/(dt*kQinnp)+I/(dt*kQoutnp)) + epn(0)*(-C/(dt*kQinnp))+qin_n*(C*Rvn/(dt*kQinnp)) - (C/kQinnp)*(pextnp-pextn)/dt;
-    rhs(1) = -I*qout_n/(dt*kQoutnp);
+    Rconv = 0.0;
   }
   else if(ele->Type() == "ConvectiveViscoElasticRLC")
   {
-    // get element information
-    double Ew, tw, nu, Ts, phis;
-    ele->getParams("WallElasticity",Ew);
-    ele->getParams("WallThickness",tw);
-    ele->getParams("PoissonsRatio",nu);
-    ele->getParams("ViscousPhaseShift",phis);
-    ele->getParams("ViscousTs",Ts);
-
-    //------------------------------------------------------------
-    // get the convective resistance
-    //------------------------------------------------------------
-    // get Poiseuille resistance with parabolic profile
-    double Rp2nd = 2.0*(2.0+2.0)*PI*visc*L/(pow(A,2));
-    // get the power of velocity profile for the currently used resistance
-    double gamma = 4.0/(Rp2nd/R) - 2.0;
-    // get the Coriolis coefficient
-    double alpha = (2.0+gamma)/(1.0+gamma);
-    double Rconv = 2.0*alpha*dens*(qout_np-qin_np)/(A*A);
-
-    // append the convective resistance to the viscous resistance
-    R += Rconv;
-
-    // find Capacitance C
-//    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-    const double C = 2.0*sqrt(A)*Ao*L/(Ew*tw*sqrt(M_PI)/(1.0-nu*nu));
-
-    // The viscous part is currently fixed to the ratio obtained from Figure 2
-    // in:
-    // Viscoelastic and dynamic nonlinear properties of airway smooth muscle
-    // tissue: roles of mechanical force and the cytoskeleton
-    // Satoru Ito, Arnab Majumdar, Hiroaki Kume, Kaoru Shimokata, Keiji
-    // Naruse, Kenneth R. Lutchen, Dimitrije Stamenovic and Béla Suki
-    // Am J Physiol Lung Cell Mol Physiol 290:L1227-L1237, 2006. First published 13 January 2006;
-    // const double Rvsc = (1.0/C)*(1.25/9.0);
-
-//    const double Rv = (1.0/(2*PI*C))*(0.2);
-    double gammas = Ts*tan(phis)*(Ew*tw*sqrt(M_PI)/(1.0-nu*nu))/(4.0*M_PI);
-    //const double Rv = gammas/(A*sqrt(A)*L);
-    //const double Rvn= gammas/(An*sqrt(An)*L);
-    const double Rv = gammas/(Ao*sqrt(Ao)*L);
-    const double Rvn= gammas/(Ao*sqrt(Ao)*L);
-
-    // find Inductance I
-    const double I = dens*L/A;
-    //------------------------------------------------------------
-    // get airway external pressure
-    //------------------------------------------------------------
-    double pextn  = 0.0;
-    double pextnp = 0.0;
-
-    // loop over all nodes
-    // pext is the average pressure over the nodes
-    for(int i = 0; i<ele->NumNode(); i++)
-    {
-      double pextVal = 0.0;
-      // get Pext at time step n
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time-dt);
-      pextn += pextVal/double(ele->NumNode());
-
-      // get Pext at time step n+1
-      this->GetCurveValAtCond(pextVal,
-                              ele->Nodes()[i],
-                              "RedAirwayPrescribedExternalPressure",
-                              "boundarycond",
-                              "ExternalPressure",
-                              time);
-      pextnp+= pextVal/double(ele->NumNode());
-    }
-
-    // Implcit integration
-    double kQoutnp = (I/dt+R);
-    double kQinnp  = (Rv*C/dt+1.0);
-    // double kQinnp  = (C*Rvsc/dt+1.0);
-    sysmat(0,0) =-C/(dt*kQinnp) - 1.0/kQoutnp; sysmat(0,1) =  1.0/kQoutnp;
-    sysmat(1,0) = 1.0/kQoutnp                ; sysmat(1,1) = -1.0/kQoutnp;
-
-//    double rhs0n = qin_n*(C*Rvsc/dt) + qout_n*(-C*Rvsc/dt+kQinnp*I/(kQoutnp*dt)) - C*(pextnp-pextn)/dt - C*epnp(0)/dt;
-    rhs(0) = qout_n*(-C*Rvn/(dt*kQinnp)+I/(dt*kQoutnp)) + epn(0)*(-C/(dt*kQinnp))+qin_n*(C*Rvn/(dt*kQinnp)) - (C/kQinnp)*(pextnp-pextn)/dt;
-    rhs(1) = -I*qout_n/(dt*kQoutnp);
+#if 0
+      cout<<"I: "      <<I<<endl;
+      cout<<"C: "      <<C<<endl;
+      cout<<"R: "      <<R<<endl;
+      cout<<"Rconv: "  <<Rconv<<endl;
+      cout<<"Rvisc: "  <<Rvis<<endl;
+      cout<<"Pext_n: " <<pextn<<endl;
+      cout<<"Pext_np: "<<pextnp<<endl;
+#endif
   }
   else
   {
@@ -902,6 +790,16 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     exit(1);
   }
 
+  double Ainv = -0.5*C/(dt+Rvis*C);
+  double B    =  0.5*I/dt+0.5*(Rconv+R);
+  double P1 = epn(0)+epn(1) - 2.0*Rvis*(qin_n-qout_n)+2.0*(pextnp-pextn);
+  double P2 = -I*(qin_n+qout_n)/(2.0*dt);
+
+  sysmat(0,0) = 0.5*Ainv   - 0.5/B      ; sysmat(0,1) = 0.5*Ainv   + 0.5/B;
+  sysmat(1,0) = 0.5*Ainv   + 0.5/B      ; sysmat(1,1) = 0.5*Ainv   - 0.5/B;
+
+  rhs(0) = 0.5*(P1*Ainv-P2/B);
+  rhs(1) = 0.5*(P1*Ainv+P2/B);
 }
 
 /*----------------------------------------------------------------------*
@@ -1099,7 +997,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
           unsigned int phase_number = 0;
 
-          if (fmod(time,period) > period1)
+          if (fmod(time,period) >= period1)
           {
             phase_number = 1;
             Bc = *(condition->Get<std::string>("phase2"));
@@ -1491,7 +1389,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   const int   myrank  = discretization.Comm().MyPID();
 
   // get total time
-  //  const double time = params.get<double>("total time");
+   const double time = params.get<double>("total time");
 
   // get time-step size
   //  const double dt = params.get<double>("time step size");
@@ -1589,7 +1487,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         }
         std::stringstream returnedBCwithId;
         returnedBCwithId << returnedBC <<"_" << ID;
-
+        cout<<"COND ["<<ID<<"] Returning at time "<<time<<" "<<returnedBC<<"= "<<BC3d<<endl;
         // -----------------------------------------------------------------
         // Check whether the coupling wrapper has already initialized this
         // map else wise we will have problems with parallelization, that's
@@ -1667,7 +1565,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway*        
 
   if (ele->Nodes()[0]->GetCondition("RedAirwayPrescribedScatraCond"))
   {
-    if (qinnp<0)
+    if (qinnp>=0)
       volumeMix_np(0) = evolnp/L;
   }
   if (ele->Nodes()[1]->GetCondition("RedAirwayPrescribedScatraCond"))
@@ -1692,7 +1590,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
                                                      Teuchos::RCP<MAT::Material>           material)
 {
   Teuchos::RCP<Epetra_Vector> qin_np   = params.get<Teuchos::RCP<Epetra_Vector> >("qin_np");
-
   Teuchos::RCP<Epetra_Vector> qout_np  = params.get<Teuchos::RCP<Epetra_Vector> >("qout_np");
 
   Teuchos::RCP<Epetra_Vector> e1scatran = params.get<Teuchos::RCP<Epetra_Vector> >("e1scatran");
@@ -1701,11 +1598,16 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
   Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("e1scatranp");
   Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("e2scatranp");
 
+  Teuchos::RCP<Epetra_Vector> volm_n  = params.get<Teuchos::RCP<Epetra_Vector> >("elemVolumen");
   Teuchos::RCP<Epetra_Vector> volm_np = params.get<Teuchos::RCP<Epetra_Vector> >("elemVolumenp");
+
+
+
 
   // get the elements Qin and Qout
   double q_out = (*qout_np)[ele->LID()];
   double q_in  = (*qin_np )[ele->LID()];
+  double eVoln = (*volm_n)[ele->LID()];
   double eVolnp= (*volm_np)[ele->LID()];
   double e1s   = (*e1scatran)[ele->LID()];
   double e2s   = (*e2scatran)[ele->LID()];
@@ -1723,8 +1625,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
 
 
   // get area
-//  double arean  = eVoln/L;
-  double areanp = eVolnp/L;
+  double areanp= eVolnp/L;
   //ele->getParams("Area",area);
 
   // evaluate velocity at nodes (1) and (2)
@@ -1754,8 +1655,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
   if (vel2 >=0.0)
   {
     double scnp = 0.0;
-  scnp = e2s - dt*vel2*(e2s-e1s)/L - dt*e2s*(vel2-vel1)/L;
-  scnp = e2s - dt*vel2*(e2s-e1s)/L;// - dt*e2s*(vel2-vel1)/L;
+    scnp = e2s - dt*(q_out*e2s-q_out*e1s)/eVoln;
+//    scnp = e2s - dt*(q_out*e2s-q_in*e1s)/eVoln;
     int gid = ele->Id();
     // Update the upstream transport
     e2scatranp->ReplaceGlobalValues(1,&scnp,&gid);
@@ -1764,8 +1665,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
   if (vel1 <0.0)
   {
     double scnp = 0.0;
-    scnp = e1s + dt*vel1*(e1s-e2s)/L  - dt*e1s*(vel1-vel2)/L; ;
-    scnp = e1s + dt*vel1*(e1s-e2s)/L;
+    scnp = e1s + dt*(q_in*e1s-q_in*e2s)/eVoln;
+//    scnp = e1s + dt*(q_in*e1s-q_out*e2s)/eVoln;
     int gid = ele->Id();
     // Update the upstream transport
     e1scatranp->ReplaceGlobalValues(1,&scnp,&gid);
@@ -1917,7 +1818,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
         double val = scnp;
         if (vel1 <0.0)
           val = (*e1scatranp)[ele->LID()];
-//        if(myrank == ele->Owner())
         {
           e1scatranp->ReplaceGlobalValues(1,&val,&gid);
         }
@@ -1929,7 +1829,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
         double val = scnp;
         if (vel2>=0.0)
           val = (*e2scatranp)[ele->LID()];
-//        if(myrank == ele->Owner())
         {
           e2scatranp->ReplaceGlobalValues(1,&val,&gid);
         }
@@ -1969,20 +1868,19 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(
 //    return;
 //  }
 
-  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<Teuchos::RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_n  = params.get<Teuchos::RCP<Epetra_Vector> >("qin_n");
+  Teuchos::RCP<Epetra_Vector> qout_n = params.get<Teuchos::RCP<Epetra_Vector> >("qout_n");
 
   Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector> >("qout_np");
-
   Teuchos::RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
-//Teuchos::RCP<Epetra_Vector> scatran = params.get<Teuchos::RCP<Epetra_Vector> >("scatran");
 
   Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("e1scatranp");
   Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("e2scatranp");
   Teuchos::RCP<Epetra_Vector> elemVolumenp= params.get<Teuchos::RCP<Epetra_Vector> >("elemVolumenp");
 
   // get the elements Qin and Qout
-  double q_out = (*qout_np)[ele->LID()];
-  double q_in  = (*qin_np)[ele->LID()];
+  double q_out = (*qout_n)[ele->LID()];
+  double q_in  = (*qin_n)[ele->LID()];
   double eVolnp= (*elemVolumenp)[ele->LID()];
 
   // extract local values from the global vectors

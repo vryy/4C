@@ -647,6 +647,120 @@ void CombustMonWriter::WriteResult(
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void RedAirwayMonWriter::CheckInfieldType(std::string& infieldtype)
+{
+  if (infieldtype != "red_airway")
+    std::cout << "\nPure red_airway problem, field option other than red_airway has been ignored!\n\n";
+}
+
+/*----------------------------------------------------------------------*/
+void RedAirwayMonWriter::FieldError(int node)
+{
+  dserror("Node %i does not belong to red_airway field!",node);
+}
+
+/*----------------------------------------------------------------------*/
+void RedAirwayMonWriter::WriteHeader(std::ofstream& outfile)
+{
+  outfile << "# red_airway problem, writing nodal data of node ";
+}
+
+/*----------------------------------------------------------------------*/
+void RedAirwayMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+{
+  outfile << "# step   time     P\n";
+}
+
+/*----------------------------------------------------------------------*/
+void RedAirwayMonWriter::WriteResult(
+  std::ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
+{
+  // get actual result vector
+  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("PO2");
+  const Epetra_BlockMap& pmap = resvec->Map();
+  // do output of general time step data
+  outfile << std::right << std::setw(20) << result.step();
+  outfile << std::right << std::setw(20) << std::scientific << result.time();
+
+  //compute second part of offset
+  int offset2 = pmap.MinAllGID();
+
+  // do output for velocity and pressure
+  for(unsigned i=0; i < gdof.size(); ++i)
+  {
+    const int lid = pmap.LID(gdof[i]);
+    outfile << std::right << std::setw(20) << (*resvec)[lid];
+  }
+  outfile << "\n";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1950,6 +2064,15 @@ int main(int argc, char** argv)
       if(infieldtype == "fluid")
       {
         CombustMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+      }
+      break;
+    }
+    case prb_red_airways:
+    {
+      if(infieldtype == "red_airway")
+      {
+        RedAirwayMonWriter mymonwriter(problem,infieldtype,node);
         mymonwriter.WriteMonFile(problem,infieldtype,node);
       }
       break;

@@ -375,10 +375,6 @@ DSURF                           0
 DVOL                            0
 -------------------------------------------------DESIGN SURFACE INV ANALYSIS
 DSURF                           0
-----------------------DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS
-DPOINT                          0
-----------------------DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS
-DSURF                           0
 ------------------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

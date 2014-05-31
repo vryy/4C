@@ -226,6 +226,7 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
   {
     if (strong_redD_3d_coupling_)
     {
+      coupled3D_redDbc_art_->LoadState();
       coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
       coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
     }
@@ -237,6 +238,7 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
   {
     if (strong_redD_3d_coupling_)
     {
+      coupled3D_redDbc_airways_->LoadState();
       coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
       coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
     }
@@ -411,6 +413,7 @@ void FLD::TimIntRedModels::TimeUpdate()
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
   {
+    coupled3D_redDbc_art_->SaveState();
     coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
     coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
     //    coupled3D_redDbc_art_->TimeUpdate();
@@ -420,6 +423,7 @@ void FLD::TimIntRedModels::TimeUpdate()
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
+    coupled3D_redDbc_airways_->SaveState();
     coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
     coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
     //    coupled3D_redDbc_airways_->TimeUpdate();
@@ -432,13 +436,13 @@ void FLD::TimIntRedModels::TimeUpdate()
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_art_->TimeUpdate();
+//    coupled3D_redDbc_art_->TimeUpdate();
   }
   // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_airways_->TimeUpdate();
+//    coupled3D_redDbc_airways_->TimeUpdate();
   }
   return;
 }

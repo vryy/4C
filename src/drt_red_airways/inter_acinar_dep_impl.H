@@ -55,9 +55,10 @@ namespace ELEMENTS
                          Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(RedInterAcinarDep*                       ele,
-                         Teuchos::ParameterList&                           params,
+                         Teuchos::ParameterList&                  params,
                          DRT::Discretization&                     discretization,
                          std::vector<int>&                        lm,
+                         Epetra_SerialDenseVector&                elevec3_epetra,
                          Teuchos::RCP<const MAT::Material>        material)=0;
 
     virtual void EvaluateTerminalBC(RedInterAcinarDep*            ele,
@@ -108,7 +109,7 @@ namespace ELEMENTS
 
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    
+
 
     /// Evaluate
     /*!
@@ -139,16 +140,9 @@ namespace ELEMENTS
       \param time             (i) current simulation time
       \param dt               (i) timestep
       */
-    void Sysmat(RedInterAcinarDep*                       ele,
-                Epetra_SerialDenseVector&                epnp,
-                Epetra_SerialDenseVector&                epn,
-                Epetra_SerialDenseVector&                epnm,
-                Epetra_SerialDenseMatrix&                estif,
-                Epetra_SerialDenseVector&                eforce,
-                Teuchos::RCP<const MAT::Material>        material,
-                Teuchos::ParameterList &                          params,
-                double                                   time,
-                double                                   dt);
+    void Sysmat(std::vector<double>     &                ial,
+                Epetra_SerialDenseMatrix&                sysmat,
+                Epetra_SerialDenseVector&                rhs);
 
 
     virtual void EvaluateTerminalBC(RedInterAcinarDep *          ele,
@@ -173,13 +167,14 @@ namespace ELEMENTS
       \param dt               (i) timestep
       */
     virtual void Initial(RedInterAcinarDep*                       ele,
-                         Teuchos::ParameterList&                           params,
+                         Teuchos::ParameterList&                  params,
                          DRT::Discretization&                     discretization,
                          std::vector<int>&                        lm,
+                         Epetra_SerialDenseVector&                elevec3_epetra,
                          Teuchos::RCP<const MAT::Material>        material);
 
     /*!
-     \Essential functions to compute the results of essentail matrices 
+     \Essential functions to compute the results of essentail matrices
     */
     virtual void CalcFlowRates(RedInterAcinarDep*            ele,
                                Teuchos::ParameterList&       params,

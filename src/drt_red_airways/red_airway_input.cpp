@@ -51,6 +51,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
     linedef->ExtractDouble("Area",A);
     linedef->ExtractInt("Generation",generation);
 
+
     // Correct the velocity profile power
     // this is because the 2.0 is the minimum energy consumtive laminar profile
     if (velPow < 2.0)
@@ -63,6 +64,16 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
     elemParams_["ViscousTs"]        = Ts;
     elemParams_["ViscousPhaseShift"]= Phis;
     generation_                     = generation;
+    if (linedef->HaveNamed("BranchLength"))
+    {
+      double l_branch = 0.0;
+      linedef->ExtractDouble("BranchLength",l_branch);
+      elemParams_["BranchLength"] = l_branch;
+    }
+    else
+    {
+      elemParams_["BranchLength"] = -1.0;
+    }
   }
   else
   {
@@ -90,7 +101,7 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
 
 
   linedef->ExtractString("TYPE",elemType_);
-  if (elemType_ == "Exponential" || elemType_ == "DoubleExponential" || elemType_ == "NeoHookean")
+  if (elemType_ == "Exponential" || elemType_ == "DoubleExponential" || elemType_ == "NeoHookean"|| elemType_ == "VolumetricOgden")
   {
     double acinusVol, alveolarDuctVol, A;
     const int generation = -1;
@@ -106,8 +117,56 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
   }
   else
   {
-    dserror("Reading type of Acinare element failed: Exponential/DoubleExponential/NeoHookean");
+    dserror("Reading type of Acinare element failed: Exponential/DoubleExponential/NeoHookean/VolumetricOgden");
     exit(1);
+  }
+
+  if(elemType_ == "Exponential")
+  {
+    double E1_0, E1_lin, E1_exp, Tau;
+    linedef->ExtractDouble("E1_0" ,E1_0);
+    linedef->ExtractDouble("E1_LIN",E1_lin);
+    linedef->ExtractDouble("E1_EXP",E1_exp);
+    linedef->ExtractDouble("TAU" , Tau);
+
+    elemParams_["E1_0"  ] = E1_0;
+    elemParams_["E1_LIN"] = E1_lin;
+    elemParams_["E1_EXP"] = E1_exp;
+    elemParams_["TAU"   ] = Tau;
+  }
+  else if(elemType_ == "DoubleExponential")
+  {
+    double E1_01, E1_lin1, E1_exp1, Tau1;
+    linedef->ExtractDouble("E1_01" ,E1_01);
+    linedef->ExtractDouble("E1_LIN1",E1_lin1);
+    linedef->ExtractDouble("E1_EXP1",E1_exp1);
+    linedef->ExtractDouble("TAU1" , Tau1);
+    elemParams_["E1_01"  ] = E1_01;
+    elemParams_["E1_LIN1"] = E1_lin1;
+    elemParams_["E1_EXP1"] = E1_exp1;
+    elemParams_["TAU1"   ] = Tau1;
+
+    double E1_02, E1_lin2, E1_exp2, Tau2;
+    linedef->ExtractDouble("E1_02" ,E1_02);
+    linedef->ExtractDouble("E1_LIN2",E1_lin2);
+    linedef->ExtractDouble("E1_EXP2",E1_exp2);
+    linedef->ExtractDouble("TAU2" , Tau2);
+    elemParams_["E1_02"  ] = E1_02;
+    elemParams_["E1_LIN2"] = E1_lin2;
+    elemParams_["E1_EXP2"] = E1_exp2;
+    elemParams_["TAU2"   ] = Tau2;
+  }
+  else if(elemType_ == "VolumetricOgden")
+  {
+    double kappa, beta;
+    linedef->ExtractDouble("KAPPA",kappa);
+    linedef->ExtractDouble("BETA",beta);
+    elemParams_["kappa"]              = kappa;
+    elemParams_["beta"]               = beta;
+  }
+  else
+  {
+    // do nothing
   }
 
   return true;

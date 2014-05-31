@@ -271,7 +271,9 @@ public:
     ImmersedSearchbox,
     ImmersedFSIForceEvaluation,
     ImmersedInterpolatingElement,
-    ParticlePeriodic
+    ParticlePeriodic,
+    RedAirwayVolDependentPleuralPressureCond,
+    RedAirwayEvalLungVolCond
   };
 
   /*!

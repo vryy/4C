@@ -468,7 +468,8 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     //    params->set("3D map of values", map3_Dnp_);
     params->set("3D map of values",map3D_inter_to_Red);
     params->set("reducedD map of values", mapRed_Dnp_);
-    params->set("time",time);
+    double subscale_time = time - (dt_rm_*double(NumOfSteps - N - 1));
+    params->set("time",subscale_time);
 //#endif
 
 //    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);

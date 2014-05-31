@@ -120,6 +120,8 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
   Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
+  Teuchos::RCP<const Epetra_Vector> ial  = discretization.GetState("intr_ac_link");
+
   Teuchos::RCP<Epetra_Vector> acinar_vnp  = params.get<Teuchos::RCP<Epetra_Vector> >("acinar_vnp");
   Teuchos::RCP<Epetra_Vector> acinar_vn   = params.get<Teuchos::RCP<Epetra_Vector> >("acinar_vn");
 
@@ -132,7 +134,6 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   Teuchos::RCP<Epetra_Vector> qout_n  = params.get<Teuchos::RCP<Epetra_Vector> >("qout_n");
   Teuchos::RCP<Epetra_Vector> qout_nm = params.get<Teuchos::RCP<Epetra_Vector> >("qout_nm");
 
-  Teuchos::RCP<Epetra_Vector> sysmat_iad = params.get<Teuchos::RCP<Epetra_Vector> >("sysmat_iad");
 
   if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -148,6 +149,10 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
   DRT::UTILS::ExtractMyValues(*pnm,mypnm,lm);
+
+  // extract local values from the global vectors
+  std::vector<double> myial(lm.size());
+  DRT::UTILS::ExtractMyValues(*ial,myial,lm);
 
   // create objects for element arrays
   Epetra_SerialDenseVector epnp(elemVecdim);
@@ -200,15 +205,14 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
          time,
          dt);
 
-  elemat1_epetra(1,0)=0.0;
-  elemat1_epetra(1,1)=0.0;
-  elevec1_epetra(1)  =0.0;
 
-  for (unsigned int i=0;i<lm.size();i++)
+  double Ao = 0.0;
+  ele->getParams("Area",Ao);
+  if (myial[1] > 0.0)
   {
-    int    gid = lm[i];
-    double val = elemat1_epetra(i,i);
-    sysmat_iad->ReplaceGlobalValues(1,&val,&gid);
+    elemat1_epetra(1,0)=0.0;
+    elemat1_epetra(1,1)=0.0;
+    elevec1_epetra(1)  =0.0;
   }
 
   return 0;
@@ -273,7 +277,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   //  if(myrank == ele->Owner())
   for (int i = 0; i<2; i++)
   {
-    if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+    if(ele->Nodes()[i]->GetCondition("RedAirwayEvalLungVolCond"))
     {
       // find the acinus condition
       int    gid = ele->Id();
@@ -542,6 +546,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     double c = 6.5158;
     double d = 47.9892;
 
+    ele->getParams("E1_0",a);
+    ele->getParams("E1_LIN",b);
+    ele->getParams("E1_EXP",c);
+    ele->getParams("TAU",d);
+
     //------------------------------------------------------------
     // get the terms assosciated with the nonlinear behavior of
     // E1
@@ -612,6 +621,16 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     double c2= 38000.0*1.4;
     double d2=-90.0000;
 
+    ele->getParams("E1_01"  ,a);
+    ele->getParams("E1_LIN1",b);
+    ele->getParams("E1_EXP1",c);
+    ele->getParams("TAU1"   ,d);
+
+    ele->getParams("E1_02"  ,a2);
+    ele->getParams("E1_LIN2",b2);
+    ele->getParams("E1_EXP2",c2);
+    ele->getParams("TAU2"   ,d2);
+
     //------------------------------------------------------------
     // get the terms assosciated with the nonlinear behavior of
     // E1
@@ -650,6 +669,49 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
 
     rhs(0)      = -1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
     rhs(1)      =  1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
+  }
+  else if (ele->Type() ==  "VolumetricOgden")
+  {
+    const double Vo  = volAlvDuct;
+    double vi_n  = (acin_vn/NumOfAcini);
+    double qi_n  = (qn /NumOfAcini);
+    double qi_np = (qnp/NumOfAcini);
+    //------------------------------------------------------------
+    // Kappa and Beta
+    //------------------------------------------------------------
+    double kappa = 0.0;//66.375;
+    double beta  = 0.0;//-3.885;
+
+    ele->getParams("kappa",kappa);
+    ele->getParams("beta",beta);
+
+    //------------------------------------------------------------
+    // P1  = Pc + Pd
+    //
+    // Pc = (kappa/beta)*(lambda^(-3))
+    // Pd =-(kappa/beta)*(lambda^(-3-3*beta))
+    // where lambda is the volumetric distention ratio
+    // i.e. lambda = (V/Vo)^(1/3)
+    //------------------------------------------------------------
+
+    // contribution of the Linear components in the  Maxwell Model
+    double kp_np  =  Rt/(E2*dt)+1.0;
+    double kp_n   = -Rt/(E2*dt);
+    double kq_np  =  Rt*Ra/(E2*dt)+(Rt+Ra);
+    double rhsLin = -Rt*Ra*(qi_n)/(E2*dt) - kp_n*(p1n-p2n);
+
+    // contribution of the nonLinear components (E1) in the  Maxwell Model
+    double kq_npNL = (Rt/E2)*(-kappa*Vo/(pow(qi_np*dt+vi_n,2.0)*beta) +(beta+1.0)*kappa*(pow(Vo/(qi_np*dt+vi_n),beta+1.0))/((qi_np*dt+vi_n)*beta));
+
+    double rhsNL   = -kappa*(pow(Vo/(qi_np*dt+vi_n),beta+1.0))/beta +kappa*Vo/(beta*(qi_np*dt+vi_n));
+    kq_np += kq_npNL;
+
+    sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini;
+    sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini;
+
+    rhs(0)      = -1.0*((rhsLin+rhsNL)*NumOfAcini/kq_np);
+    rhs(1)      =  1.0*((rhsLin+rhsNL)*NumOfAcini/kq_np);
+
   }
   else
   {
@@ -881,7 +943,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
         }
 
-        if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
+        if (Bc == "pressure" || Bc == "VolumeDependentPleuralPressure")
         {
           Teuchos::RCP<Epetra_Vector> bcval  = params.get<Teuchos::RCP<Epetra_Vector> >("bcval");
           Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector> >("dbctog");
@@ -892,21 +954,55 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-          if (Bc == "ExponentialPleuralPressure")
+          if (Bc == "VolumeDependentPleuralPressure")
           {
-            const double ap =  -977.203;
-            const double bp = -3338.290;
-            const double cp =    -7.686;
-            const double dp =  2034.470;
-            const double VFR   = 1240000.0;
-            const double TLC   = 4760000.0 - VFR;
+            DRT::Condition * pplCond = ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
+            double Pp_np = 0.0;
+            if (pplCond)
+            {
+              const  std::vector<int>*    curve  = pplCond->Get<std::vector<int>    >("curve");
+              double curvefac = 1.0;
+              const  std::vector<double>* vals   = pplCond->Get<std::vector<double> >("val");
 
-            const double lungVolumenp = params.get<double>("lungVolume_np") - VFR;
+              // -----------------------------------------------------------------
+              // Read in the value of the applied BC
+              //
+              // -----------------------------------------------------------------
+              if((*curve)[0]>=0)
+              {
+                curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+              }
 
-            const double TLCnp= lungVolumenp/TLC;
+              std::string ppl_Type = *(pplCond->Get<std::string>("TYPE"));
 
-            double Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
+              double ap = pplCond->GetDouble("P_PLEURAL_0");
+              double bp = pplCond->GetDouble("P_PLEURAL_LIN");
+              double cp = pplCond->GetDouble("P_PLEURAL_NONLIN");
+              double dp = pplCond->GetDouble("TAU");
+              double RV    = pplCond->GetDouble("VFR");
+              double TLC   = pplCond->GetDouble("TLC");
+              const double lungVolumenp = params.get<double>("lungVolume_n") - RV;
+              const double TLCnp= lungVolumenp/(TLC-RV);
 
+
+              if (ppl_Type == "Exponential")
+              {
+                Pp_np = ap +  bp*TLCnp+ cp*exp(dp*TLCnp);
+              }
+              else if (ppl_Type == "Polynomial")
+              {
+                Pp_np = -pow(1.0/(TLCnp+RV/(TLC-RV)),dp)*cp + bp*TLCnp + ap;
+              }
+              else
+              {
+                dserror("Unknown volume pleural pressure type: %s",ppl_Type.c_str());
+              }
+              Pp_np *= curvefac*((*vals)[0]);
+            }
+            else
+            {
+              dserror("No volume dependent pleural pressure condition was defined");
+            }
             BCin += Pp_np;
           }
 
@@ -1896,4 +1992,3 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(
   // set nodal surface area
   nodal_surface[1] = surfAcinus;
 }
-

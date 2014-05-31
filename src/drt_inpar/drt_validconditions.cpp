@@ -3199,7 +3199,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
   Teuchos::RCP<ConditionDefinition> art_red_to_3d_bc =
-    Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED D To 3D FLOW COUPLING CONDITIONS",
                                          "Art_redD_3D_CouplingCond",
                                          "Artery reduced D 3D coupling condition",
                                          DRT::Condition::ArtRedTo3DCouplingCond,
@@ -3225,7 +3225,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
   Teuchos::RCP<ConditionDefinition> art_3d_to_red_bc =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF 3D To REDUCED D FLOW COUPLING CONDITIONS",
                                          "Art_3D_redD_CouplingCond",
                                          "Artery 3D reduced D coupling condition",
                                          DRT::Condition::Art3DToRedCouplingCond,
@@ -3437,8 +3437,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Point));
 
   raw_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "flow",
-    Teuchos::tuple<std::string>("flow","pressure", "ExponentialPleuralPressure"),
-    Teuchos::tuple<std::string>("flow","pressure", "ExponentialPleuralPressure"),
+    Teuchos::tuple<std::string>("flow","pressure", "VolumeDependentPleuralPressure"),
+    Teuchos::tuple<std::string>("flow","pressure", "VolumeDependentPleuralPressure"),
     true)));
 
   std::vector<Teuchos::RCP<ConditionComponent> > redairwayinletcomponents;
@@ -3611,6 +3611,56 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     raw_vent_bc->AddComponent(redairwayventcomponents[i]);
 
   condlist.push_back(raw_vent_bc);
+
+
+
+
+  /*--------------------------------------------------------------------*/
+  // Prescribed volume dependent pleural pressure for reduced dimensional airways
+
+  Teuchos::RCP<ConditionDefinition> raw_volPpl_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE REDUCED D AIRWAYS VOL DEPENDENT PLEURAL PRESSURE CONDITIONS",
+                                         "RedAirwayVolDependentPleuralPressureCond",
+                                         "Reduced D airways volume-dependent peural pressure condition",
+                                         DRT::Condition::RedAirwayVolDependentPleuralPressureCond,
+                                         true,
+                                         DRT::Condition::Line));
+
+  raw_volPpl_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("TYPE", "Exponential",
+                                                                      Teuchos::tuple<std::string>("Exponential","Polynomial"),
+                                                                      Teuchos::tuple<std::string>("Exponential","Polynomial"),
+                                                                      true)));
+
+  AddNamedReal(raw_volPpl_bc,"TLC");
+  AddNamedReal(raw_volPpl_bc,"VFR");
+
+  AddNamedReal(raw_volPpl_bc,"P_PLEURAL_0");
+  AddNamedReal(raw_volPpl_bc,"P_PLEURAL_LIN");
+  AddNamedReal(raw_volPpl_bc,"P_PLEURAL_NONLIN");
+  AddNamedReal(raw_volPpl_bc,"TAU");
+
+
+  std::vector<Teuchos::RCP<ConditionComponent> > raw_volPpl_bc_components;
+  raw_volPpl_bc_components.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  raw_volPpl_bc_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<raw_volPpl_bc_components.size(); ++i)
+    raw_volPpl_bc->AddComponent(raw_volPpl_bc_components[i]);
+
+  condlist.push_back(raw_volPpl_bc);
+
+  /*--------------------------------------------------------------------*/
+  // Evaluate lung volume condition for reduced dimensional airways
+
+  Teuchos::RCP<ConditionDefinition> raw_eval_lungV_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE REDUCED D AIRWAYS EVALUATE LUNG VOLUME CONDITIONS",
+                                         "RedAirwayEvalLungVolCond",
+                                         "Reduced D airways evaluate lung volume condition",
+                                         DRT::Condition::RedAirwayEvalLungVolCond,
+                                         true,
+                                         DRT::Condition::Line));
+
+
+  condlist.push_back(raw_eval_lungV_bc);
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition

@@ -174,6 +174,23 @@ public:
   */
   void TimeUpdate();
 
+  /*!
+  \brief initialize state saving vector
+
+  */
+  void InitSaveState ();
+
+  /*! Save state vectors into saving vectors
+  \brief update configuration and output to file/screen
+
+  */
+  void SaveState ();
+
+  /*! load saved vectors into state vectors
+  \brief update configuration and output to file/screen
+
+  */
+  void LoadState();
 
   /*!
   \brief update configuration and output to file/screen
@@ -199,7 +216,7 @@ public:
          We use this to find the total lung volume by summing up
          the acinar volumes
   */
-  bool SumAllColElemVal(Teuchos::RCP<Epetra_Vector> vec, double & sum);
+  bool SumAllColElemVal(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_Vector> sumCond, double & sum);
 
 
   /*!
@@ -326,7 +343,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>          pnm_;
   Teuchos::RCP<Epetra_Vector>          p_nonlin_;
 
-  Teuchos::RCP<Epetra_Vector>          sysmat_iad_;
+  Teuchos::RCP<Epetra_Vector>          n_intr_ac_ln_;
   //@}
 
   //! @name inlet volumetric flow rates at time n+1, n and n-1
@@ -345,6 +362,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>          qo_nl_np_;
 
   Teuchos::RCP<Epetra_Vector>          qexp_;
+  Teuchos::RCP<Epetra_Vector>          qexp2_;
   Teuchos::RCP<Epetra_Vector>          pexp_;
   //@}
 
@@ -353,6 +371,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>          elemVolumen_;
   Teuchos::RCP<Epetra_Vector>          elemVolumenm_;
   Teuchos::RCP<Epetra_Vector>          elemVolume0_;
+  Teuchos::RCP<Epetra_Vector>          elemArea0_;
 
   //@}
   //! @name node Id vector
@@ -381,7 +400,7 @@ protected:
 
   //@}
 
-  //! @name sclar transport variables inside airways
+  //! @name scalar transport variables inside airways
   Teuchos::RCP<Epetra_Vector>          scatraO2nm_;
   Teuchos::RCP<Epetra_Vector>          e1scatraO2nm_;
   Teuchos::RCP<Epetra_Vector>          e2scatraO2nm_;
@@ -406,6 +425,49 @@ protected:
   Teuchos::RCP<Epetra_Vector>          cfls_;
 
   bool                        solveScatra_;
+  //@}
+
+  //! @name state saving vectors
+
+  // saving vector for pressure
+  Teuchos::RCP<Epetra_Vector> saved_pnm_;
+  Teuchos::RCP<Epetra_Vector> saved_pn_;
+  Teuchos::RCP<Epetra_Vector> saved_pnp_;
+
+  // saving vector for inflow rate
+  Teuchos::RCP<Epetra_Vector> saved_qin_nm_;
+  Teuchos::RCP<Epetra_Vector> saved_qin_n_;
+  Teuchos::RCP<Epetra_Vector> saved_qin_np_;
+
+  // saving vector for outflow rates
+  Teuchos::RCP<Epetra_Vector> saved_qout_nm_;
+  Teuchos::RCP<Epetra_Vector> saved_qout_n_;
+  Teuchos::RCP<Epetra_Vector> saved_qout_np_;
+
+  // saving vector for acinar volume
+  Teuchos::RCP<Epetra_Vector> saved_acini_e_volumenm_;
+  Teuchos::RCP<Epetra_Vector> saved_acini_e_volumen_;
+  Teuchos::RCP<Epetra_Vector> saved_acini_e_volumenp_;
+
+  // saving vector for element volume
+  Teuchos::RCP<Epetra_Vector> saved_elemVolumenm_;
+  Teuchos::RCP<Epetra_Vector> saved_elemVolumen_;
+  Teuchos::RCP<Epetra_Vector> saved_elemVolumenp_;
+
+  // saving vector for nodal O2 concentration
+  Teuchos::RCP<Epetra_Vector> saved_scatraO2nm_;
+  Teuchos::RCP<Epetra_Vector> saved_scatraO2n_;
+  Teuchos::RCP<Epetra_Vector> saved_scatraO2np_;
+
+  // saving vector for element inlet O2 concentration
+  Teuchos::RCP<Epetra_Vector> saved_e1scatraO2nm_;
+  Teuchos::RCP<Epetra_Vector> saved_e1scatraO2n_;
+  Teuchos::RCP<Epetra_Vector> saved_e1scatraO2np_;
+
+  // saving vector for element outlet O2 concentration
+  Teuchos::RCP<Epetra_Vector> saved_e2scatraO2nm_;
+  Teuchos::RCP<Epetra_Vector> saved_e2scatraO2n_;
+  Teuchos::RCP<Epetra_Vector> saved_e2scatraO2np_;
   //@}
 
   //! Error vector that shows the convergenece of the nonlinear problem

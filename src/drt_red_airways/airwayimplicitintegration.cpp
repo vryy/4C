@@ -119,7 +119,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   pnm_          = LINALG::CreateVector(*dofrowmap,true);
 
   p_nonlin_     = LINALG::CreateVector(*dofrowmap,true);
-  sysmat_iad_   = LINALG::CreateVector(*dofrowmap,true);
+  n_intr_ac_ln_ = LINALG::CreateVector(*dofrowmap,true);
 
   // Inlet volumetric flow rates at time n+1, n and n-1
   qin_np_       = LINALG::CreateVector(*elementcolmap,true);
@@ -133,6 +133,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
   // This vector will be used for exportation and restart reasons
   qexp_         = LINALG::CreateVector(*elementrowmap,true);
+  qexp2_        = LINALG::CreateVector(*elementrowmap,true);
   pexp_         = LINALG::CreateVector(*dofrowmap,true);
 
   // element volume at time n+1, n and n-1
@@ -140,6 +141,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   elemVolumen_  = LINALG::CreateVector(*elementcolmap,true);
   elemVolumenm_ = LINALG::CreateVector(*elementcolmap,true);
   elemVolume0_  = LINALG::CreateVector(*elementcolmap,true);
+  elemArea0_    = LINALG::CreateVector(*elementcolmap,true);
 
   // This vector will be used to test convergence
   residual_     = LINALG::CreateVector(*dofrowmap,true);
@@ -192,9 +194,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
     cfls_        = LINALG::CreateVector(*elementrowmap,true);
 
-    scatraCO2nm_ = LINALG::CreateVector(*dofrowmap,true);
-    scatraCO2n_  = LINALG::CreateVector(*dofrowmap,true);
-    scatraCO2np_ = LINALG::CreateVector(*dofrowmap,true);
 
     //junctionVolumeInMix_ = LINALG::CreateVector(*dofcolmap,true);
     //junVolMix_Corrector_ = LINALG::CreateVector(*dofcolmap,true);
@@ -239,12 +238,12 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     eleparams.set("e1scatranp",e1scatraO2np_);
     eleparams.set("e2scatranp",e2scatraO2np_);
   }
-
+  eleparams.set("elemArea0",elemArea0_);
   eleparams.set("action","get_initial_state");
 
   Teuchos::RCP <Epetra_Vector> radii_in = LINALG::CreateVector(*dofrowmap,true);
   Teuchos::RCP <Epetra_Vector> radii_out = LINALG::CreateVector(*dofrowmap,true);
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,radii_in,radii_out,Teuchos::null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,radii_in,radii_out,n_intr_ac_ln_);
 
   for(int i=0;i<radii_->MyLength();i++)
   {
@@ -419,10 +418,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
     time3D  = CouplingTo3DParams->get<double>("time");
     time_ = time3D-dta_;
   }
-//  if(time3D!=time_ || !coupledTo3D_)
-  {
-    PrepareTimeStep();
-  }
+
+  PrepareTimeStep();
+
   // -------------------------------------------------------------------
   //                       output to screen
   // -------------------------------------------------------------------
@@ -474,14 +472,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  if (!CoupledTo3D)
+//  if (!CoupledTo3D)
   {
     TimeUpdate();
   }
 
   // -------------------------------------------------------------------
-  //  lift'n'drag forces, statistics time sample and output of solution
-  //  and statistics
+  //  Output
   // -------------------------------------------------------------------
   if (!CoupledTo3D)
   {
@@ -583,7 +580,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::Parame
   // Evaluate Lung volume
   //--------------------------------------------------------------------
   double lung_volume_np = 0.0;
-  bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+  bool err = this->SumAllColElemVal(acini_e_volumenp_,acini_bc_,lung_volume_np);
   if(err)
   {
     dserror("Error by summing all acinar volumes");
@@ -712,6 +709,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
+    discret_->SetState("intr_ac_link",n_intr_ac_ln_);
 
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n" ,qin_n_);
@@ -728,25 +726,26 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     eleparams.set("elemVolumen",elemVolumen_);
     eleparams.set("elemVolumenp",elemVolumenp_);
+
     //------------------------------------------------------------------
     // Evaluate Lung volumes
     //------------------------------------------------------------------
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,acini_bc_,lung_volume_np);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
     }
 
     double lung_volume_n  = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumen_,lung_volume_n);
+    err = this->SumAllColElemVal(acini_e_volumen_,acini_bc_,lung_volume_n);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumenm_,lung_volume_nm);
+    err = this->SumAllColElemVal(acini_e_volumenm_,acini_bc_,lung_volume_nm);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
@@ -756,41 +755,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("lungVolume_n" ,lung_volume_n);
     eleparams.set("lungVolume_nm",lung_volume_nm);
 
-    sysmat_iad_->PutScalar(0.0);
-    eleparams.set("sysmat_iad",sysmat_iad_);
-
-    // call standard loop over all elements
-    discret_->Evaluate(eleparams,sysmat_,rhs_);
-    discret_->ClearState();
-
-    // finalize the complete matrix
-    //    sysmat_->Complete();
-    discret_->ClearState();
-
-#if 0  // Exporting some values for debugging purposes
-
-    {
-      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-      if (A_debug != Teuchos::null)
-      {
-        // print to screen
-        (A_debug->EpetraMatrix())->Print(std::cout);
-      }
-      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
-      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
-    }
-#endif
-  }
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_sys_matrix_rhs_iad");
-    discret_->SetState("sysmat_iad",sysmat_iad_);
-    discret_->SetState("pn" ,pn_ );
-
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
@@ -799,7 +763,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     sysmat_->Complete();
     discret_->ClearState();
 
-#if 0 // Exporting some values for debugging purposes
+#if 0  // Exporting some values for debugging purposes
 
     {
       std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
@@ -859,12 +823,19 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,acini_bc_,lung_volume_np);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+    double lung_volume_n = 0.0;
+    err = this->SumAllColElemVal(acini_e_volumen_,acini_bc_,lung_volume_n);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
     }
     eleparams.set("lungVolume_np",lung_volume_np);
+    eleparams.set("lungVolume_n" ,lung_volume_n);
 
     //    eleparams.set("abc",abc_);
     //    eleparams.set("rhs",rhs_);
@@ -875,6 +846,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
+
   }
 
   double norm_bc_tog = 0.0;
@@ -964,6 +936,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
+    discret_->SetState("intr_ac_link",n_intr_ac_ln_);
+
     //    discret_->SetState("acinar_vn" ,acini_e_volumen_);
     eleparams.set("acinar_vn" ,acini_e_volumen_);
 
@@ -975,7 +949,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("qout_n",qout_n_);
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
-    eleparams.set("sysmat_iad",sysmat_iad_);
     eleparams.set("elemVolumen",elemVolumen_);
     eleparams.set("elemVolumenp",elemVolumenp_);
 
@@ -1062,10 +1035,12 @@ Some detials!!
 */
 void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
+#if 0
   if (fmod(time_,4.0) < 2.1 && fmod(time_,4.0) >= 2.0)
   {
     return;
   }
+#endif
   //---------------------------------------------------------------------
   // Get the largest CFL number in the airways to scale down
   // the time if CFL>1
@@ -1114,6 +1089,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
 
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
 
@@ -1121,7 +1098,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     eleparams.set("acinar_vnp",acini_e_volumenp_);
 
     junctionVolumeInMix_->PutScalar(0.0);
-    discret_->SetState("junVolMix_Corrector",junVolMix_Corrector_);
     eleparams.set("elemVolumenp",elemVolumenp_);
 
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,junctionVolumeInMix_,Teuchos::null,Teuchos::null);
@@ -1152,6 +1128,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     eleparams.set("e2scatran" ,e2scatraO2n_ );
     eleparams.set("e2scatranp",e2scatraO2np_);
 
+    discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
+
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
 
@@ -1161,7 +1141,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     eleparams.set("elemVolumenp",elemVolumenp_);
     eleparams.set("elemVolumen" ,elemVolumen_);
 
-    discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
     const Epetra_Map* dofrowmap  = discret_->DofRowMap();
     Teuchos::RCP <Epetra_Vector> dummy    = LINALG::CreateVector(*dofrowmap,true);
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,scatraO2np_,dummy,Teuchos::null);
@@ -1206,8 +1185,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     discret_->SetState("scatranp" ,scatraO2np_);
 
     eleparams.set("qin_np",qin_np_);
-
     eleparams.set("qout_np",qout_np_);
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
+
     eleparams.set("elemVolumenp",elemVolumenp_);
     discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
 
@@ -1239,6 +1220,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     // set vector values of flow rates
     eleparams.set("time step size",dta_);
     eleparams.set("qnp",qin_np_);
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
     eleparams.set("elemVolumenp",elemVolumenp_);
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,nodal_surfaces,nodal_volumes,nodal_avg_conc);
     discret_->ClearState();
@@ -1278,6 +1261,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
     eleparams.set("qin_np",qin_np_);
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
     eleparams.set("e1scatranp",e1scatraO2np_);
     eleparams.set("e2scatranp",e2scatraO2np_);
     eleparams.set("dscatranp",dscatraO2_);
@@ -1301,6 +1286,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
     eleparams.set("qin_np",qin_np_);
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
     eleparams.set("e1scatranp",e1scatraO2np_);
     eleparams.set("e2scatranp",e2scatraO2np_);
     discret_->SetState("dscatranp",dscatraO2_);
@@ -1403,6 +1390,204 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 
   return;
 }// RedAirwayImplicitTimeInt::TimeUpdate
+
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Initializes state saving vectors                                     |
+ |                                                                      |
+ |  This is currently needed for stronly coupling 3D-0D fields          |
+ |                                                                      |
+ |                                                          ismail 04/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void AIRWAY::RedAirwayImplicitTimeInt::InitSaveState()
+{
+
+  // Get discretizations DOF row map
+  const Epetra_Map* dofrowmap      = discret_->DofRowMap();
+
+  // Get discretizations element row map
+  const Epetra_Map* elementcolmap  = discret_->ElementColMap();
+
+
+  // saving vector for pressure
+  saved_pnm_                = LINALG::CreateVector(*dofrowmap,true);
+  saved_pn_                 = LINALG::CreateVector(*dofrowmap,true);
+  saved_pnp_                = LINALG::CreateVector(*dofrowmap,true);
+
+  // saving vector for inflow rate
+  saved_qin_nm_             = LINALG::CreateVector(*elementcolmap,true);
+  saved_qin_n_              = LINALG::CreateVector(*elementcolmap,true);
+  saved_qin_np_             = LINALG::CreateVector(*elementcolmap,true);
+
+  // saving vector for outflow rate
+  saved_qout_nm_            = LINALG::CreateVector(*elementcolmap,true);
+  saved_qout_n_             = LINALG::CreateVector(*elementcolmap,true);
+  saved_qout_np_            = LINALG::CreateVector(*elementcolmap,true);
+
+  // saving vector for acinar volume
+  saved_acini_e_volumenm_   = LINALG::CreateVector(*elementcolmap,true);
+  saved_acini_e_volumen_    = LINALG::CreateVector(*elementcolmap,true);
+  saved_acini_e_volumenp_   = LINALG::CreateVector(*elementcolmap,true);
+
+  // saving vector for element volume
+  saved_elemVolumenm_       = LINALG::CreateVector(*elementcolmap,true);
+  saved_elemVolumen_        = LINALG::CreateVector(*elementcolmap,true);
+  saved_elemVolumenp_       = LINALG::CreateVector(*elementcolmap,true);
+
+  // saving vector for nodal O2 concentration
+  saved_scatraO2nm_         = LINALG::CreateVector(*dofrowmap,true);
+  saved_scatraO2n_          = LINALG::CreateVector(*dofrowmap,true);
+  saved_scatraO2np_         = LINALG::CreateVector(*dofrowmap,true);
+
+  // saving vector for element inlet O2 concentration
+  saved_e1scatraO2nm_       = LINALG::CreateVector(*elementcolmap,true);
+  saved_e1scatraO2n_        = LINALG::CreateVector(*elementcolmap,true);
+  saved_e1scatraO2np_       = LINALG::CreateVector(*elementcolmap,true);
+
+  // saving vector for element outlet O2 concentration
+  saved_e2scatraO2nm_       = LINALG::CreateVector(*elementcolmap,true);
+  saved_e2scatraO2n_        = LINALG::CreateVector(*elementcolmap,true);
+  saved_e2scatraO2np_       = LINALG::CreateVector(*elementcolmap,true);
+}// RedAirwayImplicitTimeInt::InitSaveState()
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Saves and backs up the current state.                                |
+ |                                                                      |
+ |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  example:                                                            |
+ |  saved_pn_   =  pn_                                                  |
+ |  saved_qn_   =  qn_                                                  |
+ |                                                                      |
+ |                                                          ismail 04/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void AIRWAY::RedAirwayImplicitTimeInt::SaveState()
+{
+  // save pressure vectors
+  saved_pnm_->Update(1.0,*pnm_,0.0);
+  saved_pn_ ->Update(1.0,*pn_ ,0.0);
+  saved_pnp_->Update(1.0,*pnp_,0.0);
+
+  // save inflow rate vectors
+  saved_qin_nm_->Update(1.0,*qin_nm_,0.0);
+  saved_qin_n_ ->Update(1.0,*qin_n_ ,0.0);
+  saved_qin_np_->Update(1.0,*qin_np_,0.0);
+
+  // save outflow rate vectors
+  saved_qout_nm_->Update(1.0,*qout_nm_,0.0);
+  saved_qout_n_ ->Update(1.0,*qout_n_ ,0.0);
+  saved_qout_np_->Update(1.0,*qout_np_,0.0);
+
+  // save acinar volume vectors
+  saved_acini_e_volumenm_->Update(1.0,*acini_e_volumenm_,0.0);
+  saved_acini_e_volumen_ ->Update(1.0,*acini_e_volumen_ ,0.0);
+  saved_acini_e_volumenp_->Update(1.0,*acini_e_volumenp_,0.0);
+
+  // save element volume vectors
+  saved_elemVolumenm_->Update(1.0,*elemVolumenm_,0.0);
+  saved_elemVolumen_ ->Update(1.0,*elemVolumen_ ,0.0);
+  saved_elemVolumenp_->Update(1.0,*elemVolumenp_,0.0);
+
+  if (solveScatra_)
+  {
+    // save nodal O2 concentration
+    saved_scatraO2nm_->Update(1.0,*scatraO2nm_,0.0);
+    saved_scatraO2n_ ->Update(1.0,*scatraO2n_ ,0.0);
+    saved_scatraO2np_->Update(1.0,*scatraO2np_,0.0);
+
+    // save element inlet O2 concentration
+    saved_e1scatraO2nm_->Update(1.0,*e1scatraO2nm_,0.0);
+    saved_e1scatraO2n_ ->Update(1.0,*e1scatraO2n_ ,0.0);
+    saved_e1scatraO2np_->Update(1.0,*e1scatraO2np_,0.0);
+
+    // save element outlet O2 concentration
+    saved_e2scatraO2nm_->Update(1.0,*e2scatraO2nm_,0.0);
+    saved_e2scatraO2n_ ->Update(1.0,*e2scatraO2n_ ,0.0);
+    saved_e2scatraO2np_->Update(1.0,*e2scatraO2np_,0.0);
+  }
+
+  return;
+}// RedAirwayImplicitTimeInt::SaveState
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Loads backed up states.                                              |
+ |                                                                      |
+ |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  example:                                                            |
+ |  pn_   =  saved_pn_                                                  |
+ |  qn_   =  saved_qn_                                                  |
+ |                                                                      |
+ |                                                          ismail 04/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void AIRWAY::RedAirwayImplicitTimeInt::LoadState()
+{
+  // save pressure vectors
+  pnm_->Update(1.0,*saved_pnm_,0.0);
+  pn_ ->Update(1.0,*saved_pn_ ,0.0);
+  pnp_->Update(1.0,*saved_pnp_,0.0);
+
+  // save inflow rate vectors
+  qin_nm_->Update(1.0,*saved_qin_nm_,0.0);
+  qin_n_ ->Update(1.0,*saved_qin_n_ ,0.0);
+  qin_np_->Update(1.0,*saved_qin_np_,0.0);
+
+  // save outflow rate vectors
+  qout_nm_->Update(1.0,*saved_qout_np_,0.0);
+  qout_n_ ->Update(1.0,*saved_qout_n_ ,0.0);
+  qout_np_->Update(1.0,*saved_qout_np_,0.0);
+
+  // save acinar volume vectors
+  acini_e_volumenm_->Update(1.0,*saved_acini_e_volumenm_,0.0);
+  acini_e_volumen_ ->Update(1.0,*saved_acini_e_volumen_ ,0.0);
+  acini_e_volumenp_->Update(1.0,*saved_acini_e_volumenp_,0.0);
+
+  // save element volume vectors
+  elemVolumenm_->Update(1.0,*saved_elemVolumenm_,0.0);
+  elemVolumen_ ->Update(1.0,*saved_elemVolumen_ ,0.0);
+  elemVolumenp_->Update(1.0,*saved_elemVolumenp_,0.0);
+
+  if (solveScatra_)
+  {
+    // save nodal O2 concentration
+    scatraO2nm_->Update(1.0,*saved_scatraO2nm_,0.0);
+    scatraO2n_ ->Update(1.0,*saved_scatraO2n_ ,0.0);
+    scatraO2np_->Update(1.0,*saved_scatraO2np_,0.0);
+
+    // save element inlet O2 concentration
+    e1scatraO2nm_->Update(1.0,*saved_e1scatraO2nm_,0.0);
+    e1scatraO2n_ ->Update(1.0,*saved_e1scatraO2n_ ,0.0);
+    e1scatraO2np_->Update(1.0,*saved_e1scatraO2np_,0.0);
+
+    // save element outlet O2 concentration
+    e2scatraO2nm_->Update(1.0,*saved_e2scatraO2nm_,0.0);
+    e2scatraO2n_ ->Update(1.0,*saved_e2scatraO2n_ ,0.0);
+    e2scatraO2np_->Update(1.0,*saved_e2scatraO2np_,0.0);
+  }
+
+  return;
+}// RedAirwayImplicitTimeInt::LoadState
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1531,14 +1716,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       output_.WriteVector("juncVolMix",jVDofRowMix_);
     }
 
-    // "flow" vectors for capacitances
-    //    output_.WriteVector("qcnm",qcnm_);
-    //    output_.WriteVector("qcn",qcn_);
-    //    output_.WriteVector("qcnp",qcnp_);
-
-    // write domain decomposition for visualization
-    //    output_.WriteElementData(true);
-
     // write the flow values
     LINALG::Export(*qin_nm_,*qexp_);
     output_.WriteVector("qin_nm",qexp_);
@@ -1604,6 +1781,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       LINALG::Export(*acini_bc_,*qexp_);
       output_.WriteVector("acin_bc",qexp_);
       output_.WriteElementData(true);
+      LINALG::Export(*elemArea0_,*qexp_);
+      output_.WriteVector("elemArea0",qexp_);
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -1860,7 +2039,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
-
+    discret_->SetState("intr_ac_link",n_intr_ac_ln_);
 
     eleparams.set("acinar_vn" ,acini_e_volumen_);
     eleparams.set("acinar_vnp",acini_e_volumenp_);
@@ -1878,21 +2057,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,acini_bc_,lung_volume_np);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
     }
 
     double lung_volume_n  = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumen_,lung_volume_n);
+    err = this->SumAllColElemVal(acini_e_volumen_,acini_bc_,lung_volume_n);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumenm_,lung_volume_nm);
+    err = this->SumAllColElemVal(acini_e_volumenm_,acini_bc_,lung_volume_nm);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
@@ -1902,48 +2081,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     eleparams.set("lungVolume_n" ,lung_volume_n);
     eleparams.set("lungVolume_nm",lung_volume_nm);
 
-    eleparams.set("sysmat_iad",sysmat_iad_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
 
     // finalize the complete matrix
+
     discret_->ClearState();
   }
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
 
-    // action for elements
-    eleparams.set("action","calc_sys_matrix_rhs_iad");
-    discret_->SetState("sysmat_iad",sysmat_iad_);
-    discret_->SetState("pn" ,pn_ );
-
-    // call standard loop over all elements
-    discret_->Evaluate(eleparams,sysmat_,rhs_);
-    discret_->ClearState();
-
-    // finalize the complete matrix
-    sysmat_->Complete();
-    discret_->ClearState();
-
-#if 0  // Exporting some values for debugging purposes
-
-    {
-      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-      if (A_debug != Teuchos::null)
-      {
-        // print to screen
-        (A_debug->EpetraMatrix())->Print(std::cout);
-      }
-      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
-      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
-    }
-#endif
-
-  }
   // -------------------------------------------------------------------
   // Solve the boundary conditions
   // -------------------------------------------------------------------
@@ -1985,16 +2132,24 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,acini_bc_,lung_volume_np);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+    double lung_volume_n = 0.0;
+    err = this->SumAllColElemVal(acini_e_volumen_,acini_bc_,lung_volume_n);
     if(err)
     {
       dserror("Error by summing all acinar volumes");
     }
     eleparams.set("lungVolume_np",lung_volume_np);
+    eleparams.set("lungVolume_n" ,lung_volume_n);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
+
   }
 
   // -------------------------------------------------------------------
@@ -2100,18 +2255,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(Teuchos::RCP<Epetra_Vector> vec, double & sum)
+bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_Vector> sumCond, double & sum)
 {
 
   // Check if the vector is a ColElement vector
   const Epetra_Map* elementcolmap  = discret_->ElementColMap();
-  if (!vec->Map().SameAs(*elementcolmap))
+  if (!vec->Map().SameAs(*elementcolmap) && !sumCond->Map().SameAs(*elementcolmap))
   {
     return true;
   }
 
-  // define the volume of acini on the current processor
-  double local_sum = 0.0;
 
   // Since the acinar_volume vector is a ColMap, we first need to export
   // it to a RowMap and eliminate the ghosted values
@@ -2121,17 +2274,15 @@ bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(Teuchos::RCP<Epetra_Vect
     // export from ColMap to RowMap
     int err = qexp_->Export(*vec,exporter,Zero);
     if (err) dserror("Export using exporter returned err=%d",err);
+
+    Epetra_Export exporter2(sumCond->Map(),qexp2_->Map());
+    // export from ColMap to RowMap
+    err = qexp2_->Export(*sumCond,exporter2,Zero);
+    if (err) dserror("Export using exporter returned err=%d",err);
   }
+
   // Get the mean acinar volume on the current processor
-  qexp_->MeanValue(&local_sum);
-
-  // Multiply the mean by the size of the vector to get the total
-  // acinar volume on the current processor
-  local_sum *= double(qexp_->MyLength());
-
-  // Get the total volume of Acini on all processors
-  sum = 0.0;
-  discret_->Comm().SumAll(&local_sum,&sum,1);
+  qexp_->Dot(*qexp2_,&sum);
 
   // return all is fine
   return false;

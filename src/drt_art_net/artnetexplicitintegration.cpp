@@ -252,19 +252,20 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretizati
 
     // Scalar transport vector of O2 and CO2
     export_scatra_        = LINALG::CreateVector(*noderowmap,true);
+    scatraO2nm_       = LINALG::CreateVector(*dofrowmap,true);
     scatraO2n_        = LINALG::CreateVector(*dofrowmap,true);
-    scatraO2np_        = LINALG::CreateVector(*dofrowmap,true);
-    scatraO2wfn_        = LINALG::CreateVector(*noderowmap,true);
-    scatraO2wfnp_        = LINALG::CreateVector(*noderowmap,true);
-    scatraO2wbn_        = LINALG::CreateVector(*noderowmap,true);
-    scatraO2wbnp_        = LINALG::CreateVector(*noderowmap,true);
+    scatraO2np_       = LINALG::CreateVector(*dofrowmap,true);
+    scatraO2wfn_      = LINALG::CreateVector(*noderowmap,true);
+    scatraO2wfnp_     = LINALG::CreateVector(*noderowmap,true);
+    scatraO2wbn_      = LINALG::CreateVector(*noderowmap,true);
+    scatraO2wbnp_     = LINALG::CreateVector(*noderowmap,true);
 
     scatraCO2n_      = LINALG::CreateVector(*dofrowmap,true);
-    scatraCO2np_      = LINALG::CreateVector(*dofrowmap,true);
-    scatraCO2wfn_      = LINALG::CreateVector(*noderowmap,true);
-    scatraCO2wfnp_      = LINALG::CreateVector(*noderowmap,true);
-    scatraCO2wbn_      = LINALG::CreateVector(*noderowmap,true);
-    scatraCO2wbnp_      = LINALG::CreateVector(*noderowmap,true);
+    scatraCO2np_     = LINALG::CreateVector(*dofrowmap,true);
+    scatraCO2wfn_    = LINALG::CreateVector(*noderowmap,true);
+    scatraCO2wfnp_   = LINALG::CreateVector(*noderowmap,true);
+    scatraCO2wbn_    = LINALG::CreateVector(*noderowmap,true);
+    scatraCO2wbnp_   = LINALG::CreateVector(*noderowmap,true);
 
     // a vector of zeros to be used to enforce zero dirichlet boundary conditions
     // This part might be optimized later
@@ -839,11 +840,143 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
   {
     //    scatraO2wfn_->Update(1.0,*scatraO2wfnp_ ,0.0);
     //    scatraO2wbn_->Update(1.0,*scatraO2wbnp_ ,0.0);
-    scatraO2n_->Update(1.0,*scatraO2np_ ,0.0);
+    scatraO2nm_->Update(1.0,*scatraO2n_ ,0.0);
+    scatraO2n_ ->Update(1.0,*scatraO2np_,0.0);
   }
 
   return;
 }// ArtNetExplicitTimeInt::TimeUpdate
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Initializes state saving vectors                                     |
+ |                                                                      |
+ |  This is currently needed for strongly coupling 3D-1D fields         |
+ |                                                                      |
+ |                                                          ismail 04/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetExplicitTimeInt::InitSaveState()
+{
+  // get the discretizations DOF row map
+  const Epetra_Map* dofrowmap  = discret_->DofRowMap();
+
+  // Volumetric Flow rate/Cross-sectional area of this step become most recent
+  saved_qanp_  = LINALG::CreateVector(*dofrowmap,true);
+  saved_qan_   = LINALG::CreateVector(*dofrowmap,true);
+  saved_qanm_  = LINALG::CreateVector(*dofrowmap,true);
+
+  saved_Wfnp_  = LINALG::CreateVector(*dofrowmap,true);
+  saved_Wfn_   = LINALG::CreateVector(*dofrowmap,true);
+  saved_Wfnm_  = LINALG::CreateVector(*dofrowmap,true);
+
+  saved_Wbnp_  = LINALG::CreateVector(*dofrowmap,true);
+  saved_Wbn_   = LINALG::CreateVector(*dofrowmap,true);
+  saved_Wbnm_  = LINALG::CreateVector(*dofrowmap,true);
+
+  if (solvescatra_)
+  {
+    saved_scatraO2np_ = LINALG::CreateVector(*dofrowmap,true);
+    saved_scatraO2n_ = LINALG::CreateVector(*dofrowmap,true);
+    saved_scatraO2nm_ = LINALG::CreateVector(*dofrowmap,true);
+  }
+
+  return;
+}// ArtNetExplicitTimeInt::InitSaveState
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Saves and backs up the current state.                                |
+ |                                                                      |
+ |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  example:                                                            |
+ |  saved_qanp_ = qanp_                                                 |
+ |  saved_Wfnp_ = Wfnp_                                                 |
+ |                                                                      |
+ |                                                          ismail 04/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetExplicitTimeInt::SaveState()
+{
+
+  // Volumetric Flow rate/Cross-sectional area of this step become most recent
+  saved_qanp_->Update(1.0,*qanp_,0.0);
+  saved_qan_ ->Update(1.0,*qan_ ,0.0);
+  saved_qanm_->Update(1.0,*qanm_,0.0);
+
+  saved_Wfnp_->Update(1.0,*Wfnp_,0.0);
+  saved_Wfn_ ->Update(1.0,*Wfn_ ,0.0);
+  saved_Wfnm_->Update(1.0,*Wfnm_,0.0);
+
+  saved_Wbnp_->Update(1.0,*Wbnp_,0.0);
+  saved_Wbn_ ->Update(1.0,*Wbn_ ,0.0);
+  saved_Wbnm_->Update(1.0,*Wbnm_,0.0);
+
+  if (solvescatra_)
+  {
+    saved_scatraO2np_->Update(1.0,*scatraO2np_,0.0);
+    saved_scatraO2n_ ->Update(1.0,*scatraO2n_ ,0.0);
+    saved_scatraO2nm_->Update(1.0,*scatraO2nm_,0.0);
+  }
+
+  return;
+}// ArtNetExplicitTimeInt::SaveState
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Loads backed up states.                                              |
+ |                                                                      |
+ |  This is currently needed for stronly coupling 3D-0D fields          |
+ |  example:                                                            |
+ |  qanp_   =  saved_qanp_                                              |
+ |  Wfnp_   =  saved_Wfnp_                                              |
+ |                                                                      |
+ |                                                          ismail 04/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetExplicitTimeInt::LoadState()
+{
+
+  // Volumetric Flow rate/Cross-sectional area of this step become most recent
+  qanp_->Update(1.0,*saved_qanp_,0.0);
+  qan_ ->Update(1.0,*saved_qan_ ,0.0);
+  qanm_->Update(1.0,*saved_qanm_,0.0);
+
+  Wfnp_->Update(1.0,*saved_Wfnp_,0.0);
+  Wfn_ ->Update(1.0,*saved_Wfn_ ,0.0);
+  Wfnm_->Update(1.0,*saved_Wfnm_,0.0);
+
+  Wbnp_->Update(1.0,*saved_Wbnp_,0.0);
+  Wbn_ ->Update(1.0,*saved_Wbn_ ,0.0);
+  Wbnm_->Update(1.0,*saved_Wbnm_,0.0);
+
+  if (solvescatra_)
+  {
+    scatraO2np_->Update(1.0,*saved_scatraO2np_,0.0);
+    scatraO2n_ ->Update(1.0,*saved_scatraO2n_ ,0.0);
+    scatraO2nm_->Update(1.0,*saved_scatraO2nm_,0.0);
+  }
+
+  return;
+}// ArtNetExplicitTimeInt::LoadState
+
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

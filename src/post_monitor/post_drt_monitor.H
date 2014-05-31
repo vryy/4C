@@ -305,6 +305,45 @@ private:
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+class RedAirwayMonWriter : public FieldMonWriter
+{
+public:
+  //! constructor
+  RedAirwayMonWriter(
+    PostProblem& problem,
+    std::string& infieldtype,
+    int node)
+    : FieldMonWriter(problem,infieldtype,node)
+  {}
+
+  //! destructor
+  virtual ~RedAirwayMonWriter()
+  {}
+
+protected:
+
+  virtual void CheckInfieldType(std::string& infieldtype);
+
+  void FieldError(int node);
+
+  virtual void WriteHeader(std::ofstream& outfile);
+
+  void WriteTableHead(std::ofstream& outfile, int dim);
+
+  virtual void WriteResult(
+    std::ofstream& outfile,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim
+    );
+
+private:
+}; // end of class RedAirwayMonWriter
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class StructMonWriter : public FieldMonWriter
 {
 public:

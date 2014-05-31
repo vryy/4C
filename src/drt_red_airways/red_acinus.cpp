@@ -61,7 +61,21 @@ void DRT::ELEMENTS::RedAcinusType::SetupElementDefinition( std::map<std::string,
     .AddNamedString("TYPE")
     .AddNamedDouble("AcinusVolume")
     .AddNamedDouble("AlveolarDuctVolume")
-    .AddNamedDouble("Area")
+    .AddOptionalNamedDouble("E1_0")
+    .AddOptionalNamedDouble("E1_LIN")
+    .AddOptionalNamedDouble("E1_EXP")
+    .AddOptionalNamedDouble("TAU")
+    .AddOptionalNamedDouble("E1_01")
+    .AddOptionalNamedDouble("E1_LIN1")
+    .AddOptionalNamedDouble("E1_EXP1")
+    .AddOptionalNamedDouble("TAU1")
+    .AddOptionalNamedDouble("E1_02")
+    .AddOptionalNamedDouble("E1_LIN2")
+    .AddOptionalNamedDouble("E1_EXP2")
+    .AddOptionalNamedDouble("TAU2")
+    .AddOptionalNamedDouble("KAPPA")
+    .AddOptionalNamedDouble("BETA")
+    .AddOptionalNamedDouble("Area")
     ;
 }
 

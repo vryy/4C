@@ -152,6 +152,20 @@ public:
   */
   void TimeUpdate();
 
+  /*!
+  \brief Initialize the saving state vectors
+  */
+  void InitSaveState ();
+
+  /*!
+  \brief Save the current vectors into the saving state vectors
+  */
+  void SaveState ();
+
+  /*!
+  \brief Load the currently saved state vectors into the currently used vectors
+  */
+  void LoadState();
 
   /*!
   \brief update configuration and output to file/screen
@@ -332,6 +346,7 @@ protected:
   //@}
 
   //! @name scalar transport vectors at time n+1, n and n-1
+  Teuchos::RCP<Epetra_Vector>    scatraO2nm_;
   Teuchos::RCP<Epetra_Vector>    scatraO2n_;
   Teuchos::RCP<Epetra_Vector>    scatraO2np_;
   Teuchos::RCP<Epetra_Vector>    scatraO2wfn_;
@@ -350,6 +365,23 @@ protected:
   bool solvescatra_;
   //@}
 
+  //! @name saving state vectors
+  Teuchos::RCP<Epetra_Vector>    saved_qanp_;
+  Teuchos::RCP<Epetra_Vector>    saved_qan_;
+  Teuchos::RCP<Epetra_Vector>    saved_qanm_;
+
+  Teuchos::RCP<Epetra_Vector>    saved_Wfnp_;
+  Teuchos::RCP<Epetra_Vector>    saved_Wfn_;
+  Teuchos::RCP<Epetra_Vector>    saved_Wfnm_;
+
+  Teuchos::RCP<Epetra_Vector>    saved_Wbnp_;
+  Teuchos::RCP<Epetra_Vector>    saved_Wbn_;
+  Teuchos::RCP<Epetra_Vector>    saved_Wbnm_;
+
+  Teuchos::RCP<Epetra_Vector>    saved_scatraO2np_;
+  Teuchos::RCP<Epetra_Vector>    saved_scatraO2n_;
+  Teuchos::RCP<Epetra_Vector>    saved_scatraO2nm_;
+  //@}
 
   //! @name cross-sectional area at time n+1, n and n-1
   Teuchos::RCP<Epetra_Vector>    arean_;

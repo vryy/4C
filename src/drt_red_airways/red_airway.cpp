@@ -69,6 +69,7 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,
     .AddNamedDouble("WallThickness")
     .AddNamedDouble("Area")
     .AddNamedInt("Generation")
+    .AddOptionalNamedDouble("BranchLength")
     ;
 }
 
