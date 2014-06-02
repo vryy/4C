@@ -51,7 +51,6 @@ Maintainer: Philipp Farah
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
 VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,
-                                          const Epetra_Comm& comm,
                                           Teuchos::RCP<DRT::Discretization> Adis,   // should be structure
                                           Teuchos::RCP<DRT::Discretization> Bdis) : // other field...
 dim_(dim),
@@ -59,8 +58,6 @@ Adiscret_(Adis),
 Bdiscret_(Bdis)
 {
   //check
-  if(Adiscret_->Comm().NumProc() != 1)
-     dserror("volume mortar not yet working in parallel!");
   if( not Adiscret_->Filled() or not Bdiscret_->Filled())
     dserror("FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
   if( (Adiscret_->NumDofSets()==1) or (Bdiscret_->NumDofSets()==1)  )
@@ -73,7 +70,8 @@ Bdiscret_(Bdis)
   InitDopNormals();
 
   // its the same communicator for all discr.
-   comm_ = Teuchos::rcp(Adis->Comm().Clone());
+   comm_   = Teuchos::rcp(Adis->Comm().Clone());
+   myrank_ = comm_->MyPID();
 
   // init aux normal TODO: no fixed direction!!! ONLY FOR 2D CASE !!!
   auxn_[0]=0.0;
@@ -97,9 +95,12 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
   /***********************************************************
    * Welcome                                                 *
    ***********************************************************/
-  std::cout << "**************************************************" << std::endl;
-  std::cout << "*****     Welcome to VOLMORTAR-Coupling!     *****" << std::endl;
-  std::cout << "**************************************************" << std::endl;
+  if(myrank_==0)
+  {
+    std::cout << "**************************************************" << std::endl;
+    std::cout << "*****     Welcome to VOLMORTAR-Coupling!     *****" << std::endl;
+    std::cout << "**************************************************" << std::endl;
+  }
 
   /***********************************************************
    * initialize global matrices                              *
@@ -138,7 +139,7 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
   /***********************************************************
    * Check initial residuum and perform mesh init             *
    ***********************************************************/
-  CheckInitialResiduum();
+  //CheckInitialResiduum();
 
   // mesh initialization procedure
   if(DRT::INPUT::IntegralValue<int>(Params(), "MESH_INIT") )
@@ -148,15 +149,18 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
    * Bye                                            *
    **************************************************/
 
-  std::cout << "**************************************************" << std::endl;
-  std::cout << "*****       VOLMORTAR-Coupling Done!!!       *****" << std::endl;
-  std::cout << "**************************************************" << std::endl;
+  if(myrank_==0)
+  {
+    std::cout << "**************************************************" << std::endl;
+    std::cout << "*****       VOLMORTAR-Coupling Done!!!       *****" << std::endl;
+    std::cout << "**************************************************" << std::endl;
+  }
 
   //output
-  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
-  std::cout << "Created Cells      = " << cellcounter_    << std::endl;
-  std::cout << "Integr. Elements   = " << inteles_        << std::endl;
-  std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
+//  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
+//  std::cout << "Created Cells      = " << cellcounter_    << std::endl;
+//  std::cout << "Integr. Elements   = " << inteles_        << std::endl;
+//  std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
 
   // reset counter
   polygoncounter_=0;
@@ -443,6 +447,8 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
   for(int i=0;i<ele.NumNode();++i)
   {
     DRT::Node* cnode = ele.Nodes()[i];
+    if(cnode->Owner() != myrank_)
+      continue;
 
     std::set<int>::iterator iter = donebefore.find(cnode->Id());
     if(iter != donebefore.end())
@@ -524,8 +530,12 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
     dserror("Element-based integration only for 3D coupling!");
 
   // output
-  std::cout << "*****       Element-based Integration        *****" << std::endl;
-  std::cout << "*****       First Projector:                 *****" << std::endl;
+  if(myrank_== 0)
+  {
+    std::cout << "*****       Element-based Integration        *****" << std::endl;
+    std::cout << "*****       Calc First Projector:            *****" << std::endl;
+  }
+
 
   // init searchtrees
   Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
@@ -541,7 +551,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
   std::set<int> donebeforea;
   for (int j=0;j<Adiscret_->NumMyColElements();++j)
   {
-    PrintStatus(j,false);
+    //PrintStatus(j,false);
 
     //get master element
     DRT::Element* Aele = Adiscret_->lColElement(j);
@@ -555,8 +565,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
   }
 
   // half-time output
-  std::cout << "**************************************************" << std::endl;
-  std::cout << "*****       Second Projector:                *****" << std::endl;
+  if(myrank_== 0)
+  {
+    std::cout << "**************************************************" << std::endl;
+    std::cout << "*****       Calc Second Projector:           *****" << std::endl;
+  }
 
   /**************************************************
    * loop over all Bdis elements                    *
@@ -564,7 +577,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
   std::set<int> donebeforeb;
   for (int j=0;j<Bdiscret_->NumMyColElements();++j)
   {
-    PrintStatus(j,true);
+    //PrintStatus(j,true);
 
     //get master element
     DRT::Element* Bele = Bdiscret_->lColElement(j);
@@ -597,7 +610,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
   for (int i=0;i<Adiscret_->NumMyRowElements();++i)
   {
     //output of coupling status
-    PrintStatus(i);
+    //PrintStatus(i);
 
     //get slave element
     DRT::Element* Aele = Adiscret_->lRowElement(i);
@@ -756,6 +769,12 @@ void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
   {
     std::cout<<"WARNING: The chosen integration type for volmortar coupling requires cut procedure !"<< std::endl;
     std::cout<<"WARNING: The cut is up to now not able to exactly calculate the required segments!"<< std::endl;
+  }
+
+  if(DRT::INPUT::IntegralValue<int>(volmortar, "MESH_INIT")  and
+     comm_->NumProc()!=1)
+  {
+    dserror("ERROR: MeshInit only for serial calculations!!!");
   }
 
   // merge to global parameter list
@@ -1023,7 +1042,10 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
          }
 
        //integrate found cells - tesselation
-       Integrate3DCell(*sele, *mele, IntCells);
+       if (!switched_conf)
+         Integrate3DCell(*sele, *mele, IntCells);
+       else
+         Integrate3DCell(*mele, *sele, IntCells);
 
        // count the cells and the polygons/polyhedra
        polygoncounter_+= mcells_in.size();
@@ -2440,6 +2462,7 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOpterator()
 //  std::cout << "auxb= " << *auxb << std::endl;
 //  std::cout << "pmatrixB_= " << *pmatrixB_ << std::endl;
 //  std::cout << "TB_= " << *TB_ << std::endl;
+
 
   return;
 }

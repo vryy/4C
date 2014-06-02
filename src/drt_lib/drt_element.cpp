@@ -374,9 +374,19 @@ void DRT::Element::NodalConnectivity(Epetra_SerialDenseMatrix& edgeweights, Epet
 
   int numnode = NumNode();
   nodeweights.Size(numnode);
-  for(int n=0; n<numnode; ++n)
-    nodeweights[n] = weight;
   edgeweights.Shape(numnode,numnode);
+
+  // initialize weights
+  for(int n=0; n<numnode; ++n)
+  {
+    nodeweights[n] = weight;
+    for(int k=0; k<numnode; ++k)
+    {
+      edgeweights(n,k) = 1.0;
+    }
+  }
+
+  // put squared weight on edges
   weight *= weight;
 
   std::vector<std::vector<int> > lines = DRT::UTILS::getEleNodeNumberingLines(Shape());

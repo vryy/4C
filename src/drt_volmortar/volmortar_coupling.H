@@ -56,7 +56,7 @@ class Cell;
 
 /// Class for generating projection matrices for 3D mortar
 /*!
-  The idea is to clue to non-matching meshes together using the mortar method.
+  The idea is to glue two non-matching meshes together using the mortar method.
   In general, this works for displacement fields, as well as any other field
   (e.g. temperature field in tsi). 
   The constructor expects the two discretizations, which are filled properly. 
@@ -65,8 +65,8 @@ class Cell;
   discretization. I.e. in TSI the structure must have temperature dofs as second 
   dof set and the thermo discretization must have displacement dofs as second dof set.
   When calling Evaluate() this class will identify volume cells (using polygon 
-  clipping in 2D and the cut algorthm in 3D), and build a volmortar integrator class, 
-  which evaluates the two projection matrixes. 
+  clipping in 2D and the cut algorithm in 3D) OR skip this and ignore weak discontinuities,
+  and build a volmortar integrator class, which evaluates the two projection matrices.
 
   \author vuong 01/14
 */
@@ -79,7 +79,6 @@ public:
 
   */
   VolMortarCoupl(int dim,
-                 const Epetra_Comm& comm,
                  Teuchos::RCP<DRT::Discretization> slavedis,
                  Teuchos::RCP<DRT::Discretization> masterdis);
 
@@ -388,6 +387,7 @@ protected:
 
   // communicator
   Teuchos::RCP<Epetra_Comm>          comm_;            /// communicator
+  int                                myrank_;          /// my proc id
 
   //cut specific quantities
   GEO::CUT::plain_volumecell_set     volcell_;         /// set of volume cells for direct divergence integration

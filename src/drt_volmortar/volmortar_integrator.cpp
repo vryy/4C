@@ -406,7 +406,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     // ---
     UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
 
-
     // compute cell D/M matrix ****************************************
     // dual shape functions
     for (int j=0;j<ns_;++j)
@@ -740,6 +739,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
       for (int j=0;j<ns_;++j)
       {
         DRT::Node* cnode = Aele.Nodes()[j];
+        if (cnode->Owner() != Adis->Comm().MyPID())
+          continue;
+
         int nsdof=Adis->NumDof(1,cnode);
 
         //loop over slave dofs
@@ -796,7 +798,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
   LINALG::Matrix<ns_,1>             mval_A;
   LINALG::Matrix<nm_,1>             sval_B;
   LINALG::Matrix<nm_,1>             lmval_B;
-
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -880,6 +881,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
       for (int j=0;j<nm_;++j)
       {
         DRT::Node* cnode = Bele.Nodes()[j];
+        if (cnode->Owner() != Bdis->Comm().MyPID())
+          continue;
+
         int nsdof=Bdis->NumDof(1,cnode);
 
         //loop over slave dofs

@@ -65,6 +65,9 @@ namespace BINSTRATEGY
       const Epetra_Comm& lcomm  ///< local epetra communicator
       );
 
+    /// repartitioning constructor
+    BinningStrategy(std::vector<Teuchos::RCP<DRT::Discretization> > dis);
+
     /// destructor
     virtual ~BinningStrategy(){};
 
@@ -81,6 +84,17 @@ namespace BINSTRATEGY
       std::map<int, std::set<int> >& elesinbin   ///< map of bins and assigned elements
       );
 
+    /// nodes are assigned to bins
+    void DistributeNodesToBins(
+      Teuchos::RCP<DRT::Discretization> underlyingdis,
+      std::map<int, std::vector<int> >& nodesinbin
+      );
+
+    /// elements/nodes from all provided discr. are distributed according to bin distrib.
+    void WeightedRepartitioning(
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis
+      );
+
     /// element map with extended ghosting for master side of mortar problem is returned
     virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(
       DRT::Discretization& mortardis,   ///< mortar interface discretization
@@ -94,6 +108,19 @@ namespace BINSTRATEGY
       Teuchos::RCP<DRT::Discretization> scatradis,       ///< scatra discretization
       std::map<int, std::set<int> >& escapedpartelemap,  ///< map of escaped particles and corresponding scatra elements
       std::map<int, std::set<int> >& myescapedpartelemap ///< map of escaped particles and corresponding scatra elements including particles from other procs
+      );
+
+    /// extend ghosting according to bin distribution
+    Teuchos::RCP<Epetra_Map> ExtendGhosting(
+      const Epetra_Map* initial_elecolmap,
+      std::map<int, std::set<int> >& binelemap
+      );
+
+    /// collect information of content in bins from other procs via Round Robin loop
+    void CollectInformation(
+      Teuchos::RCP<Epetra_Map> rowbins,
+      std::map<int, std::vector<int> >& nodesinbin,
+      std::map<int, std::vector<int> >& mynodesinbin
       );
 
     /// convert i,j,k into bin id
@@ -164,6 +191,11 @@ namespace BINSTRATEGY
     virtual void CreateBins(
       Teuchos::RCP<DRT::Discretization> dis   ///< underlying discret which can be used to compute bounding box
       );
+
+    // create XAABB for discretization
+    void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis);
+
+    void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis, LINALG::Matrix<3,2>& XAABB, double& cutoff);
 
     Teuchos::RCP<DRT::Discretization> particledis_;     ///< particle discretization with bins
 

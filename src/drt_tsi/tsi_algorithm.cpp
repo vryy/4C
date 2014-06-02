@@ -58,7 +58,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
     //setup projection matrices
-    volcoupl_->Setup(structdis, thermodis,comm);
+    volcoupl_->Setup(structdis, thermodis);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator

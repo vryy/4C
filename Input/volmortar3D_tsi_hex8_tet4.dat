@@ -12,7 +12,6 @@
 // - tet4 - hex8 mesh
 // - expansion due to prescribed temperatures
 // - element-based integratio procedure
-// - mesh init for dislpacement quantities
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    488
 //NODES       208
@@ -104,7 +103,7 @@ NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,{{Coupl_}And,Or}_Sing
 NORM_RESF                       Rel  // Abs,Mix
 ---------------------------------------------------------VOLMORTAR COUPLING
 INTTYPE                         elements
-MESH_INIT                       yes
+MESH_INIT                       no//yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
@@ -120,7 +119,7 @@ AZREUSE                         0
 AZSCAL                          none   // none,sym,infnorm
 AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
-AZTOL                           1e-08
+AZTOL                           1e-10
 DWINDTAU                        1.5
 BGS2X2_FLIPORDER                block1_block0_order
 IFPACKCOMBINE                   Add  // Add,Insert,Zero
@@ -157,7 +156,7 @@ AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
-AZTOL                           1e-08
+AZTOL                           1e-10
 DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
@@ -193,7 +192,7 @@ AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
-AZTOL                           1e-08
+AZTOL                           1e-10
 DWINDTAU                        1.5
 IFPACKCOMBINE                   Add
 IFPACKFILL                      1
