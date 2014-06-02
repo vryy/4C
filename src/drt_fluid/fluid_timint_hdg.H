@@ -180,11 +180,10 @@ private:
   ///< Print stabilization details to screen. Do nothing here because we do not use stabilization
   virtual void PrintStabilizationDetails() const {}
 
-  INPAR::FLUID::TimeIntegrationScheme timealgoset_;     ///< time algorithm flag actually set (we internally reset it)
+  ///< time algorithm flag actually set (we internally reset it)
+  INPAR::FLUID::TimeIntegrationScheme timealgoset_;
 
-  /*!
-  \brief In all nonlinear iteration steps but the first one, we want to reconstruct the HDG solution -> store assembly step
-   */
+  ///< Keep track of whether we do the first assembly of a time step because we reconstruct the local HDG solution as part of assembly
   bool firstAssembly_;
 
 }; // class TimIntHDG

@@ -832,6 +832,7 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/drt_utils_integration.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_local_connectivity_matrices.cpp
+  src/drt_fem_general/drt_utils_shapevalues_hdg.cpp
   src/drt_fem_general/largerotations.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
   src/drt_combust/combust_functions.cpp

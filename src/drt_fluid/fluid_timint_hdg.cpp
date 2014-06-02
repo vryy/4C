@@ -31,6 +31,7 @@ FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization>&      actdis,
                           bool                                          alefluid /*= false*/)
 : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
   TimIntGenAlpha(actdis,solver,params,output,alefluid),
+  timealgoset_ (INPAR::FLUID::timeint_afgenalpha),
   firstAssembly_(false)
 {
 }
@@ -45,13 +46,8 @@ void FLD::TimIntHDG::Init()
   if (hdgdis == NULL)
     dserror("Did not receive an HDG discretization");
 
-  const int nsd = DRT::Problem::Instance()->NDim();
-  int degreep1 = DRT::ELEMENTS::FluidHDG::degree + 1;
-  int nscalardofs = 1;
-  for(int i=0; i<nsd; ++i)
-    nscalardofs *= degreep1;
-
-  int elementndof = nscalardofs * ( nsd * nsd + nsd + 1);
+  int elementndof = hdgdis->NumMyRowElements() > 0 ?
+      dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))->NumDofPerElementAuxiliary() : 0;
 
   // set degrees of freedom in the discretization
   discret_->BuildDofSetAuxProxy(0,elementndof,0,false);

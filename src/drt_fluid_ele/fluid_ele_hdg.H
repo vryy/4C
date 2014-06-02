@@ -62,14 +62,11 @@ namespace ELEMENTS
 
 
 /*!
-\brief Viscoelastic fluid element
+\brief HDG fluid element
 */
 class FluidHDG : public Fluid
 {
 public:
-  static const int degree = 1; // hardcoded right now, assuming quad/hex geometry in polynomial space
-
-  //@}
   //! @name constructors and destructors and related methods
 
   /*!
@@ -126,9 +123,12 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
-  //@}
-
-  //! @name Geometry related methods
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string&          eletype,
+                   const std::string&          distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -144,11 +144,7 @@ public:
   \brief Get number of degrees of freedom per face
 
   */
-  virtual int NumDofPerFace(const unsigned /* face */) const
-  {
-    return DRT::UTILS::getDimension(this->Shape())*
-        fixedPower(this->degree+1,DRT::UTILS::getDimension(this->Shape())-1);
-  }
+  virtual int NumDofPerFace(const unsigned /* face */) const;
 
   /*!
   \brief Get number of degrees of freedom per element, zero for the primary dof set
@@ -158,6 +154,27 @@ public:
   {
     return 1;
   }
+
+  /*!
+   \brief Returns the degree of the element
+   */
+  int Degree() const
+  {
+    return degree_;
+  }
+
+  /*!
+   \brief Returns the degree of the element
+   */
+  int UsesCompletePolynomialSpace() const
+  {
+    return completepol_;
+  }
+
+  /*!
+   \brief Returns the degree of the element for the interior DG space
+   */
+  int NumDofPerElementAuxiliary() const;
 
   //@}
 
@@ -207,16 +224,14 @@ public:
 
 private:
 
-  int fixedPower (const int number, const int pow) const
-  {
-    int result = 1;
-    for (int i=0; i<pow; ++i)
-      result *= number;
-    return result;
-  }
-
   // don't want = operator
   FluidHDG& operator = (const FluidHDG& old);
+
+  // stores the degree of the element
+  unsigned char degree_;
+
+  // stores the polynomial type (tensor product or complete polynomial)
+  bool completepol_;
 }; // class Fluid
 
 

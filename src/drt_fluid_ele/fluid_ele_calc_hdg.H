@@ -3,6 +3,12 @@
 
 \brief main file containing routines for calculation of HDG fluid element
 
+<pre>
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -13,7 +19,7 @@
 #include "fluid_ele_interface.H"
 #include "fluid_ele_hdg.H"
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
 
 
 
@@ -23,7 +29,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-  /// Fluid element implementation
+  /// Fluid HDG element implementation
   /*!
 
     \author kronbichler
@@ -38,12 +44,6 @@ namespace ELEMENTS
 
     //! number of space dimensions
     static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-    //! number of scalar dofs per cell (quad/hex assumption right now)
-    static const unsigned int ndofs_ = DRT::UTILS::FixedPower<DRT::ELEMENTS::FluidHDG::degree+1,nsd_>::value;
-
-    //! number of scalar dofs per face (quad/hex assumption right now)
-    static const unsigned int nfdofs_ = DRT::UTILS::FixedPower<DRT::ELEMENTS::FluidHDG::degree+1,nsd_-1>::value;
 
     ///! number of faces on element
     static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
@@ -130,6 +130,10 @@ namespace ELEMENTS
     virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid*                ele,
                                            DRT::Discretization&                 discretization,
                                            Epetra_SerialDenseVector&            elevec1);
+
+    /*! \brief Initialize the shape functions and solver to the given element (degree is runtime parameter)
+     */
+    void InitializeShapes(const DRT::ELEMENTS::Fluid* ele);
 
     /// Evaluate the element
     /*!
@@ -282,70 +286,13 @@ namespace ELEMENTS
     /// private Constructor since we are a Singleton.
     FluidEleCalcHDG();
 
-    /// holds shape values on the present element and all the faces
-    struct ShapeValues
-    {
-      static const unsigned int nen_    = FluidEleCalcHDG<distype>::nen_;
-      static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
-      static const unsigned int nsd_    = FluidEleCalcHDG<distype>::nsd_;
-      static const unsigned int ndofs_  = FluidEleCalcHDG<distype>::ndofs_;
-      static const unsigned int nfdofs_ = FluidEleCalcHDG<distype>::nfdofs_;
-      static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
-
-      ShapeValues ();
-
-      void Evaluate            (const DRT::Element &ele);
-      void EvaluateFace        (const DRT::Element &ele,
-                                const unsigned int  face);
-
-      /// underlying polynomial space for element interior, created in constructor
-      const DRT::UTILS::LagrangeBasis<nsd_> polySpace_;
-
-      /// underlying polynomial space for faces
-      const DRT::UTILS::LagrangeBasis<nsd_-1> polySpaceFace_;
-
-      LINALG::Matrix<nen_,ndofs_>   funct;   /// values of mapping shape functions on all quadrature points
-      LINALG::Matrix<nfn_,nfdofs_>  functF;  /// values of mapping shape functions on all face quadrature points
-      LINALG::Matrix<nsd_,nen_>     deriv;   /// gradients of mapping shape functions
-      LINALG::Matrix<nsd_-1,nfn_>   derivF;  /// gradients of mapping shape functions on face
-      LINALG::Matrix<nsd_-1,nsd_-1> metricTensor; /// metric tensor on face
-      LINALG::Matrix<nsd_,1>        normal;  /// normal vector
-      LINALG::Matrix<nsd_,ndofs_>   xyzreal; /// coordinates of quadrature points in real space
-      LINALG::Matrix<nsd_,nfdofs_>  xyzFreal;/// coordinates of face quadrature points in real space
-
-      Epetra_SerialDenseMatrix      shfunct; /// evaluated HDG shape functions on all quadrature points
-      Epetra_SerialDenseVector      shfunctAvg;/// average of shfunctF on cell
-      Epetra_SerialDenseMatrix      shderiv; /// evaluated HDG shape function gradients in unit coordinates
-      Epetra_SerialDenseMatrix      shderxy; /// evaluated HDG shape function gradients in real coordinates
-      Epetra_SerialDenseMatrix      shfunctF;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
-      Epetra_SerialDenseMatrix      shfunctFNoPermute;///evaluated shape functions for HDG face polynomials in natural ordering
-      std::vector<Epetra_SerialDenseMatrix> shfunctI;/// evaluated shape functions on face for interior HDG polynomials
-      Epetra_SerialDenseMatrix      normals; /// normal vectors on a single face for all quadrature points
-
-      LINALG::Matrix<nsd_,1>        xsi;     /// quadrature points
-      LINALG::Matrix<nsd_-1,1>      xsiF;    /// face quadrature points
-      LINALG::Matrix<nsd_,nsd_>     xjm;     /// Jacobi matrix of transformation
-      LINALG::Matrix<nsd_,nsd_>     xji;     /// inverse of Jacobi matrix of transformation
-      LINALG::Matrix<nsd_,nen_>     xyze;    /// element nodes
-      LINALG::Matrix<nsd_,nfn_>     xyzeF;   /// face nodes
-      Epetra_SerialDenseVector      jfac;    /// Jacobian determinant times quadrature weight
-      Epetra_SerialDenseVector      jfacF;   /// face Jacobian determinant times quadrature weight
-
-      std::vector<std::vector<int> > faceNodeOrder; /// numbering of nodes belonging to faces
-
-      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_;
-      Teuchos::RCP<DRT::UTILS::GaussPoints> fquadrature_;
-    };
-
     /// local solver that inverts local problem on an element and can solve with various vectors
     struct LocalSolver
     {
       static const unsigned int nsd_    = FluidEleCalcHDG<distype>::nsd_;
-      static const unsigned int ndofs_  = FluidEleCalcHDG<distype>::ndofs_;
-      static const unsigned int nfdofs_ = FluidEleCalcHDG<distype>::nfdofs_;
       static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
 
-      LocalSolver (const ShapeValues &shapeValues);
+      LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues);
 
       void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
                                    const std::vector<double>        & valnp,
@@ -379,6 +326,9 @@ namespace ELEMENTS
       void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
                              Epetra_SerialDenseVector &elevec);
 
+      const unsigned int ndofs_;
+      const unsigned int nfdofs_;
+
       const bool stokes;
 
       // convention: we sort the entries in the matrices the following way:
@@ -387,7 +337,7 @@ namespace ELEMENTS
       // closest to each other. I.e. the blocks are in 2D for g_00, g_01, g_10, g_11, v_0, v_1, p
       // and similarly for 3D
 
-      const ShapeValues        &shapes_; /// evaluated shape values
+      const DRT::UTILS::ShapeValues<distype> &shapes_; /// evaluated shape values
 
       double                    stabilization[nfaces_]; /// stabilization parameters
 
@@ -452,10 +402,10 @@ namespace ELEMENTS
                      double                          &p) const;
 
     /// local data object
-    ShapeValues shapes_;
+    Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;
 
     /// local solver object
-    LocalSolver localSolver_;
+    Teuchos::RCP<LocalSolver> localSolver_;
 
     LINALG::Matrix<nsd_,nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
     LINALG::Matrix<nsd_,nen_> eprescpgaf_;  /// pressure gradient body force
