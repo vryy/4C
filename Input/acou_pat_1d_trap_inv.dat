@@ -180,6 +180,9 @@ NDVOL   0
 -------------------------------------DESIGN ABSORBING LINE CONDITIONS
 DLINE  1
 E 1 -
+-------------------------------DESIGN PRESSURE MONITOR LINE CONDITIONS
+DLINE 1 
+E 1 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
 E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0

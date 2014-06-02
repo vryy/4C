@@ -530,11 +530,44 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     for(int i=0;i<nen_;++i) temp(i) = mydualphi[i];
     elevec1_epetra.Multiply('N','N',sign_fac,massmat,temp,0.0);
 
-    for(int i=0;i<nen_;++i) temp(i) = -mypsi[i];
+    for(int i=0;i<nen_;++i) temp(i) = mypsi[i];
 
     bool scaleele = params.get<bool>("scaleele");
     if(scaleele) elevec1_epetra += temp;
     else         elevec1_epetra.Multiply('N','N',1.0,massmat,temp,1.0);
+    break;
+  }
+  case SCATRA::calc_integr_pat_rhsvec:
+  {
+    // extract local values from the global vectors w and phi
+    Teuchos::RCP<const Epetra_Vector> rhsvec = discretization.GetState("rhsnodebasedvals");
+    if (rhsvec==Teuchos::null)
+      dserror("Cannot get state vector 'rhsnodebasedvals' ");
+    std::vector<double> myrhsvec(lm.size());
+    DRT::UTILS::ExtractMyValues(*rhsvec,myrhsvec,lm);
+
+    Epetra_SerialDenseVector rhs(nen_);
+    for(int i=0; i<nen_; ++i)
+      rhs(i) = myrhsvec[i];
+
+    Epetra_SerialDenseMatrix mass(nen_,nen_);
+    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac*funct_(vi); // no density required here
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          mass(vi,ui) += v*funct_(ui);
+        }
+      }
+    }
+
+    elevec1_epetra.Multiply('N','N',1.0,mass,rhs,0.0);
+
     break;
   }
   default:

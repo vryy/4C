@@ -4195,7 +4195,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   /*--------------------------------------------------------------------*/
   // absorbing boundary condition for acoustic problems
-
+  // line
   Teuchos::RCP<ConditionDefinition> absorbing_line =
     Teuchos::rcp(new ConditionDefinition("DESIGN ABSORBING LINE CONDITIONS",
                                          "Absorbing",
@@ -4203,12 +4203,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Absorb,
                                          true,
                                          DRT::Condition::Line));
-
   condlist.push_back(absorbing_line);
 
-  /*--------------------------------------------------------------------*/
-  // absorbing boundary condition for acoustic problems
-
+  // surface
   Teuchos::RCP<ConditionDefinition> absorbing_surface =
     Teuchos::rcp(new ConditionDefinition("DESIGN ABSORBING SURF CONDITIONS",
                                          "Absorbing",
@@ -4216,8 +4213,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Absorb,
                                          true,
                                          DRT::Condition::Surface));
-
   condlist.push_back(absorbing_surface);
+
+  /*--------------------------------------------------------------------*/
+  // monitor condition for acoustic problems
+  // line
+  Teuchos::RCP<ConditionDefinition> pressmon_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PRESSURE MONITOR LINE CONDITIONS",
+                                         "PressureMonitor",
+                                         "Pressure monitor line for acoustics",
+                                         DRT::Condition::PressureMonitor,
+                                         true,
+                                         DRT::Condition::Line));
+  condlist.push_back(pressmon_line);
+
+  // surface
+  Teuchos::RCP<ConditionDefinition> pressmon_surface =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PRESSURE MONITOR SURF CONDITIONS",
+                                         "PressureMonitor",
+                                         "Pressure monitor surface for acoustics",
+                                         DRT::Condition::PressureMonitor,
+                                         true,
+                                         DRT::Condition::Surface));
+  condlist.push_back(pressmon_surface);
 
   /*--------------------------------------------------------------------*/
   return vc;

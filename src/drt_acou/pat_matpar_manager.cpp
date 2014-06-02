@@ -108,8 +108,10 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
     int elematid = actele->Material()->Parameter()->Id();
 
     if (paramap_.find(elematid) == paramap_.end() )
+    {
+      std::cout<<"Warning, skipping elematid "<<elematid<<" in ele "<<actele->Id()<<std::endl;
       continue;
-
+    }
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_integr_grad_reac);

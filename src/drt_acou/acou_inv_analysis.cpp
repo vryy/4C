@@ -86,7 +86,6 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     tstart_(Teuchos::Time::wallTime())
 {
   // some checks, if everything is alright
-  if(phys_==INPAR::ACOU::acou_viscous) dserror("inverse analysis for now only implemented for lossless fluid");
   if(INPAR::SCATRA::scatratype_condif!=DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(scatraparams_,"SCATRATYPE")) dserror("inverse analysis only implemented for SCATRATYPE ConvectionDiffusion (pat_matpar_manager)");
   if(ls_rho_>=1.0) dserror("LS_STEPLENGTHRED has to be smaller than 1.0");
   if(ls_c_>1.0) dserror("LS_DECREASECOND is usually chosen in between 0.0 and 0.01, decrease it!");
@@ -156,13 +155,13 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   // we need this map extractor thing!
   // we deal with NODES here, not with DOFS
 
-  std::string condname = "Absorbing";
-  std::vector<DRT::Condition*> absorbingBC;
-  acou_discret_->GetCondition(condname,absorbingBC);
-  if(absorbingBC.size()==0)
-    dserror("you have to use absorbing line conditions for inverse analysis!");
-  const std::vector<int> abcnodes = *(absorbingBC[0]->Nodes());
-  std::vector<int> abcnodesunique;
+  std::string condname = "PressureMonitor";
+  std::vector<DRT::Condition*> pressuremon;
+  acou_discret_->GetCondition(condname,pressuremon);
+  if(pressuremon.size()==0)
+    dserror("you have to use pressure monitor conditions for inverse analysis!");
+  const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
+  std::vector<int> pressuremonnodesunique;
 
   // create unique map
   acou_discret_->Comm().Barrier();
@@ -170,12 +169,12 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   {
     if(acou_discret_->Comm().MyPID() == i)
     {
-      for(unsigned int j=0; j<abcnodes.size(); ++j)
+      for(unsigned int j=0; j<pressuremonnodes.size(); ++j)
       {
-        if(acou_discret_->HaveGlobalNode(abcnodes[j]))
+        if(acou_discret_->HaveGlobalNode(pressuremonnodes[j]))
         {
-          if(acou_discret_->gNode(abcnodes[j])->Owner()==int(i))
-            abcnodesunique.push_back(abcnodes[j]);
+          if(acou_discret_->gNode(pressuremonnodes[j])->Owner()==int(i))
+            pressuremonnodesunique.push_back(pressuremonnodes[j]);
         }
       }
     }
@@ -185,7 +184,7 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
 
 
   //abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, abcnodes.size(), &abcnodes[0], 0, acou_discret_->Comm()));
-  abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, abcnodesunique.size(), &abcnodesunique[0], 0, acou_discret_->Comm()));
+  abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonnodesunique.size(), &pressuremonnodesunique[0], 0, acou_discret_->Comm()));
   abcnodes_mapex_ = Teuchos::rcp(new LINALG::MapExtractor(*(acou_discret_->NodeRowMap()),abcnodes_map_,true));
 
   // determine the number of vectors for monitoring
@@ -274,8 +273,8 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
 
   double eps = dtacou_/1000.0;
   if((numvec-1)*dtacou_>timesteps[nsteps-1]+eps) dserror("You want to simulate till %.15f but your monitor file only provides values till %.15f! Fix it!",(numvec-1)*dtacou_,timesteps[nsteps-1]);
-  if (nnodes != abcnodes.size()) dserror("For now implemented only when all boundary nodes are monitored");
-  if (nodes_ != abcnodes) dserror("And please provide the correct order (feel free to reimplement)");
+  if (nnodes != pressuremonnodes.size()) dserror("Given number of nodes in boundary condition and monitor file don't match!");
+  if (nodes_ != pressuremonnodes) dserror("And please provide the correct order (feel free to reimplement)");
 
 //  for(int i=0; i<acou_discret_->Comm().NumProc(); ++i)
 //  {
@@ -291,7 +290,7 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   // every proc knows mcurve, now, we want to write mcurve to a Epetra_MultiVector in the same form as acou_rhs_
   // with the same parallel distribution!
   // and we want to interpolate measured values in case the monitored time step size is not the same as the one for the simulation
-
+  acou_rhsm_->PutScalar(0.0);
   if( timesteps[0] != 0.0 )
     dserror("your measured values have to start at time 0.0");
   else if( timesteps[0] == 0.0 && timesteps[1] == dtacou_ ) // the standard case
@@ -387,7 +386,7 @@ void ACOU::InvAnalysis::ComputeNodeBasedVectors()
         if( nodeids[i] == nd+maxnodeidacou+1 )
         {
           const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(roptele->Material().get());
-          loc_mu_a += actmat->ReaCoeff(scatra_discret_->ElementRowMap()->LID(roptele->Id()));
+          loc_mu_a += actmat->ReaCoeff(scatra_discret_->ElementColMap()->LID(roptele->Id()));
           loc_numoptiele++;
         }
     }
@@ -629,7 +628,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
   if(alpha_ != 0.0)
   {
     double val = 0.0;
-    STR::INVANA::MVNorm(matman_->GetParams(),2,&val,matman_->ParamLayoutMap());
+    STR::INVANA::MVNorm(matman_->GetParams(),2,&val,matman_->ParamLayoutMapUnique());
     J_ += 0.5*alpha_*val*val;
   }
 
@@ -637,6 +636,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
   Epetra_MultiVector tempvec = Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors());
   tempvec.Update(1.0,*acou_rhsm_,0.0);
   tempvec.Update(1.0,*acou_rhs_,-1.0);
+
   tempvec.Multiply(1.0,tempvec,tempvec,0.0);
   acou_discret_->Comm().Barrier();
 
@@ -687,6 +687,7 @@ void ACOU::InvAnalysis::SolveAdjointAcouProblem()
   Teuchos::RCP<Epetra_Vector> touchcountvec = LINALG::CreateVector(*abcnodes_map_);
   acoualgo_->FillTouchCountVec(touchcountvec);
   acou_rhs_->Multiply(1.0,*touchcountvec,*acou_rhs_,0.0);
+
   acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhs_);
 
   std::string outname = name_;
@@ -810,7 +811,24 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
   else
   {
     rhsvec = CalculateNonconformRhsvec(adjoint_phi_0_);
+    for(int i=0; i<node_mu_a_->MyLength(); ++i)
+    {
+      double mu_a = node_mu_a_->operator [](i);
+      int dofgid = scatra_discret_->Dof(scatra_discret_->lRowNode(i),0);
+      int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
+      rhsvec->operator [](doflid) *= -mu_a;
+    }
   } // else ** if(meshconform)
+
+  Teuchos::ParameterList eleparams;
+  INPAR::SCATRA::ScaTraType scatype = DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(scatraparams_,"SCATRATYPE");
+  eleparams.set<int>("scatratype",scatype);
+  scatra_discret_->SetState("rhsnodebasedvals",rhsvec);
+  eleparams.set<int>("action",SCATRA::calc_integr_pat_rhsvec);
+  Teuchos::RCP<Epetra_Vector> b = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
+
+  scatra_discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,b,Teuchos::null,Teuchos::null);
+
 
   std::string condname = "Dirichlet";
   std::vector<DRT::Condition*> dirichlets;
@@ -824,17 +842,16 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
       if (dirichlets[i]->ContainsNode(nodegid))
       {
         int dofgid = scatra_discret_->Dof(opti_node,0);
-        int err = rhsvec->ReplaceGlobalValue(dofgid,0,0.0);
+        int err = b->ReplaceGlobalValue(dofgid,0,0.0);
         if (err) dserror("could not replace global vector entry");
       }
     } // for(unsigned int i=0; i<dirichlets.size(); ++i)
   } // for(int nd=0; nd<scatra_discret_->NumMyRowNodes(); ++nd)
 
-
   // the rhsvec is ready for take off
   // solve the system now!
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(scatrasolverparams_,scatra_discret_->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->Solve(sysmatscatra->EpetraOperator(),adjoint_w_,rhsvec,true,true);
+  solver->Solve(sysmatscatra->EpetraOperator(),adjoint_w_,b,true,true);
 
   std::string outname = name_;
   outname.append("_invadjoint_opti");
@@ -907,7 +924,7 @@ Teuchos::RCP<Epetra_Vector> ACOU::InvAnalysis::CalculateNonconformRhsvec(Teuchos
         // check, if acoustical node is in bounding box
         bool inside = true;
         for(int d=0;d<numdim;++d)
-          if(optnodecoords[d]>minmaxvals[1][d]+1.0e-5 || optnodecoords[d]<minmaxvals[0][d]-1.0e-5)
+          if(optnodecoords[d]>minmaxvals[1][d]+5.0e-5 || optnodecoords[d]<minmaxvals[0][d]-5.0e-5)
             inside=false;
         if(inside)
         {
@@ -954,7 +971,7 @@ Teuchos::RCP<Epetra_Vector> ACOU::InvAnalysis::CalculateNonconformRhsvec(Teuchos
             deltaxinorm = deltaxi.Norm2();
             xi.Update(-1.0,deltaxi,1.0);
           } while ( deltaxinorm > 1.0e-8 && count < 10 );
-          if(!(count == 10 || xi.NormInf()>1.0+0.1))
+          if(!(count == 10 || xi.NormInf()>1.0+0.15))
           {
             // get the values!
             double values[4] = {0};
@@ -989,12 +1006,14 @@ Teuchos::RCP<Epetra_Vector> ACOU::InvAnalysis::CalculateNonconformRhsvec(Teuchos
       glob_p = glob_p_max;
 
     // set p value in node based vector
-    if(myrank_==optnodeowner)
+    if(myrank_==optnodeowner && glob_p != 0.0)
     {
       int dof = scatra_discret_->Dof(optnode,0);
       int lid = scatra_discret_->DofRowMap()->LID(dof);
       if(lid<0) dserror("cannot find dof for node %d ",optnd);
-      rhsvec->ReplaceMyValue(lid,0,glob_p);
+
+      int err = rhsvec->ReplaceMyValue(lid,0,glob_p);
+      if (err) dserror("could not replace local vector entry");
     }
   } // for(int optnd=0; optnd<scatra_discret_->NumGlobalNodes(); ++optnd)
 
@@ -1100,6 +1119,11 @@ void ACOU::InvAnalysis::FD_GradientCheck()
     std::cout<<"ooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"<<std::endl;
   }
 
+
+  if(!myrank_)
+    std::cout<<"Gradient according to adjoint analysis"<<std::endl;
+  objgrad_->Print(std::cout);
+
   double J_before = J_;
   Epetra_MultiVector tempvec = Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors());
   tempvec.Update(1.0,*acou_rhs_,0.0);
@@ -1150,10 +1174,6 @@ void ACOU::InvAnalysis::FD_GradientCheck()
   J_ = J_before;
 
   if(!myrank_)
-    std::cout<<"Gradient according to adjoint analysis"<<std::endl;
-  objgrad_->Print(std::cout);
-
-  if(!myrank_)
     std::cout<<"Gradient according to finite difference check"<<std::endl;
   objgradFD->Print(std::cout);
 
@@ -1176,12 +1196,12 @@ bool ACOU::InvAnalysis::UpdateParameters()
   }
 
   if(iter_==0 || opti_ == INPAR::ACOU::inv_gd) // in the first iteration the lbfgs does not know how long the step should be, gradient descent should always do scaled step length
-    d_->Scale(1.0/normgrad0_);
+    d_->Scale(1.0/normgrad0_*double(objgrad_->Map().NumGlobalElements()));
 
   std::cout<<"search direction "<<std::endl;d_->Print(std::cout);
   bool success = LineSearch();
 
-  if (success == false && opti_ == INPAR::ACOU::inv_lbfgs)
+  if (success == false && opti_ == INPAR::ACOU::inv_lbfgs && iter_ != 0)
   {
     // in this case we try a steepest descent step!
     d_->Update(-1.0/normgrad0_,*objgrad_,0.0);
@@ -1306,13 +1326,17 @@ bool ACOU::InvAnalysis::LineSearch()
 
   double condition = J_before + ls_c_ * alpha * dotproduct;
 
+  double norm_d = 0.0;
+  d_->Norm2(&norm_d);
+
   int count = 0;
   bool success = true;
+
   do{
     count++;
 
     if(!myrank_)
-      std::cout<<"*************** line search iteration "<<count<<" of maximal "<<max_ls_iter_<<" line search iterations, condition "<<condition<<" step length "<<alpha<<std::endl;
+      std::cout<<"*************** line search iteration "<<count<<" of maximal "<<max_ls_iter_<<" line search iterations, condition "<<condition<<" step length "<<alpha<<" norm direction "<<norm_d<<std::endl;
 
     step_->Update(alpha,*d_,0.0);
     matman_->UpdateParams(step_);
@@ -1350,6 +1374,9 @@ void ACOU::InvAnalysis::CalculateStatsAndService()
   // calculate the norm of the difference of the given parameters, for the curious user
   STR::INVANA::MVNorm(step_,0,&normdiffp_,matman_->ParamLayoutMapUnique());
 
+  // update node based material parameter vector
+  ComputeNodeBasedVectors();
+
   return;
 } // void ACOU::InvAnalysis::CalculateStatsAndService()
 
@@ -1369,7 +1396,6 @@ void ACOU::InvAnalysis::OutputStats()
     std::cout<<"*** parameters:                           "<<std::endl;
   }
   matman_->GetParams()->Print(std::cout);
-
 
   return;
 } // void ACOU::InvAnalysis::OutputStats()

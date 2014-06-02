@@ -169,7 +169,7 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
   for(int i=0; i<parent->NumFace(); ++i)
   {
     const int* nodeidsfaces = faces[i]->NodeIds();
-    if( faces[i]->NumNode() != ele->NumNode() ) dserror("error");
+    if( faces[i]->NumNode() != ele->NumNode() ) break; //dserror("error");
 
     for(int j=0; j<ele->NumNode(); ++j)
     {
@@ -187,6 +187,48 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
       params.set<int>("face",i);
       break;
     }
+  }
+  if(same == false && ( faces[0]->NumNode() != ele->NumNode() ) )
+  {
+    // in this case we have a three dimensional problem and the absorbing boundary condition on
+    // a line and not on a surface. hence, we have to evaluate the abc term only at a part of
+    // the face. here, we want to figure, which part!
+    int elenode = ele->NumNode();
+    int face = -1;
+    if(elenode != 2) dserror("absorbing line in 3d not implemented for higher order geometry approximation");
+    // find the first face which contains the line!
+    for(int i=0; i<parent->NumFace(); ++i)
+    {
+      const int* nodeidsfaces = faces[i]->NodeIds();
+      int count = 0;
+      for(int j=0; j<faces[i]->NumNode(); ++j)
+      {
+        for(int n=0; n<elenode; ++n)
+        {
+          count += ( nodeidsfaces[j] == nodeids[n] );
+        }
+      }
+      if(count == elenode)
+      {
+        same = true;
+        face = i;
+        params.set<int>("face",i);
+        break;
+      }
+    }
+    if (same == false) dserror("no face contains absorbing line");
+    // now, we know which face contains the line, but we have to tell the element, which nodes we
+    // are talking about! therefore, we create a vector of ints and this vector stores the
+    // relevant nodes, for example: the line has two nodes, we store which position these nodes
+    // have in the face element
+    const int* nodeidsface = faces[face]->NodeIds();
+    Teuchos::RCP<std::vector<int> > indices = Teuchos::rcp(new std::vector<int> (elenode));
+    for(int j=0; j<faces[face]->NumNode(); ++j)
+    {
+      for(int n=0; n<elenode; ++n)
+        if(nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
+    }
+    params.set<Teuchos::RCP<std::vector<int> > >("nodeindices",indices);
   }
   if (same == false)
     dserror("either nodeids are sorted differently or a boundary element does not know to whom it belongs");

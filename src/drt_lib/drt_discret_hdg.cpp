@@ -162,9 +162,6 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
 
     for (int i=0; i<NumMyRowFaces(); ++i)
     {
-      // do not consider internal faces
-      if (lRowFace(i)->ParentSlaveElement() != NULL) continue;
-
       const unsigned int dimension = DRT::UTILS::getDimension(lRowFace(i)->ParentMasterElement()->Shape());
       if (onoff->size() <= dimension || (*onoff)[dimension] == 0)
         pressureDone = true;
@@ -259,7 +256,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
         if (dbcgids != Teuchos::null)
           (*dbcgids).insert(gid);
       }
-    }  // loop over faces
+    } // loop over faces
   }
 }
 

@@ -219,6 +219,22 @@ namespace ELEMENTS
                               Epetra_SerialDenseMatrix    &elemat,
                               Epetra_SerialDenseVector    &elevec);
 
+      /// add terms corresponding to the absorbing boundary condition
+      void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
+                              Teuchos::ParameterList&     params,
+                              Teuchos::RCP<MAT::Material> & mat,
+                              int                         face,
+                              Epetra_SerialDenseMatrix    &elemat,
+                              Epetra_SerialDenseVector    &elevec);
+
+      /// add terms corresponding to the absorbing boundary condition
+      void ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
+                                Teuchos::ParameterList&     params,
+                                Teuchos::RCP<MAT::Material> & mat,
+                                int                         face,
+                                Epetra_SerialDenseMatrix    &elemat,
+                                Epetra_SerialDenseVector    &elevec);
+
       /// set up interior matrices
       void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
                                    double                            dt,
@@ -283,7 +299,7 @@ namespace ELEMENTS
 
 
     /// add terms corresponding to the absorbing boundary condition
-    void ComputeABCNodeVals(DRT::ELEMENTS::Acou*        ele,
+    void ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
                             Teuchos::ParameterList&     params,
                             Teuchos::RCP<MAT::Material> & mat,
                             int                         face,

@@ -268,6 +268,7 @@ public:
     HomoScaTraCoupling,
     LsContact,
     Absorb,
+    PressureMonitor,
     ImmersedSearchbox,
     ImmersedFSIForceEvaluation,
     ImmersedInterpolatingElement,

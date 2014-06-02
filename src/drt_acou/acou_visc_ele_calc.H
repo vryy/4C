@@ -91,6 +91,14 @@ public:
                        const std::vector<int>&              lm,
                        Epetra_SerialDenseVector&            elevec1);
 
+  /// map solution values to nodes
+  void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
+                    DRT::ELEMENTS::Acou*                 ele,
+                    DRT::Discretization&                 discretization,
+                    const std::vector<int>&              lm,
+                    Epetra_SerialDenseVector&            elevec1,
+                    double                               dt);
+
   /// Evaluate the element
   /*!
     Generic virtual interface function. Called via base pointer.
@@ -210,6 +218,22 @@ private:
                             Epetra_SerialDenseMatrix    &elemat,
                             Epetra_SerialDenseVector    &elevec);
 
+    /// add terms corresponding to the absorbing boundary condition
+    void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
+                            Teuchos::ParameterList&     params,
+                            Teuchos::RCP<MAT::Material> & mat,
+                            int                         face,
+                            Epetra_SerialDenseMatrix    &elemat,
+                            Epetra_SerialDenseVector    &elevec);
+
+    /// add terms corresponding to the absorbing boundary condition
+    void ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
+                              Teuchos::ParameterList&     params,
+                              Teuchos::RCP<MAT::Material> & mat,
+                              int                         face,
+                              Epetra_SerialDenseMatrix    &elemat,
+                              Epetra_SerialDenseVector    &elevec);
+
     /// set up interior matrices
     void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
                                  double                            dt,
@@ -224,7 +248,9 @@ private:
                            INPAR::ACOU::DynamicType dyna);
 
     /// compute the residual
-    void ComputeResidual(Epetra_SerialDenseVector          & eleVec,
+    void ComputeResidual(Teuchos::ParameterList&     params,
+                         DRT::ELEMENTS::Acou &                ele,
+                         Epetra_SerialDenseVector          & eleVec,
                          Epetra_SerialDenseVector          & interiorGradVeln,
                          Epetra_SerialDenseVector          & interiorVeln,
                          Epetra_SerialDenseVector          & interiorPressn,
@@ -233,6 +259,17 @@ private:
                          INPAR::ACOU::DynamicType          dyna);
 
 
+    /// evaluates the source term for the adjoint integration!
+    void EvaluateSourceAdjoint(Teuchos::ParameterList&     params,
+                               DRT::ELEMENTS::Acou &                ele,
+                               Epetra_SerialDenseVector          & sourcevec);
+
+    /// evaluates source term for given coordinates
+    void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
+                             double values[],
+                             int numfnode,
+                             const double (&xyz)[nsd_],
+                             double &val) const;
 
     Epetra_SerialDenseMatrix amat;
     Epetra_SerialDenseMatrix invamat;
@@ -272,6 +309,15 @@ private:
                        double                            dt,
                        INPAR::ACOU::DynamicType          dyna,
                        bool                              adjoint);
+
+
+  /// add terms corresponding to the absorbing boundary condition
+  void ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
+                          Teuchos::ParameterList&     params,
+                          Teuchos::RCP<MAT::Material> & mat,
+                          int                         face,
+                          Epetra_SerialDenseMatrix    &elemat,
+                          Epetra_SerialDenseVector    &elevec);
 
   /// reads from global vectors
   void ReadGlobalVectors(const DRT::Element     & ele,

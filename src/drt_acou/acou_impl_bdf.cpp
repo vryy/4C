@@ -279,7 +279,7 @@ void ACOU::TimIntImplBDF::AssembleMatAndRHS()
 
   discret_->ClearState();
 
-  if(!resonly || adjoint_)
+  if(!resonly)
   {
     // absorbing boundary conditions
     std::string condname = "Absorbing";
@@ -292,6 +292,19 @@ void ACOU::TimIntImplBDF::AssembleMatAndRHS()
       discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
     }
   }
+  if(adjoint_)
+  {
+    std::string condname = "PressureMonitor";
+    std::vector<DRT::Condition*> pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    if(pressuremon.size())
+    {
+      eleparams.remove("action",false);
+      eleparams.set<int>("action",ACOU::calc_pressuremon);
+      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    }
+  }
+
   sysmat_->Complete();
 
   return;
@@ -378,15 +391,14 @@ void ACOU::TimIntImplBDF::UpdateInteriorVariablesAndAssemebleRHS()
   // calculate boundary source term for inverse adjoint runs
   if(adjoint_)
   {
-    // absorbing boundary conditions
-    std::string condname = "Absorbing";
-    std::vector<DRT::Condition*> absorbingBC;
-    discret_->GetCondition(condname,absorbingBC);
-    if(absorbingBC.size())
+    std::string condname = "PressureMonitor";
+    std::vector<DRT::Condition*> pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    if(pressuremon.size())
     {
       eleparams.remove("action",false);
-      eleparams.set<int>("action",ACOU::calc_abc);
-      discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+      eleparams.set<int>("action",ACOU::calc_pressuremon);
+      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
     }
   }
 

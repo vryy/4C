@@ -60,7 +60,8 @@ enum Action {
   set_mean_Cai,                    // special action for mfs
   calc_mat_and_rhs_lsreinit_correction_step, // level-set action: setup of system for correction step
   calc_node_based_reinit_velocity, // level-set action: compute node-based velocity field for reinitialization equation
-  calc_integr_grad_reac            // calculate regularization part in gradient for adjoint photoacoustics
+  calc_integr_grad_reac,           // calculate regularization part in gradient for adjoint photoacoustics
+  calc_integr_pat_rhsvec           // integrate rhs vec for adjoint pat
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/

@@ -212,6 +212,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_elch_initial_potential:
     case SCATRA::calc_elch_electrode_kinetics:
     case SCATRA::calc_integr_grad_reac:
+    case SCATRA::calc_integr_pat_rhsvec:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype, numdofpernode, numscal)->EvaluateService(
                this,

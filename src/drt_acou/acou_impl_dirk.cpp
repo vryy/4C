@@ -125,7 +125,7 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS()
 
   discret_->ClearState();
 
-  if(!resonly || adjoint_)
+  if(!resonly)
   {
     // absorbing boundary conditions
     std::string condname = "Absorbing";
@@ -135,6 +135,18 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS()
     {
       eleparams.remove("action",false);
       eleparams.set<int>("action",ACOU::calc_abc);
+      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    }
+  }
+  if(adjoint_)
+  {
+    std::string condname = "PressureMonitor";
+    std::vector<DRT::Condition*> pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    if(pressuremon.size())
+    {
+      eleparams.remove("action",false);
+      eleparams.set<int>("action",ACOU::calc_pressuremon);
       discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
     }
   }
@@ -158,7 +170,11 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
 
   eleparams.set<bool>("adjoint",adjoint_);
-  eleparams.set<bool>("errormaps",false);
+  eleparams.set<bool>("errormaps",errormaps_);
+  Teuchos::RCP<std::vector<double> > elevals;
+  if(errormaps_)
+    elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
+  eleparams.set<Teuchos::RCP<std::vector<double> > >("elevals",elevals);
 
   eleparams.set<int>("action",ACOU::update_secondary_solution);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
