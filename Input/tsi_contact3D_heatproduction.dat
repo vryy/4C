@@ -142,10 +142,11 @@ NUMSTEP                         2
 RESTARTEVRY                     1
 TIMESTEP                        1
 UPRES                           1
-CONVTOL                         1e-06                         // 11.02.10
 ITEMAX                          1                             // 11.02.10
-COUPVARIABLE                    Temperature
 COUPALGO                        tsi_oneway
+-----------------------------------------------------TSI DYNAMIC/PARTITIONED
+CONVTOL                         1e-06                         // 11.02.10
+COUPVARIABLE                    Temperature
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 AZBDIAG                         0

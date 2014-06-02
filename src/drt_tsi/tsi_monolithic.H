@@ -13,7 +13,6 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/10 |
  *----------------------------------------------------------------------*/
@@ -363,6 +362,7 @@ namespace TSI
   private:
 
     const Teuchos::ParameterList& tsidyn_;  //!< TSI dynamic parameter list
+    const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;

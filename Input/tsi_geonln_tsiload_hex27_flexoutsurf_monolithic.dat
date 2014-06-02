@@ -130,27 +130,25 @@ GENAVG                          TrLike
 ---------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 --------------------------------------------------------TSI DYNAMIC
-CALC_NECKING_TSI_VALUES         No
-CONVTOL                         1e-06
 COUPALGO                        tsi_monolithic
-COUPVARIABLE                    Displacement
-FIXEDOMEGA                      1
-INFNORMSCALING                  yes
 ITEMAX                          20
 ITEMIN                          1
-ITERNORM                        Rms
-LINEAR_SOLVER                   3
-MAXOMEGA                        0
 MAXTIME                         5.0
-MERGE_TSI_BLOCK_MATRIX          No
-NORMCOMBI_RESFINC               Coupl_And_Singl
 NORM_INC                        Abs
-NORM_RESF                       Rel  // Abs
 NUMSTEP                         200
 RESTARTEVRY                     1
 TIMESTEP                        1.0  // 0.05
-TOLINC                          1e-06
 UPRES                           1
+---------------------------------------------TSI DYNAMIC/MONOLITHIC
+CALC_NECKING_TSI_VALUES         No
+CONVTOL                         1e-06
+INFNORMSCALING                  yes
+ITERNORM                        Rms
+LINEAR_SOLVER                   3
+MERGE_TSI_BLOCK_MATRIX          No
+NORMCOMBI_RESFINC               Coupl_And_Singl
+NORM_RESF                       Rel  // Abs
+TOLINC                          1e-06
 -----------------------------------------------------------SOLVER 1
 NAME                            STRUCT SOLVER
 SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK

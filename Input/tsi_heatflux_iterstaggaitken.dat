@@ -98,18 +98,18 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
-COUPALGO                        tsi_iterstagg_aitken   // tsi_{iterstagg,sequstagg,oneway,monolithic}
-COUPVARIABLE                    Displacement                  // Displacement,Temperature
+COUPALGO                        tsi_iterstagg_aitken  // tsi_{iterstagg,sequstagg,oneway,monolithic}
 ITEMAX                          100
-LINEAR_SOLVER                   3
 MAXTIME                         5.0
-MAXOMEGA                        2  // 0.6; largest omega allowed for Aitken relaxation (0.0 means no constraint)
 NUMSTEP                         2000
 NORM_INC                        Abs  // Rel
 RESTARTEVRY                     1
 TIMESTEP                        1.0
 UPRES                           1
+-----------------------------------------------------TSI DYNAMIC/PARTITIONED
+CONVTOL                         1e-06
+COUPVARIABLE                    Displacement  // Displacement,Temperature
+MAXOMEGA                        2  // 0.6; largest omega allowed for Aitken relaxation (0.0 means no constraint)
 --------------------------------------------------------------------SOLVER 1
 NAME                            THERMAL_SOLVER
 SOLVER                          UMFPACK

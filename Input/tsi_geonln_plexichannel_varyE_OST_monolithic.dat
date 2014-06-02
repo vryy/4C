@@ -136,22 +136,22 @@ TOLTEMP                         1e-08
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
-TOLINC                          1e-07
 COUPALGO                        tsi_monolithic  // tsi_{oneway,sequstagg,iterstagg{_aitken,_aitkenirons},monolithic}
-COUPVARIABLE                    Temperature  // Displacement
 ITEMAX                          20
-ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
 ITEMIN                          1
-LINEAR_SOLVER                   3
 MAXTIME                         5000.0
-NORMCOMBI_RESFINC               Coupl_Or_Singl  // Or,Coupl_Or_Singl,Coupl_And_Singl,And_Singl,Or_Singl
 NORM_INC                        Abs  // Abs,Rel,Mix
-NORM_RESF                       Rel  // Abs,Rel,Mix
 NUMSTEP                         5  // 2000
 RESTARTEVRY                     4
 TIMESTEP                        200.0
 UPRES                           1
+------------------------------------------------------TSI DYNAMIC/MONOLITHIC
+CONVTOL                         1e-06
+TOLINC                          1e-07
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   3
+NORMCOMBI_RESFINC               Coupl_Or_Singl  // Or,Coupl_Or_Singl,Coupl_And_Singl,And_Singl,Or_Singl
+NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
 SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos

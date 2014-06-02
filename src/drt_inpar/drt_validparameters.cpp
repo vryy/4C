@@ -2575,20 +2575,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &tsidyn
     );
 
-  // decide in partitioned TSI which one-way coupling should be used
-  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
-    "Coupling variable",
-    tuple<std::string>(
-      "Displacement",
-      "Temperature"),
-    tuple<int>(0,1),
-    &tsidyn
-    );
-
-  // merge TSI block matrix to enable use of direct solver in monolithic TSI
-  // default: "No", i.e. use block matrix
-  BoolParameter("MERGE_TSI_BLOCK_MATRIX","No","Merge TSI block matrix",&tsidyn);
-
   BoolParameter("MATCHINGGRID","Yes","is matching grid",&tsidyn);
 
   // Coupling strategy for BACI-INCA coupling (TFSI)
@@ -2642,17 +2628,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&tsidyn);
   IntParameter("UPRES",1,"increment for writing solution",&tsidyn);
 
-  // Solver parameter for partitioned TSI
-  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&tsidyn);
-  DoubleParameter("FIXEDOMEGA",1.0,"fixed relaxation parameter",&tsidyn);
-
-  // Iterationparameters
-  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of TSI",&tsidyn);
-  // Iterationparameters
-  DoubleParameter("TOLINC",1.0e-6,"tolerance for convergence check of TSI-increment in monolithic TSI",&tsidyn);
-
   setStringToIntegralParameter<int>("NORM_INC","Abs",
-    "type of norm for primary variables convergence check in partitioned TSI",
+    "type of norm for convergence check of primary variables in TSI",
     tuple<std::string>(
       "Abs",
       "Rel",
@@ -2664,6 +2641,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &tsidyn
       );
 
+  /*----------------------------------------------------------------------*/
+  /* parameters for monolithic TSI */
+  Teuchos::ParameterList& tsidynmono = tsidyn.sublist(
+        "MONOLITHIC",false,
+        "Monolithic Thermo Structure Interaction\n"
+        "Dynamic section for monolithic TSI"
+         );
+
+  // convergence tolerance of tsi residual
+  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of TSI",&tsidynmono);
+  // Iterationparameters
+  DoubleParameter("TOLINC",1.0e-6,"tolerance for convergence check of TSI-increment in monolithic TSI",&tsidynmono);
+
   setStringToIntegralParameter<int>("NORM_RESF","Abs",
     "type of norm for residual convergence check",
     tuple<std::string>(
@@ -2674,7 +2664,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::TSI::convnorm_abs,
       INPAR::TSI::convnorm_rel,
       INPAR::TSI::convnorm_mix),
-      &tsidyn
+    &tsidynmono
       );
 
   setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","Coupl_And_Singl",
@@ -2693,7 +2683,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::TSI::bop_coupl_and_singl,
       INPAR::TSI::bop_and_singl,
       INPAR::TSI::bop_or_singl),
-    &tsidyn
+    &tsidynmono
     );
 
   setStringToIntegralParameter<int>("ITERNORM","Rms",
@@ -2710,20 +2700,55 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::TSI::norm_l2,
       INPAR::TSI::norm_rms,
       INPAR::TSI::norm_inf),
-    &tsidyn
+    &tsidynmono
     );
+
+  // number of linear solver used for monolithic TSI
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI problems",&tsidynmono);
+
+  // convergence criteria adaptivity of monolithic TSI solver
+  setStringToIntegralParameter<int>("ADAPTCONV","No",
+                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+                               yesnotuple,yesnovalue,&tsidynmono);
+  DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tsidynmono);
 
   setStringToIntegralParameter<int>("INFNORMSCALING","yes",
     "Scale blocks of matrix with row infnorm?",
-    yesnotuple,yesnovalue,&tsidyn);
+    yesnotuple,yesnovalue,&tsidynmono);
 
-  // number of linear solver used for monolithic TSI
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI problems",&tsidyn);
+  // merge TSI block matrix to enable use of direct solver in monolithic TSI
+  // default: "No", i.e. use block matrix
+  BoolParameter("MERGE_TSI_BLOCK_MATRIX","No","Merge TSI block matrix",&tsidynmono);
 
   // in case of monolithic TSI nodal values (displacements, temperatures and
   // reaction forces) at fix points of the body can be calculated
   // default: "No", i.e. nothing is calculated
-  BoolParameter("CALC_NECKING_TSI_VALUES","No","Calculate nodal values for evaluation and validation of necking",&tsidyn);
+  BoolParameter("CALC_NECKING_TSI_VALUES","No","Calculate nodal values for evaluation and validation of necking",&tsidynmono);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for partitioned TSI */
+  Teuchos::ParameterList& tsidynpart = tsidyn.sublist(
+      "PARTITIONED",false,
+      "Partitioned Thermo Structure Interaction\n"
+      "Dynamic section for partitioned TSI"
+       );
+
+  // decide in partitioned TSI which one-way coupling or predictor should be used
+  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+    "Coupling variable",
+    tuple<std::string>(
+      "Displacement",
+      "Temperature"),
+    tuple<int>(0,1),
+    &tsidynpart
+    );
+
+  // Solver parameter for relaxation of iterative staggered partitioned TSI
+  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&tsidynpart);
+  DoubleParameter("FIXEDOMEGA",1.0,"fixed relaxation parameter",&tsidynpart);
+
+  // convergence tolerance of outer iteration loop
+  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteraiton within partitioned TSI",&tsidynpart);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& poroelastdyn = list->sublist(

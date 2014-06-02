@@ -98,23 +98,23 @@ TOLTEMP                         1e-07
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5                // 0.66
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-05
-TOLINC                          1e-05
-CALC_NECKING_TSI_VALUES         No                 // Yes,No
 COUPALGO                        tsi_monolithic     // tsi_{oneway,sequstagg,iterstagg,monolithic}
-COUPVARIABLE                    Temperature        // Displacement
 ITEMAX                          50
 ITEMIN                          1
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
-LINEAR_SOLVER                   3
 MAXTIME                         1200               // 8000
-NORMCOMBI_RESFINC               Coupl_And_Singl    // And,Or,{Coupl_}{Or,And}_Singl
 NORM_INC                        Abs                // Abs,Rel
-NORM_RESF                       Rel                // Abs,Mix
 NUMSTEP                         40000              // 400,800
 RESTARTEVRY                     10
 TIMESTEP                        400
 UPRES                           2                  // 5
+------------------------------------------------------TSI DYNAMIC/MONOLITHIC
+CONVTOL                         1e-05
+TOLINC                          1e-05
+CALC_NECKING_TSI_VALUES         No                 // Yes,No
+ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   3
+NORMCOMBI_RESFINC               Coupl_And_Singl    // And,Or,{Coupl_}{Or,And}_Singl
+NORM_RESF                       Rel                // Abs,Mix
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0

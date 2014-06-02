@@ -84,15 +84,16 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
 COUPALGO                        tsi_oneway  // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
-COUPVARIABLE                    Temperature  // Displacement,Temperature
 ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         200
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 UPRES                           1
+-----------------------------------------------------TSI DYNAMIC/PARTITIONED
+COUPVARIABLE                    Temperature  // Displacement,Temperature
+CONVTOL                         1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK

@@ -52,22 +52,23 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn =
     DRT::Problem::Instance()->TSIDynamicParams();
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidynpart =
+    DRT::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
 
-  // Get the parameters for the ConvergenceCheck
+  // get the parameters for the ConvergenceCheck
   itmax_ = tsidyn.get<int>("ITEMAX"); // default: =1
-  ittol_ = tsidyn.get<double>("CONVTOL"); // default: =1e-6
+  ittol_ = tsidynpart.get<double>("CONVTOL"); // default: =1e-6
   normtypeinc_
     = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
 
-  // decide if apply one-way coupling or full coupling
-   coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  // decide which coupling scheme is applied (e.g. one-way or full coupling)
+  coupling_
+    = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
-  // decide if one-way coupling or full coupling
-//  INPAR::TSI::SolutionSchemeOverFields coupling =
-//    DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   // coupling variable
   displacementcoupling_
-    = tsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
+    = tsidynpart.get<std::string>("COUPVARIABLE") == "Displacement";
   if (displacementcoupling_)
     std::cout << "Coupling variable: displacement" << std::endl;
   else
@@ -96,9 +97,9 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 //    exit(0);
 #endif // TSIPARTITIONEDASOUTPUT
 
-    // contact
-    if (StructureField()->ContactManager() != Teuchos::null)
-      ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
+  // contact
+  if (StructureField()->ContactManager() != Teuchos::null)
+    ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
 
 }  // cstr
 
@@ -563,9 +564,12 @@ void TSI::Partitioned::OuterIterationLoop()
     std::cout<<"**************************************************************\n";
   }
 
-  // call the TSI parameter list
+  // call the TSI parameter lists
   const Teuchos::ParameterList& tsidyn =
     DRT::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidynpart =
+    DRT::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
+
   // decide if one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
@@ -801,7 +805,7 @@ void TSI::Partitioned::OuterIterationLoop()
       {
         // constrain the Aitken factor in the 1st relaxation step of new time step
         // n+1 to maximal value maxomega
-        double maxomega = tsidyn.get<double>("MAXOMEGA");
+        double maxomega = tsidynpart.get<double>("MAXOMEGA");
         // omega_{n+1} = min( omega_n, maxomega ) with omega = 1-mu
         if ( (maxomega > 0.0) and (maxomega < 1-mu_) )
           mu_ = 1 - maxomega;
@@ -893,7 +897,7 @@ void TSI::Partitioned::OuterIterationLoop()
           // -------------------------------------------- relax the displacements
 
           // get fixed relaxation parameter
-          double fixedomega = tsidyn.get<double>("FIXEDOMEGA");
+          double fixedomega = tsidynpart.get<double>("FIXEDOMEGA");
           // fixed relaxation can be applied even in the 1st iteration
           // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
           //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
@@ -1028,7 +1032,7 @@ void TSI::Partitioned::OuterIterationLoop()
 
         // constrain the Aitken factor in the 1st relaxation step of new time step
         // n+1 to maximal value maxomega
-        double maxomega = tsidyn.get<double>("MAXOMEGA");
+        double maxomega = tsidynpart.get<double>("MAXOMEGA");
         // omega_{n+1} = min( omega_n, maxomega )
         if ( (maxomega > 0.0) and (maxomega < 1-mu_) )
           mu_ = 1 - maxomega;
@@ -1134,7 +1138,7 @@ void TSI::Partitioned::OuterIterationLoop()
           // ------------------------------------------- relax the temperatures
 
           // get fixed relaxation parameter
-          double fixedomega = tsidyn.get<double>("FIXEDOMEGA");
+          double fixedomega = tsidynpart.get<double>("FIXEDOMEGA");
           // fixed relaxation can be applied even in the 1st iteration
           // T^{i+1} = omega^{i+1} . T^{i+1} + (1- omega^{i+1}) T^i
           //         = T^i + omega^{i+1} * ( T^{i+1} - T^i )

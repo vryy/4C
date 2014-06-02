@@ -114,24 +114,22 @@ THETA                           0.66  // 0.5
 NAME                            THERMAL_SOLVER
 SOLVER                          UMFPACK  // UMFPACK,Superlu,undefined,Aztec_MSR
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
-TOLINC                          1e-06
 COUPALGO                        tsi_monolithic  // tsi_{oneway,sequstagg,iterstagg_{aitken,aitkenirons,fixedrelax},monolithic}
-COUPVARIABLE                    Displacement
-FIXEDOMEGA                      1
 ITEMAX                          10
 ITEMIN                          1
-ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
-LINEAR_SOLVER                   3
-MAXOMEGA                        0
 MAXTIME                         5
-NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,Coupl_Or_Singl,{And,Or}_Singl
 NORM_INC                        Abs
-NORM_RESF                       Rel  // Abs,Rel,Mix
 NUMSTEP                         10
 RESTARTEVRY                     1
 TIMESTEP                        0.05
 UPRES                           1
+------------------------------------------------------TSI DYNAMIC/MONOLITHIC
+CONVTOL                         1e-06
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   3
+NORM_RESF                       Rel  // Abs,Rel,Mix
+NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,Coupl_Or_Singl,{And,Or}_Singl
+TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 3
 AZBDIAG                         0
 AZCONV                          AZ_r0

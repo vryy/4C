@@ -106,22 +106,25 @@ TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
-TOLINC                          1e-06
 COUPALGO                        tsi_monolithic
-COUPVARIABLE                    Displacement
 ITEMAX                          15
 ITEMIN                          1
-ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
-LINEAR_SOLVER                   3
 MAXTIME                         50  // 1000
-NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,Coupl_Or_Singl,{And,Or}_Singl
 NORM_INC                        Abs
-NORM_RESF                       Rel   // Abs,Rel,Mix
 NUMSTEP                         4  // 200000
 RESTARTEVRY                     50
 TIMESTEP                        0.05
 UPRES                           1  // 10
+------------------------------------------------------TSI DYNAMIC/MONOLITHIC
+CONVTOL                         1e-06
+TOLINC                          1e-06
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   3
+NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,Coupl_Or_Singl,{And,Or}_Singl
+NORM_RESF                       Rel   // Abs,Rel,Mix
+-----------------------------------------------------TSI DYNAMIC/PARTITIONED
+COUPVARIABLE                    Displacement
+CONVTOL                         1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 AZBDIAG                         0

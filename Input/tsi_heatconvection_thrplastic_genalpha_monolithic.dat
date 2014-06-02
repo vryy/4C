@@ -126,22 +126,22 @@ GENAVG                          TrLike
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5                           // 1.0
 -----------------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
-TOLINC                          1e-07
 COUPALGO                        tsi_monolithic                // tsi_oneway,tsi_sequstagg,tsi_iterstagg,tsi_monolithic
-COUPVARIABLE                    Displacement                  // Temperature
 ITEMAX                          50
 ITEMIN                          1
-ITERNORM                        Rms                           // Rms,L2,Inf,L1_Scaled
-LINEAR_SOLVER                   1
 MAXTIME                         4.0
-NORMCOMBI_RESFINC               Coupl_And_Singl               // And,Or,{{Coupl_}And,Or}_Singl
 NORM_INC                        Abs                           // Abs,Rel
-NORM_RESF                       Rel                           // Abs,Mix
 NUMSTEP                         30                            // 400,800
 RESTARTEVRY                     5
 TIMESTEP                        0.1                           // 0.05
 UPRES                           1
+---------------------------------------------TSI DYNAMIC/MONOLITHIC
+CONVTOL                         1e-06
+TOLINC                          1e-07
+ITERNORM                        Rms                           // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   1
+NORMCOMBI_RESFINC               Coupl_And_Singl               // And,Or,{{Coupl_}And,Or}_Singl
+NORM_RESF                       Rel                           // Abs,Mix
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0

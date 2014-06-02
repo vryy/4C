@@ -69,26 +69,26 @@ TSI::Monolithic::Monolithic(
   const Teuchos::ParameterList& sdynparams
   )
 : Algorithm(comm),
-  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV") == 1),
-  solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),"ADAPTCONV") == 1),
+  solveradaptolbetter_(((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")).get<double>("ADAPTCONV_BETTER")),
   printiter_(true),  // ADD INPUT PARAMETER
   printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
   errfile_(NULL),
   zeros_(Teuchos::null),
   strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
   tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
+  tsidynmono_( (DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC") ),
   blockrowdofmap_(Teuchos::null),
   systemmatrix_(Teuchos::null),
   k_st_(Teuchos::null),
   k_ts_(Teuchos::null),
-  merge_tsi_blockmatrix_(DRT::INPUT::IntegralValue<bool>(tsidyn_,"MERGE_TSI_BLOCK_MATRIX")),
-  iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(tsidyn_,"ITERNORM")),
+  merge_tsi_blockmatrix_(DRT::INPUT::IntegralValue<bool>(tsidynmono_,"MERGE_TSI_BLOCK_MATRIX")),
+  iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(tsidynmono_,"ITERNORM")),
   iter_(0),
   sdyn_(sdynparams),
   timernewton_(comm),
   veln_(Teuchos::null)
 {
-
   // access the thermal parameter lists
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
@@ -172,7 +172,7 @@ TSI::Monolithic::Monolithic(
   }
 
 #ifndef TFSI
-  if ( (DRT::INPUT::IntegralValue<bool>(tsidyn_,"CALC_NECKING_TSI_VALUES") == true)
+  if ( (DRT::INPUT::IntegralValue<bool>(tsidynmono_,"CALC_NECKING_TSI_VALUES") == true)
        and (Comm().MyPID() == 0) )
     std::cout
     << "CAUTION: calculation ONLY valid for necking of a cylindrical body!"
@@ -238,7 +238,7 @@ void TSI::Monolithic::PrepareTimeStep()
 void TSI::Monolithic::CreateLinearSolver()
 {
   // get the solver number used for linear TSI solver
-  const int linsolvernumber = tsidyn_.get<int>("LINEAR_SOLVER");
+  const int linsolvernumber = tsidynmono_.get<int>("LINEAR_SOLVER");
   // check if the TSI solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for monolithic TSI. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
@@ -593,7 +593,7 @@ void TSI::Monolithic::NewtonFull()
 
   // for validation with literature calculate nodal TSI values
 
-  if ((DRT::INPUT::IntegralValue<bool>(tsidyn_,"CALC_NECKING_TSI_VALUES")) == true)
+  if ((DRT::INPUT::IntegralValue<bool>(tsidynmono_,"CALC_NECKING_TSI_VALUES")) == true)
     CalculateNeckingTSIResults();
 
 }  // NewtonFull()
@@ -2689,7 +2689,7 @@ void TSI::Monolithic::ScaleSystem(
 {
   //should we scale the system?
   const bool scaling_infnorm
-    = (bool)DRT::INPUT::IntegralValue<int>(tsidyn_,"INFNORMSCALING");
+    = (bool)DRT::INPUT::IntegralValue<int>(tsidynmono_,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -2741,7 +2741,7 @@ void TSI::Monolithic::UnscaleSolution(
   )
 {
   const bool scaling_infnorm
-    = (bool)DRT::INPUT::IntegralValue<int>(tsidyn_,"INFNORMSCALING");
+    = (bool)DRT::INPUT::IntegralValue<int>(tsidynmono_,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -2864,7 +2864,7 @@ void TSI::Monolithic::SetDefaultParameters()
   normtypeinc_
     = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn_,"NORM_INC");
   normtyperhs_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn_,"NORM_RESF");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidynmono_,"NORM_RESF");
   // what kind of norm do we wanna test for the single fields
   normtypedisi_
     = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_,"NORM_DISP");
@@ -2880,7 +2880,7 @@ void TSI::Monolithic::SetDefaultParameters()
     = DRT::INPUT::IntegralValue<INPAR::THR::VectorNorm>(tdyn,"ITERNORM");
   // in total when do we reach a converged state for complete problem
   combincrhs_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn_,"NORMCOMBI_RESFINC");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidynmono_,"NORMCOMBI_RESFINC");
 
 #ifndef TFSI
   switch (combincrhs_)
@@ -2988,8 +2988,8 @@ void TSI::Monolithic::SetDefaultParameters()
   }
 
   // test the TSI-residual and the TSI-increment
-  tolinc_ = tsidyn_.get<double>("TOLINC");
-  tolrhs_ = tsidyn_.get<double>("CONVTOL");
+  tolinc_ = tsidynmono_.get<double>("TOLINC");
+  tolrhs_ = tsidynmono_.get<double>("CONVTOL");
 
   // get the single field tolerances from this field itselves
   toldisi_ = sdyn_.get<double>("TOLDISP");
