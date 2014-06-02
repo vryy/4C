@@ -198,6 +198,11 @@ void FluidFilter::WriteAllResults(PostField* field)
   //additional output for biofilm problems
   writer_->WriteResult("fld_growth_displ", "fld_growth_displ", dofbased, field->problem()->num_dim());
 
+  // additional output for HDG
+  writer_->WriteResult("velnp_hdg", "velocity", nodebased, field->problem()->num_dim());
+  writer_->WriteResult("pressure_hdg", "pressure", nodebased, 1);
+  writer_->WriteResult("tracevel_hdg", "trace_velocity", nodebased, field->problem()->num_dim());
+
   WriteElementResults(field);
 }
 

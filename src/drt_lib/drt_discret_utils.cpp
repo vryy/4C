@@ -98,7 +98,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       !solveparams.isSublist("MueLu (Contact2) Parameters") &&
       !solveparams.isSublist("MueLu (Contact3) Parameters") &&
       !solveparams.isSublist("MueLu (PenaltyContact) Parameters") &&
-	  !solveparams.isSublist("Stratimikos Parameters")) return;
+      !solveparams.isSublist("Stratimikos Parameters")) return;
   Teuchos::ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("Stratimikos Parameters"))
   {

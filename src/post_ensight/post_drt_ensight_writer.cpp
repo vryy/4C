@@ -1830,7 +1830,8 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
       );
   }
   else if(field_->problem()->SpatialApproximation()=="Polynomial" or
-          field_->problem()->SpatialApproximation()=="Meshfree")
+          field_->problem()->SpatialApproximation()=="Meshfree" or
+          field_->problem()->SpatialApproximation()=="HDG")
   {
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)

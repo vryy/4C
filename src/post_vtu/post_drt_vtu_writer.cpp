@@ -81,16 +81,16 @@ std::pair<uint8_t,std::vector<int> > vtk_element_types [DRT::Element::max_distyp
     std::pair<uint8_t,std::vector<int> > (14, make_vector<int>() << 0 << 1 << 2 << 3 << 4), // pyramid5
     std::pair<uint8_t,std::vector<int> > (3, make_vector<int>() << 0 << 1),                 // line2
     std::pair<uint8_t,std::vector<int> > (21, make_vector<int>() << 0 << 1 << 2),           // line3
-    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line4 -> mapped onto line3
-    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line5 -> mapped onto line3
-    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line6 -> mapped onto line3
-    std::pair<uint8_t,std::vector<int> > (1, std::vector<int>()),  // point1
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs2, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs3, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs4, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs9, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()), // nurbs8, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>())  // nurbs27, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line4
+    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line5 -> mapped onto line4
+    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line6 -> mapped onto line4
+    std::pair<uint8_t,std::vector<int> > (1, make_vector<int>() << 0),                      // point1
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs2, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs3, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs4, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs9, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs8, not yet implemented
+    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>())     // nurbs27, not yet implemented
 };
 
 
