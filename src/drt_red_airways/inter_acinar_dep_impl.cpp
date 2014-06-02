@@ -283,8 +283,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
         {
 
         }
-
-        if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
+        if (Bc == "pressure" || Bc == "VolumeDependentPleuralPressure")
         {
           Teuchos::RCP<Epetra_Vector> bcval  = params.get<Teuchos::RCP<Epetra_Vector> >("bcval");
           Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector> >("dbctog");
@@ -295,20 +294,55 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-          if (Bc == "ExponentialPleuralPressure")
+          if (Bc == "VolumeDependentPleuralPressure")
           {
-            const double ap =  -977.203;
-            const double bp = -3338.290;
-            const double cp =    -7.686;
-            const double dp =  2034.470;
-            const double VFR   = 1240000.0;
-            const double TLC   = 4760000.0 - VFR;
+            DRT::Condition * pplCond = ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
+            double Pp_np = 0.0;
+            if (pplCond)
+            {
+              const  std::vector<int>*    curve  = pplCond->Get<std::vector<int>    >("curve");
+              double curvefac = 1.0;
+              const  std::vector<double>* vals   = pplCond->Get<std::vector<double> >("val");
 
-            const double lungVolumenp = params.get<double>("lungVolume_np") - VFR;
+              // -----------------------------------------------------------------
+              // Read in the value of the applied BC
+              //
+              // -----------------------------------------------------------------
+              if((*curve)[0]>=0)
+              {
+                curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+              }
 
-            const double TLCnp= lungVolumenp/TLC;
+              std::string ppl_Type = *(pplCond->Get<std::string>("TYPE"));
 
-            double Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
+              double ap = pplCond->GetDouble("P_PLEURAL_0");
+              double bp = pplCond->GetDouble("P_PLEURAL_LIN");
+              double cp = pplCond->GetDouble("P_PLEURAL_NONLIN");
+              double dp = pplCond->GetDouble("TAU");
+              double RV    = pplCond->GetDouble("VFR");
+              double TLC   = pplCond->GetDouble("TLC");
+              const double lungVolumenp = params.get<double>("lungVolume_n") - RV;
+              const double TLCnp= lungVolumenp/(TLC-RV);
+
+
+              if (ppl_Type == "Exponential")
+              {
+                Pp_np = ap +  bp*TLCnp+ cp*exp(dp*TLCnp);
+              }
+              else if (ppl_Type == "Polynomial")
+              {
+                Pp_np = -pow(1.0/(TLCnp+RV/(TLC-RV)),dp)*cp + bp*TLCnp + ap;
+              }
+              else
+              {
+                dserror("Unknown volume pleural pressure type: %s",ppl_Type.c_str());
+              }
+              Pp_np *= curvefac*((*vals)[0]);
+            }
+            else
+            {
+              dserror("No volume dependent pleural pressure condition was defined");
+            }
             BCin += Pp_np;
           }
 

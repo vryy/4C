@@ -707,7 +707,7 @@ void RedAirwayMonWriter::WriteResult(
   outfile << std::right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
-  int offset2 = pmap.MinAllGID();
+//  int offset2 = pmap.MinAllGID();
 
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
