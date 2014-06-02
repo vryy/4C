@@ -1697,92 +1697,197 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
       reafvel.Multiply(reatensor,fvelint);
     }
 
-    for (int k=0; k<numnod_; k++)
+    for(int idim=0; idim<numdim_; idim++)
     {
-      const int fk = numdim_*k;
-      const double fac = detJ_w* shapefct(k);
-      const double v = fac * porosity * porosity* J * J;
+      const double reafvel_idim = reafvel(idim);
+      const double reavel_idim = reavel(idim);
+      const double Finvgradp_idim = Finvgradp(idim);
 
-      for(int j=0; j<numdim_; j++)
+      for (int inode=0; inode<numnod_; inode++)
       {
+        const double fac = detJ_w* shapefct(inode);
+        const double v = fac * porosity * porosity* J * J;
+        const int fk = numdim_*inode;
 
         /*-------structure- fluid velocity coupling:  RHS
          "dracy-terms"
-         - reacoeff * J^2 *  phi^2 *  v^f
+         - reacoeff * idim^2 *  phi^2 *  v^f
          */
-        (*force)(fk+j) += -v * reafvel(j);
+        (*force)(fk+idim) += -v * reafvel_idim;
 
         /* "reactive dracy-terms"
-         reacoeff * J^2 *  phi^2 *  v^s
+         reacoeff * idim^2 *  phi^2 *  v^s
          */
-        (*force)(fk+j) += v * reavel(j);
+        (*force)(fk+idim) += v * reavel_idim;
 
         /*-------structure- fluid pressure coupling: RHS
          *                        "pressure gradient terms"
-         - J *  F^-T * Grad(p) * phi
+         - idim *  F^-T * Grad(p) * phi
          */
-        (*force)(fk+j) += fac * J * Finvgradp(j) * ( - porosity);
+        (*force)(fk+idim) += fac * J * Finvgradp_idim * ( - porosity);
+      }
+    }
 
-        for(int i=0; i<numnod_; i++)
+    for(int idim=0; idim<numdim_; idim++)
+    {
+      for (int jdim=0; jdim<numdim_; jdim++)
+      {
+        const double reatensor_i_j = reatensor(idim,jdim);
+
+        for (int inode=0; inode<numnod_; inode++)
         {
-          const int fi = numdim_*i;
+          const int fk = numdim_*inode;
+          const double v = detJ_w* shapefct(inode) * porosity * porosity* J * J;
 
-          for (int l=0; l<numdim_; l++)
+          for(int jnode=0; jnode<numnod_; jnode++)
           {
-            const double dphi_dus_ = dphi_dus(fi+l);
-            const double dJ_dus_ = dJ_dus(fi+l);
+            const int fi = numdim_*jnode;
 
             /* additional "reactive darcy-term"
-             detJ * w(gp) * ( J^2 * reacoeff * phi^2  ) * D(v_s)
+             detJ * w(gp) * ( idim^2 * reacoeff * phi^2  ) * D(v_s)
              */
-            erea_v(fk+j,fi+l) += v * reatensor(j,l) * shapefct(i);
-
-            /* additional "pressure gradient term"
-             -  detJ * w(gp) * phi *  ( dJ/d(us) * F^-T * Grad(p) - J * d(F^-T)/d(us) *Grad(p) ) * D(us)
-             - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
-             */
-            (*stiffmatrix)(fk+j,fi+l) += fac * (
-                                              - porosity * dJ_dus_ * Finvgradp(j)
-                                              - porosity * J * dFinvdus_gradp(j, fi+l)
-                                              - dphi_dus_ * J * Finvgradp(j)
-                                            )
-            ;
-
-            /* additional "reactive darcy-term"
-               detJ * w(gp) * 2 * ( dJ/d(us) * vs * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
-             - detJ * w(gp) *  2 * ( J * dJ/d(us) * v^f * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
-             */
-            (*stiffmatrix)(fk+j,fi+l) += fac * J * porosity *  2 * ( reavel(j) - reafvel(j) ) *
-                                            ( porosity * dJ_dus_ + J * dphi_dus_ );
-
-            //check if derivatives of reaction tensor are zero --> significant speed up
-            if (fluidmat_->PermeabilityFunction() == MAT::PAR::const_)
-            {
-              for (int m=0; m<numdim_; ++m)
-                for (int n=0; n<numdim_; ++n)
-                  for (int p=0; p<numdim_; ++p)
-                    (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
-                                                    dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
-                                                  + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
-                                                  );
-            } //const permeability function
-            else
-            {
-              for (int m=0; m<numdim_; ++m)
-                for (int n=0; n<numdim_; ++n)
-                  for (int p=0; p<numdim_; ++p)
-                    (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
-                                                    dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
-                                                  + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
-                                                  + defgrd_inv(m,j) * (
-                                                  linreac_dphi(m,n) * dphi_dus_ + linreac_dJ(m,n) * dJ_dus_
-                                                  ) * defgrd_inv(n,p)
-                                                  );
-            } //any other permeability function
+            erea_v(fk+idim,fi+jdim) += v * reatensor_i_j * shapefct(jnode);
           }
         }
       }
     }
+
+    for(int idim=0; idim<numdim_; idim++)
+    {
+      const double Finvgradp_j = Finvgradp(idim);
+
+      for (int jdim=0; jdim<numdim_; jdim++)
+      {
+        for(int jnode=0; jnode<numnod_; jnode++)
+        {
+          const int fi = numdim_*jnode;
+
+          const double val =  detJ_w* (
+                                      - porosity * dJ_dus(fi+jdim) * Finvgradp_j
+                                      - porosity * J * dFinvdus_gradp(idim, fi+jdim)
+                                      - dphi_dus(fi+jdim) * J * Finvgradp_j
+                                    );
+
+          for (int inode=0; inode<numnod_; inode++)
+          {
+            /* additional "pressure gradient term"
+             -  detJ * w(gp) * phi *  ( dJ/d(us) * F^-T * Grad(p) - J * d(F^-T)/d(us) *Grad(p) ) * D(us)
+             - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
+             */
+            (*stiffmatrix)(numdim_*inode+idim,fi+jdim) += shapefct(inode) * val;
+          }
+        }
+      }
+    }
+
+    for(int idim=0; idim<numdim_; idim++)
+    {
+      const double reavel_j = reavel(idim);
+      const double reafvel_j = reafvel(idim);
+
+      for (int jdim=0; jdim<numdim_; jdim++)
+      {
+
+        for(int jnode=0; jnode<numnod_; jnode++)
+        {
+          const int fi = numdim_*jnode;
+          const double val = detJ_w*J * porosity *  2 * ( reavel_j - reafvel_j ) *
+                            ( porosity * dJ_dus(fi+jdim) + J * dphi_dus(fi+jdim) );
+
+          for (int inode=0; inode<numnod_; inode++)
+          {
+            /* additional "reactive darcy-term"
+               detJ * w(gp) * 2 * ( dJ/d(us) * vs * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
+             - detJ * w(gp) *  2 * ( J * dJ/d(us) * v^f * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
+             */
+            (*stiffmatrix)(numdim_*inode+idim,fi+jdim) += shapefct(inode) * val;
+          }
+        }
+      }
+    }
+
+    //check if derivatives of reaction tensor are zero --> significant speed up
+    if (fluidmat_->PermeabilityFunction() == MAT::PAR::const_)
+    {
+      const double fac = detJ_w*porosity * porosity* J * J;
+      for(int idim=0; idim<numdim_; idim++)
+      {
+        for (int jdim=0; jdim<numdim_; jdim++)
+        {
+          for(int jnode=0; jnode<numnod_; jnode++)
+          {
+            const int fi = numdim_*jnode;
+
+             for (int inode=0; inode<numnod_; inode++)
+            {
+               double val = 0.0;
+               for (int p=0; p<numdim_; ++p)
+               {
+                 const double velint_p = velint(p);
+                 const double fvelint_p = fvelint(p);
+                 for (int n=0; n<numdim_; ++n)
+                 {
+                   const double defgrd_inv_n_p = defgrd_inv(n,p);
+                   const double dFinvTdus_n_p = dFinvTdus(p*numdim_+n,fi+jdim);
+                   for (int m=0; m<numdim_; ++m)
+                   {
+                     val += fac* ( velint_p - fvelint_p ) * (
+                                       dFinvTdus(idim*numdim_+m,fi+jdim) * matreatensor(m,n) * defgrd_inv_n_p
+                                     + defgrd_inv(m,idim) * matreatensor(m,n) * dFinvTdus_n_p);
+                   }
+                 }
+               }
+
+              (*stiffmatrix)(numdim_*inode+idim,fi+jdim) += shapefct(inode) * val;
+            }
+          }
+        }
+      }
+    }//const permeability function
+    else
+    {
+      const double fac = detJ_w*porosity * porosity* J * J;
+      for(int idim=0; idim<numdim_; idim++)
+      {
+        for (int jdim=0; jdim<numdim_; jdim++)
+        {
+          for(int jnode=0; jnode<numnod_; jnode++)
+          {
+            const int fi = numdim_*jnode;
+            const double dphi_dus_fi_l = dphi_dus(fi+jdim);
+            const double dJ_dus_fi_l = dJ_dus(fi+jdim);
+
+            for (int inode=0; inode<numnod_; inode++)
+            {
+              double val = 0.0;
+              for (int m=0; m<numdim_; ++m)
+              {
+                const double dFinvTdus_idim_m_fi_jdim = dFinvTdus(idim*numdim_+m,fi+jdim);
+                const double defgrd_inv_m_idim = defgrd_inv(m,idim);
+                for (int n=0; n<numdim_; ++n)
+                {
+                  const double matreatensor_m_n = matreatensor(m,n);
+                  const double linreac_dphi_m_n = linreac_dphi(m,n);
+                  const double linreac_dJ_m_n = linreac_dJ(m,n);
+
+                  for (int p=0; p<numdim_; ++p)
+                  {
+                    val += fac* ( velint(p) - fvelint(p) ) * (
+                        dFinvTdus_idim_m_fi_jdim * matreatensor_m_n * defgrd_inv(n,p)
+                      + defgrd_inv_m_idim * matreatensor_m_n * dFinvTdus(p*numdim_+n,fi+jdim)
+                      + defgrd_inv_m_idim * (
+                          linreac_dphi_m_n * dphi_dus_fi_l + linreac_dJ_m_n * dJ_dus_fi_l
+                      ) * defgrd_inv(n,p)
+                      );
+                  }
+                }
+              }
+              (*stiffmatrix)(numdim_*inode+idim,fi+jdim) += val * shapefct(inode);
+            }
+          }
+        }
+      }
+    }//any other permeability function
 
     //inverse Right Cauchy-Green tensor as vector
     LINALG::Matrix<numstr_,1> C_inv_vec;
@@ -1889,42 +1994,79 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkman(
   //evaluate viscous terms (for darcy-brinkman flow only)
   //if (stiffmatrix != NULL)
   {
-    LINALG::Matrix<numdim_,numdim_> tmp4;
-    tmp4.MultiplyNT(fvelder,defgrd_inv);
+    static LINALG::Matrix<numdim_,numdim_> tmp;
+    tmp.MultiplyNT(fvelder,defgrd_inv);
 
     double fac = detJ_w * visc;
 
     LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
-    for (int n=0; n<numnod_; ++n)
-      for (int k=0; k<numdim_; ++k)
-      {
-        const int gid = n*numdim_+k;
+    {
+      const double tmp_0_0 = tmp(0,0);
+      const double tmp_0_1 = tmp(0,1);
+      const double tmp_0_2 = tmp(0,2);
+      const double tmp_1_0 = tmp(1,0);
+      const double tmp_1_1 = tmp(1,1);
+      const double tmp_1_2 = tmp(1,2);
+      const double tmp_2_0 = tmp(2,0);
+      const double tmp_2_1 = tmp(2,1);
+      const double tmp_2_2 = tmp(2,2);
 
-        fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
-        fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
-        fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
-        /* ~~~ */
-        fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
-                              + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
-        fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
-                              + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
-        fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
-                              + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
+      const double CinvFvel_0_0 = CinvFvel(0,0);
+      const double CinvFvel_0_1 = CinvFvel(0,1);
+      const double CinvFvel_0_2 = CinvFvel(0,2);
+      const double CinvFvel_1_0 = CinvFvel(1,0);
+      const double CinvFvel_1_1 = CinvFvel(1,1);
+      const double CinvFvel_1_2 = CinvFvel(1,2);
+      const double CinvFvel_2_0 = CinvFvel(2,0);
+      const double CinvFvel_2_1 = CinvFvel(2,1);
+      const double CinvFvel_2_2 = CinvFvel(2,2);
 
-        for(int j=0; j<numdim_; j++)
+      for (int n=0; n<numnod_; ++n)
+        for (int k=0; k<numdim_; ++k)
         {
-          fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
-          fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
-          fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
+          const int gid = n*numdim_+k;
+
+          fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp_0_0 + dCinv_dus(3,gid)*tmp_1_0 + dCinv_dus(5,gid)*tmp_2_0 );
+          fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp_0_1 + dCinv_dus(1,gid)*tmp_1_1 + dCinv_dus(4,gid)*tmp_2_1 );
+          fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp_0_2 + dCinv_dus(4,gid)*tmp_1_2 + dCinv_dus(2,gid)*tmp_2_2 );
           /* ~~~ */
-          fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
-                                + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
-          fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
-                                + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
-          fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
-                                + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
+          fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp_0_1 + dCinv_dus(3,gid)*tmp_1_1 + dCinv_dus(5,gid)*tmp_2_1
+                                + dCinv_dus(3,gid)*tmp_0_0 + dCinv_dus(1,gid)*tmp_1_0 + dCinv_dus(4,gid)*tmp_2_0;
+          fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp_0_2 + dCinv_dus(1,gid)*tmp_1_2 + dCinv_dus(4,gid)*tmp_2_2
+                                + dCinv_dus(5,gid)*tmp_0_1 + dCinv_dus(4,gid)*tmp_1_1 + dCinv_dus(2,gid)*tmp_2_1;
+          fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp_0_0 + dCinv_dus(4,gid)*tmp_1_0 + dCinv_dus(2,gid)*tmp_2_0
+                                + dCinv_dus(0,gid)*tmp_0_2 + dCinv_dus(3,gid)*tmp_1_2 + dCinv_dus(5,gid)*tmp_2_2;
+
+          fstress_dus(0,gid) +=  2*CinvFvel_0_0 * dFinvTdus(0*numdim_  ,gid)
+                                +2*CinvFvel_0_1 * dFinvTdus(1*numdim_  ,gid)
+                                +2*CinvFvel_0_2 * dFinvTdus(2*numdim_  ,gid);
+          fstress_dus(1,gid) +=  2*CinvFvel_1_0 * dFinvTdus(0*numdim_+1,gid)
+                                +2*CinvFvel_1_1 * dFinvTdus(1*numdim_+1,gid)
+                                +2*CinvFvel_1_2 * dFinvTdus(2*numdim_+1,gid);
+          fstress_dus(2,gid) +=  2*CinvFvel_2_0 * dFinvTdus(0*numdim_+2,gid)
+                                +2*CinvFvel_2_1 * dFinvTdus(1*numdim_+2,gid)
+                                +2*CinvFvel_2_2 * dFinvTdus(2*numdim_+2,gid);
+          /* ~~~ */
+          fstress_dus(3,gid) += + CinvFvel_0_0 * dFinvTdus(0*numdim_+1,gid)
+                                + CinvFvel_1_0 * dFinvTdus(0*numdim_  ,gid)
+                                + CinvFvel_0_1 * dFinvTdus(1*numdim_+1,gid)
+                                + CinvFvel_1_1 * dFinvTdus(1*numdim_  ,gid)
+                                + CinvFvel_0_2 * dFinvTdus(2*numdim_+1,gid)
+                                + CinvFvel_1_2 * dFinvTdus(2*numdim_  ,gid);
+          fstress_dus(4,gid) += + CinvFvel_1_0 * dFinvTdus(0*numdim_+2,gid)
+                                + CinvFvel_2_0 * dFinvTdus(0*numdim_+1,gid)
+                                + CinvFvel_1_1 * dFinvTdus(1*numdim_+2,gid)
+                                + CinvFvel_2_1 * dFinvTdus(1*numdim_+1,gid)
+                                + CinvFvel_1_2 * dFinvTdus(2*numdim_+2,gid)
+                                + CinvFvel_2_2 * dFinvTdus(2*numdim_+1,gid);
+          fstress_dus(5,gid) += + CinvFvel_2_0 * dFinvTdus(0*numdim_  ,gid)
+                                + CinvFvel_0_0 * dFinvTdus(0*numdim_+2,gid)
+                                + CinvFvel_2_1 * dFinvTdus(1*numdim_  ,gid)
+                                + CinvFvel_0_1 * dFinvTdus(1*numdim_+2,gid)
+                                + CinvFvel_2_2 * dFinvTdus(2*numdim_  ,gid)
+                                + CinvFvel_0_2 * dFinvTdus(2*numdim_+2,gid);
         }
-      }
+    }
 
     LINALG::Matrix<numdof_,numdof_> fluidstress_part;
 
@@ -1996,58 +2138,111 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
   LINALG::Matrix<numdim_,numnod_> FinvNXYZ;
   FinvNXYZ.MultiplyTN(defgrd_inv, N_XYZ);
 
-  for (int i=0; i<numnod_; i++)
   {
-    const int fi = numdim_*i;
-    const double fac = detJ_w* shapefct(i);
-
-    for(int j=0; j<numdim_; j++)
+    const double fac = detJ_w * J * J * 2 * porosity * dphi_dp;
+    for(int idim=0; idim<numdim_; idim++)
     {
-      for(int k=0; k<numnod_; k++)
+      const double reafvel_idim = reafvel(idim);
+      const double reavel_idim = reavel(idim);
+
+      for(int jnode=0; jnode<numnod_; jnode++)
       {
-        const int fkp1 = (numdim_ + 1)*k;
+        const int fkp1 = (numdim_ + 1)*jnode;
 
-        /*-------structure- fluid pressure coupling: "stress terms" + "pressure gradient terms"
-         -B^T . ( -1*J*C^-1 ) * Dp
-         - J * F^-T * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
-         */
-        (*stiffmatrix)(fi+j, fkp1+numdim_ ) +=  detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k)
-                            - fac * J * (   Finvgradp(j) * dphi_dp * shapefct(k)
-                                          + porosity * FinvNXYZ(j,k) )
-                                          ;
-
-        /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
-         - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
-         + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
-         + J * J * phi * phi * defgrd_^-T * d(mat_reacoeff)/d(phi) * defgrd_^-1 * (v^s-v^f) * d(phi)/dp Dp
-         */
-        const double tmp = fac * J * J * 2 * porosity * dphi_dp * shapefct(k);
-        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += -tmp * reafvel(j);
-
-        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += tmp * reavel(j);
-
-        //check if derivatives of reaction tensor are zero --> significant speed up
-        if (fluidmat_->PermeabilityFunction() != MAT::PAR::const_)
+        const double val = fac * shapefct(jnode) * (reavel_idim - reafvel_idim);
+        for (int inode=0; inode<numnod_; inode++)
         {
-          const double tmp2 = 0.5 * tmp * porosity;
-          for (int m=0; m<numdim_; ++m)
+          /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
+           - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
+           + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
+           */
+          (*stiffmatrix)(numdim_*inode+idim, fkp1+numdim_ ) += shapefct(inode) * val;
+        }
+      }
+    }
+  }
+
+  {
+    for(int idim=0; idim<numdim_; idim++)
+    {
+      const double Finvgradp_idim = Finvgradp(idim);
+      for(int jnode=0; jnode<numnod_; jnode++)
+      {
+        const int fkp1 = (numdim_ + 1)*jnode;
+
+        const double val1 = detJ_w * ( -1.0) * J * shapefct(jnode);
+        const double val2 = -1.0 * detJ_w * J * (   Finvgradp_idim * dphi_dp * shapefct(jnode)
+                                                  + porosity * FinvNXYZ(idim,jnode) );
+
+        for (int inode=0; inode<numnod_; inode++)
+        {
+          /*-------structure- fluid pressure coupling: "stress terms" + "pressure gradient terms"
+           -B^T . ( -1*J*C^-1 ) * Dp
+           - J * F^-T * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
+           */
+          (*stiffmatrix)(numdim_*inode+idim, fkp1+numdim_ ) +=  val1 * cinvb(numdim_*inode+idim)
+                                                   + val2 * shapefct(inode)
+                                            ;
+
+        }
+      }
+    }
+  }
+
+  //check if derivatives of reaction tensor are zero --> significant speed up
+  if (fluidmat_->PermeabilityFunction() != MAT::PAR::const_)
+  {
+    const double fac = detJ_w * J * J * porosity * porosity * dphi_dp;
+    for(int idim=0; idim<numdim_; idim++)
+    {
+      for(int jnode=0; jnode<numnod_; jnode++)
+      {
+        const int fkp1 = (numdim_ + 1)*jnode;
+        const double shapefct_jnode = shapefct(jnode);
+
+        for (int inode=0; inode<numnod_; inode++)
+        {
+          double val=0.0;
+          for (int p=0; p<numdim_; ++p)
           {
+            const double velint_fvelint_p = velint(p) - fvelint(p) ;
             for (int n=0; n<numdim_; ++n)
             {
-              for (int p=0; p<numdim_; ++p)
+              const double defgrd_inv_n_p = defgrd_inv(n,p);
+              for (int m=0; m<numdim_; ++m)
               {
-                (*stiffmatrix)(fi+j, fkp1+numdim_ ) +=  tmp2 * defgrd_inv(m,j) * linreac_dphi(m,n) * defgrd_inv(n,p) *
-                                            ( velint(p) - fvelint(p) );
+                val += fac * defgrd_inv(m,idim) * linreac_dphi(m,n) * defgrd_inv_n_p * velint_fvelint_p;
               }
             }
           }
+          val*=shapefct_jnode;
+
+          /*-------structure- fluid pressure coupling:   "reactive darcy-terms"
+           + J * J * phi * phi * defgrd_^-T * d(mat_reacoeff)/d(phi) * defgrd_^-1 * (v^s-v^f) * d(phi)/dp Dp
+           */
+          (*stiffmatrix)(numdim_*inode+idim, fkp1+numdim_ ) +=  shapefct(inode) * val;
         }
-        /*-------structure- fluid velocity coupling:  "darcy-terms"
-         -reacoeff * J * J *  phi^2 *  Dv^f
-         */
-        const double v = fac * J * J * porosity * porosity;
-        for(int l=0; l<numdim_; l++)
-          (*stiffmatrix)(fi+j, fkp1+l) += -v * reatensor(j,l) * shapefct(k);
+      }
+    }
+  }
+
+  {
+    const double fac = detJ_w * J * J * porosity * porosity;
+    for(int idim=0; idim<numdim_; idim++)
+    {
+      for(int jdim=0; jdim<numdim_; jdim++)
+      {
+        const double reatensor_idim_jdim = reatensor(idim,jdim);
+        for(int jnode=0; jnode<numnod_; jnode++)
+        {
+          const double val = -1.0 * fac * shapefct(jnode) * reatensor_idim_jdim;
+
+          /*-------structure- fluid velocity coupling:  "darcy-terms"
+           -reacoeff * J * J *  phi^2 *  Dv^f
+           */
+          for (int inode=0; inode<numnod_; inode++)
+            (*stiffmatrix)(numdim_*inode+idim, (numdim_ + 1)*jnode+jdim) += val * shapefct(inode);
+        }
       }
     }
   }
@@ -2097,19 +2292,26 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
 
   //dfstress/dv^f
   LINALG::Matrix<numstr_,numdof_> dfstressb_dv;
-  for (int i=0; i<numnod_; i++)
+  for(int j=0; j<numdim_; j++)
   {
-    const int fi = numdim_*i;
-    for(int j=0; j<numdim_; j++)
+    const double C_inv_0_j = C_inv(0,j);
+    const double C_inv_1_j = C_inv(0,j);
+    const double C_inv_2_j = C_inv(0,j);
+
+    for (int i=0; i<numnod_; i++)
     {
-      int k = fi+j;
-      dfstressb_dv(0,k) = 2 * N_XYZ_Finv(0,i) * C_inv(0,j);
-      dfstressb_dv(1,k) = 2 * N_XYZ_Finv(1,i) * C_inv(1,j);
-      dfstressb_dv(2,k) = 2 * N_XYZ_Finv(2,i) * C_inv(2,j);
+      const int k = numdim_*i+j;
+      const double N_XYZ_Finv_0_i = N_XYZ_Finv(0,i);
+      const double N_XYZ_Finv_1_i = N_XYZ_Finv(0,i);
+      const double N_XYZ_Finv_2_i = N_XYZ_Finv(0,i);
+
+      dfstressb_dv(0,k) = 2 * N_XYZ_Finv_0_i * C_inv_0_j;
+      dfstressb_dv(1,k) = 2 * N_XYZ_Finv_1_i * C_inv_1_j;
+      dfstressb_dv(2,k) = 2 * N_XYZ_Finv_2_i * C_inv_2_j;
       //**********************************
-      dfstressb_dv(3,k) = N_XYZ_Finv(0,i) * C_inv(1,j) + N_XYZ_Finv(1,i) * C_inv(0,j);
-      dfstressb_dv(4,k) = N_XYZ_Finv(1,i) * C_inv(2,j) + N_XYZ_Finv(2,i) * C_inv(1,j);
-      dfstressb_dv(5,k) = N_XYZ_Finv(2,i) * C_inv(0,j) + N_XYZ_Finv(0,i) * C_inv(2,j);
+      dfstressb_dv(3,k) = N_XYZ_Finv_0_i * C_inv_1_j + N_XYZ_Finv_1_i * C_inv_0_j;
+      dfstressb_dv(4,k) = N_XYZ_Finv_1_i * C_inv_2_j + N_XYZ_Finv_2_i * C_inv_1_j;
+      dfstressb_dv(5,k) = N_XYZ_Finv_2_i * C_inv_0_j + N_XYZ_Finv_0_i * C_inv_2_j;
     }
   }
 
@@ -2123,6 +2325,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
 
     for(int j=0; j<numdim_; j++)
     {
+      const double fstressb_i_j = fstressb(fi+j);
+
       for(int k=0; k<numnod_; k++)
       {
         const int fk = noddof_*k;
@@ -2131,7 +2335,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
         /*-------structure- fluid pressure coupling: "darcy-brinkman stress terms"
          B^T . ( \mu*J - d(phi)/(dp) * fstress ) * Dp
          */
-        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += detJ_w * fstressb(fi+j) * dphi_dp * visc * J * shapefct(k);
+        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += detJ_w * fstressb_i_j * dphi_dp * visc * J * shapefct(k);
         for(int l=0; l<noddof_; l++)
         {
           /*-------structure- fluid velocity coupling: "darcy-brinkman stress terms"
