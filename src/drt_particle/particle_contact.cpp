@@ -555,7 +555,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         DRT::Node** wallnodes = (*w)->Nodes();
         for(int counter=0; counter<numnodes; ++counter)
         {
-          LINALG::Matrix<3,1> currpos;
+          static LINALG::Matrix<3,1> currpos;
           const double* X = wallnodes[counter]->X();
           currpos(0) = X[0] + nodal_disp[counter*3+0];
           currpos(1) = X[1] + nodal_disp[counter*3+1];
@@ -2116,6 +2116,8 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   const double dt
   )
 {
+  TEUCHOS_FUNC_TIME_MONITOR("UpdatdingEventqueue");
+
   std::set<DRT::Node*> neighbouring_particles;
   std::set<DRT::Element*> neighbouring_walls;
 
@@ -2240,15 +2242,15 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
     timetocollision = GEO::LARGENUMBER;
 
     // run over all line elements
-    const std::vector<Teuchos::RCP< DRT::Element> > eleLines = wallele->Lines();
+    const std::vector<Teuchos::RCP<DRT::Element> > eleLines = wallele->Lines();
+
+    const int numnodes_line = eleLines[0]->NumNode();
+    Epetra_SerialDenseMatrix xyze_line_n(3,numnodes_line);
+    Epetra_SerialDenseMatrix xyze_line_np(3,numnodes_line);
+
     for(int i=0; i<wallele->NumLine(); ++i)
     {
-      const int line_nodes = eleLines[i]->NumNode();
-
-      Epetra_SerialDenseMatrix xyze_line_n(3,line_nodes);
-      Epetra_SerialDenseMatrix xyze_line_np(3,line_nodes);
-
-      for(int inode=0; inode<line_nodes; ++inode)
+      for(int inode=0; inode<numnodes_line; ++inode)
       {
         switch(eleshape)
         {
@@ -2697,7 +2699,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     static LINALG::Matrix<1,numnodes> deriv2;
     DRT::UTILS::shape_function_1D_deriv2(deriv2, coll_solution(0), DISTYPE);
 
-    // compute nonlinear system
+    // compute linear system
 
     wallcollpoint_pos.Clear();
     F_deriv1.Clear();
@@ -2885,19 +2887,15 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   static LINALG::TMatrix<FAD,3,1> unitnormal;
 
   // velocity of wall element is constant over the time step
-  Epetra_SerialDenseMatrix vele(xyze_line_n);
-  vele.Scale(-1.0);
-  vele += xyze_line_np;
-  vele.Scale(1.0 / dt);
-
   static LINALG::TMatrix<FAD,3,numnodes> vele_fad;
   static LINALG::TMatrix<FAD,3,numnodes> xyze_n_fad;
   static LINALG::TMatrix<FAD,3,numnodes> xyze_colltime;
+  double invdt = 1.0 / dt;
   for(int i=0; i<3; ++i)
   {
     for(int j=0; j<numnodes; ++j)
     {
-      vele_fad(i,j) = vele(i,j);
+      vele_fad(i,j) = (xyze_line_np(i,j) - xyze_line_n(i,j))*invdt;
       xyze_n_fad(i,j) = xyze_line_n(i,j);
     }
   }
@@ -2942,24 +2940,55 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     static LINALG::TMatrix<FAD,1,numnodes> deriv2;
     DRT::UTILS::shape_function_1D_deriv2(deriv2, coll_solution(0), DISTYPE);
 
-    // compute nonlinear system
+    // position and velocity of wall collision point at collision time and derivs (unrolled due to FAD)
+    switch(numnodes)
+    {
+    case 2:
+      wallcollpoint_pos_fad(0) = xyze_colltime(0,0) * funct(0) + xyze_colltime(0,1) * funct(1);
+      wallcollpoint_pos_fad(1) = xyze_colltime(1,0) * funct(0) + xyze_colltime(1,1) * funct(1);
+      wallcollpoint_pos_fad(2) = xyze_colltime(2,0) * funct(0) + xyze_colltime(2,1) * funct(1);
 
-    wallcollpoint_pos_fad.Clear();
-    wallcollpoint_vel_fad.Clear();
-    wallcollpoint_deriv_vel_fad.Clear();
-    F_deriv1.Clear();
-    F_deriv2.Clear();
+      wallcollpoint_vel_fad(0) = vele_fad(0,0) * funct(0) + vele_fad(0,1) * funct(1);
+      wallcollpoint_vel_fad(1) = vele_fad(1,0) * funct(0) + vele_fad(1,1) * funct(1);
+      wallcollpoint_vel_fad(2) = vele_fad(2,0) * funct(0) + vele_fad(2,1) * funct(1);
 
-    // position and velocity of wall collision point at collision time and derivs
-    for(int i=0; i<3; ++i)
-      for(int inode=0; inode<numnodes; ++inode)
-      {
-        wallcollpoint_pos_fad(i) += xyze_colltime(i,inode) * funct(inode);
-        wallcollpoint_vel_fad(i) += vele_fad(i,inode)      * funct(inode);
-        wallcollpoint_deriv_vel_fad(i) += vele_fad(i,inode)* deriv1(0,inode);
-        F_deriv1(i)              += xyze_colltime(i,inode) * deriv1(0,inode);
-        F_deriv2(i)              += xyze_colltime(i,inode) * deriv2(0,inode);
-      }
+      wallcollpoint_deriv_vel_fad(0) = vele_fad(0,0) * deriv1(0,0) + vele_fad(0,1) * deriv1(0,1);
+      wallcollpoint_deriv_vel_fad(1) = vele_fad(1,0) * deriv1(0,0) + vele_fad(1,1) * deriv1(0,1);
+      wallcollpoint_deriv_vel_fad(2) = vele_fad(2,0) * deriv1(0,0) + vele_fad(2,1) * deriv1(0,1);
+
+      F_deriv1(0) = xyze_colltime(0,0) * deriv1(0,0) + xyze_colltime(0,1) * deriv1(0,1);
+      F_deriv1(1) = xyze_colltime(1,0) * deriv1(0,0) + xyze_colltime(1,1) * deriv1(0,1);
+      F_deriv1(2) = xyze_colltime(2,0) * deriv1(0,0) + xyze_colltime(2,1) * deriv1(0,1);
+
+      F_deriv2(0) = xyze_colltime(0,0) * deriv2(0,0) + xyze_colltime(0,1) * deriv2(0,1);
+      F_deriv2(1) = xyze_colltime(1,0) * deriv2(0,0) + xyze_colltime(1,1) * deriv2(0,1);
+      F_deriv2(2) = xyze_colltime(2,0) * deriv2(0,0) + xyze_colltime(2,1) * deriv2(0,1);
+      break;
+    case 3:
+      wallcollpoint_pos_fad(0) = xyze_colltime(0,0) * funct(0) + xyze_colltime(0,1) * funct(1) + xyze_colltime(0,2) * funct(2);
+      wallcollpoint_pos_fad(1) = xyze_colltime(1,0) * funct(0) + xyze_colltime(1,1) * funct(1) + xyze_colltime(1,2) * funct(2);
+      wallcollpoint_pos_fad(2) = xyze_colltime(2,0) * funct(0) + xyze_colltime(2,1) * funct(1) + xyze_colltime(2,2) * funct(2);
+
+      wallcollpoint_vel_fad(0) = vele_fad(0,0) * funct(0) + vele_fad(0,1) * funct(1) + vele_fad(0,2) * funct(2);
+      wallcollpoint_vel_fad(1) = vele_fad(1,0) * funct(0) + vele_fad(1,1) * funct(1) + vele_fad(1,2) * funct(2);
+      wallcollpoint_vel_fad(2) = vele_fad(2,0) * funct(0) + vele_fad(2,1) * funct(1) + vele_fad(2,2) * funct(2);
+
+      wallcollpoint_deriv_vel_fad(0) = vele_fad(0,0) * deriv1(0,0) + vele_fad(0,1) * deriv1(0,1) + vele_fad(0,2) * deriv1(0,2);
+      wallcollpoint_deriv_vel_fad(1) = vele_fad(1,0) * deriv1(0,0) + vele_fad(1,1) * deriv1(0,1) + vele_fad(1,2) * deriv1(0,2);
+      wallcollpoint_deriv_vel_fad(2) = vele_fad(2,0) * deriv1(0,0) + vele_fad(2,1) * deriv1(0,1) + vele_fad(2,2) * deriv1(0,2);
+
+      F_deriv1(0) = xyze_colltime(0,0) * deriv1(0,0) + xyze_colltime(0,1) * deriv1(0,1) + xyze_colltime(0,2) * deriv1(0,2);
+      F_deriv1(1) = xyze_colltime(1,0) * deriv1(0,0) + xyze_colltime(1,1) * deriv1(0,1) + xyze_colltime(1,2) * deriv1(0,2);
+      F_deriv1(2) = xyze_colltime(2,0) * deriv1(0,0) + xyze_colltime(2,1) * deriv1(0,1) + xyze_colltime(2,2) * deriv1(0,2);
+
+      F_deriv2(0) = xyze_colltime(0,0) * deriv2(0,0) + xyze_colltime(0,1) * deriv2(0,1) + xyze_colltime(0,2) * deriv2(0,2);
+      F_deriv2(1) = xyze_colltime(1,0) * deriv2(0,0) + xyze_colltime(1,1) * deriv2(0,1) + xyze_colltime(1,2) * deriv2(0,2);
+      F_deriv2(2) = xyze_colltime(2,0) * deriv2(0,0) + xyze_colltime(2,1) * deriv2(0,1) + xyze_colltime(2,2) * deriv2(0,2);
+      break;
+    default:
+      dserror("not yet implemented");
+      break;
+    }
 
     // subtract current particle position from the edge collision point
     F.Update(1.0, wallcollpoint_pos_fad, -1.0, particle_pos_colltime);
@@ -2967,23 +2996,13 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     // compute rhs
     static LINALG::TMatrix<FAD,2,1> residual;
 
-    FAD dotprod_pos_pos = 0.0;
-    FAD dotprod_pos_deriv1 = 0.0;
-    FAD dotprod_deriv1_deriv1 = 0.0;
-    FAD dotprod_pos_deriv2 = 0.0;
-    FAD dotprod_pos_v = 0.0;
-    FAD dotprod_v_deriv1 = 0.0;
-    FAD dotprod_pos_derivv = 0.0;
-    for(int i=0; i<3; ++i)
-    {
-      dotprod_pos_pos       += F(i)*F(i);
-      dotprod_pos_deriv1    += F(i)*F_deriv1(i);
-      dotprod_deriv1_deriv1 += F_deriv1(i)*F_deriv1(i);
-      dotprod_pos_deriv2    += F(i)*F_deriv2(i);
-      dotprod_pos_v         += F(i)*(wallcollpoint_vel_fad(i) - particle_vel(i));
-      dotprod_v_deriv1      += (wallcollpoint_vel_fad(i) - particle_vel(i))*F_deriv1(i);
-      dotprod_pos_derivv    += F(i)*wallcollpoint_deriv_vel_fad(i);
-    }
+    FAD dotprod_pos_pos = F(0)*F(0) + F(1)*F(1) + F(2)*F(2);
+    FAD dotprod_pos_deriv1 = F(0)*F_deriv1(0) + F(1)*F_deriv1(1) + F(2)*F_deriv1(2);
+    FAD dotprod_deriv1_deriv1 = F_deriv1(0)*F_deriv1(0) + F_deriv1(1)*F_deriv1(1) + F_deriv1(2)*F_deriv1(2);
+    FAD dotprod_pos_deriv2 = F(0)*F_deriv2(0) + F(1)*F_deriv2(1) + F(2)*F_deriv2(2);
+    FAD dotprod_pos_v = F(0)*(wallcollpoint_vel_fad(0) - particle_vel(0)) + F(1)*(wallcollpoint_vel_fad(1) - particle_vel(1)) + F(2)*(wallcollpoint_vel_fad(2) - particle_vel(2));
+    FAD dotprod_v_deriv1 = (wallcollpoint_vel_fad(0) - particle_vel(0))*F_deriv1(0) + (wallcollpoint_vel_fad(1) - particle_vel(1))*F_deriv1(1) +(wallcollpoint_vel_fad(2) - particle_vel(2))*F_deriv1(2);
+    FAD dotprod_pos_derivv = F(0)*wallcollpoint_deriv_vel_fad(0) + F(1)*wallcollpoint_deriv_vel_fad(1) + F(2)*wallcollpoint_deriv_vel_fad(2);
 
     FAD pos2subtractrad2 = dotprod_pos_pos - radius*radius;
 
@@ -3004,7 +3023,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 #endif
 
     // break if collision found or residual is small and collision not possible
-    if (distance<GEO::TOL12  || (residualnorm1<1.0e-12*radius*radius && distance>GEO::TOL2*radius))
+    if (distance<GEO::TOL12 || (residualnorm1<1.0e-12*radius*radius && distance>GEO::TOL2*radius))
     {
       break;
     }
