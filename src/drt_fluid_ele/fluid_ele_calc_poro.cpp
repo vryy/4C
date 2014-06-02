@@ -980,9 +980,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
     //additional left hand side term as history values are multiplied by dphi_dp^(n+1)
     for (int vi=0; vi<my::nen_; ++vi)
     {
+      const double factor = timefacfacpre*my::funct_(vi)*my::rhscon_*dphi_dpp;
       for (int ui=0; ui<my::nen_; ++ui)
       {
-        ppmat(vi,ui)-= timefacfacpre*my::funct_(vi)*my::rhscon_*dphi_dpp*my::funct_(ui);
+        ppmat(vi,ui)-= factor *my::funct_(ui);
       } // ui
     }  // vi
 
@@ -1023,14 +1024,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
 
   if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
   {
-    for (int vi=0; vi<my::nen_; ++vi)
+    for (int idim = 0; idim <my::nsd_; ++idim)
     {
-      const double v = timefacfacpre*my::funct_(vi);
+      const double grad_porosity_idim = grad_porosity_(idim);
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui = my::nsd_*ui;
+        const double funct_ui = my::funct_(ui);
+        const double derxy_idim_ui = my::derxy_(idim,ui);
 
-        for (int idim = 0; idim <my::nsd_; ++idim)
+        for (int vi=0; vi<my::nen_; ++vi)
         {
           /* continuity term */
           /*
@@ -1048,16 +1051,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
                 |                     |
                  \                   /
             */
-          estif_q_u(vi,fui+idim) += v * ( porosity_ * my::derxy_(idim,ui)
-                      +  grad_porosity_(idim) * my::funct_(ui)
+          estif_q_u(vi,fui+idim) += timefacfacpre*my::funct_(vi) * ( porosity_ * derxy_idim_ui
+                      +  grad_porosity_idim * funct_ui
                       );
         }
       }
     }  // end for(idim)
 
     //auxiliary variables
-    LINALG::Matrix<1,my::nen_> dgradphi_dp_gridvel ;
-    LINALG::Matrix<1,my::nen_>  dgradphi_dp_velint;
+    static LINALG::Matrix<1,my::nen_> dgradphi_dp_gridvel ;
+    static LINALG::Matrix<1,my::nen_>  dgradphi_dp_velint;
     dgradphi_dp_gridvel.MultiplyTN(gridvelint_,dgradphi_dp);
     dgradphi_dp_velint.MultiplyTN(my::velint_,dgradphi_dp);
 
@@ -1124,11 +1127,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
         const double w = my::fac_ * my::funct_(vi);
         for (int ui=0; ui<my::nen_; ++ui)
         {
-            ppmat(vi,ui) += - v * dgradphi_dp_gridvel(ui)
-                + v * ( dphi_dJdp * J_ * gridvdiv_ )* my::funct_(ui)
-                + w * my::funct_(ui) *  dphi_dp
-                + w * dphi_dpp * my::funct_(ui) * press_
-                            ;
+          const double funct_ui = my::funct_(ui);
+          ppmat(vi,ui) += - v * dgradphi_dp_gridvel(ui)
+              + v * ( dphi_dJdp * J_ * gridvdiv_ )* funct_ui
+              + w * funct_ui *  dphi_dp
+              + w * dphi_dpp * funct_ui * press_
+                          ;
         }
       }  // end for(idim)
 
@@ -1143,13 +1147,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
   }
   else //my::fldpara_->PoroContiPartInt() == true
   {
-    for (int vi=0; vi<my::nen_; ++vi)
+    for (int idim = 0; idim <my::nsd_; ++idim)
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui = my::nsd_*ui;
+        const double val =  -1.0 * timefacfacpre * porosity_ * my::funct_(ui);
 
-        for (int idim = 0; idim <my::nsd_; ++idim)
+        for (int vi=0; vi<my::nen_; ++vi)
         {
             /* porosity convective term */
             /*
@@ -1159,10 +1164,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
                 |                     |
                  \                   /
             */
-          estif_q_u(vi,fui+idim) += timefacfacpre * my::derxy_(idim,vi) *
-                                    (
-                                        -1.0 * porosity_ * my::funct_(ui)
-                                    );
+          estif_q_u(vi,fui+idim) += val * my::derxy_(idim,vi);
         }
       }
     }  // end for(idim)
@@ -1188,9 +1190,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
 
     for (int vi=0; vi<my::nen_; ++vi)
     {
+      const double factor = - timefacfacpre * dphi_dp * deriv_vel(vi);
       for (int ui=0; ui<my::nen_; ++ui)
       {
-        ppmat(vi,ui)+= - timefacfacpre * dphi_dp * deriv_vel(vi) * my::funct_(ui);
+        ppmat(vi,ui)+= factor * my::funct_(ui);
       } // ui
     }  // vi
 
@@ -1223,16 +1226,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
 
       for (int vi=0; vi<my::nen_; ++vi)
       {
-        const double v = timefacfacpre*my::funct_(vi);
+        const double u = timefacfacpre * dphi_dp * deriv_gridvel(vi);
+        const double v = timefacfacpre*my::funct_(vi)* ( (dphi_dJdp * J_ + dphi_dp) * gridvdiv_ );
         const double w = my::fac_ * my::funct_(vi);
         for (int ui=0; ui<my::nen_; ++ui)
         {
-            ppmat(vi,ui) +=
-                timefacfacpre * dphi_dp * deriv_gridvel(vi) * my::funct_(ui)
-                + v * ( (dphi_dJdp * J_ + dphi_dp) * gridvdiv_ )* my::funct_(ui)
-                + w * my::funct_(ui) *  dphi_dp
-                + w * dphi_dpp * my::funct_(ui) * press_
-                            ;
+          const double funct_ui = my::funct_(ui);
+          ppmat(vi,ui) +=
+                u * funct_ui
+              + v * funct_ui
+              + w * funct_ui *  dphi_dp
+              + w * dphi_dpp * funct_ui * press_
+                          ;
         }
       }  // end for(idim)
 
@@ -1540,29 +1545,33 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
        const double visceff_timefacfac = my::visceff_*timefacfac;
        const double porosity_inv=1.0/porosity_;
 
-       for (int vi=0; vi<my::nen_; ++vi)
+       for (int idim = 0; idim <my::nsd_; ++idim)
        {
-         const int fvi   = my::nsd_*vi;
-         const double viscfac1=visceff_timefacfac*my::funct_(vi)*porosity_inv;
 
          for (int jdim= 0; jdim<my::nsd_;++jdim)
          {
-           const double viscfac2=visceff_timefacfac*my::derxy_(jdim,vi);
+
+           const double grad_porosity_jdim = grad_porosity_(jdim);
 
            for (int ui=0; ui<my::nen_; ++ui)
            {
              const int fui   = my::nsd_*ui;
              const int fui_p_jdim = fui+jdim;
 
-             for (int idim = 0; idim <my::nsd_; ++idim)
-             {
-               const int fvi_p_idim = fvi+idim;
+             const double derxy_idim_ui = my::derxy_(idim, ui);
+             const double derxy_jdim_ui = my::derxy_(jdim, ui);
 
-               estif_u(fvi_p_idim,fui_p_jdim) +=   viscfac2*my::derxy_(idim, ui)
-                                               - viscfac1*my::derxy_(idim, ui)*grad_porosity_(jdim)
+             for (int vi=0; vi<my::nen_; ++vi)
+             {
+               const double viscfac1=visceff_timefacfac*my::funct_(vi)*porosity_inv;
+               const double viscfac2=visceff_timefacfac*my::derxy_(jdim,vi);
+               const int fvi_p_idim = my::nsd_*vi+idim;
+
+               estif_u(fvi_p_idim,fui_p_jdim) +=   viscfac2*derxy_idim_ui
+                                                 - viscfac1*derxy_idim_ui*grad_porosity_jdim
                                                ;
-               estif_u(fvi_p_idim,fui+idim) +=   viscfac2*my::derxy_(jdim, ui)
-                                               - viscfac1*my::derxy_(jdim, ui)*grad_porosity_(jdim)
+               estif_u(fvi_p_idim,fui+idim) +=   viscfac2*derxy_jdim_ui
+                                               - viscfac1*derxy_jdim_ui*grad_porosity_jdim
                                                ;
              } // end for (jdim)
            } // end for (idim)
@@ -1582,12 +1591,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
        viscstress_gradphi.Multiply(viscstress,grad_porosity_);
 
        // computation of right-hand-side viscosity term
-       for (int vi=0; vi<my::nen_; ++vi)
+       for (int idim = 0; idim < my::nsd_; ++idim)
        {
-         for (int idim = 0; idim < my::nsd_; ++idim)
+         const double viscstress_gradphi_idim = viscstress_gradphi(idim);
+         for (int vi=0; vi<my::nen_; ++vi)
          {
            /* viscosity (brinkman) term on right-hand side */
-           velforce(idim,vi)-= -rhsfac * porosity_inv * viscstress_gradphi(idim)*my::funct_(vi);
+           velforce(idim,vi)-= -rhsfac * porosity_inv * viscstress_gradphi_idim*my::funct_(vi);
            for (int jdim = 0; jdim < my::nsd_; ++jdim)
            {
              /* viscosity term on right-hand side */
@@ -1598,11 +1608,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
 
        static LINALG::Matrix<my::nsd_,my::nen_> viscstress_dgradphidp(false);
        viscstress_dgradphidp.Multiply(viscstress,dgradphi_dp);
-       for (int ui=0; ui<my::nen_; ++ui)
+       for (int idim = 0; idim <my::nsd_; ++idim)
        {
-           for (int idim = 0; idim <my::nsd_; ++idim)
+         const double viscstress_gradphi_idim = viscstress_gradphi(idim);
+           for (int ui=0; ui<my::nen_; ++ui)
            {
-             lin_resM_Dp(idim,ui) += timefacfacpre * porosity_inv * ( porosity_inv*viscstress_gradphi(idim) * dphi_dp* my::funct_(ui)
+             lin_resM_Dp(idim,ui) += timefacfacpre * porosity_inv * ( porosity_inv*viscstress_gradphi_idim * dphi_dp* my::funct_(ui)
                                                                     - viscstress_dgradphidp(idim,ui)
                                                                     )
                                          ;
@@ -1644,18 +1655,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
 
      ComputeLinResMDp(timefacfacpre,dphi_dp,lin_resM_Dp);
 
-     for (int ui=0; ui<my::nen_; ++ui)
-      {
-        for (int vi=0; vi<my::nen_; ++vi)
-        {
-          const int fvi = my::nsd_*vi;
-          for (int idim = 0; idim <my::nsd_; ++idim)
-          {
-            estif_p_v(fvi + idim,ui) +=  my::funct_(vi) * lin_resM_Dp(idim,ui)
-                          ;
-          }
-        }
-      }
+     for (int vi=0; vi<my::nen_; ++vi)
+     {
+       const int fvi = my::nsd_*vi;
+       const double funct_vi =  my::funct_(vi);
+       for (int ui=0; ui<my::nen_; ++ui)
+       {
+         for (int idim = 0; idim <my::nsd_; ++idim)
+         {
+           estif_p_v(fvi + idim,ui) +=  funct_vi * lin_resM_Dp(idim,ui)
+                         ;
+         }
+       }
+     }
 
       const double pressfac = press_*rhsfac;
 
@@ -1967,54 +1979,81 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
 
       reatensorlinODvel_.Clear();
       reatensorlinODgridvel_.Clear();
-      for (int n =0; n<my::nen_; ++n)
-        for (int d =0; d<my::nsd_; ++d)
-        {
-          const int gid = my::nsd_ * n +d;
-          for (int i=0; i<my::nsd_; ++i)
-          {
-            reatensorlinODvel_(i, gid)     += dJ_dus(gid)*J_inv * reavel_(i);
-            reatensorlinODgridvel_(i, gid) += dJ_dus(gid)*J_inv * reagridvel_(i);
-            reatensorlinODvel_(i, gid)     += dphi_dus(gid)*porosity_inv * reavel_(i);
-            reatensorlinODgridvel_(i, gid) += dphi_dus(gid)*porosity_inv * reagridvel_(i);
 
-            for (int j=0; j<my::nsd_; ++j)
+
+      for (int idim=0; idim<my::nsd_; ++idim)
+      {
+        const double reavel_idim = reavel_(idim);
+        const double reagridvel_idim = reagridvel_(idim);
+
+        for (int jdim =0; jdim<my::nsd_; ++jdim)
+        {
+          for (int inode =0; inode<my::nen_; ++inode)
+          {
+            double val_reatensorlinODvel = 0.0;
+            double val_reatensorlinODgridvel = 0.0;
+
+            const double derxy_idim_inode = my::derxy_(idim,inode);
+
+            const int gid = my::nsd_ * inode +jdim;
+
+            val_reatensorlinODvel     += dJ_dus(gid)*J_inv * reavel_idim;
+            val_reatensorlinODgridvel += dJ_dus(gid)*J_inv * reagridvel_idim;
+            val_reatensorlinODvel     += dphi_dus(gid)*porosity_inv * reavel_idim;
+            val_reatensorlinODgridvel += dphi_dus(gid)*porosity_inv * reagridvel_idim;
+
+            for (int ldim=0; ldim<my::nsd_; ++ldim)
             {
-              for (int k=0; k<my::nsd_; ++k)
-                for(int l=0; l<my::nsd_; ++l)
+              const double defgrd_inv_ldim_jdim = defgrd_inv(ldim,jdim);
+              const double defgrd_inv_ldim_idim = defgrd_inv(ldim,idim);
+              for(int mdim=0; mdim<my::nsd_; ++mdim)
+              {
+                const double matreatensor_ldim_mdim = matreatensor_(ldim,mdim);
+                const double defgrd_inv_mdim_jdim = defgrd_inv(mdim,jdim);
+                for (int kdim=0; kdim<my::nsd_; ++kdim)
                 {
-                  reatensorlinODvel_(i, gid) += J_ * porosity_ *
-                                                my::velint_(j) *
-                                                   ( - defgrd_inv(k,d) * my::derxy_(i,n) * matreatensor_(k,l) * defgrd_inv(l,j)
-                                                     - defgrd_inv(k,i) * matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
+                  val_reatensorlinODvel += J_ * porosity_ *
+                                                my::velint_(kdim) *
+                                                   ( - defgrd_inv_ldim_jdim * derxy_idim_inode * matreatensor_ldim_mdim * defgrd_inv(mdim,kdim)
+                                                     - defgrd_inv_ldim_idim * matreatensor_ldim_mdim * defgrd_inv_mdim_jdim * my::derxy_(kdim,inode)
                                                     );
-                  reatensorlinODgridvel_(i, gid) += J_ * porosity_ *
-                                                    gridvelint_(j) *
-                                                       ( - defgrd_inv(k,d) * my::derxy_(i,n) * matreatensor_(k,l) * defgrd_inv(l,j)
-                                                         - defgrd_inv(k,i) * matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
+                  val_reatensorlinODgridvel += J_ * porosity_ *
+                                                    gridvelint_(kdim) *
+                                                       ( - defgrd_inv_ldim_jdim * derxy_idim_inode * matreatensor_ldim_mdim * defgrd_inv(mdim,kdim)
+                                                         - defgrd_inv_ldim_idim * matreatensor_ldim_mdim * defgrd_inv_mdim_jdim * my::derxy_(kdim,inode)
                                                         );
                 }
+              }
             }
             if (!const_permeability_)//check if derivatives of reaction tensor are zero --> significant speed up
             {
+              const double dphi_dus_gid = dphi_dus(gid);
+              const double dJ_dus_gid = dJ_dus(gid);
               for (int j=0; j<my::nsd_; ++j)
               {
+                const double velint_j = my::velint_(j);
+                const double gridvelint_j = my::gridvelint_(j);
                 for (int k=0; k<my::nsd_; ++k)
+                {
+                  const double defgrd_inv_k_idim = defgrd_inv(k,idim);
                   for(int l=0; l<my::nsd_; ++l)
                   {
-                    reatensorlinODvel_(i, gid) += J_ * porosity_ *
-                                                  my::velint_(j) *
-                                                     ( defgrd_inv(k,i) * (matreatensorlinporosity_ (k,l) * dphi_dus(gid) + matreatensorlinJ_(k,l) * dJ_dus(gid)) * defgrd_inv(l,j)
+                    val_reatensorlinODvel += J_ * porosity_ * velint_j *
+                                                     ( defgrd_inv_k_idim * (matreatensorlinporosity_ (k,l) * dphi_dus_gid + matreatensorlinJ_(k,l) * dJ_dus_gid ) * defgrd_inv(l,j)
                                                       );
-                    reatensorlinODgridvel_(i, gid) += J_ * porosity_ *
-                                                      gridvelint_(j) *
-                                                         ( defgrd_inv(k,i) * (matreatensorlinporosity_ (k,l) * dphi_dus(gid) + matreatensorlinJ_(k,l) * dJ_dus(gid)) * defgrd_inv(l,j)
+                    val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j *
+                                                         ( defgrd_inv_k_idim * (matreatensorlinporosity_ (k,l) * dphi_dus_gid + matreatensorlinJ_(k,l) * dJ_dus_gid ) * defgrd_inv(l,j)
                                                           );
                   }
+                }
               }
             }
+
+            reatensorlinODvel_(idim, gid)     += val_reatensorlinODvel;
+            reatensorlinODgridvel_(idim, gid) += val_reatensorlinODvel;
           }
         }
+      }
     }
 
     // set viscous term from previous iteration to zero (required for
@@ -2113,20 +2152,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
    */
 
   const double fac_densaf=my::fac_*my::densaf_;
-  for (int ui=0; ui<my::nen_; ++ui)
+  for (int idim = 0; idim <my::nsd_; ++idim)
   {
-    const int fui = my::nsd_*ui;
-
-    for (int idim = 0; idim <my::nsd_; ++idim)
+    for (int jdim = 0; jdim <my::nsd_; ++jdim)
     {
-      for (int jdim = 0; jdim <my::nsd_; ++jdim)
+      const double vderxy_idim_jdim = my::vderxy_(idim, jdim);
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        lin_resM_Dus(idim,fui+jdim) += + timefacfac * reatensorlinODvel_(idim,fui+jdim)
-                                           - fac_densaf * my::vderxy_(idim, jdim) * my::funct_(ui)
+        lin_resM_Dus(idim,my::nsd_*ui+jdim) += + timefacfac * reatensorlinODvel_(idim,my::nsd_*ui+jdim)
+                                               - fac_densaf * vderxy_idim_jdim * my::funct_(ui)
         ;
       }
-    } // end for (idim)
-  } // ui
+    } // end for (jdim)
+  } // idim
 
   //transient terms
   /*  reaction */
@@ -2140,16 +2178,15 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
 
   if (not my::fldparatimint_->IsStationary())
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (int idim = 0; idim <my::nsd_; ++idim)
     {
-      const int fui = my::nsd_*ui;
-
-      for (int idim = 0; idim <my::nsd_; ++idim)
+      for (int jdim =0; jdim<my::nsd_; ++jdim)
       {
-        for (int jdim =0; jdim<my::nsd_; ++jdim)
+        const double reatensor_idim_jdim = reatensor_(idim,jdim);
+        for (int ui=0; ui<my::nen_; ++ui)
         {
-          lin_resM_Dus(idim,fui+jdim) +=   my::fac_ * (-1.0) * reatensor_(idim,jdim) * my::funct_(ui)
-                                             - timefacfac * reatensorlinODgridvel_(idim,fui+jdim)
+          lin_resM_Dus(idim,my::nsd_*ui+jdim) +=   my::fac_ * (-1.0) * reatensor_idim_jdim * my::funct_(ui)
+                                                 - timefacfac * reatensorlinODgridvel_(idim,my::nsd_*ui+jdim)
           ;
         }
       } // end for (idim)
@@ -2176,16 +2213,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
 
     const double porosity_inv = 1.0/porosity_;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (int idim = 0; idim <my::nsd_; ++idim)
     {
-      const int fui = my::nsd_*ui;
-      for (int idim = 0; idim <my::nsd_; ++idim)
+      const double viscstress_gradphi_idim = viscstress_gradphi(idim);
+      for (int ui=0; ui<my::nen_; ++ui)
       {
+        const int fui = my::nsd_*ui;
         for (int jdim =0; jdim<my::nsd_; ++jdim)
-          lin_resM_Dus(idim,fui+jdim) += timefacfac * porosity_inv * ( porosity_inv*viscstress_gradphi(idim)*
-                                                                  dphi_dus(fui+jdim)
-                                                                - viscstress_dgradphidus(idim,fui+jdim)
-                                                              )
+          lin_resM_Dus(idim,fui+jdim) += timefacfac * porosity_inv * (  porosity_inv*viscstress_gradphi_idim*dphi_dus(fui+jdim)
+                                                                      - viscstress_dgradphidus(idim,fui+jdim)
+                                                                     )
                                       ;
       }
     }
@@ -2610,73 +2647,108 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 
   if (my::fldparatimint_->IsStationary() == false)
   {
+    const double fac0 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(0);
+    const double fac1 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(1);
+    const double fac2 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(2);
+
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = my::fac_ * my::densam_ * my::funct_(vi, 0) * (1.0 + addstab );
+      const double funct_vi = my::funct_(vi, 0);
+      const double v0 = fac0 * funct_vi;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
-        ecoupl_u(vi * 3    , ui * 3    ) += v * my::velint_(0) * my::derxy_(0, ui);
-        ecoupl_u(vi * 3    , ui * 3 + 1) += v * my::velint_(0) * my::derxy_(1, ui);
-        ecoupl_u(vi * 3    , ui * 3 + 2) += v * my::velint_(0) * my::derxy_(2, ui);
-
-        ecoupl_u(vi * 3 + 1, ui * 3    ) += v * my::velint_(1) * my::derxy_(0, ui);
-        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v * my::velint_(1) * my::derxy_(1, ui);
-        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * my::velint_(1) * my::derxy_(2, ui);
-
-        ecoupl_u(vi * 3 + 2, ui * 3    ) += v * my::velint_(2) * my::derxy_(0, ui);
-        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * my::velint_(2) * my::derxy_(1, ui);
-        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v * my::velint_(2) * my::derxy_(2, ui);
+        ecoupl_u(vi * 3    , ui * 3    ) += v0 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3    , ui * 3 + 1) += v0 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3    , ui * 3 + 2) += v0 * my::derxy_(2, ui);
       }
+
+      const double v1 = fac1 * funct_vi;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3 + 1, ui * 3    ) += v1 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v1 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v1 * my::derxy_(2, ui);
+      }
+
+      const double v2 = fac2 * funct_vi;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3 + 2, ui * 3    ) += v2 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v2 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v2 * my::derxy_(2, ui);
+      }
+
     }
   }
 
   // rhs
-  for (int vi = 0; vi < my::nen_; ++vi)
   {
-    double v = my::fac_ * my::funct_(vi, 0);
-    for (int ui = 0; ui < my::nen_; ++ui)
+    const double fac_timint = my::fac_ * my::fldparatimint_->Dt() * my::fldparatimint_->Theta();
+    const double fac0 = fac_timint * (-1.0) * my::rhsmom_(0);
+    const double fac1 = fac_timint * (-1.0) * my::rhsmom_(1);
+    const double fac2 = fac_timint * (-1.0) * my::rhsmom_(2);
+
+    for (int vi = 0; vi < my::nen_; ++vi)
     {
-      ecoupl_u(vi * 3    , ui * 3    ) += v * ( - my::rhsmom_(0) * my::fldparatimint_->Dt()
-                                                     * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
-      ecoupl_u(vi * 3    , ui * 3 + 1) += v * ( - my::rhsmom_(0)
-                                                     * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
-      ecoupl_u(vi * 3    , ui * 3 + 2) += v * ( - my::rhsmom_(0)
-                                                     * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(2, ui);
+      const double funct_vi = my::funct_(vi, 0);
+      const double v0 = fac0 * funct_vi;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3    , ui * 3    ) += v0 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3    , ui * 3 + 1) += v0 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3    , ui * 3 + 2) += v0 * my::derxy_(2, ui);
+      }
 
-      ecoupl_u(vi * 3 + 1, ui * 3    ) += v * ( - my::rhsmom_(1)
-                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
-      ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v * ( - my::rhsmom_(1)
-                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
-      ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * ( - my::rhsmom_(1)
-                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(2, ui);
+      const double v1 = fac1 * funct_vi;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3 + 1, ui * 3    ) += v1 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v1 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v1 * my::derxy_(2, ui);
+      }
 
-      ecoupl_u(vi * 3 + 2, ui * 3    ) += v * ( - my::rhsmom_(2)
-                                            * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
-      ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * ( - my::rhsmom_(2)
-                                            * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
-      ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v * ( - my::rhsmom_(2)
-                                            * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(2, ui);
+      const double v2 = fac2 * funct_vi;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3 + 2, ui * 3    ) += v2 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v2 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v2 * my::derxy_(2, ui);
+      }
     }
   }
 
   //---------reaction term (darcy term)
-  for (int vi = 0; vi < my::nen_; ++vi)
   {
-    //double v = timefacfac * my::funct_(vi, 0) * my::reacoeff_ * (1.0 + addstab );
-    double v = timefacfac * my::funct_(vi, 0) * (1.0 + addstab );
-    for (int ui = 0; ui < my::nen_; ++ui)
+    const double fac_reaconvel_0 = reaconvel_(0) * timefacfac * (1.0 + addstab );
+    const double fac_reaconvel_1 = reaconvel_(1) * timefacfac * (1.0 + addstab );
+    const double fac_reaconvel_2 = reaconvel_(2) * timefacfac * (1.0 + addstab );
+
+    for (int vi = 0; vi < my::nen_; ++vi)
     {
-      ecoupl_u(vi * 3    , ui * 3    ) += v * reaconvel_(0) * my::derxy_(0, ui);
-      ecoupl_u(vi * 3    , ui * 3 + 1) += v * reaconvel_(0) * my::derxy_(1, ui);
-      ecoupl_u(vi * 3    , ui * 3 + 2) += v * reaconvel_(0) * my::derxy_(2, ui);
+      const double funct_vi = my::funct_(vi, 0);
+      const double v0 =  fac_reaconvel_0 * funct_vi ;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3    , ui * 3    ) += v0 * my::derxy_(0, ui);
+        ecoupl_u(vi * 3    , ui * 3 + 1) += v0 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3    , ui * 3 + 2) += v0 * my::derxy_(2, ui);
+      }
 
-      ecoupl_u(vi * 3 + 1, ui * 3    ) += v * reaconvel_(1) * my::derxy_(0,ui);
-      ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v * reaconvel_(1) * my::derxy_(1, ui);
-      ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * reaconvel_(1) * my::derxy_(2, ui);
+      const double v1 =  fac_reaconvel_1 * funct_vi ;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3 + 1, ui * 3    ) += v1 * my::derxy_(0,ui);
+        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v1 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v1 * my::derxy_(2, ui);
+      }
 
-      ecoupl_u(vi * 3 + 2, ui * 3    ) += v * reaconvel_(2) * my::derxy_(0,ui);
-      ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * reaconvel_(2) * my::derxy_(1, ui);
-      ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v * reaconvel_(2) * my::derxy_(2, ui);
+      const double v2 =  fac_reaconvel_2 * funct_vi ;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3 + 2, ui * 3    ) += v2 * my::derxy_(0,ui);
+        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v2 * my::derxy_(1, ui);
+        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v2 * my::derxy_(2, ui);
+      }
     }
   }
 
@@ -2685,518 +2757,643 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 
 #define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
 
-#define derxjm_001(ui) (my::deriv_(2, ui)*my::xjm_(1, 2) - my::deriv_(1, ui)*my::xjm_(2, 2))
-#define derxjm_002(ui) (my::deriv_(1, ui)*my::xjm_(2, 1) - my::deriv_(2, ui)*my::xjm_(1, 1))
+#define derxjm_001(ui) (my::deriv_(2, ui)*xjm_1_2 - my::deriv_(1, ui)*xjm_2_2)
+#define derxjm_002(ui) (my::deriv_(1, ui)*xjm_2_1 - my::deriv_(2, ui)*xjm_1_1)
 
-#define derxjm_100(ui) (my::deriv_(1, ui)*my::xjm_(2, 2) - my::deriv_(2, ui)*my::xjm_(1, 2))
-#define derxjm_102(ui) (my::deriv_(2, ui)*my::xjm_(1, 0) - my::deriv_(1, ui)*my::xjm_(2, 0))
+#define derxjm_100(ui) (my::deriv_(1, ui)*xjm_2_2 - my::deriv_(2, ui)*xjm_1_2)
+#define derxjm_102(ui) (my::deriv_(2, ui)*xjm_1_0 - my::deriv_(1, ui)*xjm_2_0)
 
-#define derxjm_200(ui) (my::deriv_(2, ui)*my::xjm_(1, 1) - my::deriv_(1, ui)*my::xjm_(2, 1))
-#define derxjm_201(ui) (my::deriv_(1, ui)*my::xjm_(2, 0) - my::deriv_(2, ui)*my::xjm_(1, 0))
+#define derxjm_200(ui) (my::deriv_(2, ui)*xjm_1_1 - my::deriv_(1, ui)*xjm_2_1)
+#define derxjm_201(ui) (my::deriv_(1, ui)*xjm_2_0 - my::deriv_(2, ui)*xjm_1_0)
 
-#define derxjm_011(ui) (my::deriv_(0, ui)*my::xjm_(2, 2) - my::deriv_(2, ui)*my::xjm_(0, 2))
-#define derxjm_012(ui) (my::deriv_(2, ui)*my::xjm_(0, 1) - my::deriv_(0, ui)*my::xjm_(2, 1))
+#define derxjm_011(ui) (my::deriv_(0, ui)*xjm_2_2 - my::deriv_(2, ui)*xjm_0_2)
+#define derxjm_012(ui) (my::deriv_(2, ui)*xjm_0_1 - my::deriv_(0, ui)*xjm_2_1)
 
-#define derxjm_110(ui) (my::deriv_(2, ui)*my::xjm_(0, 2) - my::deriv_(0, ui)*my::xjm_(2, 2))
-#define derxjm_112(ui) (my::deriv_(0, ui)*my::xjm_(2, 0) - my::deriv_(2, ui)*my::xjm_(0, 0))
+#define derxjm_110(ui) (my::deriv_(2, ui)*xjm_0_2 - my::deriv_(0, ui)*xjm_2_2)
+#define derxjm_112(ui) (my::deriv_(0, ui)*xjm_2_0 - my::deriv_(2, ui)*xjm_0_0)
 
-#define derxjm_210(ui) (my::deriv_(0, ui)*my::xjm_(2, 1) - my::deriv_(2, ui)*my::xjm_(0, 1))
-#define derxjm_211(ui) (my::deriv_(2, ui)*my::xjm_(0, 0) - my::deriv_(0, ui)*my::xjm_(2, 0))
+#define derxjm_210(ui) (my::deriv_(0, ui)*xjm_2_1 - my::deriv_(2, ui)*xjm_0_1)
+#define derxjm_211(ui) (my::deriv_(2, ui)*xjm_0_0 - my::deriv_(0, ui)*xjm_2_0)
 
-#define derxjm_021(ui) (my::deriv_(1, ui)*my::xjm_(0, 2) - my::deriv_(0, ui)*my::xjm_(1, 2))
-#define derxjm_022(ui) (my::deriv_(0, ui)*my::xjm_(1, 1) - my::deriv_(1, ui)*my::xjm_(0, 1))
+#define derxjm_021(ui) (my::deriv_(1, ui)*xjm_0_2 - my::deriv_(0, ui)*xjm_1_2)
+#define derxjm_022(ui) (my::deriv_(0, ui)*xjm_1_1 - my::deriv_(1, ui)*xjm_0_1)
 
-#define derxjm_120(ui) (my::deriv_(0, ui)*my::xjm_(1, 2) - my::deriv_(1, ui)*my::xjm_(0, 2))
-#define derxjm_122(ui) (my::deriv_(1, ui)*my::xjm_(0, 0) - my::deriv_(0, ui)*my::xjm_(1, 0))
+#define derxjm_120(ui) (my::deriv_(0, ui)*xjm_1_2 - my::deriv_(1, ui)*xjm_0_2)
+#define derxjm_122(ui) (my::deriv_(1, ui)*xjm_0_0 - my::deriv_(0, ui)*xjm_1_0)
 
-#define derxjm_220(ui) (my::deriv_(1, ui)*my::xjm_(0, 1) - my::deriv_(0, ui)*my::xjm_(1, 1))
-#define derxjm_221(ui) (my::deriv_(0, ui)*my::xjm_(1, 0) - my::deriv_(1, ui)*my::xjm_(0, 0))
+#define derxjm_220(ui) (my::deriv_(1, ui)*xjm_0_1 - my::deriv_(0, ui)*xjm_1_1)
+#define derxjm_221(ui) (my::deriv_(0, ui)*xjm_1_0 - my::deriv_(1, ui)*xjm_0_0)
+
+  const double vderiv_0_0   = my::vderiv_(0, 0);
+  const double vderiv_0_1   = my::vderiv_(0, 1);
+  const double vderiv_0_2   = my::vderiv_(0, 2);
+  const double vderiv_1_0   = my::vderiv_(1, 0);
+  const double vderiv_1_1   = my::vderiv_(1, 1);
+  const double vderiv_1_2   = my::vderiv_(1, 2);
+  const double vderiv_2_0   = my::vderiv_(2, 0);
+  const double vderiv_2_1   = my::vderiv_(2, 1);
+  const double vderiv_2_2   = my::vderiv_(2, 2);
+
+  const double xjm_0_0   = my::xjm_(0, 0);
+  const double xjm_0_1   = my::xjm_(0, 1);
+  const double xjm_0_2   = my::xjm_(0, 2);
+  const double xjm_1_0   = my::xjm_(1, 0);
+  const double xjm_1_1   = my::xjm_(1, 1);
+  const double xjm_1_2   = my::xjm_(1, 2);
+  const double xjm_2_0   = my::xjm_(2, 0);
+  const double xjm_2_1   = my::xjm_(2, 1);
+  const double xjm_2_2   = my::xjm_(2, 2);
 
   const double timefacfac_det=timefacfac / my::det_;
 
-  for (int ui = 0; ui < my::nen_; ++ui)
   {
-    double v00 = +my::convvelint_(1)* (my::vderiv_(0, 0) * derxjm_(0,0,1,ui)
-                      + my::vderiv_(0, 1)* derxjm_(0,1,1,ui) + my::vderiv_(0, 2) * derxjm_(0,2,1,ui))
-                 + my::convvelint_(2) * (my::vderiv_(0, 0) * derxjm_(0,0,2,ui)
-                      + my::vderiv_(0, 1)* derxjm_(0,1,2,ui) + my::vderiv_(0, 2) * derxjm_(0,2,2,ui));
-    double v01 = +my::convvelint_(0) * (my::vderiv_(0, 0) * derxjm_(1,0,0,ui)
-                      + my::vderiv_(0, 1) * derxjm_(1,1,0,ui) + my::vderiv_(0, 2) * derxjm_(1,2,0,ui))
-                 + my::convvelint_(2) * (my::vderiv_(0, 0) * derxjm_(1,0,2,ui)
-                      + my::vderiv_(0, 1) * derxjm_(1,1,2,ui) + my::vderiv_(0, 2) * derxjm_(1,2,2,ui));
-    double v02 = +my::convvelint_(0) * (my::vderiv_(0, 0) * derxjm_(2,0,0,ui)
-                      + my::vderiv_(0, 1) * derxjm_(2,1,0,ui) + my::vderiv_(0, 2) * derxjm_(2,2,0,ui))
-                 + my::convvelint_(1) * (my::vderiv_(0, 0) * derxjm_(2,0,1,ui)
-                      + my::vderiv_(0, 1) * derxjm_(2,1,1,ui) + my::vderiv_(0, 2) * derxjm_(2,2,1,ui));
-    double v10 = +my::convvelint_(1) * (my::vderiv_(1, 0) * derxjm_(0,0,1,ui)
-                      + my::vderiv_(1, 1) * derxjm_(0,1,1,ui) + my::vderiv_(1, 2) * derxjm_(0,2,1,ui))
-                 + my::convvelint_(2) * (my::vderiv_(1, 0) * derxjm_(0,0,2,ui)
-                      + my::vderiv_(1, 1) * derxjm_(0,1,2,ui) + my::vderiv_(1, 2) * derxjm_(0,2,2,ui));
-    double v11 = +my::convvelint_(0) * (my::vderiv_(1, 0) * derxjm_(1,0,0,ui)
-                      + my::vderiv_(1, 1) * derxjm_(1,1,0,ui) + my::vderiv_(1, 2) * derxjm_(1,2,0,ui))
-                 + my::convvelint_(2) * (my::vderiv_(1, 0) * derxjm_(1,0,2,ui)
-                      + my::vderiv_(1, 1) * derxjm_(1,1,2,ui) + my::vderiv_(1, 2) * derxjm_(1,2,2,ui));
-    double v12 = +my::convvelint_(0) * (my::vderiv_(1, 0) * derxjm_(2,0,0,ui)
-                      + my::vderiv_(1, 1) * derxjm_(2,1,0,ui) + my::vderiv_(1, 2) * derxjm_(2,2,0,ui))
-                 + my::convvelint_(1) * (my::vderiv_(1, 0) * derxjm_(2,0,1,ui)
-                      + my::vderiv_(1, 1) * derxjm_(2,1,1,ui) + my::vderiv_(1, 2) * derxjm_(2,2,1,ui));
-    double v20 = +my::convvelint_(1) * (my::vderiv_(2, 0) * derxjm_(0,0,1,ui)
-                      + my::vderiv_(2, 1) * derxjm_(0,1,1,ui) + my::vderiv_(2, 2) * derxjm_(0,2,1,ui))
-                 + my::convvelint_(2) * (my::vderiv_(2, 0) * derxjm_(0,0,2,ui)
-                      + my::vderiv_(2, 1) * derxjm_(0,1,2,ui) + my::vderiv_(2, 2) * derxjm_(0,2,2,ui));
-    double v21 = +my::convvelint_(0) * (my::vderiv_(2, 0) * derxjm_(1,0,0,ui)
-                      + my::vderiv_(2, 1) * derxjm_(1,1,0,ui) + my::vderiv_(2, 2) * derxjm_(1,2,0,ui))
-                 + my::convvelint_(2) * (my::vderiv_(2, 0) * derxjm_(1,0,2,ui)
-                      + my::vderiv_(2, 1) * derxjm_(1,1,2,ui) + my::vderiv_(2, 2) * derxjm_(1,2,2,ui));
-    double v22 = +my::convvelint_(0) * (my::vderiv_(2, 0) * derxjm_(2,0,0,ui)
-                      + my::vderiv_(2, 1) * derxjm_(2,1,0,ui) + my::vderiv_(2, 2) * derxjm_(2,2,0,ui))
-                 + my::convvelint_(1) * (my::vderiv_(2, 0) * derxjm_(2,0,1,ui)
-                      + my::vderiv_(2, 1) * derxjm_(2,1,1,ui) + my::vderiv_(2, 2) * derxjm_(2,2,1,ui));
+    const double convvelint_0 = my::convvelint_(0);
+    const double convvelint_1 = my::convvelint_(1);
+    const double convvelint_2 = my::convvelint_(2);
 
-    for (int vi = 0; vi < my::nen_; ++vi)
-    {
-      double v = my::densaf_*timefacfac_det * my::funct_(vi) * (1.0 + addstab );
-
-      ecoupl_u(vi * 3 + 0, ui * 3 + 0) += v * v00;
-      ecoupl_u(vi * 3 + 0, ui * 3 + 1) += v * v01;
-      ecoupl_u(vi * 3 + 0, ui * 3 + 2) += v * v02;
-
-      ecoupl_u(vi * 3 + 1, ui * 3 + 0) += v * v10;
-      ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v * v11;
-      ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * v12;
-
-      ecoupl_u(vi * 3 + 2, ui * 3 + 0) += v * v20;
-      ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * v21;
-      ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v * v22;
-    }
-  }
-
-  // pressure;
-  for (int vi = 0; vi < my::nen_; ++vi)
-  {
-    double v = press_ * timefacfac_det;
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      ecoupl_u(vi * 3, ui * 3 + 1) += v * (   my::deriv_(0, vi) * derxjm_(0,0,1,ui)
-                                            + my::deriv_(1, vi) * derxjm_(0,1,1,ui)
-                                            + my::deriv_(2, vi) * derxjm_(0,2,1,ui));
-      ecoupl_u(vi * 3, ui * 3 + 2) += v * (   my::deriv_(0, vi) * derxjm_(0,0,2,ui)
-                                            + my::deriv_(1, vi) * derxjm_(0,1,2,ui)
-                                            + my::deriv_(2, vi) * derxjm_(0,2,2,ui));
+      double v00 = + convvelint_1* (vderiv_0_0 * derxjm_(0,0,1,ui)
+                        + vderiv_0_1* derxjm_(0,1,1,ui) + vderiv_0_2 * derxjm_(0,2,1,ui))
+                   + convvelint_2 * (vderiv_0_0 * derxjm_(0,0,2,ui)
+                        + vderiv_0_1* derxjm_(0,1,2,ui) + vderiv_0_2 * derxjm_(0,2,2,ui));
+      double v01 = + convvelint_0 * (vderiv_0_0 * derxjm_(1,0,0,ui)
+                        + vderiv_0_1 * derxjm_(1,1,0,ui) + vderiv_0_2 * derxjm_(1,2,0,ui))
+                   + convvelint_2 * (vderiv_0_0 * derxjm_(1,0,2,ui)
+                        + vderiv_0_1 * derxjm_(1,1,2,ui) + vderiv_0_2 * derxjm_(1,2,2,ui));
+      double v02 = + convvelint_0 * (vderiv_0_0 * derxjm_(2,0,0,ui)
+                        + vderiv_0_1 * derxjm_(2,1,0,ui) + vderiv_0_2 * derxjm_(2,2,0,ui))
+                   + convvelint_1 * (vderiv_0_0 * derxjm_(2,0,1,ui)
+                        + vderiv_0_1 * derxjm_(2,1,1,ui) + vderiv_0_2 * derxjm_(2,2,1,ui));
+      double v10 = + convvelint_1 * (vderiv_1_0 * derxjm_(0,0,1,ui)
+                        + vderiv_1_1 * derxjm_(0,1,1,ui) + vderiv_1_2 * derxjm_(0,2,1,ui))
+                   + convvelint_2 * (vderiv_1_0 * derxjm_(0,0,2,ui)
+                        + vderiv_1_1 * derxjm_(0,1,2,ui) + vderiv_1_2 * derxjm_(0,2,2,ui));
+      double v11 = + convvelint_0 * (vderiv_1_0 * derxjm_(1,0,0,ui)
+                        + vderiv_1_1 * derxjm_(1,1,0,ui) + vderiv_1_2 * derxjm_(1,2,0,ui))
+                   + convvelint_2 * (vderiv_1_0 * derxjm_(1,0,2,ui)
+                        + vderiv_1_1 * derxjm_(1,1,2,ui) + vderiv_1_2 * derxjm_(1,2,2,ui));
+      double v12 = + convvelint_0 * (vderiv_1_0 * derxjm_(2,0,0,ui)
+                        + vderiv_1_1 * derxjm_(2,1,0,ui) + vderiv_1_2 * derxjm_(2,2,0,ui))
+                   + convvelint_1 * (vderiv_1_0 * derxjm_(2,0,1,ui)
+                        + vderiv_1_1 * derxjm_(2,1,1,ui) + vderiv_1_2 * derxjm_(2,2,1,ui));
+      double v20 = + convvelint_1 * (my::vderiv_(2, 0) * derxjm_(0,0,1,ui)
+                        + vderiv_2_1 * derxjm_(0,1,1,ui) + vderiv_2_2 * derxjm_(0,2,1,ui))
+                   + convvelint_2 * (my::vderiv_(2, 0) * derxjm_(0,0,2,ui)
+                        + vderiv_2_1 * derxjm_(0,1,2,ui) + vderiv_2_2 * derxjm_(0,2,2,ui));
+      double v21 = + convvelint_0 * (my::vderiv_(2, 0) * derxjm_(1,0,0,ui)
+                        + vderiv_2_1 * derxjm_(1,1,0,ui) + vderiv_2_2 * derxjm_(1,2,0,ui))
+                   + convvelint_2 * (my::vderiv_(2, 0) * derxjm_(1,0,2,ui)
+                        + vderiv_2_1 * derxjm_(1,1,2,ui) + vderiv_2_2 * derxjm_(1,2,2,ui));
+      double v22 = + convvelint_0 * (my::vderiv_(2, 0) * derxjm_(2,0,0,ui)
+                        + vderiv_2_1 * derxjm_(2,1,0,ui) + vderiv_2_2 * derxjm_(2,2,0,ui))
+                   + convvelint_1 * (my::vderiv_(2, 0) * derxjm_(2,0,1,ui)
+                        + vderiv_2_1 * derxjm_(2,1,1,ui) + vderiv_2_2 * derxjm_(2,2,1,ui));
 
-      ecoupl_u(vi * 3 + 1, ui * 3 + 0) += v * (   my::deriv_(0, vi) * derxjm_(1,0,0,ui)
-                                                + my::deriv_(1, vi) * derxjm_(1,1,0,ui)
-                                                + my::deriv_(2, vi) * derxjm_(1,2,0,ui));
-      ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * (   my::deriv_(0, vi) * derxjm_(1,0,2,ui)
-                                                + my::deriv_(1, vi) * derxjm_(1,1,2,ui)
-                                                + my::deriv_(2, vi) * derxjm_(1,2,2,ui));
+      for (int vi = 0; vi < my::nen_; ++vi)
+      {
+        double v = my::densaf_*timefacfac_det * my::funct_(vi) * (1.0 + addstab );
 
-      ecoupl_u(vi * 3 + 2, ui * 3 + 0) += v * (   my::deriv_(0, vi) * derxjm_(2,0,0,ui)
-                                                + my::deriv_(1, vi) * derxjm_(2,1,0,ui)
-                                                + my::deriv_(2, vi) * derxjm_(2,2,0,ui));
-      ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * (   my::deriv_(0, vi) * derxjm_(2,0,1,ui)
-                                                + my::deriv_(1, vi) * derxjm_(2,1,1,ui)
-                                                + my::deriv_(2, vi) * derxjm_(2,2,1,ui));
+        ecoupl_u(vi * 3 + 0, ui * 3 + 0) += v * v00;
+        ecoupl_u(vi * 3 + 0, ui * 3 + 1) += v * v01;
+        ecoupl_u(vi * 3 + 0, ui * 3 + 2) += v * v02;
+
+        ecoupl_u(vi * 3 + 1, ui * 3 + 0) += v * v10;
+        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v * v11;
+        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * v12;
+
+        ecoupl_u(vi * 3 + 2, ui * 3 + 0) += v * v20;
+        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * v21;
+        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v * v22;
+      }
+    }
+
+    // pressure
+    const double v = press_ * timefacfac_det;
+    for (int vi = 0; vi < my::nen_; ++vi)
+    {
+      const double deriv_vi_0 = my::deriv_(0, vi);
+      const double deriv_vi_1 = my::deriv_(1, vi);
+      const double deriv_vi_2 = my::deriv_(2, vi);
+
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 3, ui * 3 + 1) += v * (   deriv_vi_0 * derxjm_(0,0,1,ui)
+                                              + deriv_vi_1 * derxjm_(0,1,1,ui)
+                                              + deriv_vi_2 * derxjm_(0,2,1,ui));
+        ecoupl_u(vi * 3, ui * 3 + 2) += v * (   deriv_vi_0 * derxjm_(0,0,2,ui)
+                                              + deriv_vi_1 * derxjm_(0,1,2,ui)
+                                              + deriv_vi_2 * derxjm_(0,2,2,ui));
+
+        ecoupl_u(vi * 3 + 1, ui * 3 + 0) += v * (   deriv_vi_0 * derxjm_(1,0,0,ui)
+                                                  + deriv_vi_1 * derxjm_(1,1,0,ui)
+                                                  + deriv_vi_2 * derxjm_(1,2,0,ui));
+        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * (   deriv_vi_0 * derxjm_(1,0,2,ui)
+                                                  + deriv_vi_1 * derxjm_(1,1,2,ui)
+                                                  + deriv_vi_2 * derxjm_(1,2,2,ui));
+
+        ecoupl_u(vi * 3 + 2, ui * 3 + 0) += v * (   deriv_vi_0 * derxjm_(2,0,0,ui)
+                                                  + deriv_vi_1 * derxjm_(2,1,0,ui)
+                                                  + deriv_vi_2 * derxjm_(2,2,0,ui));
+        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * (   deriv_vi_0 * derxjm_(2,0,1,ui)
+                                                  + deriv_vi_1 * derxjm_(2,1,1,ui)
+                                                  + deriv_vi_2 * derxjm_(2,2,1,ui));
+      }
     }
   }
 
   // //---------viscous term (brinkman term)
-#define xji_00 my::xji_(0,0)
-#define xji_01 my::xji_(0,1)
-#define xji_02 my::xji_(0,2)
-#define xji_10 my::xji_(1,0)
-#define xji_11 my::xji_(1,1)
-#define xji_12 my::xji_(1,2)
-#define xji_20 my::xji_(2,0)
-#define xji_21 my::xji_(2,1)
-#define xji_22 my::xji_(2,2)
+  const double xji_00 = my::xji_(0,0);
+  const double xji_01 = my::xji_(0,1);
+  const double xji_02 = my::xji_(0,2);
+  const double xji_10 = my::xji_(1,0);
+  const double xji_11 = my::xji_(1,1);
+  const double xji_12 = my::xji_(1,2);
+  const double xji_20 = my::xji_(2,0);
+  const double xji_21 = my::xji_(2,1);
+  const double xji_22 = my::xji_(2,2);
 
-#define xjm(i,j) my::xjm_(i,j)
+  const double porosity_inv = 1.0/porosity_;
 
   if(my::visceff_)
   {
 
+    const double vderxy_0_0   = 2.0*my::vderxy_(0, 0);
+    const double vderxy_1_1   = 2.0*my::vderxy_(1, 1);
+    const double vderxy_2_2   = 2.0*my::vderxy_(2, 2);
+    const double vderxy_0_1   = my::vderxy_(0, 1) + my::vderxy_(1, 0);
+    const double vderxy_0_2   = my::vderxy_(0, 2) + my::vderxy_(2, 0);
+    const double vderxy_1_2   = my::vderxy_(1, 2) + my::vderxy_(2, 1);
+
+    const double refgrad_porosity_0 = refgrad_porosity_(0);
+    const double refgrad_porosity_1 = refgrad_porosity_(1);
+    const double refgrad_porosity_2 = refgrad_porosity_(2);
+
     // part 1: derivative of 1/det
 
-    double v = my::visceff_*timefac*my::fac_ * (1.0 + addstab );
-    for (int ui=0; ui<my::nen_; ++ui)
     {
-      double derinvJ0 = -v*(my::deriv_(0,ui)*xji_00 + my::deriv_(1,ui)*xji_01 + my::deriv_(2,ui)*xji_02);
-      double derinvJ1 = -v*(my::deriv_(0,ui)*xji_10 + my::deriv_(1,ui)*xji_11 + my::deriv_(2,ui)*xji_12);
-      double derinvJ2 = -v*(my::deriv_(0,ui)*xji_20 + my::deriv_(1,ui)*xji_21 + my::deriv_(2,ui)*xji_22);
-      for (int vi=0; vi<my::nen_; ++vi)
+      const double v = my::visceff_*timefac*my::fac_ * (1.0 + addstab );
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        double visres0 =     2.0*my::derxy_(0, vi)* my::vderxy_(0, 0)
-                           +     my::derxy_(1, vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                           +     my::derxy_(2, vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0)) ;
-        double visres1 =         my::derxy_(0, vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                           + 2.0*my::derxy_(1, vi)* my::vderxy_(1, 1)
-                           +     my::derxy_(2, vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1)) ;
-        double visres2 =         my::derxy_(0, vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
-                           +     my::derxy_(1, vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
-                           + 2.0*my::derxy_(2, vi)* my::vderxy_(2, 2) ;
-        ecoupl_u(vi*3 + 0, ui*3 + 0) += derinvJ0*visres0;
-        ecoupl_u(vi*3 + 1, ui*3 + 0) += derinvJ0*visres1;
-        ecoupl_u(vi*3 + 2, ui*3 + 0) += derinvJ0*visres2;
+        const double derinvJ0 = -v*(my::deriv_(0,ui)*xji_00 + my::deriv_(1,ui)*xji_01 + my::deriv_(2,ui)*xji_02);
+        const double derinvJ1 = -v*(my::deriv_(0,ui)*xji_10 + my::deriv_(1,ui)*xji_11 + my::deriv_(2,ui)*xji_12);
+        const double derinvJ2 = -v*(my::deriv_(0,ui)*xji_20 + my::deriv_(1,ui)*xji_21 + my::deriv_(2,ui)*xji_22);
 
-        ecoupl_u(vi*3 + 0, ui*3 + 1) += derinvJ1*visres0;
-        ecoupl_u(vi*3 + 1, ui*3 + 1) += derinvJ1*visres1;
-        ecoupl_u(vi*3 + 2, ui*3 + 1) += derinvJ1*visres2;
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const double visres0 =     my::derxy_(0, vi)* vderxy_0_0
+                                   + my::derxy_(1, vi)* vderxy_0_1
+                                   + my::derxy_(2, vi)* vderxy_0_2;
+          const double visres1 =     my::derxy_(0, vi)* vderxy_0_1
+                                   + my::derxy_(1, vi)* vderxy_1_1
+                                   + my::derxy_(2, vi)* vderxy_1_2;
+          const double visres2 =     my::derxy_(0, vi)* vderxy_0_2
+                                   + my::derxy_(1, vi)* vderxy_1_2
+                                   + my::derxy_(2, vi)* vderxy_2_2;
+          ecoupl_u(vi*3 + 0, ui*3 + 0) += derinvJ0*visres0;
+          ecoupl_u(vi*3 + 1, ui*3 + 0) += derinvJ0*visres1;
+          ecoupl_u(vi*3 + 2, ui*3 + 0) += derinvJ0*visres2;
 
-        ecoupl_u(vi*3 + 0, ui*3 + 2) += derinvJ2*visres0;
-        ecoupl_u(vi*3 + 1, ui*3 + 2) += derinvJ2*visres1;
-        ecoupl_u(vi*3 + 2, ui*3 + 2) += derinvJ2*visres2;
+          ecoupl_u(vi*3 + 0, ui*3 + 1) += derinvJ1*visres0;
+          ecoupl_u(vi*3 + 1, ui*3 + 1) += derinvJ1*visres1;
+          ecoupl_u(vi*3 + 2, ui*3 + 1) += derinvJ1*visres2;
 
-        double visres0_poro =     2.0*refgrad_porosity_(0)*my::funct_(vi)* my::vderxy_(0, 0)
-                                +     refgrad_porosity_(1)*my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                +     refgrad_porosity_(2)*my::funct_(vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0)) ;
-        double visres1_poro =         refgrad_porosity_(0)*my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                + 2.0*refgrad_porosity_(1)*my::funct_(vi)* my::vderxy_(1, 1)
-                                +     refgrad_porosity_(2)*my::funct_(vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1)) ;
-        double visres2_poro =         refgrad_porosity_(0)*my::funct_(vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
-                                +     refgrad_porosity_(1)*my::funct_(vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
-                                + 2.0*refgrad_porosity_(2)*my::funct_(vi)* my::vderxy_(2, 2) ;
+          ecoupl_u(vi*3 + 0, ui*3 + 2) += derinvJ2*visres0;
+          ecoupl_u(vi*3 + 1, ui*3 + 2) += derinvJ2*visres1;
+          ecoupl_u(vi*3 + 2, ui*3 + 2) += derinvJ2*visres2;
 
-        ecoupl_u(vi*3 + 0, ui*3 + 0) += -1.0*derinvJ0/porosity_*visres0_poro;
-        ecoupl_u(vi*3 + 1, ui*3 + 0) += -1.0*derinvJ0/porosity_*visres1_poro;
-        ecoupl_u(vi*3 + 2, ui*3 + 0) += -1.0*derinvJ0/porosity_*visres2_poro;
+          const double funct_vi = my::funct_(vi);
+          const double visres0_poro =     refgrad_porosity_0*funct_vi* vderxy_0_0
+                                        + refgrad_porosity_1*funct_vi* vderxy_0_1
+                                        + refgrad_porosity_2*funct_vi* vderxy_0_2;
+          const double visres1_poro =     refgrad_porosity_0*funct_vi* vderxy_0_1
+                                        + refgrad_porosity_1*funct_vi* vderxy_1_1
+                                        + refgrad_porosity_2*funct_vi* vderxy_1_2;
+          const double visres2_poro =     refgrad_porosity_0*funct_vi* vderxy_0_2
+                                        + refgrad_porosity_1*funct_vi* vderxy_1_2
+                                        + refgrad_porosity_2*funct_vi* vderxy_2_2;
 
-        ecoupl_u(vi*3 + 0, ui*3 + 1) += -1.0*derinvJ1/porosity_*visres0_poro;
-        ecoupl_u(vi*3 + 1, ui*3 + 1) += -1.0*derinvJ1/porosity_*visres1_poro;
-        ecoupl_u(vi*3 + 2, ui*3 + 1) += -1.0*derinvJ1/porosity_*visres2_poro;
+          ecoupl_u(vi*3 + 0, ui*3 + 0) += -1.0*derinvJ0*porosity_inv*visres0_poro;
+          ecoupl_u(vi*3 + 1, ui*3 + 0) += -1.0*derinvJ0*porosity_inv*visres1_poro;
+          ecoupl_u(vi*3 + 2, ui*3 + 0) += -1.0*derinvJ0*porosity_inv*visres2_poro;
 
-        ecoupl_u(vi*3 + 0, ui*3 + 2) += -1.0*derinvJ2/porosity_*visres0_poro;
-        ecoupl_u(vi*3 + 1, ui*3 + 2) += -1.0*derinvJ2/porosity_*visres1_poro;
-        ecoupl_u(vi*3 + 2, ui*3 + 2) += -1.0*derinvJ2/porosity_*visres2_poro;
+          ecoupl_u(vi*3 + 0, ui*3 + 1) += -1.0*derinvJ1*porosity_inv*visres0_poro;
+          ecoupl_u(vi*3 + 1, ui*3 + 1) += -1.0*derinvJ1*porosity_inv*visres1_poro;
+          ecoupl_u(vi*3 + 2, ui*3 + 1) += -1.0*derinvJ1*porosity_inv*visres2_poro;
+
+          ecoupl_u(vi*3 + 0, ui*3 + 2) += -1.0*derinvJ2*porosity_inv*visres0_poro;
+          ecoupl_u(vi*3 + 1, ui*3 + 2) += -1.0*derinvJ2*porosity_inv*visres1_poro;
+          ecoupl_u(vi*3 + 2, ui*3 + 2) += -1.0*derinvJ2*porosity_inv*visres2_poro;
+        }
       }
     }
 
     // part 2: derivative of viscosity residual
 
-    const double porosity_inv=1.0/porosity_;
-     v = timefacfac_det*my::visceff_ * (1.0 + addstab );
-    for (int ui=0; ui<my::nen_; ++ui)
     {
-      double v0 = - my::vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
-                  - my::vderiv_(0,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
-                  - my::vderiv_(0,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
-                  - my::vderiv_(1,0)*(derxjm_100(ui)*xji_00)
-                  - my::vderiv_(1,1)*(derxjm_100(ui)*xji_01)
-                  - my::vderiv_(1,2)*(derxjm_100(ui)*xji_02)
-                  - my::vderiv_(2,0)*(derxjm_200(ui)*xji_00)
-                  - my::vderiv_(2,1)*(derxjm_200(ui)*xji_01)
-                  - my::vderiv_(2,2)*(derxjm_200(ui)*xji_02);
-      double v1 = - my::vderiv_(0,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
-                  - my::vderiv_(0,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
-                  - my::vderiv_(0,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
-                  - my::vderiv_(1,0)*(derxjm_110(ui)*xji_00)
-                  - my::vderiv_(1,1)*(derxjm_110(ui)*xji_01)
-                  - my::vderiv_(1,2)*(derxjm_110(ui)*xji_02)
-                  - my::vderiv_(2,0)*(derxjm_210(ui)*xji_00)
-                  - my::vderiv_(2,1)*(derxjm_210(ui)*xji_01)
-                  - my::vderiv_(2,2)*(derxjm_210(ui)*xji_02);
-      double v2 = - my::vderiv_(0,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
-                  - my::vderiv_(0,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
-                  - my::vderiv_(0,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
-                  - my::vderiv_(1,0)*(derxjm_120(ui)*xji_00)
-                  - my::vderiv_(1,1)*(derxjm_120(ui)*xji_01)
-                  - my::vderiv_(1,2)*(derxjm_120(ui)*xji_02)
-                  - my::vderiv_(2,0)*(derxjm_220(ui)*xji_00)
-                  - my::vderiv_(2,1)*(derxjm_220(ui)*xji_01)
-                  - my::vderiv_(2,2)*(derxjm_220(ui)*xji_02);
+      const double v = timefacfac_det*my::visceff_ * (1.0 + addstab );
 
-      for (int vi=0; vi<my::nen_; ++vi)
+      const double refgrad_porosity_0 = refgrad_porosity_(0);
+      const double refgrad_porosity_1 = refgrad_porosity_(1);
+      const double refgrad_porosity_2 = refgrad_porosity_(2);
+
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        ecoupl_u(vi*3 + 0, ui*3 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
+        const double derxjm_100_ui = derxjm_100(ui);
+        const double derxjm_110_ui = derxjm_110(ui);
+        const double derxjm_120_ui = derxjm_120(ui);
+        const double derxjm_200_ui = derxjm_200(ui);
+        const double derxjm_210_ui = derxjm_210(ui);
+        const double derxjm_220_ui = derxjm_220(ui);
+        const double derxjm_201_ui = derxjm_201(ui);
+        const double derxjm_001_ui = derxjm_001(ui);
+        const double derxjm_002_ui = derxjm_002(ui);
+        const double derxjm_011_ui = derxjm_011(ui);
+        const double derxjm_021_ui = derxjm_021(ui);
+        const double derxjm_012_ui = derxjm_012(ui);
+        const double derxjm_022_ui = derxjm_022(ui);
+        const double derxjm_221_ui = derxjm_221(ui);
+        const double derxjm_102_ui = derxjm_102(ui);
+        const double derxjm_112_ui = derxjm_112(ui);
+        const double derxjm_122_ui = derxjm_122(ui);
+        const double derxjm_211_ui = derxjm_211(ui);
 
-      ////////////////////////////////////////////////////////////////
+        {
+          const double v0 = - vderiv_0_0*(xji_10*derxjm_100_ui + xji_10*derxjm_100_ui + xji_20*derxjm_200_ui + xji_20*derxjm_200_ui)
+                            - vderiv_0_1*(xji_11*derxjm_100_ui + xji_10*derxjm_110_ui + xji_21*derxjm_200_ui + xji_20*derxjm_210_ui)
+                            - vderiv_0_2*(xji_12*derxjm_100_ui + xji_10*derxjm_120_ui + xji_22*derxjm_200_ui + xji_20*derxjm_220_ui)
+                            - vderiv_1_0*(derxjm_100_ui*xji_00)
+                            - vderiv_1_1*(derxjm_100_ui*xji_01)
+                            - vderiv_1_2*(derxjm_100_ui*xji_02)
+                            - vderiv_2_0*(derxjm_200_ui*xji_00)
+                            - vderiv_2_1*(derxjm_200_ui*xji_01)
+                            - vderiv_2_2*(derxjm_200_ui*xji_02);
+          const double v1 = - vderiv_0_0*(xji_10*derxjm_110_ui + xji_11*derxjm_100_ui + xji_20*derxjm_210_ui + xji_21*derxjm_200_ui)
+                            - vderiv_0_1*(xji_11*derxjm_110_ui + xji_11*derxjm_110_ui + xji_21*derxjm_210_ui + xji_21*derxjm_210_ui)
+                            - vderiv_0_2*(xji_12*derxjm_110_ui + xji_11*derxjm_120_ui + xji_22*derxjm_210_ui + xji_21*derxjm_220_ui)
+                            - vderiv_1_0*(derxjm_110_ui*xji_00)
+                            - vderiv_1_1*(derxjm_110_ui*xji_01)
+                            - vderiv_1_2*(derxjm_110_ui*xji_02)
+                            - vderiv_2_0*(derxjm_210_ui*xji_00)
+                            - vderiv_2_1*(derxjm_210_ui*xji_01)
+                            - vderiv_2_2*(derxjm_210_ui*xji_02);
+          const double v2 = - vderiv_0_0*(xji_10*derxjm_120_ui + xji_12*derxjm_100_ui + xji_20*derxjm_220_ui + xji_22*derxjm_200_ui)
+                            - vderiv_0_1*(xji_11*derxjm_120_ui + xji_12*derxjm_110_ui + xji_21*derxjm_220_ui + xji_22*derxjm_210_ui)
+                            - vderiv_0_2*(xji_12*derxjm_120_ui + xji_12*derxjm_120_ui + xji_22*derxjm_220_ui + xji_22*derxjm_220_ui)
+                            - vderiv_1_0*(derxjm_120_ui*xji_00)
+                            - vderiv_1_1*(derxjm_120_ui*xji_01)
+                            - vderiv_1_2*(derxjm_120_ui*xji_02)
+                            - vderiv_2_0*(derxjm_220_ui*xji_00)
+                            - vderiv_2_1*(derxjm_220_ui*xji_01)
+                            - vderiv_2_2*(derxjm_220_ui*xji_02);
 
-      v0 = - my::vderiv_(0,0)*(2*derxjm_001(ui)*xji_00 + 2*derxjm_001(ui)*xji_00 + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
-           - my::vderiv_(0,1)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
-           - my::vderiv_(0,2)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
-           - my::vderiv_(1,0)*(derxjm_001(ui)*xji_10)
-           - my::vderiv_(1,1)*(derxjm_011(ui)*xji_10)
-           - my::vderiv_(1,2)*(derxjm_021(ui)*xji_10)
-           - my::vderiv_(2,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
-           - my::vderiv_(2,1)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
-           - my::vderiv_(2,2)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20);
-      v1 = - my::vderiv_(0,0)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
-           - my::vderiv_(0,1)*(2*derxjm_011(ui)*xji_01 + 2*derxjm_011(ui)*xji_01 + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
-           - my::vderiv_(0,2)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
-           - my::vderiv_(1,0)*(derxjm_001(ui)*xji_11)
-           - my::vderiv_(1,1)*(derxjm_011(ui)*xji_11)
-           - my::vderiv_(1,2)*(derxjm_021(ui)*xji_11)
-           - my::vderiv_(2,0)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
-           - my::vderiv_(2,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
-           - my::vderiv_(2,2)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21);
-      v2 = - my::vderiv_(0,0)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
-           - my::vderiv_(0,1)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
-           - my::vderiv_(0,2)*(2*derxjm_021(ui)*xji_02 + 2*derxjm_021(ui)*xji_02 + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
-           - my::vderiv_(1,0)*(derxjm_001(ui)*xji_12)
-           - my::vderiv_(1,1)*(derxjm_011(ui)*xji_12)
-           - my::vderiv_(1,2)*(derxjm_021(ui)*xji_12)
-           - my::vderiv_(2,0)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
-           - my::vderiv_(2,1)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
-           - my::vderiv_(2,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22);
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 0, ui*3 + 0) += v*(  my::deriv_(0,vi)*v0
+                                               + my::deriv_(1,vi)*v1
+                                               + my::deriv_(2,vi)*v2)
+                                         - v*my::funct_(vi)*porosity_inv*(
+                                               refgrad_porosity_0*v0
+                                             + refgrad_porosity_1*v1
+                                             + refgrad_porosity_2*v2);
+          }
+        }
 
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 0, ui*3 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(2*derxjm_001_ui*xji_00 + 2*derxjm_001_ui*xji_00 + xji_20*derxjm_201_ui + xji_20*derxjm_201_ui)
+                             - vderiv_0_1*(2*derxjm_011_ui*xji_00 + 2*derxjm_001_ui*xji_01 + xji_21*derxjm_201_ui + xji_20*derxjm_211_ui)
+                             - vderiv_0_2*(2*derxjm_021_ui*xji_00 + 2*derxjm_001_ui*xji_02 + xji_22*derxjm_201_ui + xji_20*derxjm_221_ui)
+                             - vderiv_1_0*(derxjm_001_ui*xji_10)
+                             - vderiv_1_1*(derxjm_011_ui*xji_10)
+                             - vderiv_1_2*(derxjm_021_ui*xji_10)
+                             - vderiv_2_0*(derxjm_201_ui*xji_00 + derxjm_001_ui*xji_20)
+                             - vderiv_2_1*(derxjm_201_ui*xji_01 + derxjm_011_ui*xji_20)
+                             - vderiv_2_2*(derxjm_201_ui*xji_02 + derxjm_021_ui*xji_20);
+          const double v1 =  - vderiv_0_0*(2*derxjm_011_ui*xji_00 + 2*derxjm_001_ui*xji_01 + xji_21*derxjm_201_ui + xji_20*derxjm_211_ui)
+                             - vderiv_0_1*(2*derxjm_011_ui*xji_01 + 2*derxjm_011_ui*xji_01 + xji_21*derxjm_211_ui + xji_21*derxjm_211_ui)
+                             - vderiv_0_2*(2*derxjm_011_ui*xji_02 + 2*derxjm_021_ui*xji_01 + xji_21*derxjm_221_ui + xji_22*derxjm_211_ui)
+                             - vderiv_1_0*(derxjm_001_ui*xji_11)
+                             - vderiv_1_1*(derxjm_011_ui*xji_11)
+                             - vderiv_1_2*(derxjm_021_ui*xji_11)
+                             - vderiv_2_0*(derxjm_211_ui*xji_00 + derxjm_001_ui*xji_21)
+                             - vderiv_2_1*(derxjm_211_ui*xji_01 + derxjm_011_ui*xji_21)
+                             - vderiv_2_2*(derxjm_211_ui*xji_02 + derxjm_021_ui*xji_21);
+          const double v2 =  - vderiv_0_0*(2*derxjm_021_ui*xji_00 + 2*derxjm_001_ui*xji_02 + xji_22*derxjm_201_ui + xji_20*derxjm_221_ui)
+                             - vderiv_0_1*(2*derxjm_011_ui*xji_02 + 2*derxjm_021_ui*xji_01 + xji_21*derxjm_221_ui + xji_22*derxjm_211_ui)
+                             - vderiv_0_2*(2*derxjm_021_ui*xji_02 + 2*derxjm_021_ui*xji_02 + xji_22*derxjm_221_ui + xji_22*derxjm_221_ui)
+                             - vderiv_1_0*(derxjm_001_ui*xji_12)
+                             - vderiv_1_1*(derxjm_011_ui*xji_12)
+                             - vderiv_1_2*(derxjm_021_ui*xji_12)
+                             - vderiv_2_0*(derxjm_221_ui*xji_00 + derxjm_001_ui*xji_22)
+                             - vderiv_2_1*(derxjm_221_ui*xji_01 + derxjm_011_ui*xji_22)
+                             - vderiv_2_2*(derxjm_221_ui*xji_02 + derxjm_021_ui*xji_22);
 
-      ////////////////////////////////////////////////////////////////
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 0, ui*3 + 1) +=  v*(  my::deriv_(0,vi)*v0
+                                                + my::deriv_(1,vi)*v1
+                                                + my::deriv_(2,vi)*v2)
+                                           - v*my::funct_(vi)*porosity_inv*(
+                                                 refgrad_porosity_0*v0
+                                               + refgrad_porosity_1*v1
+                                               + refgrad_porosity_2*v2);
+          }
+        }
 
-      v0 = - my::vderiv_(0,0)*(2*derxjm_002(ui)*xji_00 + 2*derxjm_002(ui)*xji_00 + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
-           - my::vderiv_(0,1)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
-           - my::vderiv_(0,2)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
-           - my::vderiv_(1,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
-           - my::vderiv_(1,1)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
-           - my::vderiv_(1,2)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
-           - my::vderiv_(2,0)*(derxjm_002(ui)*xji_20)
-           - my::vderiv_(2,1)*(derxjm_012(ui)*xji_20)
-           - my::vderiv_(2,2)*(derxjm_022(ui)*xji_20);
-      v1 = - my::vderiv_(0,0)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
-           - my::vderiv_(0,1)*(2*derxjm_012(ui)*xji_01 + 2*derxjm_012(ui)*xji_01 + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
-           - my::vderiv_(0,2)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
-           - my::vderiv_(1,0)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
-           - my::vderiv_(1,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
-           - my::vderiv_(1,2)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
-           - my::vderiv_(2,0)*(derxjm_002(ui)*xji_21)
-           - my::vderiv_(2,1)*(derxjm_012(ui)*xji_21)
-           - my::vderiv_(2,2)*(derxjm_022(ui)*xji_21);
-      v2 = - my::vderiv_(0,0)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
-           - my::vderiv_(0,1)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
-           - my::vderiv_(0,2)*(2*derxjm_022(ui)*xji_02 + 2*derxjm_022(ui)*xji_02 + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui))
-           - my::vderiv_(1,0)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
-           - my::vderiv_(1,1)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
-           - my::vderiv_(1,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
-           - my::vderiv_(2,0)*(derxjm_002(ui)*xji_22)
-           - my::vderiv_(2,1)*(derxjm_012(ui)*xji_22)
-           - my::vderiv_(2,2)*(derxjm_022(ui)*xji_22);
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(2*derxjm_002_ui*xji_00 + 2*derxjm_002_ui*xji_00 + xji_10*derxjm_102_ui + xji_10*derxjm_102_ui)
+                             - vderiv_0_1*(2*derxjm_012_ui*xji_00 + 2*derxjm_002_ui*xji_01 + xji_11*derxjm_102_ui + xji_10*derxjm_112_ui)
+                             - vderiv_0_2*(2*derxjm_022_ui*xji_00 + 2*derxjm_002_ui*xji_02 + xji_12*derxjm_102_ui + xji_10*derxjm_122_ui)
+                             - vderiv_1_0*(derxjm_002_ui*xji_10 + derxjm_102_ui*xji_00)
+                             - vderiv_1_1*(derxjm_012_ui*xji_10 + derxjm_102_ui*xji_01)
+                             - vderiv_1_2*(derxjm_022_ui*xji_10 + derxjm_102_ui*xji_02)
+                             - vderiv_2_0*(derxjm_002_ui*xji_20)
+                             - vderiv_2_1*(derxjm_012_ui*xji_20)
+                             - vderiv_2_2*(derxjm_022_ui*xji_20);
+          const double v1 =  - vderiv_0_0*(2*derxjm_012_ui*xji_00 + 2*derxjm_002_ui*xji_01 + xji_11*derxjm_102_ui + xji_10*derxjm_112_ui)
+                             - vderiv_0_1*(2*derxjm_012_ui*xji_01 + 2*derxjm_012_ui*xji_01 + xji_11*derxjm_112_ui + xji_11*derxjm_112_ui)
+                             - vderiv_0_2*(2*derxjm_012_ui*xji_02 + 2*derxjm_022_ui*xji_01 + xji_11*derxjm_122_ui + xji_12*derxjm_112_ui)
+                             - vderiv_1_0*(derxjm_002_ui*xji_11 + derxjm_112_ui*xji_00)
+                             - vderiv_1_1*(derxjm_012_ui*xji_11 + derxjm_112_ui*xji_01)
+                             - vderiv_1_2*(derxjm_022_ui*xji_11 + derxjm_112_ui*xji_02)
+                             - vderiv_2_0*(derxjm_002_ui*xji_21)
+                             - vderiv_2_1*(derxjm_012_ui*xji_21)
+                             - vderiv_2_2*(derxjm_022_ui*xji_21);
+          const double v2 =  - vderiv_0_0*(2*derxjm_022_ui*xji_00 + 2*derxjm_002_ui*xji_02 + xji_12*derxjm_102_ui + xji_10*derxjm_122_ui)
+                             - vderiv_0_1*(2*derxjm_012_ui*xji_02 + 2*derxjm_022_ui*xji_01 + xji_11*derxjm_122_ui + xji_12*derxjm_112_ui)
+                             - vderiv_0_2*(2*derxjm_022_ui*xji_02 + 2*derxjm_022_ui*xji_02 + xji_12*derxjm_122_ui + xji_12*derxjm_122_ui)
+                             - vderiv_1_0*(derxjm_002_ui*xji_12 + derxjm_122_ui*xji_00)
+                             - vderiv_1_1*(derxjm_012_ui*xji_12 + derxjm_122_ui*xji_01)
+                             - vderiv_1_2*(derxjm_022_ui*xji_12 + derxjm_122_ui*xji_02)
+                             - vderiv_2_0*(derxjm_002_ui*xji_22)
+                             - vderiv_2_1*(derxjm_012_ui*xji_22)
+                             - vderiv_2_2*(derxjm_022_ui*xji_22);
 
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 0, ui*3 + 2) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 0, ui*3 + 2) +=   v*(  my::deriv_(0,vi)*v0
+                                                 + my::deriv_(1,vi)*v1
+                                                 + my::deriv_(2,vi)*v2)
+                                            - v*my::funct_(vi)*porosity_inv*(
+                                                  refgrad_porosity_0*v0
+                                                + refgrad_porosity_1*v1
+                                                + refgrad_porosity_2*v2);
+          }
+        }
 
-      ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(derxjm_100_ui*xji_00)
+                             - vderiv_0_1*(derxjm_110_ui*xji_00)
+                             - vderiv_0_2*(derxjm_120_ui*xji_00)
+                             - vderiv_1_0*(2*xji_10*derxjm_100_ui + 2*xji_10*derxjm_100_ui + xji_20*derxjm_200_ui + xji_20*derxjm_200_ui)
+                             - vderiv_1_1*(2*xji_11*derxjm_100_ui + 2*xji_10*derxjm_110_ui + xji_21*derxjm_200_ui + xji_20*derxjm_210_ui)
+                             - vderiv_1_2*(2*xji_12*derxjm_100_ui + 2*xji_10*derxjm_120_ui + xji_22*derxjm_200_ui + xji_20*derxjm_220_ui)
+                             - vderiv_2_0*(derxjm_200_ui*xji_10 + derxjm_100_ui*xji_20)
+                             - vderiv_2_1*(derxjm_200_ui*xji_11 + derxjm_110_ui*xji_20)
+                             - vderiv_2_2*(derxjm_200_ui*xji_12 + derxjm_120_ui*xji_20);
+          const double v1 =  - vderiv_0_0*(derxjm_100_ui*xji_01)
+                             - vderiv_0_1*(derxjm_110_ui*xji_01)
+                             - vderiv_0_2*(derxjm_120_ui*xji_01)
+                             - vderiv_1_0*(2*xji_10*derxjm_110_ui + 2*xji_11*derxjm_100_ui + xji_20*derxjm_210_ui + xji_21*derxjm_200_ui)
+                             - vderiv_1_1*(2*xji_11*derxjm_110_ui + 2*xji_11*derxjm_110_ui + xji_21*derxjm_210_ui + xji_21*derxjm_210_ui)
+                             - vderiv_1_2*(2*xji_12*derxjm_110_ui + 2*xji_11*derxjm_120_ui + xji_22*derxjm_210_ui + xji_21*derxjm_220_ui)
+                             - vderiv_2_0*(derxjm_210_ui*xji_10 + derxjm_100_ui*xji_21)
+                             - vderiv_2_1*(derxjm_210_ui*xji_11 + derxjm_110_ui*xji_21)
+                             - vderiv_2_2*(derxjm_210_ui*xji_12 + derxjm_120_ui*xji_21);
+          const double v2 =  - vderiv_0_0*(derxjm_100_ui*xji_02)
+                             - vderiv_0_1*(derxjm_110_ui*xji_02)
+                             - vderiv_0_2*(derxjm_120_ui*xji_02)
+                             - vderiv_1_0*(2*xji_10*derxjm_120_ui + 2*xji_12*derxjm_100_ui + xji_20*derxjm_220_ui + xji_22*derxjm_200_ui)
+                             - vderiv_1_1*(2*xji_11*derxjm_120_ui + 2*xji_12*derxjm_110_ui + xji_21*derxjm_220_ui + xji_22*derxjm_210_ui)
+                             - vderiv_1_2*(2*xji_12*derxjm_120_ui + 2*xji_12*derxjm_120_ui + xji_22*derxjm_220_ui + xji_22*derxjm_220_ui)
+                             - vderiv_2_0*(derxjm_220_ui*xji_10 + derxjm_100_ui*xji_22)
+                             - vderiv_2_1*(derxjm_220_ui*xji_11 + derxjm_110_ui*xji_22)
+                             - vderiv_2_2*(derxjm_220_ui*xji_12 + derxjm_120_ui*xji_22);
 
-      v0 = - my::vderiv_(0,0)*(derxjm_100(ui)*xji_00)
-           - my::vderiv_(0,1)*(derxjm_110(ui)*xji_00)
-           - my::vderiv_(0,2)*(derxjm_120(ui)*xji_00)
-           - my::vderiv_(1,0)*(2*xji_10*derxjm_100(ui) + 2*xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
-           - my::vderiv_(1,1)*(2*xji_11*derxjm_100(ui) + 2*xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
-           - my::vderiv_(1,2)*(2*xji_12*derxjm_100(ui) + 2*xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
-           - my::vderiv_(2,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
-           - my::vderiv_(2,1)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
-           - my::vderiv_(2,2)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20);
-      v1 = - my::vderiv_(0,0)*(derxjm_100(ui)*xji_01)
-           - my::vderiv_(0,1)*(derxjm_110(ui)*xji_01)
-           - my::vderiv_(0,2)*(derxjm_120(ui)*xji_01)
-           - my::vderiv_(1,0)*(2*xji_10*derxjm_110(ui) + 2*xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
-           - my::vderiv_(1,1)*(2*xji_11*derxjm_110(ui) + 2*xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
-           - my::vderiv_(1,2)*(2*xji_12*derxjm_110(ui) + 2*xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
-           - my::vderiv_(2,0)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
-           - my::vderiv_(2,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
-           - my::vderiv_(2,2)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21);
-      v2 = - my::vderiv_(0,0)*(derxjm_100(ui)*xji_02)
-           - my::vderiv_(0,1)*(derxjm_110(ui)*xji_02)
-           - my::vderiv_(0,2)*(derxjm_120(ui)*xji_02)
-           - my::vderiv_(1,0)*(2*xji_10*derxjm_120(ui) + 2*xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
-           - my::vderiv_(1,1)*(2*xji_11*derxjm_120(ui) + 2*xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
-           - my::vderiv_(1,2)*(2*xji_12*derxjm_120(ui) + 2*xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
-           - my::vderiv_(2,0)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
-           - my::vderiv_(2,1)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
-           - my::vderiv_(2,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22);
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 1, ui*3 + 0) +=   v*(  my::deriv_(0,vi)*v0
+                                                 + my::deriv_(1,vi)*v1
+                                                 + my::deriv_(2,vi)*v2)
+                                             - v*my::funct_(vi)*porosity_inv*(
+                                                   refgrad_porosity_0*v0
+                                                 + refgrad_porosity_1*v1
+                                                 + refgrad_porosity_2*v2);
+          }
+        }
 
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 1, ui*3 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(derxjm_001_ui*xji_10)
+                             - vderiv_0_1*(derxjm_001_ui*xji_11)
+                             - vderiv_0_2*(derxjm_001_ui*xji_12)
+                             - vderiv_1_0*(xji_00*derxjm_001_ui + xji_00*derxjm_001_ui + xji_20*derxjm_201_ui + xji_20*derxjm_201_ui)
+                             - vderiv_1_1*(xji_01*derxjm_001_ui + xji_00*derxjm_011_ui + xji_21*derxjm_201_ui + xji_20*derxjm_211_ui)
+                             - vderiv_1_2*(xji_02*derxjm_001_ui + xji_00*derxjm_021_ui + xji_22*derxjm_201_ui + xji_20*derxjm_221_ui)
+                             - vderiv_2_0*(derxjm_201_ui*xji_10)
+                             - vderiv_2_1*(derxjm_201_ui*xji_11)
+                             - vderiv_2_2*(derxjm_201_ui*xji_12);
+          const double v1 =   - vderiv_0_0*(derxjm_011_ui*xji_10)
+                             - vderiv_0_1*(derxjm_011_ui*xji_11)
+                             - vderiv_0_2*(derxjm_011_ui*xji_12)
+                             - vderiv_1_0*(xji_00*derxjm_011_ui + xji_01*derxjm_001_ui + xji_20*derxjm_211_ui + xji_21*derxjm_201_ui)
+                             - vderiv_1_1*(xji_01*derxjm_011_ui + xji_01*derxjm_011_ui + xji_21*derxjm_211_ui + xji_21*derxjm_211_ui)
+                             - vderiv_1_2*(xji_02*derxjm_011_ui + xji_01*derxjm_021_ui + xji_22*derxjm_211_ui + xji_21*derxjm_221_ui)
+                             - vderiv_2_0*(derxjm_211_ui*xji_10)
+                             - vderiv_2_1*(derxjm_211_ui*xji_11)
+                             - vderiv_2_2*(derxjm_211_ui*xji_12);
+          const double v2 =  - vderiv_0_0*(derxjm_021_ui*xji_10)
+                             - vderiv_0_1*(derxjm_021_ui*xji_11)
+                             - vderiv_0_2*(derxjm_021_ui*xji_12)
+                             - vderiv_1_0*(xji_00*derxjm_021_ui + xji_02*derxjm_001_ui + xji_20*derxjm_221_ui + xji_22*derxjm_201_ui)
+                             - vderiv_1_1*(xji_01*derxjm_021_ui + xji_02*derxjm_011_ui + xji_21*derxjm_221_ui + xji_22*derxjm_211_ui)
+                             - vderiv_1_2*(xji_02*derxjm_021_ui + xji_02*derxjm_021_ui + xji_22*derxjm_221_ui + xji_22*derxjm_221_ui)
+                             - vderiv_2_0*(derxjm_221_ui*xji_10)
+                             - vderiv_2_1*(derxjm_221_ui*xji_11)
+                             - vderiv_2_2*(derxjm_221_ui*xji_12);
 
-      ////////////////////////////////////////////////////////////////
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 1, ui*3 + 1) +=   v*(  my::deriv_(0,vi)*v0
+                                                 + my::deriv_(1,vi)*v1
+                                                 + my::deriv_(2,vi)*v2)
+                                         - v*my::funct_(vi)*porosity_inv*(
+                                               refgrad_porosity_0*v0
+                                             + refgrad_porosity_1*v1
+                                             + refgrad_porosity_2*v2);
+          }
+        }
 
-      v0 = - my::vderiv_(0,0)*(derxjm_001(ui)*xji_10)
-           - my::vderiv_(0,1)*(derxjm_001(ui)*xji_11)
-           - my::vderiv_(0,2)*(derxjm_001(ui)*xji_12)
-           - my::vderiv_(1,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
-           - my::vderiv_(1,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
-           - my::vderiv_(1,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
-           - my::vderiv_(2,0)*(derxjm_201(ui)*xji_10)
-           - my::vderiv_(2,1)*(derxjm_201(ui)*xji_11)
-           - my::vderiv_(2,2)*(derxjm_201(ui)*xji_12);
-      v1 = - my::vderiv_(0,0)*(derxjm_011(ui)*xji_10)
-           - my::vderiv_(0,1)*(derxjm_011(ui)*xji_11)
-           - my::vderiv_(0,2)*(derxjm_011(ui)*xji_12)
-           - my::vderiv_(1,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + xji_20*derxjm_211(ui) + xji_21*derxjm_201(ui))
-           - my::vderiv_(1,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
-           - my::vderiv_(1,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + xji_22*derxjm_211(ui) + xji_21*derxjm_221(ui))
-           - my::vderiv_(2,0)*(derxjm_211(ui)*xji_10)
-           - my::vderiv_(2,1)*(derxjm_211(ui)*xji_11)
-           - my::vderiv_(2,2)*(derxjm_211(ui)*xji_12);
-      v2 = - my::vderiv_(0,0)*(derxjm_021(ui)*xji_10)
-           - my::vderiv_(0,1)*(derxjm_021(ui)*xji_11)
-           - my::vderiv_(0,2)*(derxjm_021(ui)*xji_12)
-           - my::vderiv_(1,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + xji_20*derxjm_221(ui) + xji_22*derxjm_201(ui))
-           - my::vderiv_(1,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
-           - my::vderiv_(1,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
-           - my::vderiv_(2,0)*(derxjm_221(ui)*xji_10)
-           - my::vderiv_(2,1)*(derxjm_221(ui)*xji_11)
-           - my::vderiv_(2,2)*(derxjm_221(ui)*xji_12);
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(derxjm_002_ui*xji_10 + derxjm_102_ui*xji_00)
+                             - vderiv_0_1*(derxjm_002_ui*xji_11 + derxjm_112_ui*xji_00)
+                             - vderiv_0_2*(derxjm_002_ui*xji_12 + derxjm_122_ui*xji_00)
+                             - vderiv_1_0*(xji_00*derxjm_002_ui + xji_00*derxjm_002_ui + 2*xji_10*derxjm_102_ui + 2*xji_10*derxjm_102_ui)
+                             - vderiv_1_1*(xji_01*derxjm_002_ui + xji_00*derxjm_012_ui + 2*xji_11*derxjm_102_ui + 2*xji_10*derxjm_112_ui)
+                             - vderiv_1_2*(xji_02*derxjm_002_ui + xji_00*derxjm_022_ui + 2*xji_12*derxjm_102_ui + 2*xji_10*derxjm_122_ui)
+                             - vderiv_2_0*(derxjm_102_ui*xji_20)
+                             - vderiv_2_1*(derxjm_112_ui*xji_20)
+                             - vderiv_2_2*(derxjm_122_ui*xji_20);
+          const double v1 =  - vderiv_0_0*(derxjm_012_ui*xji_10 + derxjm_102_ui*xji_01)
+                             - vderiv_0_1*(derxjm_012_ui*xji_11 + derxjm_112_ui*xji_01)
+                             - vderiv_0_2*(derxjm_012_ui*xji_12 + derxjm_122_ui*xji_01)
+                             - vderiv_1_0*(xji_00*derxjm_012_ui + xji_01*derxjm_002_ui + 2*xji_10*derxjm_112_ui + 2*xji_11*derxjm_102_ui)
+                             - vderiv_1_1*(xji_01*derxjm_012_ui + xji_01*derxjm_012_ui + 2*xji_11*derxjm_112_ui + 2*xji_11*derxjm_112_ui)
+                             - vderiv_1_2*(xji_02*derxjm_012_ui + xji_01*derxjm_022_ui + 2*xji_12*derxjm_112_ui + 2*xji_11*derxjm_122_ui)
+                             - vderiv_2_0*(derxjm_102_ui*xji_21)
+                             - vderiv_2_1*(derxjm_112_ui*xji_21)
+                             - vderiv_2_2*(derxjm_122_ui*xji_21);
+          const double v2 =  - vderiv_0_0*(derxjm_022_ui*xji_10 + derxjm_102_ui*xji_02)
+                             - vderiv_0_1*(derxjm_022_ui*xji_11 + derxjm_112_ui*xji_02)
+                             - vderiv_0_2*(derxjm_022_ui*xji_12 + derxjm_122_ui*xji_02)
+                             - vderiv_1_0*(xji_00*derxjm_022_ui + xji_02*derxjm_002_ui + 2*xji_10*derxjm_122_ui + 2*xji_12*derxjm_102_ui)
+                             - vderiv_1_1*(xji_01*derxjm_022_ui + xji_02*derxjm_012_ui + 2*xji_11*derxjm_122_ui + 2*xji_12*derxjm_112_ui)
+                             - vderiv_1_2*(xji_02*derxjm_022_ui + xji_02*derxjm_022_ui + 2*xji_12*derxjm_122_ui + 2*xji_12*derxjm_122_ui)
+                             - vderiv_2_0*(derxjm_102_ui*xji_22)
+                             - vderiv_2_1*(derxjm_112_ui*xji_22)
+                             - vderiv_2_2*(derxjm_122_ui*xji_22);
 
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 1, ui*3 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 1, ui*3 + 2) +=   v * (  my::deriv_(0,vi)*v0
+                                                   + my::deriv_(1,vi)*v1
+                                                   + my::deriv_(2,vi)*v2)
+                                         - v * my::funct_(vi)*porosity_inv*(
+                                               refgrad_porosity_0*v0
+                                             + refgrad_porosity_1*v1
+                                             + refgrad_porosity_2*v2);
+          }
+        }
 
-      ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(derxjm_200_ui*xji_00)
+                             - vderiv_0_1*(derxjm_210_ui*xji_00)
+                             - vderiv_0_2*(derxjm_220_ui*xji_00)
+                             - vderiv_1_0*(derxjm_200_ui*xji_10 + derxjm_100_ui*xji_20)
+                             - vderiv_1_1*(derxjm_210_ui*xji_10 + derxjm_100_ui*xji_21)
+                             - vderiv_1_2*(derxjm_220_ui*xji_10 + derxjm_100_ui*xji_22)
+                             - vderiv_2_0*(xji_10*derxjm_100_ui + xji_10*derxjm_100_ui + 2*xji_20*derxjm_200_ui + 2*xji_20*derxjm_200_ui)
+                             - vderiv_2_1*(xji_11*derxjm_100_ui + xji_10*derxjm_110_ui + 2*xji_21*derxjm_200_ui + 2*xji_20*derxjm_210_ui)
+                             - vderiv_2_2*(xji_12*derxjm_100_ui + xji_10*derxjm_120_ui + 2*xji_22*derxjm_200_ui + 2*xji_20*derxjm_220_ui);
+          const double v1 =  - vderiv_0_0*(derxjm_200_ui*xji_01)
+                             - vderiv_0_1*(derxjm_210_ui*xji_01)
+                             - vderiv_0_2*(derxjm_220_ui*xji_01)
+                             - vderiv_1_0*(derxjm_200_ui*xji_11 + derxjm_110_ui*xji_20)
+                             - vderiv_1_1*(derxjm_210_ui*xji_11 + derxjm_110_ui*xji_21)
+                             - vderiv_1_2*(derxjm_220_ui*xji_11 + derxjm_110_ui*xji_22)
+                             - vderiv_2_0*(xji_10*derxjm_110_ui + xji_11*derxjm_100_ui + 2*xji_20*derxjm_210_ui + 2*xji_21*derxjm_200_ui)
+                             - vderiv_2_1*(xji_11*derxjm_110_ui + xji_11*derxjm_110_ui + 2*xji_21*derxjm_210_ui + 2*xji_21*derxjm_210_ui)
+                             - vderiv_2_2*(xji_12*derxjm_110_ui + xji_11*derxjm_120_ui + 2*xji_22*derxjm_210_ui + 2*xji_21*derxjm_220_ui);
+          const double v2 =  - vderiv_0_0*(derxjm_200_ui*xji_02)
+                             - vderiv_0_1*(derxjm_210_ui*xji_02)
+                             - vderiv_0_2*(derxjm_220_ui*xji_02)
+                             - vderiv_1_0*(derxjm_200_ui*xji_12 + derxjm_120_ui*xji_20)
+                             - vderiv_1_1*(derxjm_210_ui*xji_12 + derxjm_120_ui*xji_21)
+                             - vderiv_1_2*(derxjm_220_ui*xji_12 + derxjm_120_ui*xji_22)
+                             - vderiv_2_0*(xji_10*derxjm_120_ui + xji_12*derxjm_100_ui + 2*xji_20*derxjm_220_ui + 2*xji_22*derxjm_200_ui)
+                             - vderiv_2_1*(xji_11*derxjm_120_ui + xji_12*derxjm_110_ui + 2*xji_21*derxjm_220_ui + 2*xji_22*derxjm_210_ui)
+                             - vderiv_2_2*(xji_12*derxjm_120_ui + xji_12*derxjm_120_ui + 2*xji_22*derxjm_220_ui + 2*xji_22*derxjm_220_ui);
 
-      v0 = - my::vderiv_(0,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
-           - my::vderiv_(0,1)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
-           - my::vderiv_(0,2)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
-           - my::vderiv_(1,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + 2*xji_10*derxjm_102(ui) + 2*xji_10*derxjm_102(ui))
-           - my::vderiv_(1,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + 2*xji_11*derxjm_102(ui) + 2*xji_10*derxjm_112(ui))
-           - my::vderiv_(1,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + 2*xji_12*derxjm_102(ui) + 2*xji_10*derxjm_122(ui))
-           - my::vderiv_(2,0)*(derxjm_102(ui)*xji_20)
-           - my::vderiv_(2,1)*(derxjm_112(ui)*xji_20)
-           - my::vderiv_(2,2)*(derxjm_122(ui)*xji_20);
-      v1 = - my::vderiv_(0,0)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
-           - my::vderiv_(0,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
-           - my::vderiv_(0,2)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
-           - my::vderiv_(1,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + 2*xji_10*derxjm_112(ui) + 2*xji_11*derxjm_102(ui))
-           - my::vderiv_(1,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + 2*xji_11*derxjm_112(ui) + 2*xji_11*derxjm_112(ui))
-           - my::vderiv_(1,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + 2*xji_12*derxjm_112(ui) + 2*xji_11*derxjm_122(ui))
-           - my::vderiv_(2,0)*(derxjm_102(ui)*xji_21)
-           - my::vderiv_(2,1)*(derxjm_112(ui)*xji_21)
-           - my::vderiv_(2,2)*(derxjm_122(ui)*xji_21);
-      v2 = - my::vderiv_(0,0)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
-           - my::vderiv_(0,1)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
-           - my::vderiv_(0,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
-           - my::vderiv_(1,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + 2*xji_10*derxjm_122(ui) + 2*xji_12*derxjm_102(ui))
-           - my::vderiv_(1,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + 2*xji_11*derxjm_122(ui) + 2*xji_12*derxjm_112(ui))
-           - my::vderiv_(1,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + 2*xji_12*derxjm_122(ui) + 2*xji_12*derxjm_122(ui))
-           - my::vderiv_(2,0)*(derxjm_102(ui)*xji_22)
-           - my::vderiv_(2,1)*(derxjm_112(ui)*xji_22)
-           - my::vderiv_(2,2)*(derxjm_122(ui)*xji_22);
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 2, ui*3 + 0) +=   v*(   my::deriv_(0,vi)*v0
+                                                  + my::deriv_(1,vi)*v1
+                                                  + my::deriv_(2,vi)*v2)
+                                            - v*my::funct_(vi)*porosity_inv*(
+                                                  refgrad_porosity_0*v0
+                                                + refgrad_porosity_1*v1
+                                                + refgrad_porosity_2*v2);
+          }
+        }
 
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 1, ui*3 + 2) +=   v * (my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v * my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(derxjm_201_ui*xji_00 + derxjm_001_ui*xji_20)
+                             - vderiv_0_1*(derxjm_211_ui*xji_00 + derxjm_001_ui*xji_21)
+                             - vderiv_0_2*(derxjm_221_ui*xji_00 + derxjm_001_ui*xji_22)
+                             - vderiv_1_0*(derxjm_201_ui*xji_10)
+                             - vderiv_1_1*(derxjm_211_ui*xji_10)
+                             - vderiv_1_2*(derxjm_221_ui*xji_10)
+                             - vderiv_2_0*(xji_00*derxjm_001_ui + xji_00*derxjm_001_ui + 2*xji_20*derxjm_201_ui + 2*xji_20*derxjm_201_ui)
+                             - vderiv_2_1*(xji_01*derxjm_001_ui + xji_00*derxjm_011_ui + 2*xji_21*derxjm_201_ui + 2*xji_20*derxjm_211_ui)
+                             - vderiv_2_2*(xji_02*derxjm_001_ui + xji_00*derxjm_021_ui + 2*xji_22*derxjm_201_ui + 2*xji_20*derxjm_221_ui);
+          const double v1 =  - vderiv_0_0*(derxjm_201_ui*xji_01 + derxjm_011_ui*xji_20)
+                             - vderiv_0_1*(derxjm_211_ui*xji_01 + derxjm_011_ui*xji_21)
+                             - vderiv_0_2*(derxjm_221_ui*xji_01 + derxjm_011_ui*xji_22)
+                             - vderiv_1_0*(derxjm_201_ui*xji_11)
+                             - vderiv_1_1*(derxjm_211_ui*xji_11)
+                             - vderiv_1_2*(derxjm_221_ui*xji_11)
+                             - vderiv_2_0*(xji_00*derxjm_011_ui + xji_01*derxjm_001_ui + 2*xji_20*derxjm_211_ui + 2*xji_21*derxjm_201_ui)
+                             - vderiv_2_1*(xji_01*derxjm_011_ui + xji_01*derxjm_011_ui + 2*xji_21*derxjm_211_ui + 2*xji_21*derxjm_211_ui)
+                             - vderiv_2_2*(xji_02*derxjm_011_ui + xji_01*derxjm_021_ui + 2*xji_22*derxjm_211_ui + 2*xji_21*derxjm_221_ui);
+          const double v2 =  - vderiv_0_0*(derxjm_201_ui*xji_02 + derxjm_021_ui*xji_20)
+                             - vderiv_0_1*(derxjm_211_ui*xji_02 + derxjm_021_ui*xji_21)
+                             - vderiv_0_2*(derxjm_221_ui*xji_02 + derxjm_021_ui*xji_22)
+                             - vderiv_1_0*(derxjm_201_ui*xji_12)
+                             - vderiv_1_1*(derxjm_211_ui*xji_12)
+                             - vderiv_1_2*(derxjm_221_ui*xji_12)
+                             - vderiv_2_0*(xji_00*derxjm_021_ui + xji_02*derxjm_001_ui + 2*xji_20*derxjm_221_ui + 2*xji_22*derxjm_201_ui)
+                             - vderiv_2_1*(xji_01*derxjm_021_ui + xji_02*derxjm_011_ui + 2*xji_21*derxjm_221_ui + 2*xji_22*derxjm_211_ui)
+                             - vderiv_2_2*(xji_02*derxjm_021_ui + xji_02*derxjm_021_ui + 2*xji_22*derxjm_221_ui + 2*xji_22*derxjm_221_ui);
 
-      ////////////////////////////////////////////////////////////////
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 2, ui*3 + 1) +=   v*(  my::deriv_(0,vi)*v0
+                                                 + my::deriv_(1,vi)*v1
+                                                 + my::deriv_(2,vi)*v2)
+                                         - v*my::funct_(vi)*porosity_inv*(
+                                               refgrad_porosity_0*v0
+                                             + refgrad_porosity_1*v1
+                                             + refgrad_porosity_2*v2);
+          }
+        }
 
-      v0 = - my::vderiv_(0,0)*(derxjm_200(ui)*xji_00)
-           - my::vderiv_(0,1)*(derxjm_210(ui)*xji_00)
-           - my::vderiv_(0,2)*(derxjm_220(ui)*xji_00)
-           - my::vderiv_(1,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
-           - my::vderiv_(1,1)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
-           - my::vderiv_(1,2)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
-           - my::vderiv_(2,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + 2*xji_20*derxjm_200(ui) + 2*xji_20*derxjm_200(ui))
-           - my::vderiv_(2,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + 2*xji_21*derxjm_200(ui) + 2*xji_20*derxjm_210(ui))
-           - my::vderiv_(2,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + 2*xji_22*derxjm_200(ui) + 2*xji_20*derxjm_220(ui));
-      v1 = - my::vderiv_(0,0)*(derxjm_200(ui)*xji_01)
-           - my::vderiv_(0,1)*(derxjm_210(ui)*xji_01)
-           - my::vderiv_(0,2)*(derxjm_220(ui)*xji_01)
-           - my::vderiv_(1,0)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
-           - my::vderiv_(1,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
-           - my::vderiv_(1,2)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
-           - my::vderiv_(2,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + 2*xji_20*derxjm_210(ui) + 2*xji_21*derxjm_200(ui))
-           - my::vderiv_(2,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + 2*xji_21*derxjm_210(ui) + 2*xji_21*derxjm_210(ui))
-           - my::vderiv_(2,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + 2*xji_22*derxjm_210(ui) + 2*xji_21*derxjm_220(ui));
-      v2 = - my::vderiv_(0,0)*(derxjm_200(ui)*xji_02)
-           - my::vderiv_(0,1)*(derxjm_210(ui)*xji_02)
-           - my::vderiv_(0,2)*(derxjm_220(ui)*xji_02)
-           - my::vderiv_(1,0)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20)
-           - my::vderiv_(1,1)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21)
-           - my::vderiv_(1,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22)
-           - my::vderiv_(2,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + 2*xji_20*derxjm_220(ui) + 2*xji_22*derxjm_200(ui))
-           - my::vderiv_(2,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + 2*xji_21*derxjm_220(ui) + 2*xji_22*derxjm_210(ui))
-           - my::vderiv_(2,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + 2*xji_22*derxjm_220(ui) + 2*xji_22*derxjm_220(ui));
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(derxjm_002_ui*xji_20)
+                             - vderiv_0_1*(derxjm_002_ui*xji_21)
+                             - vderiv_0_2*(derxjm_002_ui*xji_22)
+                             - vderiv_1_0*(derxjm_102_ui*xji_20)
+                             - vderiv_1_1*(derxjm_102_ui*xji_21)
+                             - vderiv_1_2*(derxjm_102_ui*xji_22)
+                             - vderiv_2_0*(xji_00*derxjm_002_ui + xji_00*derxjm_002_ui + xji_10*derxjm_102_ui + xji_10*derxjm_102_ui)
+                             - vderiv_2_1*(xji_01*derxjm_002_ui + xji_00*derxjm_012_ui + xji_11*derxjm_102_ui + xji_10*derxjm_112_ui)
+                             - vderiv_2_2*(xji_02*derxjm_002_ui + xji_00*derxjm_022_ui + xji_12*derxjm_102_ui + xji_10*derxjm_122_ui);
+          const double v1 =  - vderiv_0_0*(derxjm_012_ui*xji_20)
+                             - vderiv_0_1*(derxjm_012_ui*xji_21)
+                             - vderiv_0_2*(derxjm_012_ui*xji_22)
+                             - vderiv_1_0*(derxjm_112_ui*xji_20)
+                             - vderiv_1_1*(derxjm_112_ui*xji_21)
+                             - vderiv_1_2*(derxjm_112_ui*xji_22)
+                             - vderiv_2_0*(xji_00*derxjm_012_ui + xji_01*derxjm_002_ui + xji_10*derxjm_112_ui + xji_11*derxjm_102_ui)
+                             - vderiv_2_1*(xji_01*derxjm_012_ui + xji_01*derxjm_012_ui + xji_11*derxjm_112_ui + xji_11*derxjm_112_ui)
+                             - vderiv_2_2*(xji_02*derxjm_012_ui + xji_01*derxjm_022_ui + xji_12*derxjm_112_ui + xji_11*derxjm_122_ui);
+          const double v2 =  - vderiv_0_0*(derxjm_022_ui*xji_20)
+                             - vderiv_0_1*(derxjm_022_ui*xji_21)
+                             - vderiv_0_2*(derxjm_022_ui*xji_22)
+                             - vderiv_1_0*(derxjm_122_ui*xji_20)
+                             - vderiv_1_1*(derxjm_122_ui*xji_21)
+                             - vderiv_1_2*(derxjm_122_ui*xji_22)
+                             - vderiv_2_0*(xji_00*derxjm_022_ui + xji_02*derxjm_002_ui + xji_10*derxjm_122_ui + xji_12*derxjm_102_ui)
+                             - vderiv_2_1*(xji_01*derxjm_022_ui + xji_02*derxjm_012_ui + xji_11*derxjm_122_ui + xji_12*derxjm_112_ui)
+                             - vderiv_2_2*(xji_02*derxjm_022_ui + xji_02*derxjm_022_ui + xji_12*derxjm_122_ui + xji_12*derxjm_122_ui);
 
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 2, ui*3 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
-
-      ////////////////////////////////////////////////////////////////
-
-      v0 = - my::vderiv_(0,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
-           - my::vderiv_(0,1)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
-           - my::vderiv_(0,2)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
-           - my::vderiv_(1,0)*(derxjm_201(ui)*xji_10)
-           - my::vderiv_(1,1)*(derxjm_211(ui)*xji_10)
-           - my::vderiv_(1,2)*(derxjm_221(ui)*xji_10)
-           - my::vderiv_(2,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + 2*xji_20*derxjm_201(ui) + 2*xji_20*derxjm_201(ui))
-           - my::vderiv_(2,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + 2*xji_21*derxjm_201(ui) + 2*xji_20*derxjm_211(ui))
-           - my::vderiv_(2,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + 2*xji_22*derxjm_201(ui) + 2*xji_20*derxjm_221(ui));
-      v1 = - my::vderiv_(0,0)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
-           - my::vderiv_(0,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
-           - my::vderiv_(0,2)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
-           - my::vderiv_(1,0)*(derxjm_201(ui)*xji_11)
-           - my::vderiv_(1,1)*(derxjm_211(ui)*xji_11)
-           - my::vderiv_(1,2)*(derxjm_221(ui)*xji_11)
-           - my::vderiv_(2,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + 2*xji_20*derxjm_211(ui) + 2*xji_21*derxjm_201(ui))
-           - my::vderiv_(2,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + 2*xji_21*derxjm_211(ui) + 2*xji_21*derxjm_211(ui))
-           - my::vderiv_(2,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + 2*xji_22*derxjm_211(ui) + 2*xji_21*derxjm_221(ui));
-      v2 = - my::vderiv_(0,0)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20)
-           - my::vderiv_(0,1)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21)
-           - my::vderiv_(0,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22)
-           - my::vderiv_(1,0)*(derxjm_201(ui)*xji_12)
-           - my::vderiv_(1,1)*(derxjm_211(ui)*xji_12)
-           - my::vderiv_(1,2)*(derxjm_221(ui)*xji_12)
-           - my::vderiv_(2,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + 2*xji_20*derxjm_221(ui) + 2*xji_22*derxjm_201(ui))
-           - my::vderiv_(2,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + 2*xji_21*derxjm_221(ui) + 2*xji_22*derxjm_211(ui))
-           - my::vderiv_(2,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + 2*xji_22*derxjm_221(ui) + 2*xji_22*derxjm_221(ui));
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 2, ui*3 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
-      }
-
-      ////////////////////////////////////////////////////////////////
-
-      v0 = - my::vderiv_(0,0)*(derxjm_002(ui)*xji_20)
-           - my::vderiv_(0,1)*(derxjm_002(ui)*xji_21)
-           - my::vderiv_(0,2)*(derxjm_002(ui)*xji_22)
-           - my::vderiv_(1,0)*(derxjm_102(ui)*xji_20)
-           - my::vderiv_(1,1)*(derxjm_102(ui)*xji_21)
-           - my::vderiv_(1,2)*(derxjm_102(ui)*xji_22)
-           - my::vderiv_(2,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
-           - my::vderiv_(2,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
-           - my::vderiv_(2,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui));
-      v1 = - my::vderiv_(0,0)*(derxjm_012(ui)*xji_20)
-           - my::vderiv_(0,1)*(derxjm_012(ui)*xji_21)
-           - my::vderiv_(0,2)*(derxjm_012(ui)*xji_22)
-           - my::vderiv_(1,0)*(derxjm_112(ui)*xji_20)
-           - my::vderiv_(1,1)*(derxjm_112(ui)*xji_21)
-           - my::vderiv_(1,2)*(derxjm_112(ui)*xji_22)
-           - my::vderiv_(2,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + xji_10*derxjm_112(ui) + xji_11*derxjm_102(ui))
-           - my::vderiv_(2,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
-           - my::vderiv_(2,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + xji_12*derxjm_112(ui) + xji_11*derxjm_122(ui));
-      v2 = - my::vderiv_(0,0)*(derxjm_022(ui)*xji_20)
-           - my::vderiv_(0,1)*(derxjm_022(ui)*xji_21)
-           - my::vderiv_(0,2)*(derxjm_022(ui)*xji_22)
-           - my::vderiv_(1,0)*(derxjm_122(ui)*xji_20)
-           - my::vderiv_(1,1)*(derxjm_122(ui)*xji_21)
-           - my::vderiv_(1,2)*(derxjm_122(ui)*xji_22)
-           - my::vderiv_(2,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + xji_10*derxjm_122(ui) + xji_12*derxjm_102(ui))
-           - my::vderiv_(2,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
-           - my::vderiv_(2,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui));
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*3 + 2, ui*3 + 2) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2)
-                                     - v*my::funct_(vi)*porosity_inv*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*3 + 2, ui*3 + 2) +=   v*(   my::deriv_(0,vi)*v0
+                                                  + my::deriv_(1,vi)*v1
+                                                  + my::deriv_(2,vi)*v2)
+                                             - v*my::funct_(vi)*porosity_inv*(
+                                                   refgrad_porosity_0*v0
+                                                 + refgrad_porosity_1*v1
+                                                 + refgrad_porosity_2*v2);
+          }
+        }
       }
     }
   }//if(my::visceff_)
@@ -3204,32 +3401,46 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
   //*************************** ReacStab**********************************
   if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
   {
+    const double refgradp_0 = refgradp_(0);
+    const double refgradp_1 = refgradp_(1);
+    const double refgradp_2 = refgradp_(2);
+
     // pressure;
-    for (int vi = 0; vi < my::nen_; ++vi)
+    for (int ui = 0; ui < my::nen_; ++ui)
     {
-      double v =  my::funct_(vi) * timefacfac_det * addstab;
-      for (int ui = 0; ui < my::nen_; ++ui)
+      const double v10 =   refgradp_0 * derxjm_(0,0,1,ui)
+                         + refgradp_1 * derxjm_(0,1,1,ui)
+                         + refgradp_2 * derxjm_(0,2,1,ui);
+      const double v20 =   refgradp_0 * derxjm_(0,0,2,ui)
+                         + refgradp_1 * derxjm_(0,1,2,ui)
+                         + refgradp_2 * derxjm_(0,2,2,ui);
+
+      const double v01 =   refgradp_0 * derxjm_(1,0,0,ui)
+                         + refgradp_1 * derxjm_(1,1,0,ui)
+                         + refgradp_2 * derxjm_(1,2,0,ui);
+      const double v21 =   refgradp_0 * derxjm_(1,0,2,ui)
+                         + refgradp_1 * derxjm_(1,1,2,ui)
+                         + refgradp_2 * derxjm_(1,2,2,ui);
+
+      const double v02 =   refgradp_0 * derxjm_(2,0,0,ui)
+                         + refgradp_1 * derxjm_(2,1,0,ui)
+                         + refgradp_2 * derxjm_(2,2,0,ui);
+      const double v12 =   refgradp_0 * derxjm_(2,0,1,ui)
+                         + refgradp_1 * derxjm_(2,1,1,ui)
+                         + refgradp_2 * derxjm_(2,2,1,ui);
+
+      for (int vi = 0; vi < my::nen_; ++vi)
       {
-        ecoupl_u(vi * 3 + 1, ui * 3) += v * (   refgradp_(0) * derxjm_(0,0,1,ui)
-                                              + refgradp_(1) * derxjm_(0,1,1,ui)
-                                              + refgradp_(2) * derxjm_(0,2,1,ui));
-        ecoupl_u(vi * 3 + 2, ui * 3) += v * (   refgradp_(0) * derxjm_(0,0,2,ui)
-                                              + refgradp_(1) * derxjm_(0,1,2,ui)
-                                              + refgradp_(2) * derxjm_(0,2,2,ui));
+        const double v =  my::funct_(vi) * timefacfac_det * addstab;
 
-        ecoupl_u(vi * 3 + 0, ui * 3 + 1) += v * (   refgradp_(0) * derxjm_(1,0,0,ui)
-                                                  + refgradp_(1) * derxjm_(1,1,0,ui)
-                                                  + refgradp_(2) * derxjm_(1,2,0,ui));
-        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * (   refgradp_(0) * derxjm_(1,0,2,ui)
-                                                  + refgradp_(1) * derxjm_(1,1,2,ui)
-                                                  + refgradp_(2) * derxjm_(1,2,2,ui));
+        ecoupl_u(vi * 3 + 1, ui * 3) += v * v10;
+        ecoupl_u(vi * 3 + 2, ui * 3) += v * v20;
 
-        ecoupl_u(vi * 3 + 0, ui * 3 + 2) += v * (   refgradp_(0) * derxjm_(2,0,0,ui)
-                                                  + refgradp_(1) * derxjm_(2,1,0,ui)
-                                                  + refgradp_(2) * derxjm_(2,2,0,ui));
-        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * (   refgradp_(0) * derxjm_(2,0,1,ui)
-                                                  + refgradp_(1) * derxjm_(2,1,1,ui)
-                                                  + refgradp_(2) * derxjm_(2,2,1,ui));
+        ecoupl_u(vi * 3 + 0, ui * 3 + 1) += v * v01;
+        ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * v21;
+
+        ecoupl_u(vi * 3 + 0, ui * 3 + 2) += v * v02;
+        ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * v12;
       }
     }
   }
@@ -3247,6 +3458,49 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
     const double &                                                    refporositydot,
     const double &                                                    timefacfac)
 {
+
+  const double xjm_0_0   = my::xjm_(0, 0);
+  const double xjm_0_1   = my::xjm_(0, 1);
+  const double xjm_0_2   = my::xjm_(0, 2);
+  const double xjm_1_0   = my::xjm_(1, 0);
+  const double xjm_1_1   = my::xjm_(1, 1);
+  const double xjm_1_2   = my::xjm_(1, 2);
+  const double xjm_2_0   = my::xjm_(2, 0);
+  const double xjm_2_1   = my::xjm_(2, 1);
+  const double xjm_2_2   = my::xjm_(2, 2);
+
+  const double vderiv_0_0   = my::vderiv_(0, 0);
+  const double vderiv_0_1   = my::vderiv_(0, 1);
+  const double vderiv_0_2   = my::vderiv_(0, 2);
+  const double vderiv_1_0   = my::vderiv_(1, 0);
+  const double vderiv_1_1   = my::vderiv_(1, 1);
+  const double vderiv_1_2   = my::vderiv_(1, 2);
+  const double vderiv_2_0   = my::vderiv_(2, 0);
+  const double vderiv_2_1   = my::vderiv_(2, 1);
+  const double vderiv_2_2   = my::vderiv_(2, 2);
+
+  const double gridvelderiv_0_0   = gridvelderiv_(0, 0);
+  const double gridvelderiv_0_1   = gridvelderiv_(0, 1);
+  const double gridvelderiv_0_2   = gridvelderiv_(0, 2);
+  const double gridvelderiv_1_0   = gridvelderiv_(1, 0);
+  const double gridvelderiv_1_1   = gridvelderiv_(1, 1);
+  const double gridvelderiv_1_2   = gridvelderiv_(1, 2);
+  const double gridvelderiv_2_0   = gridvelderiv_(2, 0);
+  const double gridvelderiv_2_1   = gridvelderiv_(2, 1);
+  const double gridvelderiv_2_2   = gridvelderiv_(2, 2);
+
+  const double velint_0   = my::velint_(0);
+  const double velint_1   = my::velint_(1);
+  const double velint_2   = my::velint_(2);
+
+  const double gridvelint_0   = gridvelint_(0);
+  const double gridvelint_1   = gridvelint_(1);
+  const double gridvelint_2   = gridvelint_(2);
+
+  const double convvelint_0   = my::convvelint_(0);
+  const double convvelint_1   = my::convvelint_(1);
+  const double convvelint_2   = my::convvelint_(2);
+
   //*************************** linearisation of mesh motion in continuity equation**********************************
 
   const double timefacfac_det=timefacfac / my::det_;
@@ -3254,92 +3508,110 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
   if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
   {
     // (porosity_)*div u
-    for (int vi = 0; vi < my::nen_; ++vi)
+    for (int ui = 0; ui < my::nen_; ++ui)
     {
-      double v = timefacfac_det * my::funct_(vi, 0) * porosity_;
-      for (int ui = 0; ui < my::nen_; ++ui)
+      const double v0 =   vderiv_1_0 * derxjm_(0,0,1,ui)
+                        + vderiv_1_1 * derxjm_(0,1,1,ui)
+                        + vderiv_1_2 * derxjm_(0,2,1,ui)
+                        + vderiv_2_0 * derxjm_(0,0,2,ui)
+                        + vderiv_2_1 * derxjm_(0,1,2,ui)
+                        + vderiv_2_2 * derxjm_(0,2,2,ui);
+
+      const double v1 =   vderiv_0_0 * derxjm_(1,0,0,ui)
+                        + vderiv_0_1 * derxjm_(1,1,0,ui)
+                        + vderiv_0_2 * derxjm_(1,2,0,ui)
+                        + vderiv_2_0 * derxjm_(1,0,2,ui)
+                        + vderiv_2_1 * derxjm_(1,1,2,ui)
+                        + vderiv_2_2 * derxjm_(1,2,2,ui);
+
+      const double v2 =   vderiv_0_0 * derxjm_(2,0,0,ui)
+                        + vderiv_0_1 * derxjm_(2,1,0,ui)
+                        + vderiv_0_2 * derxjm_(2,2,0,ui)
+                        + vderiv_1_0 * derxjm_(2,0,1,ui)
+                        + vderiv_1_1 * derxjm_(2,1,1,ui)
+                        + vderiv_1_2 * derxjm_(2,2,1,ui);
+
+      for (int vi = 0; vi < my::nen_; ++vi)
       {
-        ecoupl_p(vi, ui * 3    ) += v * (+ my::vderiv_(1, 0) * derxjm_(0,0,1,ui)
-                                              + my::vderiv_(1, 1) * derxjm_(0,1,1,ui)
-                                              + my::vderiv_(1, 2) * derxjm_(0,2,1,ui)
-                                              + my::vderiv_(2, 0) * derxjm_(0,0,2,ui)
-                                              + my::vderiv_(2, 1) * derxjm_(0,1,2,ui)
-                                              + my::vderiv_(2, 2) * derxjm_(0,2,2,ui));
+        const double v = timefacfac_det * my::funct_(vi, 0) * porosity_;
 
-        ecoupl_p(vi, ui * 3 + 1) += v * (+ my::vderiv_(0, 0) * derxjm_(1,0,0,ui)
-                                              + my::vderiv_(0, 1) * derxjm_(1,1,0,ui)
-                                              + my::vderiv_(0, 2) * derxjm_(1,2,0,ui)
-                                              + my::vderiv_(2, 0) * derxjm_(1,0,2,ui)
-                                              + my::vderiv_(2, 1) * derxjm_(1,1,2,ui)
-                                              + my::vderiv_(2, 2) * derxjm_(1,2,2,ui));
+        ecoupl_p(vi, ui * 3    ) += v * v0;
 
-        ecoupl_p(vi, ui * 3 + 2) += v * (+ my::vderiv_(0, 0) * derxjm_(2,0,0,ui)
-                                              + my::vderiv_(0, 1) * derxjm_(2,1,0,ui)
-                                              + my::vderiv_(0, 2) * derxjm_(2,2,0,ui)
-                                              + my::vderiv_(1, 0) * derxjm_(2,0,1,ui)
-                                              + my::vderiv_(1, 1) * derxjm_(2,1,1,ui)
-                                              + my::vderiv_(1, 2) * derxjm_(2,2,1,ui));
+        ecoupl_p(vi, ui * 3 + 1) += v * v1;
+
+        ecoupl_p(vi, ui * 3 + 2) += v * v2;
       }
     }
 
     if (my::fldparatimint_->IsStationary() == false)
     {
       // (dphi_dJ*J)*div vs
-      for (int vi = 0; vi < my::nen_; ++vi)
+      for (int ui = 0; ui < my::nen_; ++ui)
       {
-        double v = timefacfac_det * my::funct_(vi, 0) * dphi_dJ * J_;
-        for (int ui = 0; ui < my::nen_; ++ui)
+        const double v0 =    gridvelderiv_1_0 * derxjm_(0,0,1,ui)
+                           + gridvelderiv_1_1 * derxjm_(0,1,1,ui)
+                           + gridvelderiv_1_2 * derxjm_(0,2,1,ui)
+                           + gridvelderiv_2_0 * derxjm_(0,0,2,ui)
+                           + gridvelderiv_2_1 * derxjm_(0,1,2,ui)
+                           + gridvelderiv_2_2 * derxjm_(0,2,2,ui);
+
+        const double v1 =    gridvelderiv_0_0 * derxjm_(1,0,0,ui)
+                           + gridvelderiv_0_1 * derxjm_(1,1,0,ui)
+                           + gridvelderiv_0_2 * derxjm_(1,2,0,ui)
+                           + gridvelderiv_2_0 * derxjm_(1,0,2,ui)
+                           + gridvelderiv_2_1 * derxjm_(1,1,2,ui)
+                           + gridvelderiv_2_2 * derxjm_(1,2,2,ui);
+
+        const double v2 =    gridvelderiv_0_0 * derxjm_(2,0,0,ui)
+                           + gridvelderiv_0_1 * derxjm_(2,1,0,ui)
+                           + gridvelderiv_0_2 * derxjm_(2,2,0,ui)
+                           + gridvelderiv_1_0 * derxjm_(2,0,1,ui)
+                           + gridvelderiv_1_1 * derxjm_(2,1,1,ui)
+                           + gridvelderiv_1_2 * derxjm_(2,2,1,ui);
+
+        for (int vi = 0; vi < my::nen_; ++vi)
         {
-          ecoupl_p(vi, ui * 3 + 0) += v * (+ gridvelderiv_(1, 0) * derxjm_(0,0,1,ui)
-                                           + gridvelderiv_(1, 1) * derxjm_(0,1,1,ui)
-                                           + gridvelderiv_(1, 2) * derxjm_(0,2,1,ui)
-                                           + gridvelderiv_(2, 0) * derxjm_(0,0,2,ui)
-                                           + gridvelderiv_(2, 1) * derxjm_(0,1,2,ui)
-                                           + gridvelderiv_(2, 2) * derxjm_(0,2,2,ui));
+          const double v = timefacfac_det * my::funct_(vi, 0) * dphi_dJ * J_;
 
-          ecoupl_p(vi, ui * 3 + 1) += v * (+ gridvelderiv_(0, 0) * derxjm_(1,0,0,ui)
-                                           + gridvelderiv_(0, 1) * derxjm_(1,1,0,ui)
-                                           + gridvelderiv_(0, 2) * derxjm_(1,2,0,ui)
-                                           + gridvelderiv_(2, 0) * derxjm_(1,0,2,ui)
-                                           + gridvelderiv_(2, 1) * derxjm_(1,1,2,ui)
-                                           + gridvelderiv_(2, 2) * derxjm_(1,2,2,ui));
+          ecoupl_p(vi, ui * 3 + 0) += v * v0;
 
-          ecoupl_p(vi, ui * 3 + 2) += v * (+ gridvelderiv_(0, 0) * derxjm_(2,0,0,ui)
-                                           + gridvelderiv_(0, 1) * derxjm_(2,1,0,ui)
-                                           + gridvelderiv_(0, 2) * derxjm_(2,2,0,ui)
-                                           + gridvelderiv_(1, 0) * derxjm_(2,0,1,ui)
-                                           + gridvelderiv_(1, 1) * derxjm_(2,1,1,ui)
-                                           + gridvelderiv_(1, 2) * derxjm_(2,2,1,ui));
+          ecoupl_p(vi, ui * 3 + 1) += v * v1;
+
+          ecoupl_p(vi, ui * 3 + 2) += v * v2;
         }
       }
     }
 
     //-----------(u-vs)grad(phi)
 
+    const double refgrad_porosity_0   = refgrad_porosity_(0);
+    const double refgrad_porosity_1   = refgrad_porosity_(1);
+    const double refgrad_porosity_2   = refgrad_porosity_(2);
+
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      double v00 = + (my::velint_(1) - gridvelint_(1)) * (  refgrad_porosity_(0) * derxjm_(0,0,1,ui)
-                                                          + refgrad_porosity_(1) * derxjm_(0,1,1,ui)
-                                                          + refgrad_porosity_(2) * derxjm_(0,2,1,ui) )
-                   + (my::velint_(2) - gridvelint_(2)) * (  refgrad_porosity_(0) * derxjm_(0,0,2,ui)
-                                                          + refgrad_porosity_(1) * derxjm_(0,1,2,ui)
-                                                          + refgrad_porosity_(2) * derxjm_(0,2,2,ui));
-      double v01 = + (my::velint_(0) - gridvelint_(0)) * (  refgrad_porosity_(0) * derxjm_(1,0,0,ui)
-                                                          + refgrad_porosity_(1) * derxjm_(1,1,0,ui)
-                                                          + refgrad_porosity_(2) * derxjm_(1,2,0,ui))
-                   + (my::velint_(2) - gridvelint_(2)) * (  refgrad_porosity_(0) * derxjm_(1,0,2,ui)
-                                                          + refgrad_porosity_(1) * derxjm_(1,1,2,ui)
-                                                          + refgrad_porosity_(2) * derxjm_(1,2,2,ui));
-      double v02 = + (my::velint_(0) - gridvelint_(0)) * (  refgrad_porosity_(0) * derxjm_(2,0,0,ui)
-                                                          + refgrad_porosity_(1) * derxjm_(2,1,0,ui)
-                                                          + refgrad_porosity_(2) * derxjm_(2,2,0,ui))
-                   + (my::velint_(1) - gridvelint_(1)) * (  refgrad_porosity_(0) * derxjm_(2,0,1,ui)
-                                                          + refgrad_porosity_(1) * derxjm_(2,1,1,ui)
-                                                          + refgrad_porosity_(2) * derxjm_(2,2,1,ui));
+      const double v00 = + (velint_1 - gridvelint_1) * (  refgrad_porosity_0 * derxjm_(0,0,1,ui)
+                                                        + refgrad_porosity_1 * derxjm_(0,1,1,ui)
+                                                        + refgrad_porosity_2 * derxjm_(0,2,1,ui) )
+                         + (velint_2 - gridvelint_2) * (  refgrad_porosity_0 * derxjm_(0,0,2,ui)
+                                                        + refgrad_porosity_1 * derxjm_(0,1,2,ui)
+                                                        + refgrad_porosity_2 * derxjm_(0,2,2,ui));
+      const double v01 = + (velint_0 - gridvelint_0) * (  refgrad_porosity_0 * derxjm_(1,0,0,ui)
+                                                        + refgrad_porosity_1 * derxjm_(1,1,0,ui)
+                                                        + refgrad_porosity_2 * derxjm_(1,2,0,ui))
+                         + (velint_2 - gridvelint_2) * (  refgrad_porosity_0 * derxjm_(1,0,2,ui)
+                                                        + refgrad_porosity_1 * derxjm_(1,1,2,ui)
+                                                        + refgrad_porosity_2 * derxjm_(1,2,2,ui));
+      const double v02 = + (velint_0 - gridvelint_0) * (  refgrad_porosity_0 * derxjm_(2,0,0,ui)
+                                                        + refgrad_porosity_1 * derxjm_(2,1,0,ui)
+                                                        + refgrad_porosity_2 * derxjm_(2,2,0,ui))
+                         + (velint_1 - gridvelint_1) * (  refgrad_porosity_0 * derxjm_(2,0,1,ui)
+                                                        + refgrad_porosity_1 * derxjm_(2,1,1,ui)
+                                                        + refgrad_porosity_2 * derxjm_(2,2,1,ui));
 
       for (int vi = 0; vi < my::nen_; ++vi)
       {
-        double v = timefacfac_det * my::funct_(vi);
+        const double v = timefacfac_det * my::funct_(vi);
 
         ecoupl_p(vi, ui * 3 + 0) += v * v00;
         ecoupl_p(vi, ui * 3 + 1) += v * v01;
@@ -3352,31 +3624,38 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
     if (my::fldparatimint_->IsStationary() == false)
     {
       // (dphi_dJ*J+phi)*div vs
-      for (int vi = 0; vi < my::nen_; ++vi)
+      for (int ui = 0; ui < my::nen_; ++ui)
       {
-        double v = timefacfac_det * my::funct_(vi, 0) * (dphi_dJ * J_+porosity_);
-        for (int ui = 0; ui < my::nen_; ++ui)
+        const double v0 =    gridvelderiv_1_0 * derxjm_(0,0,1,ui)
+                           + gridvelderiv_1_1 * derxjm_(0,1,1,ui)
+                           + gridvelderiv_1_2 * derxjm_(0,2,1,ui)
+                           + gridvelderiv_2_0 * derxjm_(0,0,2,ui)
+                           + gridvelderiv_2_1 * derxjm_(0,1,2,ui)
+                           + gridvelderiv_2_2 * derxjm_(0,2,2,ui);
+
+        const double v1 =    gridvelderiv_0_0 * derxjm_(1,0,0,ui)
+                           + gridvelderiv_0_1 * derxjm_(1,1,0,ui)
+                           + gridvelderiv_0_2 * derxjm_(1,2,0,ui)
+                           + gridvelderiv_2_0 * derxjm_(1,0,2,ui)
+                           + gridvelderiv_2_1 * derxjm_(1,1,2,ui)
+                           + gridvelderiv_2_2 * derxjm_(1,2,2,ui);
+
+        const double v2 =    gridvelderiv_0_0 * derxjm_(2,0,0,ui)
+                           + gridvelderiv_0_1 * derxjm_(2,1,0,ui)
+                           + gridvelderiv_0_2 * derxjm_(2,2,0,ui)
+                           + gridvelderiv_1_0 * derxjm_(2,0,1,ui)
+                           + gridvelderiv_1_1 * derxjm_(2,1,1,ui)
+                           + gridvelderiv_1_2 * derxjm_(2,2,1,ui);
+
+        for (int vi = 0; vi < my::nen_; ++vi)
         {
-          ecoupl_p(vi, ui * 3 + 0) += v * (+ gridvelderiv_(1, 0) * derxjm_(0,0,1,ui)
-                                           + gridvelderiv_(1, 1) * derxjm_(0,1,1,ui)
-                                           + gridvelderiv_(1, 2) * derxjm_(0,2,1,ui)
-                                           + gridvelderiv_(2, 0) * derxjm_(0,0,2,ui)
-                                           + gridvelderiv_(2, 1) * derxjm_(0,1,2,ui)
-                                           + gridvelderiv_(2, 2) * derxjm_(0,2,2,ui));
+          const double v = timefacfac_det * my::funct_(vi, 0) * (dphi_dJ * J_+porosity_);
 
-          ecoupl_p(vi, ui * 3 + 1) += v * (+ gridvelderiv_(0, 0) * derxjm_(1,0,0,ui)
-                                           + gridvelderiv_(0, 1) * derxjm_(1,1,0,ui)
-                                           + gridvelderiv_(0, 2) * derxjm_(1,2,0,ui)
-                                           + gridvelderiv_(2, 0) * derxjm_(1,0,2,ui)
-                                           + gridvelderiv_(2, 1) * derxjm_(1,1,2,ui)
-                                           + gridvelderiv_(2, 2) * derxjm_(1,2,2,ui));
+          ecoupl_p(vi, ui * 3 + 0) += v * v0;
 
-          ecoupl_p(vi, ui * 3 + 2) += v * (+ gridvelderiv_(0, 0) * derxjm_(2,0,0,ui)
-                                           + gridvelderiv_(0, 1) * derxjm_(2,1,0,ui)
-                                           + gridvelderiv_(0, 2) * derxjm_(2,2,0,ui)
-                                           + gridvelderiv_(1, 0) * derxjm_(2,0,1,ui)
-                                           + gridvelderiv_(1, 1) * derxjm_(2,1,1,ui)
-                                           + gridvelderiv_(1, 2) * derxjm_(2,2,1,ui));
+          ecoupl_p(vi, ui * 3 + 1) += v * v1;
+
+          ecoupl_p(vi, ui * 3 + 2) += v * v2;
         }
       }
     }
@@ -3384,28 +3663,32 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
     //----------- phi * (u-vs)grad(vi)
     const double v = -1.0 * timefacfac_det * porosity_;
 
-    for (int ui = 0; ui < my::nen_; ++ui)
+    for (int vi = 0; vi < my::nen_; ++vi)
     {
-      for (int vi = 0; vi < my::nen_; ++vi)
+      const double deriv_vi_0   = my::deriv_(0,vi);
+      const double deriv_vi_1   = my::deriv_(1,vi);
+      const double deriv_vi_2   = my::deriv_(2,vi);
+
+      for (int ui = 0; ui < my::nen_; ++ui)
       {
-        double v00 = + (my::velint_(1) - gridvelint_(1)) * (   my::deriv_(0,vi) * derxjm_(0,0,1,ui)
-                                                             + my::deriv_(1,vi) * derxjm_(0,1,1,ui)
-                                                             + my::deriv_(2,vi) * derxjm_(0,2,1,ui) )
-                     + (my::velint_(2) - gridvelint_(2)) * (   my::deriv_(0,vi) * derxjm_(0,0,2,ui)
-                                                             + my::deriv_(1,vi) * derxjm_(0,1,2,ui)
-                                                             + my::deriv_(2,vi) * derxjm_(0,2,2,ui));
-        double v01 = + (my::velint_(0) - gridvelint_(0)) * (   my::deriv_(0,vi) * derxjm_(1,0,0,ui)
-                                                             + my::deriv_(1,vi) * derxjm_(1,1,0,ui)
-                                                             + my::deriv_(2,vi) * derxjm_(1,2,0,ui))
-                     + (my::velint_(2) - gridvelint_(2)) * (   my::deriv_(0,vi) * derxjm_(1,0,2,ui)
-                                                             + my::deriv_(1,vi) * derxjm_(1,1,2,ui)
-                                                             + my::deriv_(2,vi) * derxjm_(1,2,2,ui));
-        double v02 = + (my::velint_(0) - gridvelint_(0)) * (   my::deriv_(0,vi) * derxjm_(2,0,0,ui)
-                                                             + my::deriv_(1,vi) * derxjm_(2,1,0,ui)
-                                                             + my::deriv_(2,vi) * derxjm_(2,2,0,ui))
-                     + (my::velint_(1) - gridvelint_(1)) * (   my::deriv_(0,vi) * derxjm_(2,0,1,ui)
-                                                             + my::deriv_(1,vi) * derxjm_(2,1,1,ui)
-                                                             + my::deriv_(2,vi) * derxjm_(2,2,1,ui));
+        const double v00 = + (velint_1 - gridvelint_1) * (   deriv_vi_0 * derxjm_(0,0,1,ui)
+                                                           + deriv_vi_1 * derxjm_(0,1,1,ui)
+                                                           + deriv_vi_2 * derxjm_(0,2,1,ui) )
+                           + (velint_2 - gridvelint_2) * (   deriv_vi_0 * derxjm_(0,0,2,ui)
+                                                           + deriv_vi_1 * derxjm_(0,1,2,ui)
+                                                           + deriv_vi_2 * derxjm_(0,2,2,ui));
+        const double v01 = + (velint_0 - gridvelint_0) * (   deriv_vi_0 * derxjm_(1,0,0,ui)
+                                                           + deriv_vi_1 * derxjm_(1,1,0,ui)
+                                                           + deriv_vi_2 * derxjm_(1,2,0,ui))
+                           + (velint_2 - gridvelint_2) * (   deriv_vi_0 * derxjm_(1,0,2,ui)
+                                                           + deriv_vi_1 * derxjm_(1,1,2,ui)
+                                                           + deriv_vi_2 * derxjm_(1,2,2,ui));
+        const double v02 = + (velint_0 - gridvelint_0) * (   deriv_vi_0 * derxjm_(2,0,0,ui)
+                                                           + deriv_vi_1 * derxjm_(2,1,0,ui)
+                                                           + deriv_vi_2 * derxjm_(2,2,0,ui))
+                           + (velint_1 - gridvelint_1) * (   deriv_vi_0 * derxjm_(2,0,1,ui)
+                                                           + deriv_vi_1 * derxjm_(2,1,1,ui)
+                                                           + deriv_vi_2 * derxjm_(2,2,1,ui));
 
         ecoupl_p(vi, ui * 3 + 0) += v * v00;
         ecoupl_p(vi, ui * 3 + 1) += v * v01;
@@ -3420,8 +3703,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
     // dphi_dp*dp/dt + rhs
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = my::fac_ * my::funct_(vi, 0) *    dphi_dp * press_
-                + timefacfac * my::funct_(vi, 0) * refporositydot ;
+      const double v =  my::fac_ * my::funct_(vi, 0) * dphi_dp * press_
+                      + timefacfac * my::funct_(vi, 0) * refporositydot ;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
         ecoupl_p(vi, ui * 3)     += v * my::derxy_(0, ui);
@@ -3450,28 +3733,36 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
     {
       const double v = -1.0 * timefacfac_det;
 
-      for (int ui = 0; ui < my::nen_; ++ui)
+      const double sgvelint_0   = my::sgvelint_(0);
+      const double sgvelint_1   = my::sgvelint_(1);
+      const double sgvelint_2   = my::sgvelint_(2);
+
+      for (int vi = 0; vi < my::nen_; ++vi)
       {
-        for (int vi = 0; vi < my::nen_; ++vi)
+        const double deriv_vi_0   = my::deriv_(0,vi);
+        const double deriv_vi_1   = my::deriv_(1,vi);
+        const double deriv_vi_2   = my::deriv_(2,vi);
+
+        for (int ui = 0; ui < my::nen_; ++ui)
         {
-          double v00 = + my::sgvelint_(1) * (   my::deriv_(0,vi) * derxjm_(0,0,1,ui)
-                                              + my::deriv_(1,vi) * derxjm_(0,1,1,ui)
-                                              + my::deriv_(2,vi) * derxjm_(0,2,1,ui) )
-                       + my::sgvelint_(2) * (   my::deriv_(0,vi) * derxjm_(0,0,2,ui)
-                                              + my::deriv_(1,vi) * derxjm_(0,1,2,ui)
-                                              + my::deriv_(2,vi) * derxjm_(0,2,2,ui));
-          double v01 = + my::sgvelint_(0) * (   my::deriv_(0,vi) * derxjm_(1,0,0,ui)
-                                              + my::deriv_(1,vi) * derxjm_(1,1,0,ui)
-                                              + my::deriv_(2,vi) * derxjm_(1,2,0,ui))
-                       + my::sgvelint_(2) * (   my::deriv_(0,vi) * derxjm_(1,0,2,ui)
-                                              + my::deriv_(1,vi) * derxjm_(1,1,2,ui)
-                                              + my::deriv_(2,vi) * derxjm_(1,2,2,ui));
-          double v02 = + my::sgvelint_(0) * (   my::deriv_(0,vi) * derxjm_(2,0,0,ui)
-                                              + my::deriv_(1,vi) * derxjm_(2,1,0,ui)
-                                              + my::deriv_(2,vi) * derxjm_(2,2,0,ui))
-                       + my::sgvelint_(1) * (   my::deriv_(0,vi) * derxjm_(2,0,1,ui)
-                                              + my::deriv_(1,vi) * derxjm_(2,1,1,ui)
-                                              + my::deriv_(2,vi) * derxjm_(2,2,1,ui));
+          const double v00 = + sgvelint_1 * (   deriv_vi_0 * derxjm_(0,0,1,ui)
+                                              + deriv_vi_1 * derxjm_(0,1,1,ui)
+                                              + deriv_vi_2 * derxjm_(0,2,1,ui) )
+                             + sgvelint_2 * (   deriv_vi_0 * derxjm_(0,0,2,ui)
+                                              + deriv_vi_1 * derxjm_(0,1,2,ui)
+                                              + deriv_vi_2 * derxjm_(0,2,2,ui));
+          const double v01 = + sgvelint_0 * (   deriv_vi_0 * derxjm_(1,0,0,ui)
+                                              + deriv_vi_1 * derxjm_(1,1,0,ui)
+                                              + deriv_vi_2 * derxjm_(1,2,0,ui))
+                             + sgvelint_2 * (   deriv_vi_0 * derxjm_(1,0,2,ui)
+                                              + deriv_vi_1 * derxjm_(1,1,2,ui)
+                                              + deriv_vi_2 * derxjm_(1,2,2,ui));
+          const double v02 = + sgvelint_0 * (   deriv_vi_0 * derxjm_(2,0,0,ui)
+                                              + deriv_vi_1 * derxjm_(2,1,0,ui)
+                                              + deriv_vi_2 * derxjm_(2,2,0,ui))
+                             + sgvelint_1 * (   deriv_vi_0 * derxjm_(2,0,1,ui)
+                                              + deriv_vi_1 * derxjm_(2,1,1,ui)
+                                              + deriv_vi_2 * derxjm_(2,2,1,ui));
 
           ecoupl_p(vi, ui * 3 + 0) += v * v00;
           ecoupl_p(vi, ui * 3 + 1) += v * v01;
@@ -3494,29 +3785,38 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
     //pressure
     {
       const double v = timefacfac_det * scal_grad_q;
-      for (int ui = 0; ui < my::nen_; ++ui)
+
+      const double refgradp_0   = refgradp_(0);
+      const double refgradp_1   = refgradp_(1);
+      const double refgradp_2   = refgradp_(2);
+
+      for (int vi = 0; vi < my::nen_; ++vi)
       {
-        for (int vi = 0; vi < my::nen_; ++vi)
+        const double derxy_vi_0   = my::derxy_(0,vi);
+        const double derxy_vi_1   = my::derxy_(1,vi);
+        const double derxy_vi_2   = my::derxy_(2,vi);
+
+        for (int ui = 0; ui < my::nen_; ++ui)
         {
 
-          double v00 = + my::derxy_(1,vi) * (  refgradp_(0) * derxjm_(0,0,1,ui)
-                                             + refgradp_(1) * derxjm_(0,1,1,ui)
-                                             + refgradp_(2) * derxjm_(0,2,1,ui) )
-                       + my::derxy_(2,vi) * (  refgradp_(0) * derxjm_(0,0,2,ui)
-                                             + refgradp_(1) * derxjm_(0,1,2,ui)
-                                             + refgradp_(2) * derxjm_(0,2,2,ui));
-          double v01 = + my::derxy_(0,vi) * (  refgradp_(0) * derxjm_(1,0,0,ui)
-                                             + refgradp_(1) * derxjm_(1,1,0,ui)
-                                             + refgradp_(2) * derxjm_(1,2,0,ui))
-                       + my::derxy_(2,vi) * (  refgradp_(0) * derxjm_(1,0,2,ui)
-                                             + refgradp_(1) * derxjm_(1,1,2,ui)
-                                             + refgradp_(2) * derxjm_(1,2,2,ui));
-          double v02 = + my::derxy_(0,vi) * (  refgradp_(0) * derxjm_(2,0,0,ui)
-                                             + refgradp_(1) * derxjm_(2,1,0,ui)
-                                             + refgradp_(2) * derxjm_(2,2,0,ui))
-                       + my::derxy_(1,vi) * (  refgradp_(0) * derxjm_(2,0,1,ui)
-                                             + refgradp_(1) * derxjm_(2,1,1,ui)
-                                             + refgradp_(2) * derxjm_(2,2,1,ui));
+          const double v00 = + derxy_vi_1 * (  refgradp_0 * derxjm_(0,0,1,ui)
+                                             + refgradp_1 * derxjm_(0,1,1,ui)
+                                             + refgradp_2 * derxjm_(0,2,1,ui) )
+                             + derxy_vi_2 * (  refgradp_0 * derxjm_(0,0,2,ui)
+                                             + refgradp_1 * derxjm_(0,1,2,ui)
+                                             + refgradp_2 * derxjm_(0,2,2,ui));
+          const double v01 = + derxy_vi_0 * (  refgradp_0 * derxjm_(1,0,0,ui)
+                                             + refgradp_1 * derxjm_(1,1,0,ui)
+                                             + refgradp_2 * derxjm_(1,2,0,ui))
+                             + derxy_vi_2 * (  refgradp_0 * derxjm_(1,0,2,ui)
+                                             + refgradp_1 * derxjm_(1,1,2,ui)
+                                             + refgradp_2 * derxjm_(1,2,2,ui));
+          const double v02 = + derxy_vi_0 * (  refgradp_0 * derxjm_(2,0,0,ui)
+                                             + refgradp_1 * derxjm_(2,1,0,ui)
+                                             + refgradp_2 * derxjm_(2,2,0,ui))
+                             + derxy_vi_1 * (  refgradp_0 * derxjm_(2,0,1,ui)
+                                             + refgradp_1 * derxjm_(2,1,1,ui)
+                                             + refgradp_2 * derxjm_(2,2,1,ui));
 
           ecoupl_p(vi, ui * 3 + 0) += v * v00;
           ecoupl_p(vi, ui * 3 + 1) += v * v01;
@@ -3524,11 +3824,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
         }
       }
 
-      LINALG::Matrix<my::nen_,1> temp;
+      static LINALG::Matrix<my::nen_,1> temp;
       temp.MultiplyTN(my::derxy_,my::gradp_);
       for (int vi = 0; vi < my::nen_; ++vi)
       {
-        double v3 = -1.0 * timefacfac * scal_grad_q * temp(vi);
+        const double v3 = -1.0 * timefacfac * scal_grad_q * temp(vi);
         for (int ui = 0; ui < my::nen_; ++ui)
         {
           ecoupl_p(vi, ui * 3)     += v3 * my::derxy_(0, ui);
@@ -3543,82 +3843,86 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
 
     {
       const double v = my::densaf_*timefacfac_det * scal_grad_q;
-      for (int ui = 0; ui < my::nen_; ++ui)
+      for (int vi = 0; vi < my::nen_; ++vi)
       {
-        for (int vi = 0; vi < my::nen_; ++vi)
+        const double derxy_vi_0   = my::derxy_(0,vi);
+        const double derxy_vi_1   = my::derxy_(1,vi);
+        const double derxy_vi_2   = my::derxy_(2,vi);
+
+        for (int ui = 0; ui < my::nen_; ++ui)
         {
-          double v00 = + my::derxy_(1,vi) * my::convvelint_(1) * (
-                                                  my::vderiv_(0, 0) * derxjm_(0,0,1,ui)
-                                                + my::vderiv_(0, 1) * derxjm_(0,1,1,ui)
-                                                + my::vderiv_(0, 2) * derxjm_(0,2,1,ui))
-                       + my::derxy_(2,vi) * my::convvelint_(2) * (
-                                                  my::vderiv_(0, 0) * derxjm_(0,0,2,ui)
-                                                + my::vderiv_(0, 1) * derxjm_(0,1,2,ui)
-                                                + my::vderiv_(0, 2) * derxjm_(0,2,2,ui));
-          double v10 = + my::derxy_(1,vi) *  my::convvelint_(1) * (
-                                                  my::vderiv_(1, 0) * derxjm_(0,0,1,ui)
-                                                + my::vderiv_(1, 1) * derxjm_(0,1,1,ui)
-                                                + my::vderiv_(1, 2) * derxjm_(0,2,1,ui))
-                       + my::derxy_(2,vi) * my::convvelint_(2) * (
-                                                  my::vderiv_(1, 0) * derxjm_(0,0,2,ui)
-                                                + my::vderiv_(1, 1) * derxjm_(0,1,2,ui)
-                                                + my::vderiv_(1, 2) * derxjm_(0,2,2,ui));
-          double v20 = + my::derxy_(1,vi) * my::convvelint_(1) * (
-                                                  my::vderiv_(2, 0) * derxjm_(0,0,1,ui)
-                                                + my::vderiv_(2, 1) * derxjm_(0,1,1,ui)
-                                                + my::vderiv_(2, 2) * derxjm_(0,2,1,ui))
-                       + my::derxy_(2,vi) * my::convvelint_(2) * (
-                                                  my::vderiv_(2, 0) * derxjm_(0,0,2,ui)
-                                                + my::vderiv_(2, 1) * derxjm_(0,1,2,ui)
-                                                + my::vderiv_(2, 2) * derxjm_(0,2,2,ui));
-          double v01 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(0, 0) * derxjm_(1,0,0,ui)
-                                                + my::vderiv_(0, 1) * derxjm_(1,1,0,ui)
-                                                + my::vderiv_(0, 2) * derxjm_(1,2,0,ui))
-                       + my::derxy_(2,vi) * my::convvelint_(2) * (
-                                                  my::vderiv_(0, 0) * derxjm_(1,0,2,ui)
-                                                + my::vderiv_(0, 1) * derxjm_(1,1,2,ui)
-                                                + my::vderiv_(0, 2) * derxjm_(1,2,2,ui));
-          double v11 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(1, 0) * derxjm_(1,0,0,ui)
-                                                + my::vderiv_(1, 1) * derxjm_(1,1,0,ui)
-                                                + my::vderiv_(1, 2) * derxjm_(1,2,0,ui))
-                       + my::derxy_(2,vi) * my::convvelint_(2) * (
-                                                  my::vderiv_(1, 0) * derxjm_(1,0,2,ui)
-                                                + my::vderiv_(1, 1) * derxjm_(1,1,2,ui)
-                                                + my::vderiv_(1, 2) * derxjm_(1,2,2,ui));
-          double v21 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(2, 0) * derxjm_(1,0,0,ui)
-                                                + my::vderiv_(2, 1) * derxjm_(1,1,0,ui)
-                                                + my::vderiv_(2, 2) * derxjm_(1,2,0,ui))
-                       + my::derxy_(2,vi) * my::convvelint_(2) * (
-                                                  my::vderiv_(2, 0) * derxjm_(1,0,2,ui)
-                                                + my::vderiv_(2, 1) * derxjm_(1,1,2,ui)
-                                                + my::vderiv_(2, 2) * derxjm_(1,2,2,ui));
-          double v02 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(0, 0) * derxjm_(2,0,0,ui)
-                                                + my::vderiv_(0, 1) * derxjm_(2,1,0,ui)
-                                                + my::vderiv_(0, 2) * derxjm_(2,2,0,ui))
-                       + my::derxy_(1,vi) * my::convvelint_(1) * (
-                                                  my::vderiv_(0, 0) * derxjm_(2,0,1,ui)
-                                                + my::vderiv_(0, 1) * derxjm_(2,1,1,ui)
-                                                + my::vderiv_(0, 2) * derxjm_(2,2,1,ui));
-          double v12 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(1, 0) * derxjm_(2,0,0,ui)
-                                                + my::vderiv_(1, 1) * derxjm_(2,1,0,ui)
-                                                + my::vderiv_(1, 2) * derxjm_(2,2,0,ui))
-                       + my::derxy_(1,vi) * my::convvelint_(1) * (
-                                                  my::vderiv_(1, 0) * derxjm_(2,0,1,ui)
-                                                + my::vderiv_(1, 1) * derxjm_(2,1,1,ui)
-                                                + my::vderiv_(1, 2) * derxjm_(2,2,1,ui));
-          double v22 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(2, 0) * derxjm_(2,0,0,ui)
-                                                + my::vderiv_(2, 1) * derxjm_(2,1,0,ui)
-                                                + my::vderiv_(2, 2) * derxjm_(2,2,0,ui))
-                       + my::derxy_(1,vi) * my::convvelint_(1) * (
-                                                  my::vderiv_(2, 0) * derxjm_(2,0,1,ui)
-                                                + my::vderiv_(2, 1) * derxjm_(2,1,1,ui)
-                                                + my::vderiv_(2, 2) * derxjm_(2,2,1,ui));
+          const double v00 = + derxy_vi_1 * convvelint_1 * (
+                                                        vderiv_0_0 * derxjm_(0,0,1,ui)
+                                                      + vderiv_0_1 * derxjm_(0,1,1,ui)
+                                                      + vderiv_0_2 * derxjm_(0,2,1,ui))
+                             + derxy_vi_2 * convvelint_2 * (
+                                                        vderiv_0_0 * derxjm_(0,0,2,ui)
+                                                      + vderiv_0_1 * derxjm_(0,1,2,ui)
+                                                      + vderiv_0_2 * derxjm_(0,2,2,ui));
+          const double v10 = + derxy_vi_1 *  convvelint_1 * (
+                                                        vderiv_1_0 * derxjm_(0,0,1,ui)
+                                                      + vderiv_1_1 * derxjm_(0,1,1,ui)
+                                                      + vderiv_1_2 * derxjm_(0,2,1,ui))
+                             + derxy_vi_2 * convvelint_2 * (
+                                                        vderiv_1_0 * derxjm_(0,0,2,ui)
+                                                      + vderiv_1_1 * derxjm_(0,1,2,ui)
+                                                      + vderiv_1_2 * derxjm_(0,2,2,ui));
+          const double v20 = + derxy_vi_1 * convvelint_1 * (
+                                                        vderiv_2_0 * derxjm_(0,0,1,ui)
+                                                      + vderiv_2_1 * derxjm_(0,1,1,ui)
+                                                      + vderiv_2_2 * derxjm_(0,2,1,ui))
+                             + derxy_vi_2 * convvelint_2 * (
+                                                        vderiv_2_0 * derxjm_(0,0,2,ui)
+                                                      + vderiv_2_1 * derxjm_(0,1,2,ui)
+                                                      + vderiv_2_2 * derxjm_(0,2,2,ui));
+          const double v01 = + derxy_vi_0 * convvelint_0 * (
+                                                        vderiv_0_0 * derxjm_(1,0,0,ui)
+                                                      + vderiv_0_1 * derxjm_(1,1,0,ui)
+                                                      + vderiv_0_2 * derxjm_(1,2,0,ui))
+                             + derxy_vi_2 * convvelint_2 * (
+                                                        vderiv_0_0 * derxjm_(1,0,2,ui)
+                                                      + vderiv_0_1 * derxjm_(1,1,2,ui)
+                                                      + vderiv_0_2 * derxjm_(1,2,2,ui));
+          const double v11 = + derxy_vi_0 * convvelint_0 * (
+                                                        vderiv_1_0 * derxjm_(1,0,0,ui)
+                                                      + vderiv_1_1 * derxjm_(1,1,0,ui)
+                                                      + vderiv_1_2 * derxjm_(1,2,0,ui))
+                             + derxy_vi_2 * convvelint_2 * (
+                                                        vderiv_1_0 * derxjm_(1,0,2,ui)
+                                                      + vderiv_1_1 * derxjm_(1,1,2,ui)
+                                                      + vderiv_1_2 * derxjm_(1,2,2,ui));
+          const double v21 = + derxy_vi_0 * convvelint_0 * (
+                                                        vderiv_2_0 * derxjm_(1,0,0,ui)
+                                                      + vderiv_2_1 * derxjm_(1,1,0,ui)
+                                                      + vderiv_2_2 * derxjm_(1,2,0,ui))
+                             + derxy_vi_2 * convvelint_2 * (
+                                                        vderiv_2_0 * derxjm_(1,0,2,ui)
+                                                      + vderiv_2_1 * derxjm_(1,1,2,ui)
+                                                      + vderiv_2_2 * derxjm_(1,2,2,ui));
+          const double v02 = + derxy_vi_0 * convvelint_0 * (
+                                                        vderiv_0_0 * derxjm_(2,0,0,ui)
+                                                      + vderiv_0_1 * derxjm_(2,1,0,ui)
+                                                      + vderiv_0_2 * derxjm_(2,2,0,ui))
+                             + derxy_vi_1 * convvelint_1 * (
+                                                        vderiv_0_0 * derxjm_(2,0,1,ui)
+                                                      + vderiv_0_1 * derxjm_(2,1,1,ui)
+                                                      + vderiv_0_2 * derxjm_(2,2,1,ui));
+          const double v12 = + derxy_vi_0 * convvelint_0 * (
+                                                        vderiv_1_0 * derxjm_(2,0,0,ui)
+                                                      + vderiv_1_1 * derxjm_(2,1,0,ui)
+                                                      + vderiv_1_2 * derxjm_(2,2,0,ui))
+                             + derxy_vi_1 * convvelint_1 * (
+                                                        vderiv_1_0 * derxjm_(2,0,1,ui)
+                                                      + vderiv_1_1 * derxjm_(2,1,1,ui)
+                                                      + vderiv_1_2 * derxjm_(2,2,1,ui));
+          const double v22 = + derxy_vi_0 * convvelint_0 * (
+                                                        vderiv_2_0 * derxjm_(2,0,0,ui)
+                                                      + vderiv_2_1 * derxjm_(2,1,0,ui)
+                                                      + vderiv_2_2 * derxjm_(2,2,0,ui))
+                             + derxy_vi_1 * convvelint_1 * (
+                                                        vderiv_2_0 * derxjm_(2,0,1,ui)
+                                                      + vderiv_2_1 * derxjm_(2,1,1,ui)
+                                                      + vderiv_2_2 * derxjm_(2,2,1,ui));
 
           ecoupl_p(vi, ui * 3 + 0) += v * (v00 + v10 + v20);
           ecoupl_p(vi, ui * 3 + 1) += v * (v01 + v11 + v21);
@@ -3660,80 +3964,100 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
   // mass
   if (my::fldparatimint_->IsStationary() == false)
   {
+    const double fac0 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(0);
+    const double fac1 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(1);
+
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = my::fac_ * my::densam_ * my::funct_(vi, 0) * (1.0 + addstab );
+      const double funct_vi = my::funct_(vi, 0);
+      const double v0 = fac0 * funct_vi;
+      const double v1 = fac1 * funct_vi;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
-        ecoupl_u(vi * 2    , ui * 2    ) += v * my::velint_(0) * my::derxy_(0, ui);
-        ecoupl_u(vi * 2    , ui * 2 + 1) += v * my::velint_(0) * my::derxy_(1, ui);
+        ecoupl_u(vi * 2    , ui * 2    ) += v0 * my::derxy_(0, ui);
+        ecoupl_u(vi * 2    , ui * 2 + 1) += v0 * my::derxy_(1, ui);
 
-        ecoupl_u(vi * 2 + 1, ui * 2    ) += v * my::velint_(1) * my::derxy_(0, ui);
-        ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v * my::velint_(1) * my::derxy_(1, ui);
+        ecoupl_u(vi * 2 + 1, ui * 2    ) += v1 * my::derxy_(0, ui);
+        ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v1 * my::derxy_(1, ui);
       }
     }
   }
 
   //rhs
-  for (int vi = 0; vi < my::nen_; ++vi)
   {
-    double v = my::fac_ * my::funct_(vi, 0);
-    for (int ui = 0; ui < my::nen_; ++ui)
+    const double fac_timint = my::fac_ * my::fldparatimint_->Dt() * my::fldparatimint_->Theta();
+    const double fac0 = fac_timint * (-1.0) * my::rhsmom_(0);
+    const double fac1 = fac_timint * (-1.0) * my::rhsmom_(1);
+    for (int vi = 0; vi < my::nen_; ++vi)
     {
-      ecoupl_u(vi * 2    , ui * 2    ) += v * (- my::rhsmom_(0) * my::fldparatimint_->Dt()
-                                                     * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
-      ecoupl_u(vi * 2    , ui * 2 + 1) += v * (- my::rhsmom_(0)
-                                                     * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
+      const double funct_vi = my::funct_(vi, 0);
+      const double v0 = fac0 * funct_vi;
+      const double v1 = fac1 * funct_vi;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 2    , ui * 2    ) += v0 * my::derxy_(0, ui);
+        ecoupl_u(vi * 2    , ui * 2 + 1) += v0 * my::derxy_(1, ui);
 
-      ecoupl_u(vi * 2 + 1, ui * 2    ) += v * (- my::rhsmom_(1)
-                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
-      ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v * (- my::rhsmom_(1)
-                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
+        ecoupl_u(vi * 2 + 1, ui * 2    ) += v1 * my::derxy_(0, ui);
+        ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v1 * my::derxy_(1, ui);
+      }
     }
   }
 
   //---------reaction term (darcy term)
-  for (int vi = 0; vi < my::nen_; ++vi)
   {
-    //double v = timefacfac * my::funct_(vi, 0) * my::reacoeff_ * (1.0 + addstab );
-    double v = timefacfac * my::funct_(vi, 0) * (1.0 + addstab );
-    for (int ui = 0; ui < my::nen_; ++ui)
+    const double fac_reaconvel_0 = reaconvel_(0) * timefacfac * (1.0 + addstab );
+    const double fac_reaconvel_1 = reaconvel_(1) * timefacfac * (1.0 + addstab );
+    for (int vi = 0; vi < my::nen_; ++vi)
     {
-      ecoupl_u(vi * 2    , ui * 2    ) += v * reaconvel_(0) * my::derxy_(0, ui);
-      ecoupl_u(vi * 2    , ui * 2 + 1) += v * reaconvel_(0) * my::derxy_(1, ui);
+      const double funct_vi = my::funct_(vi, 0);
+      const double v0 =  fac_reaconvel_0 * funct_vi ;
+      const double v1 =  fac_reaconvel_1 * funct_vi ;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        ecoupl_u(vi * 2    , ui * 2    ) += v0 * my::derxy_(0, ui);
+        ecoupl_u(vi * 2    , ui * 2 + 1) += v0 * my::derxy_(1, ui);
 
-      ecoupl_u(vi * 2 + 1, ui * 2    ) += v * reaconvel_(1) * my::derxy_(0,ui);
-      ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v * reaconvel_(1) * my::derxy_(1, ui);
+        ecoupl_u(vi * 2 + 1, ui * 2    ) += v1 * my::derxy_(0,ui);
+        ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v1 * my::derxy_(1, ui);
+      }
     }
   }
 
+  const double vderiv_0_0   = my::vderiv_(0, 0);
+  const double vderiv_0_1   = my::vderiv_(0, 1);
+  const double vderiv_1_0   = my::vderiv_(1, 0);
+  const double vderiv_1_1   = my::vderiv_(1, 1);
   //---------------convective term
-
-  for (int vi=0; vi<my::nen_; ++vi)
   {
-    const int tvi  = 2*vi;
-    const int tvip = tvi+1;
-    const double v = my::densaf_*timefacfac/my::det_*my::funct_(vi) * (1.0 + addstab );
-    for (int ui=0; ui<my::nen_; ++ui)
+    const double convvelint_0 = my::convvelint_(0);
+    const double convvelint_1 = my::convvelint_(1);
+    for (int vi=0; vi<my::nen_; ++vi)
     {
-      const int tui  = 2*ui;
-      const int tuip = tui+1;
+      const int tvi  = 2*vi;
+      const int tvip = tvi+1;
+      const double v = my::densaf_*timefacfac/my::det_*my::funct_(vi) * (1.0 + addstab );
+      for (int ui=0; ui<my::nen_; ++ui)
+      {
+        const int tui  = 2*ui;
+        const int tuip = tui+1;
 
-      ecoupl_u(tvi , tui ) += v*(
-      + my::convvelint_(1)*(-my::vderiv_(0, 0)*my::deriv_(1,ui) + my::vderiv_(0, 1)*my::deriv_(0,ui))
-      );
+        ecoupl_u(tvi , tui ) += v*(
+        + convvelint_1*(-vderiv_0_0*my::deriv_(1,ui) + vderiv_0_1*my::deriv_(0,ui))
+        );
 
-      ecoupl_u(tvi , tuip) += v*(
-      + my::convvelint_(0)*( my::vderiv_(0, 0)*my::deriv_(1,ui) - my::vderiv_(0, 1)*my::deriv_(0,ui))
-      );
+        ecoupl_u(tvi , tuip) += v*(
+        + convvelint_0*( vderiv_0_0*my::deriv_(1,ui) - vderiv_0_1*my::deriv_(0,ui))
+        );
 
-      ecoupl_u(tvip, tui ) += v*(
-      + my::convvelint_(1)*(-my::vderiv_(1, 0)*my::deriv_(1,ui) + my::vderiv_(1, 1)*my::deriv_(0,ui))
-      );
+        ecoupl_u(tvip, tui ) += v*(
+        + convvelint_1*(-vderiv_1_0*my::deriv_(1,ui) + vderiv_1_1*my::deriv_(0,ui))
+        );
 
-      ecoupl_u(tvip, tuip) += v*(
-      + my::convvelint_(0)*( my::vderiv_(1, 0)*my::deriv_(1,ui) - my::vderiv_(1, 1)*my::deriv_(0,ui))
-      );
+        ecoupl_u(tvip, tuip) += v*(
+        + convvelint_0*( vderiv_1_0*my::deriv_(1,ui) - vderiv_1_1*my::deriv_(0,ui))
+        );
+      }
     }
   }
 
@@ -3743,152 +4067,163 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
     const int tvi  = 2*vi;
     const int tvip = tvi+1;
     const double v = press_*timefacfac/my::det_;
+    const double deriv_0_vi = my::deriv_(0, vi);
+    const double deriv_1_vi = my::deriv_(1, vi);
     for (int ui=0; ui<my::nen_; ++ui)
     {
       const int tui = 2*ui;
-      ecoupl_u(tvi,  tui + 1) -= v*( my::deriv_(0, vi)*my::deriv_(1, ui) - my::deriv_(0, ui)*my::deriv_(1, vi)) ;
-      ecoupl_u(tvip, tui    ) -= v*(-my::deriv_(0, vi)*my::deriv_(1, ui) + my::deriv_(0, ui)*my::deriv_(1, vi)) ;
+      ecoupl_u(tvi,  tui + 1) -= v*( deriv_0_vi*my::deriv_(1, ui) - my::deriv_(0, ui)*deriv_1_vi) ;
+      ecoupl_u(tvip, tui    ) -= v*(-deriv_0_vi*my::deriv_(1, ui) + my::deriv_(0, ui)*deriv_1_vi) ;
     }
   }
 
   // //---------viscous term (brinkman term)
+  const double xji_00 = my::xji_(0,0);
+  const double xji_01 = my::xji_(0,1);
+  const double xji_10 = my::xji_(1,0);
+  const double xji_11 = my::xji_(1,1);
 
   if(my::visceff_)
   {
+    const double vderxy_0_0   = 2.0*my::vderxy_(0, 0);
+    const double vderxy_1_1   = 2.0*my::vderxy_(1, 1);
+    const double vderxy_0_1   = my::vderxy_(0, 1) + my::vderxy_(1, 0);
+
+    const double refgrad_porosity_0 = refgrad_porosity_(0);
+    const double refgrad_porosity_1 = refgrad_porosity_(1);
 
     // part 1: derivative of det
-
-    double v = my::visceff_*timefac*my::fac_ * (1.0 + addstab );
-    for (int ui=0; ui<my::nen_; ++ui)
     {
-      double derinvJ0 = -v*(my::deriv_(0,ui)*my::xji_(0,0) + my::deriv_(1,ui)*my::xji_(0,1) );
-      double derinvJ1 = -v*(my::deriv_(0,ui)*my::xji_(1,0) + my::deriv_(1,ui)*my::xji_(1,1) );
-      for (int vi=0; vi<my::nen_; ++vi)
+      const double v = my::visceff_*timefac*my::fac_ * (1.0 + addstab );
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        double visres0 =   2.0*my::derxy_(0, vi)* my::vderxy_(0, 0)
-                           +     my::derxy_(1, vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0)) ;
-        double visres1 =         my::derxy_(0, vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                           + 2.0*my::derxy_(1, vi)* my::vderxy_(1, 1) ;
+        const double derinvJ0 = -v*(my::deriv_(0,ui)*xji_00 + my::deriv_(1,ui)*xji_01 );
+        const double derinvJ1 = -v*(my::deriv_(0,ui)*xji_10 + my::deriv_(1,ui)*xji_11 );
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const double visres0 =   my::derxy_(0, vi)* vderxy_0_0
+                                 + my::derxy_(1, vi)*vderxy_0_1 ;
+          const double visres1 =   my::derxy_(0, vi)*vderxy_0_1
+                                 + my::derxy_(1, vi)* vderxy_1_1 ;
 
-        ecoupl_u(vi*2    , ui*2    ) += derinvJ0*visres0;
-        ecoupl_u(vi*2 + 1, ui*2    ) += derinvJ0*visres1;
+          ecoupl_u(vi*2    , ui*2    ) += derinvJ0*visres0;
+          ecoupl_u(vi*2 + 1, ui*2    ) += derinvJ0*visres1;
 
-        ecoupl_u(vi*2    , ui*2 + 1) += derinvJ1*visres0;
-        ecoupl_u(vi*2 + 1, ui*2 + 1) += derinvJ1*visres1;
+          ecoupl_u(vi*2    , ui*2 + 1) += derinvJ1*visres0;
+          ecoupl_u(vi*2 + 1, ui*2 + 1) += derinvJ1*visres1;
 
-        double visres0_poro =     2.0*refgrad_porosity_(0)*my::funct_(vi)* my::vderxy_(0, 0)
-                                +     refgrad_porosity_(1)*my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0));
-        double visres1_poro =         refgrad_porosity_(0)*my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                + 2.0*refgrad_porosity_(1)*my::funct_(vi)* my::vderxy_(1, 1) ;
+          const double visres0_poro =   refgrad_porosity_0*my::funct_(vi)* vderxy_0_0
+                                      + refgrad_porosity_1*my::funct_(vi)* vderxy_0_1;
+          const double visres1_poro =         refgrad_porosity_0*my::funct_(vi)* vderxy_0_1
+                                      + refgrad_porosity_1*my::funct_(vi)* vderxy_1_1 ;
 
-        ecoupl_u(vi*2 + 0, ui*2 + 0) += -1.0 * derinvJ0/porosity_*visres0_poro;
-        ecoupl_u(vi*2 + 1, ui*2 + 0) += -1.0 * derinvJ0/porosity_*visres1_poro;
+          ecoupl_u(vi*2 + 0, ui*2 + 0) += -1.0 * derinvJ0/porosity_*visres0_poro;
+          ecoupl_u(vi*2 + 1, ui*2 + 0) += -1.0 * derinvJ0/porosity_*visres1_poro;
 
-        ecoupl_u(vi*2 + 0, ui*2 + 1) += -1.0 * derinvJ1/porosity_*visres0_poro;
-        ecoupl_u(vi*2 + 1, ui*2 + 1) += -1.0 * derinvJ1/porosity_*visres1_poro;
-
-//        double v0_poro =   +     my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-//                                                                               * (   refgrad_porosity_(0) * my::deriv_(1,ui)
-//                                                                                   + refgrad_porosity_(1) * my::deriv_(0,ui)
-//                                                                                 );
-//        double v1_poro =         my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-//                                                                               * (   refgrad_porosity_(0) * my::deriv_(1,ui)
-//                                                                                   + refgrad_porosity_(1) * my::deriv_(0,ui)
-//                                                                                 );
-//
-//        ecoupl_u(vi * 2 + 2, ui * 2 + 0) += -1.0 * v/porosity_/my::det_ * v0_poro;
-//        ecoupl_u(vi * 2 + 2, ui * 2 + 1) += -1.0 * v/porosity_/my::det_ * v1_poro;
+          ecoupl_u(vi*2 + 0, ui*2 + 1) += -1.0 * derinvJ1/porosity_*visres0_poro;
+          ecoupl_u(vi*2 + 1, ui*2 + 1) += -1.0 * derinvJ1/porosity_*visres1_poro;
+        }
       }
     }
 
     // part 2: derivative of viscosity residual
-
-     v = timefacfac*my::visceff_/my::det_ * (1.0 + addstab );
-    for (int ui=0; ui<my::nen_; ++ui)
     {
-      double v0 = - my::vderiv_(0,0)*(my::xji_(1,0)*my::deriv_(1,ui) + my::xji_(1,0)*my::deriv_(1,ui) )
-                  - my::vderiv_(0,1)*(my::xji_(1,1)*my::deriv_(1,ui) + my::xji_(1,0)*my::deriv_(0,ui) )
-                  - my::vderiv_(1,0)*(my::deriv_(1,ui)*my::xji_(0,0))
-                  - my::vderiv_(1,1)*(my::deriv_(1,ui)*my::xji_(0,1));
-      double v1 = - my::vderiv_(0,0)*(my::xji_(1,0)*my::deriv_(0,ui) + my::xji_(1,1)*my::deriv_(1,ui) )
-                  - my::vderiv_(0,1)*(my::xji_(1,1)*my::deriv_(0,ui) + my::xji_(1,1)*my::deriv_(0,ui) )
-                  - my::vderiv_(1,0)*(my::deriv_(0,ui)*my::xji_(0,0))
-                  - my::vderiv_(1,1)*(my::deriv_(0,ui)*my::xji_(0,1));
-
-      for (int vi=0; vi<my::nen_; ++vi)
+      const double v = timefacfac*my::visceff_/my::det_ * (1.0 + addstab );
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        ecoupl_u(vi*2 + 0, ui*2 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
-                                     - v*my::funct_(vi)/porosity_*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 );
+        const double deriv_0_ui = my::deriv_(0,ui);
+        const double deriv_1_ui = my::deriv_(1,ui);
+        {
+          const double v0 = - vderiv_0_0*(xji_10*deriv_1_ui + xji_10*deriv_1_ui )
+                      - vderiv_0_1*(xji_11*deriv_1_ui + xji_10*deriv_0_ui )
+                      - vderiv_1_0*(deriv_1_ui*xji_00)
+                      - vderiv_1_1*(deriv_1_ui*xji_01);
+          const double  v1 = - vderiv_0_0*(xji_10*deriv_0_ui + xji_11*deriv_1_ui )
+                      - vderiv_0_1*(xji_11*deriv_0_ui + xji_11*deriv_0_ui )
+                      - vderiv_1_0*(deriv_0_ui*xji_00)
+                      - vderiv_1_1*(deriv_0_ui*xji_01);
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*2 + 0, ui*2 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
+                                            - v*my::funct_(vi)/porosity_*(refgrad_porosity_0*v0 + refgrad_porosity_1*v1 );
+          }
+        }
+
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(2*deriv_1_ui*xji_00 + 2*deriv_1_ui*xji_00 )
+                             - vderiv_0_1*(2*deriv_0_ui*xji_00 + 2*deriv_1_ui*xji_01 )
+                             - vderiv_1_0*(deriv_1_ui*xji_10)
+                             - vderiv_1_1*(deriv_0_ui*xji_10);
+          const double v1 =  - vderiv_0_0*(2*deriv_0_ui*xji_00 + 2*deriv_1_ui*xji_01 )
+                             - vderiv_0_1*(2*deriv_0_ui*xji_01 + 2*deriv_0_ui*xji_01 )
+                             - vderiv_1_0*(deriv_1_ui*xji_11)
+                             - vderiv_1_1*(deriv_0_ui*xji_11);
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*2 + 0, ui*2 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
+                                            - v*my::funct_(vi)/porosity_*(refgrad_porosity_0*v0 + refgrad_porosity_1*v1 );
+          }
+        }
+
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(deriv_1_ui*xji_00)
+                             - vderiv_0_1*(deriv_0_ui*xji_00)
+                             - vderiv_1_0*(2*xji_10*deriv_1_ui + 2*xji_10*deriv_1_ui )
+                             - vderiv_1_1*(2*xji_11*deriv_1_ui + 2*xji_10*deriv_0_ui );
+          const double v1 =  - vderiv_0_0*(deriv_1_ui*xji_01)
+                             - vderiv_0_1*(deriv_0_ui*xji_01)
+                             - vderiv_1_0*(2*xji_10*deriv_0_ui + 2*xji_11*deriv_1_ui )
+                             - vderiv_1_1*(2*xji_11*deriv_0_ui + 2*xji_11*deriv_0_ui );
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*2 + 1, ui*2 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
+                                            - v*my::funct_(vi)/porosity_*(refgrad_porosity_0*v0 + refgrad_porosity_1*v1 );
+          }
+        }
+
+        ////////////////////////////////////////////////////////////////
+        {
+          const double v0 =  - vderiv_0_0*(deriv_1_ui*xji_10)
+                             - vderiv_0_1*(deriv_1_ui*xji_11)
+                             - vderiv_1_0*(xji_00*deriv_1_ui + xji_00*deriv_1_ui )
+                             - vderiv_1_1*(xji_01*deriv_1_ui + xji_00*deriv_0_ui );
+          const double v1 =  - vderiv_0_0*(deriv_0_ui*xji_10)
+                             - vderiv_0_1*(deriv_0_ui*xji_11)
+                             - vderiv_1_0*(xji_00*deriv_0_ui + xji_01*deriv_1_ui )
+                             - vderiv_1_1*(xji_01*deriv_0_ui + xji_01*deriv_0_ui );
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecoupl_u(vi*2 + 1, ui*2 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
+                                            - v*my::funct_(vi)/porosity_*(refgrad_porosity_0*v0 + refgrad_porosity_1*v1 );
+          }
+        }
+
       }
-
-      ////////////////////////////////////////////////////////////////
-
-      v0 = - my::vderiv_(0,0)*(2*my::deriv_(1,ui)*my::xji_(0,0) + 2*my::deriv_(1,ui)*my::xji_(0,0) )
-           - my::vderiv_(0,1)*(2*my::deriv_(0,ui)*my::xji_(0,0) + 2*my::deriv_(1,ui)*my::xji_(0,1) )
-           - my::vderiv_(1,0)*(my::deriv_(1,ui)*my::xji_(1,0))
-           - my::vderiv_(1,1)*(my::deriv_(0,ui)*my::xji_(1,0));
-      v1 = - my::vderiv_(0,0)*(2*my::deriv_(0,ui)*my::xji_(0,0) + 2*my::deriv_(1,ui)*my::xji_(0,1) )
-           - my::vderiv_(0,1)*(2*my::deriv_(0,ui)*my::xji_(0,1) + 2*my::deriv_(0,ui)*my::xji_(0,1) )
-           - my::vderiv_(1,0)*(my::deriv_(1,ui)*my::xji_(1,1))
-           - my::vderiv_(1,1)*(my::deriv_(0,ui)*my::xji_(1,1));
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*2 + 0, ui*2 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
-                                     - v*my::funct_(vi)/porosity_*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 );
-      }
-
-      ////////////////////////////////////////////////////////////////
-
-      v0 = - my::vderiv_(0,0)*(my::deriv_(1,ui)*my::xji_(0,0))
-           - my::vderiv_(0,1)*(my::deriv_(0,ui)*my::xji_(0,0))
-           - my::vderiv_(1,0)*(2*my::xji_(1,0)*my::deriv_(1,ui) + 2*my::xji_(1,0)*my::deriv_(1,ui) )
-           - my::vderiv_(1,1)*(2*my::xji_(1,1)*my::deriv_(1,ui) + 2*my::xji_(1,0)*my::deriv_(0,ui) );
-      v1 = - my::vderiv_(0,0)*(my::deriv_(1,ui)*xji_01)
-           - my::vderiv_(0,1)*(my::deriv_(0,ui)*xji_01)
-           - my::vderiv_(1,0)*(2*my::xji_(1,0)*my::deriv_(0,ui) + 2*my::xji_(1,1)*my::deriv_(1,ui) )
-           - my::vderiv_(1,1)*(2*my::xji_(1,1)*my::deriv_(0,ui) + 2*my::xji_(1,1)*my::deriv_(0,ui) );
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*2 + 1, ui*2 + 0) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
-                                     - v*my::funct_(vi)/porosity_*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 );
-      }
-
-      ////////////////////////////////////////////////////////////////
-
-      v0 = - my::vderiv_(0,0)*(my::deriv_(1,ui)*my::xji_(1,0))
-           - my::vderiv_(0,1)*(my::deriv_(1,ui)*my::xji_(1,1))
-           - my::vderiv_(1,0)*(my::xji_(0,0)*my::deriv_(1,ui) + my::xji_(0,0)*my::deriv_(1,ui) )
-           - my::vderiv_(1,1)*(my::xji_(0,1)*my::deriv_(1,ui) + my::xji_(0,0)*my::deriv_(0,ui) );
-      v1 = - my::vderiv_(0,0)*(my::deriv_(0,ui)*my::xji_(1,0))
-           - my::vderiv_(0,1)*(my::deriv_(0,ui)*my::xji_(1,1))
-           - my::vderiv_(1,0)*(my::xji_(0,0)*my::deriv_(0,ui) + my::xji_(0,1)*my::deriv_(1,ui) )
-           - my::vderiv_(1,1)*(my::xji_(0,1)*my::deriv_(0,ui) + my::xji_(0,1)*my::deriv_(0,ui) );
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        ecoupl_u(vi*2 + 1, ui*2 + 1) +=   v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 )
-                                     - v*my::funct_(vi)/porosity_*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 );
-      }
-
     }
   }//if(my::visceff_)
 
   //*************************** ReacStab**********************************
   if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
   {
+    const double refgradp_0 =refgradp_(0);
+    const double refgradp_1 =refgradp_(1);
     // pressure;
     for (int vi = 0; vi < my::nen_; ++vi)
     {
       double v =  my::funct_(vi) * timefacfac / my::det_ * addstab;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
-        ecoupl_u(vi * 2 + 1, ui * 2) += v * ( - refgradp_(0) * my::deriv_(1, ui)
-                                              + refgradp_(1) * my::deriv_(0, ui));
+        ecoupl_u(vi * 2 + 1, ui * 2) += v * ( - refgradp_0 * my::deriv_(1, ui)
+                                              + refgradp_1 * my::deriv_(0, ui));
 
-        ecoupl_u(vi * 2 + 0, ui * 2 + 1) += v * (   refgradp_(0) * my::deriv_(1, ui)
-                                                  - refgradp_(1) * my::deriv_(0, ui));
+        ecoupl_u(vi * 2 + 0, ui * 2 + 1) += v * (   refgradp_0 * my::deriv_(1, ui)
+                                                  - refgradp_1 * my::deriv_(0, ui));
       }
     }
   }
@@ -3907,12 +4242,31 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     const double &                                                    timefacfac  )
 {
 
+  const double vderiv_0_0   = my::vderiv_(0, 0);
+  const double vderiv_0_1   = my::vderiv_(0, 1);
+  const double vderiv_1_0   = my::vderiv_(1, 0);
+  const double vderiv_1_1   = my::vderiv_(1, 1);
+
+  const double gridvelderiv_0_0   = gridvelderiv_(0, 0);
+  const double gridvelderiv_0_1   = gridvelderiv_(0, 1);
+  const double gridvelderiv_1_0   = gridvelderiv_(1, 0);
+  const double gridvelderiv_1_1   = gridvelderiv_(1, 1);
+
+  const double velint_0   = my::velint_(0);
+  const double velint_1   = my::velint_(1);
+
+  const double gridvelint_0   = gridvelint_(0);
+  const double gridvelint_1   = gridvelint_(1);
+
+  const double convvelint_0   = my::convvelint_(0);
+  const double convvelint_1   = my::convvelint_(1);
+
   if (my::fldparatimint_->IsStationary() == false)
   {
     // dphi_dp*dp/dt
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = my::fac_ * my::funct_(vi, 0) * (   dphi_dp * press_ )
+      const double v = my::fac_ * my::funct_(vi, 0) * (   dphi_dp * press_ )
                  + timefacfac * my::funct_(vi, 0) * refporositydot ;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
@@ -3925,7 +4279,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
   // rhs
   for (int vi = 0; vi < my::nen_; ++vi)
   {
-    double v = -1.0 * timefacfac * my::funct_(vi, 0) *  dphi_dp*my::rhscon_;
+    const double v = -1.0 * timefacfac * my::funct_(vi, 0) *  dphi_dp*my::rhscon_;
     for (int ui = 0; ui < my::nen_; ++ui)
     {
       ecoupl_p(vi, ui * 2    ) += v * my::derxy_(0, ui);
@@ -3940,14 +4294,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     // (porosity)*div u
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = timefacfac_det * my::funct_(vi, 0) * porosity_;
+      const double v = timefacfac_det * my::funct_(vi, 0) * porosity_;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
-        ecoupl_p(vi, ui * 2    ) += v * (- my::vderiv_(1, 0) * my::deriv_(1,ui)
-                                         + my::vderiv_(1, 1) * my::deriv_(0,ui));
+        ecoupl_p(vi, ui * 2    ) += v * (- vderiv_1_0 * my::deriv_(1,ui)
+                                         + vderiv_1_1 * my::deriv_(0,ui));
 
-        ecoupl_p(vi, ui * 2 + 1) += v * (+ my::vderiv_(0, 0) * my::deriv_(1,ui)
-                                         - my::vderiv_(0, 1) * my::deriv_(0,ui));
+        ecoupl_p(vi, ui * 2 + 1) += v * (+ vderiv_0_0 * my::deriv_(1,ui)
+                                         - vderiv_0_1 * my::deriv_(0,ui));
       }
     }
 
@@ -3955,14 +4309,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     // (dphi_dJ*J_)*div vs
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = timefacfac_det * my::funct_(vi, 0) * dphi_dJ * J_;
+      const double v = timefacfac_det * my::funct_(vi, 0) * dphi_dJ * J_;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
-        ecoupl_p(vi, ui * 2    ) += v * (- gridvelderiv_(1, 0) * my::deriv_(1,ui)
-                                         + gridvelderiv_(1, 1) * my::deriv_(0,ui));
+        ecoupl_p(vi, ui * 2    ) += v * (- gridvelderiv_1_0 * my::deriv_(1,ui)
+                                         + gridvelderiv_1_1 * my::deriv_(0,ui));
 
-        ecoupl_p(vi, ui * 2 + 1) += v * (+ gridvelderiv_(0, 0) * my::deriv_(1,ui)
-                                         - gridvelderiv_(0, 1) * my::deriv_(0,ui));
+        ecoupl_p(vi, ui * 2 + 1) += v * (+ gridvelderiv_0_0 * my::deriv_(1,ui)
+                                         - gridvelderiv_0_1 * my::deriv_(0,ui));
       }
     }
 
@@ -3970,14 +4324,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
 
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      double v00 = + (my::velint_(1) - gridvelint_(1)) * ( - refgrad_porosity_(0) * my::deriv_(1,ui)
-                                                           + refgrad_porosity_(1) * my::deriv_(0,ui) );
-      double v01 = + (my::velint_(0) - gridvelint_(0)) * ( + refgrad_porosity_(0) * my::deriv_(1,ui)
-                                                           - refgrad_porosity_(1) * my::deriv_(0,ui) );
+      const double v00 = + (velint_1 - gridvelint_1) * ( - refgrad_porosity_(0) * my::deriv_(1,ui)
+                                                         + refgrad_porosity_(1) * my::deriv_(0,ui) );
+      const double v01 = + (velint_0 - gridvelint_0) * ( + refgrad_porosity_(0) * my::deriv_(1,ui)
+                                                         - refgrad_porosity_(1) * my::deriv_(0,ui) );
 
       for (int vi = 0; vi < my::nen_; ++vi)
       {
-        double v = timefacfac_det * my::funct_(vi);
+        const double v = timefacfac_det * my::funct_(vi);
 
         ecoupl_p(vi, ui * 2    ) += v * v00;
         ecoupl_p(vi, ui * 2 + 1) += v * v01;
@@ -3990,30 +4344,33 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     // (dphi_dJ*J+phi)*div vs
     for (int vi = 0; vi < my::nen_; ++vi)
     {
-      double v = timefacfac_det * my::funct_(vi, 0) * (dphi_dJ * J_+porosity_);
+      const double v = timefacfac_det * my::funct_(vi, 0) * (dphi_dJ * J_+porosity_);
       for (int ui = 0; ui < my::nen_; ++ui)
       {
-        ecoupl_p(vi, ui * 2    ) += v * (  - gridvelderiv_(1, 0) * my::deriv_(1,ui)
-                                           + gridvelderiv_(1, 1) * my::deriv_(0,ui));
+        ecoupl_p(vi, ui * 2    ) += v * (  - gridvelderiv_1_0 * my::deriv_(1,ui)
+                                           + gridvelderiv_1_1 * my::deriv_(0,ui));
 
-        ecoupl_p(vi, ui * 2 + 1) += v * (  + gridvelderiv_(0, 0) * my::deriv_(1,ui)
-                                           - gridvelderiv_(0, 1) * my::deriv_(0,ui));
+        ecoupl_p(vi, ui * 2 + 1) += v * (  + gridvelderiv_0_0 * my::deriv_(1,ui)
+                                           - gridvelderiv_0_1 * my::deriv_(0,ui));
       }
     }
 
     //----------- phi * (u-vs)grad(vi)
 
-    double v00 = -1.0 * timefacfac_det * porosity_ * (my::velint_(1) - gridvelint_(1));
-    double v01 = -1.0 * timefacfac_det * porosity_ * (my::velint_(0) - gridvelint_(0));
+    const double v00 = -1.0 * timefacfac_det * porosity_ * (velint_1 - gridvelint_1);
+    const double v01 = -1.0 * timefacfac_det * porosity_ * (velint_0 - gridvelint_0);
 
     for (int ui = 0; ui < my::nen_; ++ui)
     {
+      const double deriv_0_ui = my::deriv_(0,ui);
+      const double deriv_1_ui = my::deriv_(1,ui);
+
       for (int vi = 0; vi < my::nen_; ++vi)
       {
-        ecoupl_p(vi, ui * 2    ) += v00 * ( - my::deriv_(0,vi) * my::deriv_(1,ui)
-                                            + my::deriv_(1,vi) * my::deriv_(0,ui) );
-        ecoupl_p(vi, ui * 2 + 1) += v01 * ( + my::deriv_(0,vi) * my::deriv_(1,ui)
-                                            - my::deriv_(1,vi) * my::deriv_(0,ui) );
+        ecoupl_p(vi, ui * 2    ) += v00 * ( - my::deriv_(0,vi) * deriv_1_ui
+                                            + my::deriv_(1,vi) * deriv_0_ui );
+        ecoupl_p(vi, ui * 2 + 1) += v01 * ( + my::deriv_(0,vi) * deriv_1_ui
+                                            - my::deriv_(1,vi) * deriv_0_ui );
       }
     }
 
@@ -4021,17 +4378,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
   //-------------------
   if (my::fldpara_->PSPG())
   {
-    double v00 = -1.0 * timefacfac_det * my::sgvelint_(1);
-    double v01 = -1.0 * timefacfac_det * my::sgvelint_(0);
+    const double v00 = -1.0 * timefacfac_det * my::sgvelint_(1);
+    const double v01 = -1.0 * timefacfac_det * my::sgvelint_(0);
 
     for (int ui = 0; ui < my::nen_; ++ui)
     {
+      const double deriv_0_ui = my::deriv_(0,ui);
+      const double deriv_1_ui = my::deriv_(1,ui);
       for (int vi = 0; vi < my::nen_; ++vi)
       {
-        ecoupl_p(vi, ui * 2    ) += v00 * ( - my::deriv_(0,vi) * my::deriv_(1,ui)
-                                            + my::deriv_(1,vi) * my::deriv_(0,ui) );
-        ecoupl_p(vi, ui * 2 + 1) += v01 * ( + my::deriv_(0,vi) * my::deriv_(1,ui)
-                                            - my::deriv_(1,vi) * my::deriv_(0,ui) );
+        ecoupl_p(vi, ui * 2    ) += v00 * ( - my::deriv_(0,vi) * deriv_1_ui
+                                            + my::deriv_(1,vi) * deriv_0_ui );
+        ecoupl_p(vi, ui * 2 + 1) += v01 * ( + my::deriv_(0,vi) * deriv_1_ui
+                                            - my::deriv_(1,vi) * deriv_0_ui );
       }
     }
 
@@ -4048,16 +4407,20 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
 
     //pressure
     {
+      const double refgradp_0 = refgradp_(0);
+      const double refgradp_1 = refgradp_(1);
       const double v = timefacfac_det * scal_grad_q;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
+        const double deriv_0_ui = my::deriv_(0,ui);
+        const double deriv_1_ui = my::deriv_(1,ui);
+
         for (int vi = 0; vi < my::nen_; ++vi)
         {
-
-          double v00 = + my::derxy_(1,vi) * (- refgradp_(0) * my::deriv_(1,ui)
-                                             + refgradp_(1) * my::deriv_(0,ui));
-          double v01 = + my::derxy_(0,vi) * (  refgradp_(0) * my::deriv_(1,ui)
-                                             - refgradp_(1) * my::deriv_(0,ui));
+          double v00 = + my::derxy_(1,vi) * (- refgradp_0 * deriv_1_ui
+                                             + refgradp_1 * deriv_0_ui);
+          double v01 = + my::derxy_(0,vi) * (  refgradp_0 * deriv_1_ui
+                                             - refgradp_1 * deriv_0_ui);
 
           ecoupl_p(vi, ui * 2 + 0) += v * v00;
           ecoupl_p(vi, ui * 2 + 1) += v * v01;
@@ -4068,11 +4431,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
       temp.MultiplyTN(my::derxy_,my::gradp_);
       for (int vi = 0; vi < my::nen_; ++vi)
       {
-        double v3 = -1.0 * timefacfac * scal_grad_q * temp(vi);
+        const double v = -1.0 * timefacfac * scal_grad_q * temp(vi);
         for (int ui = 0; ui < my::nen_; ++ui)
         {
-          ecoupl_p(vi, ui * 2)     += v3 * my::derxy_(0, ui);
-          ecoupl_p(vi, ui * 2 + 1) += v3 * my::derxy_(1, ui);
+          ecoupl_p(vi, ui * 2)     += v * my::derxy_(0, ui);
+          ecoupl_p(vi, ui * 2 + 1) += v * my::derxy_(1, ui);
         }
       }
 
@@ -4084,20 +4447,23 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
       const double v = my::densaf_*timefacfac_det * scal_grad_q;
       for (int ui = 0; ui < my::nen_; ++ui)
       {
+        const double deriv_0_ui = my::deriv_(0,ui);
+        const double deriv_1_ui = my::deriv_(1,ui);
+
         for (int vi = 0; vi < my::nen_; ++vi)
         {
-          double v00 = + my::derxy_(1,vi) * my::convvelint_(1) * (
-                                                - my::vderiv_(0, 0) * my::deriv_(1,ui)
-                                                + my::vderiv_(0, 1) * my::deriv_(0,ui));
-          double v10 = + my::derxy_(1,vi) *  my::convvelint_(1) * (
-                                                  my::vderiv_(1, 0) * my::deriv_(1,ui)
-                                                - my::vderiv_(1, 1) * my::deriv_(0,ui));
-          double v01 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                - my::vderiv_(0, 0) * my::deriv_(1,ui)
-                                                + my::vderiv_(0, 1) * my::deriv_(0,ui));
-          double v11 = + my::derxy_(0,vi) * my::convvelint_(0) * (
-                                                  my::vderiv_(1, 0) * my::deriv_(1,ui)
-                                                - my::vderiv_(1, 1) * my::deriv_(0,ui));
+          double v00 = + my::derxy_(1,vi) * convvelint_1 * (
+                                                - vderiv_0_0 * deriv_1_ui
+                                                + vderiv_0_1 * deriv_0_ui);
+          double v10 = + my::derxy_(1,vi) *  convvelint_1 * (
+                                                  vderiv_1_0 * deriv_1_ui
+                                                - vderiv_1_1 * deriv_0_ui);
+          double v01 = + my::derxy_(0,vi) * convvelint_0 * (
+                                                - vderiv_0_0 * deriv_1_ui
+                                                + vderiv_0_1 * deriv_0_ui);
+          double v11 = + my::derxy_(0,vi) * convvelint_0 * (
+                                                  vderiv_1_0 * deriv_1_ui
+                                                - vderiv_1_1 * deriv_0_ui);
 
           ecoupl_p(vi, ui * 2 + 0) += v * (v00 + v10 );
           ecoupl_p(vi, ui * 2 + 1) += v * (v01 + v11 );
@@ -4402,9 +4768,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
         for(int j=0; j<my::nsd_; j++)
         {
           const int gid = my::nsd_ * n +j;
+          const double defgrd_inv_ij = defgrd_inv(i,j);
           for (int k=0; k<my::nsd_; k++)
+          {
+            const double derxy_kn = my::derxy_(k,n);
             for(int p=0; p<my::nsd_; p++)
-              dFinvdus_dFdx(p, gid) += -defgrd_inv(i,j) * my::derxy_(k,n) * F_x(k*my::nsd_+i,p);
+              dFinvdus_dFdx(p, gid) += -defgrd_inv_ij * derxy_kn * F_x(k*my::nsd_+i,p);
+          }
         }
 
     //F^-T : d(dF/dx)/dus =  F^-T : (N,XX * F^ -1 + dF/dX * F^-1 * N,x)
@@ -4416,13 +4786,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
       {
         const int gid = my::nsd_ * n +j;
         for(int i=0; i<my::nsd_; i++)
+        {
+          const double defgrd_inv_ij = defgrd_inv(i,j);
           for(int k=0; k<my::nsd_; k++)
+          {
+            const double defgrd_inv_kj = defgrd_inv(k,j);
             for(int p=0; p<my::nsd_; p++)
             {
-              FinvT_dFx_dus(p, gid) +=   defgrd_inv(i,j) * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
+              FinvT_dFx_dus(p, gid) +=   defgrd_inv_ij * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
               for(int l=0; l<my::nsd_; l++)
-                FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv(k,j) * my::derxy_(p,n) ;
+                FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * my::derxy_(p,n) ;
             }
+          }
+        }
       }
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
@@ -4976,40 +5352,55 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(
   double porosity_inv= 1.0/porosity_;
   if (my::nsd_==3)
   {
+    const double grad_porosity_0 = grad_porosity_(0);
+    const double grad_porosity_1 = grad_porosity_(1);
+    const double grad_porosity_2 = grad_porosity_(2);
+
     for (int inode=0; inode<my::nen_; ++inode)
     {
-      double sum = (my::derxy2_(0,inode)+my::derxy2_(1,inode)+my::derxy2_(2,inode));
-      my::viscs2_(0,inode) =   0.5 * (sum + my::derxy2_(0,inode))
+      const double derxy_0_inode = my::derxy_(0, inode);
+      const double derxy_1_inode = my::derxy_(1, inode);
+      const double derxy_2_inode = my::derxy_(2, inode);
+
+      const double derxy2_0_inode = my::derxy2_(0, inode);
+      const double derxy2_1_inode = my::derxy2_(1, inode);
+      const double derxy2_2_inode = my::derxy2_(2, inode);
+      const double derxy2_3_inode = my::derxy2_(3, inode);
+      const double derxy2_4_inode = my::derxy2_(4, inode);
+      const double derxy2_5_inode = my::derxy2_(5, inode);
+
+      const double sum = (derxy2_0_inode+derxy2_1_inode+derxy2_2_inode);
+      my::viscs2_(0,inode) =   0.5 * (sum + derxy2_0_inode)
                              + 0.5 * porosity_inv * (
-                                        2*my::derxy_(0, inode)*grad_porosity_(0)
-                                       +  my::derxy_(1, inode)*grad_porosity_(1)
-                                       +  my::derxy_(2, inode)*grad_porosity_(2)
+                                        2*derxy_0_inode*grad_porosity_0
+                                       +  derxy_1_inode*grad_porosity_1
+                                       +  derxy_2_inode*grad_porosity_2
                                      );
-      my::viscs2_(1,inode) =   0.5 * my::derxy2_(3,inode)
-                             + 0.5 * porosity_inv * my::derxy_(0, inode)*grad_porosity_(1);
-      my::viscs2_(2,inode) =   0.5 * my::derxy2_(4,inode)
-                             + 0.5 * porosity_inv * my::derxy_(0, inode)*grad_porosity_(2);
+      my::viscs2_(1,inode) =   0.5 * derxy2_3_inode
+                             + 0.5 * porosity_inv * derxy_0_inode*grad_porosity_1;
+      my::viscs2_(2,inode) =   0.5 * derxy2_4_inode
+                             + 0.5 * porosity_inv * derxy_0_inode*grad_porosity_2;
       /********************************************************************/
-      my::viscs2_(3,inode) =   0.5 * my::derxy2_(3,inode)
-                             + 0.5 * porosity_inv * my::derxy_(1, inode)*grad_porosity_(0);
-      my::viscs2_(4,inode) =   0.5 * (sum + my::derxy2_(1,inode))
+      my::viscs2_(3,inode) =   0.5 * derxy2_3_inode
+                             + 0.5 * porosity_inv * derxy_1_inode*grad_porosity_0;
+      my::viscs2_(4,inode) =   0.5 * (sum + derxy2_1_inode)
                              + 0.5 * porosity_inv * (
-                                          my::derxy_(0, inode)*grad_porosity_(0)
-                                      + 2*my::derxy_(1, inode)*grad_porosity_(1)
-                                      +   my::derxy_(2, inode)*grad_porosity_(2)
+                                          derxy_0_inode*grad_porosity_0
+                                      + 2*derxy_1_inode*grad_porosity_1
+                                      +   derxy_2_inode*grad_porosity_2
                                     );
-      my::viscs2_(5,inode) =   0.5 * my::derxy2_(5,inode)
-                             + 0.5 * porosity_inv * my::derxy_(1, inode)*grad_porosity_(2);
+      my::viscs2_(5,inode) =   0.5 * derxy2_5_inode
+                             + 0.5 * porosity_inv * derxy_1_inode*grad_porosity_2;
       /********************************************************************/
-      my::viscs2_(6,inode) =   0.5 * my::derxy2_(4,inode)
-                             + 0.5 * porosity_inv * my::derxy_(2, inode)*grad_porosity_(0);
-      my::viscs2_(7,inode) =   0.5 * my::derxy2_(5,inode)
-                             + 0.5 * porosity_inv * my::derxy_(2, inode)*grad_porosity_(1);
-      my::viscs2_(8,inode) =   0.5 * (sum + my::derxy2_(2,inode))
+      my::viscs2_(6,inode) =   0.5 * derxy2_4_inode
+                             + 0.5 * porosity_inv * derxy_2_inode*grad_porosity_0;
+      my::viscs2_(7,inode) =   0.5 * derxy2_5_inode
+                             + 0.5 * porosity_inv * derxy_2_inode*grad_porosity_1;
+      my::viscs2_(8,inode) =   0.5 * (sum + derxy2_2_inode)
                              + 0.5 * porosity_inv * (
-                                           my::derxy_(0, inode)*grad_porosity_(0)
-                                       +   my::derxy_(1, inode)*grad_porosity_(1)
-                                       + 2*my::derxy_(2, inode)*grad_porosity_(2)
+                                           derxy_0_inode*grad_porosity_0
+                                       +   derxy_1_inode*grad_porosity_1
+                                       + 2*derxy_2_inode*grad_porosity_2
                                      );
 
       for (int idim=0; idim<my::nsd_; ++idim)
@@ -5024,24 +5415,34 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(
   }
   else if (my::nsd_==2)
   {
+    const double grad_porosity_0 = grad_porosity_(0);
+    const double grad_porosity_1 = grad_porosity_(1);
+
     for (int inode=0; inode<my::nen_; ++inode)
     {
-      double sum = (my::derxy2_(0,inode)+my::derxy2_(1,inode));
-      my::viscs2_(0,inode) =   0.5 * (sum + my::derxy2_(0,inode))
+      const double derxy_0_inode = my::derxy_(0, inode);
+      const double derxy_1_inode = my::derxy_(1, inode);
+
+      const double derxy2_0_inode = my::derxy2_(0, inode);
+      const double derxy2_1_inode = my::derxy2_(1, inode);
+      const double derxy2_2_inode = my::derxy2_(2, inode);
+
+      const double sum = (derxy2_0_inode+derxy2_1_inode);
+      my::viscs2_(0,inode) =   0.5 * (sum + derxy2_0_inode)
                              + 0.5 * porosity_inv * (
-                                        2*my::derxy_(0, inode)*grad_porosity_(0)
-                                       +  my::derxy_(1, inode)*grad_porosity_(1)
+                                        2*derxy_0_inode*grad_porosity_0
+                                       +  derxy_1_inode*grad_porosity_1
                                      )
                                      ;
-      my::viscs2_(1,inode) = 0.5 * my::derxy2_(2,inode)+ 0.5 * porosity_inv * my::derxy_(0, inode)*grad_porosity_(1)
+      my::viscs2_(1,inode) = 0.5 * derxy2_2_inode+ 0.5 * porosity_inv * derxy_0_inode*grad_porosity_1
           ;
       /********************************************************************/
-      my::viscs2_(2,inode) = 0.5 * my::derxy2_(2,inode)+ 0.5 * porosity_inv * my::derxy_(1, inode)*grad_porosity_(0)
+      my::viscs2_(2,inode) = 0.5 * derxy2_2_inode+ 0.5 * porosity_inv * derxy_1_inode*grad_porosity_0
           ;
-      my::viscs2_(3,inode) =   0.5 * (sum + my::derxy2_(1,inode))
+      my::viscs2_(3,inode) =   0.5 * (sum + derxy2_1_inode)
                              + 0.5 * porosity_inv * (
-                                           my::derxy_(0, inode)*grad_porosity_(0)
-                                       + 2*my::derxy_(1, inode)*grad_porosity_(1)
+                                         derxy_0_inode*grad_porosity_0
+                                       + 2*derxy_1_inode*grad_porosity_1
                                      )
                                      ;
 
@@ -5100,17 +5501,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
 
   if (not my::fldparatimint_->IsStationary())
   {
+    const double factor = timefacfacpre/porosity_*dphi_dp;
     for (int ui=0; ui<my::nen_; ++ui)
     {
-       const double w = my::funct_(ui)*timefacfacpre/porosity_*dphi_dp;
+       const double w = my::funct_(ui)*factor;
        for (int idim = 0; idim <my::nsd_; ++idim)
          lin_resM_Dp(idim,ui) +=  w * (- reagridvel_(idim) );
     }
     if (!const_permeability_) //check if derivatives of reaction tensor are zero --> significant speed up
     {
+      const double factor2 = timefacfacpre*dphi_dp*porosity_;
       for (int ui=0; ui<my::nen_; ++ui)
       {
-        const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
+        const double w1 = my::funct_(ui)*factor2;
         for (int idim = 0; idim <my::nsd_; ++idim)
           lin_resM_Dp(idim,ui) += - w1 * lin_p_vel_grid_(idim);
       }
