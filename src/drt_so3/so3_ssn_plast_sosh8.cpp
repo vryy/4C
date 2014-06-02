@@ -453,10 +453,10 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(const std::string& eletype,
   else dserror("Reading of SO_SH8 thickness direction failed");
 
   // plasticity related stuff
-  KbbInv_                      = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_)));
-  Kbd_                         = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_)));
-  fbeta_                       = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
-  dDp_last_iter_               = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
+  KbbInv_        .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_));
+  Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
+  fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+  dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
 
 
   return true;

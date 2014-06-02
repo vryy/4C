@@ -469,17 +469,17 @@ namespace ELEMENTS
 
     // plasticity ********************************************
     // Kbb^-1 at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > KbbInv_;
+    std::vector<Epetra_SerialDenseMatrix> KbbInv_;
 
     // Kbd at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > Kbd_;
+    std::vector<Epetra_SerialDenseMatrix> Kbd_;
 
     // f_b at each Gauss point for recovery of inner variables
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > fbeta_;
+    std::vector<Epetra_SerialDenseVector> fbeta_;
 
     // plastic increment at each Gauss point at last Newton iteration
     // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dDp_last_iter_;
+    std::vector<Epetra_SerialDenseVector> dDp_last_iter_;
 
     PlSpinType       plspintype_;
 

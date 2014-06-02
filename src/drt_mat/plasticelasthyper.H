@@ -303,10 +303,10 @@ private:
     virtual void GetParams(int s, int cpl){params_->stab_s_=s;params_->cpl_=cpl;};
 
     /// return accumulated plastic strain at GP
-    virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp);}
+    virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_[gp];}
 
     /// is this GP active
-    virtual bool Active(int gp) { return (*activity_state_)[gp];}
+    virtual bool Active(int gp) { return activity_state_[gp];}
 
   protected:
 
@@ -505,19 +505,19 @@ private:
     LINALG::Matrix<6,6> InvPlAniso_full_;
 
     /// inverse plastic deformation gradient for each Gauss point at last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_plastic_defgrd_inverse_;
+    std::vector<LINALG::Matrix<3,3> > last_plastic_defgrd_inverse_;
 
     /// accumulated plastic strain for each Gauss point at last converged state
-    Teuchos::RCP<std::vector<double > > last_alpha_isotropic_;
+    std::vector<double > last_alpha_isotropic_;
 
     /// accumulated plastic strain for each Gauss point at last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_alpha_kinematic_;
+    std::vector<LINALG::Matrix<3,3> > last_alpha_kinematic_;
 
     /// classification, if the Gauss point is currently in the active (true) or inactive (false) set
-    Teuchos::RCP<std::vector<bool> > activity_state_;
+    std::vector<bool> activity_state_;
 
     /// isotropic hardening increment over this time step
-    Teuchos::RCP<std::vector<double> > delta_alpha_i_;
+    std::vector<double> delta_alpha_i_;
 
   };
 

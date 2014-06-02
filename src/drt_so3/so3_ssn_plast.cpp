@@ -34,10 +34,10 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   int owner
   )
 : DRT::Element(id,owner),
-  KbbInv_(Teuchos::null),
-  Kbd_(Teuchos::null),
-  fbeta_(Teuchos::null),
-  dDp_last_iter_(Teuchos::null),
+  KbbInv_(std::vector<Epetra_SerialDenseMatrix>(0)),
+  Kbd_(std::vector<Epetra_SerialDenseMatrix>(0)),
+  fbeta_(std::vector<Epetra_SerialDenseVector>(0)),
+  dDp_last_iter_(std::vector<Epetra_SerialDenseVector>(0)),
   plspintype_(plspin),
   KaaInv_(Teuchos::null),
   Kad_(Teuchos::null),
@@ -223,12 +223,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   // parameters
   AddtoPack(data,(int)fbar_);
 
-  // plasticity stuff
-  int histsize=0;
-  if (dDp_last_iter_!=Teuchos::null)
-      histsize=dDp_last_iter_->size();
-  AddtoPack(data,histsize);
-
   // plastic spin type
   AddtoPack(data,(int)plspintype_);
 
@@ -243,9 +237,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   }
 
   // history at each Gauss point
+  int histsize=dDp_last_iter_.size();
+  AddtoPack(data,histsize);
   if (histsize!=0)
     for (int i=0; i<histsize; i++)
-        AddtoPack(data,dDp_last_iter_->at(i));
+      AddtoPack(data,dDp_last_iter_[i]);
 
   return;
 }  // Pack()
@@ -293,8 +289,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
   // paramters
   fbar_=(bool)ExtractInt(position,data);
 
-   int histsize=ExtractInt(position,data);
-
    // plastic spin type
    plspintype_=static_cast<PlSpinType>(ExtractInt(position,data));
 
@@ -320,16 +314,16 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      KaaInv_                             =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,neas_));
      Kad_                                =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,numdofperelement_));
      feas_                               =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-     Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(histsize,Epetra_SerialDenseMatrix(plspintype_,neas_)));
+     Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,neas_)));
      alpha_eas_                          =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      alpha_eas_last_timestep_            =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      alpha_eas_delta_over_last_timestep_ =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
    }
 
-     KbbInv_                      = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_)));
-     Kbd_                         = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_)));
-     fbeta_                       = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
-     dDp_last_iter_               = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
+     KbbInv_        .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_));
+     Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
+     fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+     dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
 
    if (eastype_!=soh8p_easnone)
    {
@@ -338,8 +332,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      ExtractfromPack(position,data,(*alpha_eas_delta_over_last_timestep_));
    }
 
-   for (int i=0; i<histsize; i++)
-     ExtractfromPack(position,data,(*dDp_last_iter_)[i]);
+   size=ExtractInt(position,data);
+   for (int i=0; i<size; i++)
+     ExtractfromPack(position,data,dDp_last_iter_[i]);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -519,10 +514,10 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   EasInit();
 
   // plasticity related stuff
-  KbbInv_                      = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_)));
-  Kbd_                         = Teuchos::rcp( new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_)));
-  fbeta_                       = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
-  dDp_last_iter_               = Teuchos::rcp( new std::vector<Epetra_SerialDenseVector>(numgpt_,Epetra_SerialDenseVector(plspintype_)));
+  KbbInv_        .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_));
+  Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
+  fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+  dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
 
   return true;
 

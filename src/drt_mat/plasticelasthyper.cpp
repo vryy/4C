@@ -169,19 +169,9 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   }
 
   // plastic history data
-  int histsize=0;
-  if (last_plastic_defgrd_inverse_!=Teuchos::null)
-      histsize=last_plastic_defgrd_inverse_->size();
-  AddtoPack(data,histsize);
-
-  if (histsize!=0)
-    for (int i=0; i<histsize; i++)
-    {
-      AddtoPack(data,last_plastic_defgrd_inverse_->at(i));
-      AddtoPack(data,last_alpha_isotropic_->at(i));
-      AddtoPack(data,last_alpha_kinematic_->at(i));
-      AddtoPack(data,(int)activity_state_->at(i));
-    }
+  AddtoPack<3,3>(data,last_plastic_defgrd_inverse_);
+  AddtoPack(data,last_alpha_isotropic_);
+  AddtoPack<3,3>(data,last_alpha_kinematic_);
 
   return;
 }
@@ -246,24 +236,14 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  // plastic history
-  int histsize=ExtractInt(position,data);
-
-  // initialize plastic history data
-  last_plastic_defgrd_inverse_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(histsize));
-  last_alpha_isotropic_        = Teuchos::rcp( new std::vector<double>(histsize));
-  last_alpha_kinematic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(histsize));
-  activity_state_              = Teuchos::rcp( new std::vector<bool>(histsize));
-  for (int i=0; i<histsize; i++)
-   {
-     ExtractfromPack(position,data,(*last_plastic_defgrd_inverse_)[i]);
-     (*last_alpha_isotropic_)[i]=ExtractDouble(position,data);
-     ExtractfromPack(position,data,(*last_alpha_kinematic_)[i]);
-     (*activity_state_)[i]=(bool)(ExtractInt(position,data));
-   }
+  // plastic history data
+  ExtractfromPack<3,3>(position,data,last_plastic_defgrd_inverse_);
+  ExtractfromPack(position,data,last_alpha_isotropic_);
+  ExtractfromPack<3,3>(position,data,last_alpha_kinematic_);
 
   // no need to pack this
-  delta_alpha_i_=Teuchos::rcp( new std::vector<double>(histsize,0.));
+  delta_alpha_i_ .resize(last_alpha_isotropic_.size(),0.);
+  activity_state_.resize(last_alpha_isotropic_.size(),false);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
@@ -354,12 +334,12 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
 
     // setup plastic history variables
     LINALG::Matrix<3,3> tmp(true);
-    last_alpha_isotropic_        = Teuchos::rcp( new std::vector<double>(numgp,0.));
-    last_alpha_kinematic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgp,tmp));
+    last_alpha_isotropic_        .resize(numgp,0.);
+    last_alpha_kinematic_        .resize(numgp,tmp);
     for (int i=0; i<3; i++) tmp(i,i)=1.;
-    last_plastic_defgrd_inverse_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgp,tmp));
-    activity_state_              = Teuchos::rcp( new std::vector<bool>(numgp,false));
-    delta_alpha_i_               = Teuchos::rcp( new std::vector<double>(numgp,0.));
+    last_plastic_defgrd_inverse_ .resize(numgp,tmp);
+    activity_state_              .resize(numgp,false);
+    delta_alpha_i_               .resize(numgp,0.);
 
   return;
 }
@@ -705,7 +685,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
   LINALG::Matrix<3,3> eta(*mStr);
   for (int i=0; i<3; i++)
     eta(i,i) -= 1./3.*((*mStr)(0,0) + (*mStr)(1,1) + (*mStr)(2,2));
-  eta.Update(2./3.*Kinhard(),(*last_alpha_kinematic_)[gp],1.);
+  eta.Update(2./3.*Kinhard(),last_alpha_kinematic_[gp],1.);
   eta.Update(-2./3.*Kinhard(),*deltaDp,1.);
 
   // in stress-like voigt notation
@@ -753,36 +733,36 @@ void MAT::PlasticElastHyper::EvaluateNCP(
   HetaH_strainlike.Multiply(PlAniso_full_,tmp61);
 
   // isotropic hardening increment
-  (*delta_alpha_i_)[gp]=0.;
+  delta_alpha_i_[gp]=0.;
   if (dDpHeta>0. && absHeta>0.)
-    (*delta_alpha_i_)[gp]=sq*dDpHeta*abseta_H/(absHeta*absHeta);
+    delta_alpha_i_[gp]=sq*dDpHeta*abseta_H/(absHeta*absHeta);
 
   // current yield stress equivalent (yield stress scaled by sqrt(2/3))
   double ypl=0.;
-  ypl = sq * ((Infyield() - Inityield())*(1.-exp(-Expisohard()*((*last_alpha_isotropic_)[gp]+ (*delta_alpha_i_)[gp])))
-      + Isohard()*((*last_alpha_isotropic_)[gp]+ (*delta_alpha_i_)[gp]) +Inityield());
+  ypl = sq * ((Infyield() - Inityield())*(1.-exp(-Expisohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp])))
+      + Isohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp]) +Inityield());
 
   // activity state check
   if (ypl<absetatr_H)
   {
-    if ((*activity_state_)[gp]==false) // gp switches state
+    if (activity_state_[gp]==false) // gp switches state
     {
       if (abs(ypl-absetatr_H)>AS_CONVERGENCE_TOL*Inityield()
           || deltaDp->NormInf()>AS_CONVERGENCE_TOL*Inityield()/cpl())
         *as_converged = false;
     }
-    (*activity_state_)[gp] = true;
+    activity_state_[gp] = true;
     *active=true;
   }
   else
   {
-    if ((*activity_state_)[gp]==true) // gp switches state
+    if (activity_state_[gp]==true) // gp switches state
     {
       if (abs(ypl-absetatr_H)>AS_CONVERGENCE_TOL*Inityield()
           || deltaDp->NormInf()>AS_CONVERGENCE_TOL*Inityield()/cpl())
         *as_converged = false;
     }
-    (*activity_state_)[gp] = false;
+    activity_state_[gp] = false;
     *active=false;
   }
 
@@ -811,9 +791,9 @@ void MAT::PlasticElastHyper::EvaluateNCP(
         for (int b=0; b<3; b++)
           for (int i=0; i<6; i++)
             if (i<=2)
-              dFpiDdeltaDp(VOIGT3X3NONSYM_[A][a],i) -= last_plastic_defgrd_inverse_->at(gp)(A,b)*Dexp(VOIGT3X3_[b][a],i);
+              dFpiDdeltaDp(VOIGT3X3NONSYM_[A][a],i) -= last_plastic_defgrd_inverse_[gp](A,b)*Dexp(VOIGT3X3_[b][a],i);
             else
-              dFpiDdeltaDp(VOIGT3X3NONSYM_[A][a],i) -= 2.*last_plastic_defgrd_inverse_->at(gp)(A,b)*Dexp(VOIGT3X3_[b][a],i);
+              dFpiDdeltaDp(VOIGT3X3NONSYM_[A][a],i) -= 2.*last_plastic_defgrd_inverse_[gp](A,b)*Dexp(VOIGT3X3_[b][a],i);
 
     // derivative of mandel stress
     // we spare the deviatoric projection of the mandel stress derivative to get the effective stress derivative.
@@ -824,7 +804,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     dPK2dDp->Multiply(*dPK2dFpinv,dFpiDdeltaDp);
 
     // Factor of derivative of Y^pl w.r.t. delta alpha ^i
-    double fac = 2./3.*(Isohard()+(Infyield()-Inityield())*Expisohard()*exp(-Expisohard()*((*last_alpha_isotropic_)[gp]+(*delta_alpha_i_)[gp])));
+    double fac = 2./3.*(Isohard()+(Infyield()-Inityield())*Expisohard()*exp(-Expisohard()*(last_alpha_isotropic_[gp]+delta_alpha_i_[gp])));
 
     // plastic gp
     if (*active)
@@ -1031,7 +1011,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
   LINALG::Matrix<3,3> eta(*mStr);
   for (int i=0; i<3; i++)
     eta(i,i) -= 1./3.*((*mStr)(0,0) + (*mStr)(1,1) + (*mStr)(2,2));
-  eta.Update(2./3.*Kinhard(),(*last_alpha_kinematic_)[gp],1.);
+  eta.Update(2./3.*Kinhard(),last_alpha_kinematic_[gp],1.);
   eta.Update(-1./3.*Kinhard(),*deltaLp,1.);
   eta.UpdateT(-1./3.*Kinhard(),*deltaLp,1.);
 
@@ -1079,36 +1059,36 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
   HetaH_strainlike.Multiply(PlAniso_full_,tmp61);
 
   // isotropic hardening increment
-  (*delta_alpha_i_)[gp]=0.;
+  delta_alpha_i_[gp]=0.;
   if (dDpHeta>0. && absHeta>0.)
-    (*delta_alpha_i_)[gp]=sq*dDpHeta*abseta_H/(absHeta*absHeta);
+    delta_alpha_i_[gp]=sq*dDpHeta*abseta_H/(absHeta*absHeta);
 
   // current yield stress equivalent (yield stress scaled by sqrt(2/3))
   double ypl=0.;
-  ypl = sq * ((Infyield() - Inityield())*(1.-exp(-Expisohard()*((*last_alpha_isotropic_)[gp]+ (*delta_alpha_i_)[gp])))
-      + Isohard()*((*last_alpha_isotropic_)[gp]+ (*delta_alpha_i_)[gp]) +Inityield());
+  ypl = sq * ((Infyield() - Inityield())*(1.-exp(-Expisohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp])))
+      + Isohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp]) +Inityield());
 
   // check activity state
   if (ypl<absetatr_H)
   {
-    if ((*activity_state_)[gp]==false) // gp switches state
+    if (activity_state_[gp]==false) // gp switches state
     {
       if (abs(ypl-absetatr_H)>AS_CONVERGENCE_TOL*Inityield()
           || deltaLp->NormInf()>AS_CONVERGENCE_TOL*Inityield()/cpl())
         *as_converged = false;
     }
-    (*activity_state_)[gp] = true;
+    activity_state_[gp] = true;
     *active=true;
   }
   else
   {
-    if ((*activity_state_)[gp]==true) // gp switches state
+    if (activity_state_[gp]==true) // gp switches state
     {
       if (abs(ypl-absetatr_H)>AS_CONVERGENCE_TOL*Inityield()
           || deltaLp->NormInf()>AS_CONVERGENCE_TOL*Inityield()/cpl())
         *as_converged = false;
     }
-    (*activity_state_)[gp] = false;
+    activity_state_[gp] = false;
     *active=false;
   }
 
@@ -1141,7 +1121,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
        for (int a=0; a<3; a++)
          for (int b=0; b<3; b++)
            for (int i=0; i<9; i++)
-             dFpiDdeltaLp(VOIGT3X3NONSYM_[A][a],i) -= last_plastic_defgrd_inverse_->at(gp)(A,b)*Dexp(VOIGT3X3NONSYM_[b][a],i);
+             dFpiDdeltaLp(VOIGT3X3NONSYM_[A][a],i) -= last_plastic_defgrd_inverse_[gp](A,b)*Dexp(VOIGT3X3NONSYM_[b][a],i);
 
     // derivative of mandel stress
     LINALG::Matrix<6,9> dMdLp;
@@ -1153,7 +1133,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     dPK2dLp->Multiply(*dPK2dFpinv,dFpiDdeltaLp);
 
     // Factor of derivative of Y^pl w.r.t. delta alpha ^i
-    double fac = 2./3.*(Isohard()+(Infyield()-Inityield())*Expisohard()*exp(-Expisohard()*((*last_alpha_isotropic_)[gp]+(*delta_alpha_i_)[gp])));
+    double fac = 2./3.*(Isohard()+(Infyield()-Inityield())*Expisohard()*exp(-Expisohard()*(last_alpha_isotropic_[gp]+delta_alpha_i_[gp])));
 
     // plastic gp
     if (*active)
@@ -1347,20 +1327,20 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
 
 void MAT::PlasticElastHyper::UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp)
 {
-  if (activity_state_->at(gp)==true)
+  if (activity_state_[gp]==true)
   {
     // update plastic deformation gradient
     LINALG::Matrix<3,3> tmp;
     tmp.Update(-1.,*deltaDp);
     MatrixExponential3x3(tmp);
-    LINALG::Matrix<3,3> fpi_last = (*last_plastic_defgrd_inverse_)[gp];
-    (*last_plastic_defgrd_inverse_)[gp].Multiply(fpi_last,tmp);
+    LINALG::Matrix<3,3> fpi_last = last_plastic_defgrd_inverse_[gp];
+    last_plastic_defgrd_inverse_[gp].Multiply(fpi_last,tmp);
     // update isotropic hardening
-    (*last_alpha_isotropic_)[gp] += (*delta_alpha_i_)[gp];
+    last_alpha_isotropic_[gp] += delta_alpha_i_[gp];
 
     // update kinematic hardening
-    (*last_alpha_kinematic_)[gp].Update(-.5,*deltaDp,1.);
-    (*last_alpha_kinematic_)[gp].UpdateT(-.5,*deltaDp,1.);
+    last_alpha_kinematic_[gp].Update(-.5,*deltaDp,1.);
+    last_alpha_kinematic_[gp].UpdateT(-.5,*deltaDp,1.);
   }
 
   return;
@@ -1381,7 +1361,7 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(
 {
   LINALG::Matrix<3,3> tmp;
   LINALG::Matrix<3,3> invpldefgrd;
-  LINALG::Matrix<3,3>& InvPlasticDefgrdLast = (*last_plastic_defgrd_inverse_)[gp];
+  LINALG::Matrix<3,3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.Update(-1.,*deltaLp);
   MatrixExponential3x3(tmp);
   invpldefgrd.Multiply(InvPlasticDefgrdLast,tmp);
@@ -1467,7 +1447,7 @@ void MAT::PlasticElastHyper::EvaluateKinQuantPlast(
   }
   LINALG::Matrix<3,3> tmp;
   LINALG::Matrix<3,3> tmp33;
-  LINALG::Matrix<3,3>& InvPlasticDefgrdLast = (*last_plastic_defgrd_inverse_)[gp];
+  LINALG::Matrix<3,3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.Update(-1.,*deltaLp);
   MatrixExponential3x3(tmp);
   invpldefgrd.Multiply(InvPlasticDefgrdLast,tmp);

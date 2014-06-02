@@ -228,9 +228,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   {
     for (int i=0; i<numgpt_; i++)
     {
-      (*KbbInv_)[i].Scale(0.);
-      (*Kbd_)[i].Scale(0.);
-      (*fbeta_)[i].Scale(0.);
+      KbbInv_[i].Scale(0.);
+      Kbd_   [i].Scale(0.);
+      fbeta_ [i].Scale(0.);
     }
     break;
   }
@@ -1302,7 +1302,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     LINALG::Matrix<spintype+1,spintype> dNCPdb;
     dNCPdb.Multiply(dncpddp,dDpdbeta);
     LINALG::DENSEFUNCTIONS::multiplyTN<double,spintype,spintype+1,spintype>
-      (0.,(*KbbInv_)[gp].A(),1.,voigt_red.A(),dNCPdb.A());
+      (0.,KbbInv_[gp].A(),1.,voigt_red.A(),dNCPdb.A());
 
     // apply chain rule for kbd block
     LINALG::Matrix<spintype+1,numdofperelement_> dNCPdd;
@@ -1317,7 +1317,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     else
       dNCPdd.Multiply(dncpdc,bop);
     LINALG::DENSEFUNCTIONS::multiplyTN<double,spintype,spintype+1,numdofperelement_>
-      (0.,(*Kbd_)[gp].A(),1.,voigt_red.A(),dNCPdd.A());
+      (0.,Kbd_[gp].A(),1.,voigt_red.A(),dNCPdd.A());
 
     // EAS block kba
     if (eastype_!=soh8p_easnone)
@@ -1346,14 +1346,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
 
     // residual
     LINALG::DENSEFUNCTIONS::multiplyTN<double,spintype,spintype+1,1>
-      (0.,(*fbeta_)[gp].A(),1.,voigt_red.A(),ncp.A());
+      (0.,fbeta_[gp].A(),1.,voigt_red.A(),ncp.A());
 
     // **************************************************************
     // static condensation of inner variables
     // **************************************************************
     //inverse matrix block [k_beta beta]_ij
     Epetra_SerialDenseSolver solve_for_kbbinv;
-    solve_for_kbbinv.SetMatrix((*KbbInv_)[gp]);
+    solve_for_kbbinv.SetMatrix(KbbInv_[gp]);
     int err = solve_for_kbbinv.Invert();
     if (err != 0)
       dserror("Inversion of Kbb failed");
@@ -1361,19 +1361,19 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     // temporary  Kdb.Kbb^-1
     LINALG::Matrix<numdofperelement_,spintype> KdbKbb;
     LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,spintype>
-      (0.,KdbKbb.A(),1.,kdbeta.A(),(*KbbInv_)[gp].A());
+      (0.,KdbKbb.A(),1.,kdbeta.A(),KbbInv_[gp].A());
 
     // "plastic displacement stiffness"
     // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
     if (stiffmatrix!=NULL)
       LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,numdofperelement_>
-        (1.,stiffmatrix->A(),-1.,KdbKbb.A(),(*Kbd_)[gp].A());
+        (1.,stiffmatrix->A(),-1.,KdbKbb.A(),Kbd_[gp].A());
 
     // "plastic internal force"
     // plFint = [K_db.K_bb^-1].f_b
     if (force!=NULL)
       LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,1>
-        (1.,force->A(),-1.,KdbKbb.A(),(*fbeta_)[gp].A());
+        (1.,force->A(),-1.,KdbKbb.A(),fbeta_[gp].A());
 
     if (eastype_!=soh8p_easnone)
     {
@@ -1385,37 +1385,37 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,soh8p_easfull>
           (1.,Kda->A(),-1.,KdbKbb.A(),Kba_->at(gp).A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,spintype,spintype>
-          (0.,tmp.A(),1.,Kab.A(),KbbInv_->at(gp).A());
+          (0.,tmp.A(),1.,Kab.A(),KbbInv_[gp].A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,spintype,numdofperelement_>
-          (1.,Kad_->A(),-1.,tmp.A(),Kbd_->at(gp).A());
+          (1.,Kad_->A(),-1.,tmp.A(),Kbd_[gp].A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,spintype,soh8p_easfull>
           (1.,KaaInv_->A(),-1.,tmp.A(),Kba_->at(gp).A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,spintype,1>
-          (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
+          (1.,feas_->A(),-1.,tmp.A(),fbeta_[gp].A());
         break;
       case soh8p_easmild:
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,soh8p_easmild>
           (1.,Kda->A(),-1.,KdbKbb.A(),Kba_->at(gp).A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,spintype,spintype>
-          (0.,tmp.A(),1.,Kab.A(),KbbInv_->at(gp).A());
+          (0.,tmp.A(),1.,Kab.A(),KbbInv_[gp].A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,spintype,numdofperelement_>
-          (1.,Kad_->A(),-1.,tmp.A(),Kbd_->at(gp).A());
+          (1.,Kad_->A(),-1.,tmp.A(),Kbd_[gp].A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,spintype,soh8p_easmild>
           (1.,KaaInv_->A(),-1.,tmp.A(),Kba_->at(gp).A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,spintype,1>
-          (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
+          (1.,feas_->A(),-1.,tmp.A(),fbeta_[gp].A());
         break;
       case soh8p_eassosh8:
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,soh8p_eassosh8>
           (1.,Kda->A(),-1.,KdbKbb.A(),Kba_->at(gp).A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,spintype>
-          (0.,tmp.A(),1.,Kab.A(),KbbInv_->at(gp).A());
+          (0.,tmp.A(),1.,Kab.A(),KbbInv_[gp].A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,numdofperelement_>
-          (1.,Kad_->A(),-1.,tmp.A(),Kbd_->at(gp).A());
+          (1.,Kad_->A(),-1.,tmp.A(),Kbd_[gp].A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,soh8p_eassosh8>
           (1.,KaaInv_->A(),-1.,tmp.A(),Kba_->at(gp).A());
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,1>
-          (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
+          (1.,feas_->A(),-1.,tmp.A(),fbeta_[gp].A());
         break;
       case soh8p_easnone:
         // do nothing
@@ -1433,11 +1433,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   // structure to avoid the inversion of the 5x5 matrix kbb.
   else
   {
-    if (dDp_last_iter_->at(gp).NormInf()>0.)
+    if (dDp_last_iter_[gp].NormInf()>0.)
     {
       if (force!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,1>
-          (1.,force->A(),-1.,kdbeta.A(),(*dDp_last_iter_)[gp].A());
+          (1.,force->A(),-1.,kdbeta.A(),dDp_last_iter_[gp].A());
 
       switch (eastype_)
       {
@@ -1445,26 +1445,26 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
         break;
       case soh8p_easmild:
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,spintype,1>
-          (1.,feas_->A(),-1.,Kab.A(),(*dDp_last_iter_)[gp].A());
+          (1.,feas_->A(),-1.,Kab.A(),dDp_last_iter_[gp].A());
         break;
       case soh8p_easfull:
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,spintype,1>
-          (1.,feas_->A(),-1.,Kab.A(),(*dDp_last_iter_)[gp].A());
+          (1.,feas_->A(),-1.,Kab.A(),dDp_last_iter_[gp].A());
         break;
       case soh8p_eassosh8:
         LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,spintype,1>
-          (1.,feas_->A(),-1.,Kab.A(),(*dDp_last_iter_)[gp].A());
+          (1.,feas_->A(),-1.,Kab.A(),dDp_last_iter_[gp].A());
         break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
     }
 
-    (*KbbInv_)[gp].Scale(0.);
-    (*fbeta_)[gp].Scale(0.);
-    (*Kbd_)[gp].Scale(0.);
+    KbbInv_[gp].Scale(0.);
+    fbeta_[gp].Scale(0.);
+    Kbd_[gp].Scale(0.);
     if (eastype_!=soh8p_easnone)
       Kba_->at(gp).Shape(spintype,neas_);
-    (*dDp_last_iter_)[gp].Scale(0.);
+    dDp_last_iter_[gp].Scale(0.);
   }
 
   return;
@@ -1496,7 +1496,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
     {
     // constant predictor
     case INPAR::STR::pred_constdis:
-      (*dDp_last_iter_)[gp].Scale(0.);
+      dDp_last_iter_[gp].Scale(0.);
       break;
 
     // tangential predictor
@@ -1508,11 +1508,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
     case INPAR::STR::pred_vague:
       // first part
       LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,1>
-        (0.,tmp_v.A(),1.,(*KbbInv_)[gp].A(),(*fbeta_)[gp].A());
+        (0.,tmp_v.A(),1.,KbbInv_[gp].A(),fbeta_[gp].A());
 
       // second part
       LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,numdofperelement_>
-        (0.,tmp_m.A(),1.,(*KbbInv_)[gp].A(),(*Kbd_)[gp].A());
+        (0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kbd_[gp].A());
       LINALG::DENSEFUNCTIONS::multiply<double,spintype,numdofperelement_,1>
         (1.,tmp_v.A(),1.,tmp_m.A(),res_d.A());
 
@@ -1523,15 +1523,15 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
         switch (eastype_)
         {
         case soh8p_easmild:
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easmild>(0.,tmp_m.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
+          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easmild>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
           LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easmild,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
           break;
         case soh8p_easfull:
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
+          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
           LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
           break;
         case soh8p_eassosh8:
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
+          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
           LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
           break;
         case soh8p_easnone:
@@ -1539,7 +1539,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
       }
-      LINALG::DENSEFUNCTIONS::update<double,spintype,1>(1.,(*dDp_last_iter_)[gp],-1.,tmp_v);
+      LINALG::DENSEFUNCTIONS::update<double,spintype,1>(1.,dDp_last_iter_[gp],-1.,tmp_v);
 
       if (MyPID==Owner())
       {
@@ -1575,23 +1575,23 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
   // end of recover **********************************************
 
   // current plastic flow increment
-  deltaLp(0,0) = (*dDp_last_iter_)[gp](0);
-  deltaLp(1,1) = (*dDp_last_iter_)[gp](1);
-  deltaLp(2,2) = -1.0*((*dDp_last_iter_)[gp](0)+(*dDp_last_iter_)[gp](1));
-  deltaLp(0,1) = (*dDp_last_iter_)[gp](2);
-  deltaLp(1,0) = (*dDp_last_iter_)[gp](2);
-  deltaLp(1,2) = (*dDp_last_iter_)[gp](3);
-  deltaLp(2,1) = (*dDp_last_iter_)[gp](3);
-  deltaLp(0,2) = (*dDp_last_iter_)[gp](4);
-  deltaLp(2,0) = (*dDp_last_iter_)[gp](4);
+  deltaLp(0,0) = dDp_last_iter_[gp](0);
+  deltaLp(1,1) = dDp_last_iter_[gp](1);
+  deltaLp(2,2) = -1.0*(dDp_last_iter_[gp](0)+dDp_last_iter_[gp](1));
+  deltaLp(0,1) = dDp_last_iter_[gp](2);
+  deltaLp(1,0) = dDp_last_iter_[gp](2);
+  deltaLp(1,2) = dDp_last_iter_[gp](3);
+  deltaLp(2,1) = dDp_last_iter_[gp](3);
+  deltaLp(0,2) = dDp_last_iter_[gp](4);
+  deltaLp(2,0) = dDp_last_iter_[gp](4);
   if (spintype==plspin)
   {
-    deltaLp(0,1) += (*dDp_last_iter_)[gp](5);
-    deltaLp(1,0) -= (*dDp_last_iter_)[gp](5);
-    deltaLp(1,2) += (*dDp_last_iter_)[gp](6);
-    deltaLp(2,1) -= (*dDp_last_iter_)[gp](6);
-    deltaLp(0,2) += (*dDp_last_iter_)[gp](7);
-    deltaLp(2,0) -= (*dDp_last_iter_)[gp](7);
+    deltaLp(0,1) += dDp_last_iter_[gp](5);
+    deltaLp(1,0) -= dDp_last_iter_[gp](5);
+    deltaLp(1,2) += dDp_last_iter_[gp](6);
+    deltaLp(2,1) -= dDp_last_iter_[gp](6);
+    deltaLp(0,2) += dDp_last_iter_[gp](7);
+    deltaLp(2,0) -= dDp_last_iter_[gp](7);
   }
   return;
 }
@@ -1608,29 +1608,29 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
   for (int gp=0; gp<numgpt_; gp++)
   {
     LINALG::Matrix<3,3> deltaLp;
-    deltaLp(0,0) = (*dDp_last_iter_)[gp](0);
-    deltaLp(1,1) = (*dDp_last_iter_)[gp](1);
-    deltaLp(2,2) = -1.0*((*dDp_last_iter_)[gp](0)+(*dDp_last_iter_)[gp](1));
-    deltaLp(0,1) = (*dDp_last_iter_)[gp](2);
-    deltaLp(1,0) = (*dDp_last_iter_)[gp](2);
-    deltaLp(1,2) = (*dDp_last_iter_)[gp](3);
-    deltaLp(2,1) = (*dDp_last_iter_)[gp](3);
-    deltaLp(0,2) = (*dDp_last_iter_)[gp](4);
-    deltaLp(2,0) = (*dDp_last_iter_)[gp](4);
+    deltaLp(0,0) = dDp_last_iter_[gp](0);
+    deltaLp(1,1) = dDp_last_iter_[gp](1);
+    deltaLp(2,2) = -1.0*(dDp_last_iter_[gp](0)+dDp_last_iter_[gp](1));
+    deltaLp(0,1) = dDp_last_iter_[gp](2);
+    deltaLp(1,0) = dDp_last_iter_[gp](2);
+    deltaLp(1,2) = dDp_last_iter_[gp](3);
+    deltaLp(2,1) = dDp_last_iter_[gp](3);
+    deltaLp(0,2) = dDp_last_iter_[gp](4);
+    deltaLp(2,0) = dDp_last_iter_[gp](4);
     if (spintype==plspin)
     {
-      deltaLp(0,1) += (*dDp_last_iter_)[gp](5);
-      deltaLp(1,0) -= (*dDp_last_iter_)[gp](5);
-      deltaLp(1,2) += (*dDp_last_iter_)[gp](6);
-      deltaLp(2,1) -= (*dDp_last_iter_)[gp](6);
-      deltaLp(0,2) += (*dDp_last_iter_)[gp](7);
-      deltaLp(2,0) -= (*dDp_last_iter_)[gp](7);
+      deltaLp(0,1) += dDp_last_iter_[gp](5);
+      deltaLp(1,0) -= dDp_last_iter_[gp](5);
+      deltaLp(1,2) += dDp_last_iter_[gp](6);
+      deltaLp(2,1) -= dDp_last_iter_[gp](6);
+      deltaLp(0,2) += dDp_last_iter_[gp](7);
+      deltaLp(2,0) -= dDp_last_iter_[gp](7);
     }
     static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp,&deltaLp);
 
-    (*KbbInv_)[gp].Scale(0.);
-    (*Kbd_)[gp].Scale(0.);
-    (*fbeta_)[gp].Scale(0.);
+    KbbInv_[gp].Scale(0.);
+    Kbd_[gp].Scale(0.);
+    fbeta_[gp].Scale(0.);
   }
 
   if (eastype_!=soh8p_easnone)
