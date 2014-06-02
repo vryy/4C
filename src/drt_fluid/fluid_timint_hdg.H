@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_hdg.H
-\brief
+\brief Time integration class for HDG discretization
 
 <pre>
-Maintainers: Ursula Rasthofer & Martin Kronbichler
-             {rasthofer,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ protected:
   //@}
 
   //! @name other HDG-specific auxiliary vectors, like velocity for output
-  Teuchos::RCP<Epetra_Vector> interpolatedVelocity_;
+  Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity_;
   Teuchos::RCP<Epetra_Vector> interpolatedPressure_;
   //@}
 

@@ -4,10 +4,10 @@
 \brief HDG time-integration scheme
 
 <pre>
-Maintainers: Ursula Rasthofer & Martin Kronbichler
-             {rasthofer,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -454,37 +454,17 @@ namespace
                           const Teuchos::RCP<Epetra_Vector> &interiorValues,
                           const Teuchos::RCP<Epetra_Vector> &traceValues,
                           const int                          ndim,
-                          Teuchos::RCP<Epetra_Vector>       &velocity,
+                          Teuchos::RCP<Epetra_MultiVector>  &velocity,
                           Teuchos::RCP<Epetra_Vector>       &pressure,
-                          Teuchos::RCP<Epetra_Vector>       &tracevel,
+                          Teuchos::RCP<Epetra_MultiVector>  &tracevel,
                           Teuchos::RCP<Epetra_Vector>       &cellPres)
   {
     // create dofsets for velocity and pressure at nodes
-    if (pressure.get() == NULL || pressure->MyLength() != dis.NumMyRowNodes()) {
-      std::vector<int> conddofset;
-      std::vector<int> otherdofset;
-      int numrownodes = dis.NumMyRowNodes();
-      conddofset.reserve(numrownodes);
-      otherdofset.reserve(numrownodes*ndim);
-
-      for (int i=0; i<numrownodes; ++i)
-      {
-        DRT::Node* node = dis.lRowNode(i);
-        const int index = node->Id()*(ndim+1);
-        for (int d=0; d<ndim; ++d)
-          otherdofset.push_back(index+d);
-        conddofset.push_back(index+ndim);
-      }
-
-      Teuchos::RCP<Epetra_Map> conddofmap =
-          Teuchos::rcp(new Epetra_Map(-1, conddofset.size(), &conddofset[0], 0, dis.Comm()));
-      Teuchos::RCP<Epetra_Map> otherdofmap =
-          Teuchos::rcp(new Epetra_Map(-1, otherdofset.size(), &otherdofset[0], 0, dis.Comm()));
-
-      velocity.reset(new Epetra_Vector(*otherdofmap));
-      pressure.reset(new Epetra_Vector(*conddofmap));
+    if (pressure.get() == NULL || pressure->GlobalLength() != dis.NumGlobalNodes()) {
+      velocity.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
+      pressure.reset(new Epetra_Vector(*dis.NodeRowMap()));
     }
-    tracevel.reset(new Epetra_Vector(velocity->Map()));
+    tracevel.reset(new Epetra_MultiVector(velocity->Map(), ndim));
     cellPres.reset(new Epetra_Vector(*dis.ElementRowMap()));
 
     // call element routine for interpolate HDG to elements
@@ -496,7 +476,7 @@ namespace
     Epetra_SerialDenseMatrix dummyMat;
     Epetra_SerialDenseVector dummyVec;
     Epetra_SerialDenseVector interpolVec;
-    std::vector<unsigned char> touchCount(pressure->MyLength());
+    std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
     velocity->PutScalar(0.);
     pressure->PutScalar(0.);
     for (int el=0; el<dis.NumMyColElements();++el) {
@@ -510,15 +490,15 @@ namespace
       for (int i=0; i<ele->NumNode(); ++i)
       {
         DRT::Node* node = ele->Nodes()[i];
-        const int localIndex = pressure->Map().LID(node->Id()*(ndim+1)+ndim);
+        const int localIndex = dis.NodeRowMap()->LID(node->Id());
         if (localIndex < 0)
           continue;
         touchCount[localIndex]++;
         for (int d=0; d<ndim; ++d)
-          (*velocity)[ndim*localIndex+d] += interpolVec(i+d*ele->NumNode());
+          (*velocity)[d][localIndex] += interpolVec(i+d*ele->NumNode());
         (*pressure)[localIndex] += interpolVec(i+ndim*ele->NumNode());
         for (int d=0; d<ndim; ++d)
-          (*tracevel)[ndim*localIndex+d] += interpolVec(i+(ndim+1+d)*ele->NumNode());
+          (*tracevel)[d][localIndex] += interpolVec(i+(ndim+1+d)*ele->NumNode());
 
         const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
         if (eleIndex >= 0)
@@ -528,9 +508,9 @@ namespace
     for (int i=0; i<pressure->MyLength(); ++i) {
       (*pressure)[i] /= touchCount[i];
       for (int d=0; d<ndim; ++d)
-        (*velocity)[i*ndim+d] /= touchCount[i];
+        (*velocity)[d][i] /= touchCount[i];
       for (int d=0; d<ndim; ++d)
-        (*tracevel)[i*ndim+d] /= touchCount[i];
+        (*tracevel)[d][i] /= touchCount[i];
     }
     dis.ClearState();
   }
@@ -549,14 +529,15 @@ void FLD::TimIntHDG::Output()
     // step number and time
     output_->NewStep(step_,time_);
 
-    Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
+    Teuchos::RCP<Epetra_Vector> cellPres;
+    Teuchos::RCP<Epetra_MultiVector> traceVel;
     getNodeVectorsHDG(*discret_, intvelnp_, velnp_,
                       params_->get<int>("number of velocity degrees of freedom"),
                       interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
-    output_->WriteVector("velnp",interpolatedVelocity_);
-    output_->WriteVector("pressure",interpolatedPressure_);
-    output_->WriteVector("par_vel",traceVel);
-    output_->WriteVector("pressure_avg",cellPres);
+    output_->WriteVector("velnp_hdg",interpolatedVelocity_, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("pressure_hdg",interpolatedPressure_, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("tracevel_hdg",traceVel, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("pressure_avg",cellPres, IO::DiscretizationWriter::elementvector);
 
     if (step_==upres_ or step_ == 0) output_->WriteElementData(true,false);
 
