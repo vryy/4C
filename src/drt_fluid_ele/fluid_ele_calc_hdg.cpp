@@ -377,7 +377,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 ||
-           elevec2.M() == (nsd_*nsd_+nsd_+1)*shapes_->ndofs_, "Wrong size in project vector 2");
+           elevec2.M() == static_cast<int>((nsd_*nsd_+nsd_+1)*shapes_->ndofs_), "Wrong size in project vector 2");
 
   // get function
   const int *initfield = params.getPtr<int>("initfield");
@@ -430,8 +430,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
   Epetra_SerialDenseMatrix mass(shapes_->nfdofs_, shapes_->nfdofs_);
   Epetra_SerialDenseMatrix trVec(shapes_->nfdofs_, nsd_);
-  dsassert(elevec1.M() == nsd_*shapes_->nfdofs_ ||
-           elevec1.M() == 1+nfaces_*nsd_*shapes_->nfdofs_, "Wrong size in project vector 1");
+  dsassert(elevec1.M() == static_cast<int>(nsd_*shapes_->nfdofs_) ||
+           elevec1.M() == 1+static_cast<int>(nfaces_*nsd_*shapes_->nfdofs_), "Wrong size in project vector 1");
 
   const unsigned int *faceConsider = params.getPtr<unsigned int>("faceconsider");
   Teuchos::Array<int> *functno = params.getPtr<Teuchos::Array<int> >("funct");

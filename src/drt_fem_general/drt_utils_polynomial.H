@@ -218,7 +218,7 @@ namespace UTILS
         derivatives(k) = kfaculty * temp[k];
         kfaculty *= static_cast<double>(k+1);
       }
-      for (unsigned int k=maxder; k<nderivs; ++k)
+      for (int k=maxder; k<nderivs; ++k)
         derivatives(k) = 0;
     }
 
