@@ -86,9 +86,11 @@ public:
 	  strLabel << "CheapSIMPLE ";
 
 	  const bool visml = predictSolver_list_.isSublist("ML Parameters");
+	  const bool vismuelu = predictSolver_list_.isSublist("MueLu Parameters");
 	  const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
 	  strLabel << "[Inv1=";
 	  if(visml) strLabel << "ML-type";
+	  else if(vismuelu) strLabel << "MueLu-type";
 	  else if(visifpack) {
 	    const Teuchos::ParameterList & ifpackParams = predictSolver_list_.sublist("IFPACK Parameters");
 	    if(ifpackParams.isParameter("relaxation: type")) {
@@ -102,8 +104,10 @@ public:
 
 	  strLabel << ",Inv2=";
 	  const bool pisml = schurSolver_list_.isSublist("ML Parameters");
+	  const bool pismuelu = predictSolver_list_.isSublist("MueLu Parameters");
 	  const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
     if(pisml) strLabel << "ML-type";
+    else if(pismuelu) strLabel << "MueLu-type";
     else if(pisifpack) {
       const Teuchos::ParameterList & ifpackParams = schurSolver_list_.sublist("IFPACK Parameters");
       if(ifpackParams.isParameter("relaxation: type")) {
