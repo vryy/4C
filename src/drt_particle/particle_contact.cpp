@@ -2923,7 +2923,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     ++iter;
 
     // compute wall positions at collision time: xyze_colltime = xyze_n + colltime*vele
-    FAD colltime = dt-remaining_dt+coll_solution(1);
+    static FAD colltime;
+    colltime = dt-remaining_dt+coll_solution(1);
     xyze_colltime.Update(1.0, xyze_n_fad, colltime, vele_fad);
 
     // update particle position to current time
@@ -2995,16 +2996,18 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 
     // compute rhs
     static LINALG::TMatrix<FAD,2,1> residual;
+    static FAD dotprod_pos_pos, dotprod_pos_deriv1, dotprod_deriv1_deriv1, dotprod_pos_deriv2,
+               dotprod_pos_v, dotprod_v_deriv1, dotprod_pos_derivv, pos2subtractrad2;
 
-    FAD dotprod_pos_pos = F(0)*F(0) + F(1)*F(1) + F(2)*F(2);
-    FAD dotprod_pos_deriv1 = F(0)*F_deriv1(0) + F(1)*F_deriv1(1) + F(2)*F_deriv1(2);
-    FAD dotprod_deriv1_deriv1 = F_deriv1(0)*F_deriv1(0) + F_deriv1(1)*F_deriv1(1) + F_deriv1(2)*F_deriv1(2);
-    FAD dotprod_pos_deriv2 = F(0)*F_deriv2(0) + F(1)*F_deriv2(1) + F(2)*F_deriv2(2);
-    FAD dotprod_pos_v = F(0)*(wallcollpoint_vel_fad(0) - particle_vel(0)) + F(1)*(wallcollpoint_vel_fad(1) - particle_vel(1)) + F(2)*(wallcollpoint_vel_fad(2) - particle_vel(2));
-    FAD dotprod_v_deriv1 = (wallcollpoint_vel_fad(0) - particle_vel(0))*F_deriv1(0) + (wallcollpoint_vel_fad(1) - particle_vel(1))*F_deriv1(1) +(wallcollpoint_vel_fad(2) - particle_vel(2))*F_deriv1(2);
-    FAD dotprod_pos_derivv = F(0)*wallcollpoint_deriv_vel_fad(0) + F(1)*wallcollpoint_deriv_vel_fad(1) + F(2)*wallcollpoint_deriv_vel_fad(2);
+    dotprod_pos_pos = F(0)*F(0) + F(1)*F(1) + F(2)*F(2);
+    dotprod_pos_deriv1 = F(0)*F_deriv1(0) + F(1)*F_deriv1(1) + F(2)*F_deriv1(2);
+    dotprod_deriv1_deriv1 = F_deriv1(0)*F_deriv1(0) + F_deriv1(1)*F_deriv1(1) + F_deriv1(2)*F_deriv1(2);
+    dotprod_pos_deriv2 = F(0)*F_deriv2(0) + F(1)*F_deriv2(1) + F(2)*F_deriv2(2);
+    dotprod_pos_v = F(0)*(wallcollpoint_vel_fad(0) - particle_vel(0)) + F(1)*(wallcollpoint_vel_fad(1) - particle_vel(1)) + F(2)*(wallcollpoint_vel_fad(2) - particle_vel(2));
+    dotprod_v_deriv1 = (wallcollpoint_vel_fad(0) - particle_vel(0))*F_deriv1(0) + (wallcollpoint_vel_fad(1) - particle_vel(1))*F_deriv1(1) +(wallcollpoint_vel_fad(2) - particle_vel(2))*F_deriv1(2);
+    dotprod_pos_derivv = F(0)*wallcollpoint_deriv_vel_fad(0) + F(1)*wallcollpoint_deriv_vel_fad(1) + F(2)*wallcollpoint_deriv_vel_fad(2);
 
-    FAD pos2subtractrad2 = dotprod_pos_pos - radius*radius;
+    pos2subtractrad2 = dotprod_pos_pos - radius*radius;
 
     residual(0) = pos2subtractrad2*2.0*dotprod_pos_deriv1 +
                   dotprod_pos_deriv1*(dotprod_deriv1_deriv1 + dotprod_pos_deriv2);
@@ -3096,9 +3099,14 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 
     if (std::fabs(det) < GEO::TOL14)
     {
-      LINALG::TMatrix<FAD,3,1> crossprod = GEO::computeCrossProductT(particle_vel_fad, F_deriv1);
-      FAD crossprodnorm = crossprod(0)*crossprod(0) + crossprod(1)*crossprod(1) + crossprod(2)*crossprod(2);
-      if(crossprodnorm.val() < GEO::TOL10*GEO::TOL10 and iter>1)
+      static LINALG::Matrix<3,1> copy_particle_vel, copy_F_deriv1;
+      for(int i=0; i<3; ++i)
+      {
+        copy_particle_vel(i) = particle_vel_fad(i).val();
+        copy_F_deriv1(i) = F_deriv1(i).val();
+      }
+      LINALG::Matrix<3,1> crossprod = GEO::computeCrossProduct(copy_particle_vel, copy_F_deriv1);
+      if(crossprod.Norm1() < GEO::TOL10 and iter>1)
       {
         coll_solution(1) = -1000.0;
         break;
