@@ -1765,91 +1765,77 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
   // a given argument z
 
 //  const int end = 50;
-  int end = 1;
-  std::complex<double> J(0.0,0.0);
-  std::complex<double> Jmine(0.0,0.0);
+  std::complex<double> J (0.0,0.0);
+  std::complex<double> Jm(0.0,0.0);
   double fac = 1.0;
 
-  int alpha = 1;
-  if(order==false)
-  {
-    alpha = 0;
-  }
-  else
-  {
-    alpha = 1;
-  }
-
-  //--------------------------------------------------------------------
-  // Find max a converged truncation of the Bessel series
-  // by finding S_n/S_0 < TOL
-  // where TOL = 1E-16
-  // and S_0 and S_n are defined as J = sum (S_m) for m=0...n
-  //--------------------------------------------------------------------
-  const double tol  = 1e-16;
-  std::complex<double> error= std::complex<double>(10.0*tol);
-  double facN = 1.0;
-  double facA = 1.0;
-  do
-  {
-    facN *= double(end);
-    facA *= double(end+alpha);
-    error = pow(-std::complex<double>(0.25)*z*z,double(end))/(std::complex<double> (facN)*std::complex<double> (facA));
-    end += 1;
-  }  while (std::abs(error)>tol);
-
-  for(int m=0;m<end;m++)
-  {
-    double fac   = 1.0;
-    double gamma = 1.0;
-    for (int k=1;k<=m;k++)
-    {
-      fac *= (double)(k);
-    }
-    for (int k=1;k<=m+alpha;k++)
-    {
-      gamma *= (double)(k);
-    }
-
-
-    Jmine += std::pow(z*std::complex<double>(0.5),double(alpha))
-      *  pow(-std::complex<double>(0.25)*z*z,double(m))
-      /(std::complex<double> (fac) * std::complex<double> (gamma));
-  }
-
-
+  int end = 70;
   // Bessel function of the first kind and order 0
+  double tol = 1e-10;
+  double error = 10.0*tol;
   if(order==false)
   {
-    for(int m=0;m<end;m++)
+    int m = 1;
+    J = std::complex<double>(1.0,0.0);
+    do
     {
-      for(int k=2;k<=m;k++)
-        fac *= (double)(k);
-      J += (std::complex<double>)((double)(std::pow(-1.0,(double)(m)))/std::pow(fac,2.0))*
-      pow((z/(std::complex<double>)(2.0)),(std::complex<double>)(2*m));
-      fac = 1.0;
-    }
+      std::complex<double> Sn = std::complex<double>(1.0,0.0);
+      for(int i=1;i<=m;i++)
+      {
+        Sn *= -(z*z/4.0)/(double(m+1-i)*double(m+1-i));
+      }
+      J += Sn;
+      if (m < 1)
+      {
+        error = 10.0*tol;
+      }
+      else
+      {
+        error = abs(J-Jm);
+      }
+      Jm = J;
+      m += 1;
+    }while(error>tol);
     if(z == std::complex<double>(0.0,0.0))
       J= std::complex<double>(1.0,0.0);
   }
   // Bessel function of the first kind and order 1
   else
   {
-    for(int m=0;m<end;m++)
+    int m = 0;
+    J = std::complex<double>(0.0,0.0);
+    do
     {
-      for(int k=2;k<=m;k++)
-        fac *= (double)(k);
-      J += (std::complex<double>)((std::pow(-1.0,(double)(m)))/((double)(m+1)*std::pow(fac,2.0)))*
-      std::pow((z/std::complex<double>(2.0)),(std::complex<double>)(2*m+1));
-      fac = 1.0;
-    }
-  }
+//      J += (std::complex<double>)((std::pow(-1.0,(double)(m)))/((double)(m+1)*std::pow(fac,2.0)))*
+//      std::pow((z/std::complex<double>(2.0)),(std::complex<double>)(2*m+1));
 
+      std::complex<double> Sn = std::complex<double>(1.0,0.0);
+      Sn = (z/2.0)/(double(m+1));
+      for(int i=1;i<=m;i++)
+      {
+        Sn *= -(z*z/4.0)/(double(m+1-i)*double(m+1-i));
+      }
+      J += Sn;
+      if (m < 1)
+      {
+        error = 10.0*tol;
+      }
+      else
+      {
+        error = abs(J-Jm);
+      }
+      Jm = J;
+      m += 1;
+    }while(error>tol);
+    if(z == std::complex<double>(0.0,0.0))
+      J= std::complex<double>(1.0,0.0);
+  }
+#if 0
   if (fabs(real(Jmine)-  real(J))>0.001*fabs(real(J)) || fabs(imag(Jmine)- imag(J))>0.001*fabs(imag(J)))
   {
     dserror("J(%d) problems... [%f,%f]\t[%f,%f]",alpha,real(Jmine),imag(Jmine),real(J),imag(J));
   }
-
+#endif
 
   return J;
 }
