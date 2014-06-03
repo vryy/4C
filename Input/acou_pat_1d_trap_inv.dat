@@ -49,10 +49,10 @@ INV_TOL_GRAD_YN                 No
 INV_LS_MAX_RUN                  3
 ALPHA_MUA                       0.0
 BETA_MUA                        0.0
-OPTIMIZATION			GradientDescent   
+OPTIMIZATION			LBFGS   
 SIZESTORAGE                     10 
 ELE_SCALING			No
-LS_STEPLENGTHRED		0.1    
+LS_STEPLENGTHRED		0.5  
 -------------------------------------------------------STAT INVERSE ANALYSIS
 PARAMLIST                       2 REAC 
 METAPARAMS                      no
