@@ -2266,8 +2266,6 @@ void FLD::XFluid::Init()
   }
   boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
 
-
-
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
@@ -4355,7 +4353,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
         TransferDofsBetweenSteps(
             discret_,
             *dofrowmap_Intn_,
-            *newdofrowmap,
+            *newdofrowmap, //*dofcolmap_Intn_, //
             oldRowStateVectors,
             newRowStateVectors,
             wizard_Intn_,
@@ -4406,8 +4404,8 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------------------------------------------------------------------------------
     //                      SEMILAGRANGE RECONSTRUCTION of std values
     //------------------------------------------------------------------------------------
-    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-      return;  // Do nothing in time integration----> active for crack-fsi problem ???
+    //if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+    //  return;  // Do nothing in time integration----> active for crack-fsi problem ???
       
     if(timint_semi_lagrangean)
     {
@@ -6255,8 +6253,8 @@ void FLD::XFluid::UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldne
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, idispnp_, oldnewIds );
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, idispn_, oldnewIds );
 
-  itrueresidual_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
-  //DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, itrueresidual_, oldnewIds );
+  //itrueresidual_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, itrueresidual_, oldnewIds );
 
   //TODO: I guess the following lines are unnecessary (Sudhakar)
   {

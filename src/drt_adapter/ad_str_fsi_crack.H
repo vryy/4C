@@ -101,6 +101,9 @@ namespace ADAPTER {
     //! Add the nodal numbers given in the vector to the given condition
     void addNodesToConditions( DRT::Condition * cond, std::vector<int> add );
 
+    //! Add the nodal numbers given in the set to the given condition
+    void addNodesToConditions( DRT::Condition * cond, std::set<int> add );
+
     //! Rebuild cut interface only when crack mouth opening distance satisfies predefined value
     void RebuildInterfaceWithConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
                                              std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
@@ -111,6 +114,18 @@ namespace ADAPTER {
 
     //! Returns true when the given crack mouth opening criterion is satisfied
     bool isCrackMouthOpeningConditionSatisfied( const std::map<int,int>& tips );
+
+    //! distribute this discretization to all processors within its communicator
+    void distributeDisToAllProcs( Teuchos::RCP<DRT::Discretization>& boundary_dis );
+
+    //! add given node to the discretization
+    void addThisStructNodeToDis( int nodeid, Teuchos::RCP<DRT::Discretization>& dis );
+
+    //! check whether given element exist in the discretization (element ids can be different but node numbers are same)
+    bool checkElementExist( Teuchos::RCP<DRT::Discretization>& dis, DRT::Element* ele, int& eleid );
+
+    //! check an element with given nodeids exist in the discretization
+    bool checkElementExist( Teuchos::RCP<DRT::Discretization>& dis, const int* elenod, int& eleid );
 
   };  // class FSICrackingStructure
 
