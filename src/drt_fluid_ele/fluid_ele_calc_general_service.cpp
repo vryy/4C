@@ -553,12 +553,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
 //                       INTEGRATION LOOP
 //------------------------------------------------------------------
 
+  // option to evaluate div u at Gauss point
+
   // loop over Gauss points if div u needs to be evaluated at the Gauss points
   /*
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
   */
 
     // get velocity at integration point
