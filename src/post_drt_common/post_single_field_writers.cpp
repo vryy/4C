@@ -277,11 +277,11 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     writer_->WriteResult("activation_time_np","act_time",dofbased,1);
   }
 
-  // write velocity field (always 3D)
-  writer_->WriteResult("convec_velocity", "velocity", nodebased, 3);
+  // write velocity field
+  writer_->WriteResult("convec_velocity", "velocity", nodebased, field->problem()->num_dim());
 
-  // write displacement field (always 3D)
-  writer_->WriteResult("dispnp", "ale-displacement", nodebased, 3);
+  // write displacement field
+  writer_->WriteResult("dispnp", "ale-displacement", nodebased, field->problem()->num_dim());
 
   // write optimization field
   writer_->WriteResult("x_mma","optimization_variable", dofbased,1);

@@ -1834,29 +1834,38 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
           field_->problem()->SpatialApproximation()=="HDG")
   {
 
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-    Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
-  Epetra_Import proc0dofimporter(*proc0map_,datamap);
-  int err = data_proc0->Import(*data,proc0dofimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+    // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
+      Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+    Epetra_Import proc0dofimporter(*proc0map_,datamap);
+    int err = data_proc0->Import(*data,proc0dofimporter,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
-  //---------------
-  // write results
-  //---------------
+    //---------------
+    // write results
+    //---------------
 
-  const int finalnumnode = proc0map_->NumGlobalElements();
+    const int finalnumnode = proc0map_->NumGlobalElements();
 
-  if (myrank_==0)
-  {
-    for (int idf=0; idf<numdf; ++idf)
+    if (myrank_==0)
     {
-      Epetra_Vector* column = (*data_proc0)(idf);
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
+      for (int idf=0; idf<numdf; ++idf)
       {
-        Write(file, static_cast<float>((*column)[inode]));
+        Epetra_Vector* column = (*data_proc0)(idf);
+        for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
+        {
+          Write(file, static_cast<float>((*column)[inode]));
+        }
+      }
+    } // if (myrank_==0)
+
+    // 2 component vectors in a 3d problem require a row of zeros.
+    if (numdf==2)
+    {
+      for (int inode=0; inode<finalnumnode; inode++)
+      {
+        Write<float>(file, 0.);
       }
     }
-  } // if (myrank_==0)
   } // polynomial || meshfree
   else
   {
