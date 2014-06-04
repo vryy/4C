@@ -378,7 +378,7 @@ void ACOU::TimIntImplBDF::UpdateInteriorVariablesAndAssemebleRHS()
   {
     std::vector<double> localvals = *(elevals.get());
     for(int el=0; el<discret_->NumMyRowElements(); ++el)
-      error_->ReplaceGlobalValue(el,0,localvals[error_->Map().GID(el)]);
+      error_->ReplaceMyValue(el,0,localvals[error_->Map().GID(el)]);
   }
 
   // update internal field

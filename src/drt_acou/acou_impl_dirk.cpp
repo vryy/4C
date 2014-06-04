@@ -190,6 +190,14 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
 
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
+  // update the error vector
+  if(errormaps_)
+  {
+    std::vector<double> localvals = *(elevals.get());
+    for(int el=0; el<discret_->NumMyRowElements(); ++el)
+      error_->ReplaceMyValue(el,0,localvals[error_->Map().GID(el)]);
+  }
+
   const Epetra_Vector& intvelnpGhosted = *discret_->GetState(1,"intvel");
   for (int i=0; i<intvelnp_->MyLength(); ++i)
     (*(y_[stage]))[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];

@@ -1186,111 +1186,111 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::AcouEleCalc<distype>::
 CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_SerialDenseVector & rhs, Epetra_SerialDenseVector & p)
 {
-//  DRT::UTILS::LagrangeBasis<nsd_> postpoly(DRT::ELEMENTS::Acou::degree+1);
-//  LINALG::Matrix<nsd_,1> xsi;
-//  const unsigned int ndofspost = DRT::UTILS::FixedPower<DRT::ELEMENTS::Acou::degree+2,nsd_>::value;
-//
-//  LINALG::Matrix<nsd_,ndofspost> derivs;
-//  LINALG::Matrix<1,shapes_->ndofs_> myvalues;
-//  LINALG::Matrix<nsd_,nen_> deriv;
-//  LINALG::Matrix<nsd_,nsd_> xjm, xji;
-//
-//  LINALG::Matrix<1,ndofspost> values;
-//
-//  Teuchos::RCP<DRT::UTILS::GaussPoints> postquad;
-//
-//  postquad = DRT::UTILS::GaussPointCache::Instance().Create(distype, (DRT::ELEMENTS::Acou::degree+1)*2);
-//
-//  LINALG::Matrix<nsd_,nen_> xyze;
-//  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(&ele,xyze);
-//
-//  for (int q=0; q<postquad->NumPoints(); ++q)
-//  {
-//    const double* gpcoord = postquad->Point(q);
-//    for (unsigned int idim=0;idim<nsd_;idim++)
-//      xsi(idim) = gpcoord[idim];
-//
-//    postpoly.Evaluate(xsi,values);
-//    postpoly.Evaluate_deriv1(xsi,derivs);
-//
-//    DRT::UTILS::shape_function_deriv1<distype>(xsi,deriv);
-//    xjm.MultiplyNT(deriv,xyze);
-//    const double jfac = xji.Invert(xjm) * postquad->Weight(q);
-//
-//    // transform shape functions derivatives
-//    for (unsigned int i=0; i<ndofspost; ++i)
-//    {
-//      double res[nsd_];
-//      for (unsigned int d=0; d<nsd_; ++d)
-//      {
-//        res[d] = xji(d,0) * derivs(0,i);
-//        for (unsigned int e=1; e<nsd_; ++e)
-//          res[d] += xji(d,e) * derivs(e,i);
-//      }
-//      for (unsigned int d=0; d<nsd_; ++d)
-//        derivs(d,i) = res[d];
-//    }
-//
-//    shapes_->polySpace_.Evaluate(xsi,myvalues);
-//
-//    for (unsigned int j=0; j<ndofspost; ++j)
-//      h(0,j) += values(j) * jfac;
-//    for (unsigned int j=0; j<shapes_->ndofs_; ++j)
-//      rhs(0) += myvalues(j) * jfac * interiorPressnp_[j];
-//
-//    for (unsigned int i=1; i<ndofspost; ++i)
-//    {
-//      for (unsigned int j=0; j<ndofspost; ++j)
-//      {
-//        double t = 0;
-//        for (unsigned int d=0; d<nsd_; ++d)
-//          t += derivs(d,i) * derivs(d,j);
-//        h(i,j) += t * jfac;
-//      }
-//    }
-//    double ugrad[nsd_];
-//    for (unsigned int d=0; d<nsd_; ++d)
-//      ugrad[d]=0.0;
-//    for (unsigned int d=0; d<nsd_; ++d)
-//      for (unsigned int j=0; j<shapes_->ndofs_; ++j)
-//        ugrad[d] += myvalues(j) * p(j+d*shapes_->ndofs_);
-//    for (unsigned int i=1; i<ndofspost; ++i)
-//      for (unsigned int d=0; d<nsd_; ++d)
-//        rhs(i) += ugrad[d] * derivs(d,i) * jfac;
-//
-//  } // for (int q=0; q<postquad->NumPoints(); ++q)
-//
-//
-//  LINALG::FixedSizeSerialDenseSolver<ndofspost,ndofspost,1> inverseH;
-//  LINALG::Matrix<ndofspost,ndofspost> Hmat(h,true);
-//  LINALG::Matrix<ndofspost,1> Rvec(rhs,true);
-//  inverseH.SetMatrix(Hmat);
-//  inverseH.SetVectors(Rvec,Rvec);
-//  inverseH.Solve();
-//
+  DRT::UTILS::LagrangeBasis<nsd_> postpoly(ele.Degree()+1);
+  LINALG::Matrix<nsd_,1> xsi;
+  int ndofspost = 1;
+  for(unsigned int i=0; i<nsd_; ++i) ndofspost *= (ele.Degree()+2);
+
+
+  Epetra_SerialDenseMatrix derivs(nsd_,ndofspost);
+  Epetra_SerialDenseVector myvalues(shapes_->ndofs_);
+
+  LINALG::Matrix<nsd_,nen_> deriv;
+  LINALG::Matrix<nsd_,nsd_> xjm, xji;
+
+  Epetra_SerialDenseVector values(ndofspost);
+
+  Teuchos::RCP<DRT::UTILS::GaussPoints> postquad;
+  postquad = DRT::UTILS::GaussPointCache::Instance().Create(distype, (ele.Degree()+1)*2);
+
+  LINALG::Matrix<nsd_,nen_> xyze;
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(&ele,xyze);
+
+  for (int q=0; q<postquad->NumPoints(); ++q)
+  {
+    const double* gpcoord = postquad->Point(q);
+    for (unsigned int idim=0;idim<nsd_;idim++)
+      xsi(idim) = gpcoord[idim];
+
+    postpoly.Evaluate(xsi,values);
+    postpoly.Evaluate_deriv1(xsi,derivs);
+
+    DRT::UTILS::shape_function_deriv1<distype>(xsi,deriv);
+    xjm.MultiplyNT(deriv,xyze);
+    const double jfac = xji.Invert(xjm) * postquad->Weight(q);
+
+    // transform shape functions derivatives
+    for (int i=0; i<ndofspost; ++i)
+    {
+      double res[nsd_];
+      for (unsigned int d=0; d<nsd_; ++d)
+      {
+        res[d] = xji(d,0) * derivs(0,i);
+        for (unsigned int e=1; e<nsd_; ++e)
+          res[d] += xji(d,e) * derivs(e,i);
+      }
+      for (unsigned int d=0; d<nsd_; ++d)
+        derivs(d,i) = res[d];
+    }
+
+    shapes_->polySpace_->Evaluate(xsi,myvalues);
+
+    for (int j=0; j<ndofspost; ++j)
+      h(0,j) += values(j) * jfac;
+    for (unsigned int j=0; j<shapes_->ndofs_; ++j)
+      rhs(0) += myvalues(j) * jfac * interiorPressnp_[j];
+
+    for (int i=1; i<ndofspost; ++i)
+    {
+      for (int j=0; j<ndofspost; ++j)
+      {
+        double t = 0;
+        for (unsigned int d=0; d<nsd_; ++d)
+          t += derivs(d,i) * derivs(d,j);
+        h(i,j) += t * jfac;
+      }
+    }
+    double ugrad[nsd_];
+    for (unsigned int d=0; d<nsd_; ++d)
+      ugrad[d]=0.0;
+    for (unsigned int d=0; d<nsd_; ++d)
+      for (unsigned int j=0; j<shapes_->ndofs_; ++j)
+        ugrad[d] += myvalues(j) * p(j+d*shapes_->ndofs_);
+    for (int i=1; i<ndofspost; ++i)
+      for (unsigned int d=0; d<nsd_; ++d)
+        rhs(i) += ugrad[d] * derivs(d,i) * jfac;
+
+  } // for (int q=0; q<postquad->NumPoints(); ++q)
+
+
+  Epetra_SerialDenseSolver inverseH;
+  inverseH.SetMatrix(h);
+  inverseH.SetVectors(rhs,rhs);
+  inverseH.Solve();
+
   double err_p = 0.0;
-//  double numerical_post = 0.0;
-//  double numerical = 0.0;
-//  double area = 0.0;
-//  for (unsigned int q=0; q<shapes_->ndofs_; ++q)
-//  {
-//    numerical_post = 0.0;
-//    numerical = 0.0;
-//    const double* gpcoord = shapes_->quadrature_->Point(q);
-//    for (unsigned int idim=0;idim<nsd_;idim++)
-//      xsi(idim) = gpcoord[idim];
-//
-//    postpoly.Evaluate(xsi,values);
-//    for (unsigned int i=0; i<ndofspost; ++i)
-//      numerical_post += values(i) * rhs(i);
-//    for (unsigned int i=0; i<shapes_->ndofs_; ++i)
-//      numerical += shapes_->shfunct(i,q) * interiorPressnp_(i);
-//    area += shapes_->jfac(q);
-//    err_p +=  (numerical_post - numerical) * (numerical_post - numerical) * shapes_->jfac(q);
-//  } // for (int q=0; q<postquad->NumPoints(); ++q)
-//
-//  err_p /= area;
-//
+  double numerical_post = 0.0;
+  double numerical = 0.0;
+  double area = 0.0;
+  for (unsigned int q=0; q<shapes_->nqpoints_; ++q)
+  {
+    numerical_post = 0.0;
+    numerical = 0.0;
+    const double* gpcoord = shapes_->quadrature_->Point(q);
+    for (unsigned int idim=0;idim<nsd_;idim++)
+      xsi(idim) = gpcoord[idim];
+
+    postpoly.Evaluate(xsi,values);
+    for (int i=0; i<ndofspost; ++i)
+      numerical_post += values(i) * rhs(i);
+    for (unsigned int i=0; i<shapes_->ndofs_; ++i)
+      numerical += shapes_->shfunct(i,q) * interiorPressnp_(i);
+    area += shapes_->jfac(q);
+    err_p +=  (numerical_post - numerical) * (numerical_post - numerical) * shapes_->jfac(q);
+  } // for (int q=0; q<postquad->NumPoints(); ++q)
+
+  err_p /= area;
+
   return err_p;
 } // FillMatrices
 
