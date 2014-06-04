@@ -69,11 +69,8 @@ void FLD::TimIntRedModels::Init()
   // evaluate the map of the womersley bcs
   vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
   vol_surf_flow_bc_ -> EvaluateCondMap(vol_surf_flow_bcmaps_);
-//  std::cout<< "velnp_first: " << *velnp_ << std::endl;
-//  std::cout << "time_: " << time_ << std::endl;
   // Evaluate the womersley velocities
   vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
-//  std::cout<< "velnp_last: " << *velnp_ << std::endl;
   // -------------------------------------------------------------------
   // Initialize the reduced models
   // -------------------------------------------------------------------
@@ -205,7 +202,6 @@ void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
 *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
 {
-
   // update impedance boundary condition
   impedancebc_->UpdateResidual(residual_);
 
@@ -395,55 +391,6 @@ void FLD::TimIntRedModels::TimeUpdate()
 
   // update wind kessel optimization condition
   Wk_optimization_->Solve(WkOpt_params);
-
-  // -------------------------------------------------------------------
-  // treat the 3D-to-reduced_D coupling condition
-  // note: these methods return without action, if the problem does not
-  //       have any coupling boundary conditions
-  // -------------------------------------------------------------------
-
-
-#ifdef D_ALE_BFLOW
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
-#endif // D_ALE_BFLOW
-
-  // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
-  {
-    coupled3D_redDbc_art_->SaveState();
-    coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
-    coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
-    //    coupled3D_redDbc_art_->TimeUpdate();
-  }
-
-
-  // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
-  {
-    coupled3D_redDbc_airways_->SaveState();
-    coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
-    coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
-    //    coupled3D_redDbc_airways_->TimeUpdate();
-  }
-
-  discret_->ClearState();
-
-  // update the 3D-to-reduce_D coupling condition
-  // update the 3D-to-reduced_D coupling data
-  // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
-  {
-//    coupled3D_redDbc_art_->TimeUpdate();
-  }
-  // update the 3D-to-reduced_D coupling data
-  // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
-  {
-//    coupled3D_redDbc_airways_->TimeUpdate();
-  }
   return;
 }
 
@@ -622,6 +569,46 @@ void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | RedModels - prepare time step                            ismail 06/14|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModels::PrepareTimeStep()
+{
+  FluidImplicitTimeInt::PrepareTimeStep();
+
+  discret_->ClearState();
+  discret_->SetState("velaf",velnp_);
+  discret_->SetState("hist",hist_);
+#ifdef D_ALE_BFLOW
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+#endif // D_ALE_BFLOW
+
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_art_->SaveState();
+    coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
+    coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+  }
+
+
+  // Check if one-dimensional artery network problem exist
+  if (airway_imp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_airways_->SaveState();
+    coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
+    coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+  }
+
+  discret_->ClearState();
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | Apply Womersley bc to shapederivatives                       bk 12/13|

@@ -129,6 +129,9 @@ public:
   /// prepare AVM3-based scale separation
   void AVM3Preparation();
 
+  /// prepare time step
+  void PrepareTimeStep();
+
   /*!
   \brief Additional function for RedModels in LinearRelaxationSolve
 
