@@ -1767,9 +1767,7 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
 //  const int end = 50;
   std::complex<double> J (0.0,0.0);
   std::complex<double> Jm(0.0,0.0);
-  double fac = 1.0;
 
-  int end = 70;
   // Bessel function of the first kind and order 0
   double tol = 1e-10;
   double error = 10.0*tol;
