@@ -1763,78 +1763,98 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
   // DESCRIPTION:
   // Bessel functions of order 0 (order==false) or 1 (order==true) are calculated for
   // a given argument z
-
-//  const int end = 50;
   std::complex<double> J (0.0,0.0);
   std::complex<double> Jm(0.0,0.0);
 
-  // Bessel function of the first kind and order 0
+  // Convergence tolerance of the Bessel function
   double tol = 1e-10;
   double error = 10.0*tol;
+  const int maxItr = 200;
+  // Bessel function of the first kind and order 1
   if(order==false)
   {
-    int m = 1;
-    J = std::complex<double>(1.0,0.0);
-    do
-    {
-      std::complex<double> Sn = std::complex<double>(1.0,0.0);
-      for(int i=1;i<=m;i++)
-      {
-        Sn *= -(z*z/4.0)/(double(m+1-i)*double(m+1-i));
-      }
-      J += Sn;
-      if (m < 1)
-      {
-        error = 10.0*tol;
-      }
-      else
-      {
-        error = abs(J-Jm);
-      }
-      Jm = J;
-      m += 1;
-    }while(error>tol);
+    // J0[N] = sum_{m=0}^{N} {Sn}
+    // Sn = ((-(0.5*z)^2))^(m))/(m!*m!)
+    // Error = | J0[N]-J0[N-1] |
+    int m = 0;
+    J = std::complex<double>(0.0,0.0);
     if(z == std::complex<double>(0.0,0.0))
       J= std::complex<double>(1.0,0.0);
+    else
+    {
+      do
+      {
+        std::complex<double> Sn = std::complex<double>(1.0,0.0);
+        // -------------------------------------------------------------
+        // calculate Sn
+        // Warning: do not use pow function. The total denominator in
+        // the Sn function can become larger than 1e300 (i.e NaN)
+        // -------------------------------------------------------------
+        for(int i=1;i<=m;i++)
+        {
+          Sn *= -(z*z/4.0)/(double(m+1-i)*double(m+1-i));
+        }
+        J += Sn;
+        // -------------------------------------------------------------
+        // Evaluate the convergence error
+        // -------------------------------------------------------------
+        if (m < 1)
+        {
+          error = 10.0*tol;
+        }
+        else
+        {
+          error = abs(J-Jm);
+        }
+        Jm = J;
+        m += 1;
+      }while(error>tol and m<maxItr);
+    }
   }
   // Bessel function of the first kind and order 1
   else
   {
+    // -----------------------------------------------------------------
+    // J1[N] = sum_{m=0}^{N} {Sn}
+    // Sn = ((-1.0)^m)*(0.5*z)^(2*m+1))/(m!*(m+1)!)
+    // Error = | J1[N]-J1[N-1] |
+    // -----------------------------------------------------------------
     int m = 0;
     J = std::complex<double>(0.0,0.0);
-    do
-    {
-//      J += (std::complex<double>)((std::pow(-1.0,(double)(m)))/((double)(m+1)*std::pow(fac,2.0)))*
-//      std::pow((z/std::complex<double>(2.0)),(std::complex<double>)(2*m+1));
-
-      std::complex<double> Sn = std::complex<double>(1.0,0.0);
-      Sn = (z/2.0)/(double(m+1));
-      for(int i=1;i<=m;i++)
-      {
-        Sn *= -(z*z/4.0)/(double(m+1-i)*double(m+1-i));
-      }
-      J += Sn;
-      if (m < 1)
-      {
-        error = 10.0*tol;
-      }
-      else
-      {
-        error = abs(J-Jm);
-      }
-      Jm = J;
-      m += 1;
-    }while(error>tol);
     if(z == std::complex<double>(0.0,0.0))
-      J= std::complex<double>(1.0,0.0);
+      J= std::complex<double>(0.0,0.0);
+    else
+    {
+      do
+      {
+        std::complex<double> Sn = std::complex<double>(1.0,0.0);
+        // -------------------------------------------------------------
+        // calculate Sn
+        // Warning: do not use pow function. The total denominator in
+        // the Sn function can become larger than 1e300 (i.e NaN)
+        // -------------------------------------------------------------
+        Sn = (z/2.0)/(double(m+1));
+        for(int i=1;i<=m;i++)
+        {
+          Sn *= -(z*z/4.0)/(double(m+1-i)*double(m+1-i));
+        }
+        J += Sn;
+        // -------------------------------------------------------------
+        // Evaluate the convergence error
+        // -------------------------------------------------------------
+        if (m < 1)
+        {
+          error = 10.0*tol;
+        }
+        else
+        {
+          error = abs(J-Jm);
+        }
+        Jm = J;
+        m += 1;
+      }while(error>tol and m<maxItr);
+    }
   }
-#if 0
-  if (fabs(real(Jmine)-  real(J))>0.001*fabs(real(J)) || fabs(imag(Jmine)- imag(J))>0.001*fabs(imag(J)))
-  {
-    dserror("J(%d) problems... [%f,%f]\t[%f,%f]",alpha,real(Jmine),imag(Jmine),real(J),imag(J));
-  }
-#endif
-
   return J;
 }
 
