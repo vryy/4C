@@ -58,8 +58,6 @@ private:
 class AcouVisc : public Acou
 {
 public:
-  static const int degree = 3; // hardcoded right now, assuming quad/hex geometry in polynomial space
-
 
   //@}
   //! @name constructors and destructors and related methods
@@ -196,11 +194,67 @@ public:
   */
   virtual int NumDofPerFace(const unsigned /* face */) const
   {
-    return DRT::UTILS::getDimension(this->Shape())*
-        fixedPower(this->degree+1,DRT::UTILS::getDimension(this->Shape())-1); // tensor product assumed
+    const int nsd = DRT::UTILS::getDimension(distype_);
+    switch (nsd)
+    {
+      case 3:
+        if (completepol_)
+          return 3*DRT::UTILS::LegendreBasis<2>::Size(degree_);
+        else
+          return 3*DRT::UTILS::LagrangeBasis<2>::Size(degree_);
+        break;
+      case 2:
+        if (completepol_)
+          return 2*DRT::UTILS::LegendreBasis<1>::Size(degree_);
+        else
+          return 2*DRT::UTILS::LagrangeBasis<1>::Size(degree_);
+        break;
+      default:
+        dserror("Invalid dimension");
+        return -1;
+    }
+  }
+
+  virtual int NumDofPerElementAuxiliary() const
+  {
+    const int nsd = DRT::UTILS::getDimension(distype_);
+    switch (nsd)
+    {
+      case 3:
+        if (completepol_)
+          return 14*DRT::UTILS::LegendreBasis<3>::Size(degree_);
+        else
+          return 14*DRT::UTILS::LagrangeBasis<3>::Size(degree_);
+        break;
+      case 2:
+        if (completepol_)
+          return 8*DRT::UTILS::LegendreBasis<2>::Size(degree_);
+        else
+          return 8*DRT::UTILS::LagrangeBasis<2>::Size(degree_);
+        break;
+      default:
+        dserror("Invalid dimension");
+        return -1;
+    }
   }
 
   virtual int NumDofPerElement() const { return 0;}
+
+  /*!
+   \brief Returns the degree of the element
+   */
+  int Degree() const
+  {
+    return degree_;
+  }
+
+  /*!
+   \brief Returns the degree of the element
+   */
+  int UsesCompletePolynomialSpace() const
+  {
+    return completepol_;
+  }
 
   /*!
   \brief Print this element
@@ -241,6 +295,12 @@ private:
 
   // don't want = operator
   AcouVisc& operator = (const AcouVisc& old);
+
+  // stores the degree of the element
+  unsigned char degree_;
+
+  // stores the polynomial type (tensor product or complete polynomial)
+  bool completepol_;
 
 }; // class AcouVisc
 

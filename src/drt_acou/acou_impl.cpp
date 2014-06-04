@@ -98,7 +98,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
 
   // print user information which might not be known by everyone
   if (errormaps_ && !myrank_ )
-    std::cout<<"Local postprocessing is only effective when temporal accuracy is of order k+2, here k = "<<DRT::ELEMENTS::Acou::degree<<". Did you choose your time integrator accordingly?"<<std::endl;
+    std::cout<<"Local postprocessing is only effective when temporal accuracy is of order k+2. Did you choose your time integrator accordingly?"<<std::endl;
 
   // create system matrix
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -641,10 +641,10 @@ void ACOU::AcouImplicitTimeInt::PrintInformationToScreen()
     std::cout << "number of faces             " << discret_->NumGlobalFaces() << std::endl;
     std::cout << "number of trace unknowns    " << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
     std::cout << "number of interior unknowns " << discret_->DofRowMap(1)->NumGlobalElements() << std::endl;
-    if(phys_ == INPAR::ACOU::acou_lossless)
-      std::cout << "polynomial order            " << DRT::ELEMENTS::Acou::degree << std::endl;
-    else
-      std::cout << "polynomial order            " << DRT::ELEMENTS::AcouVisc::degree << std::endl;
+    //if(phys_ == INPAR::ACOU::acou_lossless)
+    //  std::cout << "polynomial order            " << DRT::ELEMENTS::Acou::degree << std::endl;
+    //else
+    //  std::cout << "polynomial order            " << DRT::ELEMENTS::AcouVisc::degree << std::endl;
     std::cout << "time step size              " << dtp_ << std::endl;
     std::cout << "time integration scheme     " << Name() << std::endl;
     std::cout << "---------------------------------------------------------------------------------" << std::endl;

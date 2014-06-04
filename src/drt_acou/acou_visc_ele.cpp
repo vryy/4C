@@ -65,34 +65,38 @@ void DRT::ELEMENTS::AcouViscType::SetupElementDefinition( std::map<std::string,s
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedInt("DEG")
+    .AddNamedInt("SPC")
     ;
 
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedInt("DEG")
+    .AddNamedInt("SPC")
     ;
 
   // 2D elements
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedInt("DEG")
+    .AddNamedInt("SPC")
     ;
 
   defs["QUAD9"]
     .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedInt("DEG")
+    .AddNamedInt("SPC")
     ;
 
   defs["TRI3"]
     .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
-    .AddNamedString("NA")
+    .AddNamedInt("DEG")
+    .AddNamedInt("SPC")
     ;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -100,7 +104,9 @@ void DRT::ELEMENTS::AcouViscType::SetupElementDefinition( std::map<std::string,s
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouVisc::AcouVisc(int id, int owner) :
-Acou(id,owner)
+Acou(id,owner),
+degree_(1),
+completepol_(true)
 {
   distype_= dis_none;
 }
@@ -110,7 +116,9 @@ Acou(id,owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouVisc::AcouVisc(const DRT::ELEMENTS::AcouVisc& old) :
 Acou(old             ),
-distype_    (old.distype_    )
+distype_    (old.distype_    ),
+degree_(old.degree_),
+completepol_(old.completepol_)
 {
 }
 
@@ -137,11 +145,16 @@ void DRT::ELEMENTS::AcouVisc::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+
   // add base class Element
   Element::Pack(data);
 
   // Discretisation type
   AddtoPack(data,distype_);
+  int degree = degree_;
+  AddtoPack(data, degree);
+  degree = completepol_;
+  AddtoPack(data, degree);
 
   return;
 }
@@ -158,6 +171,7 @@ void DRT::ELEMENTS::AcouVisc::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
@@ -165,6 +179,12 @@ void DRT::ELEMENTS::AcouVisc::Unpack(const std::vector<char>& data)
 
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  int val = 0;
+  ExtractfromPack(position,data,val);
+  dsassert(val >= 0 && val < 255, "Degree out of range");
+  degree_ = val;
+  ExtractfromPack(position,data,val);
+  completepol_ = val;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -199,6 +219,12 @@ bool DRT::ELEMENTS::AcouVisc::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
+  int degree;
+  linedef->ExtractInt("DEG", degree);
+  degree_ = degree;
+
+  linedef->ExtractInt("SPC", degree);
+  completepol_ = degree;
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)

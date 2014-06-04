@@ -20,6 +20,7 @@ Maintainer: Svenja Schoeder
 #include "acou_visc_ele.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_inpar/inpar_acou.H"
+#include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
 
 namespace DRT
 {
@@ -42,12 +43,6 @@ public:
 
   //! number of space dimensions
   static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-  //! number of scalar dofs per cell (quad/hex assumption right now)
-  static const unsigned int ndofs_ = DRT::UTILS::FixedPower<DRT::ELEMENTS::AcouVisc::degree+1,nsd_>::value;
-
-  //! number of scalar dofs per face (quad/hex assumption right now)
-  static const unsigned int nfdofs_ = DRT::UTILS::FixedPower<DRT::ELEMENTS::AcouVisc::degree+1,nsd_-1>::value;
 
   ///! number of faces on element
   static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
@@ -99,6 +94,10 @@ public:
                     Epetra_SerialDenseVector&            elevec1,
                     double                               dt);
 
+
+  ///Initialize the shape functions and solver to the given element (degree is runtime parameter)
+  void InitializeShapes(const DRT::ELEMENTS::Acou* ele);
+
   /// Evaluate the element
   /*!
     Generic virtual interface function. Called via base pointer.
@@ -143,72 +142,13 @@ private:
   /// private Constructor since we are a Singleton.
   AcouViscEleCalc();
 
-  /// holds shape values on the present element and all the faces
-  struct ShapeValues
-  {
-    static const unsigned int nen_    = AcouViscEleCalc<distype>::nen_;
-    static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
-    static const unsigned int nsd_    = AcouViscEleCalc<distype>::nsd_;
-    static const unsigned int ndofs_  = AcouViscEleCalc<distype>::ndofs_;
-    static const unsigned int nfdofs_ = AcouViscEleCalc<distype>::nfdofs_;
-    static const unsigned int nfaces_ = AcouViscEleCalc<distype>::nfaces_;
-
-    ShapeValues ();
-
-    void Evaluate            (const DRT::Element &ele);
-    void EvaluateFace        (const DRT::Element &ele,
-                              const unsigned int  face);
-
-    /// underlying polynomial space for element interior, created in constructor
-    const DRT::UTILS::LagrangeBasis<nsd_> polySpace_;
-
-    /// underlying polynomial space for faces
-    const DRT::UTILS::LagrangeBasis<nsd_-1> polySpaceFace_;
-
-    LINALG::Matrix<nen_,ndofs_>   funct;              /// values of mapping shape functions on all quadrature points
-    LINALG::Matrix<nfn_,nfdofs_>  functF;             /// values of mapping shape functions on all face quadrature points
-    LINALG::Matrix<nsd_,nen_>     deriv;              /// gradients of mapping shape functions
-    LINALG::Matrix<nsd_-1,nfn_>   derivF;             /// gradients of mapping shape functions on face
-    LINALG::Matrix<nsd_-1,nsd_-1> metricTensor;       /// metric tensor on face
-    LINALG::Matrix<nsd_,1>        normal;             /// normal vector
-    LINALG::Matrix<nsd_,ndofs_>   xyzreal;            /// coordinates of quadrature points in real space
-    LINALG::Matrix<nsd_,nfdofs_>  xyzFreal;           /// coordinates of face quadrature points in real space
-
-    Epetra_SerialDenseMatrix      shfunct;            /// evaluated HDG shape functions on all quadrature points
-    Epetra_SerialDenseVector      shfunctAvg;         /// average of shfunctF on cell
-    Epetra_SerialDenseMatrix      shderiv;            /// evaluated HDG shape function gradients in unit coordinates
-    Epetra_SerialDenseMatrix      shderxy;            /// evaluated HDG shape function gradients in real coordinates
-    Epetra_SerialDenseMatrix      shfunctF;           /// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
-    Epetra_SerialDenseMatrix      shfunctFNoPermute;  /// evaluated shape functions for HDG face polynomials in natural ordering
-    std::vector<Epetra_SerialDenseMatrix> shfunctI;   /// evaluated shape functions on face for interior HDG polynomials
-    Epetra_SerialDenseMatrix      normals;            /// normal vectors on a single face for all quadrature points
-
-    LINALG::Matrix<nsd_,1>        xsi;                /// quadrature points
-    LINALG::Matrix<nsd_-1,1>      xsiF;               /// face quadrature points
-    LINALG::Matrix<nsd_,nsd_>     xjm;                /// Jacobi matrix of transformation
-    LINALG::Matrix<nsd_,nsd_>     xji;                /// inverse of Jacobi matrix of transformation
-    LINALG::Matrix<nsd_,nen_>     xyze;               /// element nodes
-    LINALG::Matrix<nsd_,nfn_>     xyzeF;              /// face nodes
-    Epetra_SerialDenseVector      jfac;               /// Jacobian determinant times quadrature weight
-    Epetra_SerialDenseVector      jfacF;              /// face Jacobian determinant times quadrature weight
-
-    std::vector<std::vector<int> > faceNodeOrder;     /// numbering of nodes belonging to faces
-
-    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_;
-    Teuchos::RCP<DRT::UTILS::GaussPoints> fquadrature_;
-  };
-
   /// local solver that inverts local problem on an element and can solve with various vectors
   struct LocalSolver
   {
     static const unsigned int nsd_    = AcouViscEleCalc<distype>::nsd_;
-    static const unsigned int ndofs_  = AcouViscEleCalc<distype>::ndofs_;
-    static const unsigned int nfdofs_ = AcouViscEleCalc<distype>::nfdofs_;
     static const unsigned int nfaces_ = AcouViscEleCalc<distype>::nfaces_;
 
-    LocalSolver (const ShapeValues &shapeValues);
-
-    const ShapeValues        &shapes_;  /// evaluated shape values
+    LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues);
 
     /// add terms corresponding to the absorbing boundary condition
     void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
@@ -258,18 +198,17 @@ private:
                          std::vector<double>               traceVal,
                          INPAR::ACOU::DynamicType          dyna);
 
-
-    /// evaluates the source term for the adjoint integration!
-    void EvaluateSourceAdjoint(Teuchos::ParameterList&     params,
-                               DRT::ELEMENTS::Acou &                ele,
-                               Epetra_SerialDenseVector          & sourcevec);
-
     /// evaluates source term for given coordinates
     void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
                              double values[],
                              int numfnode,
                              const double (&xyz)[nsd_],
                              double &val) const;
+
+    const unsigned int ndofs_;
+    const unsigned int nfdofs_;
+
+    const DRT::UTILS::ShapeValues<distype> &shapes_; /// evaluated shape values
 
     Epetra_SerialDenseMatrix amat;
     Epetra_SerialDenseMatrix invamat;
@@ -335,11 +274,12 @@ private:
                      double  &p,
                      double absorptioncoeff) const;
 
+
   /// local data object
-  ShapeValues shapes_;
+  Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;
 
   /// local solver object
-  LocalSolver localSolver_;
+  Teuchos::RCP<LocalSolver> localSolver_;
 
   std::vector<double> traceVal_;          /// extracted values from trace solution vector
   std::vector<double> traceValm_;         /// extracted values from old trace

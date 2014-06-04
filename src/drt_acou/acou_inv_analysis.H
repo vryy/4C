@@ -66,6 +66,12 @@ namespace DRT
   }
 }
 
+namespace ADAPTER
+{
+  class MortarVolCoupl;
+}
+
+
 namespace ACOU
 {
 /*====================================================================*/
@@ -222,6 +228,14 @@ private:
 
   //! time measurement
   double tstart_;
+
+  //! @name Volume Mortar stuff
+  //! flag for volume mortar
+  const bool volmort_;
+
+  //! volume coupling (using mortar) adapter
+  Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_;
+  //@}
 
   //! Read in measured values from the monitor file
   void ReadMonitor(std::string monitorfilename);

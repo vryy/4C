@@ -60,8 +60,7 @@ void acoustics_drt()
   // get input lists
   const Teuchos::ParameterList& acouparams = DRT::Problem::Instance()->AcousticParams();
 
-  //if(DRT::Problem::Instance()->SpatialApproximation() != "HDG") dserror("you have to set SHAPEFCT in parameter list PROBLEM TYP to HDG for Acoustics");
-
+  // do we want to do inverse analysis?
   bool invanalysis = (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS") != INPAR::ACOU::inv_none);
 
   // access the discretization
@@ -69,22 +68,27 @@ void acoustics_drt()
   if (acoudishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
+  // call fill complete on acoustical discretization
+  if (not acoudishdg->Filled() || not acoudishdg->HaveDofs()) acoudishdg->FillComplete();
 
+  // calculate size of required dof set (internal field)
   const int dim = DRT::Problem::Instance()->NDim();
   int degreep1 = 0;
   if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
-    degreep1 = DRT::ELEMENTS::Acou::degree + 1;
+    degreep1 = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::Acou::degree + 1;
   else
-    degreep1 = DRT::ELEMENTS::AcouVisc::degree +1;
+    degreep1 = dynamic_cast<DRT::ELEMENTS::AcouVisc*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::AcouVisc::degree +1;
   int nscalardofs = 1;
   for(int i=0; i<dim; ++i)
     nscalardofs *= degreep1;
 
   int elementndof = 0;
   if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
-    elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
+    elementndof =  acoudishdg->NumMyRowElements() > 0 ?
+        dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
   else
-    elementndof = nscalardofs * ( dim * dim + dim + 2); // velocity gradient, velocity, pressure, density
+    elementndof = acoudishdg->NumMyRowElements() > 0 ?
+        dynamic_cast<DRT::ELEMENTS::AcouVisc*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//nscalardofs * ( dim * dim + dim + 2); // velocity gradient, velocity, pressure, density
 
   // set degrees of freedom in the discretization
   //  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
@@ -92,7 +96,8 @@ void acoustics_drt()
   acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
 
   // call fill complete on acoustical discretization
-  if (not acoudishdg->Filled() || not acoudishdg->HaveDofs()) acoudishdg->FillComplete();
+  //if (not acoudishdg->Filled() || not acoudishdg->HaveDofs())
+    acoudishdg->FillComplete();
 
   // print problem specific logo
   if(!acoudishdg->Comm().MyPID()) { if (!invanalysis) printacoulogo(); else printacouinvlogo(); }
