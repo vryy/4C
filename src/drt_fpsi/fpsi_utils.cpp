@@ -168,6 +168,9 @@ them.
   {
     // Create the fluid discretization within the porous medium
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,porofluiddis);
+
+    //set material pointers
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,porofluiddis);
   }
   else
   {
@@ -205,6 +208,9 @@ them.
     RedistributeInterface(aledis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
     RedistributeInterface(porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
     RedistributeInterface(structdis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+
+    // Material pointers need to be reset after redistribution.
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,porofluiddis);
   }
   //4.- get coupling algorithm
     Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
