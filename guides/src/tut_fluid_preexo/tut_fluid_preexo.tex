@@ -30,26 +30,24 @@ W.A. Wall, PhD thesis, 1999
 
 In order to use \baci{} for your special purposes (here: Fluid Flow), you have
 to do a kind of setup first. 
-
 \begin{itemize}
-\item Execute the following command in the console (in the \baci{} directory):\\
-\emph{./do-configure}\\
-This creates the \texttt{Makefile} needed for compiling the code
-in the following steps. 
-\item Now simply run \emph{make -j 2}.
-\item It will take about twenty minutes to compile Baci
+\item Execute the following commands in the console (in any directory):\\
+\texttt{mkdir -p \textasciitilde{}/workspace/build-release}\\
+\texttt{cd \textasciitilde{}/workspace/build-release}\\
+\texttt{\textasciitilde{}/workspace/baci/do-configure}\\
+
+This creates the \texttt{Makefile} needed for compiling the code in the following steps. 
+\item Now simply run \texttt{make -j 2}. You can also pick an integer larger than 2 if your computer has more than 2 cores available.
+\item It will take about twenty minutes to compile Baci.
 \end{itemize}
-This created everything necessary for BACI to solve your specific
-problem.
-
-
+This created everything necessary for BACI to solve your specific problem.
 %%
 %%============================
 \section{Preprocessing}
 
 \subsection{Creating the Geometry with Cubit}
 We will use Cubit for creating the geometry and the mesh. For 32-bit systems, Cubit 12.0 is used which can be executed by \texttt{/lnm/programs/cubit12/cubit} and for 64-bit systems, Cubit 13.2 is used that can be started via \texttt{/lnm/programs64/cubit-13.2/cubit}. Within Cubit, open the Journal-Editor (\emph{Tools}$\to$\emph{Journal
-Editor}), paste the text below and press \emph{play}. If the geometry couldn't be created, try to set the editor to 'Translate to Cubit commands' first and retry. After successful geometry and mesh creation, export everything to an Exodus-file of your choice via \emph{File}$\to$\emph{Export...}. During export, set the dimension explicitly to 2d.
+Editor}), paste the text below and press \emph{play}. If the geometry couldn't be created, try to set the editor to 'Translate to Cubit commands' first and retry. Alternatively, double-check every single line of the text, since sometimes errors occur during copying and pasting. After successful geometry and mesh creation, export everything to an Exodus-file of your choice via \emph{File}$\to$\emph{Export...}. Select the folder \texttt{build-release} created before, pick an arbitrary name for the file, click on \texttt{Save}, and then set the dimension explicitly to 2d.
 
 \begin{small} \begin{verbatim}
 $***********************
@@ -197,8 +195,11 @@ transfer a given mesh into a \baci{}-readable input file.
 
 \subsection{Preliminaries}
 
-If not already done, compile \prexo via \begin{verbatim}make pre_exodus\end{verbatim} after 
-configuring \baci{} in the usual way.
+If not already done, compile \prexo in the \texttt{build-release} folder via
+\begin{verbatim}
+  make pre_exodus
+\end{verbatim}
+after configuring \baci{} in the usual way.
 
 \subsection{General Procedure of Creating a Valid \baci{} Input File}
 With a given mesh including some nodal clouds to apply conditions to you need
@@ -210,15 +211,12 @@ solvers, algorithmic parameters, etc. Those three files are merged by \prexo
 into an input file for \baci{}. This file is then \emph{automatically} validated
 using all available \baci{} validation and is therefore likely to run.
 
-Sure, you usually do not have already a proper \head and matching \bc. By
+Sure, you usually do not have already a proper \head and matching \emph{bc-file}. By
 typing
 \begin{center}
-  \verb|./pre_exodus --exo=yourmesh.e|
+  \texttt{./pre\_exodus --exo=yourmesh.e}
 \end{center}
-you get two preliminary files
-'default.head' and 'default.bc'. The first contains the currently valid header
-parameters with default values and commented options which you can edit to
-adapt it to your means. Similarly, 'default.bc' consists of all your mesh
+in the \texttt{build-release} folder you get two preliminary files 'default.head' and 'default.bc'. The first contains the currently valid header parameters with default values and commented options which you can edit to adapt it to your means. Similarly, 'default.bc' consists of all your mesh
 entities and a list of all currently valid conditions. See next section for
 details how to work with them and how to create valid input files.
 
@@ -312,7 +310,7 @@ Save the file under a different name of your choice.
 \subsection{Creating a \baci{} input file with \prexo}
 The previously created files have to be merged to a \baci{} input file in oder 
 to solve the problem. We will use \prexo for this purpose. Open a terminal 
-and execute the following command:
+and execute the following command in the \texttt{build-release} folder:
 \begin{center}
   \verb|./pre_exodus --exo=/meshpath/yourmesh.e --head=/headpath/headerfile.head|
   \verb|	--bc=/bcpath/bcfile.bc --dat=/datpath/datfile.dat|
@@ -327,7 +325,7 @@ To start the solver use the call
 \begin{center}
 	\verb|./baci-release [inputdirectory]/datfile.dat [outputdirectory]/outputprefix|
 \end{center}
-(in the \baci{}-directory). You may have to adapt the name of the executable 
+in the \texttt{build-release} folder. You may have to adapt the name of the executable 
 in this command. The prefix that you have chosen before will 
 be applied to all output files that \baci{} generates.
 
@@ -340,31 +338,41 @@ You can postprocess your results with any vizualization software you like. In th
 \begin{itemize}
 \item Before you can admire your results, you have to generate a filter 
 which converts the generic binary \baci{} output to the desired format.
-Starting from the \baci{} directory, execute \texttt{make post\_drt\_ensight}.
-\item The filter should now be available in your \baci{} directory. Filter your results with
-the call (inside the \baci{} directory): \texttt{./post\_drt\_ensight -\,-file=[outputdirectory]/outputprefix} 
-\item Further options of the filter program are made visible by the command \texttt{post\_drt\_ensight --help}
+Starting from the \texttt{build-release} directory, execute \texttt{make post\_drt\_ensight}.
+\item The filter should now be available in the \texttt{build-release} folder. Filter your results with the following call inside the \texttt{build-release} folder:
+\begin{center}
+\texttt{./post\_drt\_ensight -\,-file=[outputdirectory]/outputprefix}
+\end{center}
+\item Further options of the filter program are made visible by the command \texttt{./post\_drt\_ensight --help}
 \end{itemize}
 
 \subsection{Visualize your results in Paraview}
 \begin{itemize}
-\item After the filtering process is finished open \emph{paraview} by typing \newline
-\texttt{/lnm/programs/paraview-3.6.1-Linux-i686/bin/paraview \&} for 32-bit systems and simply \newline
-\texttt{paraview \&} for 64-bit systems that should have installed Paraview locally.
-\item \emph{File$\to$Open} and select the filtered \emph{*.case}
-file: \emph{outputprefix.case}
-\item Choose \emph{LittleEndian} instead of \emph{BigEndian} and press \emph{Apply} to activate the display. \newline (Only for older versions of Paraview)
-\item Choose time step $19$ ($=0.2$) in the top menu bar 
-\item At \emph{Color by} you can choose now between \emph{pressure} and \emph{velocity (Magnitude, X, ...)}. Choose \emph{velocity (X)}!
-\item in the \emph{Display} tab (section \emph{Color}) press \emph{Rescale to Data Range}. 
-\item For the scale, press \emph{Edit Color Map}, choose the tab \emph{Color legend} and activate \emph{Show color legend}.
-You receive a visualization of the x-velocity field, which should look like Fig. \ref{fig:FlowPastCylinder_x-velocity}.
+\item After the filtering process is finished open \emph{paraview} by typing
+\begin{center}
+  \texttt{/lnm/programs/paraview-3.6.1-Linux-i686/bin/paraview \&}
+\end{center}
+for 32-bit systems, or simply
+\begin{center}
+  \texttt{paraview \&}
+\end{center}
+for 64-bit systems that should have installed Paraview locally.
+
+\item \emph{File $\to$ Open} and select the filtered \emph{*.case} file: \emph{outputprefix\_fluid.case}
+
+\item Choose \emph{LittleEndian} instead of \emph{BigEndian} in case you have an old version of Paraview.
+
+\item Press \emph{Apply} to activate the display.
+
+\item Set the time step in the top menu bar to $19$ ($=0.2$).
+
+\item In the \emph{Color} section you can now choose between \emph{pressure} and \emph{velocity}. Select velocity and pick the $X$-component from the adjacent drop-down menu. Then press the \emph{Rescale} button and the \emph{Show} button. You receive a visualization of the $X$-velocity field, which should look similar to Fig. \ref{fig:FlowPastCylinder_x-velocity}.
 \end{itemize}
 
 \begin{figure}[H]
  \begin{center}
   \includegraphics[width=0.95\textwidth]{pics/tut_fluid_xvel.png}   
-  \caption{x-velocity for a flow past a circular cylinder.}
+  \caption{$X$-velocity for a flow past a circular cylinder}
   \label{fig:FlowPastCylinder_x-velocity}
 \end{center}
 \end{figure}

@@ -1621,9 +1621,9 @@ home directory. This way they can access their code from another machine next ti
 
 \item Change to the shell and configure BACI as usual:
 \begin{itemize}
-  \item \texttt{mkdir baci\_debug}
-  \item \texttt{cd baci\_debug}
-  \item \texttt{../do-configure-debug}
+  \item \texttt{mkdir /scratch/<student\_name>/workspace/baci\_debug}
+  \item \texttt{cd /scratch/<student\_name>/workspace/baci\_debug}
+  \item \texttt{../baci/do-configure-debug}
   \item it will take some seconds
 \end{itemize}
 
@@ -1637,7 +1637,7 @@ home directory. This way they can access their code from another machine next ti
 \begin{itemize}
  \item De-Select \texttt{Generate Makefiles automatically}
  \item \texttt{Build directory}: browse via \texttt{File system} to your folder \\
- /scratch/student\_name/workspace/baci/baci\_debug
+ /scratch/student\_name/workspace/baci\_debug
 \end{itemize}
 
 \item \texttt{C/C++ Build} $ \rightarrow $ tab \texttt{Behaviour}:
@@ -1650,7 +1650,8 @@ home directory. This way they can access their code from another machine next ti
 \item Open subitem of \texttt{C/C++ Build} named \texttt{Discovery Options}
 \begin{itemize}
  \item \texttt{Discover Profile Options}: browse to your previously created Makefile
- \item press \texttt{Load} to load all defines flag from your Makefile (Baci\_debug/Makefile)
+ \item press \texttt{Load} to load all defines flag from your Makefile
+ (baci\_debug/Makefile)
 \end{itemize}
 
 \item Open subitem of \texttt{C/C++ General} named \texttt{Path and Symbols}
@@ -1674,6 +1675,9 @@ home directory. This way they can access their code from another machine next ti
     \item Tab policy: spaces only
     \item indendation size: 2 white spaces 
     \item tab size: 2 white spaces
+    \item Alternatively, the student can be provided with our style file
+    \newline (\texttt{/lnm/styles/BACI\_eclipse\_style.xml}) according to our
+    FAQ.
   \end{itemize}
 \end{itemize}
 
@@ -1690,7 +1694,7 @@ home directory. This way they can access their code from another machine next ti
 \begin{itemize}
 \item Under \texttt{Main}
 \item choose your project
-\item choose your application (Baci\_debug/baci-debug)
+\item choose your application (baci\_debug/baci-debug)
 \item Under \texttt{Arguments}
 \item add \texttt{\$ \{file\_prompt\} XXX} to box
 \item choose your working direction (all data are saved in this folder)
