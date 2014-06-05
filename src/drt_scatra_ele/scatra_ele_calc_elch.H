@@ -179,13 +179,27 @@ protected:
     );
 
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-  void CalculateFlux(
-    LINALG::Matrix<3,my::nen_>&     flux,       //!< flux to be computed
-    const DRT::Element*             ele,        //!< the element we are dealing with
-    INPAR::ELCH::ElchType           elchtype,   //!< type of elch problem
+  virtual void CalculateFlux(
+    Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
+    Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
+    Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-    const int                       k           //!< index of current scalar
-    );
+    const int                       k,          //!< index of current scalar
+    const double                    fac,         //!< integration factor
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,  //!< variable manager
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme                                 //!< diffusion manager
+  ){return;};
+
+  //!  calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
+  virtual void CalculateCurrent(
+    Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
+    Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
+    Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
+    const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
+    const double                    fac,        //!< integration factor
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,  //!< variable manager
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&                                  dme  //!< diffusion manager
+  ){return;};
 
   //! calculate error of numerical solution with respect to analytical solution
   void CalErrorComparedToAnalytSolution(
@@ -315,7 +329,7 @@ class ScaTraEleInternalVariableManagerElch
       nsd_(nsd),
       // constant internal variables
       faraday_(INPAR::ELCH::faraday_const),
-      epsilon_(INPAR::ELCH::epsilon),
+      epsilon_(INPAR::ELCH::epsilon_const),
       frt_(elchpara->FRT()),
       // internal variables evaluated at the Gauss point
       gradphi_(numscal),

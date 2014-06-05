@@ -65,7 +65,7 @@ namespace INPAR
   const double gas_const = 8.314472;
 
   // permittivität (not a general definition, but only once used)
-  const double epsilon = 1.e-4;
+  const double epsilon_const = 1.e-4;
 
   }  // namespace ELCH
 

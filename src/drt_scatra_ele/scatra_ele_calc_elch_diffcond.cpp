@@ -302,14 +302,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   // 4) element right hand side vector (neg. residual of nonlinear problem)
   //-----------------------------------------------------------------------
 
-  // adaption of rhs with respect to time integration
-  my::ComputeRhsInt(rhsint,eps_[0],eps_[0],hist);
-
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
     this->CalcRHSLinMass(erhs,k,rhsfac,fac,eps_[0],eps_[0],vmdc->ConInt(k),hist);
 
+  // adaption of rhs with respect to time integration
+  my::ComputeRhsInt(rhsint,eps_[0],eps_[0],hist);
+
   // add RHS and history contribution
-  my::CalcRHSHistAndSource(erhs,k,fac*eps_[0],rhsint);
+  my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
   // 3a) element rhs: convective term
   my::CalcRHSConv(erhs,k,rhsfac*eps_[0],vmdc->ConvPhi(k));
@@ -773,7 +773,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviOhm(
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double laplawf(0.0);
-      my::GetLaplacianWeakForm(laplawf,ui,vi); // compute once, reuse below!
+      my::GetLaplacianWeakForm(laplawf,ui,vi);
 
       // linearization of the ohmic term
       //
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviOhm(
   for (int vi=0; vi<my::nen_; ++vi)
   {
     double laplawfrhs_gradpot(0.0);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi); // compute once, reuse below!
+    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);
 
     erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*epstort_[0]*invf*dmedc->GetCond()*laplawfrhs_gradpot;
   }
@@ -1416,6 +1416,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
   Epetra_SerialDenseVector&   erhs)
 {
   // get dirichlet toggle from the discretization
+  // we always get the dirichet toggle:
+  // in this function we check if the actual nodes have a dirichlet value
   Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.GetState("dctoggle");
   std::vector<double> mydctoggle(lm.size());
   DRT::UTILS::ExtractMyValues(*dctoggle,mydctoggle,lm);
@@ -1428,7 +1430,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
   {
     for (int k=0; k<my::numscal_; ++k)
     {
-      //
+      // here we check if the actual nodes have a dirichlet value
       if (mydctoggle[vi*my::numdofpernode_+k] == 1)
       {
         const int fvi = vi*my::numdofpernode_+k;

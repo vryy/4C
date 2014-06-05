@@ -193,6 +193,140 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPote
   return;
 }
 
+/*----------------------------------------------------------------------*
+  |  calculate weighted mass flux (no reactive flux so far)     ae 05/15|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
+  Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
+  Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
+  Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
+  const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
+  const int                       k,          //!< index of current scalar
+  const double                    fac,        //!< integration factor
+  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,  //!< variable manager
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&                                  dme  //!< diffusion manager
+)
+{
+  // dynamic cast to elch-specific diffusion manager
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
+
+  // dynamic cast to elch-specific diffusion manager
+  Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
+    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
+
+  /*
+  * Actually, we compute here a weighted (and integrated) form of the fluxes!
+  * On time integration level, these contributions are then used to calculate
+  * an L2-projected representation of fluxes.
+  * Thus, this method here DOES NOT YET provide flux values that are ready to use!!
+  /                                                         \
+  |                /   \                               /   \  |
+  | w, -D * nabla | phi | + u*phi - frt*z_k*c_k*nabla | pot | |
+  |                \   /                               \   /  |
+  \                      [optional]      [ELCH]               /
+  */
+
+  // allocate and initialize!
+  LINALG::Matrix<my::nsd_,1> q(true);
+
+  // add different flux contributions as specified by user input
+  switch (fluxtype)
+  {
+  case INPAR::SCATRA::flux_total_domain:
+    // convective flux contribution
+    q.Update(vmdc->ConInt(k),vmdc->ConVelInt());
+
+    // no break statement here!
+  case INPAR::SCATRA::flux_diffusive_domain:
+    // diffusive flux contribution
+    q.Update(-dmedc->GetIsotropicDiff(k),vmdc->GradPhi(k),1.0);
+    // flux due to ohmic overpotential
+    q.Update(-dmedc->GetTransNum(k)*vmdc->InvFVal(k)*dmedc->GetCond(),vmdc->GradPot(),1.0);
+    // flux due to concentration overpotential
+    q.Update(-dmedc->GetTransNum(k)*vmdc->RTFFCVal(k)*dmedc->GetCond()*dmedc->GetThermFac()*(myelch::elchpara_->NewmanConstA()+(myelch::elchpara_->NewmanConstB()*dmedc->GetTransNum(k)))*vmdc->ConIntInv(k),vmdc->GradPhi(k),1.0);
+    break;
+  default:
+    dserror("received illegal flag inside flux evaluation for whole domain"); break;
+  };
+
+  // integrate and assemble everything into the "flux" vector
+  for (int vi=0; vi < my::nen_; vi++)
+  {
+    const int fvi = vi*my::numdofpernode_+k;
+    fluxx[fvi] += fac*my::funct_(vi)*q(0);
+    fluxy[fvi] += fac*my::funct_(vi)*q(1);
+    fluxz[fvi] += fac*my::funct_(vi)*q(2);
+  } // vi
+
+  return;
+} // ScaTraCalc::CalculateFlux
+
+
+/*----------------------------------------------------------------------*
+  |  calculate weighted mass flux (no reactive flux so far)     ae 05/15|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateCurrent(
+  Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
+  Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
+  Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
+  const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
+  const double                    fac,        //!< integration factor
+  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,  //!< variable manager
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&                                  dme  //!< diffusion manager
+)
+{
+  // dynamic cast to elch-specific diffusion manager
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
+
+  // dynamic cast to elch-specific diffusion manager
+  Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
+    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
+
+  /*
+  * Actually, we compute here a weighted (and integrated) form of the fluxes!
+  * On time integration level, these contributions are then used to calculate
+  * an L2-projected representation of fluxes.
+  * Thus, this method here DOES NOT YET provide flux values that are ready to use!!
+  /                                                         \
+  |                /   \                               /   \  |
+  | w, -D * nabla | phi | + u*phi - frt*z_k*c_k*nabla | pot | |
+  |                \   /                               \   /  |
+  \                      [optional]      [ELCH]               /
+  */
+
+  // allocate and initialize!
+  LINALG::Matrix<my::nsd_,1> q(true);
+
+  // add different flux contributions as specified by user input
+  switch (fluxtype)
+  {
+  case INPAR::SCATRA::flux_total_domain:
+  case INPAR::SCATRA::flux_diffusive_domain:
+    // ohmic flux contribution
+    q.Update(-dmedc->GetCond(),vmdc->GradPot(),1.0);
+    // diffusion overpotential flux contribution
+    for (int k = 0; k<my::numscal_; ++k)
+      q.Update(-vmdc->RTF()/myelch::elchpara_->NewmanConstC()*dmedc->GetCond()*dmedc->GetThermFac()*(myelch::elchpara_->NewmanConstA()+(myelch::elchpara_->NewmanConstB()*dmedc->GetTransNum(k)))*vmdc->ConIntInv(k),vmdc->GradPhi(k),1.0);
+
+    break;
+  default:
+    dserror("received illegal flag inside flux evaluation for whole domain"); break;
+  };
+
+  // integrate and assemble everything into the "flux" vector
+  for (int vi=0; vi < my::nen_; vi++)
+  {
+    const int fvi = vi*my::numdofpernode_+(my::numdofpernode_-1);
+    fluxx[fvi] += fac*my::funct_(vi)*q(0);
+    fluxy[fvi] += fac*my::funct_(vi)*q(1);
+    fluxz[fvi] += fac*my::funct_(vi)*q(2);
+  } // vi
+
+  return;
+} // ScaTraCalc::CalculateFlux
+
 // template classes
 
 // 2D elements

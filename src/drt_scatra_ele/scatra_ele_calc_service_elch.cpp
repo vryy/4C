@@ -100,55 +100,94 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     break;
   }
   case SCATRA::calc_flux_domain:
+  {
+    //--------------------------------------------------------------------------------
+    // extract element based or nodal values
+    //--------------------------------------------------------------------------------
+
+    // get velocity values at the nodes
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,my::evelnp_,velocity,my::nsd_);
+    const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,convelocity,my::nsd_);
+
+    // need current values of transported scalar
+    // -> extract local values from global vectors
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    std::vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill all element arrays
+    for (int i=0;i<my::nen_;++i)
     {
-      // get velocity values at the nodes
-      const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,my::evelnp_,velocity,my::nsd_);
-      const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,convelocity,my::nsd_);
-
-      // need current values of transported scalar
-      // -> extract local values from global vectors
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      std::vector<double> myphinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-      // fill all element arrays
-      for (int i=0;i<my::nen_;++i)
+      for (int k = 0;k<my::numscal_; ++k)
       {
-        for (int k = 0;k<my::numscal_; ++k)
-        {
-          // split for each transported scalar, insert into element arrays
-          my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-        }
-        epotnp_(i) = myphinp[i*my::numdofpernode_+my::numscal_];
-      } // for i
+        // split for each transported scalar, insert into element arrays
+        my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
+      }
+      epotnp_(i) = myphinp[i*my::numdofpernode_+my::numscal_];
+    } // for i
+
+    //----------------------------------------------------------------------
+    // calculation of element volume both for tau at ele. cent. and int. pt.
+    //----------------------------------------------------------------------
+    my::EvalShapeFuncAndDerivsAtEleCenter();
+
+    //----------------------------------------------------------------------
+    // get material and stabilization parameters (evaluation at element center)
+    //----------------------------------------------------------------------
+    // density at t_(n)
+    double densn(1.0);
+    // density at t_(n+1) or t_(n+alpha_F)
+    double densnp(1.0);
+    // density at t_(n+alpha_M)
+    double densam(1.0);
+
+    // fluid viscosity
+    double visc(0.0);
+
+    // material parameter at the element center
+    if (not my::scatrapara_->MatGP())
+      this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+
+    // dynamic cast to elch-specific diffusion manager
+    Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+
+    //----------------------------------------------------------------------
+    // integration loop for one element
+    //----------------------------------------------------------------------
+    // integrations points and weights
+    DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      //----------------------------------------------------------------------
+      // get material parameters (evaluation at integration point)
+      //----------------------------------------------------------------------
+      if (my::scatrapara_->MatGP())
+        this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
+
+      // set internal variables
+      varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
+
+      SetFormulationSpecificInternalVariables(dme,varmanager_);
 
       // access control parameter for flux calculation
       INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
 
-      // we always get an 3D flux vector for each node
-      LINALG::Matrix<3,my::nen_> eflux(true);
-
       // do a loop for systems of transported scalars
       for (int k = 0; k<my::numscal_; ++k)
-      {
-        // calculate flux vectors for actual scalar
-        eflux.Clear();
-        CalculateFlux(eflux,ele,elchtype,fluxtype,k);
-        // assembly
-        for (int inode=0;inode<my::nen_;inode++)
-        {
-          const int fvi = inode*my::numdofpernode_+k;
-          elevec1_epetra[fvi]+=eflux(0,inode);
-          elevec2_epetra[fvi]+=eflux(1,inode);
-          elevec3_epetra[fvi]+=eflux(2,inode);
-        }
-      } // loop over numscal
+        CalculateFlux(elevec1_epetra,elevec2_epetra,elevec3_epetra,fluxtype,k,fac,varmanager_,dme);
 
-      break;
+      if(elchpara_->EquPot()==INPAR::ELCH::equpot_divi)
+        CalculateCurrent(elevec1_epetra,elevec2_epetra,elevec3_epetra,fluxtype,fac,varmanager_,dme);
     }
+
+    break;
+  }
   case SCATRA::calc_error:
   {
     // check if length suffices
@@ -322,133 +361,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CheckElchElementParameter(
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-  |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateFlux(
-  LINALG::Matrix<3,my::nen_>&         flux,
-  const DRT::Element*             ele,
-  INPAR::ELCH::ElchType           elchtype,
-  const INPAR::SCATRA::FluxType   fluxtype,
-  const int                       k
-  )
-{
-  // dynamic cast of elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
-
-  // set constants
-  const double frt = elchpara_->FRT();
-
-  /*
-  * Actually, we compute here a weighted (and integrated) form of the fluxes!
-  * On time integration level, these contributions are then used to calculate
-  * an L2-projected representation of fluxes.
-  * Thus, this method here DOES NOT YET provide flux values that are ready to use!!
-  /                                                         \
-  |                /   \                               /   \  |
-  | w, -D * nabla | phi | + u*phi - frt*z_k*c_k*nabla | pot | |
-  |                \   /                               \   /  |
-  \                      [optional]      [ELCH]               /
-  */
-
-  // density at t_(n)
-  double densn(1.0);
-  // density at t_(n+1) or t_(n+alpha_F)
-  double densnp(1.0);
-  // density at t_(n+alpha_M)
-  double densam(1.0);
-
-  // fluid viscosity
-  double visc(0.0);
-
-  // get material parameters (evaluation at element center)
-  if (not my::scatrapara_->MatGP()) this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
-
-  // integration rule
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // integration loop
-  for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
-  {
-    // evaluate shape functions and derivatives at integration point
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
-
-    // get material parameters (evaluation at integration point)
-    if (my::scatrapara_->MatGP()) this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
-
-    // get velocity at integration point
-    LINALG::Matrix<my::nsd_,1> velint(true);
-    LINALG::Matrix<my::nsd_,1> convelint(true);
-    velint.Multiply(my::evelnp_,my::funct_);
-    convelint.Multiply(my::econvelnp_,my::funct_);
-
-    // get scalar at integration point
-    const double phi = my::funct_.Dot(my::ephinp_[k]);
-
-    // get gradient of scalar at integration point
-    LINALG::Matrix<my::nsd_,1> gradphi(true);
-    gradphi.Multiply(my::derxy_,my::ephinp_[k]);
-
-    // get gradient of electric potential at integration point
-    LINALG::Matrix<my::nsd_,1> gradpot(true);
-    gradpot.Multiply(my::derxy_,epotnp_);
-
-    // allocate and initialize!
-    LINALG::Matrix<my::nsd_,1> q(true);
-
-    if(elchtype == INPAR::ELCH::elchtype_diffcond)
-    {
-      // Be careful: - Evaluation of phi only for actual scalar
-      //             - loop over numscal instead of numdof
-      dserror("domain flux not implemented for diffusion-conduction formulation");
-    }
-    else
-    {
-      // add different flux contributions as specified by user input
-      switch (fluxtype)
-      {
-      case INPAR::SCATRA::flux_total_domain:
-        // convective flux contribution
-        q.Update(densnp*phi,convelint);
-
-        // no break statement here!
-      case INPAR::SCATRA::flux_diffusive_domain:
-        // diffusive flux contribution
-        q.Update(-(dme->GetIsotropicDiff(k)),gradphi,1.0);
-
-        q.Update(-dme->GetIsotropicDiff(k)*dme->GetValence(k)*frt*phi,gradpot,1.0);
-
-        break;
-      default:
-        dserror("received illegal flag inside flux evaluation for whole domain"); break;
-      };
-      // q at integration point
-
-      // integrate and assemble everything into the "flux" vector
-      for (int vi=0; vi < my::nen_; vi++)
-      {
-        for (int idim=0; idim<my::nsd_ ;idim++)
-        {
-          flux(idim,vi) += fac*my::funct_(vi)*q(idim);
-        } // idim
-      } // vi
-    }
-  } // integration loop
-
-  //set zeros for unused space dimensions
-  for (int idim=my::nsd_; idim<3; idim++)
-  {
-    for (int vi=0;vi <my::nen_;vi++)
-    {
-      flux(idim,vi) = 0.0;
-    }
-  }
-
-  return;
-} // ScaTraCalc::CalculateFlux
 
 
 /*---------------------------------------------------------------------*
