@@ -53,7 +53,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
   // set element id
   my::eid_ = ele->Id();
 
-  INPAR::ELCH::ElchType elchtype = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_)->ElchType();
   INPAR::ELCH::EquPot equpot = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_)->EquPot();
 
   // check for the action parameter
