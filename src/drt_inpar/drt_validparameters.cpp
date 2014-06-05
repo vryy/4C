@@ -6554,17 +6554,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      ),
                                  &xfluid_stab);
 
-  DoubleParameter("CONV_STAB_FAC",       1.0, "define stabilization parameter for convective part of interface stabilization (inflow, inflow and outflow)",&xfluid_stab);
 
-  setStringToIntegralParameter<int>("CONV_STAB_SCALING","abs_normal_vel","scaling factor for viscous interface stabilization (Nitsche, MSH)",
-                                    tuple<std::string>("inflow", "abs_normal_vel", "max_abs_normal_vel", "const", "averaged" , "none"),
+  setStringToIntegralParameter<int>("CONV_STAB_SCALING","none","scaling factor for viscous interface stabilization (Nitsche, MSH)",
+                                    tuple<std::string>("inflow", "abs_normal_vel", "max_abs_normal_vel", "averaged" , "none"),
                                     tuple<int>(
                                       INPAR::XFEM::ConvStabScaling_inflow,           // scaling with max(0,-u*n)
                                       INPAR::XFEM::ConvStabScaling_abs_normal_vel,   // scaling with |u*n|
                                       INPAR::XFEM::ConvStabScaling_max_abs_normal_vel,// scaling with max(1.0, |u*n|)
-                                      INPAR::XFEM::ConvStabScaling_const,            // scaling with 1.0=const
                                       INPAR::XFEM::ConvStabScaling_averaged,         // scaling with u*n
                                       INPAR::XFEM::ConvStabScaling_none              // no convective stabilization
+                                      ),
+                               &xfluid_stab);
+
+  setStringToIntegralParameter<int>("XFF_CONV_STAB_SCALING","none","scaling factor for convective interface stabilization of fluid-fluid Coupling",
+                                    tuple<std::string>("inflow", "averaged", "inflow_max_penalty", "averaged_max_penalty", "none"),
+                                    tuple<int>(
+                                      INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow,              // one-sided inflow stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_averaged,            // averaged inflow stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty,  // one-sided inflow stabilization with max(|u|_inf,\alpha)
+                                      INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty,// averaged inflow stabilization with max(|u|_inf,\alpha)
+                                      INPAR::XFEM::XFF_ConvStabScaling_none              // no convective stabilization
                                       ),
                                &xfluid_stab);
 

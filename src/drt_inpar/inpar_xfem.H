@@ -106,6 +106,16 @@ namespace INPAR
       ConvStabScaling_none
     };
 
+    /// Xfluidfluid scaling for convective/inflow stabilization term
+    enum XFF_ConvStabScaling
+    {
+      XFF_ConvStabScaling_onesidedinflow,
+      XFF_ConvStabScaling_averaged,
+      XFF_ConvStabScaling_onesidedinflow_max_penalty,
+      XFF_ConvStabScaling_averaged_max_penalty,
+      XFF_ConvStabScaling_none
+    };
+
     /// xfluidfluid-fsi-monolithic approach
     enum Monolithic_xffsi_Approach
     {

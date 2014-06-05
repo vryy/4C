@@ -691,10 +691,10 @@ namespace FLD
 
     //! @name nitsche stabilization factors
     double visc_stab_fac_;     ///< viscous stabilization parameter for Nitsche's method/MSH
-    double conv_stab_fac_;     ///< convective stabilization parameter for inflow terms
 
     enum INPAR::XFEM::ViscStabScaling visc_stab_scaling_;     ///< viscous stabilization scaling for Nitsche's method/MSH
-    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;     ///< convective stabilization scaling for inflow terms
+    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;     ///< convective stabilization scaling for inflow terms (xfluid)
+    enum INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_; ///< convective stabilization scaling for inflow terms (xfluidfluid)
 
     enum INPAR::XFEM::ViscStab_hk visc_stab_hk_; ///< definition of characteristic element length
     //@}

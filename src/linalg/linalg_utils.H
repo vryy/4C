@@ -182,7 +182,7 @@ namespace LINALG
   \param B (in):    B Matrix
 
   */
-  int GeneralizedEigen(Epetra_SerialDenseMatrix& A,
+  double GeneralizedEigen(Epetra_SerialDenseMatrix& A,
 		               Epetra_SerialDenseMatrix& B);
 
   /*!

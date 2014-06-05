@@ -684,8 +684,8 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-int LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
-                             Epetra_SerialDenseMatrix& B)
+double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
+                                Epetra_SerialDenseMatrix& B)
 {
   Epetra_SerialDenseMatrix tmpA(A);
   Epetra_SerialDenseMatrix tmpB(B);

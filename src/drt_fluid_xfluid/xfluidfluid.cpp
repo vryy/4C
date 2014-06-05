@@ -104,6 +104,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   xfluid_.bgdis_->FillComplete();
 
   //print all dofsets
+  //---ALE---|---BG---|---Emb---|---Str---|
   xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
 
   //--------------------------------------------------------------------------------------
@@ -205,6 +206,10 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   // std::vector<const Epetra_Map*> maps;
   Teuchos::RCP<Epetra_Map> fluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
   Teuchos::RCP<Epetra_Map> alefluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.embdis_->DofRowMap()));
+
+  if ((fluiddofrowmap->MaxAllGID()) > (alefluiddofrowmap->MinAllGID()))
+		  dserror("Maximum number of reserved dofs is not enough! Change MAX_NUM_DOFSETS in you dat-file.");
+
   maps.push_back(fluiddofrowmap);
   maps.push_back(alefluiddofrowmap);
   fluidfluiddofrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
@@ -538,7 +543,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   eleparams.set("visc_stab_scaling", xfluid_.visc_stab_scaling_);
   eleparams.set("visc_stab_hk", xfluid_.visc_stab_hk_);
 
-  eleparams.set("conv_stab_fac", xfluid_.conv_stab_fac_);
+  eleparams.set("xff_conv_stab_scaling", xfluid_.xff_conv_stab_scaling_);
+
   eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
 
   eleparams.set("velgrad_interface_stab",xfluid_.velgrad_interface_stab_);
@@ -2041,11 +2047,11 @@ void FLD::XFluidFluid::Init()
 
   msh_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MSH_L2_Proj>(params_xf_stab, "MSH_L2_PROJ");
 
-  visc_stab_fac_     = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
-  conv_stab_fac_     = params_xf_stab.get<double>("CONV_STAB_FAC", 0.0);
-  visc_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
-  conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
-  visc_stab_hk_      = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
+  visc_stab_fac_         = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
+  visc_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
+  xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(params_xf_stab,"XFF_CONV_STAB_SCALING");
+  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
+  visc_stab_hk_          = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   edge_based_        = (params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
@@ -2064,7 +2070,7 @@ void FLD::XFluidFluid::Init()
   presscoupling_interface_fac_  = params_xf_stab.get<double>("PRESSCOUPLING_INTERFACE_FAC", 0.0);
 
   nitsche_evp_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"NITSCHE_EVP");
-  nitsche_evp_fac_ = params_xf_stab.get<double>("NITSCHE_EVP_FAC", 0.0);
+  nitsche_evp_fac_ = params_xf_stab.get<double>("NITSCHE_EVP_FAC", 0.0);  //default value of  nitsche_evp_fac_ is 2
 
   // get general XFEM specific parameters
 
@@ -2722,14 +2728,8 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( Teuchos::ParameterList& params_xf
     // ----------------------------------------------------------------------
 
     // convective stabilization parameter (scaling factor and stabilization factor)
-    if (conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
-      IO::cout << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << IO::endl;
-
-    if (conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
-      dserror("For ConvStabScaling_none the conv_stab_fac should be zero!");
-    else if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_inflow and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_averaged
-              and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
-      dserror("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid!");
+    if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none)
+      dserror("INPAR::XFEM::ConvStabScaling should be set to ConvStabScaling_none for XFluidFluid!");
 
     if (velgrad_interface_stab_ and action_ != "coupling nitsche embedded sided" )
       dserror("VELGRAD_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
@@ -2882,8 +2882,7 @@ void FLD::XFluidFluid::PrintStabilizationParams()
     IO::cout << "GHOST_PENALTY               : " << interfstabparams->get<string>("GHOST_PENALTY_STAB")    << IO::endl;
     IO::cout << "GHOST_PENALTY_2nd_STAB      : " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << IO::endl;
     IO::cout << "GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << IO::endl;
-    IO::cout << "INFLOW_CONV_STAB_STRATEGY   : " << interfstabparams->get<string>("CONV_STAB_SCALING") << IO::endl;
-    IO::cout << "INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << IO::endl;
+    IO::cout << "INFLOW_CONV_STAB_STRATEGY   : " << interfstabparams->get<string>("XFF_CONV_STAB_SCALING") << IO::endl;
     IO::cout << "VELGRAD_INTERFACE_STAB      : " << interfstabparams->get<string>("VELGRAD_INTERFACE_STAB")<< IO::endl;
     IO::cout << "PRESSCOUPLING_INTERFACE_STAB: " << interfstabparams->get<string>("PRESSCOUPLING_INTERFACE_STAB")<< IO::endl;
     IO::cout << "PRESSCOUPLING_INTERFACE_FAC : " << presscoupling_interface_fac_ << IO::endl;

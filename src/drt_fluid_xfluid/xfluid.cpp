@@ -377,8 +377,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   eleparams.set("visc_stab_scaling", xfluid_.visc_stab_scaling_);
   eleparams.set("visc_stab_hk", xfluid_.visc_stab_hk_);
 
-  eleparams.set("conv_stab_fac", xfluid_.conv_stab_fac_);
   eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
+  eleparams.set("xff_conv_stab_scaling", xfluid_.xff_conv_stab_scaling_);
 
   eleparams.set("msh_l2_proj", xfluid_.msh_l2_proj_);
 
@@ -2184,11 +2184,11 @@ void FLD::XFluid::Init()
 
   msh_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MSH_L2_Proj>(params_xf_stab, "MSH_L2_PROJ");
 
-  visc_stab_fac_     = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
-  conv_stab_fac_     = params_xf_stab.get<double>("CONV_STAB_FAC", 0.0);
-  visc_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
-  conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
-  visc_stab_hk_      = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
+  visc_stab_fac_         = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
+  visc_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
+  xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(params_xf_stab,"XFF_CONV_STAB_SCALING"); //relevant for xff
+  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
+  visc_stab_hk_          = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
@@ -2915,33 +2915,11 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     // ----------------------------------------------------------------------
     // check XFLUID DYNAMIC/STABILIZATION parameter list
     // ----------------------------------------------------------------------
-
-    // convective stabilization parameter (scaling factor and stabilization factor)
-    if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
-    {
-      if(myrank_ == 0)
-      {
-        IO::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << IO::endl;
-      }
-    }
-    if(conv_stab_fac_ != 1.0 and (    conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_inflow
-                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_abs_normal_vel
-                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel) )
-    {
-      if(myrank_ == 0)
-      {
-        IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
-        IO::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC is set to 1.0" << END_COLOR << IO::endl;
-        IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
-      }
-
-      conv_stab_fac_ = 1.0;
-    }
-    if(conv_stab_fac_ <= 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_const)
-      dserror("INPUT CHECK: 'CONV_STAB_SCALING = const' with CONV_STAB_FAC <= 0.0  has no effect");
+    if (xff_conv_stab_scaling_ != INPAR::XFEM::XFF_ConvStabScaling_none)
+      dserror("INPAR::XFEM::XFF_ConvStabScaling should be set to XFF_ConvStabScaling_none for XFluid!");
 
     // check for unreasonable transient ghost penalty stabilization
-    if( timealgo_ == INPAR::FLUID::timeint_stationary and ghost_penalty_transient_ == true)
+    if ((timealgo_ == INPAR::FLUID::timeint_stationary) and (ghost_penalty_transient_ == true ))
     {
       if(myrank_ == 0)
       {
@@ -3105,7 +3083,6 @@ void FLD::XFluid::PrintStabilizationParams()
 
 
     IO::cout << "CONV_STAB_SCALING:                 " << interfstabparams->get<string>("CONV_STAB_SCALING") << "\n";
-    IO::cout << "CONV_STAB_FAC:                     " << conv_stab_fac_ << "\n";
 
     IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 

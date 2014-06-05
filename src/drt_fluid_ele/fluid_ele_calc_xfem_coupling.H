@@ -143,7 +143,7 @@ namespace DRT
             LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
         ) = 0;
 
-        virtual void Stab_InflowCoercivity(
+        virtual void MSH_Stab_InflowCoercivity(
             Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
             Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
             const bool &                        coupling,         ///< assemble coupling terms (yes/no)
@@ -154,14 +154,16 @@ namespace DRT
             const double &                      visceff_2,        ///< viscosity in embedded fluid
             const double &                      kappa1,           ///< mortaring weighting
             const double &                      kappa2,           ///< mortaring weighting
-            const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
+            const double &                      stabfac,         ///< Nitsche penalty
+            const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
             const LINALG::Matrix<nen_,1> &      funct_,            ///< bg shape functions
             const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
             const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
             const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
             const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-            INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies
-            std::string                              coupl_method      ///< coupling method (NIT or MSH)
+            INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
+            INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling,///< Inflow term strategies xfluidfluid
+            std::string                         coupl_method      ///< coupling method (NIT or MSH)
           ) = 0;
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
@@ -177,14 +179,15 @@ namespace DRT
             const double &                      kappa1,           ///< mortaring weighting
             const double &                      kappa2,           ///< mortaring weighting
             const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
-            const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
-            const LINALG::Matrix<nen_,1> &      funct,            ///< bg shape functions
+            const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
+            const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
             const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
             const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
             const double &                      press,            ///< bg p^n
             const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
             const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-            INPAR::XFEM::ConvStabScaling        conv_stab_scaling
+            INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
+            INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling///< Inflow term strategies xfluidfluid
           ) = 0;
 
       };
@@ -279,7 +282,7 @@ namespace DRT
             double &                      press,          // bg p^n
             LINALG::Matrix<nsd_,1> &      velint,          // bg u^n
             LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP, // Dirichlet velocity vector or prescribed jump vector
-            INPAR::XFEM::ConvStabScaling  conv_stab_scaling // Inflow term strategies
+            INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab_scaling // Inflow term strategies
           ) = 0;
 
 

@@ -166,7 +166,7 @@ namespace DRT
           LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
       );
 
-      virtual void Stab_InflowCoercivity(
+      virtual void MSH_Stab_InflowCoercivity(
           Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
           Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
           const bool &                        coupling,         ///< assemble coupling terms (yes/no)
@@ -177,14 +177,16 @@ namespace DRT
           const double &                      visceff_2,        ///< viscosity in embedded fluid
           const double &                      kappa1,           ///< mortaring weighting
           const double &                      kappa2,           ///< mortaring weighting
-          const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
+          const double &                      stabfac,         ///< Nitsche penalty
+          const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
           const LINALG::Matrix<nen_,1> &      funct_,            ///< bg shape functions
           const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
           const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
           const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
           const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies
-          std::string                              coupl_method      ///< coupling method (NIT or MSH)
+          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
+          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling,///< Inflow term strategies xfluidfluid
+          std::string                         coupl_method      ///< coupling method (NIT or MSH)
         );
 
       //! build coupling matrices and assemble terms for Nitsche's (NIT) method
@@ -200,14 +202,15 @@ namespace DRT
           const double &                      kappa1,           ///< mortaring weighting
           const double &                      kappa2,           ///< mortaring weighting
           const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
-          const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
+          const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
           const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
           const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
           const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
           const double &                      press,            ///< bg p^n
           const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
           const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-          INPAR::XFEM::ConvStabScaling        conv_stab_scaling ///< Inflow term strategies
+          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
+          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling///< Inflow term strategies xfluidfluid
         );
 
       //! evaluate pressure-consistency term for Nitsche's method
@@ -281,8 +284,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
-      //! evaluate stabilizing inflow term
-      virtual void NIT_Stab_InflowCoercivity(
+      virtual void NIT_Stab_ConvAveraged(
           Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
           Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
           const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
@@ -292,34 +294,11 @@ namespace DRT
           const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
           const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,            ///< sidefunct^T * timefacfac
           const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
-          const LINALG::Matrix<side_nen_,side_nen_>& side_side_dyad_timefacfac,
-          const double &                           kappa1,                           ///< mortaring weighting
-          const double &                           kappa2,                           ///< mortaring weighting
-          const double &                           stabfac_conv,                     ///< stabilization factor
+          const double &                           stabfac_avg,                      ///< stabilization factor
           const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal,                           ///< normal vector
-          INPAR::XFEM::ConvStabScaling             conv_stab_scaling
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
-      virtual void MHS_Stab_InflowCoercivity(
-        Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
-        Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
-        const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
-        const LINALG::Matrix<nsd_,1>&            ivelint,                          ///< interface velocity at integration point
-        const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
-        const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
-        const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
-        const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,            ///< sidefunct^T * timefacfac
-        const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
-        const LINALG::Matrix<nen_,side_nen_>&    funct_side_dyad_timefacfac,       ///< (funct^T * sidefunct) * timefacfac
-        const LINALG::Matrix<side_nen_,side_nen_>& side_side_dyad_timefacfac,
-        const double &                           kappa1,                           ///< mortaring weighting
-        const double &                           kappa2,                           ///< mortaring weighting
-        const double &                           stabfac_conv,                     ///< stabilization factor
-        const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
-        const LINALG::Matrix<nsd_,1> &           normal,                           ///< normal vector
-        INPAR::XFEM::ConvStabScaling             conv_stab_scaling
-       );
 
 
     private:
@@ -428,7 +407,7 @@ namespace DRT
           double &                      kappa1,         // mortaring weighting
           double &                      kappa2,         // mortaring weighting
           double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
-          double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
+          double &                      stabfac_avg,   // Nitsche convective non-dimensionless stabilization factor
           bool &                        velgrad_interface_stab,// penalty term for velocity gradients at the interface
           double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
           bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface
@@ -439,11 +418,10 @@ namespace DRT
           double &                      press,          // bg p^n
           LINALG::Matrix<nsd_,1> &      velint,         // bg u^n
           LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP, // Dirichlet velocity vector or prescribed jump vector
-          INPAR::XFEM::ConvStabScaling  conv_stab_scaling // Inflow term strategies
+          INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab_scaling // Inflow term strategies
         );
 
-      //! evaluate stabilizing inflow term
-      virtual void NIT2_Stab_InflowCoercivity(
+       virtual void NIT2_Stab_ConvAveraged(
           Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
           Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
           const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
@@ -451,17 +429,12 @@ namespace DRT
           const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
           const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
           const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
-          const LINALG::Matrix<emb_nen_,1>&        emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
-          const LINALG::Matrix<emb_nen_,nen_>&     emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
-          const LINALG::Matrix<emb_nen_,emb_nen_>& emb_emb_dyad_timefacfac,
-          const double &                           kappa1,                           ///< mortaring weighting
-          const double &                           kappa2,                           ///< mortaring weighting
-          const double &                           stabfac_conv,                     ///< stabilization factor
+          const LINALG::Matrix<emb_nen_,1>&       emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
+          const LINALG::Matrix<emb_nen_,nen_>&    emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+          const double &                           stabfac_avg,                          ///< stabilization factor
           const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal,                           ///< normal vector
-          INPAR::XFEM::ConvStabScaling             conv_stab_scaling
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
-
 
     private:
 

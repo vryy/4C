@@ -237,21 +237,22 @@ private:
 
   //! compute stabilization factors for Nitsche's method
   void NIT_ComputeStabfac(
-      bool                            fluidfluidcoupling,
-      Teuchos::ParameterList&         params,            ///< parameter list
-      double &                        stabfac_visc,         ///< Nitsche stabilization factor
-      double &                        stabfac_conv,         ///< stabilization factor 2
-      const double                    NIT_stab_fac,
-      INPAR::XFEM::ConvStabScaling    conv_stab_scaling,
-      const double                    conv_stab_fac,
-      const double                    veln_normal,
-      const double                    gamma_ghost_penalty,
-      double &                        velgrad_interface_fac,
-      const double                    gamma_press_coupling,
-      double &                        press_coupling_fac,
-      bool                            nitsche_evp_,
-      int                             sid,
-      const double                    h_k
+      bool                             fluidfluidcoupling,
+      Teuchos::ParameterList&          params,            ///< parameter list
+      double &                         stabfac_visc,         ///< Nitsche stabilization factor
+      double &                         stabfac_avg,         ///< stabilization factor 2
+      const double                     NIT_stab_fac,
+      INPAR::XFEM::ConvStabScaling     conv_stab_scaling,
+      INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling,
+      const double                     veln_normal,
+      LINALG::Matrix<3,1>              velint,
+      const double                     gamma_ghost_penalty,
+      double &                         velgrad_interface_fac,
+      const double                     gamma_press_coupling,
+      double &                         press_coupling_fac,
+      bool                             nitsche_evp_,
+      int                              sid,
+      const double                     h_k
   );
 
   //! pre-compute the measure of the element's intersecting surface
