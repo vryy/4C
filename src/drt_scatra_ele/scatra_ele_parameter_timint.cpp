@@ -92,6 +92,17 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetElementTimeParameter( Teuchos::
   // one-step-Theta:    timefac = theta*dt
   // BDF2:              timefac = 2/3 * dt
   // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+
+  //-----------------------------------------------------
+  //       |          timefac         |    timefacrhs   |
+  // ----------------------------------------------------
+  // OST   |                  dt*theta                  |
+  //-----------------------------------------------------
+  // BDF2  |               2/3 * dt                     |
+  //-----------------------------------------------------
+  // Af GA | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM |
+  //-----------------------------------------------------
+
   timefac_ = 1.0;
   alphaF_  = 1.0;
   timefacrhs_ = 1.0;
