@@ -49,12 +49,9 @@ SCATRA::TimIntBDF2::TimIntBDF2(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::Init()
 {
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   // initialize base class
   ScaTraTimIntImpl::Init();
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -69,8 +66,6 @@ void SCATRA::TimIntBDF2::Init()
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   // -------------------------------------------------------------------
   // set element parameters
   // -------------------------------------------------------------------
@@ -78,14 +73,8 @@ void SCATRA::TimIntBDF2::Init()
   //       - order is important here: for savety checks in SetElementGeneralScaTraParameter(),
   //         we have to konw the time-integration parameters
   SetElementTimeParameter();
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   SetElementGeneralScaTraParameter();
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   SetElementTurbulenceParameter();
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
 
   //TODO: SCATRA_ELE_CLEANING
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
@@ -99,15 +88,13 @@ void SCATRA::TimIntBDF2::Init()
 
   // setup krylov
   PrepareKrylovProjection();
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
   // note: this constructor has to be called after the forcing_ vector has
   //       been initialized; this is done in ScaTraTimIntImpl::Init() called before
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
@@ -117,8 +104,7 @@ void SCATRA::TimIntBDF2::Init()
       homisoturb_forcing_->SetInitialSpectrum(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"));
     }
   }
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__  << std::endl;
+
   return;
 }
 
