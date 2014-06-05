@@ -1241,7 +1241,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
             const double defgrd_inv_kj = defgrd_inv(k,j);
             for(int p=0; p<my::nsd_; p++)
             {
-              FinvT_dFx_dus(p, gid) +=   defgrd_inv_ij * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
+              FinvT_dFx_dus(p, gid) +=   defgrd_inv_ij * my::N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
               for(int l=0; l<my::nsd_; l++)
                 FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * my::derxy_(p,n) ;
             }
