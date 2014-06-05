@@ -27,8 +27,7 @@
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_mat/fluidporo.H"
-
-#include "../drt_so3/so_poro_interface.H"
+#include "../drt_mat/structporo.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -99,8 +98,8 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
     reavel_(true),
     reagridvel_(true),
     reaconvel_(true),
-    dtaudphi_(true),
-    so_interface_(NULL)
+    dtaudphi_(true)
+//    so_interface_(NULL)
 {
   my::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
 }
@@ -235,7 +234,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // set element id
   my::eid_ = ele->Id();
   //get structure material
-  GetStructMaterial();
+  GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
@@ -393,7 +392,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   my::eid_ = ele->Id();
 
   //get structure material
-  GetStructMaterial();
+  GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
@@ -988,7 +987,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
     }  // vi
 
     // in case of reactive porous medium : additional rhs term
-    double refporositydot = so_interface_->RefPorosityTimeDeriv();
+    double refporositydot = structmat_->RefPorosityTimeDeriv();
     for (int vi=0; vi<my::nen_; ++vi)
     {
       preforce(vi)-= rhsfac * refporositydot * my::funct_(vi) ;
@@ -1896,7 +1895,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
                       NULL, //dphi_dpp not needed
                       false);
 
-    double refporositydot = so_interface_->RefPorosityTimeDeriv();
+    double refporositydot = structmat_->RefPorosityTimeDeriv();
 
     //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
     static LINALG::Matrix<my::nsd_,1> gradJ(false);
@@ -1969,92 +1968,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     ComputeSpatialReactionTerms(material,defgrd_inv);
 
     //compute linearization of spatial reaction tensor w.r.t. structural displacements
-    {
-      Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
-      if(actmat->VaryingPermeablity())
-        dserror("varying material permeablity not yet supported!");
-
-      const double porosity_inv = 1.0/porosity_;
-      const double J_inv = 1.0/J_;
-
-      reatensorlinODvel_.Clear();
-      reatensorlinODgridvel_.Clear();
-
-
-      for (int idim=0; idim<my::nsd_; ++idim)
-      {
-        const double reavel_idim = reavel_(idim);
-        const double reagridvel_idim = reagridvel_(idim);
-
-        for (int jdim =0; jdim<my::nsd_; ++jdim)
-        {
-          for (int inode =0; inode<my::nen_; ++inode)
-          {
-            double val_reatensorlinODvel = 0.0;
-            double val_reatensorlinODgridvel = 0.0;
-
-            const double derxy_idim_inode = my::derxy_(idim,inode);
-
-            const int gid = my::nsd_ * inode +jdim;
-
-            val_reatensorlinODvel     += dJ_dus(gid)*J_inv * reavel_idim;
-            val_reatensorlinODgridvel += dJ_dus(gid)*J_inv * reagridvel_idim;
-            val_reatensorlinODvel     += dphi_dus(gid)*porosity_inv * reavel_idim;
-            val_reatensorlinODgridvel += dphi_dus(gid)*porosity_inv * reagridvel_idim;
-
-            for (int ldim=0; ldim<my::nsd_; ++ldim)
-            {
-              const double defgrd_inv_ldim_jdim = defgrd_inv(ldim,jdim);
-              const double defgrd_inv_ldim_idim = defgrd_inv(ldim,idim);
-              for(int mdim=0; mdim<my::nsd_; ++mdim)
-              {
-                const double matreatensor_ldim_mdim = matreatensor_(ldim,mdim);
-                const double defgrd_inv_mdim_jdim = defgrd_inv(mdim,jdim);
-                for (int kdim=0; kdim<my::nsd_; ++kdim)
-                {
-                  val_reatensorlinODvel += J_ * porosity_ *
-                                                my::velint_(kdim) *
-                                                   ( - defgrd_inv_ldim_jdim * derxy_idim_inode * matreatensor_ldim_mdim * defgrd_inv(mdim,kdim)
-                                                     - defgrd_inv_ldim_idim * matreatensor_ldim_mdim * defgrd_inv_mdim_jdim * my::derxy_(kdim,inode)
-                                                    );
-                  val_reatensorlinODgridvel += J_ * porosity_ *
-                                                    gridvelint_(kdim) *
-                                                       ( - defgrd_inv_ldim_jdim * derxy_idim_inode * matreatensor_ldim_mdim * defgrd_inv(mdim,kdim)
-                                                         - defgrd_inv_ldim_idim * matreatensor_ldim_mdim * defgrd_inv_mdim_jdim * my::derxy_(kdim,inode)
-                                                        );
-                }
-              }
-            }
-            if (!const_permeability_)//check if derivatives of reaction tensor are zero --> significant speed up
-            {
-              const double dphi_dus_gid = dphi_dus(gid);
-              const double dJ_dus_gid = dJ_dus(gid);
-              for (int j=0; j<my::nsd_; ++j)
-              {
-                const double velint_j = my::velint_(j);
-                const double gridvelint_j = my::gridvelint_(j);
-                for (int k=0; k<my::nsd_; ++k)
-                {
-                  const double defgrd_inv_k_idim = defgrd_inv(k,idim);
-                  for(int l=0; l<my::nsd_; ++l)
-                  {
-                    val_reatensorlinODvel += J_ * porosity_ * velint_j *
-                                                     ( defgrd_inv_k_idim * (matreatensorlinporosity_ (k,l) * dphi_dus_gid + matreatensorlinJ_(k,l) * dJ_dus_gid ) * defgrd_inv(l,j)
-                                                      );
-                    val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j *
-                                                         ( defgrd_inv_k_idim * (matreatensorlinporosity_ (k,l) * dphi_dus_gid + matreatensorlinJ_(k,l) * dJ_dus_gid ) * defgrd_inv(l,j)
-                                                          );
-                  }
-                }
-              }
-            }
-
-            reatensorlinODvel_(idim, gid)     += val_reatensorlinODvel;
-            reatensorlinODgridvel_(idim, gid) += val_reatensorlinODvel;
-          }
-        }
-      }
-    }
+    ComputeLinSpatialReactionTerms(material,defgrd_inv,&dJ_dus,&dphi_dus);
 
     // set viscous term from previous iteration to zero (required for
     // using routine for evaluation of momentum rhs/residual as given)
@@ -4841,7 +4755,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosity(
                                           double* dphi_dpp,
                                           bool save)
 {
-  so_interface_->ComputePorosity( params,
+  structmat_->ComputePorosity( params,
                               press,
                               J,
                               gp,
@@ -4917,19 +4831,21 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::SetupMaterialDerivatives()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial()
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial(DRT::ELEMENTS::Fluid* ele)
 {
-  //access structure discretization
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
-  //get corresponding structure element (it has the same global ID as the fluid element)
-  DRT::Element* structele = structdis->gElement(my::eid_);
-  if(structele == NULL)
-    dserror("Fluid element %i not on local processor", my::eid_);
-
-  so_interface_ = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(structele);
-  if(so_interface_ == NULL)
-    dserror("cast to so_interface failed!");
+  //get fluid material
+  {
+    //access second material in structure element
+    if (ele->NumMaterial() > 1)
+    {
+      structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
+      if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+         structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+        dserror("invalid structure material for poroelasticity");
+    }
+    else
+      dserror("no second material defined for element %i",my::eid_);
+  }
 
   return;
 }
@@ -5062,6 +4978,129 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
   lin_p_vel_.Multiply(lin_p_tmp_2,my::velint_);
   lin_p_vel_grid_.Multiply(lin_p_tmp_2,gridvelint_);
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
+    Teuchos::RCP<const MAT::Material>              material,
+    const LINALG::Matrix<my::nsd_,my::nsd_>&       defgrd_inv,
+    const LINALG::Matrix<1,my::nsd_*my::nen_>*     dJ_dus,
+    const LINALG::Matrix<1,my::nsd_*my::nen_>*     dphi_dus)
+{
+  Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
+  if(actmat->VaryingPermeablity())
+    dserror("varying material permeablity not yet supported!");
+
+  const double porosity_inv = 1.0/porosity_;
+  const double J_inv = 1.0/J_;
+
+  reatensorlinODvel_.Clear();
+  reatensorlinODgridvel_.Clear();
+
+  //check for constant or not given derivatives
+  const bool const_phi = (dphi_dus==NULL);
+  const bool const_J = (dJ_dus==NULL);
+
+
+  for (int idim=0; idim<my::nsd_; ++idim)
+  {
+    const double reavel_idim = reavel_(idim);
+    const double reagridvel_idim = reagridvel_(idim);
+
+    for (int jdim =0; jdim<my::nsd_; ++jdim)
+    {
+      for (int inode =0; inode<my::nen_; ++inode)
+      {
+        double val_reatensorlinODvel = 0.0;
+        double val_reatensorlinODgridvel = 0.0;
+
+        const double derxy_idim_inode = my::derxy_(idim,inode);
+
+        const int gid = my::nsd_ * inode +jdim;
+
+        if(!const_J)
+        {
+          val_reatensorlinODvel     += (*dJ_dus)(gid)*J_inv * reavel_idim;
+          val_reatensorlinODgridvel += (*dJ_dus)(gid)*J_inv * reagridvel_idim;
+        }
+        if(!const_phi)
+        {
+          val_reatensorlinODvel     += (*dphi_dus)(gid)*porosity_inv * reavel_idim;
+          val_reatensorlinODgridvel += (*dphi_dus)(gid)*porosity_inv * reagridvel_idim;
+        }
+
+        for (int ldim=0; ldim<my::nsd_; ++ldim)
+        {
+          const double defgrd_inv_ldim_jdim = defgrd_inv(ldim,jdim);
+          const double defgrd_inv_ldim_idim = defgrd_inv(ldim,idim);
+          for(int mdim=0; mdim<my::nsd_; ++mdim)
+          {
+            const double matreatensor_ldim_mdim = matreatensor_(ldim,mdim);
+            const double defgrd_inv_mdim_jdim = defgrd_inv(mdim,jdim);
+            for (int kdim=0; kdim<my::nsd_; ++kdim)
+            {
+              val_reatensorlinODvel += J_ * porosity_ *
+                                            my::velint_(kdim) *
+                                               ( - defgrd_inv_ldim_jdim * derxy_idim_inode * matreatensor_ldim_mdim * defgrd_inv(mdim,kdim)
+                                                 - defgrd_inv_ldim_idim * matreatensor_ldim_mdim * defgrd_inv_mdim_jdim * my::derxy_(kdim,inode)
+                                                );
+              val_reatensorlinODgridvel += J_ * porosity_ *
+                                                gridvelint_(kdim) *
+                                                   ( - defgrd_inv_ldim_jdim * derxy_idim_inode * matreatensor_ldim_mdim * defgrd_inv(mdim,kdim)
+                                                     - defgrd_inv_ldim_idim * matreatensor_ldim_mdim * defgrd_inv_mdim_jdim * my::derxy_(kdim,inode)
+                                                    );
+            }
+          }
+        }
+        if (!const_permeability_)//check if derivatives of reaction tensor are zero --> significant speed up
+        {
+          if(!const_phi)
+          {
+            const double dphi_dus_gid = (*dphi_dus)(gid);
+            for (int j=0; j<my::nsd_; ++j)
+            {
+              const double velint_j = my::velint_(j);
+              const double gridvelint_j = my::gridvelint_(j);
+              for (int k=0; k<my::nsd_; ++k)
+              {
+                const double defgrd_inv_k_idim = defgrd_inv(k,idim);
+                for(int l=0; l<my::nsd_; ++l)
+                {
+                  val_reatensorlinODvel += J_ * porosity_ * velint_j * defgrd_inv_k_idim * matreatensorlinporosity_ (k,l) * dphi_dus_gid;
+                  val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j * defgrd_inv_k_idim * matreatensorlinporosity_ (k,l) * dphi_dus_gid;
+                }
+              }
+            }
+          }
+
+          if(!const_J)
+          {
+            const double dJ_dus_gid = (*dJ_dus)(gid);
+            for (int j=0; j<my::nsd_; ++j)
+            {
+              const double velint_j = my::velint_(j);
+              const double gridvelint_j = my::gridvelint_(j);
+              for (int k=0; k<my::nsd_; ++k)
+              {
+                for(int l=0; l<my::nsd_; ++l)
+                {
+                  val_reatensorlinODvel += J_ * porosity_ * velint_j * matreatensorlinJ_(k,l) * dJ_dus_gid * defgrd_inv(l,j);
+                  val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j * matreatensorlinJ_(k,l) * dJ_dus_gid * defgrd_inv(l,j);
+                }
+              }
+            }
+          }
+        }
+
+        reatensorlinODvel_(idim, gid)     += val_reatensorlinODvel;
+        reatensorlinODgridvel_(idim, gid) += val_reatensorlinODvel;
+      }
+    }
+  }
+
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

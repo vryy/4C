@@ -244,3 +244,36 @@ void MAT::StructPoroReaction::Evaluate(const LINALG::Matrix<3,3>* defgrd,    ///
   cmat->Scale((1.0-refporosity_)/(1.0-params_->initporosity_));
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::StructPoroReaction::RefPorosityAv() const
+{
+  return refporosity_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoroReaction::VisNames(std::map<std::string,int>& names)
+{
+  //call base class
+  StructPoro::VisNames(names);
+  std::string name = "reference_porosity";
+  names[name] = 1; // scalar
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool MAT::StructPoroReaction::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
+{
+  //call base class
+  if (StructPoro::VisData(name,data,numgp,eleID))
+    return true;
+  if (name=="reference_porosity")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = RefPorosityAv();
+    return true;
+  }
+  return false;
+}

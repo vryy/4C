@@ -22,8 +22,6 @@
 #include "wall1.H"
 #include "wall1_poro_eletypes.H"
 
-#include "../drt_so3/so_poro_interface.H"
-
 namespace MAT
 {
   class StructPoro;
@@ -43,7 +41,7 @@ namespace ELEMENTS
 
   */
   template<DRT::Element::DiscretizationType distype>
-  class Wall1_Poro : public Wall1, public So_Poro_Interface
+  class Wall1_Poro : public Wall1
   {
 
   public:
@@ -231,37 +229,6 @@ namespace ELEMENTS
                      DRT::INPUT::LineDefinition* linedef) ;
 
     //@}
-
-    virtual void ComputePorosity( Teuchos::ParameterList& params,
-                               double press,
-                               double J,
-                               int gp,
-                               double& porosity,
-                               double* dphi_dp,
-                               double* dphi_dJ,
-                               double* dphi_dJdp,
-                               double* dphi_dJJ,
-                               double* dphi_dpp,
-                               bool save);
-
-    virtual void ComputeSurfPorosity( Teuchos::ParameterList& params,
-                           double press,
-                           double J,
-                           int surfnum,
-                           int gp,
-                           double& porosity,
-                           double* dphi_dp,
-                           double* dphi_dJ,
-                           double* dphi_dJdp,
-                           double* dphi_dJJ,
-                           double* dphi_dpp,
-                           bool save) ;
-
-    virtual double RefPorosityTimeDeriv();
-
-    virtual int NumDof(){return 2;};
-
-    virtual bool HasExtraDof(){return false;};
 
     /*!
     \brief Read input for this element

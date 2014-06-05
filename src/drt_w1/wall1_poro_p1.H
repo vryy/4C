@@ -177,12 +177,6 @@ namespace ELEMENTS
     //! initialize the inverse of the jacobian and its determinant in the material configuration
     virtual void InitElement();
 
-    //! return number of degrees of freedom
-    virtual int NumDof(){return 3;};
-
-    //! return whether this element has more degrees of freedom than standard solid elements
-    virtual bool HasExtraDof(){return true;}
-
   protected:
 
     //! don't want = operator

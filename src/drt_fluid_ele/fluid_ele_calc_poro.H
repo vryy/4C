@@ -869,15 +869,23 @@ protected:
   double SetupMaterialDerivatives();
 
   /// access structure material of corresponding solid (poro) element
-  void GetStructMaterial();
+  void GetStructMaterial(DRT::ELEMENTS::Fluid*                 ele);
 
   /// get material parameters of poro fluid element
   void GetMaterialParamters(Teuchos::RCP<const MAT::Material>   material);
 
-  /// get material parameters of poro fluid element
+  /// compute spatial reactive term (darcy term)
   void ComputeSpatialReactionTerms(
       Teuchos::RCP<const MAT::Material>        material,   //< fluid material
       const LINALG::Matrix<my::nsd_,my::nsd_>& invdefgrd   //< inverse of deformationgradient at gausspoint
+      );
+
+  /// compute linearization of spatial reactive term (darcy term) w.r.t to structural displacements
+  void ComputeLinSpatialReactionTerms(
+      Teuchos::RCP<const MAT::Material>              material,   //< fluid material
+      const LINALG::Matrix<my::nsd_,my::nsd_>&       defgrd_inv, //< inverse of deformationgradient at gausspoint
+      const LINALG::Matrix<1,my::nsd_*my::nen_>*     dJ_dus,     //< derivative of jacobian w.r.t. structural displacements at gauss point
+      const LINALG::Matrix<1,my::nsd_*my::nen_>*     dphi_dus    //< derivative of porosity w.r.t. structural displacements at gauss point
       );
 
   /// get compute RHS of momentum equation of time step n and subgrid-scale velocity
@@ -994,7 +1002,10 @@ protected:
   LINALG::Matrix<3,1> dtaudphi_;
 
   //! corresponding solid element
-  DRT::ELEMENTS::So_Poro_Interface* so_interface_;
+  //DRT::ELEMENTS::So_Poro_Interface* so_interface_;
+
+  //! corresponding poro structure material
+  Teuchos::RCP< MAT::StructPoro > structmat_;
 
   //! state if reaction/permeability tensor is constant
   bool const_permeability_;

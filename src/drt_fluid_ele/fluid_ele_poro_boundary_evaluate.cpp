@@ -36,6 +36,16 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
   // get the action required
   const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params,"action");
 
+  // switch between different physical types as used below
+  std::string impltype = "poro";
+  switch(params.get<int>("physical type",INPAR::FLUID::poro))
+  {
+  case INPAR::FLUID::poro:              impltype = "poro";                break;
+  case INPAR::FLUID::poro_p1:           impltype = "poro_p1";             break;
+  case INPAR::FLUID::poro_p2:           impltype = "poro_p2";             break;
+  default: dserror("invalid physical type for porous fluid!");  break;
+  }
+
   switch(act)
   {
   case FLD::calc_flowrate:
@@ -45,7 +55,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
   case FLD::poro_prescoupl:
   case FLD::fpsi_coupling:
   {
-  DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),"poro")->EvaluateAction(
+  DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),impltype)->EvaluateAction(
       this,
       params,
       discretization,

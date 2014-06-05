@@ -400,6 +400,8 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::nlnstiff_poroelast(
     Teuchos::ParameterList&                     params        ///< algorithmic parameters e.g. time
     )
 {
+  my::GetMaterials();
+
   // update element geometry
   LINALG::Matrix<my::numdim_,my::numnod_> xrefe; // material coord. of element
   LINALG::Matrix<my::numdim_,my::numnod_> xcurr; // current  coord. of element
@@ -734,6 +736,9 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::coupling_poroelast(
     LINALG::Matrix<numdof_, 1>*                               force,        // element internal force vector
     Teuchos::ParameterList&                                   params)       // algorithmic parameters e.g. time
 {
+
+  my::GetMaterials();
+
   //=======================================================================
 
   // update element geometry

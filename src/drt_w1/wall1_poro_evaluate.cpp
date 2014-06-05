@@ -87,8 +87,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
     }
   }
 
-  GetMaterials();
-
   return;
 }
 
@@ -509,6 +507,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
  //   const INPAR::STR::StressType       iostress     // stress output option
     )
 {
+  GetMaterials();
+
   // update element geometry
   LINALG::Matrix<numdim_,numnod_> xrefe; // material coord. of element
   LINALG::Matrix<numdim_,numnod_> xcurr; // current  coord. of element
@@ -1009,6 +1009,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     LINALG::Matrix<numdof_, 1>*                       force,         // element internal force vector
     Teuchos::ParameterList&                           params)        // algorithmic parameters e.g. time
 {
+
+  GetMaterials();
+
   //=======================================================================
 
   // update element geometry
@@ -1598,77 +1601,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
   (cauchystress).MultiplyNT(temp,(defgrd));
 
 }  // PK2toCauchy()
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosity
-(   Teuchos::ParameterList& params,
-    double press,
-    double J,
-    int gp,
-    double& porosity,
-    double* dphi_dp,
-    double* dphi_dJ,
-    double* dphi_dJdp,
-    double* dphi_dJJ,
-    double* dphi_dpp,
-    bool save)
-{
-  structmat_->ComputePorosity( params,
-                              press,
-                              J,
-                              gp,
-                              porosity,
-                              dphi_dp,
-                              dphi_dJ,
-                              dphi_dJdp,
-                              dphi_dJJ,
-                              dphi_dpp,
-                              save
-                              );
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSurfPorosity( Teuchos::ParameterList& params,
-                       double press,
-                       double J,
-                       int surfnum,
-                       int gp,
-                       double& porosity,
-                       double* dphi_dp,
-                       double* dphi_dJ,
-                       double* dphi_dJdp,
-                       double* dphi_dJJ,
-                       double* dphi_dpp,
-                       bool save)
-{
-  structmat_->ComputeSurfPorosity( params,
-                              press,
-                              J,
-                              surfnum,
-                              gp,
-                              porosity,
-                              dphi_dp,
-                              dphi_dJ,
-                              dphi_dJdp,
-                              dphi_dJJ,
-                              dphi_dpp,
-                              save
-                              );
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::Wall1_Poro<distype>::RefPorosityTimeDeriv()
-{
-  return structmat_->RefPorosityTimeDeriv();
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

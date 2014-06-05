@@ -176,23 +176,6 @@ public:
   //! initialize the inverse of the jacobian and its determinant in the material configuration
   virtual void InitElement();
 
-  /*
-  virtual void ComputePorosity( Teuchos::ParameterList& params,
-                             double press,
-                             double J,
-                             int gp,
-                             double& porosity,
-                             double* dphi_dp,
-                             double* dphi_dJ,
-                             double* dphi_dJdp,
-                             double* dphi_dJJ,
-                             double* dphi_dpp,
-                             bool save);
-  */
-  virtual int NumDof(){return 4;};
-
-  virtual bool HasExtraDof(){return true;}
-
 protected:
 
   //! don't want = operator

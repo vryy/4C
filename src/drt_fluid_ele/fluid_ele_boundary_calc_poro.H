@@ -52,7 +52,7 @@ public:
                       Epetra_SerialDenseVector&       elevec2,
                       Epetra_SerialDenseVector&       elevec3);
 
-private:
+protected:
   /// private constructor since we are singleton
   FluidEleBoundaryCalcPoro();
 
@@ -220,7 +220,56 @@ private:
       std::vector<int>&          lm,
       Epetra_SerialDenseVector&  elevec1);
 
+  virtual bool ComputeNodalPorosity(DRT::ELEMENTS::FluidBoundary*  ele,
+                                   const std::vector<double> &     mydispnp,
+                                   LINALG::Matrix<my::bdrynen_,1>& eporosity )
+  {return false;};
+
+  virtual void ComputePorosityAtGP( Teuchos::ParameterList& params,
+                                    DRT::ELEMENTS::FluidBoundary*  ele,
+                                    const LINALG::Matrix<my::bdrynen_,1>& funct,
+                                    const LINALG::Matrix<my::bdrynen_,1>& eporosity,
+                                    double press,
+                                    double J,
+                                    int gp,
+                                    double& porosity,
+                                    double& dphi_dp,
+                                    double& dphi_dJ );
+
 }; // class FluidEleBoundaryCalcPoro
+
+template<DRT::Element::DiscretizationType distype>
+class FluidEleBoundaryCalcPoroP1 : public FluidEleBoundaryCalcPoro<distype>
+{
+  typedef DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype> my;
+
+public:
+
+  /// Singleton access method
+  static FluidEleBoundaryCalcPoroP1<distype> * Instance( bool create=true );
+
+  /// Empty destructor
+  virtual ~FluidEleBoundaryCalcPoroP1() {};
+
+  /// called upon destruction
+  virtual void Done();
+
+protected:
+  bool ComputeNodalPorosity( DRT::ELEMENTS::FluidBoundary*  ele,
+                             const std::vector<double> &     mydispnp,
+                             LINALG::Matrix<my::bdrynen_,1>& eporosity);
+
+  void ComputePorosityAtGP( Teuchos::ParameterList& params,
+                                    DRT::ELEMENTS::FluidBoundary*  ele,
+                                    const LINALG::Matrix<my::bdrynen_,1>& funct,
+                                    const LINALG::Matrix<my::bdrynen_,1>& eporosity,
+                                    double press,
+                                    double J,
+                                    int gp,
+                                    double& porosity,
+                                    double& dphi_dp,
+                                    double& dphi_dJ );
+};// class FluidEleBoundaryCalcPoroP1
 
 } // namespace ELEMENTS
 } // namespace DRT

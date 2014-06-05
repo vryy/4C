@@ -28,7 +28,7 @@ Maintainer: Michael Gee
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_so3/so_poro_interface.H"
+#include "../drt_mat/structporo.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
@@ -1788,6 +1788,9 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
                                   Shape()  ,
                                   LSurfNumber());
 
+  Teuchos::RCP< MAT::StructPoro > structmat =
+      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(parentele->Material(1));
+
   for (int gp=0; gp<ngp; ++gp)
   {
     // get shape functions and derivatives in the plane of the element
@@ -1821,11 +1824,9 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
 
     const double J = det/detJ;
 
-    DRT::ELEMENTS::So_Poro_Interface* so_interface = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(parentele);
-    if(so_interface == NULL)
-      dserror("cast to so_interface failed!");
     double porosity=0.0;
-    so_interface->ComputeSurfPorosity( params,
+
+    structmat->ComputeSurfPorosity( params,
                                        press,
                                        J,
                                        LSurfNumber(),

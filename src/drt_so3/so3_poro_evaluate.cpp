@@ -1285,25 +1285,29 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
 {
-  // get global id of the structure element
-  int id = Id();
-  //access fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("porofluid");
-  //get corresponding fluid element
-  DRT::Element* fluidele = fluiddis->gElement(id);
-  if (fluidele == NULL)
-    dserror("Fluid element %i not on local processor", id);
-
-  //get fluid material
-  fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
-    dserror("invalid fluid material for poroelasticity");
 
   //get structure material
-  structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat_->MaterialType() != INPAR::MAT::m_structporo)
-    dserror("invalid structure material for poroelasticity");
+  if(structmat_==Teuchos::null)
+  {
+    structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+      dserror("invalid structure material for poroelasticity");
+  }
+
+  //get fluid material
+  if(fluidmat_==Teuchos::null)
+  {
+    //access second material in structure element
+    if (so3_ele::NumMaterial() > 1)
+    {
+      fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(so3_ele::Material(1));
+      if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
+        dserror("invalid fluid material for poroelasticity");
+    }
+    else
+      dserror("no second material defined for element %i",Id());
+  }
 
   return;
 }

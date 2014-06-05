@@ -520,34 +520,6 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::coupling_poroscatra(
 }  // coupling_poroelast()
 
 /*----------------------------------------------------------------------*
- |  evaluate constitutive relation for porosity and compute derivatives (protected) |
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_PoroP2<distype>::ConsitutiveDerivatives(
-                                              Teuchos::ParameterList& params,       ///< (i) parameter list
-                                              double     press,   ///< (i) fluid pressure at gauss point
-                                              double     J,       ///< (i) Jacobian determinant at gauss point
-                                              double     porosity,///< (i) porosity at gauss point
-                                              double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
-                                              double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
-                                              double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
-                                              double*    W        ///< (o) inner potential
-                                              )
-{
-  my::structmat_->ConsitutiveDerivatives(
-    params,
-    press,
-    J,
-    porosity,
-    dW_dp,
-    dW_dphi,
-    dW_dJ,
-    W
-    );
-  return;
-};
-
-/*----------------------------------------------------------------------*
  |  evaluate only the poroelasticity fraction for the element (protected) |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>

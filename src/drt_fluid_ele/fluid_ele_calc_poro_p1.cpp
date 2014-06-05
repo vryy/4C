@@ -19,8 +19,7 @@
 #include "fluid_ele_utils.H"
 
 #include "../drt_mat/fluidporo.H"
-
-#include "../drt_so3/so_poro_interface.H"
+#include "../drt_mat/structporo.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
@@ -90,7 +89,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
   // set element id
   my::eid_ = ele->Id();
   //get structure material
-  my::GetStructMaterial();
+  my::GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
@@ -357,7 +356,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
   my::eid_ = ele->Id();
 
   //get structure material
-  my::GetStructMaterial();
+  my::GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
@@ -761,7 +760,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                       NULL, //dphi_dpp not needed
                       false);
 
-    double refporositydot = my::so_interface_->RefPorosityTimeDeriv();
+    double refporositydot = my::structmat_->RefPorosityTimeDeriv();
 
     //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
     static LINALG::Matrix<my::nsd_,1> gradJ(false);
@@ -810,7 +809,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                        eporositynp,
                        gradJ);
 
-      my::ComputeLinearizationOD(
+      ComputeLinearizationOD(
                               dphi_dJ,
                               dphi_dJJ,
                               dphi_dJdp,
@@ -841,45 +840,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     my::ComputeSpatialReactionTerms(material,defgrd_inv);
 
     //compute linearization of spatial reaction tensor w.r.t. structural displacements
-    {
-
-      //const double porosity_inv = 1.0/my::porosity_;
-      const double J_inv = 1.0/my::J_;
-
-      my::reatensorlinODvel_.Clear();
-      my::reatensorlinODgridvel_.Clear();
-      for (int n =0; n<my::nen_; ++n)
-        for (int d =0; d<my::nsd_; ++d)
-        {
-          const int gid = my::nsd_ * n +d;
-          for (int i=0; i<my::nsd_; ++i)
-          {
-            my::reatensorlinODvel_(i, gid)     += dJ_dus(gid)*J_inv * my::reavel_(i);
-            my::reatensorlinODgridvel_(i, gid) += dJ_dus(gid)*J_inv * my::reagridvel_(i);
-//            my::reatensorlinODvel_(i, gid)     += dphi_dus(gid)*porosity_inv * my::reavel_(i);
-//            my::reatensorlinODgridvel_(i, gid) += dphi_dus(gid)*porosity_inv * my::reagridvel_(i);
-            for (int j=0; j<my::nsd_; ++j)
-            {
-              for (int k=0; k<my::nsd_; ++k)
-                for(int l=0; l<my::nsd_; ++l)
-                {
-                  my::reatensorlinODvel_(i, gid) += my::J_ * my::porosity_ *
-                                                my::velint_(j) *
-                                                   ( - defgrd_inv(k,d) * my::derxy_(i,n) * my::matreatensor_(k,l) * defgrd_inv(l,j)
-                                                     - defgrd_inv(k,i) *
-                                                     my::matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
-                                                    );
-                  my::reatensorlinODgridvel_(i, gid) += my::J_ * my::porosity_ *
-                                                    my::gridvelint_(j) *
-                                                       ( - defgrd_inv(k,d) * my::derxy_(i,n) * my::matreatensor_(k,l) * defgrd_inv(l,j)
-                                                         - defgrd_inv(k,i) *
-                                                         my::matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
-                                                        );
-                }
-            }
-          }
-        }
-    }
+    my::ComputeLinSpatialReactionTerms(material,defgrd_inv,&dJ_dus,NULL);
 
     // get stabilization parameters at integration point
     my::ComputeStabilizationParameters(vol);
@@ -936,14 +897,17 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
      |                             |
       \                           /
      */
-    for (int ui=0; ui<my::nen_; ++ui)
     {
-      const double tmp = 1.0/my::porosity_;
-      for (int idim = 0; idim <my::nsd_; ++idim)
+      const double porosity_inv = 1.0/my::porosity_;
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        lin_resM_Dphi(idim,ui) += timefacfac * tmp * my::reavel_(idim) * my::funct_(ui);
-      } // end for (idim)
-    } // ui
+
+        for (int idim = 0; idim <my::nsd_; ++idim)
+        {
+          lin_resM_Dphi(idim,ui) += timefacfac * porosity_inv * my::reavel_(idim) * my::funct_(ui);
+        } // end for (idim)
+      } // ui
+    }
 
 
     if (not my::fldparatimint_->IsStationary())
@@ -1123,19 +1087,19 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       //linearization of residual in stabilization term w.r.t. porosity
       if (my::is_higher_order_ele_ || my::fldpara_->IsNewton())
       {
-        static LINALG::Matrix<my::nen_ , my::nen_ >   temp2(false);
-        temp2.Clear();
+        static LINALG::Matrix<my::nen_ , my::nen_ >   temp(false);
+        temp.Clear();
 
         for (int vi=0; vi<my::nen_; ++vi)
           for (int ui=0; ui<my::nen_; ++ui)
             for(int idim=0;idim<my::nsd_;++idim)
-                temp2(vi,ui) += my::derxy_(idim,vi)*lin_resM_Dphi(idim,ui);
+                temp(vi,ui) += my::derxy_(idim,vi)*lin_resM_Dphi(idim,ui);
 
         for (int ui=0; ui<my::nen_; ++ui)
         {
           for (int vi=0; vi<my::nen_; ++vi)
           {
-            ecouplp1_p(vi,ui) +=  scal_grad_q * temp2(vi,ui);
+            ecouplp1_p(vi,ui) +=  scal_grad_q * temp(vi,ui);
           } // vi
         } // ui
       } // end if (is_higher_order_ele_) or (newton_)
@@ -1252,9 +1216,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
         for(int j=0; j<my::nsd_; j++)
         {
           const int gid = my::nsd_ * n +j;
+          const double defgrd_inv_ij = defgrd_inv(i,j);
           for (int k=0; k<my::nsd_; k++)
+          {
+            const double derxy_kn = my::derxy_(k,n);
             for(int p=0; p<my::nsd_; p++)
-              dFinvdus_dFdx(p, gid) += -defgrd_inv(i,j) * my::derxy_(k,n) * F_x(k*my::nsd_+i,p);
+              dFinvdus_dFdx(p, gid) += -defgrd_inv_ij * derxy_kn * F_x(k*my::nsd_+i,p);
+          }
         }
 
     //F^-T : d(dF/dx)/dus =  F^-T : (N,XX * F^ -1 + dF/dX * F^-1 * N,x)
@@ -1266,13 +1234,19 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
       {
         const int gid = my::nsd_ * n +j;
         for(int i=0; i<my::nsd_; i++)
+        {
+          const double defgrd_inv_ij = defgrd_inv(i,j);
           for(int k=0; k<my::nsd_; k++)
+          {
+            const double defgrd_inv_kj = defgrd_inv(k,j);
             for(int p=0; p<my::nsd_; p++)
             {
-              FinvT_dFx_dus(p, gid) +=   defgrd_inv(i,j) * this->N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
+              FinvT_dFx_dus(p, gid) +=   defgrd_inv_ij * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
               for(int l=0; l<my::nsd_; l++)
-                FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv(k,j) * my::derxy_(p,n) ;
+                FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * my::derxy_(p,n) ;
             }
+          }
+        }
       }
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
@@ -1287,6 +1261,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
     dgradJ_dus.Update(my::J_,dFinvdus_dFdx,1.0);
 
     dgradJ_dus.Update(my::J_,FinvT_dFx_dus,1.0);
+
   }
 
   return;

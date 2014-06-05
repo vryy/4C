@@ -182,7 +182,13 @@ void POROELAST::PoroBase::ReadRestart( int restart)
     if(submeshes_)
       AddDofSets(true);
 
+    //set the current time in the algorithm (taken from fluid field)
     SetTimeStep(FluidField()->Time(), restart);
+
+    // Material pointers to other field were deleted during ReadRestart().
+    // They need to be reset.
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(StructureField()->Discretization(),
+                                                      FluidField()->Discretization());
   }
 
   return;
@@ -355,6 +361,7 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
   coupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
   int ndof = ndim;
 
+  // if the porosity is a primary variable, we get one more dof
   if(porositydof_) ndof++;
 
   if(submeshes_)

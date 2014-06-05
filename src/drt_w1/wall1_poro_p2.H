@@ -137,23 +137,6 @@ namespace ELEMENTS
     //! initialize the inverse of the jacobian and its determinant in the material configuration
     virtual void InitElement();
 
-    //! return number of degrees of freedom
-    virtual int NumDof(){return 2;};
-
-    //! return whether this element has more degrees of freedom than standard solid elements
-    virtual bool HasExtraDof(){return false;}
-
-    //! evaluate constitutive relation for porosity and compute derivatives
-   virtual void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
-                                                  double     press,   ///< (i) fluid pressure at gauss point
-                                                  double     J,       ///< (i) Jacobian determinant at gauss point
-                                                  double     porosity,///< (i) porosity at gauss point
-                                                  double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
-                                                  double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
-                                                  double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
-                                                  double*    W        ///< (o) inner potential
-                                                  );
-
   protected:
 
     //! don't want = operator

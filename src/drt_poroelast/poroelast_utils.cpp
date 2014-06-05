@@ -227,7 +227,13 @@ void POROELAST::UTILS::SetupPoro()
 
   // create fluid elements if the fluid discretization is empty
   if (fluiddis->NumGlobalNodes()==0)
+  {
+    //create fluid discretization
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
+
+    //set material pointers
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
+  }
   else
     dserror("Structure AND Fluid discretization present. This is not supported.");
 }
@@ -362,6 +368,27 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::
   }
 
   return porositysplitter;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+    Teuchos::RCP<const DRT::Discretization> sourcedis,
+    Teuchos::RCP<const DRT::Discretization> targetdis)
+{
+  const int numelements = targetdis->NumMyColElements();
+
+  for (int i=0; i<numelements; ++i)
+  {
+    DRT::Element* targetele = targetdis->lColElement(i);
+    const int gid = targetele->Id();
+
+    DRT::Element* sourceele = sourcedis->gElement(gid);
+
+    //for coupling we add the source material to the target element and vice versa
+    targetele->AddMaterial(sourceele->Material());
+    sourceele->AddMaterial(targetele->Material());
+  }
 }
 
 /*----------------------------------------------------------------------*

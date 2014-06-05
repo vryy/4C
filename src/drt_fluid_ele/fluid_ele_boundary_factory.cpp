@@ -89,6 +89,10 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
     return DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance();
   else if (problem == "poro")
     return DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance();
+  else if (problem == "poro_p1")
+    return DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance();
+  else if (problem == "poro_p2")
+    return DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 

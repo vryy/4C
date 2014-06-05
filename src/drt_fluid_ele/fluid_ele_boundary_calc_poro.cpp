@@ -34,7 +34,7 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 
 #include "../drt_poroelast/poroelast_utils.H"
 
-#include "../drt_so3/so_poro_interface.H"
+//#include "../drt_so3/so_poro_interface.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -1702,22 +1702,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
-  const int peleid = pele->Id();
-  //access structure discretization
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
-  //get corresponding structure element (it has the same global ID as the scatra element)
-  DRT::Element* structele = structdis->gElement(peleid);
-  if (structele == NULL)
-    dserror("Structure element %i not on local processor", peleid);
-
-  DRT::ELEMENTS::So_Poro_Interface* so_interface = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(structele);
-  if(so_interface == NULL)
-    dserror("cast to so_interface failed!");
-
-  //ask if the structure element has a porosity dof
-  const bool porositydof = so_interface->HasExtraDof();
-
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<my::bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
@@ -1796,11 +1780,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     epressnp(inode) = myvelnp[my::nsd_+(inode*my::numdofpernode_)];
   }
 
-  if(porositydof)
-  {
-    for (int inode=0;inode<my::bdrynen_;inode++)
-      eporosity(inode) = mydispnp[my::nsd_+(inode*my::numdofpernode_)];
-  }
+  ComputeNodalPorosity(ele,mydispnp,eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
   Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
@@ -1893,27 +1873,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 
    // params.set<double>("scalar",scalar);
 
-    if(porositydof)
-    {
-      dserror("not implemented");
-      //porosity_gp = eporosity.Dot(my::funct_);
-    }
-    else
-    {
-      so_interface->ComputeSurfPorosity(params,
-                                     press,
-                                     J,
-                                     ele->SurfaceNumber(),
-                                     gpid,
-                                     porosity_gp,
-                                     &dphi_dp,
-                                     &dphi_dJ,
-                                     NULL,                  //dphi_dJdp not needed
-                                     NULL,                  //dphi_dJJ not needed
-                                     NULL,                   //dphi_dpp not needed
-                                     true
-                                     );
-    }
+    ComputePorosityAtGP(params,
+                        ele,
+                        my::funct_,
+                        eporosity,
+                        press,
+                        J,
+                        gpid,
+                        porosity_gp,
+                        dphi_dp,
+                        dphi_dJ );
 
     // flowrate = uint o normal
     const double flowrate = ( my::velint_.Dot(my::unitnormal_)//- gridvelint.Dot(my::unitnormal_)
@@ -2457,22 +2426,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
-  const int peleid = pele->Id();
-  //access structure discretization
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
-  //get corresponding structure element (it has the same global ID as the scatra element)
-  DRT::Element* structele = structdis->gElement(peleid);
-  if (structele == NULL)
-    dserror("Structure element %i not on local processor", peleid);
-
-  DRT::ELEMENTS::So_Poro_Interface* so_interface = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(structele);
-  if(so_interface == NULL)
-    dserror("cast to so_interface failed!");
-
-  //ask if the structure element has a porosity dof
-  const bool porositydof = so_interface->HasExtraDof();
-
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<my::bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
@@ -2554,11 +2507,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     escaaf(inode) = myscaaf[my::nsd_+(inode*my::numdofpernode_)];
   }
 
-  if(porositydof)
-  {
-    for (int inode=0;inode<my::bdrynen_;inode++)
-      eporosity(inode) = mydispnp[my::nsd_+(inode*my::numdofpernode_)];
-  }
+  const bool porositydof = ComputeNodalPorosity(ele,mydispnp,eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
   Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
@@ -2669,26 +2618,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     double porosity_gp=0.0;
 
     params.set<double>("scalar",scalar);
-    if(porositydof)
-    {
-      porosity_gp = eporosity.Dot(my::funct_);
-    }
-    else
-    {
-      so_interface->ComputeSurfPorosity(params,
-                                     press,
-                                     J,
-                                     ele->SurfaceNumber(),
-                                     gpid,
-                                     porosity_gp,
-                                     &dphi_dp,
-                                     &dphi_dJ,
-                                     NULL,                  //dphi_dJdp not needed
-                                     NULL,                  //dphi_dJJ not needed
-                                     NULL,                   //dphi_dpp not needed
-                                     true
-                                     );
-    }
+
+    ComputePorosityAtGP(params,
+                        ele,
+                        my::funct_,
+                        eporosity,
+                        press,
+                        J,
+                        gpid,
+                        porosity_gp,
+                        dphi_dp,
+                        dphi_dJ );
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
@@ -2992,6 +2932,105 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
+                                   Teuchos::ParameterList& params,
+                                    DRT::ELEMENTS::FluidBoundary*  ele,
+                                    const LINALG::Matrix<my::bdrynen_,1>& funct,
+                                    const LINALG::Matrix<my::bdrynen_,1>& eporosity,
+                                    double press,
+                                    double J,
+                                    int gp,
+                                    double& porosity,
+                                    double& dphi_dp,
+                                    double& dphi_dJ )
+{
+  Teuchos::RCP< MAT::StructPoro > structmat =
+      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->ParentElement()->Material(1));
+  structmat->ComputeSurfPorosity(params,
+                                 press,
+                                 J,
+                                 ele->SurfaceNumber(),
+                                 gp,
+                                 porosity,
+                                 &dphi_dp,
+                                 &dphi_dJ,
+                                 NULL,                  //dphi_dJdp not needed
+                                 NULL,                  //dphi_dJJ not needed
+                                 NULL,                   //dphi_dpp not needed
+                                 true
+                                 );
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype> * DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance( bool create )
+{
+  static FluidEleBoundaryCalcPoroP1<distype> * instance;
+  if ( create )
+  {
+    if ( instance==NULL )
+    {
+      instance = new FluidEleBoundaryCalcPoroP1<distype>();
+    }
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Done()
+{
+  // delete ele1 pointer! Afterwards we have to go! But since ele1 is a
+  // cleanup call, we can do it ele1 way.
+    Instance( false );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputeNodalPorosity(
+                                 DRT::ELEMENTS::FluidBoundary*  ele,
+                                 const std::vector<double> &     mydispnp,
+                                 LINALG::Matrix<my::bdrynen_,1>& eporosity)
+{
+  for (int inode=0;inode<my::bdrynen_;inode++)
+    eporosity(inode) = mydispnp[my::nsd_+(inode*my::numdofpernode_)];
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputePorosityAtGP(
+                                   Teuchos::ParameterList& params,
+                                    DRT::ELEMENTS::FluidBoundary*  ele,
+                                    const LINALG::Matrix<my::bdrynen_,1>& funct,
+                                    const LINALG::Matrix<my::bdrynen_,1>& eporosity,
+                                    double press,
+                                    double J,
+                                    int gp,
+                                    double& porosity,
+                                    double& dphi_dp,
+                                    double& dphi_dJ )
+{
+  porosity = eporosity.Dot(my::funct_);
+  dphi_dp=0.0;
+  dphi_dJ=0.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 // template classes
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::quad8>;
@@ -3004,3 +3043,15 @@ template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs2>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs3>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs4>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<DRT::Element::nurbs9>;
+
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::quad4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::quad8>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::quad9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::tri3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::tri6>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::line2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::line3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<DRT::Element::nurbs9>;

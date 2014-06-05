@@ -68,7 +68,7 @@ namespace POROELAST
       virtual ~PoroBase();
 
       /// read restart data
-      virtual void ReadRestart(int restart);
+      void ReadRestart(int restart);
 
       //! outer level time loop
       virtual void TimeLoop();

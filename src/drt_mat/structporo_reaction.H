@@ -188,6 +188,9 @@ namespace MAT
         return params_;
       }
 
+      /// return reference porosity average
+      double RefPorosityAv() const;
+
       //! @name Evaluation methods
 
       /// evaluate material law
@@ -197,6 +200,16 @@ namespace MAT
                             LINALG::Matrix<6,1>* stress,          ///< (o) second piola kirchhoff stress
                             LINALG::Matrix<6,6>* cmat,            ///< (o) constitutive matrix
                             const int eleGID);
+
+      //@}
+
+      //! @name Visualization methods
+
+      /// Return names of visualization data
+      virtual void VisNames(std::map<std::string,int>& names);
+
+      /// Return visualization data
+      virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
       //@}
 

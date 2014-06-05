@@ -100,6 +100,9 @@ void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
   {
     // create the fluid discretization
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
+
+    //set material pointers
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
   }
   else
     dserror("Structure AND Fluid discretization present. This is not supported.");

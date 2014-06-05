@@ -19,8 +19,7 @@
 #include "fluid_ele_utils.H"
 
 #include "../drt_mat/fluidporo.H"
-
-#include "../drt_so3/so_poro_interface.H"
+#include "../drt_mat/structporo.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "fluid_ele_action.H"
@@ -94,7 +93,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
   // set element id
   my::eid_ = ele->Id();
   //get structure material
-  my::GetStructMaterial();
+  my::GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
@@ -243,7 +242,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
   my::eid_ = ele->Id();
 
   //get structure material
-  my::GetStructMaterial();
+  my::GetStructMaterial(ele);
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
@@ -578,7 +577,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluatePressureEquation(
     )
 {
   double    dW_dp   = 0.0;
-  my::so_interface_->ConsitutiveDerivatives(params,
+  my::structmat_->ConsitutiveDerivatives(params,
                                     my::press_,
                                     my::J_,
                                     my::porosity_,

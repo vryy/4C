@@ -130,6 +130,10 @@ namespace POROELAST
                              const Epetra_Comm& comm //!< communicator(i)
                              );
 
+    void SetMaterialPointersMatchingGrid(
+        Teuchos::RCP<const DRT::Discretization> sourcedis,
+        Teuchos::RCP<const DRT::Discretization> targetdis);
+
   } // namespace UTILS
 
   void PrintLogo();

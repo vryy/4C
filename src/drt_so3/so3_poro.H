@@ -15,8 +15,6 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
-#include "so_poro_interface.H"
-
   // forward declaration
 namespace MAT
 {
@@ -39,8 +37,7 @@ and (near)-incompressibility.
 
 */
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-class So3_Poro : public so3_ele,
-                 public So_Poro_Interface
+class So3_Poro : public so3_ele
 {
 
   //! @name Friends
@@ -293,12 +290,6 @@ public:
 
   //! return time derivative of reference porosity
   virtual double RefPorosityTimeDeriv();
-
-  //! return number of degrees of freedom of node
-  virtual int NumDof(){return noddof_;};
-
-  //! return whether element has more degrees of freedom than standard solid element
-  virtual bool HasExtraDof(){return false;}
 
 protected:
 
