@@ -805,8 +805,7 @@ void FS3I::BiofilmFSI::ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuch
   for (int index = 0; index < numnode; ++index)
   {
     // get current node
-    int gid = (dis->NodeColMap())->GID(index);
-    DRT::Node* mynode = dis->gNode(gid);
+    DRT::Node* mynode = dis->lColNode(index);
 
     std::vector<int> globaldofs = dis->Dof(0,mynode);
     std::vector<double> nvector(globaldofs.size());
