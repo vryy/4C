@@ -93,7 +93,7 @@ OUTMEAN                         Yes
 UPRES                           1
 BLOCKPRECOND No //Yes
 MATID                           5
-SCATRATYPE                      Elch_ENC_PDE_ELIM             // we eliminated the 2nd ion species!
+SCATRATYPE                      Elch             // we eliminated the 2nd ion species!
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         5e-6
 ITEMAX                          15
@@ -104,6 +104,7 @@ ADAPTCONV_BETTER                0.1
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 ITEMAX                          10
 MAXTIME                         1000
 NUMSTEP                         3
@@ -113,6 +114,7 @@ UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 NATURAL_CONVECTION              Yes
 CONVTOL                         5e-6
+EQUPOT                          ENC_PDE_ELIM
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

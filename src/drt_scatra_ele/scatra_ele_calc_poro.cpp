@@ -137,7 +137,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::wedge6>;

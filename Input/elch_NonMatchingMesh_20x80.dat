@@ -36,11 +36,16 @@ BLOCKPRECOND                    No
 MATID                           3
 MESHTYING                       Condensed_Smat
 OUTMEAN                         yes
+SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          2
 EXPLPREDICT                     Yes
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
+DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 ITEMAX                          2
 MAXTIME                         100
 NUMSTEP                         15
@@ -48,6 +53,7 @@ RESTARTEVRY                     1000
 TIMESTEP                        0.1
 UPRES                           1
 TEMPERATURE                     11604.506                       // abused as a scaling factor in order to have: F/RT = 1.0
+EQUPOT                          ENC
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
 PARALLEL_REDIST                 static

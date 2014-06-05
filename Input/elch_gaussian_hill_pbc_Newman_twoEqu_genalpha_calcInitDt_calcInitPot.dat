@@ -83,16 +83,16 @@ CONVTOL                         1.0e-7
 ITEMAX                          2
 ABSTOLRES                       5.0e-13
 ----------------------------------------------------------------ELCH CONTROL
-ELCHTYPE			DiffCond
+ELCHTYPE                        DiffCond
 UPRES                           1
 RESTARTEVRY                     2
 NUMSTEP                         2 // shorter run for nightly test case! //100
 MAXTIME 			1.0 //hill reaches point of departure (x0=2/15) for 100 steps
 TIMESTEP                        0.01                            // Cr = 1.5
+EQUPOT                          divi
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
 CURRENT_SOLUTION_VAR            No
-EQUPOT                          divi
 MAT_NEWMAN_CONST_A              1.0
 MAT_NEWMAN_CONST_B              -2.0
 MAT_NEWMAN_CONST_C              -1.0

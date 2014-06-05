@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_calc_elch_diffcond.cpp
 
-\brief evalution of ScaTra elements for ion-transport equation
+\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -180,7 +180,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Evaluate(
 
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
-  CorrectionForFluxAccrosDC(discretization,lm,elemat1_epetra,elevec1_epetra);
+  CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
 
 #if 0
   // for debugging of matrix entries
@@ -226,10 +226,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
     const double                              hist          //!< history
   )
 {
-  // dynamic cast to elch-specific diffusion manager
+  // dynamic cast to diffusion-conduction-specific diffusion manager
   Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
 
-  // dynamic cast to elch-specific diffusion manager
+  // dynamic cast to diffusion-conduction-specific internal variable manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
     = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
 
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   //      i)  constant diffusion coefficient
   my::CalcMatDiff(emat,k,timefacfac*epstort_[0],dmedc);
 
-  //      ii) concentation depending diffusion coefficient
+  //      ii) concentration depending diffusion coefficient
   //          (additional term for Newman material)
   if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
     CalcMatDiffCoeffLin(emat,k,timefacfac*epstort_[0],dmedc,vmdc->GradPhi(k));
@@ -293,16 +293,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
       CalcMatCondDiff(emat,k,timefacfac,vmdc->InvFVal(k),dmedc,vmdc->GradPhi());
   } // end if(not cursolvar_)
 
-  //----------------------------------------------------------------
+  //---------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current
-  //----------------------------------------------------------------
+  //---------------------------------------------------------------------
   // see function CalMatAndRhsOutsideScalarLoop()
 
   //-----------------------------------------------------------------------
   // 4) element right hand side vector (neg. residual of nonlinear problem)
   //-----------------------------------------------------------------------
 
-  //adaption of rhs with respect to time integration
+  // adaption of rhs with respect to time integration
   my::ComputeRhsInt(rhsint,eps_[0],eps_[0],hist);
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
@@ -311,13 +311,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   // add RHS and history contribution
   my::CalcRHSHistAndSource(erhs,k,fac*eps_[0],rhsint);
 
-  // 3a)  element rhsx: convective term
+  // 3a) element rhs: convective term
   my::CalcRHSConv(erhs,k,rhsfac*eps_[0],vmdc->ConvPhi(k));
 
-  // 3b)  element rhs: diffusion term
+  // 3b) element rhs: diffusion term
   my::CalcRHSDiff(erhs,k,rhsfac*epstort_[0],dmedc,vmdc->GradPhi(k));
 
-  // 3c) electrical conduction term (transport equation)
+  // 3c) element rhs: electrical conduction term (transport equation)
   //     equation for current is inserted in the mass transport equation
   //
   //     mass transport equation:
@@ -422,10 +422,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsOutsideScala
       for (int k=0;k<my::numscal_;++k)
       {
         //
-        CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF(),dmedc);
+        myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF(),dme);
 
         //
-        CalcRhsPotEquENC(erhs,k,fac,dmedc,vmdc->ConInt(k));
+        myelch::CalcRhsPotEquENC(erhs,k,fac,dme,vmdc->ConInt(k));
       }
     }
     else
@@ -476,10 +476,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsOutsideScala
       for (int k=0; k < my::numscal_; ++k)
       {
         //
-        CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF(),dmedc);
+        myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF(),dme);
 
         //
-        CalcRhsPotEquENC(erhs,k,fac,dmedc,vmdc->ConInt(k));
+        myelch::CalcRhsPotEquENC(erhs,k,fac,dme,vmdc->ConInt(k));
       }
     }
     else
@@ -531,7 +531,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
   const double                            timefacfac,   //!< domain-integration factor times time-integration factor
   const double                            invfval,      //!< 1/(F z_k)
   Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,          //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradpot       //!< gradient of potenial at GP
+  const LINALG::Matrix<my::nsd_,1>&        gradpot       //!< gradient of potential at GP
 )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -871,35 +871,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
       }
       else
         dserror("Diffusion-Conduction material is not specified");
-    }
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------------------*
-|  CalcMat: Potential equation ENC                                       ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquENC(
-  Epetra_SerialDenseMatrix&               emat,   //!< element matrix to be filled
-  const int                               k,      //!< index of current scalar
-  const double                            fac,    //!< domain-integration factor
-  const double                            alphaf, //!< time factor for ENC
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc     //!< diffusion manager
-
-)
-{
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    for (int ui=0; ui<my::nen_; ++ui)
-    {
-      //linearization of the transference number in the conduction term (transport equation)
-      //
-      // (w, sum(z_k c_k))
-      //
-      emat(vi*my::numdofpernode_+my::numscal_, ui*my::numdofpernode_+k) += alphaf*dmedc->GetValence(k)*fac*my::funct_(vi)*my::funct_(ui);
     }
   }
 
@@ -1313,28 +1284,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
 
 
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Potential equation ENC                                         ehrl 11/13 |
- *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquENC(
-  Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
-  const int                               k,        //!< index of current scalar
-  const double                            fac,   //!< time-integration factor for rhs times domain-integration factor
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
-  const double                            conint    //!< concentration at GP
-  )
-{
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    // electroneutrality condition
-    // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
-    erhs[vi*my::numdofpernode_+my::numscal_] -= dmedc->GetValence(k)*fac*my::funct_(vi)*conint;
-  }
-
-  return;
-}
-
-/*-------------------------------------------------------------------------------------*
  |  CalcRhs: Potential equation divi without inserted current               ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -1457,10 +1406,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
 
 
 /*----------------------------------------------------------------------*
-|  Correct sysmat for fluxes accros DC                       ehrl  02/14|
+|  Correct sysmat for fluxes across DC                       ehrl  02/14|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAccrosDC(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossDC(
   DRT::Discretization&        discretization,
   const std::vector<int>&     lm,
   Epetra_SerialDenseMatrix&   emat,
@@ -1550,7 +1499,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::SetFormulationSpecificIn
   // dynamic cast to elch diffusion-conduction-specific diffusion manager
   Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
 
-  // dynamic cast to elch diffusion conduction-specific diffusion manager
+  // dynamic cast to elch diffusion conduction-specific internal variable manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc =
       Teuchos::rcp_dynamic_cast< ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
 
@@ -1759,7 +1708,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::wedge6>;

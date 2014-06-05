@@ -879,6 +879,7 @@ void SCATRA::ScaTraTimIntImpl::PrintScatraType()
     break;
   default:
     dserror("Fix your scatratype!");
+    break;
   }
 
   return;

@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_calc_elch_diffcond.H
 
-\brief evalution of ScaTra elements for ion-transport equation
+\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -98,7 +98,7 @@ private:
   );
 
   //! Correction for additional flux terms / currents across Dirichlet boundaries
-  void CorrectionForFluxAccrosDC(
+  void CorrectionForFluxAcrossDC(
       DRT::Discretization&        discretization,   //!< discretization
       const std::vector<int>&     lm,               //!< location vector
       Epetra_SerialDenseMatrix&   emat,             //!< element matrix to calculate
@@ -187,7 +187,7 @@ private:
     const double                            timefacfac,     //!< domain-integration factor times time-integration factor
     const double                            invfval,        //!< 1/(F z_k)
     Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc, //!< diffusion manager
-    const LINALG::Matrix<my::nsd_,1>&        gradpot        //!< gradient of potenial at GP
+    const LINALG::Matrix<my::nsd_,1>&        gradpot        //!< gradient of potential at GP
   );
 
   //! CalcMat: Conduction term with inserted current - conc. overpotential
@@ -245,15 +245,6 @@ private:
     Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc, //!< diffusion manager
     const LINALG::Matrix<my::nsd_,1>&        gradphi,       //!< gradient of concentration at GP
     const double                            conintinv       //!< inverted concentration at GP
-  );
-
-  //! Potential equation ENC
-  void CalcMatPotEquENC(
-    Epetra_SerialDenseMatrix&               emat,   //!< element matrix to be filled
-    const int                               k,      //!< index of current scalar
-    const double                            fac,    //!< domain-integration factor
-    const double                            alphaf, //!< time factor for ENC
-    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc  //!< diffusion manager
   );
 
   //! Potential equation div i without inserted current
@@ -359,15 +350,6 @@ private:
     const double                           conintinv  //!< inverted concentration at GP
   );
 
-  //! CalcRhs: Potential equation ENC
-  void CalcRhsPotEquENC(
-    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
-    const int                               k,        //!< index of current scalar
-    const double                            fac,      //!< domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,    //!< diffusion manager
-    const double                                     conint    //!< concentration at GP
-  );
-
   //! CalcRhs: Potential equation divi without inserted current
   void CalcRhsPotEquDivi(
     Epetra_SerialDenseVector&           erhs,     //!< element vector to be filled
@@ -421,7 +403,7 @@ private:
 
   // Get conductivity from material
   virtual void GetConductivity(
-    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     double&                           sigma_all,  //!< conductivity of electrolyte solution
     Epetra_SerialDenseVector&         sigma       //!< conductivity or a single ion + overall electrolyte solution
   );
@@ -429,7 +411,7 @@ private:
   // Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseMatrix&         emat,       //!< element matrix
     Epetra_SerialDenseVector&         erhs,       //!< element rhs
     const double                      fac,        //!< integration factor

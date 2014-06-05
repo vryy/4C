@@ -100,7 +100,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
-    const enum INPAR::ELCH::ElchType  elchtype,
+    const enum INPAR::ELCH::EquPot  equpot,
     double&                    sigma_all,
     Epetra_SerialDenseVector&  sigma
   )
@@ -122,7 +122,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPotentialField(
   Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-  const enum INPAR::ELCH::ElchType  elchtype,
+  const enum INPAR::ELCH::EquPot    equpot,
   Epetra_SerialDenseMatrix&         emat,
   Epetra_SerialDenseVector&         erhs,
   const double                      fac,
@@ -207,7 +207,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::wedge6>;

@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_calc_elch.cpp
 
-\brief evalution of ScaTra elements for ion-transport equation
+\brief evaluation of ScaTra elements for ion-transport equation
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
 
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
-  CorrectionForFluxAccrosDC(discretization,lm,elemat1_epetra,elevec1_epetra);
+  CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
 
 #if 0
   // for debugging of matrix entries
@@ -145,10 +145,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
       scatratype);
   }
 #endif
-
   return 0;
 }
-
 
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 ehrl  08/08|
@@ -225,14 +223,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       double rhsint(0.0);
       my::GetRhsInt(rhsint,densnp,k);
 
-      // Comute element matrix and rhs
+      // Compute element matrix and rhs
       CalMatAndRhs(varmanager_,emat,erhs,k,fac,timefacfac,rhsfac,dme,rhsint,hist);
     }  // end loop over scalar
 
-    // Comute element matrix and rhs
+    // Compute element matrix and rhs
     CalMatAndRhsOutsideScalarLoop(varmanager_,emat,erhs,fac,timefacfac,rhsfac,dme);
-
-    //} // end(Nernst-Planck formulation or diffusion-conduction formulation)
   }
 
   return;
@@ -267,7 +263,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::MatIon(
   {
     // Material data of eliminated ion species is read from the LAST ion material
     // in the matlist!
-    if(elchpara_->ElchType()==INPAR::ELCH::elchtype_enc_pde_elim)
+    if(elchpara_->EquPot()==INPAR::ELCH::equpot_enc_pde_elim)
     {
       diffmanager->IncreaseLengthVector(k, my::numscal_);
 
@@ -278,6 +274,55 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::MatIon(
       diffmanager->SetIsotropicDiff(actmat->ElimDiffusivity(),my::numscal_);
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------------*
+|  CalcMat: Potential equation ENC                                       ehrl  02/14|
+*-----------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcMatPotEquENC(
+  Epetra_SerialDenseMatrix&                 emat,     //!< element matrix to be filled
+  const int                                 k,        //!< index of current scalar
+  const double                              fac,      //!< domain-integration factor
+  const double                              alphaf,   //!< time factor for ENC
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme       //!< diffusion manager
+
+)
+{
+  for (int vi=0; vi<my::nen_; ++vi)
+  {
+    for (int ui=0; ui<my::nen_; ++ui)
+    {
+      // linearization of the transference number in the conduction term (transport equation)
+      //
+      // (w, sum(z_k c_k))
+      //
+      // electroneutrality condition (only derivative w.r.t. concentration c_k)
+      emat(vi*my::numdofpernode_+my::numscal_, ui*my::numdofpernode_+k) += alphaf*dme->GetValence(k)*fac*my::funct_(vi)*my::funct_(ui);
+    }
+  }
+
+  return;
+}
+
+/*-------------------------------------------------------------------------------------*
+ |  CalcRhs: Potential equation ENC                                         ehrl 11/13 |
+ *-------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
+  Epetra_SerialDenseVector&                 erhs,    //!< element vector to be filled
+  const int                                 k,       //!< index of current scalar
+  const double                              fac,     //!< time-integration factor for rhs times domain-integration factor
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,     //!< diffusion manager
+  const double                              conint   //!< concentration at GP
+  )
+{
+  for (int vi=0; vi<my::nen_; ++vi)
+    // electroneutrality condition
+    // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
+    erhs[vi*my::numdofpernode_+my::numscal_] -= dme->GetValence(k)*fac*my::funct_(vi)*conint;
 
   return;
 }
@@ -297,7 +342,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;

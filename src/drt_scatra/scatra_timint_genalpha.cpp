@@ -375,6 +375,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
 void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors()
 {
   discret_->SetState("phinp",phiaf_);
+
   if (not incremental_)
   {
     discret_->SetState("hist",hist_);

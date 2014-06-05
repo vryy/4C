@@ -63,28 +63,26 @@ public:
   /*========================================================================*/
 
   /*--------------------------------------------------------*/
-  //! @name general elch parameters for Nernst-Planck equation
+  //! @name general elch parameters
   /*--------------------------------------------------------*/
 
   INPAR::ELCH::ElchType ElchType(){return elchtype_;};
 
-  bool NernstPlanck(){return nernstplanck_;};
+  INPAR::ELCH::EquPot EquPot(){return equpot_;};
 
   double FRT(){return frt_;};
 
-  /*--------------------------------------------------------*/
-  //! @name elch parameters for Nernst-Planck equation
-  /*--------------------------------------------------------*/
+  /*--------------------------------------------------------------*/
+  //! @name elch parameters for Nernst-Planck formulation
+  /*--------------------------------------------------------------*/
 
-  /*--------------------------------------------------------*/
-  //! @name elch parameters for diffusion-conduction equation
-  /*--------------------------------------------------------*/
+  /*--------------------------------------------------------------*/
+  //! @name elch parameters for diffusion-conduction formulation
+  /*--------------------------------------------------------------*/
 
   bool CurSolVar(){return cursolvar_;};
 
   bool DiffusionCoeffBased(){return diffusioncoefbased_;};
-
-  INPAR::ELCH::EquPot EquPot(){return equpot_;};
 
   const double NewmanConstA(){return newmanconsta_;};
 
@@ -95,19 +93,16 @@ public:
 private:
 
   //! type of elch problem
-  INPAR::ELCH::ElchType elchtype_;
+  enum INPAR::ELCH::ElchType elchtype_;
 
-  //! activation of Nernst-Planck or diffusion-conduction formulation
-  bool nernstplanck_;
+  //! equation used for closing of the elch-system
+  enum INPAR::ELCH::EquPot equpot_;
 
   //! factor frt
   double frt_;
 
   //! flag if current is used as a solution variable
   bool cursolvar_;
-
-  //! equation used for closing of the elch-system
-  enum INPAR::ELCH::EquPot equpot_;
 
   // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
   bool diffusioncoefbased_;
@@ -123,12 +118,9 @@ private:
   double newmanconsta_;
   double newmanconstb_;
   double newmanconstc_;
-
-private:
-
 };
 
-}
-}
+} // namespace ELEMENTS
+} // namespace DRT
 
 #endif

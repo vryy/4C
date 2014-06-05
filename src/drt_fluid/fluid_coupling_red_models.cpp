@@ -943,7 +943,7 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
 /*!
   modified by chfoe 04/08
 
-  Calculate the flow rate accros an impedance boundary surface
+  Calculate the flow rate across an impedance boundary surface
 
   Flow rates are
   (1) calculated for single element surfaces
@@ -996,7 +996,7 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
-  Calculate the pressure accros a coupling boundary surface
+  Calculate the pressure across a coupling boundary surface
 
   Flow rates are
   (1) calculated for single element surfaces

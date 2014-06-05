@@ -1063,7 +1063,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::wedge6>;

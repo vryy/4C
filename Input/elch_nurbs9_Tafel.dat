@@ -43,7 +43,7 @@ BLOCKPRECOND                    NO
 CALCERROR                       No
 CONVFORM                        conservative
 INITPOTCALC                     no
-SCATRATYPE                      Elch_ENC
+SCATRATYPE                      Elch
 VELCURVENO                      -1
 WRITEFLUX_IDS 1 2 // do not write flux of species 3
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
@@ -63,6 +63,7 @@ EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 UPRES                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
@@ -83,6 +84,7 @@ MOLARVOLUME                     0
 MOVINGBOUNDARY                  No
 NATURAL_CONVECTION              No
 TEMPERATURE                     293
+ELCHTYPE                        ENC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

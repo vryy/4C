@@ -5006,19 +5006,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Type of elch formulation",
                                  tuple<std::string>(
                                    "Undefined",
-                                   "ENC",
-                                   "ENC_PDE",
-                                   "ENC_PDE_ELIM",
-                                   "Poisson",
-                                   "Laplace",
+                                   "Nernst_Planck",
                                    "DiffCond"),
                                  tuple<int>(
                                    INPAR::ELCH::elchtype_undefined,
-                                   INPAR::ELCH::elchtype_enc,
-                                   INPAR::ELCH::elchtype_enc_pde,
-                                   INPAR::ELCH::elchtype_enc_pde_elim,
-                                   INPAR::ELCH::elchtype_poisson,
-                                   INPAR::ELCH::elchtype_laplace,
+                                   INPAR::ELCH::elchtype_nernst_planck,
                                    INPAR::ELCH::elchtype_diffcond),
                                    &elchcontrol);
 
@@ -5059,6 +5051,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTAT_LENGTH_CURRENTPATH",0.0,"average length of the current path",&elchcontrol);
 //  IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
+  setStringToIntegralParameter<int>("EQUPOT",
+                               "Undefined",
+                               "type of closing equation for electric potential",
+                                tuple<std::string>(
+                                  "Undefined",
+                                  "ENC",
+                                  "ENC_PDE",
+                                  "ENC_PDE_ELIM",
+                                  "Poisson",
+                                  "Laplace",
+                                  "divi"),
+                                 tuple<int>(
+                                   INPAR::ELCH::equpot_undefined,
+                                   INPAR::ELCH::equpot_enc,
+                                   INPAR::ELCH::equpot_enc_pde,
+                                   INPAR::ELCH::equpot_enc_pde_elim,
+                                   INPAR::ELCH::equpot_poisson,
+                                   INPAR::ELCH::equpot_laplace,
+                                   INPAR::ELCH::equpot_divi),
+                                  &elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol
@@ -5072,17 +5084,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "Activation of diffusion-conduction formulation",&elchdiffcondcontrol);
 
     BoolParameter("CURRENT_SOLUTION_VAR","No","Current as a solution variable",&elchdiffcondcontrol);
-
-    setStringToIntegralParameter<int>("EQUPOT",
-                                 "ENC",
-                                 "ENC condition",
-                                  tuple<std::string>(
-                                    "ENC",
-                                    "divi"),
-                                   tuple<int>(
-                                     INPAR::ELCH::equpot_enc,
-                                     INPAR::ELCH::equpot_divi),
-                                    &elchdiffcondcontrol);
 
     BoolParameter("MAT_DIFFCOND_DIFFBASED","Yes",
         "Coupling terms of chemical diffusion for current equation are based on t and kappa",&elchdiffcondcontrol);

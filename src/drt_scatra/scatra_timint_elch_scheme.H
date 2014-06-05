@@ -69,12 +69,6 @@ protected:
 
   //! set old part of RHS for galvanostatic equation
   void ElectrodeKineticsSetOldPartOfRHS();
-
-  //! density (nodebased!) at times n for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensn_;
-  //! density (nodebased!) at times n+1 for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensnp_;
-
 }; // class TimIntElchOST
 
 
@@ -121,7 +115,6 @@ protected:
 
   //! set old part of RHS for galvanostatic equation
   void ElectrodeKineticsSetOldPartOfRHS();
-
 }; // class TimIntElchBDF2
 
 
@@ -168,7 +161,6 @@ protected:
 
   //! set old part of RHS for galvanostatic equation
   void ElectrodeKineticsSetOldPartOfRHS(){dserror(""); return;};
-
 }; // class TimIntElchGenAlpha
 
 
@@ -215,10 +207,7 @@ protected:
 
   //! set old part of RHS for galvanostatic equation
   void ElectrodeKineticsSetOldPartOfRHS(){return;};
-
 }; // class TimIntElchStatationary
-
-
 } // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_ELCH_SCHEME_H

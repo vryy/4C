@@ -871,7 +871,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
   const double   densam,     //!< density at t_(n+am)
   const double   densnp,     //!< density at t_(n+1)
   const double   phinp,      //!< scalar at t_(n+1)
-  const double   hist,       //!< history of time integartion
+  const double   hist,       //!< history of time integration
   const double   conv_phi,   //!< convective contribution
   const double   diff_phi,   //!< diffusive contribution
   const double   rea_phi,    //!< reactive contribution
@@ -1122,7 +1122,7 @@ template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;

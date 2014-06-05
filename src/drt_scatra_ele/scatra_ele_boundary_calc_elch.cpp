@@ -85,7 +85,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
   : DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal),
-    equpot_(INPAR::ELCH::equpot_enc)
+    equpot_(INPAR::ELCH::equpot_undefined)
 {
   // pointer to class ScaTraEleParameter
   my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
@@ -301,13 +301,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
   // **********************************************************************
   // add boundary flux contributions to the potential equation as well!
   // **********************************************************************
-  const INPAR::ELCH::ElchType elchtype = static_cast<DRT::ELEMENTS::ScaTraEleParameterElch* >(my::scatraparams_)->ElchType();
-  if (elchtype == INPAR::ELCH::elchtype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
 
   // this has to be done only for the following problem formulations:
-  if ((elchtype==INPAR::ELCH::elchtype_enc_pde) or
-      (elchtype==INPAR::ELCH::elchtype_enc_pde_elim))
+  if ((equpot_==INPAR::ELCH::equpot_enc_pde) or
+      (equpot_==INPAR::ELCH::equpot_enc_pde_elim))
   {
     // access the parent element's material
     DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
@@ -457,13 +454,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
     if (scatratype == INPAR::SCATRA::scatratype_undefined)
       dserror("Element parameter SCATRATYPE has not been set!");
 
-
+    // type of closing equation for electric potential
     equpot_ = static_cast<DRT::ELEMENTS::ScaTraEleParameterElch* >(my::scatraparams_)->EquPot();
-
-    // the type of elch problem
-    const INPAR::ELCH::ElchType elchtype = static_cast<DRT::ELEMENTS::ScaTraEleParameterElch* >(my::scatraparams_)->ElchType();
-    if (scatratype == INPAR::SCATRA::scatratype_undefined)
-      dserror("Element parameter SCATRATYPE has not been set!");
 
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -587,8 +579,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
           kinetics,
           pot0,
           frt,
-          iselch,
-          elchtype
+          iselch
       );
 
       // realize correct scaling of rhs contribution for gen.alpha case
@@ -786,8 +777,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
     const int                         kinetics,
     const double                      pot0,
     const double                      frt,
-    const bool                        iselch,
-    const INPAR::ELCH::ElchType   elchtype
+    const bool                        iselch
 )
 {
   //for pre-multiplication of i0 with 1/(F z_k)
@@ -1422,11 +1412,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
           // In the moment it is not checked if two products or reactants are defined
         }
 
-        // equilibrium potential (equpot):
+        // equilibrium potential (equilpot):
         // defined in Bard, 2001, p.98, eq. 3.4.3
-        const double equpot = e0 + (log(c_c0/c_a0))/(frt*nume);
+        const double equilpot = e0 + (log(c_c0/c_a0))/(frt*nume);
         // overpotential based on equilibrium potential
-        const double eta_equpot = epd - equpot;
+        const double eta_equilpot = epd - equilpot;
 
         // negative sign: we look at electon flow
         const double i0 = k0*pow(c_c0,1-beta)*pow(c_a0,beta)*nume*faraday;
@@ -1466,16 +1456,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
 #ifdef DEBUG
         // some safety checks/ user warnings
-        if (((1-beta)*(frt*nume)*eta_equpot) > 100.0)
+        if (((1-beta)*(frt*nume)*eta_equilpot) > 100.0)
           std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
-          <<exp((1-beta)*(frt*nume)*eta_equpot)<<std::endl;
-        if (((-beta)*(frt*nume)*eta_equpot) > 100.0)
+          <<exp((1-beta)*(frt*nume)*eta_equilpot)<<std::endl;
+        if (((-beta)*(frt*nume)*eta_equilpot) > 100.0)
           std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
-          <<exp((-beta)*(frt*nume)*eta_equpot)<<std::endl;
+          <<exp((-beta)*(frt*nume)*eta_equilpot)<<std::endl;
 #endif
 
-        const double expterma = exp((1-beta) * (frt*nume) * eta_equpot);
-        const double exptermc = exp((-beta) * (frt*nume) * eta_equpot);
+        const double expterma = exp((1-beta) * (frt*nume) * eta_equilpot);
+        const double exptermc = exp((-beta) * (frt*nume) * eta_equilpot);
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
@@ -1646,8 +1636,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
   // TODO (ehrl): Is it ok to use nume instead of valence?
   if (iselch)
   {
-    if ((elchtype==INPAR::ELCH::elchtype_enc_pde) or
-        (elchtype==INPAR::ELCH::elchtype_enc_pde_elim))
+    if ((equpot_==INPAR::ELCH::equpot_enc_pde) or
+        (equpot_==INPAR::ELCH::equpot_enc_pde_elim))
     {
       // we have to add boundary contributions to the potential equation as well!
       // and do not forget the corresponding matrix contributions ;-)
@@ -2145,14 +2135,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
             conctermc = conint[kk]/c_c0;
         }
 
-        // equilibrium potential (equpot):
+        // equilibrium potential (equilpot):
         // defined in Bard, 2001, p.98, eq. 3.4.3
-        const double equpot = e0 + (log(c_c0/c_a0))/(frt*nume);
+        const double equilpot = e0 + (log(c_c0/c_a0))/(frt*nume);
         // overpotential based on equilibrium potential
-        const double eta_equpot = epd - equpot;
+        const double eta_equilpot = epd - equilpot;
         // difference between equilibrium potential and open circuit potential:
-        // -> equpot: depends on initial electrode surface concentration
-        // -> ocp:    depends on actual electrode surface concentration
+        // -> equilpot: depends on initial electrode surface concentration
+        // -> ocp:      depends on actual electrode surface concentration
 
         // open circuit potential (ocp): time dependent electrode surface concentrations
         // defined in Newman, 2004, p. 211, eq. 8.20
@@ -2160,8 +2150,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         // overpotential based on open circuit potential
         const double eta = epd - ocp;
 
-        const double expterma = exp((1-beta)*(frt*nume)*eta_equpot);
-        const double exptermc = exp(-beta*(frt*nume)*eta_equpot);
+        const double expterma = exp((1-beta)*(frt*nume)*eta_equilpot);
+        const double exptermc = exp(-beta*(frt*nume)*eta_equilpot);
         const double linea = concterma*(1-beta)*(frt*nume)*expterma+conctermc*beta*(frt*nume)*exptermc;
 
         if (not iselch)

@@ -83,9 +83,8 @@ private:
      const int             kinetics,                ///< desired electrode kinetics model
      const double              pot0,                ///< actual electrode potential on metal side
      const double               frt,                ///< factor F/RT
-     const bool              iselch,                ///< problemtype elch or scatra
-     const INPAR::ELCH::ElchType elchtype           ///< scatra problem type
-     );
+     const bool              iselch                 ///< problemtype elch or scatra
+  );
 
   //! evaluate elch electrode kinetics
   void CalcElchElectrodeKinetics(
@@ -95,7 +94,7 @@ private:
       std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         elemat1_epetra,
       Epetra_SerialDenseVector&         elevec1_epetra
-      );
+  );
 
   //! provide electrode kinetics status information
   void ElectrodeStatus(
@@ -112,7 +111,6 @@ private:
       const bool                    iselch,   ///< problemtype elch or scatra
       const double                  timefac   ///< factor due to time discretization
   );
-
 
   //! evaluate linearization of nernst equation
   void CalcNernstLinearization(

@@ -164,7 +164,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::wedge6>;

@@ -54,6 +54,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
   my::eid_ = ele->Id();
 
   INPAR::ELCH::ElchType elchtype = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_)->ElchType();
+  INPAR::ELCH::EquPot equpot = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_)->EquPot();
 
   // check for the action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
@@ -175,7 +176,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
 
     CalErrorComparedToAnalytSolution(
       ele,
-      elchtype,
       params,
       elevec1_epetra);
 
@@ -202,7 +202,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     if(discretization.Comm().MyPID()==0)
       std::cout << "Electrolyte conductivity evaluated at global element " << ele->Id() << ":" << std::endl;
 
-    CalculateConductivity(ele,elchtype,elevec1_epetra);
+    CalculateConductivity(ele,equpot,elevec1_epetra);
     break;
   }
   case SCATRA::calc_elch_initial_potential:
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
       epotnp_(i) = myphi0[i*my::numdofpernode_+my::numscal_];
     } // for i
 
-    CalculateElectricPotentialField(ele,elchtype,elemat1_epetra,elevec1_epetra);
+    CalculateElectricPotentialField(ele,equpot,elemat1_epetra,elevec1_epetra);
 
     break;
   }
@@ -403,7 +403,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateFlux(
     {
       // Be careful: - Evaluation of phi only for actual scalar
       //             - loop over numscal instead of numdof
-      dserror("domain fluy not implemented for diffusion-conduction formulation");
+      dserror("domain flux not implemented for diffusion-conduction formulation");
     }
     else
     {
@@ -457,7 +457,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateFlux(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution(
   const DRT::Element*                   ele,
-  const enum INPAR::ELCH::ElchType      elchtype,
   Teuchos::ParameterList&               params,
   Epetra_SerialDenseVector&             errors
   )
@@ -704,7 +703,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
   const DRT::Element*               ele,
-  const enum INPAR::ELCH::ElchType  elchtype,
+  const enum INPAR::ELCH::EquPot    equpot,
   Epetra_SerialDenseVector&         sigma
   )
 {
@@ -729,7 +728,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
 
-  GetConductivity(elchtype,sigma_all, sigma);
+  GetConductivity(equpot,sigma_all, sigma);
 
   // conductivity based on ALL ionic species (even eliminated ones!)
   sigma[my::numscal_] += sigma_all;
@@ -745,7 +744,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     const DRT::Element*               ele,
-    const enum INPAR::ELCH::ElchType  elchtype,
+    const enum INPAR::ELCH::EquPot    equpot,
     Epetra_SerialDenseMatrix&         emat,
     Epetra_SerialDenseVector&         erhs
   )
@@ -782,7 +781,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
 
     SetFormulationSpecificInternalVariables(dme,varmanager_);
 
-    CalMatAndRhsElectricPotentialField(varmanager_,elchtype,emat,erhs,fac,dme);
+    CalMatAndRhsElectricPotentialField(varmanager_,equpot,emat,erhs,fac,dme);
   } // integration loop
 
   return;
@@ -804,7 +803,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;

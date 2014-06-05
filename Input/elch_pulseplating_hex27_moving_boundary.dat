@@ -56,6 +56,7 @@ UPRES                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+SCATRATYPE                      Elch
 LINEAR_SOLVER                   1
 FSSUGRDIFF                      No
 INITFUNCNO                      3
@@ -79,8 +80,10 @@ CONVFORM                        convective
 CONVTOL                         1e-6
 ITEMAX                          20
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 ITEMAX                          10
 CONVTOL                         1.0e-10
 MAXTIME                         0.02
@@ -97,6 +100,7 @@ MOVINGBOUNDARY                  fully-transient
 MOVBOUNDARYTHETA                1.0                           // backward-Euler style
 MOLARVOLUME                     10.0                          // 7.11E-3 // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
 //                                                             // Wikipedia: 7,11 x 10 a 6 m3/mol
+EQUPOT                          ENC
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.0002
 NUMSTEP                         21
@@ -145,7 +149,7 @@ NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
@@ -162,7 +166,7 @@ AZSCAL                          none                          // none sym infnor
 DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
 ML_PRINT                        1                             // ML print-out level (0-10)
 ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
+ML_MAXLEVEL                     3                             // ML max number of levels
 ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
@@ -170,7 +174,7 @@ ML_PROLONG_THRES                0.0                           // threshold for p
 ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     2 0 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.67                          // damping fine grid
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid

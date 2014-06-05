@@ -437,59 +437,59 @@ baci_test(elch_1D_tertiary_twoEqu_ENC_varParams_2iter 1 "10")
 baci_test(elch_1D_tertiary_twoEqu_ENC_varParams_ndb_2iter 2 "10")
 baci_test(elch_1D_tertiary_twoEqu_divi_varParams_2iter 3 "10")
 baci_test(elch_1D_tertiary_twoEqu_divi_varParams_ndb_2iter 1 "")
-#baci_test(elch_1D_5ele_line3_3ions_stab_genalpha 1 "7" minimal)
-#baci_test(elch_1D_5ele_line3_3ions_stab_genalpha 2 "7")
-#baci_test(elch_1D_10ele_3ions_stab 1 "")
-#baci_test(elch_1D_10ele_3ions_stab 2 "")
-#baci_test(elch_1D_RDE_kineticsNewman 1 5)
-#baci_test(elch_1D_RDE_kineticsNewman 2 "")
-#baci_test(elch_1D_RDE_kineticsNewman_galvanostat 1 "10")
-#baci_test(elch_1D_RDE_kineticsNewman_2react 1 "")
-#baci_test(elch_1D_RDE_kineticsBard 1 "")
-#baci_test(elch_1D_RDE_kineticsBard 2 5)
-#baci_test(elch_1D_RDE_kineticsBard_galvanostat 1 "10")
-#baci_test(elch_1D_RDE_kineticsBard_2react 1 "")
-#baci_test(elch_1D_galvanostat 1 10)
+#baci_test(elch_1D_5ele_line3_3ions_stab_genalpha 1 "7" minimal)    // Stabilization required
+#baci_test(elch_1D_5ele_line3_3ions_stab_genalpha 2 "7")            // Stabilization required
+#baci_test(elch_1D_10ele_3ions_stab 1 "")                           // Stabilization required
+#baci_test(elch_1D_10ele_3ions_stab 2 "")                           // Stabilization required
+#baci_test(elch_1D_RDE_kineticsNewman 1 5)                          // Stabilization required
+#baci_test(elch_1D_RDE_kineticsNewman 2 "")                         // Stabilization required
+baci_test(elch_1D_RDE_kineticsNewman_galvanostat 1 "10")
+#baci_test(elch_1D_RDE_kineticsNewman_2react 1 "")                  // Stabilization required
+#baci_test(elch_1D_RDE_kineticsBard 1 "")                           // Stabilization required
+#baci_test(elch_1D_RDE_kineticsBard 2 5)                            // Stabilization required
+baci_test(elch_1D_RDE_kineticsBard_galvanostat 1 "10")
+#baci_test(elch_1D_RDE_kineticsBard_2react 1 "")                    // Stabilization required
+baci_test(elch_1D_galvanostat 1 10)
 baci_test(elch_1D_DLcap_linearKinetics 1 "10")
 baci_test(elch_1D_DLcap_linearKinetics 2 "10")
 baci_test(elch_1D_DLcap_linearKinetics_galvanostat 1 "10")
 baci_test(elch_1D_DLcap_linearKinetics_galvanostat 2 "10")
 baci_test(elch_1D_NernstBC_2iter 1 "10")
 baci_test(elch_1D_NernstBC_ost_2iter 2 "10")
-#baci_test(elch_Kwok_Wu 1 "")
-#baci_test(elch_Kwok_Wu 2 "")
-#baci_test(elch_Kwok_Wu_BDF2 2 "")
-#baci_test(elch_RCE_rotsymm_pbc 1 "")
-#baci_test(elch_RCE_rotsymm_pbc 2 "")
-#baci_test(elch_gaussian_hill_pbc_genalpha 2 8)
+baci_test(elch_Kwok_Wu 1 "")
+baci_test(elch_Kwok_Wu 2 "")
+baci_test(elch_Kwok_Wu_BDF2 2 "")
+baci_test(elch_RCE_rotsymm_pbc 1 "")
+baci_test(elch_RCE_rotsymm_pbc 2 "")
+baci_test(elch_gaussian_hill_pbc_genalpha 2 8)
 baci_test(elch_gaussian_hill_pbc_Newman_twoEqu_genalpha_calcInitDt_calcInitPot 1 "")
-#baci_test(elch_gaussian_hill_pbc_NP_genalpha_calcInitDt_calcInitPot 2 "")
-#baci_test(elch_natconv 1 2)
-#baci_test(elch_natconv 2 2)
-#baci_test(elch_natconv_enc_pde_elim 1 2)
-#baci_test(elch_natconv_enc_pde_elim 2 2)
-#baci_test(elch_natconv_onescalar_boussinesq 1 "")
-#baci_test(elch_natconv_onescalar_boussinesq 2 "")
-#baci_test(elch_NonMatchingMesh_20x80 1 "")
-#baci_test(elch_NonMatchingMesh_20x80 2 "")
-#baci_test(elch_NonMatchingMesh_20x80_pdeElim_ionTransport_Laplace 1 "")
-#baci_test(elch_NonMatchingMesh_20x80_pdeElim_ionTransport_Laplace 2 "")
-#baci_test(elch_nurbs9 1 9)
-#baci_test(elch_nurbs9 2 9)
-#baci_test(elch_nurbs9_Tafel 2 9)
-#baci_test(elch_pper_butlervolmer 1 "")
-#baci_test(elch_pper_butlervolmer 2 "")
-#baci_test(elch_pper_primary_current_distribution 1 "")
-#baci_test(elch_pper_primary_current_distribution 2 "")
-#baci_test(elch_pper_secondary_current_distribution 1 "")
-#baci_test(elch_pper_secondary_current_distribution 2 "")
-#baci_test(elch_pulseplating_hex27 1 6)
-#baci_test(elch_pulseplating_hex27 2 6)
-#baci_test(elch_pulseplating_hex27_moving_boundary 2 "34")
-#baci_test(elch_straight_convection 1 "")
-#baci_test(elch_straight_convection 2 "")
-#baci_test(elch_test 1 "")
-#baci_test(elch_test 2 "")
+baci_test(elch_gaussian_hill_pbc_NP_genalpha_calcInitDt_calcInitPot 2 "")
+baci_test(elch_natconv 1 2)
+baci_test(elch_natconv 2 2)
+baci_test(elch_natconv_enc_pde_elim 1 2)
+baci_test(elch_natconv_enc_pde_elim 2 2)
+#baci_test(elch_natconv_onescalar_boussinesq 1 "")                    // Stabilization required
+#baci_test(elch_natconv_onescalar_boussinesq 2 "")                    // Stabilization required
+#baci_test(elch_NonMatchingMesh_20x80 1 "")                           // Stabilization required
+#baci_test(elch_NonMatchingMesh_20x80 2 "")                           // Stabilization required
+baci_test(elch_NonMatchingMesh_20x80_pdeElim_ionTransport_Laplace 1 "")
+baci_test(elch_NonMatchingMesh_20x80_pdeElim_ionTransport_Laplace 2 "")
+#baci_test(elch_nurbs9 1 9)                                           // Stabilization required
+#baci_test(elch_nurbs9 2 9)                                           // Stabilization required
+#baci_test(elch_nurbs9_Tafel 2 9)                                     // Stabilization required
+#baci_test(elch_pper_butlervolmer 1 "")                               // Stabilization required
+#baci_test(elch_pper_butlervolmer 2 "")                               // Stabilization required
+baci_test(elch_pper_primary_current_distribution 1 "")
+baci_test(elch_pper_primary_current_distribution 2 "")
+#baci_test(elch_pper_secondary_current_distribution 1 "")             // Further restructuring required
+#baci_test(elch_pper_secondary_current_distribution 2 "")             // Further restructuring required
+baci_test(elch_pulseplating_hex27 1 6)
+baci_test(elch_pulseplating_hex27 2 6)
+baci_test(elch_pulseplating_hex27_moving_boundary 2 "34")
+#baci_test(elch_straight_convection 1 "")                             // Stabilization required
+#baci_test(elch_straight_convection 2 "")                             // Stabilization required
+baci_test(elch_test 1 "")
+baci_test(elch_test 2 "")
 baci_test(f2_channel4x4_stokes_maxent_pressureprojection 1 "")
 baci_test(f2_channel20x20_drt_weak 1 "")
 baci_test(f2_channel20x20_drt_weak 2 "")

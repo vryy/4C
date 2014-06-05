@@ -116,7 +116,7 @@ protected:
   ){return;};
 
   //! Correction for additional flux terms / currents across Dirichlet boundaries
-  virtual void CorrectionForFluxAccrosDC(
+  virtual void CorrectionForFluxAcrossDC(
     DRT::Discretization&        discretization,   //!< discretization
     const std::vector<int>&     lm,               //!< location vector
     Epetra_SerialDenseMatrix&   emat,             //!< element matrix to calculate
@@ -150,6 +150,23 @@ protected:
   //! @name methods for evaluation of individual terms
   /*========================================================================*/
 
+  //! Potential equation ENC
+  void CalcMatPotEquENC(
+    Epetra_SerialDenseMatrix&                 emat,     //!< element matrix to be filled
+    const int                                 k,        //!< index of current scalar
+    const double                              fac,      //!< domain-integration factor
+    const double                              alphaf,   //!< time factor for ENC
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme       //!< diffusion manager
+  );
+
+  //! CalcRhs: Potential equation ENC
+  void CalcRhsPotEquENC(
+    Epetra_SerialDenseVector&                 erhs,     //!< element vector to be filled
+    const int                                 k,        //!< index of current scalar
+    const double                              fac,      //!< domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,   //!< diffusion manager
+    const double                              conint    //!< concentration at GP
+  );
 
   /*========================================================================*/
   //! @name additional service routines
@@ -173,7 +190,6 @@ protected:
   //! calculate error of numerical solution with respect to analytical solution
   void CalErrorComparedToAnalytSolution(
     const DRT::Element*                   ele,        //!< the element we are dealing with
-    const enum INPAR::ELCH::ElchType      elchtype,   //!< type of elch problem
     Teuchos::ParameterList&               params,     //!< parameter list
     Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
   );
@@ -181,14 +197,14 @@ protected:
   //! calculate conductivity of electrolyte solution
   void CalculateConductivity(
     const DRT::Element*               ele,        //!< the element we are dealing with
-    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   );
 
   //! Solving for electrical potenial field: Evaluate system matrix and rhs
   void CalculateElectricPotentialField(
     const DRT::Element*               ele,        //!< the element we are dealing with
-    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseMatrix&         emat,       //!< element matrix
     Epetra_SerialDenseVector&         erhs        //!< element rhs
   );
@@ -201,7 +217,7 @@ protected:
 
   // Get conductivity from material
   virtual void GetConductivity(
-    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     double&                           sigma_all,  //!< conductivity of electrolyte solution
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   ){return;};
@@ -209,7 +225,7 @@ protected:
   // Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseMatrix&         emat,       //!< element matrix
     Epetra_SerialDenseVector&         erhs,       //!< element rhs
     const double                      fac,        //!< integration factor
@@ -287,7 +303,7 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
   The internal variables stored in this class are used by the Nernst-Planck formulation
   as well as the diffusion-conduction formulation.
   All formulation-specific internal variables are stored and managed by a class derived from this class
-  (e.g. class ScaTraEleInternalVariableManagerElchDiffCond).
+  (class ScaTraEleInternalVariableManagerElchNP and class ScaTraEleInternalVariableManagerElchDiffCond).
 */
 template<int NSD, int NEN>
 class ScaTraEleInternalVariableManagerElch
@@ -301,7 +317,7 @@ class ScaTraEleInternalVariableManagerElch
       faraday_(INPAR::ELCH::faraday_const),
       epsilon_(INPAR::ELCH::epsilon),
       frt_(elchpara->FRT()),
-      //internal variables evaluated at the Gauss point
+      // internal variables evaluated at the Gauss point
       gradphi_(numscal),
       conint_(numscal),
       conintinv_(numscal),
@@ -318,17 +334,18 @@ class ScaTraEleInternalVariableManagerElch
     void SetInternalVariablesElch(
       LINALG::Matrix<NEN,1>&                   funct,      //!< array for shape functions
       LINALG::Matrix<NSD,NEN>&                 derxy,      //!< global derivatives of shape functions w.r.t x,y,z
-      std::vector<LINALG::Matrix<NEN,1> >&     ephinp,     //!< nodal concentration values at time n+1
-      LINALG::Matrix<NEN,1>&                   epotnp,     //!< nodal electric potential values at time n+1
-      LINALG::Matrix<NSD,NEN>&                 econvelnp   //!< nodal velocity values at t_(n+1) or t_(n+alpha_F)
+      std::vector<LINALG::Matrix<NEN,1> >&     ephinp,     //!< nodal concentration values at t_(n+1) or t_(n+alpha_F)
+      LINALG::Matrix<NEN,1>&                   epotnp,     //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
+//      LINALG::Matrix<NSD,NEN>&                 evelnp,     //!< nodal velocity values at t_(n+1) or t_(n+alpha_F)
+      LINALG::Matrix<NSD,NEN>&                 econvelnp   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
     )
     {
       // loop over all transported scalars
       // get concentration of transported scalar k at integration point
       // evaluation of all concentrations is necessary at this point since
       // -> homogeneous reactions of scalar k may depend on all concentrations
-      // -> concentration depending material parameters for the diffusion-confection formulation
-      // -> avoiding of possible errors (concentration was always defined as a vector where only on
+      // -> concentration depending material parameters for the diffusion-convection formulation
+      // -> avoiding of possible errors (concentration was always defined as a vector where only one
       //    entry was filled)
       for (int k = 0; k < numscal_;++k)
       {
@@ -341,9 +358,8 @@ class ScaTraEleInternalVariableManagerElch
       }
       // calculate gradient of electric potential at GP
       gradpot_.Multiply(derxy,epotnp);
-
       // calculate velocity at GP
-      //velint_.Multiply(evelnp,funct);
+//      velint_.Multiply(evelnp,funct);
       // calculate convective velocity at GP
       convelint_.Multiply(econvelnp,funct);
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
@@ -383,6 +399,10 @@ class ScaTraEleInternalVariableManagerElch
     const std::vector<double> ConIntInv(){return conintinv_;};
     //! return gradient of electric potential at GP
     const LINALG::Matrix<NSD,1> GradPot(){return gradpot_;};
+    //! return velocity at GP
+//    const LINALG::Matrix<NSD,1> VelInt(){return velint_;};
+    //! return convective velocity at GP
+    const LINALG::Matrix<NSD,1> ConVelInt(){return convelint_;};
     //! return convective part in convective form
     const LINALG::Matrix<NEN,1> Conv(){return conv_;};
     //! return convective contribution
@@ -411,7 +431,7 @@ class ScaTraEleInternalVariableManagerElch
     double epsilon_;
     //! pre-calculation of divisions which are regularly used in following
     //! (a division is much more expensive than a multiplication)
-    //! constant parameter 1/F
+    //! constant parameter F/RT
     double frt_;
 
   /*========================================================================*/
@@ -427,14 +447,14 @@ class ScaTraEleInternalVariableManagerElch
     //! gradient of electric potential at integration point
     LINALG::Matrix<NSD,1> gradpot_;
     //! velocity at GP
-    //LINALG::Matrix<NSD,1> velint_;
+//    LINALG::Matrix<NSD,1> velint_;
     //! convective velocity at GP
     LINALG::Matrix<NSD,1> convelint_;
     //! convective part in convective form: u_x*N,x+ u_y*N,y
     LINALG::Matrix<NEN,1> conv_;
     //! convective contribution
     std::vector<double> convphi_;
-    // subgrind velocity
+    // subgrid velocity
     LINALG::Matrix<NEN,1> sgconv_;
 };
 

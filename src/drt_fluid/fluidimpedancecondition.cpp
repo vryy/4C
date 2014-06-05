@@ -867,7 +867,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
 /*!
   modified by chfoe 04/08
 
-  Calculate the flow rate accros an impedance boundary surface
+  Calculate the flow rate across an impedance boundary surface
 
   Flow rates are
   (1) calculated for single element surfaces

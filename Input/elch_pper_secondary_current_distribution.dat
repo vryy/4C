@@ -16,7 +16,7 @@ secondary current distribution in a PPER
 //NODES                           902
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+PROBLEMTYP                      Electrochemistry
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -79,6 +79,11 @@ SCATRATYPE                      ConvectionDiffusion
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1.0e-6
 ITEMAX                          10
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
+----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
+EQUPOT                          Laplace
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

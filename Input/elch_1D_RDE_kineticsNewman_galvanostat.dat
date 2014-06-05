@@ -35,6 +35,7 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 CONVTOL                         1e-06
 GALVANOSTATIC                   Yes
 GSTATCONDID_ANODE               1
@@ -45,7 +46,6 @@ GSTATCURVENO                    1
 GSTATITEMAX                     50
 GSTAT_LENGTH_CURRENTPATH        0.1
 ITEMAX                          8
-MAGNETICFIELD_FUNCNO            -1
 MAXTIME                         1000
 MOLARVOLUME                     0
 MOVINGBOUNDARY                  No
@@ -55,6 +55,7 @@ RESTARTEVRY                     1
 TEMPERATURE                     298
 TIMESTEP                        0.01
 UPRES                           1
+EQUPOT                          ENC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 ALPHA_F                         0.5

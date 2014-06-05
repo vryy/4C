@@ -75,11 +75,15 @@ UPRES                           1
 CALCERROR                       Kwok_Wu
 BLOCKPRECOND                    Yes
 MATID                           4
+SCATRATYPE                      Elch
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          50
 EXPLPREDICT                     Yes
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 ITEMAX                          10
 MAXTIME                         0.1
 NUMSTEP                         40
@@ -87,6 +91,7 @@ RESTARTEVRY                     1000
 TIMESTEP                        0.005
 UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
+EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

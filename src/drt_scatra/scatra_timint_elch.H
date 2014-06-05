@@ -210,6 +210,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! elch type
   INPAR::ELCH::ElchType elchtype_;
 
+  //! type of closing equation for electric potential
+  INPAR::ELCH::EquPot equpot_;
+
   //! ELCH-specific parameter F/RT (default value for the temperature is 298K)
   double frt_;
 

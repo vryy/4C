@@ -67,10 +67,10 @@ GSTATITEMAX                     30
 GSTAT_LENGTH_CURRENTPATH        0.1
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
+EQUPOT                          divi
 ---------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
 CURRENT_SOLUTION_VAR            No
-EQUPOT                          divi
 MAT_NEWMAN_CONST_A              1.0
 MAT_NEWMAN_CONST_B              -2.0
 MAT_NEWMAN_CONST_C              -1.0

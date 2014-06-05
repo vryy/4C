@@ -48,6 +48,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
     elchparams_     (params),
     elchtype_       (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchType>(*elchparams_,"ELCHTYPE")),
+    equpot_         (DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_,"EQUPOT")),
     frt_            (0.0),
     elchdensnm_     (Teuchos::null),
     elchdensn_      (Teuchos::null),
@@ -56,7 +57,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     gstatincrement_ (0.0),
     c0_             (0,0.0),
     sigma_          (Teuchos::null),
-    densific_       (numscal_),
+    densific_       (0),
     dlcapexists_    (false),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null)
@@ -82,6 +83,7 @@ void SCATRA::ScaTraTimIntElch::Init()
   OutputElectrodeInfo(false,false);
 
   // initializes variables for natural convection (ELCH) if necessary
+  densific_.resize(numscal_);
   SetupElchNatConv();
 
   // initialize dirichlet toggle:
@@ -126,7 +128,7 @@ void SCATRA::ScaTraTimIntElch::Init()
     {
       std::cout<<"Electrolyte conductivity (species "<<k+1<<")    = "<<(*sigma_)[k]<<std::endl;
     }
-    if (elchtype_==INPAR::ELCH::elchtype_enc_pde_elim)
+    if (equpot_==INPAR::ELCH::equpot_enc_pde_elim)
     {
       double diff = (*sigma_)[0];
       for (int k=1;k < numscal_;k++)
@@ -175,7 +177,7 @@ void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
       and msht_ == INPAR::FLUID::no_meshtying)
   {
-    if ((elchtype_!=INPAR::ELCH::elchtype_enc))
+    if ((equpot_!=INPAR::ELCH::equpot_enc))
       dserror("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
 
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8
@@ -203,7 +205,7 @@ void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
 
     if ((msht_== INPAR::FLUID::condensed_bmat or
         msht_== INPAR::FLUID::condensed_bmat_merged) and
-        (elchtype_ == INPAR::ELCH::elchtype_enc))
+        (equpot_== INPAR::ELCH::equpot_enc))
       dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
           "cannot be solved in a block matrix");
 
@@ -253,6 +255,7 @@ void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameter()
   // general elch parameter
   eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
   eleparams.set<int>("elchtype",elchtype_);
+  eleparams.set<int>("equpot",equpot_);
 
   // parameters for diffusion-conduction formulation
   eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
@@ -604,9 +607,10 @@ void SCATRA::ScaTraTimIntElch::ComputeDensity()
     const int localdofid = phinp_->Map().LID(globaldofid);
     if (localdofid < 0)
       dserror("localdofid not found in map for given globaldofid");
-    err = elchdensnp_->ReplaceMyValue(localdofid,0,newdensity);
-    if (err != 0) dserror("error while inserting a value into elchdensnp_");
 
+    err = elchdensnp_->ReplaceMyValue(localdofid,0,newdensity);
+
+    if (err != 0) dserror("error while inserting a value into elchdensnp_");
   } // loop over all local nodes
   return;
 } // SCATRA::ScaTraTimIntImpl::ComputeDensity
@@ -947,7 +951,7 @@ void SCATRA::ScaTraTimIntElch::SetupElchNatConv()
 
     if (mat->MaterialType() == INPAR::MAT::m_matlist)
     {
-      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
+      Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 
       for (int k = 0;k<numscal_;++k)
       {
@@ -956,17 +960,20 @@ void SCATRA::ScaTraTimIntElch::SetupElchNatConv()
 
         if (singlemat->MaterialType() == INPAR::MAT::m_ion)
         {
-          const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+          Teuchos::RCP<const MAT::Ion> actsinglemat = Teuchos::rcp_static_cast<const MAT::Ion>(singlemat);
+
           densific_[k] = actsinglemat->Densification();
+
           if (densific_[k] < 0.0) dserror("received negative densification value");
         }
         else
           dserror("material type is not allowed");
       }
     }
+
     if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
     {
-      const MAT::Ion* actmat = static_cast<const MAT::Ion*>(mat.get());
+      Teuchos::RCP<const MAT::Ion> actmat = Teuchos::rcp_static_cast<const MAT::Ion>(mat);
       densific_[0] = actmat->Densification();
       if (densific_[0] < 0.0) dserror("received negative densification value");
       if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
@@ -1065,10 +1072,8 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
     // check if Nernst-BC is defined on electrode kinetics condition
     if (Elchcond[icond]->GetInt("kinetic model")==INPAR::SCATRA::nernst)
     {
-      switch(scatratype_)
+      switch(elchtype_)
       {
-        case INPAR::ELCH::elchtype_enc_pde:
-        case INPAR::ELCH::elchtype_enc_pde_elim:
         case INPAR::ELCH::elchtype_diffcond:
         {
           // this vector must not be defined more than once!!
@@ -1200,8 +1205,8 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
 
     // solve the system linear incrementally:
-    // the system is linear and therefore it converges in a single step but
-    // an incremental solution procedure supports allows the solution for the potential field
+    // the system is linear and therefore it converges in a single step, but
+    // an incremental solution procedure allows the solution for the potential field
     // to converge to an "defined" potential level due to initial conditions!
     solver_->Solve(sysmat_->EpetraOperator(),inc,rhs,true,true,projector_);
 
@@ -1532,7 +1537,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
   AddTimeIntegrationSpecificVectors();
   SetElementTimeParameter(condparams);
 
-
   std::string condstring("ElectrodeKinetics");
   // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
@@ -1543,7 +1547,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
     LinearizationNernstCondition();
 
   return;
-} // ScaTraTimIntImpl::EvaluateElectrodeKinetics
+} // ScaTraTimIntElch::EvaluateSolutionDependingBC
 
 
 /*----------------------------------------------------------------------*
@@ -1668,7 +1672,3 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // so much code for a simple check!
   return;
 } // ScaTraTimIntImpl::CheckConcentrationValues
-
-
-
-

@@ -686,7 +686,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
-        CalcMatConvAddCons(emat,k,timefacfac,convelint,gradphi,vdiv,densnp,vdiv);
+        CalcMatConvAddCons(emat,k,timefacfac,vdiv,densnp);
 
       // calculation of diffusive element matrix
       CalcMatDiff(emat,k,timefacfac,diffmanager_);
@@ -1319,11 +1319,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvAddCons(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  timefacfac,
-  const LINALG::Matrix<nsd_,1>& convelint,
-  const LINALG::Matrix<nsd_,1>& gradphi,
   const double                  vdiv,
-  const double                  densnp,
-  const double                  visc
+  const double                  densnp
   )
 {
   const double consfac = timefacfac*densnp*vdiv;
@@ -1471,7 +1468,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatMass(
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
-  // transient term
   for (int vi=0; vi<nen_; ++vi)
   {
     const double v = densamfac*funct_(vi);
@@ -2109,7 +2105,7 @@ template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;

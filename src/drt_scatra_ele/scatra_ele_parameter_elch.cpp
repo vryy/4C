@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_elch.H
+\file scatra_ele_parameter_elch.cpp
 
 \brief Setting of elch scatra parameter for element evaluation
 
@@ -55,10 +55,9 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::Done()
 DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch()
   : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(),
   elchtype_(INPAR::ELCH::elchtype_undefined),
-  nernstplanck_(true),
+  equpot_(INPAR::ELCH::equpot_undefined),
   frt_(0.0),
   cursolvar_(false),
-  equpot_(INPAR::ELCH::equpot_undefined),
   diffusioncoefbased_(true),
   newmanconsta_(2.0),
   newmanconstb_(-2.0),
@@ -77,9 +76,8 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchScaTraParameter(
   // type of elch problem
   elchtype_ = DRT::INPUT::get<INPAR::ELCH::ElchType>(params, "elchtype");
 
-  // check if we are in the Nernst-Planck or in the diffusion-conduction framework
-  if(elchtype_ == INPAR::ELCH::elchtype_diffcond)
-    nernstplanck_=false;
+  // type of closing equation for electric potential
+  equpot_ = DRT::INPUT::get<INPAR::ELCH::EquPot>(params, "equpot");
 
   // get parameter F/RT
   frt_ = params.get<double>("frt");
@@ -89,7 +87,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchScaTraParameter(
     dserror("Only SUPG-type stabilization available for ELCH.");
 
   // safety check - only stabilization of SUPG-type available
-  if (mat_gp_ == false)
+  if ((mat_gp_ == false) and (elchtype_ == INPAR::ELCH::elchtype_diffcond))
     dserror("Since most of the materials of the Diffusion-conduction formulation depend on the concentration,\n"
             "an evaluation of the material at the element center is disabled.");
 
@@ -105,15 +103,12 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchDiffCondScaTraParamete
   int myrank )
 {
   // set diffusion-conduction sepecific parameter only when diffusion-conduction formulation is used
-  if(nernstplanck_ == false)
+  if(elchtype_ == INPAR::ELCH::elchtype_diffcond)
   {
     Teuchos::ParameterList& diffcondparams = params.sublist("DIFFCOND");
 
     // flag if current is used as a solution variable
     cursolvar_ = DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR");
-
-    //! equation used for closing of the elch-system
-    equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"EQUPOT");
 
     // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
     diffusioncoefbased_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"MAT_DIFFCOND_DIFFBASED");
@@ -142,8 +137,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchDiffCondScaTraParamete
     if (mat_gp_ == false and tau_gp_==false)
       dserror("Since most of the materials of the Diffusion-conduction formulation depend on the concentration,\n"
               "an evaluation of the material (and the potential stabilization parameter) at the element center is disabled.");
-  }
-
+  } // if(elchtype_ == INPAR::ELCH::elchtype_diffcond)
 
   return;
 }

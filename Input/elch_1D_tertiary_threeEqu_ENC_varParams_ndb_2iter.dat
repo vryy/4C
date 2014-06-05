@@ -69,10 +69,10 @@ GSTATITEMAX                     30
 GSTAT_LENGTH_CURRENTPATH        0.03
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
+EQUPOT                          ENC
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
 CURRENT_SOLUTION_VAR            Yes
-EQUPOT                          ENC
 MAT_DIFFCOND_DIFFBASED          No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

@@ -49,10 +49,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 //  {
 //    return ScaTraImpl<DRT::Element::hex20>::Instance(problem,numdofpernode,numscal);
 //  } */
-//  case DRT::Element::hex27:
-//  {
-//    return ScaTraImpl<DRT::Element::hex27>::Instance(problem,numdofpernode,numscal);
-//  } /*
+  case DRT::Element::hex27:
+  {
+    return DefineProblemType<DRT::Element::hex27>(problem,numdofpernode,numscal);
+  }
 //  case DRT::Element::nurbs8:
 //  {
 //    return ScaTraImpl<DRT::Element::nurbs8>::Instance(problem,numdofpernode,numscal);

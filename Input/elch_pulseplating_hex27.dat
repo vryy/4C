@@ -30,6 +30,7 @@ NUMTHERMDIS                     0
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+SCATRATYPE                      Elch
 LINEAR_SOLVER                   1
 FSSUGRDIFF                      No
 INITFUNCNO                      3
@@ -55,6 +56,7 @@ ITEMAX                          20
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 ITEMAX                          10
 MAXTIME                         0.02
 NUMSTEP                         17
@@ -66,6 +68,7 @@ GALVANOSTATIC                   Yes
 GSTATCONVTOL                    1e-6
 GSTATCURVENO                    4
 GSTATITEMAX                     20
+EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

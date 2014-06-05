@@ -35,9 +35,9 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 THETA                           0.66
 TIMEINTEGR                      Gen_Alpha
-ALPHA_M             		0.83333333333333
-ALPHA_F             		0.66666666666666
-GAMMA               		0.66666666666666
+ALPHA_M                         0.83333333333333
+ALPHA_F                         0.66666666666666
+GAMMA                           0.66666666666666
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
@@ -62,7 +62,7 @@ DEFINITION_TAU      		Zero
 EVALUATION_MAT      		integration_point
 EVALUATION_TAU      		integration_point
 ------------------------------------------------------ELCH CONTROL
-ELCHTYPE			DiffCond
+ELCHTYPE                        DiffCond
 ITEMAX                          10
 MAXTIME                         0.25
 NUMSTEP                         5
@@ -78,10 +78,10 @@ GSTATITEMAX                     20
 GSTAT_LENGTH_CURRENTPATH        0.075
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
+EQUPOT                          divi
 ---------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
 CURRENT_SOLUTION_VAR            No
-EQUPOT                          divi
 MAT_DIFFCOND_DIFFBASED          No
 MAT_NEWMAN_CONST_A              1.0
 MAT_NEWMAN_CONST_B              -2.0

@@ -127,7 +127,6 @@ void SCATRA::TimIntStationary::SetElementTimeParameter()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set<int>("action",SCATRA::set_time_parameter);
   // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
   eleparams.set<int>("scatratype",scatratype_);
 

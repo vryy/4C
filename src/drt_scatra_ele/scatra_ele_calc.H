@@ -634,7 +634,7 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
       const int                     k,           //!< index of current scalar
       const double                  timefacfac,  //!< domain-integration factor times time-integration factor
-      const double                  densnp,      //!< density  at time_(n+1)
+      const double                  densnp,      //!< density at time_(n+1)
       const LINALG::Matrix<nen_,1>& conv,        //!< convective operator
       const LINALG::Matrix<nen_,1>& sgconv       //!< subgrid-scale convective operator
     );
@@ -644,11 +644,8 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
       const int                     k,           //!< index of current scalar
       const double                  timefacfac,  //!< domain-integration factor times time-integration factor
-      const LINALG::Matrix<nsd_,1>& convelint,   //!< convective velocity at Gauss point
-      const LINALG::Matrix<nsd_,1>& gradphi,     //!< scalar gradient at Gauss point
       const double                  vdiv,        //!< velocity divergence
-      const double                  densnp,      //!< density at time_(n+1)
-      const double                  visc        //!< viscosity
+      const double                  densnp       //!< density at time_(n+1)
     );
 
     //! calculation of diffusive element matrix
@@ -919,7 +916,7 @@ namespace ELEMENTS
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
 
-    //! bodyforce in element nodesx
+    //! bodyforce in element nodes
     std::vector<LINALG::Matrix<nen_,1> > bodyforce_;
 //
     //! weights for nurbs elements

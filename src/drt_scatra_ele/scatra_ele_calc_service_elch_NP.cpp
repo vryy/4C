@@ -67,7 +67,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepMatAndRhsInitialTimeDeriva
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
-  const enum INPAR::ELCH::ElchType  elchtype,
+  const enum INPAR::ELCH::EquPot    equpot,
   double&                           sigma_all,
   Epetra_SerialDenseVector&         sigma
 )
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
     sigma_all += sigma_k;
 
     // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-    if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
+    if(equpot==INPAR::ELCH::equpot_enc_pde_elim)
     {
       sigma_all += factor*dme->GetIsotropicDiff(my::numscal_)*dme->GetValence(my::numscal_)*dme->GetValence(k)*(-conint[k]);
     }
@@ -110,7 +110,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhsElectricPotentialField(
   Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-  const enum INPAR::ELCH::ElchType  elchtype,
+  const enum INPAR::ELCH::EquPot    equpot,
   Epetra_SerialDenseMatrix&         emat,
   Epetra_SerialDenseVector&         erhs,
   const double                      fac,
@@ -127,8 +127,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhsElectricPotentialF
     sigmaint += sigma_k;
 
     // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-    if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
-      sigmaint += frt*dme->GetValence(k)*dme->GetIsotropicDiff(k)*dme->GetValence(my::numscal_)*(-vm->ConInt(k));
+    if(equpot==INPAR::ELCH::equpot_enc_pde_elim)
+      sigmaint += frt*dme->GetValence(k)*dme->GetIsotropicDiff(my::numscal_)*dme->GetValence(my::numscal_)*(-vm->ConInt(k));
 
     // diffusive terms on rhs
     const double vrhs = fac*dme->GetIsotropicDiff(k)*dme->GetValence(k);
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhsElectricPotentialF
       my::GetLaplacianWeakFormRHS(laplawf,vm->GradPhi(k),vi);
       erhs[fvi] -= vrhs*laplawf;
       // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-      if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
+      if(equpot==INPAR::ELCH::equpot_enc_pde_elim)
         erhs[fvi] -= -fac*dme->GetValence(k)*dme->GetIsotropicDiff(my::numscal_)*laplawf;
     }
 
@@ -190,7 +190,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::nurbs9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::wedge6>;

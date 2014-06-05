@@ -27,11 +27,7 @@ namespace INPAR
   enum ElchType
   {
     elchtype_undefined,
-    elchtype_enc,
-    elchtype_enc_pde,
-    elchtype_enc_pde_elim,
-    elchtype_poisson,
-    elchtype_laplace,
+    elchtype_nernst_planck,
     elchtype_diffcond
   };
 
@@ -46,9 +42,13 @@ namespace INPAR
   /// type of scalar transport problem
   enum EquPot
   {
-    equpot_divi,
+    equpot_undefined,
     equpot_enc,
-    equpot_undefined
+    equpot_enc_pde,
+    equpot_enc_pde_elim,
+    equpot_poisson,
+    equpot_laplace,
+    equpot_divi
   };
 
   enum DiffCondMat

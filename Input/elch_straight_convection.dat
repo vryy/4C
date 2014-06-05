@@ -68,6 +68,7 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       totalflux_domain
 MATID                           4
+SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-9
 ITEMAX                          10
@@ -75,6 +76,7 @@ ITEMAX                          10
 STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        Nernst_Planck
 ITEMAX                          12
 MAXTIME                         1000
 NUMSTEP                         1
@@ -82,6 +84,7 @@ RESTARTEVRY                     1000
 TIMESTEP                        1.0
 UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
+EQUPOT                          ENC
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall

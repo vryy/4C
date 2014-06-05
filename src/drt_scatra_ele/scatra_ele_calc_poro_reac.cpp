@@ -182,7 +182,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::quad9>;
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex8>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::wedge6>;
