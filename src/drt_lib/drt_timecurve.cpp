@@ -602,7 +602,8 @@ DRT::UTILS::TimeCurve& DRT::UTILS::TimeCurveManager::Curve(int num)
         "possible problems: \n"
         "a) Dirichlet condition: \n "
         "   defined NUMDOF's does not match number of dof's defined by "
-        "   the problem type / material / space dimensions",num+1);
+        "   the problem type / material / space dimensions"
+        "b) The numbering of the curves have to start with 1 ",num+1);
 
   return *(curves_[num]);
 }
