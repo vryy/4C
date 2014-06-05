@@ -67,8 +67,7 @@ SOLVER                          UMFPACK
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma            
 COUPLING_STRATEGY               xfluid_sided_coupling
-CONV_STAB_FAC                   0.0
-CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING               none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS

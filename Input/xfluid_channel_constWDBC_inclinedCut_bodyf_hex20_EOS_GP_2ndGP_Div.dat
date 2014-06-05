@@ -91,7 +91,6 @@ EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // "BoundaryType
 VISC_STAB_FAC                   50.0                            // in [10;100]
 VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
-CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_2nd_STAB          Yes

@@ -112,8 +112,7 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   1.0
-CONV_STAB_FAC                   0.0
-CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING               none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 RELAXING_ALE                    Yes
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved         // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues //// //

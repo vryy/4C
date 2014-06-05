@@ -124,7 +124,6 @@ INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche
 VISC_STAB_FAC                   10.0
-CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.001

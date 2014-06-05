@@ -88,8 +88,7 @@ COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   35                              // in [10;100]
 VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
-CONV_STAB_FAC                   0.0
-CONV_STAB_SCALING none //abs_normal_vel //abs_normal_vel // inflow // const // none
+XFF_CONV_STAB_SCALING        none 
 GHOST_PENALTY_STAB yes //
 GHOST_PENALTY_FAC               0.003                           // in [0.1;0.5]
 PRESSCOUPLING_INTERFACE_STAB no //

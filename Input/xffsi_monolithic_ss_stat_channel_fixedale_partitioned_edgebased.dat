@@ -91,8 +91,7 @@ COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   100.0                         // (relevant for nitsche)
 VISC_STAB_SCALING               visc_div_by_hk                // inv_hk // const (relevant for nitsche)
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length (relevant for nitsche)
-CONV_STAB_FAC                   0.0                           // 1.0
-CONV_STAB_SCALING               none                          // abs_normal_vel //abs_normal_vel // inflow // const
+XFF_CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
 MSH_L2_PROJ                     part_ele_proj //full_ele_proj (K_ss whole element or just partial) 

@@ -82,7 +82,6 @@ VEL_INIT_FUNCT_NO               2
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 VISC_STAB_FAC                   10.0
-CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

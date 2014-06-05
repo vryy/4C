@@ -99,8 +99,7 @@ GMSH_DEBUG_OUT                  No
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche           // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   1.0
-CONV_STAB_FAC                   1.0//0.0
-CONV_STAB_SCALING               inflow//averaged//none
+XFF_CONV_STAB_SCALING           inflow//averaged//none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
