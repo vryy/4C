@@ -94,7 +94,7 @@ protected:
   }
 
   /// get number of element dofs for this element
-  virtual int NumDofPerFace( const Element & element ) const
+  virtual int NumDofPerFace( const Element & element, int face) const
   {
     return numauxdofperface_;
   }

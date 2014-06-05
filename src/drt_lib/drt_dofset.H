@@ -346,6 +346,11 @@ protected:
     return element.NumDofPerElement( );
   }
 
+  virtual int NumDofPerFace( const Element & element, int face) const
+  {
+    return element.NumDofPerFace(face);
+  }
+
   //! @name Proxy management
 
   /// Notify proxies of new dofs
