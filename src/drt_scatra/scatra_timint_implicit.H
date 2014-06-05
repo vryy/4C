@@ -520,13 +520,6 @@ protected:
   //! update Krylov space projector
   void UpdateKrylovSpaceProjection();
 
-  //! export node-based multivector to column map and add it to a parameter list
-  void AddMultiVectorToParameterList(
-    Teuchos::ParameterList&          p,    //!< parameter list
-    const std::string                name, //!< naming std::string for added vector
-    Teuchos::RCP<Epetra_MultiVector> vec   //!< Epetra_MultiVector to be added
-  );
-
   //! compute approximation for fluxes and add it to a parameter list
   void AddFluxApproxToParameterList(
     Teuchos::ParameterList&            p,       //!< parameter list

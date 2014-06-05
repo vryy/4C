@@ -333,13 +333,6 @@ protected:
 
 private:
 
-  /*!
-  \brief export multivector to column map and add it to parameter list (additional scatra statistics)
-  */
-  void AddMultiVectorToParameterList(Teuchos::ParameterList& p,
-                                     const std::string name,
-                                     Teuchos::RCP<Epetra_MultiVector> vec);
-
   //! direction normal to homogenous plane
   int                              dim_;
 

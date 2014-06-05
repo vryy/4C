@@ -1057,19 +1057,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
   filterparams.set<int>("scatratype",scatratype_);
 
   // add velocity
-  if (velocity != Teuchos::null)
-  {
-    //provide data in node-based multi-vector for usage on element level
-    // -> export to column map is necessary for parallel evaluation
-    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
-    const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
-    int numcol = velocity->NumVectors();
-    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-    LINALG::Export(*velocity,*tmp);
-    filterparams.set("velocity",tmp);
-  }
-  else
-    filterparams.set("velocity",Teuchos::null);
+  scatradiscret_->AddMultiVectorToParameterList(filterparams, "velocity", velocity);
 
   filterparams.set("thermpress",thermpress);
 

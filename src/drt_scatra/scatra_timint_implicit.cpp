@@ -1928,7 +1928,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     mode_params.set<int>("scatratype",scatratype_);
     mode_params.set("isale",isale_);
     if (isale_)
-      AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
+      discret_->AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
 
     // loop over all activemodes
     for (int imode = 0; imode < nummodes; ++imode)
@@ -2004,31 +2004,6 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
 
 } // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
 
-/*----------------------------------------------------------------------*
- | export multivector to column map & add it to parameter list gjb 06/09|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
-(Teuchos::ParameterList& p,
-    const std::string name,
-    Teuchos::RCP<Epetra_MultiVector> vec
-)
-{
-  if (vec != Teuchos::null)
-  {
-    //provide data in node-based multi-vector for usage on element level
-    // -> export to column map is necessary for parallel evaluation
-    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
-    const Epetra_Map* nodecolmap = discret_->NodeColMap();
-    int numcol = vec->NumVectors();
-    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-    LINALG::Export(*vec,*tmp);
-    p.set(name,tmp);
-  }
-  else
-    p.set(name,Teuchos::null);
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
 
 /*----------------------------------------------------------------------*
  | add approximation to flux vectors to a parameter list      gjb 05/10 |
@@ -2162,7 +2137,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   AddProblemSpecificParametersAndVectors(condparams);
 
   // provide displacement field in case of ALE
-  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+  if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   discret_->ClearState();
   // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
@@ -2220,16 +2195,16 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+  discret_->AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
   // and provide fine-scale velocity for multifractal subgrid-scale modeling only
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
-    AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
+    discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -2276,8 +2251,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     mhdbcparams.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
-    AddMultiVectorToParameterList(mhdbcparams,"convective velocity field",convel_);
-    AddMultiVectorToParameterList(mhdbcparams,"velocity field",vel_);
+    discret_->AddMultiVectorToParameterList(mhdbcparams,"convective velocity field",convel_);
+    discret_->AddMultiVectorToParameterList(mhdbcparams,"velocity field",vel_);
     AddTimeIntegrationSpecificVectors();
 
     // evaluate all mixed hybrid Dirichlet boundary conditions

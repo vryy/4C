@@ -140,11 +140,11 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure() //TODO: parameterlist
   discret_->SetState("phinp",phiaf_);
 
   // provide velocity field (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
 
   // provide displacement field in case of ALE
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set action for elements
   eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);

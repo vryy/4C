@@ -237,3 +237,28 @@ void DRT::Discretization::ComputeNullSpace(
   dwele->ElementType().ComputeNullSpace( *this, *nullspace, x0, numdf, dimns );
 }
 
+/*----------------------------------------------------------------------*
+ |  SetState surrogate for node based vectors                  (public) |
+ |                                                            gjb 06/09 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::AddMultiVectorToParameterList(Teuchos::ParameterList& p,
+                                                        const std::string name,
+                                                        Teuchos::RCP<const Epetra_MultiVector> vec)
+{
+  //provide data in node-based multi-vector for usage on element level
+  // -> export to column map is necessary for parallel evaluation
+  //SetState cannot be used since this multi-vector is nodebased and not dofbased!
+  if (vec != Teuchos::null)
+  {
+    const Epetra_Map* nodecolmap = NodeColMap();
+    int numcol = vec->NumVectors();
+    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    LINALG::Export(*vec,*tmp);
+    p.set(name,tmp);
+  }
+  else
+    p.set(name,Teuchos::null);
+
+  return;
+}
+

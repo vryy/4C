@@ -107,7 +107,7 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(Teuchos::
 
     // add nodal velocity field, if required
     if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
-      AddMultiVectorToParameterList(params,"reinitialization velocity field",reinitvel_);
+      discret_->AddMultiVectorToParameterList(params,"reinitialization velocity field",reinitvel_);
   }
 
   return;

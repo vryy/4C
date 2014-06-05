@@ -389,7 +389,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
     // parameters for Elch/DiffCond formulation
     eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
@@ -485,7 +485,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -524,7 +524,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -753,7 +753,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
   if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // Since we just want to have the status ouput for t_{n+1},
   // we have to take care for Gen.Alpha!
@@ -930,7 +930,7 @@ void SCATRA::ScaTraTimIntElch::SetupElchNatConv()
 
     //provide displacement field in case of ALE
     if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
     // evaluate integrals of concentrations and domain
     Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -1184,7 +1184,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -1248,7 +1248,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::ComputeConducti
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
   if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -1530,7 +1530,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
   condparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
   if (isale_)   //provide displacement field in case of ALE
-    AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+    discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   //TODO: SCATRA_ELE_CLEANING: Boundary element auf Parameterliste
   // add element parameters and set state vectors according to time-integration scheme

@@ -1404,6 +1404,25 @@ public:
    */
   virtual bool HasState(const std::string& name) const { return HasState(0,name); }
 
+
+  /*!
+  \brief Export a node based Epetra_MultiVector to column layout
+         and store it in the given ParameterList
+
+  Using this method, the node based vector is exported to column
+  layout and stored in the given ParameterList. The elements can access
+  this vector by using the name of that vector in the corresponding
+  ParameterList.
+
+  \param nds (in): ParameterList in which vector is stored
+  \param name (in): Name of data
+  \param state (in): vector of some data
+
+  */
+  virtual void AddMultiVectorToParameterList(Teuchos::ParameterList& p,
+                                             const std::string name,
+                                             Teuchos::RCP<const Epetra_MultiVector> vec);
+
   /*!
   \brief Call elements to evaluate
 

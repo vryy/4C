@@ -3206,7 +3206,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
                                                         field!=scatrafieldvecs.end()  ;
                                                         ++field                 )
      {
-       AddMultiVectorToParameterList(scatraeleparams_,field->first,field->second);
+       scatradiscret_->AddMultiVectorToParameterList(scatraeleparams_,field->first,field->second);
      }
 
      // set state vectors for element call
@@ -5693,28 +5693,5 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
        scnum_ = visc_ / (diffus * dens_);
      }
   }
-  return;
-}
-
-
-void FLD::TurbulenceStatisticsCha::AddMultiVectorToParameterList(
-          Teuchos::ParameterList& p,
-          const std::string name,
-          Teuchos::RCP<Epetra_MultiVector> vec)
-{
-  if (vec != Teuchos::null)
-  {
-    //provide data in node-based multi-vector for usage on element level
-    // -> export to column map is necessary for parallel evaluation
-    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
-    const Epetra_Map* nodecolmap = discret_->NodeColMap();
-    int numcol = vec->NumVectors();
-    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-    LINALG::Export(*vec,*tmp);
-    p.set(name,tmp);
-  }
-  else
-    p.set(name,Teuchos::null);
-
   return;
 }
