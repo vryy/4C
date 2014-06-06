@@ -238,6 +238,10 @@ protected:
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );
 
+  void SetAdvancedReactionTerms(Teuchos::RCP<ScaTraEleReaManager>       reamanager,
+                                const int                               k,
+                                const double                            scale=1.0);
+
   bool iscoupled_;                           /// Flag for homogenous scatra coupling volume condition
   bool isinit_;                              /// Flag if is checked for coupling condition or Material is allready done
   int numcond_;                              /// number of homogenous scatra coupling conditions

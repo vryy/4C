@@ -18,6 +18,11 @@
 
 #include "scatra_ele_calc.H"
 
+namespace MAT
+{
+class ScatraMat;
+}
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -60,9 +65,23 @@ protected:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
-/*========================================================================*/
-//! @name routines for additional element evaluations (called from EvaluateService)
-/*========================================================================*/
+  double GetPorosityAtGP(const int  iquad);
+
+  void SetDiffusivity(const Teuchos::RCP<const MAT::ScatraMat>& material,
+                     const int                                 k,
+                     Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
+                     const double                              porosity);
+
+  void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
+                        const int                                 k,
+                        Teuchos::RCP<ScaTraEleReaManager>         reamanager,
+                        const double                              porosity);
+
+  void SetDensities(double  porosity,
+                   double& densn,    //!< density at t_(n)
+                   double& densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+                   double& densam   //!< density at t_(n+alpha_M));
+                   );
 
 };
 }

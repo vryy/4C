@@ -117,53 +117,29 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
 //       dserror("Check your diffusivity! Dynamic diffusivity required!");
 //   }
 
-    if(iquad==-1)
-      dserror("no gauss point given for evaluation of scatra material. Check your input file.");
+  if(iquad==-1)
+    dserror("no gauss point given for evaluation of scatra material. Check your input file.");
 
-    //access structure discretization
-    Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-    structdis = DRT::Problem::Instance()->GetDis("structure");
-    //get corresponding fluid element (it has the same global ID as the scatra element)
-    DRT::Element* structele = structdis->gElement(my::eid_);
-    if (structele == NULL)
-      dserror("Structure element %i not on local processor", my::eid_);
+  //get porosity from structure material
+  const double porosity = poro::GetPorosityAtGP(iquad);
 
-    const Teuchos::RCP<const MAT::StructPoro>& structmat
-              = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
-    if(structmat == Teuchos::null)
-      dserror("invalid structure material for poroelasticity");
+  const Teuchos::RCP<const MAT::ScatraMat>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
-    const double porosity   = structmat->GetPorosityAtGP(iquad);
+  // set diffusivity (scaled with porosity)
+  poro::SetDiffusivity(actmat,k,diffmanager,porosity);
 
-    const Teuchos::RCP<const MAT::ScatraMat>& actmat
-      = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
+  // set/calculate reaction coefficient (scaled with porosity)
+  if (not advreac::iscoupled_)
+    poro::SetReaCoefficient(actmat,k,reamanager,porosity);
+  else
+    advreac::SetAdvancedReactionTerms(reamanager,k,porosity);
 
-    // set diffusivity (scaled with porosity)
-    diffmanager->SetIsotropicDiff(actmat->Diffusivity()*porosity,k);
+  // set densities (scaled with porosity)
+  poro::SetDensities(porosity,densn,densnp,densam);
 
-    // set/calculate reaction coefficient (scaled with porosity)
-    if (not advreac::iscoupled_)
-      reamanager->SetReaCoeff(actmat->ReaCoeff()*porosity,k); // set reaction coefficient (scaled with porosity)
-    else
-    {
-      // dynamic cast to Advanced_Reaction-specific reaction manager
-      Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
-
-      reamanageradvreac->SetReaBodyForce( advreac::CalcReaBodyForceTerm(k)*porosity ,k);
-      reamanageradvreac->SetReaCoeff( advreac::CalcReaCoeff(k)*porosity ,k);
-      for (int j=0; j<my::numscal_ ;j++)
-      {
-        reamanageradvreac->SetReaBodyForceDerivMatrix( advreac::CalcReaBodyForceDerivMatrix(k,j)*porosity ,k,j );
-        reamanager->SetReaCoeffDerivMatrix( advreac::CalcReaCoeffDerivMatrix(k,j)*porosity ,k,j );
-      }
-    }
-    // set densities (scaled with porosity)
-    densn = porosity;
-    densnp = porosity;
-    densam = porosity;
-
-    return;
-  } // ScaTraEleCalcPoroReac<distype>::MatScaTra
+  return;
+} // ScaTraEleCalcPoroReac<distype>::MatScaTra
 
 
 

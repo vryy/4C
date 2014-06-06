@@ -69,7 +69,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofper
 }
 
 /*----------------------------------------------------------------------*
- |  Material ScaTra                                          ehrl 11/13 |
+ |  Material ScaTra                                           |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
@@ -87,6 +87,28 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   if(iquad==-1)
     dserror("no gauss point given for evaluation of scatra material. Check your input file.");
 
+  const double porosity = GetPorosityAtGP(iquad);
+
+  const Teuchos::RCP<const MAT::ScatraMat>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
+
+  // set diffusivity (scaled with porosity)
+  SetDiffusivity(actmat,k,diffmanager,porosity);
+
+  // set reaction coefficient
+  SetReaCoefficient(actmat,k,reamanager,porosity);
+
+  // set densities (scaled with porosity)
+  SetDensities(porosity,densn,densnp,densam);
+
+  return;
+} // ScaTraEleCalcPoro<distype>::MatScaTra
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetPorosityAtGP(const int  iquad)
+{
   //access structure discretization
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -100,28 +122,55 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   if(structmat == Teuchos::null)
     dserror("invalid structure material for poroelasticity");
 
-  const double           porosity   = structmat->GetPorosityAtGP(iquad);
+  return structmat->GetPorosityAtGP(iquad);
+}
 
-  const Teuchos::RCP<const MAT::ScatraMat>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for SCATRA material");
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
+    const Teuchos::RCP<const MAT::ScatraMat>& material,
+    const int                                 k,
+    Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
+    const double                              porosity)
+{
+  diffmanager->SetIsotropicDiff(material->Diffusivity()*porosity,k);
 
-  // set diffusivity (scaled with porosity)
-  diffmanager->SetIsotropicDiff(actmat->Diffusivity()*porosity,k);
+  return;
+}
 
-  // set reaction coefficient (scaled with porosity)
-  reamanager->SetReaCoeff(actmat->ReaCoeff()*porosity,k);
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetReaCoefficient(
+    const Teuchos::RCP<const MAT::ScatraMat>& material,
+    const int                                k,
+    Teuchos::RCP<ScaTraEleReaManager>        reamanager,
+    const double                             porosity)
+{
+  //set reaction coefficient (no scaling with porosity)
+  reamanager->SetReaCoeff(material->ReaCoeff(),k);
 
-  // set densities (scaled with porosity)
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
+    double  porosity,
+    double& densn,
+    double& densnp,
+    double& densam
+    )
+{
   densn = porosity;
   densnp = porosity;
   densam = porosity;
 
-
   return;
-} // ScaTraEleCalcPoro<distype>::MatScaTra
-
+}
 
 
 // template classes

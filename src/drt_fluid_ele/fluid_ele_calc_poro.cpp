@@ -4699,19 +4699,22 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
       for(int j=0; j<my::nsd_; j++)
       {
         const int gid = my::nsd_ * n +j;
-        for(int i=0; i<my::nsd_; i++)
+        for(int p=0; p<my::nsd_; p++)
         {
-          const double defgrd_inv_ij = defgrd_inv(i,j);
+          double val = 0.0;
+          const double derxy_p_n = my::derxy_(p,n);
           for(int k=0; k<my::nsd_; k++)
           {
             const double defgrd_inv_kj = defgrd_inv(k,j);
-            for(int p=0; p<my::nsd_; p++)
+            const double defgrd_inv_kp = defgrd_inv(k,p);
+            for(int i=0; i<my::nsd_; i++)
             {
-              FinvT_dFx_dus(p, gid) +=   defgrd_inv_ij * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
+              val +=   defgrd_inv(i,j) * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv_kp ;
               for(int l=0; l<my::nsd_; l++)
-                FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * my::derxy_(p,n) ;
+                val += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * derxy_p_n ;
             }
           }
+          FinvT_dFx_dus(p, gid) += val;
         }
       }
 

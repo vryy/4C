@@ -133,16 +133,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatScaTra(
 
   if (iscoupled_)
   {
-    // dynamic cast to Advanced_Reaction-specific reaction manager
-    Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
-
-    reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
-    reamanageradvreac->SetReaCoeff( CalcReaCoeff(k) ,k);
-    for (int j=0; j<my::numscal_ ;j++)
-    {
-      reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
-      reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j) ,k,j );
-    }
+    SetAdvancedReactionTerms(reamanager,k);
   }
 }
 
@@ -879,6 +870,28 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   return;
 }
 
+/*-------------------------------------------------------------------------------*
+ |  set body force, reaction coefficient and derivatives          vuong 06/14 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
+    Teuchos::RCP<ScaTraEleReaManager>       reamanager,
+    const int                               k,
+    const double                            scale
+                                    )
+{
+  // dynamic cast to Advanced_Reaction-specific reaction manager
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
+  if(reamanageradvreac==Teuchos::null) dserror("cast to ScaTraEleReaManagerAdvReac failed");
+
+  reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
+  reamanageradvreac->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
+  for (int j=0; j<my::numscal_ ;j++)
+  {
+    reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
+    reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
+  }
+}
 
 // template classes
 
