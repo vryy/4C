@@ -442,7 +442,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 {
   double dens = 0.0;
   double visc = 0.0;
-
   //  const int elemVecdim = epnp.Length () ;
 
   if(material->MaterialType() == INPAR::MAT::m_fluid)
@@ -505,7 +504,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   {
     dserror("[%s] is not a defined ElemSolvingType of a RED_AIRWAY element",ele->ElemSolvingType().c_str());
   }
-
   // Get airway branch length
   double l_branch = 0.0;
   ele->getParams("BranchLength",l_branch);
@@ -695,7 +693,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   ele->getParams("WallElasticity",Ew);
   ele->getParams("WallThickness",tw);
   ele->getParams("PoissonsRatio",nu);
-  double C = 2.0*sqrt(A)*Ao*L/(Ew*tw*sqrt(M_PI)/(1.0-nu*nu));
+  double C = 0.0;
+  double Ec = 0.0;
+  Ec = (Ew*tw*sqrt(M_PI)*(1.0-nu*nu))/(2.0*sqrt(A)*Ao*L);
+  if (Ec !=0.0)
+  {
+    C = 1.0/Ec;
+  }
 
   //------------------------------------------------------------
   // get airway viscous resistance
@@ -775,7 +779,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   else if(ele->Type() == "ConvectiveViscoElasticRLC")
   {
 #if 0
-      std::out<<"I: "      <<I<<std::endl;
+      std::cout<<"I: "      <<I<<std::endl;
       std::cout<<"C: "      <<C<<std::endl;
       std::cout<<"R: "      <<R<<std::endl;
       std::cout<<"Rconv: "  <<Rconv<<std::endl;
