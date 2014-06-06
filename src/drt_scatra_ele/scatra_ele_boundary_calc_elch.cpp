@@ -85,7 +85,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
   : DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal),
-    equpot_(INPAR::ELCH::equpot_undefined)
+    equpot_(INPAR::ELCH::equpot_undefined),
+    eps_(1.0)
 {
   // pointer to class ScaTraEleParameter
   my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
@@ -189,7 +190,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
       {
         const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
-        my::eps_ = actsinglemat->Epsilon();
+        eps_ = actsinglemat->Epsilon();
       }
     }
   }
@@ -291,7 +292,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
 
         for (int node=0;node<my::nen_;++node)
         {
-          elevec1[node*my::numdofpernode_+dof] += my::funct_(node)*val_fac_functfac*my::eps_;
+          //TODO: with or without eps_
+          elevec1[node*my::numdofpernode_+dof] += my::funct_(node)*val_fac_functfac*eps_;
         }
       } // if ((*onoff)[dof])
     }
@@ -331,6 +333,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
       else
         dserror("material type is not a 'matlist' material");
 
+      //TODO
       // get corresponding Neumann values, multiply with z_k and add to
       // the row of the electric potential equation
       double val(0.0);
@@ -388,29 +391,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
               dserror("");
           }
         }
-
-//        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
-//
-//        const int specid = actmat->SpecID(k);
-//        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
-//        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
-//        {
-//          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
-//          valence_k = actsinglemat->Valence();
-//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-//        }
-//        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
-//        {
-//          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
-//          valence_k = actsinglemat->Valence();
-//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-//        }
-//        else
-//          dserror("");
       }
       else
         dserror("material type is not a 'matlist' material");
 
+      //TODO
       // get corresponding Neumann values, multiply with z_k and add to
       // the row of the electric potential equation
       double val(0.0);
@@ -482,6 +467,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
     double                    pot0 = cond->GetDouble("pot");
     const int                 curvenum = cond->GetInt("curve");
     const int                 nume = cond->GetInt("e-");
+    // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
+    // but the electrode status is evaluated
+    const int                 zerocur = cond->GetInt("zero_cur");
     if(nume < 0)
       dserror("The convention for electrochemical reactions at the electrodes does not allow \n"
           "a negative number of transfered electrones");
@@ -543,7 +531,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
           {
             const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
-            my::eps_ = actsinglemat->Epsilon();
+            eps_ = actsinglemat->Epsilon();
           }
         }
       }
@@ -565,22 +553,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
         rhsfac =  1.0/alphaF;
       }
 
-      EvaluateElectrodeKinetics(
-          ele,
-          elemat1_epetra,
-          elevec1_epetra,
-          ephinp,
-          ehist,
-          timefac,
-          mat,
-          cond,
-          nume,
-          *stoich,
-          kinetics,
-          pot0,
-          frt,
-          iselch
-      );
+      if(zerocur==0)
+      {
+        EvaluateElectrodeKinetics(
+            ele,
+            elemat1_epetra,
+            elevec1_epetra,
+            ephinp,
+            ehist,
+            timefac,
+            mat,
+            cond,
+            nume,
+            *stoich,
+            kinetics,
+            pot0,
+            frt,
+            iselch
+        );
+      }
 
       // realize correct scaling of rhs contribution for gen.alpha case
       // with dt*(gamma/alpha_M) = timefac/alpha_F
@@ -907,23 +898,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
               dserror("");
           }
         }
-
-//        const int specid = actmat->SpecID(k);
-//        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
-//        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
-//        {
-//          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
-//          valence_k = actsinglemat->Valence();
-//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-//        }
-//        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
-//        {
-//          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
-//          valence_k = actsinglemat->Valence();
-//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-//        }
-//        else
-//          dserror("");
       }
       else
         dserror("material type is not a 'matlist' material");
@@ -1029,7 +1003,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
           for (int vi=0; vi<my::nen_; ++vi)
           {
-            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*my::eps_;
+            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
             //double fac_i0_funct_vi = fac*i0*my::funct_(vi);
             // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
             for (int ui=0; ui<my::nen_; ++ui)
@@ -1055,6 +1029,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
           {
             for (int vi=0; vi<my::nen_; ++vi)
             {
+              //TODO: Do we need epsilon here
               //add terms of double layer capacitance current density
               for (int ui=0; ui<my::nen_; ++ui)
               {
@@ -1088,7 +1063,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
           for (int vi=0; vi<my::nen_; ++vi)
           {
-            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi);
+            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
             // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
             for (int ui=0; ui<my::nen_; ++ui)
             {
@@ -1158,7 +1133,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*my::eps_;
+          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
           // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
           {
@@ -1229,7 +1204,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*my::eps_;
+          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
           const int fvi = vi*my::numdofpernode_+k;
           // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
@@ -1357,7 +1332,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         {
           // see Wittmann, Erweiterte Reaktionsmodelle für die numerische Simulation von
           // elektrochemischen Systemen, p.20, equ. 3.4
-          const double fac_fns_funct_vi = faraday*nume*fac*fns*my::funct_(vi);
+          const double fac_fns_funct_vi = faraday*nume*fac*fns*my::funct_(vi)*eps_;
           for (int ui=0; ui<my::nen_; ++ui)
           {
             //loop over the columns of the matrix, makes sure that the linearisation w.r.t the first concentration is added to the first column
@@ -1469,7 +1444,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          const double fac_i0_funct_vi = fac*fns*i0*my::funct_(vi);
+          const double fac_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
           // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
           {
@@ -1487,8 +1462,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         }
         break;
       }
-      // do-nothing for these electrode kinetic types
-      case INPAR::SCATRA::zero:
       case INPAR::SCATRA::nernst:
         break;
       default:
@@ -1620,7 +1593,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
       case INPAR::SCATRA::butler_volmer_yang1997:
       case INPAR::SCATRA::butler_volmer_newman:
       case INPAR::SCATRA::butler_volmer_bard:
-      case INPAR::SCATRA::zero:
       {
         dserror("Kinetic model not implemented: %i",kinetics);
         break;
@@ -1633,7 +1605,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
     } // if iselch
   } // end of loop over integration points gpid
 
-  // TODO (ehrl): Is it ok to use nume instead of valence?
   if (iselch)
   {
     if ((equpot_==INPAR::ELCH::equpot_enc_pde) or
@@ -1682,7 +1653,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
     const double                  timefac
 )
 {
-  //TODO:
   // Warning:
   // Specific time integration parameter are set in the following function.
   // In the case of a genalpha-time integration scheme the solution vector phiaf_ at time n+af
@@ -1694,10 +1664,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
   double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
+  // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
+  // but the electrode status is evaluated
+  const int zerocur = cond->GetInt("zero_cur");
+
   // get variables with their current values
+  // TODO
+  // current integrals: (i = epsilon i^E ) is calculated in case of porous media
   double currentintegral   = params.get<double>("currentintegral");
   double currentdlintegral = params.get<double>("currentdlintegral");
   double boundaryint       = params.get<double>("boundaryintegral");
+  double electpotentialint = params.get<double>("electpotentialintegral");
   double overpotentialint  = params.get<double>("overpotentialintegral");
   double electdiffpotint   = params.get<double>("electrodedifferencepotentialintegral");
   double opencircuitpotint = params.get<double>("opencircuitpotentialintegral");
@@ -1769,8 +1746,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
       potint = my::funct_.Dot(pot);
       potdtnpint = my::funct_.Dot(potdtnp);
 
-      // surface overpotential eta at integration point
-      const double epd = (pot0 - potint);
+      // electrode potential difference epd at integration point
+      double epd = (pot0 - potint);
 
       // linearization of current w.r.t applied electrode potential "pot0"
       double linea(0.0);
@@ -1800,10 +1777,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           pot0hist = cond->GetDouble("pot0hist");
         }
 
-        // opencircuit potential is assumed to be zero
-        const double ocp = 0.0;
-        // overpotential based on opencircuit potential
-        const double eta = epd - ocp;
+        // opencircuit potential is assumed to be zero here
+        double ocp = 0.0;
+        // surface overpotential based on opencircuit potential
+        double eta = 0.0;
+        // electrode potential
+        double pot = 0.0;
+
+        if(zerocur==0)
+        {
+          eta = epd - ocp;
+          pot = pot0;
+        }
+        else if(zerocur==1)
+        {
+          pot = potint+ocp;
+          epd  = ocp;
+        }
+        else
+          dserror("The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
         double expterm(0.0);
         if (iselch)
@@ -1839,6 +1831,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           dserror("NaN detected in electrode status calculation");
 
         // compute integrals
+        electpotentialint += pot*fac;
         overpotentialint += eta*fac;
         electdiffpotint += epd*fac;
         opencircuitpotint += ocp*fac;
@@ -1877,16 +1870,32 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double dlcap = cond->GetDouble("dl_spec_cap");
         if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
 
-        // opencircuit potential is assumed to be zero
-        const double ocp = 0.0;
-        // overpotential based on opencircuit potential
-        const double eta = epd - ocp;
+        // opencircuit potential is assumed to be zero here
+        double ocp = 0.0;
+        // surface overpotential based on opencircuit potential
+        double eta = 0.0;
+        // electrode potential
+        double pot = 0.0;
+
+        if(zerocur==0)
+        {
+          eta = epd - ocp;
+          pot = pot0;
+        }
+        else if(zerocur==1)
+        {
+          pot = potint+ocp;
+          epd  = ocp;
+        }
+        else
+          dserror("The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
         if(iselch)
         {
           const double expterm = std::pow(conint[k]/refcon,gamma) * (-exp((-alpha)*frt*eta));
           linea = std::pow(conint[k]/refcon,gamma) * frt*(alpha*exp((-alpha)*frt*eta));
           // compute integrals
+          electpotentialint += pot*fac;
           overpotentialint += eta * fac;
           electdiffpotint += epd*fac;
           opencircuitpotint += ocp*fac;
@@ -1905,6 +1914,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           //linea = (-alphac)*exp((-alphac)*eta);
 
           // compute integrals
+          electpotentialint += pot*fac;
           overpotentialint += eta * fac;
           electdiffpotint += epd*fac;
           opencircuitpotint += ocp*fac;
@@ -1936,16 +1946,31 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           pot0hist = cond->GetDouble("pot0hist");
         }
 
+        // opencircuit potential is assumed to be zero here
+        double ocp = 0.0;
+        // surface overpotential based on opencircuit potential
+        double eta = 0.0;
+        // electrode potential
+        double pot = 0.0;
 
-        // opencircuit potential is assumed to be zero
-        const double ocp = 0.0;
-        // overpotential based on opencircuit potential
-        const double eta = epd - ocp;
+        if(zerocur==0)
+        {
+          eta = epd - ocp;
+          pot = pot0;
+        }
+        else if(zerocur==1)
+        {
+          pot = potint+ocp;
+          epd  = ocp;
+        }
+        else
+          dserror("The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
         if(iselch)
         {
           // compute integrals
           overpotentialint += eta * fac;
+          electpotentialint += pot*fac;
           electdiffpotint += epd*fac;
           opencircuitpotint += ocp*fac;
           currentintegral += i0 * pow(conint[k]/refcon,gamma)*(alphaa*frt*eta) * fac; // the negative(!) normal flux density
@@ -1994,6 +2019,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double beta = cond->GetDouble("beta");
         const double dlcap = cond->GetDouble("dl_spec_cap");
         if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(zerocur!=0) dserror("The electrode kinetics flag zero_cur is not implemented for this specific kinetic model.");
 
         //reaction order of the cathodic and anodic reactants of ionic species k
         std::vector<int> q(my::numscal_,0);
@@ -2093,6 +2119,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double c_a0 = cond->GetDouble("c_a0");
         const double dlcap = cond->GetDouble("dl_spec_cap");
         if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(zerocur!=0) dserror("The electrode kinetics flag zero_cur is not implemented for this specific kinetic model.");
 
         if(nume!=1)
           dserror("electron != 1; \n "
@@ -2177,23 +2204,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
         break;
       } //end Butler-Volmer-Bard
-      case INPAR::SCATRA::zero: // zero
-      {
-        // opencircuit potential is assumed to be zero
-        const double ocp = 0.0;
-        // overpotential based on opencircuit potential
-        const double eta = epd - ocp;
-
-        // compute integrals
-        overpotentialint -= eta * fac;
-        boundaryint += fac;
-        concentrationint += conint[k]*fac;
-        break;
-      }
-      case INPAR::SCATRA::nernst: // zero
+      case INPAR::SCATRA::nernst:
       {
         const double e0 = cond->GetDouble("e0");
         const double c0 = cond->GetDouble("c0");
+        if(zerocur!=0) dserror("The electrode kinetics flag zero_cur is not implemented for this specific kinetic model.");
 
         // compute integrals
         overpotentialint += potint * fac;
@@ -2201,7 +2216,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         concentrationint += conint[k]*fac;
 
         opencircuitpotint+= e0 + (log(concentrationint/boundaryint/c0))/(frt*nume);
-        //TODO: Harald Andi - how do I design the output section
         opencircuitpotint*=boundaryint;
         break;
       }
@@ -2222,6 +2236,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   params.set<double>("currentintegral",currentintegral);
   params.set<double>("currentdlintegral",currentdlintegral);
   params.set<double>("boundaryintegral",boundaryint);
+  params.set<double>("electpotentialintegral",electpotentialint);
   params.set<double>("overpotentialintegral",overpotentialint);
   params.set<double>("electrodedifferencepotentialintegral",electdiffpotint);
   params.set<double>("opencircuitpotentialintegral",opencircuitpotint);

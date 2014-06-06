@@ -153,9 +153,9 @@ NDVOL                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode
-E 1 - pot 1.0 curve none numscal 1 stoich -1 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dl_spec_cap 0.0
+E 1 - pot 1.0 curve none numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
 //                              cathode
-E 2 - pot -1.0 curve none numscal 1 stoich -1 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dl_spec_cap 0.0
+E 2 - pot -1.0 curve none numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           2
 E 1 - OUTPUT standard // for flux calculation on this boundary

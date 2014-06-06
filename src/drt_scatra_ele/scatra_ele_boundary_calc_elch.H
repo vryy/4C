@@ -125,6 +125,9 @@ private:
   //! flag for closure equation
   enum INPAR::ELCH::EquPot equpot_;
 
+  //! porosity
+  double eps_;
+
 }; // class ScaTraEleBoundaryCalcElch
 
 } //namsepace ELEMENTS

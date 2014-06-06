@@ -350,7 +350,7 @@ E 2 - 1
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           1
 //                              cathode
-E 2 - pot -0.0 curve none numscal 3 stoich -1 0 0 e- 2 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.0 // no capacity here 0.25
+E 2 - pot -0.0 curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.0 END // no capacity here 0.25
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 E 2 - OUTPUT standard // for flux calculation on this boundary

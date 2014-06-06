@@ -332,9 +332,6 @@ public:
     //! thermodynamic pressure (LOMA specific)
     double thermpress_;
 
-    //! porosity
-    double eps_;
-
 };
 
 }

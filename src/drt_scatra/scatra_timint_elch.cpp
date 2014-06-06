@@ -775,10 +775,14 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   AddTimeIntegrationSpecificVectors();
   SetElementTimeParameter(eleparams);
 
+  // add element parameters according to time-integration scheme
+  //AddSpecificTimeIntegrationParameters(eleparams);
+
   // values to be computed
   eleparams.set("currentintegral",0.0);
   eleparams.set("currentdlintegral",0.0);
   eleparams.set("boundaryintegral",0.0);
+  eleparams.set("electpotentialintegral",0.0);
   eleparams.set("overpotentialintegral",0.0);
   eleparams.set("electrodedifferencepotentialintegral",0.0);
   eleparams.set("opencircuitpotentialintegral",0.0);
@@ -796,6 +800,8 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   double currentdlintegral = eleparams.get<double>("currentdlintegral");
   // get area of the boundary on this proc
   double boundaryint = eleparams.get<double>("boundaryintegral");
+  // get integral of overpotential on this proc
+  double electpotentialint = eleparams.get<double>("electpotentialintegral");
   // get integral of overpotential on this proc
   double overpotentialint = eleparams.get<double>("overpotentialintegral");
   // get integral of overpotential on this proc
@@ -818,6 +824,8 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   discret_->Comm().SumAll(&currentdlintegral,&parcurrentdlintegral,1);
   double parboundaryint = 0.0;
   discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
+  double parelectpotentialint = 0.0;
+  discret_->Comm().SumAll(&electpotentialint,&parelectpotentialint,1);
   double paroverpotentialint = 0.0;
   discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
   double parepdint = 0.0;
@@ -833,22 +841,12 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   double parcurrentresidual = 0.0;
   discret_->Comm().SumAll(&currentresidual,&parcurrentresidual ,1);
 
-  // access some parameters of the actual condition
-  double pot = condition->GetDouble("pot");
-  const int curvenum = condition->GetInt("curve");
-  if (curvenum>=0)
-  {
-    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
-    // adjust potential at metal side accordingly
-    pot *= curvefac;
-  }
-
   // specify some return values
   currentsum += parcurrentintegral; // sum of currents
   currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
   currresidual = parcurrentresidual;
   electrodesurface = parboundaryint;
-  electrodepot = pot;
+  electrodepot = parelectpotentialint/parboundaryint;
   meanoverpot = paroverpotentialint/parboundaryint;
 
   // clean up
@@ -860,7 +858,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
     if (printtoscreen) // print out results to screen
     {
       printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-          condid,parcurrentintegral+currentdlintegral,parboundaryint,parcurrentintegral/parboundaryint+currentdlintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
+          condid,parcurrentintegral+currentdlintegral,parboundaryint,parcurrentintegral/parboundaryint+currentdlintegral/parboundaryint,paroverpotentialint/parboundaryint, electrodepot, parcint/parboundaryint);
     }
 
     if (printtofile)// write results to file
@@ -882,7 +880,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
       f << condid << "," << Step() << "," << Time() << "," << parcurrentintegral+currentdlintegral  << "," << parboundaryint
       << "," << parcurrentintegral/parboundaryint << "," << parcurrentdlintegral/parboundaryint
       << "," << paroverpotentialint/parboundaryint << "," <<
-      parepdint/parboundaryint << "," << parocpint/parboundaryint << "," << pot << ","
+      parepdint/parboundaryint << "," << parocpint/parboundaryint << "," << electrodepot << ","
       << parcint/parboundaryint << "\n";
       f.flush();
       f.close();
@@ -1002,16 +1000,6 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linar solver!!");
-
-    // This feature is nice to validate and compare the new formulation
-    // Therefore, convective transport is added without stabilization
-    //
-    //if((DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams,"VELOCITYFIELD"))!= INPAR::SCATRA::velocity_zero)
-    //  dserror("Convective ion transport is neglected so far!!");
-
-    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params_,"WRITEFLUX"))== INPAR::SCATRA::flux_diffusive_domain or
-       (DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params_,"WRITEFLUX"))== INPAR::SCATRA::flux_total_domain)
-      dserror("This feature is needed -> Think about!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_,"CONVFORM"))!= INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
@@ -1460,6 +1448,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
             std::cout<<"  potinc_ohm (CURRENTPATH based): "<< potinc_ohm <<std::endl;
             std::cout<<"  New guess for potinc_ohm:       "<< (-1.0)*(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<std::endl;
           }
+          // TODO: Which formulation is the best?
           potinc_ohm = (-1.0)*(potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
         }
         else

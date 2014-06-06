@@ -81,8 +81,7 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(const int numdofp
    normal_(true),
    velint_(true),
    metrictensor_(true),
-   thermpress_(0.0),
-   eps_(1.0)
+   thermpress_(0.0)
 {
   // params for time integration
   scatraparamstimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
@@ -562,7 +561,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 
         for (int node=0;node<nen_;++node)
         {
-          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac*eps_;
+          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
         }
       } // if ((*onoff)[dof])
     }

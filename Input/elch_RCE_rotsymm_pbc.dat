@@ -289,7 +289,7 @@ DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           1
 //                              completeinnerwall
-E 7 - pot -0.05 curve 2 numscal 3 stoich -1 0 0 e- 2 Butler-Volmer-Yang1997 alpha_a 1.5 alpha_c 0.5 i0 4.0 gamma 0.5 refcon 0.003 dl_spec_cap 0.0
+E 7 - pot -0.05 curve 2 numscal 3 stoich -1 0 0 e- 2 zero_cur 0 Butler-Volmer-Yang1997 alpha_a 1.5 alpha_c 0.5 i0 4.0 gamma 0.5 refcon 0.003 dl_spec_cap 0.0 END
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration

@@ -2540,6 +2540,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
     butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
     butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
+    butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",
                                                              butlervolmer,
                                                              INPAR::SCATRA::butler_volmer)));
@@ -2559,6 +2560,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     butlervolmeryang.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
     butlervolmeryang.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
     butlervolmeryang.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
+    butlervolmeryang.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Yang1997",
                                                              butlervolmeryang,
                                                              INPAR::SCATRA::butler_volmer_yang1997)));
@@ -2591,6 +2593,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     linear.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
     linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
     linear.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
+    linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("linear",
                                                                    linear,
                                                                    INPAR::SCATRA::linear)));
@@ -2606,6 +2609,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     bvnewman.push_back(Teuchos::rcp(new RealConditionComponent("beta")));
     bvnewman.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
     bvnewman.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
+    bvnewman.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Newman",
                                                               bvnewman,
                                                               INPAR::SCATRA::butler_volmer_newman)));
@@ -2625,6 +2629,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     bvbard.push_back(Teuchos::rcp(new RealConditionComponent("c_a0")));
     bvbard.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
     bvbard.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
+    bvbard.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Bard",
                                                               bvbard,
                                                               INPAR::SCATRA::butler_volmer_bard)));
@@ -2640,12 +2645,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Nernst",
                                                               nernst,
                                                               INPAR::SCATRA::nernst)));
-
-    // do-nothing
-    std::vector<Teuchos::RCP<ConditionComponent> > zero;
-    reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("zero",
-                                                             zero,
-                                                             INPAR::SCATRA::zero)));
 
     // input: stoichiometry for reaction mechanism (IntRealBundle)
     // definition separator for int vectors
@@ -2678,6 +2677,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         realveccomp)));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
     elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+    elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("zero_cur")));
+    elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("zero_cur")));
     elechemcomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
         "kinetic model bundle",
         Teuchos::rcp(new StringConditionComponent(

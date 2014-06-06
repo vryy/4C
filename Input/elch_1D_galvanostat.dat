@@ -117,9 +117,9 @@ NDVOL                           0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 3 - pot -0.1 curve none numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0
+E 3 - pot -0.1 curve none numscal 2 stoich -1 0 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 //                              anode
-E 4 - pot 0.0 curve none numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0
+E 4 - pot 0.0 curve none numscal 2 stoich -1 0 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
 E 1 - OUTPUT standard //flux calculation at inner cylinder
