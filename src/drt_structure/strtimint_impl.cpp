@@ -3336,15 +3336,16 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
   stcmat_->Complete();
 
-  #ifdef DEBUG
+#ifdef DEBUG
   if (iter_==1&& step_==0)
   {
-    const std::string fname = "stcmatrix1.mtl";
+    std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+    fname += ".stcmatrix1.mtl";
     if (myrank_ == 0)
       std::cout<<"Printing stcmatrix1 to file"<<std::endl;
-      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
+    LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
   }
-  #endif
+#endif
 
   for (int lay = 2; lay <= stclayer_; ++lay)
   {
@@ -3361,21 +3362,21 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     discret_-> Evaluate(pe, tmpstcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->Complete();
 
-    #ifdef DEBUG
+#ifdef DEBUG
     if (iter_==1&& step_==0)
     {
-      const std::string fname = "stcmatrix2.mtl";
+      std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      fname += ".stcmatrix2.mtl";
       if (myrank_ == 0)
         std::cout<<"Printing stcmatrix2 to file"<<std::endl;
-        LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
+      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
     }
-    #endif
+#endif
 
     stcmat_ = MLMultiply(*tmpstcmat,*stcmat_,false,false,true);
   }
 
   discret_-> ClearState();
-
 
 }
 
