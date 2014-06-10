@@ -265,7 +265,10 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     case INPAR::STATMECH::linkermodel_myosinthick:
       linkermodel_ = statmech_linker_myosinthick;
       if(!discret_->Comm().MyPID())
+      {
         std::cout<<"  -- active Beam3 myosin thick filament (interpolated binding site positions)"<<std::endl;
+        std::cout<<"  ===WARNING! Implementatation incomplete!!!==="<<std::endl;
+      }
       break;
     default:
       dserror("Unknown linker model %i", DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "LINKERMODEL"));
@@ -704,9 +707,6 @@ void STATMECH::StatMechManager::Update(const int&                               
 #ifdef MEASURETIME
       t4 = Teuchos::Time::wallTime();
 #endif
-
-      if(beamcmanager!=Teuchos::null && rebuildoctree)
-        beamcmanager->ResetPairs();
       
       SearchAndDeleteCrosslinkers(istep, timen, dt, bspotpositions, bspotrotations, discol,beamcmanager,printscreen);
 
@@ -2593,6 +2593,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     case statmech_linker_activeintpol:
                     case statmech_linker_myosinthick:
                     {
+                      std::cout<<"  ===WARNING! Implementatation incomplete!!!==="<<std::endl;
                       nodelid1 = discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][irandom]);
                       for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
                         if((*crosslinkerbond_)[k][irandom]>-0.1)
@@ -6769,10 +6770,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       beamcmanager->BTSolDiscret().FillComplete(true, false, false);
     }
 
-    // reduce number of contact pairs to zero again to avoid unnecessary computations
-    if(beamcmanager!=Teuchos::null && !(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamContactParams(), "BEAMS_NEWGAP")))
-      beamcmanager->ResetPairs();
-
     //Gmsh output
     if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
     {
@@ -6782,11 +6779,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       GmshOutput(disrow,filename,0);
     }
     if(beamcmanager!=Teuchos::null && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_octree)
-    {
       // "-2" for initial octree output
       beamcmanager->OcTree()->OctTreeSearch(currentpositions,-2);
-      beamcmanager->ResetPairs();
-    }
     //std::couts
     if(!discret_->Comm().MyPID())
     {

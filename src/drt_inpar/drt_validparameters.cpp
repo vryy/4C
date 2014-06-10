@@ -2313,7 +2313,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("ALPHAPTC",6.0,"exponent of power law for reduction of PTC factor",&statmech);
   //Number of iterations after which PTC is turned off
-  IntParameter("MAXITERPTC",5,"Number of iterations after which PTC is turned off!",&statmech);
+  IntParameter("MAXITERPTC",5,"Number of iterations after which PTC is turned off! 0 entails standard Newton-Raphson.",&statmech);
   // fraction of initial residual below which PTC is turned off
   DoubleParameter("RESLOWPTC",0.001,"fraction of initial residual below which PTC is turned off!",&statmech);
   //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally

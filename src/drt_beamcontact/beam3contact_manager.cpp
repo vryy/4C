@@ -1802,29 +1802,6 @@ void CONTACT::Beam3cmanager::ResetUzawaIter()
 }
 
 /*----------------------------------------------------------------------*
- |  Reset pairs vector                                     mueller 11/11|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::ResetPairs()
-{
-  if (!newgapfunction_)
-  {
-    // Reset pairs vector to size zero
-    pairs_.clear();
-  }
-  else
-  {
-    dserror("Are you sure you want to delete the pairs_ vector? The newgapfunction_ "
-            "flag is on: In this case history variables of the last time step are needed"
-            "and the pairs_ vector should not be deleted!");
-  }
-
-  // Reset pairs vector to size zero
-  btsolpairs_.clear();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Update Uzawa iteration index                              popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::UpdateUzawaIter()

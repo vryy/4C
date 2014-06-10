@@ -1236,8 +1236,9 @@ void STR::TimIntStatMech::PTC()
     //backward Euler
     stiff_->Complete();
 
-    //the following part was especially introduced for Brownian dynamics
-    PTCBrownianForcesAndDamping((*dt_)[0],crotptc,ctransptc, sumptc);
+    //the following part was especially introduced for Brownian dynamics. Set to zero for std Newton-Raphson
+    if(statmechparams.get<int>("MAXITERPTC",5)>0)
+      PTCBrownianForcesAndDamping((*dt_)[0],crotptc,ctransptc, sumptc);
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1316,16 +1317,30 @@ void STR::TimIntStatMech::PTC()
   //-------------------------------- test whether max iterations was hit
   PTCConvergenceStatus(iter_, itermax_, fresnormdivergent);
 
-  INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
-  if(HaveBeamContact())
-    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-  if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
-    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
-  if(isconverged_  && !myrank_ && printscreen_)
-    PrintNewtonIter();
+  // terminate nonlinear solve for divcont type set in the input file
+  if ( (iter_ >= itermax_ || fresnormdivergent) && divcontype_==INPAR::STR::divcont_stop)
+    dserror("Newton unconverged in %d iterations", iter_);
 
-  if(!myrank_ && printscreen_)
-    std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
+  // output to screen depending on how the PTC scheme is applied
+  if(printscreen_)
+  {
+    if(isconverged_)
+    {
+      if(isconverged_  && !myrank_ && printscreen_)
+        PrintNewtonIter();
+    }
+    else
+    {
+      INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
+      if(HaveBeamContact())
+        soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
+      if(!myrank_ && soltype != INPAR::CONTACT::solution_auglag)
+        std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+    }
+
+    if(!myrank_)
+      std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
+  }
   return;
 } // STR::TimIntStatMech::PTC()
 
@@ -1613,8 +1628,6 @@ void STR::TimIntStatMech::BeamContactAugLag()
     {
       if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
         std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcman_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
-      // reset pairs to size 0 since the octree is being constructed completely anew
-      beamcman_->ResetPairs();
       break;
     }
 

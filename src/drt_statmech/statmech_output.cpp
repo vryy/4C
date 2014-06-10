@@ -960,7 +960,6 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         LINALG::Export(dis, discol);
         GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
         beamcmanager->OcTree()->OctTreeSearch(currentpositions, istep);
-        beamcmanager->ResetPairs();
       }
     }
     break;
