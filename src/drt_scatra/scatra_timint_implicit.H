@@ -93,8 +93,6 @@ class HomIsoTurbScalarForcing;
 
 /*!
  * \brief implicit time integration for scalar transport problems
- *
- * \author Georg Bauer (bauer@lnm.mw.tum.de)
  */
 
 class ScaTraTimIntImpl
@@ -791,7 +789,7 @@ protected:
   INPAR::SCATRA::FluxType writeflux_;
 
   //! ids of scalars for which flux vectors are written (starting with 1)
-  std::vector<int> writefluxids_;
+  Teuchos::RCP<std::vector<int> > writefluxids_;
 
   //! flux vector fields
   Teuchos::RCP<Epetra_MultiVector> flux_;

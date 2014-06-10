@@ -249,6 +249,12 @@ void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameter()
   eleparams.set<int>("form of convective term",convform_);
   eleparams.set("isale",isale_);
 
+  // set flag for writing the flux vector fields
+  eleparams.set<int>("writeflux",writeflux_);
+
+  //! set vector containing ids of scalars for which flux vectors are calculated
+  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
+
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 

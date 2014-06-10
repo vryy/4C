@@ -76,8 +76,6 @@ private:
 
 /*!
 \brief The Transport element
-
-\author Georg Bauer (bauer@lnm.mw.tum.de)
 */
 class Transport : public DRT::Element
 {
@@ -428,8 +426,6 @@ private:
 \note This is a pure boundary condition element. Its only
       purpose is to evaluate certain boundary conditions that might be
       adjacent to a parent Transport element.
-
-\author Georg Bauer (bauer@lnm.mw.tum.de)
 */
 class TransportBoundary : public DRT::Element
 {

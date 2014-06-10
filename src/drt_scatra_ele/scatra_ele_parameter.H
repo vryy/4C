@@ -78,6 +78,13 @@ public:
   bool IsConservative(){return is_conservative_;};
 
   /*--------------------------*/
+  //! @name query and output
+  /*--------------------------*/
+
+  INPAR::SCATRA::FluxType WriteFlux(){return writeflux_;};
+  Teuchos::RCP<std::vector<int> > WriteFluxIds(){return writefluxids_;};
+
+  /*--------------------------*/
   //! @name stabilization parameters
   /*--------------------------*/
 
@@ -134,6 +141,15 @@ protected:
   bool is_ale_;
   //! flag for conservative form
   bool is_conservative_;
+
+  /*--------------------------*/
+  //! @name query and output
+  /*--------------------------*/
+
+  //! flag for writing the flux vector fields
+  INPAR::SCATRA::FluxType writeflux_;
+  //! ids of scalars for which flux vectors are written (starting with 1)
+  Teuchos::RCP<std::vector<int> > writefluxids_;
 
   /*--------------------------*/
   //! @name stabilization parameters

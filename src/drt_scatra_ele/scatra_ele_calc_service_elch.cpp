@@ -175,14 +175,46 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
       SetFormulationSpecificInternalVariables(dme,varmanager_);
 
       // access control parameter for flux calculation
-      INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
+      INPAR::SCATRA::FluxType fluxtype = elchpara_->WriteFlux();
+      Teuchos::RCP<std::vector<int> > writefluxids = elchpara_->WriteFluxIds();
 
       // do a loop for systems of transported scalars
-      for (int k = 0; k<my::numscal_; ++k)
-        CalculateFlux(elevec1_epetra,elevec2_epetra,elevec3_epetra,fluxtype,k,fac,varmanager_,dme);
+      for (std::vector<int>::iterator it = writefluxids->begin(); it!=writefluxids->end(); ++it)
+      {
+        int k=0;
+        // Actually, we compute here a weighted (and integrated) form of the fluxes!
+        // On time integration level, these contributions are then used to calculate
+        // an L2-projected representation of fluxes.
+        // Thus, this method here DOES NOT YET provide flux values that are ready to use!!
 
-      if(elchpara_->EquPot()==INPAR::ELCH::equpot_divi)
-        CalculateCurrent(elevec1_epetra,elevec2_epetra,elevec3_epetra,fluxtype,fac,varmanager_,dme);
+        // allocate and initialize!
+        LINALG::Matrix<my::nsd_,1> q(true);
+
+        if((*it) != my::numdofpernode_)
+        {
+          k=(*it)-1;
+          CalculateFlux(q,fluxtype,k,fac,varmanager_,dme);
+        }
+        else if ((*it) == my::numdofpernode_)
+        {
+          k=my::numdofpernode_-1;
+          CalculateCurrent(q,fluxtype,fac,varmanager_,dme);
+        }
+        else
+          dserror("Flux id, which should be calculated, does not exit in the dof set.");
+
+        // integrate and assemble everything into the "flux" vector
+        for (int vi=0; vi < my::nen_; vi++)
+        {
+          const int fvi = vi*my::numdofpernode_+k;
+          elevec1_epetra[fvi] += fac*my::funct_(vi)*q(0);
+          elevec2_epetra[fvi] += fac*my::funct_(vi)*q(1);
+          if(my::nsd_<3)
+            elevec3_epetra[fvi] = 0.0;
+          else
+            elevec3_epetra[fvi] += fac*my::funct_(vi)*q(2);
+        } // vi
+      }
     }
 
     break;

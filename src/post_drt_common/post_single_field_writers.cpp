@@ -337,6 +337,12 @@ void ElchFilter::WriteAllResults(PostField* field)
     }
     // finally, handle the electric potential
     writer_->WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
+
+    // write flux vectors (always 3D)
+    std::ostringstream temp;
+    temp << numdofpernode;
+    writer_->WriteResult("flux_phi_"+temp.str(), "current", nodebased, 3);
+
     // temporal mean field from turbulent statistics (if present)
     writer_->WriteResult("averaged_phinp", "averaged_phi", dofbased, 1,numdofpernode-1);
   }

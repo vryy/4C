@@ -4,8 +4,6 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15252
 //
-// necessary defines: D_FLUID DEBUG BINIO TRAP_FE
-//
 // example: reaction model Bard
 // simulation of potential sweep experiment described in
 //

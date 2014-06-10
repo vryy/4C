@@ -93,7 +93,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fssgd_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   turbmodel_(INPAR::FLUID::no_model),
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
-  writefluxids_(0),
+  writefluxids_(Teuchos::rcp(new std::vector<int>)),
   flux_(Teuchos::null),
   sumnormfluxintegral_(Teuchos::null),
   lastfluxoutputstep_(-1),
@@ -392,27 +392,27 @@ void SCATRA::ScaTraTimIntImpl::Init()
     int word1 = 0;
     std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
     while (mystream >> word1)
-      writefluxids_.push_back(word1);
+
+    writefluxids_->push_back(word1);
 
     // default value (-1): flux is written for all dof's
     // scalar transport: numdofpernode_ = numscal_
     // elch:             numdofpernode_ = numscal_+1
     // -> current flux for potential only if div i is used to close the system otherwise zero
-    if (writefluxids_[0]==(-1)) //default is to perform flux output for ALL scalars
+    if ((*writefluxids_)[0]==(-1)) //default is to perform flux output for ALL scalars
     {
-      writefluxids_.resize(numdofpernode_);
+      writefluxids_->resize(numdofpernode_);
       for(int k=0;k<numdofpernode_;++k)
-        writefluxids_[k]=k+1;
+        (*writefluxids_)[k]=k+1;
     }
-
     // flux_ vector is initized when CalcFlux() is called
     if ((writeflux_!=INPAR::SCATRA::flux_no) and (myrank_ == 0))
     {
       IO::cout << "Flux output is performed for scalars: ";
-      for (unsigned int i=0; i < writefluxids_.size();i++)
+      for (unsigned int i=0; i < writefluxids_->size();i++)
       {
-        const int id = writefluxids_[i];
-        IO::cout << writefluxids_[i] << " ";
+        const int id = (*writefluxids_)[i];
+        IO::cout << (*writefluxids_)[i] << " ";
         if ((id<1) or (id > numdofpernode_)) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
@@ -695,6 +695,12 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralScaTraParameter()
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+  // set flag for writing the flux vector fields
+  eleparams.set<int>("writeflux",writeflux_);
+
+  //! set vector containing ids of scalars for which flux vectors are calculated
+  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

@@ -33,6 +33,8 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
   scatratype_(INPAR::SCATRA::scatratype_undefined),
   is_ale_(false),
   is_conservative_(false),
+  writeflux_(INPAR::SCATRA::flux_no),
+  writefluxids_(Teuchos::null),
   stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
   whichtau_(INPAR::SCATRA::tau_zero),
   charelelength_(INPAR::SCATRA::streamlength),
@@ -104,6 +106,12 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameter(
     DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
   is_conservative_ = false;
   if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
+
+  // flag for writing the flux vector fields
+  writeflux_ =  DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "writeflux");
+
+  //! vector containing ids of scalars for which flux vectors are calculated
+  writefluxids_ =  params.get<Teuchos::RCP<std::vector<int> > >("writefluxids");
 
   // set parameters for stabilization
   Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");

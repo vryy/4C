@@ -5,8 +5,8 @@
 \brief scalar transport field base algorithm
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
@@ -36,8 +36,6 @@ namespace ADAPTER {
 
   /// general scalar transport field interface for multiphysics problems
   /*!
-
-  \author Georg Bauer
   \date 07/08
   */
 

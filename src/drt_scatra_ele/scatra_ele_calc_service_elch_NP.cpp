@@ -180,9 +180,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhsElectricPotentialF
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
-    Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
-    Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
-    Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
+    LINALG::Matrix<my::nsd_,1>&     q,      //!< flux of species k
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
     const int                       k,          //!< index of current scalar
     const double                    fac,         //!< integration factor
@@ -206,9 +204,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   \                      [optional]      [ELCH]               /
   */
 
-  // allocate and initialize!
-  LINALG::Matrix<my::nsd_,1> q(true);
-
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
@@ -227,15 +222,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   default:
     dserror("received illegal flag inside flux evaluation for whole domain"); break;
   };
-
-  // integrate and assemble everything into the "flux" vector
-  for (int vi=0; vi < my::nen_; vi++)
-  {
-    const int fvi = vi*my::numdofpernode_+k;
-    fluxx[fvi] += fac*my::funct_(vi)*q(0);
-    fluxy[fvi] += fac*my::funct_(vi)*q(1);
-    fluxz[fvi] += fac*my::funct_(vi)*q(2);
-  } // vi
 
   return;
 } // ScaTraCalc::CalculateFlux

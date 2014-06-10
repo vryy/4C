@@ -180,9 +180,7 @@ protected:
 
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
   virtual void CalculateFlux(
-    Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
-    Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
-    Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
+    LINALG::Matrix<my::nsd_,1>&     q,      //!< flux of species k
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
     const int                       k,          //!< index of current scalar
     const double                    fac,         //!< integration factor
@@ -192,9 +190,7 @@ protected:
 
   //!  calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
   virtual void CalculateCurrent(
-    Epetra_SerialDenseVector&       fluxx,      //!< flux in x-direction to be computed
-    Epetra_SerialDenseVector&       fluxy,      //!< flux in y-direction to be computed
-    Epetra_SerialDenseVector&       fluxz,      //!< flux in z-direction to be computed
+    LINALG::Matrix<my::nsd_,1>&     q,      //!< flux of species k
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
     const double                    fac,        //!< integration factor
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,  //!< variable manager

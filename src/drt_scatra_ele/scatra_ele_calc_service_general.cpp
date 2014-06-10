@@ -124,14 +124,16 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     } // for i
 
     // access control parameter for flux calculation
-    INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
+    INPAR::SCATRA::FluxType fluxtype = scatrapara_->WriteFlux();
+    Teuchos::RCP<std::vector<int> > writefluxids = scatrapara_->WriteFluxIds();
 
     // we always get an 3D flux vector for each node
     LINALG::Matrix<3,nen_> eflux(true);
 
     // do a loop for systems of transported scalars
-    for (int k = 0; k<numscal_; ++k)
+    for (std::vector<int>::iterator it = writefluxids->begin(); it!=writefluxids->end(); ++it)
     {
+      int k = (*it)-1;
       // calculate flux vectors for actual scalar
       eflux.Clear();
       CalculateFlux(eflux,ele,fluxtype,k);

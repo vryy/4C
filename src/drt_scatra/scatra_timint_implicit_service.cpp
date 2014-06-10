@@ -105,13 +105,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
     eleparams.set<int>("scatratype",scatratype_);
     // we integrate shape functions for the first numscal_ dofs per node!!
     Epetra_IntSerialDenseVector dofids(7); // make it big enough!
-    for(int rr=0;rr < numscal_;rr++)
-    {
-      dofids(rr) = rr;
-    }
-    for(int rr=numscal_;rr<7;rr++)
+    for(int rr=0;rr<7;rr++)
     {
       dofids(rr) = -1; // do not integrate shape functions for these dofs
+    }
+    for (std::vector<int>::iterator it = writefluxids_->begin(); it!=writefluxids_->end(); ++it)
+    {
+      dofids((*it)-1) = (*it); // do not integrate shape functions for these dofs
     }
     eleparams.set("dofids",dofids);
 
@@ -126,11 +126,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   Teuchos::ParameterList params;
   params.set<int>("action",SCATRA::calc_flux_domain);
   params.set<int>("scatratype",scatratype_);
-  //TODO: SCATRA_ELE_CLEANING: ELCH
-  //params.set("frt",frt_);
-  params.set<int>("fluxtype",fluxtype);
-  //TODO: SCATRA_ELE_CLEANING: ELCH
-  //params.set<double>("time-step length",dta_);
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
@@ -327,7 +322,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // vector for effective flux over all defined boundary conditions
   // maximal number of fluxes  (numscal+1 -> ionic species + potential) is generated
   // for OUTPUT standard -> last entry is not used
-  std::vector<double> normfluxsum(numscal_+1);
+  std::vector<double> normfluxsum(numdofpernode_);
 
   for (unsigned int i=0; i < condnames.size(); i++)
   {
@@ -1142,7 +1137,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for (std::vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
+  for (std::vector<int>::iterator it = writefluxids_->begin(); it!=writefluxids_->end(); ++it)
   {
     int k=(*it);
 
