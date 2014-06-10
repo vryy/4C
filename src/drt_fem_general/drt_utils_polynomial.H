@@ -118,13 +118,19 @@ namespace UTILS
 
 
   /*!
-   \brief generates complete Lagrange basis in 1D
+   \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
    */
   inline
   std::vector<LagrangePolynomial> generateLagrangeBasis1D (const unsigned int degree)
   {
     std::vector<LagrangePolynomial> poly1d;
-    dsassert(degree>=1 && degree<10, "Not implemented");
+    if (degree==0)
+    {
+      poly1d.push_back(DRT::UTILS::LagrangePolynomial(std::vector<double>(), 0.));
+      return poly1d;
+    }
+
+    dsassert(degree<10, "Not implemented");
     DRT::UTILS::IntegrationPoints1D gaussLobattoPoints
       (DRT::UTILS::GaussRule1D(DRT::UTILS::intrule_line_lobatto2point+degree-1));
     std::vector<double> points(degree);
@@ -133,6 +139,38 @@ namespace UTILS
       for (unsigned int j=0, c=0; j<=degree; ++j)
         if (i!=j) {
           points[c] = gaussLobattoPoints.qxg[j][0];
+          ++c;
+        }
+      poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
+    }
+    return poly1d;
+  }
+
+
+
+  /*!
+   \brief generates complete Lagrange basis in 1D for [0,1]-based elements (TET)
+   */
+  inline
+  std::vector<LagrangePolynomial> generateLagrangeBasisTET1D (const unsigned int degree)
+  {
+    std::vector<LagrangePolynomial> poly1d;
+    if (degree==0)
+    {
+      poly1d.push_back(DRT::UTILS::LagrangePolynomial(std::vector<double>(), 0.));
+      return poly1d;
+    }
+
+    dsassert(degree<10, "Not implemented");
+    DRT::UTILS::IntegrationPoints1D gaussLobattoPoints
+      (DRT::UTILS::GaussRule1D(DRT::UTILS::intrule_line_lobatto2point+degree-1));
+    std::vector<double> points(degree);
+    for (unsigned int i=0; i<=degree; ++i)
+    {
+      // need to transform the Gauss points from [-1,1] to the interval [0,1]
+      for (unsigned int j=0, c=0; j<=degree; ++j)
+        if (i!=j) {
+          points[c] = 0.5 + 0.5 * gaussLobattoPoints.qxg[j][0];
           ++c;
         }
       poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
@@ -230,6 +268,10 @@ namespace UTILS
 
   /*!
    \brief generates complete Legendre basis in 1D
+
+   Legendre polynomials are orthogonal on the unit interval [-1, 1]. As opposed
+   to the usual mathematical definition, we also scale the polynomials such that
+   they are actually orthonormal on the unit interval.
    */
   inline
   std::vector<Polynomial> generateLegendreBasis1D (const unsigned int degree)
@@ -249,16 +291,25 @@ namespace UTILS
 
     std::vector<double> coefficients_n1(2, 0.);
     coefficients_n1[1] = 1.;
-    polynomials.push_back(Polynomial(coefficients_n1));
-    for (unsigned int n=2; n<=degree; ++n)
+    for (unsigned int n=2; ; ++n)
     {
       dsassert(coefficients_n1.size() == n, "Internal error");
+      {
+        // Scale coefficients to make polynomials orthonormal
+        std::vector<double> scaledCoefficients(coefficients_n1);
+        for (unsigned int q=0; q<scaledCoefficients.size(); ++q)
+          scaledCoefficients[q] *= (2.*n-1.)*0.5;
+        polynomials.push_back(Polynomial(scaledCoefficients));
+      }
+
+      if (n > degree)
+        break;
+
       coefficients.resize(n+1);
       for (unsigned int i=0; i<n-1; ++i)
         coefficients[i] *= -static_cast<double>(n-1) / n;
       for (unsigned int i=0; i<n; ++i)
         coefficients[i+1] += coefficients_n1[i] * static_cast<double>(2*n-1) / n;
-      polynomials.push_back(Polynomial(coefficients));
 
       coefficients.swap(coefficients_n1);
     }
@@ -269,7 +320,7 @@ namespace UTILS
 
 
   /*!
-  \brief Base class for polynomial spaces used by HDG
+  \brief Base class for polynomial spaces in nsd_ dimensions used by HDG
   */
   template <int nsd_>
   class PolynomialSpaceBase
@@ -324,6 +375,8 @@ namespace UTILS
     :
       polySpace1d_(polySpace1d)
     {
+      // renumbering is included in case we want to use these polynomials also
+      // for standard finite elements
       renumbering_.resize(Size());
       for (unsigned int i=0; i<renumbering_.size(); ++i)
         renumbering_[i] = i;
@@ -601,7 +654,7 @@ namespace UTILS
       for (unsigned int d=1; d<nsd_; ++d)
       {
         size *= degree+1+d;
-        size /= (d+1);
+        size /= (d+1);      // This integer division is always without remainder
       }
       return size;
     }
@@ -812,7 +865,8 @@ namespace UTILS
   /*!
    \brief Class of tensor product Lagrange polynomials based on 1D Gauss-Lobatto
    support points (gives standard Q1 and Q2 basis functions and good polynomials
-   for higher order)
+   for higher order). This class is usually not directly called in user code, as
+   its functionality can be accessed through PolynomialSpace<nsd_>.
   */
  template <int nsd_>
  class LagrangeBasis : public PolynomialSpaceTensor<nsd_, LagrangePolynomial>
@@ -830,7 +884,9 @@ namespace UTILS
 
 
  /*!
-  \brief Class of Legendre polynomials that are pairwise orthogonal
+  \brief Class of Legendre polynomials that are pairwise orthogonal. This class
+   is usually not directly called in user code, as its functionality can be
+   accessed through PolynomialSpace<nsd_>.
  */
 template <int nsd_>
 class LegendreBasis : public PolynomialSpaceComplete<nsd_, Polynomial>
@@ -845,6 +901,109 @@ public:
   {}
 };
 
+
+
+/*!
+ \brief General polynomial class that encapsulates the various polynomial shapes
+
+ For QUAD/HEX elements, this class allows to select between the usual tensor
+ polynomial space LagrangeBasisHEX and the complete polynomial space
+ LegendreBasis. For TRI/TET elements, Legendre polynomials are always used.
+ We might want to implement a Lagrange basis for triangles at some point but
+ for that we need a special transform to be able to use the above truncated
+ tensor product.
+*/
+template <int nsd_>
+class PolynomialSpace
+{
+public:
+  PolynomialSpace (const DRT::Element::DiscretizationType distype,
+                   const unsigned int degree,
+                   const bool completeSpace)
+  :
+    // TODO: Use Legendre basis for triangles, but should rescale polynomial to interval [0,1]
+    polyspace_ (completeSpace || (getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1) ?
+                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LegendreBasis<nsd_>(degree)) :
+                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LagrangeBasis<nsd_>(degree)))
+  {
+    if (nsd_ != getDimension(distype))
+      dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
+  }
+
+  /*
+   \brief Return the number of polynomials (over all dimensions)
+   */
+  std::size_t Size() const
+  {
+    return polyspace_->Size();
+  }
+
+  /*
+   \brief Evaluates the values of all polynomials on the given point
+   */
+  void Evaluate (const LINALG::Matrix<nsd_,1> &point,
+                 Epetra_SerialDenseVector     &values) const
+  {
+    polyspace_->Evaluate(point, values);
+  }
+
+  /*
+   \brief Evaluates the values of all polynomials on the given point
+   */
+  void Evaluate_deriv1 (const LINALG::Matrix<nsd_,1> &point,
+                        Epetra_SerialDenseMatrix     &derivatives) const
+  {
+    polyspace_->Evaluate_deriv1(point, derivatives);
+  }
+
+  /*
+   \brief Evaluates the first derivative of all polynomials on the given point
+   */
+  void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
+                       Epetra_SerialDenseMatrix     &derivatives) const
+  {
+    polyspace_->Evaluate_deriv2(point, derivatives);
+  }
+
+private:
+  Teuchos::RCP<PolynomialSpaceBase<nsd_> > polyspace_;
+};
+
+
+/*!
+ \brief Returns the size of the polynomial space.
+
+ Note: This class must always be synchronized with PolynomialSpace above!
+ */
+inline
+int getBasisSize(const DRT::Element::DiscretizationType distype,
+                 const int degree,
+                 const bool completeSpace)
+{
+  const int dim = getDimension(distype);
+  const int nfaces = getNumberOfElementFaces(distype);
+  switch (dim)
+  {
+    case 3:
+      if ( completeSpace || (nfaces == dim+1) )
+        return LegendreBasis<3>::Size(degree);
+      else
+        return LagrangeBasis<3>::Size(degree);
+      break;
+    case 2:
+      if ( completeSpace || (nfaces == dim+1) )
+        return LegendreBasis<2>::Size(degree);
+      else
+        return LagrangeBasis<2>::Size(degree);
+      break;
+    case 1:
+      return degree+1;
+      break;
+    default:
+      dserror("Invalid dimension");
+      return -1;
+  }
+}
 
 } // namespace UTILS
 } // namespace DRT

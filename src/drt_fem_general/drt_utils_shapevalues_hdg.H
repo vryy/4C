@@ -31,12 +31,6 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     struct ShapeValues
     {
-      enum BasisType
-      {
-        lagrange,              // nodal Lagrange polynomials on triangles or quadrilaterals
-        legendre_complete      // Legendre polynomials, always complete degree p, even for quadrilaterals
-      };
-
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const unsigned int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -49,22 +43,42 @@ namespace DRT
       ///! number of nodes on faces
       static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
+      /*!
+      \brief Initialize the data structure for shape functions, set element-independent data
+
+      @param degree  Degree of the polynomial
+      @param completepoly  Sets whether to use a polynomial of complete degree or tensor degree (on hex); on tet, only complete degree makes sense
+      @param quadratureDegree  Sets the degree of polynomials the Gauss formula should integrate exactly; typically 2*degree
+       */
       ShapeValues (const unsigned int degree,
-                   const BasisType    basis,
+                   const bool         completepoly,
                    const unsigned int quadratureDegree);
 
-      void Evaluate            (const DRT::Element &ele);
-      void EvaluateFace        (const DRT::Element &ele,
-                                const unsigned int  face);
+      /*!
+      \brief Compute element-dependent data, like gradients in real cell, integration weights, for element dofs
+      */
+      void Evaluate              (const DRT::Element &ele);
+
+      /*!
+      \brief Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
+      */
+      void EvaluateFace          (const DRT::Element &ele,
+                                  const unsigned int  face);
+
+      /*!
+      \brief Consider the orientation of faces for face degrees of freedom
+       */
+      void AdjustFaceOrientation (const DRT::Element &ele,
+                                  const unsigned int  face);
 
       /// polynomial degree
       const unsigned int degree_;
 
       /// underlying polynomial space for element interior, created in constructor
-      Teuchos::RCP<const DRT::UTILS::PolynomialSpaceBase<nsd_> >   polySpace_;
+      const DRT::UTILS::PolynomialSpace<nsd_>   polySpace_;
 
       /// underlying polynomial space for faces
-      Teuchos::RCP<const DRT::UTILS::PolynomialSpaceBase<nsd_-1> > polySpaceFace_;
+      const DRT::UTILS::PolynomialSpace<nsd_-1> polySpaceFace_;
 
       const unsigned int ndofs_;
       const unsigned int nfdofs_;

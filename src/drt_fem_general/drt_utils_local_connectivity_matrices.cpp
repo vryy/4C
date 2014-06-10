@@ -318,13 +318,57 @@ int DRT::UTILS::getNumberOfElementVolumes(
 int DRT::UTILS::getNumberOfElementFaces(
     const DRT::Element::DiscretizationType&     distype)
 {
-  if (getDimension(distype) == 3)
+  const int dim = getDimension(distype);
+  if (dim == 3)
     return getNumberOfElementSurfaces(distype);
-  else if (getDimension(distype) == 2)
+  else if (dim == 2)
     return getNumberOfElementLines(distype);
+  else if (dim == 1)
+    return 2;
   else
     dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns the face discretization type               kronbichler 06/14|
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType
+DRT::UTILS::getEleFaceShapeType(
+    const DRT::Element::DiscretizationType& distype,
+    const unsigned int                      face)
+{
+  DRT::Element::DiscretizationType type = DRT::Element::dis_none;
+
+  switch(distype)
+  {
+    case DRT::Element::line2   : type = DisTypeToFaceShapeType<DRT::Element::line2>::shape; break;
+    case DRT::Element::line3   : type = DisTypeToFaceShapeType<DRT::Element::line3>::shape; break;
+    case DRT::Element::nurbs2  : type = DisTypeToFaceShapeType<DRT::Element::nurbs2>::shape; break;
+    case DRT::Element::nurbs3  : type = DisTypeToFaceShapeType<DRT::Element::nurbs3>::shape; break;
+    case DRT::Element::quad4   : type = DisTypeToFaceShapeType<DRT::Element::quad4>::shape; break;
+    case DRT::Element::quad8   : type = DisTypeToFaceShapeType<DRT::Element::quad8>::shape; break;
+    case DRT::Element::quad9   : type = DisTypeToFaceShapeType<DRT::Element::quad9>::shape; break;
+    case DRT::Element::tri3    : type = DisTypeToFaceShapeType<DRT::Element::tri3>::shape; break;
+    case DRT::Element::tri6    : type = DisTypeToFaceShapeType<DRT::Element::tri6>::shape; break;
+    case DRT::Element::nurbs4  : type = DisTypeToFaceShapeType<DRT::Element::nurbs4>::shape; break;
+    case DRT::Element::nurbs9  : type = DisTypeToFaceShapeType<DRT::Element::nurbs9>::shape; break;
+    case DRT::Element::hex8    : type = DisTypeToFaceShapeType<DRT::Element::hex8>::shape; break;
+    case DRT::Element::nurbs8  : type = DisTypeToFaceShapeType<DRT::Element::nurbs8>::shape; break;
+    case DRT::Element::hex20   : type = DisTypeToFaceShapeType<DRT::Element::hex20>::shape; break;
+    case DRT::Element::hex27   : type = DisTypeToFaceShapeType<DRT::Element::hex27>::shape; break;
+    case DRT::Element::nurbs27 : type = DisTypeToFaceShapeType<DRT::Element::nurbs27>::shape; break;
+    case DRT::Element::tet4    : type = DisTypeToFaceShapeType<DRT::Element::tet4>::shape; break;
+    case DRT::Element::tet10   : type = DisTypeToFaceShapeType<DRT::Element::tet10>::shape; break;
+    case DRT::Element::wedge6  : type = face < 3 ? DRT::Element::quad4 : DRT::Element::tri3; break;
+    case DRT::Element::wedge15 : type = face < 3 ? DRT::Element::quad8 : DRT::Element::tri6; break;
+    case DRT::Element::pyramid5: type = face == 0 ? DRT::Element::quad4 : DRT::Element::tri3; break;
+    case DRT::Element::point1  : type = DisTypeToFaceShapeType<DRT::Element::point1>::shape; break;
+    default:
+      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+      break;
+  }
+  return type;
 }
 
 /*----------------------------------------------------------------------*
@@ -493,7 +537,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a std::vector< std::vector<int> > with all nodes for         u.may 08/07|
+ |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/
 std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(

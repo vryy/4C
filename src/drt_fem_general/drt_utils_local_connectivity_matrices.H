@@ -556,6 +556,14 @@ namespace UTILS
       const DRT::Element::DiscretizationType&     distype);
 
   /*!
+  \brief Returns the shape type of a face of a given element
+   */
+  DRT::Element::DiscretizationType getEleFaceShapeType (
+      const DRT::Element::DiscretizationType&     distype,     ///< discretization type
+      const unsigned int face = 0                              ///< which face?
+      );
+
+  /*!
   \brief Fills a vector< std::vector<int> > with all nodes for every surface
          for each discretization type
 

@@ -83,15 +83,14 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
   if (const DRT::ELEMENTS::FluidHDG * hdgele = dynamic_cast<const DRT::ELEMENTS::FluidHDG*>(ele))
   {
     shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(),
-                                                                hdgele->UsesCompletePolynomialSpace() ?
-                                                                DRT::UTILS::ShapeValues<distype>::legendre_complete :
-                                                                DRT::UTILS::ShapeValues<distype>::lagrange,
+                                                                hdgele->UsesCompletePolynomialSpace(),
                                                                 2*hdgele->Degree()));
     localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_));
   }
   else
     dserror("Only works for HDG fluid elements");
 }
+
 
 
 template <DRT::Element::DiscretizationType distype>
@@ -392,7 +391,6 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
     for (unsigned int q=0; q<shapes_->nqpoints_; ++q )
     {
       const double fac = shapes_->jfac(q);
-      const double sqrtfac = std::sqrt(fac);
       LINALG::Matrix<nsd_,1> xyz(false);
       for (unsigned int d=0; d<nsd_; ++d)
         xyz(d) = shapes_->xyzreal(d,q);
@@ -406,7 +404,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i=0; i<shapes_->ndofs_; ++i) {
         // mass matrix part
-        localSolver_->massPart(i,q) = shapes_->shfunct(i,q) * sqrtfac;
+        localSolver_->massPart(i,q)  = shapes_->shfunct(i,q);
+        localSolver_->massPartW(i,q) = shapes_->shfunct(i,q) * fac;
 
         for (unsigned int d=0; d<nsd_; ++d)
           for (unsigned int e=0; e<nsd_; ++e)
@@ -419,7 +418,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       avgpre += p * fac;
       vol += fac;
     }
-    localSolver_->massMat.Multiply('N', 'T', 1., localSolver_->massPart,localSolver_->massPart, 0.);
+    localSolver_->massMat.Multiply('N', 'T', 1., localSolver_->massPart,localSolver_->massPartW, 0.);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
     Epetra_SerialDenseSolver inverseMass;
@@ -527,7 +526,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
+    shapes_->polySpace_.Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     for (unsigned int d=0; d<=nsd_; ++d) {
@@ -555,7 +554,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
       // evaluate shape polynomials in node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
         shapes_->xsiF(idim) = locations(idim,i);
-      shapes_->polySpaceFace_->Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
+      shapes_->polySpaceFace_.Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
 
       // compute values for velocity and pressure by summing over all basis functions
       for (unsigned int d=0; d<nsd_; ++d) {
@@ -713,6 +712,7 @@ shapes_(shapeValues)
   fuMat.Shape(ufMat.N(), ufMat.M());
 
   massPart.Shape(ndofs_,shapes_.nqpoints_);
+  massPartW.Shape(ndofs_,shapes_.nqpoints_);
   gradPart.Shape(nsd_*ndofs_,shapes_.nqpoints_);
   uPart.Shape(ndofs_*nsd_,shapes_.nqpoints_);
 
@@ -862,9 +862,6 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
   // loop over interior quadrature points
   for (unsigned int q=0; q<shapes_.nqpoints_; ++q )
   {
-    const double sqrtfac = std::sqrt(shapes_.jfac(q));
-
-    // fix pressure average on element
     if (!evaluateOnlyNonlinear) {
       for (unsigned int i=0; i<ndofs_; ++i)
         uuMat(nsd_*ndofs_,nsd_*ndofs_+i) += shapes_.shfunct(i,q) * shapes_.jfac(q);
@@ -874,13 +871,14 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
     // now fill the components in the one-sided matrices
     for (unsigned int i=0; i<ndofs_; ++i) {
       // mass matrix part (velocity and velocity gradient use the same mass matrix)
-      const double valf = shapes_.shfunct(i,q) * sqrtfac;
-      massPart(i,q) = valf;
+      massPart(i,q) = shapes_.shfunct(i,q);
+      const double valf = shapes_.shfunct(i,q) * shapes_.jfac(q);
+      massPartW(i,q) = valf;
 
       // gradient of shape functions
       for (unsigned int d=0; d<nsd_; ++d) {
         if (!evaluateOnlyNonlinear) {
-          const double vald = shapes_.shderxy(i*nsd_+d,q) * sqrtfac;
+          const double vald = shapes_.shderxy(i*nsd_+d,q);
           gradPart (d*ndofs_+i,q) = vald;
         }
 
@@ -892,8 +890,8 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
 
   // multiply matrices to perform summation over quadrature points
   if (!evaluateOnlyNonlinear) {
-    massMat.Multiply('N', 'T', 1., massPart, massPart, 0.);
-    guMat.Multiply('N', 'T', 1., gradPart, massPart, 0.);
+    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    guMat.Multiply('N', 'T', 1., gradPart, massPartW, 0.);
     ugMat = guMat;
     ugMat.Scale(viscosity);
   }

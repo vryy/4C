@@ -222,54 +222,16 @@ public:
   */
   virtual int NumDofPerFace(const unsigned /* face */) const
   {
-    const int nsd = DRT::UTILS::getDimension(distype_);
-    switch (nsd)
-    {
-      case 3:
-        if (completepol_)
-          return DRT::UTILS::LegendreBasis<2>::Size(degree_);
-        else
-          return DRT::UTILS::LagrangeBasis<2>::Size(degree_);
-        break;
-      case 2:
-        if (completepol_)
-          return DRT::UTILS::LegendreBasis<1>::Size(degree_);
-        else
-          return DRT::UTILS::LagrangeBasis<1>::Size(degree_);
-        break;
-      case 1:
-        return 1;
-        break;
-      default:
-        dserror("Invalid dimension");
-        return -1;
-    }
+    return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), degree_, completepol_);
   }
 
   virtual int NumDofPerElementAuxiliary() const
   {
-    const int nsd = DRT::UTILS::getDimension(distype_);
-    switch (nsd)
-    {
-      case 3:
-        if (completepol_)
-          return 4*DRT::UTILS::LegendreBasis<3>::Size(degree_);
-        else
-          return 4*DRT::UTILS::LagrangeBasis<3>::Size(degree_);
-        break;
-      case 2:
-        if (completepol_)
-          return 3*DRT::UTILS::LegendreBasis<2>::Size(degree_);
-        else
-          return 3*DRT::UTILS::LagrangeBasis<2>::Size(degree_);
-        break;
-      default:
-        dserror("Invalid dimension");
-        return -1;
-    }
+    return (DRT::UTILS::getDimension(distype_) + 1) *
+            DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
   }
 
-  virtual int NumDofPerElement() const { return 0;}
+  virtual int NumDofPerElement() const { return 0; }
 
   /*!
    \brief Returns the degree of the element

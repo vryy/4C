@@ -210,9 +210,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::InitializeShapes(const DRT::ELEMENTS::
   if (const DRT::ELEMENTS::Acou * hdgele = dynamic_cast<const DRT::ELEMENTS::Acou*>(ele))
   {
     shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(),
-                                                                hdgele->UsesCompletePolynomialSpace() ?
-                                                                DRT::UTILS::ShapeValues<distype>::legendre_complete :
-                                                                DRT::UTILS::ShapeValues<distype>::lagrange,
+                                                                hdgele->UsesCompletePolynomialSpace(),
                                                                 2*hdgele->Degree()));
     localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_));
   }
@@ -786,7 +784,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
+    shapes_->polySpace_.Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     double sum = 0;
@@ -814,7 +812,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
       // evaluate shape polynomials in node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
         shapes_->xsiF(idim) = locations(idim,i);
-      shapes_->polySpaceFace_->Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
+      shapes_->polySpaceFace_.Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
 
       // compute values for velocity and pressure by summing over all basis functions
       double sum = 0;
@@ -880,7 +878,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedPsi(
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
+    shapes_->polySpace_.Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     double sum = 0;
@@ -1186,7 +1184,7 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::AcouEleCalc<distype>::
 CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_SerialDenseVector & rhs, Epetra_SerialDenseVector & p)
 {
-  DRT::UTILS::LagrangeBasis<nsd_> postpoly(ele.Degree()+1);
+  DRT::UTILS::PolynomialSpace<nsd_> postpoly(distype, ele.Degree()+1, ele.UsesCompletePolynomialSpace());
   LINALG::Matrix<nsd_,1> xsi;
   int ndofspost = 1;
   for(unsigned int i=0; i<nsd_; ++i) ndofspost *= (ele.Degree()+2);
@@ -1233,7 +1231,7 @@ CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_Se
         derivs(d,i) = res[d];
     }
 
-    shapes_->polySpace_->Evaluate(xsi,myvalues);
+    shapes_->polySpace_.Evaluate(xsi,myvalues);
 
     for (int j=0; j<ndofspost; ++j)
       h(0,j) += values(j) * jfac;
@@ -1326,7 +1324,7 @@ ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_-1;idim++)
       xsiFl(idim) = locations(idim,i);
-    shapes_->polySpaceFace_->Evaluate(xsiFl,fvalues); // TODO: fix face orientation here
+    shapes_->polySpaceFace_.Evaluate(xsiFl,fvalues); // TODO: fix face orientation here
 
     // compute values for velocity and pressure by summing over all basis functions
     double sum = 0.0;
@@ -1390,7 +1388,7 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
         // evaluate shape polynomials in node
         for (unsigned int idim=0;idim<nsd_-1;idim++)
           xsitemp(idim) = locations(idim,i);// TODO: fix face orientation here
-        shapes_.polySpaceFace_->Evaluate(xsitemp,fvalues);
+        shapes_.polySpaceFace_.Evaluate(xsitemp,fvalues);
 
         // compute values for velocity and pressure by summing over all basis functions
         for (unsigned int k=0; k<nfdofs_; ++k)

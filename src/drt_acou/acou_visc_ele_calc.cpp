@@ -211,9 +211,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::InitializeShapes(const DRT::ELEMEN
   if (const DRT::ELEMENTS::AcouVisc * hdgele = dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))
   {
     shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(),
-                                                                hdgele->UsesCompletePolynomialSpace() ?
-                                                                DRT::UTILS::ShapeValues<distype>::legendre_complete :
-                                                                DRT::UTILS::ShapeValues<distype>::lagrange,
+                                                                hdgele->UsesCompletePolynomialSpace(),
                                                                 2*hdgele->Degree()));
     localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_));
   }
@@ -779,7 +777,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::NodeBasedValues(
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
+    shapes_->polySpace_.Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     double sump = 0;
@@ -819,7 +817,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::NodeBasedValues(
       // evaluate shape polynomials in node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
         shapes_->xsiF(idim) = locations(idim,i);
-      shapes_->polySpaceFace_->Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
+      shapes_->polySpaceFace_.Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
 
       // compute values for velocity and pressure by summing over all basis functions
       for (unsigned int d=0; d<nsd_; ++d)
@@ -862,7 +860,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::NodeBasedPsi(
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
-    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
+    shapes_->polySpace_.Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     double sump = 0.0;
@@ -1760,7 +1758,7 @@ ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       xsiFl(idim) = locations(idim,i);
-    shapes_->polySpace_->Evaluate(xsiFl,values);
+    shapes_->polySpace_.Evaluate(xsiFl,values);
 
     // is node part of this face element?
     int nodeid = ele->NodeIds()[i];

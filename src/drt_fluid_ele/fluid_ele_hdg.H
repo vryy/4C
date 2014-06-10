@@ -19,6 +19,7 @@ Maintainer: Martin Kronbichler
 
 
 #include "fluid_ele.H"
+#include "../drt_fem_general/drt_utils_polynomial.H"
 
 namespace DRT
 {
@@ -144,7 +145,11 @@ public:
   \brief Get number of degrees of freedom per face
 
   */
-  virtual int NumDofPerFace(const unsigned /* face */) const;
+  virtual int NumDofPerFace(const unsigned /* face */) const
+  {
+    return DRT::UTILS::getDimension(distype_) *
+           DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), degree_, completepol_);
+  }
 
   /*!
   \brief Get number of degrees of freedom per element, zero for the primary dof set
@@ -174,7 +179,11 @@ public:
   /*!
    \brief Returns the degree of the element for the interior DG space
    */
-  int NumDofPerElementAuxiliary() const;
+  int NumDofPerElementAuxiliary() const
+  {
+    const int nsd_ = DRT::UTILS::getDimension(distype_);
+    return (nsd_*(nsd_+1)+1) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+  }
 
   //@}
 

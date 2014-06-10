@@ -130,25 +130,25 @@ void DRT::ELEMENTS::FluidHDGType
       definitions["FLUIDHDG"];
 
   //3D
-  defs["HEX8"]     = defs_fluid["HEX8"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["HEX20"]    = defs_fluid["HEX20"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["HEX27"]    = defs_fluid["HEX27"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["TET4"]     = defs_fluid["TET4"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["TET10"]    = defs_fluid["TET10"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["WEDGE6"]   = defs_fluid["WEDGE6"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["WEDGE15"]  = defs_fluid["WEDGE15"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["PYRAMID5"] = defs_fluid["PYRAMID5"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["NURBS8"]   = defs_fluid["NURBS8"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["NURBS27"]  = defs_fluid["NURBS27"].AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["HEX8"]     = defs_fluid["HEX8"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["HEX20"]    = defs_fluid["HEX20"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["HEX27"]    = defs_fluid["HEX27"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["TET4"]     = defs_fluid["TET4"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["TET10"]    = defs_fluid["TET10"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["WEDGE6"]   = defs_fluid["WEDGE6"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["WEDGE15"]  = defs_fluid["WEDGE15"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["PYRAMID5"] = defs_fluid["PYRAMID5"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["NURBS8"]   = defs_fluid["NURBS8"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["NURBS27"]  = defs_fluid["NURBS27"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
 
   //2D
-  defs["QUAD4"]    = defs_fluid["QUAD4"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["QUAD8"]    = defs_fluid["QUAD8"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["QUAD9"]    = defs_fluid["QUAD9"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["TRI3"]     = defs_fluid["TRI3"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["TRI6"]     = defs_fluid["TRI6"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["NURBS4"]   = defs_fluid["NURBS4"].AddNamedInt("DEG").AddNamedInt("SPC");
-  defs["NURBS9"]   = defs_fluid["NURBS9"].AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["QUAD4"]    = defs_fluid["QUAD4"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["QUAD8"]    = defs_fluid["QUAD8"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["QUAD9"]    = defs_fluid["QUAD9"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["TRI3"]     = defs_fluid["TRI3"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["TRI6"]     = defs_fluid["TRI6"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["NURBS4"]   = defs_fluid["NURBS4"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  defs["NURBS9"]   = defs_fluid["NURBS9"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
 }
 
 
@@ -259,75 +259,15 @@ bool DRT::ELEMENTS::FluidHDG::ReadElement(const std::string&          eletype,
   linedef->ExtractInt("DEG", degree);
   degree_ = degree;
 
-  linedef->ExtractInt("SPC", degree);
-  completepol_ = degree;
+  if (linedef->HaveNamed("SPC"))
+  {
+    linedef->ExtractInt("SPC", degree);
+    completepol_ = degree;
+  }
+  else
+    completepol_ = false;
 
   return success;
-}
-
-
-
-/*---------------------------------------------------------------------*
-|  return the number of dofs per face (public)        kronbichler 06/14|
-*----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidHDG::NumDofPerFace(const unsigned /* face */) const
-{
-  const int nsd = DRT::UTILS::getDimension(distype_);
-  switch (nsd)
-  {
-    case 3:
-      if (completepol_)
-        return nsd*DRT::UTILS::LegendreBasis<2>::Size(degree_);
-      else
-        return nsd*DRT::UTILS::LagrangeBasis<2>::Size(degree_);
-      break;
-    case 2:
-      if (completepol_)
-        return nsd*DRT::UTILS::LegendreBasis<1>::Size(degree_);
-      else
-        return nsd*DRT::UTILS::LagrangeBasis<1>::Size(degree_);
-      break;
-    case 1:
-      return 1;
-      break;
-    default:
-      dserror("Invalid dimension");
-      return -1;
-  }
-}
-
-
-
-/*---------------------------------------------------------------------*
-|  return the number of dofs per element (public)     kronbichler 06/14|
-*----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidHDG::NumDofPerElementAuxiliary() const
-{
-  const int nsd = DRT::UTILS::getDimension(distype_);
-  switch (nsd)
-  {
-    case 3:
-      if (completepol_)
-        return 13*DRT::UTILS::LegendreBasis<3>::Size(degree_);
-      else
-        return 13*DRT::UTILS::LagrangeBasis<3>::Size(degree_);
-      break;
-    case 2:
-      if (completepol_)
-        return 7*DRT::UTILS::LegendreBasis<2>::Size(degree_);
-      else
-        return 7*DRT::UTILS::LagrangeBasis<2>::Size(degree_);
-      break;
-    case 1:
-      if (completepol_)
-        return 3*DRT::UTILS::LegendreBasis<1>::Size(degree_);
-      else
-        return 3*DRT::UTILS::LagrangeBasis<1>::Size(degree_);
-      break;
-    default:
-      dserror("Invalid dimension");
-      return -1;
-  }
 }
 
 

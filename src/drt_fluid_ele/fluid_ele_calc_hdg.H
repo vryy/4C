@@ -131,7 +131,8 @@ namespace ELEMENTS
                                            DRT::Discretization&                 discretization,
                                            Epetra_SerialDenseVector&            elevec1);
 
-    /*! \brief Initialize the shape functions and solver to the given element (degree is runtime parameter)
+    /*!
+    \brief Initialize the shape functions and solver to the given element (degree is runtime parameter)
      */
     void InitializeShapes(const DRT::ELEMENTS::Fluid* ele);
 
@@ -352,6 +353,7 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix  fuMat;     /// evaluated coupling between trace and velocity
 
       Epetra_SerialDenseMatrix  massPart;  /// temporary matrix for mass matrix on all quadrature points
+      Epetra_SerialDenseMatrix  massPartW; /// temporary matrix for mass matrix weighted by integration factor on all quadrature points
       Epetra_SerialDenseMatrix  gradPart;  /// temporary matrix for gradient matrix on all quadrature points
       Epetra_SerialDenseMatrix  uPart;     /// temporary matrix for convection
 

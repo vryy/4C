@@ -385,6 +385,10 @@ void FLD::TimIntHDG::SetInitialFlowField(
       intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
     }
   }
+  double globerror = 0;
+  discret_->Comm().SumAll(&error, &globerror, 1);
+  if (discret_->Comm().MyPID() == 0)
+    std::cout << "Error project when setting face twice: " << globerror << std::endl;
 }
 
 
