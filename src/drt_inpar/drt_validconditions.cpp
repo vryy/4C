@@ -3378,6 +3378,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_ard");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_ref");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_arp_0");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"y_arp_0");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_ard_0");
   windkesselheartvalvearterialproxdistcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("P_AT")));
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"fac");
   windkesselheartvalvearterialproxdistcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("crv")));

@@ -1975,14 +1975,18 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
     int gindex4 = gindex+3;
 
     double p_arp_0=windkesselcond_[condID]->GetDouble("p_arp_0");
+    double y_arp_0=windkesselcond_[condID]->GetDouble("y_arp_0");
+    double p_ard_0=windkesselcond_[condID]->GetDouble("p_ard_0");
 
     std::vector<int> colvec(4);
     colvec[0]=gindex;
     colvec[1]=gindex2;
     colvec[2]=gindex3;
     colvec[3]=gindex4;
-    int err = sysvec2->SumIntoGlobalValues(1,&p_arp_0,&colvec[1]);
-    if (err) dserror("SumIntoGlobalValues failed!");
+    int err1 = sysvec2->SumIntoGlobalValues(1,&p_arp_0,&colvec[1]);
+    int err2 = sysvec2->SumIntoGlobalValues(1,&y_arp_0,&colvec[2]);
+    int err3 = sysvec2->SumIntoGlobalValues(1,&p_ard_0,&colvec[3]);
+    if (err1 or err2 or err3) dserror("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
@@ -2080,7 +2084,7 @@ void UTILS::Windkessel::ResetStdWindkessel(
     std::vector<int> colvec(1);
     colvec[0]=gindex;
     int err1 = sysvec->ReplaceGlobalValues(1,&p_0,&colvec[0]);
-    if (err1) dserror("SumIntoGlobalValues failed!");
+    if (err1) dserror("ReplaceGlobalValues failed!");
 
   }
   return;
@@ -2160,14 +2164,18 @@ void UTILS::Windkessel::ResetHeartValveArterialProxDistWindkessel(
     int gindex4 = gindex+3;
 
     double p_arp_0=windkesselcond_[condID]->GetDouble("p_arp_0");
+    double y_arp_0=windkesselcond_[condID]->GetDouble("y_arp_0");
+    double p_ard_0=windkesselcond_[condID]->GetDouble("p_ard_0");
 
     std::vector<int> colvec(4);
     colvec[0]=gindex;
     colvec[1]=gindex2;
     colvec[2]=gindex3;
     colvec[3]=gindex4;
-    int err = sysvec->ReplaceGlobalValues(1,&p_arp_0,&colvec[1]);
-    if (err) dserror("SumIntoGlobalValues failed!");
+    int err1 = sysvec->ReplaceGlobalValues(1,&p_arp_0,&colvec[1]);
+    int err2 = sysvec->ReplaceGlobalValues(1,&y_arp_0,&colvec[2]);
+    int err3 = sysvec->ReplaceGlobalValues(1,&p_ard_0,&colvec[3]);
+    if (err1 or err2 or err3) dserror("ReplaceGlobalValues failed!");
 
   }
   return;
