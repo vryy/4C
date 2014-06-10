@@ -526,10 +526,10 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
   if(forced_writerestart)
   {
     // restart has already been written
-    if(writerestartevery_ and (step_%writerestartevery_ == 0))
+    if((writerestartevery_ and (step_%writerestartevery_ == 0)) or step_==DRT::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
-    if(writeresultsevery_ and (step_%writeresultsevery_ == 0) and step_!=DRT::Problem::Instance()->Restart())
+    if(writeresultsevery_ and (step_%writeresultsevery_ == 0))
     {
       AddRestartToOutputState();
       return;

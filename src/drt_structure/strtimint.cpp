@@ -1717,11 +1717,11 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
   {
     // reset possible history data on element level
     ResetStep();
-    // restart has already been written
-    if(writerestartevery_ and (step_%writerestartevery_ == 0))
+    // restart has already been written or simulation has just started
+    if((writerestartevery_ and (step_%writerestartevery_ == 0)) or step_==DRT::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
-    if(writeresultsevery_ and (step_%writeresultsevery_ == 0) and step_!=DRT::Problem::Instance()->Restart())
+    if(writeresultsevery_ and (step_%writeresultsevery_ == 0))
     {
       AddRestartToOutputState();
       return;

@@ -381,11 +381,11 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
   // special treatment is necessary when restart is forced
   if(forced_writerestart)
   {
-    // restart has already been written
-    if(writerestartevery_ and (step_%writerestartevery_ == 0))
+    // restart has already been written or simulation has just started
+    if((writerestartevery_ and (step_%writerestartevery_ == 0)) or step_==DRT::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
-    if(writeglobevery_ and (step_%writeglobevery_ == 0) and step_!=DRT::Problem::Instance()->Restart())
+    if(writeglobevery_ and (step_%writeglobevery_ == 0))
     {
       AddRestartToOutputState();
       return;
