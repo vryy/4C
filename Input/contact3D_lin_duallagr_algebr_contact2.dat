@@ -158,7 +158,7 @@ DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              dbc_ext
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 0 0 FUNCT 0 0 0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slave
 E 3 - 1 Slave Inactive FrCoeffOrBound 0.0

@@ -19,6 +19,7 @@ Maintainer: Alexander Popp
 #include "strtimint_ab2.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
@@ -157,7 +158,11 @@ int STR::TimIntAB2::IntegrateStep()
   if (HaveContactMeshtying())
   {
     fcmtn_->PutScalar(0.0);
-    cmtman_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
+
+    if(cmtbridge_->HaveMeshtying())
+      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
+    if(cmtbridge_->HaveContact())
+      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
   }
 
   // TIMING

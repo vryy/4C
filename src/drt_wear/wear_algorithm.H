@@ -46,6 +46,10 @@ namespace ADAPTER
   class coupling;
 }
 
+namespace MORTAR
+{
+  class ManagerBase;
+}
 
 /*----------------------------------------------------------------------*
  |                                                          farah 11/13 |

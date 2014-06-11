@@ -277,7 +277,7 @@ E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 DLINE  1
 // poro_bottom
 E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
--------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // solid_contact_interface
 E 1 - 1 Slave Inactive FrCoeffOrBound 0.3

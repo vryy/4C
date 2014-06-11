@@ -24,6 +24,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/windkessel_manager.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
 
@@ -58,7 +59,7 @@ STR::TimIntExpl::TimIntExpl
   if (HaveContactMeshtying())
   {
     INPAR::CONTACT::SolvingStrategy soltype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
     if (soltype != INPAR::CONTACT::solution_penalty)
       dserror("Explicit TIS can only handle penalty contact / meshtying");
   }

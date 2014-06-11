@@ -76,9 +76,6 @@ LAGMULT_QUAD                    quad_quad
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 LM_DUAL_CONSISTENT              no
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -143,7 +140,7 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 1 - 1 Slave
 E 4 - 1 Master

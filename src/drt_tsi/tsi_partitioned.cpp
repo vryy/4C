@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
 // contact
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 
 //! Note: The order of calling the two BasePartitioned-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -98,8 +99,9 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 #endif // TSIPARTITIONEDASOUTPUT
 
   // contact
-  if (StructureField()->ContactManager() != Teuchos::null)
-    ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
+  if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
+    if(StructureField()->MeshtyingContactBridge()->HaveContact())
+      ThermoField()->PrepareThermoContact(StructureField()->MeshtyingContactBridge()->ContactManager(),StructureField()->Discretization());
 
 }  // cstr
 
@@ -163,7 +165,9 @@ void TSI::Partitioned::TimeLoop()
 {
 
   // get active nodes from structural contact simulation
-  Teuchos::RCP<MORTAR::ManagerBase> cmtman = StructureField()->ContactManager();
+  Teuchos::RCP<MORTAR::ManagerBase> cmtman = Teuchos::null;
+  if(StructureField()->MeshtyingContactBridge()!=Teuchos::null)
+    cmtman = StructureField()->MeshtyingContactBridge()->ContactManager();
 
   // tsi with or without contact
   // only tsi

@@ -158,7 +158,7 @@ DLINE                           0
 DSURF                           0
 ------------------------------------------------------------FILAMENT NUMBERS
 DLINE                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 10 - 1 Master Inactive
 E 23 - 1 Slave Inactive

@@ -144,7 +144,7 @@ E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //                              untenunten2
 E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           3
 //                              obenunten
 E 4 - 1 Slave Inactive FrCoeffOrBound 0.1

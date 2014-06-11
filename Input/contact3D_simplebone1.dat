@@ -55,9 +55,6 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
@@ -227,7 +224,7 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          4
 NDVOL                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.3
 E 3 - 1 Master Inactive FrCoeffOrBound 0.3

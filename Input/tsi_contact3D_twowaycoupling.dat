@@ -330,7 +330,7 @@ DSURF                           0
 DVOL                            0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slavesurface
 E 3 - 1 Slave Inactive FrCoeffOrBound 0.35

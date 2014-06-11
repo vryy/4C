@@ -115,9 +115,9 @@ namespace ADAPTER
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps, Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
     { return structure_->UseBlockMatrix(domainmaps, rangemaps); }
 
-    // access to contact/meshtying manager
-    virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
-    { return structure_->ContactManager(); }
+    // access to contact/meshtying bridge
+    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
+    { return structure_->MeshtyingContactBridge(); }
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager()

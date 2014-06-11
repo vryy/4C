@@ -865,10 +865,10 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  reader.ReadVector(LagrMult(),"lagrmultold");
+  reader.ReadVector(LagrMult(),"mt_lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  reader.ReadVector(LagrMultOld(),"lagrmultold");
+  reader.ReadVector(LagrMultOld(),"mt_lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
   
   // only for Augmented strategy
@@ -876,7 +876,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   if (st == INPAR::CONTACT::solution_auglag)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    reader.ReadVector(LagrMultUzawa(),"lagrmultold");
+    reader.ReadVector(LagrMultUzawa(),"mt_lagrmultold");
     StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   }
     

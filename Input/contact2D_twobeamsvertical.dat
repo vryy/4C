@@ -216,7 +216,7 @@ DSURF                           0
 DLINE                           0
 ---------------------------------------------------------------FORCE SENSORS
 DPOINT                          0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 4 - 1 Slave Inactive FrCoeffOrBound 0.9
 E 6 - 1 Master Inactive FrCoeffOrBound 0.9

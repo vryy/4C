@@ -149,7 +149,7 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           8
 E 14 - 1 Master
 E 15 - 1 Master

@@ -160,7 +160,7 @@ DLINE                           0
 DSURF                           0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              master
 E 4 - 1 Master Inactive FrCoeffOrBound 0.1

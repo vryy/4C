@@ -71,9 +71,6 @@ PENALTYPARAM                    20000
 SHAPEFCN                        Standard
 LAGMULT_QUAD                    pwlin_pwlin
 LM_DUAL_CONSISTENT              no
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -149,7 +146,7 @@ DLINE                           0
 DSURF                           0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive
 E 7 - 1 Slave Inactive

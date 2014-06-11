@@ -28,6 +28,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_contact/contact_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
+#include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
@@ -172,11 +173,12 @@ STR::TimIntImpl::TimIntImpl
   if (HaveContactMeshtying())
   {
     // extract information from parameter lists
-    tolcontconstr_      = cmtman_->GetStrategy().Params().get<double>("TOLCONTCONSTR");
-    tollagr_            = cmtman_->GetStrategy().Params().get<double>("TOLLAGR");
-    combfrescontconstr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtman_->GetStrategy().Params(),"NORMCOMBI_RESFCONTCONSTR");
-    combdisilagr_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtman_->GetStrategy().Params(),"NORMCOMBI_DISPLAGR");
+    tolcontconstr_      = cmtbridge_->GetStrategy().Params().get<double>("TOLCONTCONSTR");
+    tollagr_            = cmtbridge_->GetStrategy().Params().get<double>("TOLLAGR");
+    combfrescontconstr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtbridge_->GetStrategy().Params(),"NORMCOMBI_RESFCONTCONSTR");
+    combdisilagr_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtbridge_->GetStrategy().Params(),"NORMCOMBI_DISPLAGR");
   }
+
 
   // setup binary operators for convergence check of semi-smooth plasticity problems
   combfresplconstr_ = INPAR::STR::bop_and;
@@ -540,11 +542,15 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   else
     solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
 
+  // recover contact / meshtying Lagrange multipliers
+  if(HaveContactMeshtying())
+    cmtbridge_->Recover(disi_);
+
   // decide which norms have to be evaluated
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP = (HaveContactMeshtying() &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
 
   if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
   if( bPressure == false && bContactSP == false)
@@ -562,7 +568,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   if (bContactSP )
   {
     // extract subvectors
-    Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
+    Teuchos::RCP<Epetra_Vector> lagrincr  = cmtbridge_->GetStrategy().LagrMultSolveIncr();
 
     // build residual displacement norm
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
@@ -831,7 +837,10 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 
     // make contact / meshtying modifications to lhs and rhs
     // (depending on whether this is a predictor step or not)
-    cmtman_->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
+    if(cmtbridge_->HaveMeshtying())
+      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
+    if(cmtbridge_->HaveContact())
+      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
 
     // scaling back
     fresm->Scale(-1.0);
@@ -992,19 +1001,19 @@ bool STR::TimIntImpl::Converged()
   {
     // check which case (application, strategy) we are in
     INPAR::CONTACT::ApplicationType apptype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-    bool semismooth = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
+    bool semismooth = DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
-      ccontact = cmtman_->GetStrategy().ActiveSetSemiSmoothConverged();
+      ccontact = cmtbridge_->GetStrategy().ActiveSetSemiSmoothConverged();
 
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
     // LM increments
-    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
     if (stype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed) {
       bool convDispLagrIncr = false;
       bool convDispWIncr = false;
@@ -1285,8 +1294,8 @@ int STR::TimIntImpl::NewtonFull()
     RecoverSTCSolution();
 
     // recover contact / meshtying Lagrange multipliers
-    if (HaveContactMeshtying())
-      cmtman_->GetStrategy().Recover(disi_);
+    if(HaveContactMeshtying())
+      cmtbridge_->Recover(disi_);
 
     // *********** time measurement ***********
     dtsolve_ = timer_->WallTime() - dtcpu;
@@ -1329,8 +1338,8 @@ int STR::TimIntImpl::NewtonFull()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (HaveContactMeshtying() &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
 
     if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
     if( bPressure == false && bContactSP == false)
@@ -1354,9 +1363,9 @@ int STR::TimIntImpl::NewtonFull()
     }
     if (bContactSP )
     {
-      // extract subvectors
-      Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
-      Teuchos::RCP<Epetra_Vector> constrrhs = cmtman_->GetStrategy().ConstrRhs();
+      // extract subvectors (for mt and contact use only contact lm)
+      Teuchos::RCP<Epetra_Vector> lagrincr  = cmtbridge_->GetStrategy().LagrMultSolveIncr();
+      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
 
       // build residual force norm
       normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
@@ -1372,14 +1381,14 @@ int STR::TimIntImpl::NewtonFull()
 
       // for wear discretization
       INPAR::CONTACT::WearType wtype =
-          DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtman_->GetStrategy().Params(),"WEARTYPE");
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
       INPAR::CONTACT::WearSide wside =
-          DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtman_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
 
       if(wtype==INPAR::CONTACT::wear_discr)
       {
-        Teuchos::RCP<Epetra_Vector> wincr  = cmtman_->GetStrategy().WSolveIncr();
-        Teuchos::RCP<Epetra_Vector> wearrhs = cmtman_->GetStrategy().WearRhs();
+        Teuchos::RCP<Epetra_Vector> wincr  = cmtbridge_->GetStrategy().WSolveIncr();
+        Teuchos::RCP<Epetra_Vector> wearrhs = cmtbridge_->GetStrategy().WearRhs();
 
         if(wearrhs!=Teuchos::null) normwrhs_ = STR::AUX::CalculateVectorNorm(iternorm_, wearrhs);
         else normwrhs_ = -1.0;
@@ -1389,8 +1398,8 @@ int STR::TimIntImpl::NewtonFull()
 
         if(wside==INPAR::CONTACT::wear_both_discr)
         {
-          Teuchos::RCP<Epetra_Vector> wmincr  = cmtman_->GetStrategy().WMSolveIncr();
-          Teuchos::RCP<Epetra_Vector> wearmrhs = cmtman_->GetStrategy().WearMRhs();
+          Teuchos::RCP<Epetra_Vector> wmincr  = cmtbridge_->GetStrategy().WMSolveIncr();
+          Teuchos::RCP<Epetra_Vector> wearmrhs = cmtbridge_->GetStrategy().WearMRhs();
 
           if(wearmrhs!=Teuchos::null) normwmrhs_ = STR::AUX::CalculateVectorNorm(iternorm_, wearmrhs);
           else normwmrhs_ = -1.0;
@@ -1629,288 +1638,287 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 {
   if (conman_->HaveConstraint())
   {
-		// allocate additional vectors and matrices
-		Teuchos::RCP<Epetra_Vector> conrhs
-			= Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+    // allocate additional vectors and matrices
+    Teuchos::RCP<Epetra_Vector> conrhs
+      = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
-		Teuchos::RCP<Epetra_Vector> lagrincr
-			= Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap())));
+    Teuchos::RCP<Epetra_Vector> lagrincr
+      = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap())));
 
-		// check whether we have a sanely filled stiffness matrix
-		if (not stiff_->Filled())
-		{
-			dserror("Effective stiffness matrix must be filled here");
-		}
+    // check whether we have a sanely filled stiffness matrix
+    if (not stiff_->Filled())
+    {
+      dserror("Effective stiffness matrix must be filled here");
+    }
 
-		// initialise equilibrium loop
-		iter_ = 1;
-		normfres_ = CalcRefNormForce();
-		// normdisi_ was already set in predictor; this is strictly >0
-		normcon_ = conman_->GetErrorNorm();
-		timer_->ResetStartTime();
+    // initialise equilibrium loop
+    iter_ = 1;
+    normfres_ = CalcRefNormForce();
+    // normdisi_ was already set in predictor; this is strictly >0
+    normcon_ = conman_->GetErrorNorm();
+    timer_->ResetStartTime();
 
-		// equilibrium iteration loop
-		while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
-		{
-			// make negative residual
-			fres_->Scale(-1.0);
+    // equilibrium iteration loop
+    while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+    {
+      // make negative residual
+      fres_->Scale(-1.0);
 
-			//    // uncomplete stiffness matrix, so stuff can be inserted again
-			//    stiff_->UnComplete();
+      //    // uncomplete stiffness matrix, so stuff can be inserted again
+      //    stiff_->UnComplete();
 
-			// transform to local co-ordinate systems
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+      // transform to local co-ordinate systems
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
-			// apply Dirichlet BCs to system of equations
-			disi_->PutScalar(0.0);  // Useful? depends on solver and more
-			LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-																		 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+      // apply Dirichlet BCs to system of equations
+      disi_->PutScalar(0.0);  // Useful? depends on solver and more
+      LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                     GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
-			// prepare residual Lagrange multiplier
-			lagrincr->PutScalar(0.0);
+      // prepare residual Lagrange multiplier
+      lagrincr->PutScalar(0.0);
 
-			// *********** time measurement ***********
-			double dtcpu = timer_->WallTime();
-			// *********** time measurement ***********
+      // *********** time measurement ***********
+      double dtcpu = timer_->WallTime();
+      // *********** time measurement ***********
 
-			//Use STC preconditioning on system matrix
-			STCPreconditioning();
+      //Use STC preconditioning on system matrix
+      STCPreconditioning();
 
-			// get constraint matrix with and without Dirichlet zeros
-			Teuchos::RCP<LINALG::SparseMatrix> constr =
-					(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
-			Teuchos::RCP<LINALG::SparseMatrix> constrT =
-					Teuchos::rcp(new LINALG::SparseMatrix (*constr));
+      // get constraint matrix with and without Dirichlet zeros
+      Teuchos::RCP<LINALG::SparseMatrix> constr =
+          (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
+      Teuchos::RCP<LINALG::SparseMatrix> constrT =
+          Teuchos::rcp(new LINALG::SparseMatrix (*constr));
 
-			constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+      constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-			// Apply STC on constraint matrices of desired
-			if(stcscale_ != INPAR::STR::stc_none)
-			{
-				//std::cout<<"scaling constraint matrices"<<std::endl;
-				constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
-				if (stcscale_ == INPAR::STR::stc_currsym)
-				{
-					constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
-				}
-			}
-			// Call constraint solver to solve system with zeros on diagonal
-			consolv_->Solve(SystemMatrix(), constr, constrT,
-											disi_, lagrincr,
-											fres_, conrhs);
+      // Apply STC on constraint matrices of desired
+      if(stcscale_ != INPAR::STR::stc_none)
+      {
+        //std::cout<<"scaling constraint matrices"<<std::endl;
+        constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
+        if (stcscale_ == INPAR::STR::stc_currsym)
+        {
+          constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
+        }
+      }
+      // Call constraint solver to solve system with zeros on diagonal
+      consolv_->Solve(SystemMatrix(), constr, constrT,
+                      disi_, lagrincr,
+                      fres_, conrhs);
 
-			//recover unscaled solution
-			RecoverSTCSolution();
+      //recover unscaled solution
+      RecoverSTCSolution();
 
-			// *********** time measurement ***********
-			dtsolve_ = timer_->WallTime() - dtcpu;
-			// *********** time measurement ***********
+      // *********** time measurement ***********
+      dtsolve_ = timer_->WallTime() - dtcpu;
+      // *********** time measurement ***********
 
-			// transform back to global co-ordinate system
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateLocalToGlobal(disi_);
+      // transform back to global co-ordinate system
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(disi_);
 
-			// update Lagrange multiplier
-			conman_->UpdateLagrMult(lagrincr);
-			// update end-point displacements etc
-			UpdateIter(iter_);
+      // update Lagrange multiplier
+      conman_->UpdateLagrMult(lagrincr);
+      // update end-point displacements etc
+      UpdateIter(iter_);
 
       // create parameter list
       Teuchos::ParameterList params;
 
-			// compute residual forces #fres_ and stiffness #stiff_
-			// which contain forces and stiffness of constraints
-			EvaluateForceStiffResidual(params);
-			// compute residual and stiffness of constraint equations
-			conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+      // compute residual forces #fres_ and stiffness #stiff_
+      // which contain forces and stiffness of constraints
+      EvaluateForceStiffResidual(params);
+      // compute residual and stiffness of constraint equations
+      conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
-			// blank residual at (locally oriented) Dirichlet DOFs
-			// rotate to local co-ordinate systems
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateGlobalToLocal(fres_);
+      // blank residual at (locally oriented) Dirichlet DOFs
+      // rotate to local co-ordinate systems
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(fres_);
 
-			// extract reaction forces
-			// reactions are negative to balance residual on DBC
-			freact_->Update(-1.0, *fres_, 0.0);
-			dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
-			// rotate reaction forces back to global co-ordinate system
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateLocalToGlobal(freact_);
+      // extract reaction forces
+      // reactions are negative to balance residual on DBC
+      freact_->Update(-1.0, *fres_, 0.0);
+      dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+      // rotate reaction forces back to global co-ordinate system
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(freact_);
 
-			// blank residual at DOFs on Dirichlet BC
-			dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-			// rotate back to global co-ordinate system
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateLocalToGlobal(fres_);
+      // blank residual at DOFs on Dirichlet BC
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+      // rotate back to global co-ordinate system
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(fres_);
 
-			// build residual force norm
-			normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-			// build residual displacement norm
-			normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-			// build residual Lagrange multiplier norm
-			normcon_ = conman_->GetErrorNorm();
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      // build residual Lagrange multiplier norm
+      normcon_ = conman_->GetErrorNorm();
 
-			if (pressure_ != Teuchos::null)
-			{
-				Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
-				Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-				normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      if (pressure_ != Teuchos::null)
+      {
+        Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+        Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+        normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
 
-				pres = pressure_->ExtractCondVector(disi_);
-				disp = pressure_->ExtractOtherVector(disi_);
-				normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-			}
-			else
-			{
-				// build residual force norm
-				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-				// build residual displacement norm
-				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-			}
+        pres = pressure_->ExtractCondVector(disi_);
+        disp = pressure_->ExtractOtherVector(disi_);
+        normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      }
+      else
+      {
+        // build residual force norm
+        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+        // build residual displacement norm
+        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      }
 
-			// print stuff
-			PrintNewtonIter();
+      // print stuff
+      PrintNewtonIter();
 
-			// increment equilibrium loop index
-			iter_ += 1;
-		}  // end equilibrium loop
+      // increment equilibrium loop index
+      iter_ += 1;
+    }  // end equilibrium loop
 
-		// correct iteration counter
-		iter_ -= 1;
+    // correct iteration counter
+    iter_ -= 1;
   }
   else if (windkman_->HaveWindkessel())
   {
+    // check whether we have a sanely filled stiffness matrix
+    if (not stiff_->Filled())
+    {
+      dserror("Effective stiffness matrix must be filled here");
+    }
 
-	  // check whether we have a sanely filled stiffness matrix
-	  if (not stiff_->Filled())
-	  {
-	  	dserror("Effective stiffness matrix must be filled here");
-	  }
+    // initialise equilibrium loop
+    iter_ = 1;
+    normfres_ = CalcRefNormForce();
+    // normdisi_ was already set in predictor; this is strictly >0
+    normwindk_ = windkman_->GetWindkesselRHSNorm();
+    timer_->ResetStartTime();
 
-	  // initialise equilibrium loop
-	  iter_ = 1;
-	  normfres_ = CalcRefNormForce();
-	  // normdisi_ was already set in predictor; this is strictly >0
-	  normwindk_ = windkman_->GetWindkesselRHSNorm();
-	  timer_->ResetStartTime();
+    // equilibrium iteration loop
+    while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+    {
+      // make negative residual
+      fres_->Scale(-1.0);
 
-	  // equilibrium iteration loop
-	  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
-	  {
-			// make negative residual
-			fres_->Scale(-1.0);
+      // uncomplete stiffness matrix, so stuff can be inserted again
+      // stiff_->UnComplete();
 
-		  // uncomplete stiffness matrix, so stuff can be inserted again
-		  // stiff_->UnComplete();
+      // transform to local co-ordinate systems
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
-			// transform to local co-ordinate systems
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+      // apply Dirichlet BCs to system of equations
+      disi_->PutScalar(0.0);  // Useful? depends on solver and more
+      LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                       GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
-			// apply Dirichlet BCs to system of equations
-			disi_->PutScalar(0.0);  // Useful? depends on solver and more
-			LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-											 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+      // *********** time measurement ***********
+      double dtcpu = timer_->WallTime();
+      // *********** time measurement ***********
 
-			// *********** time measurement ***********
-			double dtcpu = timer_->WallTime();
-			// *********** time measurement ***********
+      //Use STC preconditioning on system matrix
+      STCPreconditioning();
 
-			//Use STC preconditioning on system matrix
-			STCPreconditioning();
+      // linear solver call (contact / meshtying case or default)
+      if (HaveContactMeshtying())
+        CmtWindkConstrLinearSolve();
+      else
+      {
+        // Call Windkessel solver to solve system
+        windkman_->Solve(SystemMatrix(),disi_,fres_);
+      }
 
-	    // linear solver call (contact / meshtying case or default)
-	    if (HaveContactMeshtying())
-	      CmtWindkConstrLinearSolve();
-	    else
-	    {
-				// Call Windkessel solver to solve system
-	    	windkman_->Solve(SystemMatrix(),disi_,fres_);
-	    }
+      // recover contact / meshtying Lagrange multipliers
+      if(HaveContactMeshtying())
+        cmtbridge_->Recover(disi_);
 
-	    // recover contact / meshtying Lagrange multipliers
-	    if (HaveContactMeshtying())
-	      cmtman_->GetStrategy().Recover(disi_);
+      // *********** time measurement ***********
+      dtsolve_ = timer_->WallTime() - dtcpu;
+      // *********** time measurement ***********
 
-			// *********** time measurement ***********
-			dtsolve_ = timer_->WallTime() - dtcpu;
-			// *********** time measurement ***********
+      // transform back to global co-ordinate system
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(disi_);
 
-			// transform back to global co-ordinate system
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateLocalToGlobal(disi_);
-
-			// update end-point displacements, velocities, accelerations
-			UpdateIter(iter_);
+      // update end-point displacements, velocities, accelerations
+      UpdateIter(iter_);
 
       // create parameter list
       Teuchos::ParameterList params;
 
-			// compute residual forces #fres_ and stiffness #stiff_
-			// which contain forces and stiffness of Windkessels
-			EvaluateForceStiffResidual(params);
+      // compute residual forces #fres_ and stiffness #stiff_
+      // which contain forces and stiffness of Windkessels
+      EvaluateForceStiffResidual(params);
 
-			// blank residual at (locally oriented) Dirichlet DOFs
-			// rotate to local co-ordinate systems
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateGlobalToLocal(fres_);
+      // blank residual at (locally oriented) Dirichlet DOFs
+      // rotate to local co-ordinate systems
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(fres_);
 
-			// extract reaction forces
-			// reactions are negative to balance residual on DBC
-			freact_->Update(-1.0, *fres_, 0.0);
-			dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
-			// rotate reaction forces back to global co-ordinate system
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateLocalToGlobal(freact_);
+      // extract reaction forces
+      // reactions are negative to balance residual on DBC
+      freact_->Update(-1.0, *fres_, 0.0);
+      dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+      // rotate reaction forces back to global co-ordinate system
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(freact_);
 
-			// blank residual at DOFs on Dirichlet BC
-			dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-			// rotate back to global co-ordinate system
-			if (locsysman_ != Teuchos::null)
-				locsysman_->RotateLocalToGlobal(fres_);
+      // blank residual at DOFs on Dirichlet BC
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+      // rotate back to global co-ordinate system
+      if (locsysman_ != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(fres_);
 
-			// build residual force norm
-			normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-			// build residual displacement norm
-			normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-			// build residual pressure norm
-			normwindk_ = windkman_->GetWindkesselRHSNorm();
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      // build residual pressure norm
+      normwindk_ = windkman_->GetWindkesselRHSNorm();
 
-			if (pressure_ != Teuchos::null)
-			{
-				Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
-				Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-				normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      if (pressure_ != Teuchos::null)
+      {
+        Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+        Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+        normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
 
-				pres = pressure_->ExtractCondVector(disi_);
-				disp = pressure_->ExtractOtherVector(disi_);
-				normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-			}
-			else
-			{
-				// build residual force norm
-				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-				// build residual displacement norm
-				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-			}
+        pres = pressure_->ExtractCondVector(disi_);
+        disp = pressure_->ExtractOtherVector(disi_);
+        normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      }
+      else
+      {
+        // build residual force norm
+        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+        // build residual displacement norm
+        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      }
 
-			// print stuff
-			PrintNewtonIter();
+      // print stuff
+      PrintNewtonIter();
 
-			// increment equilibrium loop index
-			iter_ += 1;
-	  }  // end equilibrium loop
+      // increment equilibrium loop index
+      iter_ += 1;
+    }  // end equilibrium loop
 
-	  // correct iteration counter
-	  iter_ -= 1;
+    // correct iteration counter
+    iter_ -= 1;
   }
 
-	// no linear solver error check implemented here, always passing 0
+  // no linear solver error check implemented here, always passing 0
   return UzawaLinearNewtonFullErrorCheck(0);
 }
 
@@ -1976,14 +1984,14 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // application type
   INPAR::CONTACT::ApplicationType apptype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
 
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
 
   // semi-smooth Newton type
-  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonfull)
@@ -2019,7 +2027,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     {
       // active set strategy
       int activeiter = 0;
-      while (cmtman_->GetStrategy().ActiveSetConverged()==false)
+      while (cmtbridge_->GetStrategy().ActiveSetConverged()==false)
       {
         // increase active set iteration index
         ++activeiter;
@@ -2032,7 +2040,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
         if(error) return error;
 
         // update of active set (fixed-point)
-        cmtman_->GetStrategy().UpdateActiveSet();
+        cmtbridge_->GetStrategy().UpdateActiveSet();
       }
     }
 
@@ -2061,7 +2069,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     if(error) return error;
 
     // update constraint norm
-    cmtman_->GetStrategy().UpdateConstraintNorm();
+    cmtbridge_->GetStrategy().UpdateConstraintNorm();
   }
 
   //********************************************************************
@@ -2070,8 +2078,8 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   else if (soltype == INPAR::CONTACT::solution_auglag)
   {
     // get tolerance and maximum Uzawa steps
-    double eps = cmtman_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
-    int maxuzawaiter = cmtman_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
+    double eps = cmtbridge_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = cmtbridge_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
 
     // Augmented Lagrangian loop (Uzawa)
     int uzawaiter=0;
@@ -2086,7 +2094,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       if (uzawaiter>1)
       {
         fres_->Scale(-1.0);
-        cmtman_->GetStrategy().InitializeUzawa(stiff_,fres_);
+        cmtbridge_->GetStrategy().InitializeUzawa(stiff_,fres_);
         fres_->Scale(-1.0);
       }
 
@@ -2095,16 +2103,16 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       if(error) return error;
 
       // update constraint norm and penalty parameter
-      cmtman_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+      cmtbridge_->GetStrategy().UpdateConstraintNorm(uzawaiter);
 
       // store Lagrange multipliers for next Uzawa step
-      cmtman_->GetStrategy().UpdateAugmentedLagrange();
-      cmtman_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+      cmtbridge_->GetStrategy().UpdateAugmentedLagrange();
+      cmtbridge_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
-    } while (cmtman_->GetStrategy().ConstraintNorm() >= eps);
+    } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
 
     // reset penalty parameter
-    cmtman_->GetStrategy().ResetPenalty();
+    cmtbridge_->GetStrategy().ResetPenalty();
   }
 
   return 0;
@@ -2123,15 +2131,16 @@ void STR::TimIntImpl::CmtLinearSolve()
     contactsolver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
 
-  // strategy and system setup types
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
 
   // update information about active slave dofs
   //**********************************************************************
   // feed solver/preconditioner with additional information about the contact/meshtying problem
   //**********************************************************************
   {
+    //TODO: maps for merged meshtying and contact problem !!!
+
     // feed Aztec based solvers with contact information
     if (contactsolver_->Params().isSublist("Aztec Parameters"))
     {
@@ -2140,7 +2149,7 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
       Teuchos::RCP<Epetra_Map> activeDofMap;
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
@@ -2161,7 +2170,7 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
       Teuchos::RCP<Epetra_Map> activeDofMap;
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
@@ -2174,7 +2183,6 @@ void STR::TimIntImpl::CmtLinearSolve()
       linSystemProps.set<int>("time step",step_);
       linSystemProps.set<int>("iter",iter_);
     }
-
   } // end: feed solver with contact/meshtying information
 
   // analysis of eigenvalues and condition number
@@ -2201,7 +2209,7 @@ void STR::TimIntImpl::CmtLinearSolve()
   if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
   {
     // (iter_-1 to be consistent with old time integration)
-    cmtman_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+    cmtbridge_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
 
   //**********************************************************************
@@ -2211,20 +2219,27 @@ void STR::TimIntImpl::CmtLinearSolve()
   //**********************************************************************
   else
   {
-    // check if contact contributions are present,
-    // if not we make a standard solver call to speed things up
-    if (!cmtman_->GetStrategy().IsInContact() &&
-        !cmtman_->GetStrategy().WasInContact() &&
-        !cmtman_->GetStrategy().WasInContactLastTimeStep())
+    if(cmtbridge_->HaveMeshtying())
     {
-      // standard solver call (fallback solver for pure structure problem)
-      solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
-      return;
+      // solve with contact solver
+      contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
     }
+    else if(cmtbridge_->HaveContact())
+    {
+      // check if contact contributions are present,
+      // if not we make a standard solver call to speed things up
+      if (!cmtbridge_->GetStrategy().IsInContact() &&
+          !cmtbridge_->GetStrategy().WasInContact() &&
+          !cmtbridge_->GetStrategy().WasInContactLastTimeStep())
+      {
+        // standard solver call (fallback solver for pure structure problem)
+        solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+        return;
+      }
 
-    // solve with contact solver
-    contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
-    //cmtman_->GetStrategy().Solve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+      // solve with contact solver
+      contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+    }
   }
 
   // reset tolerance for contact solver
@@ -2408,8 +2423,8 @@ int STR::TimIntImpl::PTC()
     RecoverSTCSolution();
 
     // recover contact / meshtying Lagrange multipliers
-    if (HaveContactMeshtying())
-      cmtman_->GetStrategy().Recover(disi_);
+    if(HaveContactMeshtying())
+      cmtbridge_->Recover(disi_);
 
     // *********** time measurement ***********
     dtsolve_ = timer_->WallTime() - dtcpu;
@@ -2447,8 +2462,8 @@ int STR::TimIntImpl::PTC()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (HaveContactMeshtying() &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
 
     if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
     if( bPressure == false && bContactSP == false)
@@ -2473,8 +2488,8 @@ int STR::TimIntImpl::PTC()
     if (bContactSP )
     {
       // extract subvectors
-      Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
-      Teuchos::RCP<Epetra_Vector> constrrhs = cmtman_->GetStrategy().ConstrRhs();
+      Teuchos::RCP<Epetra_Vector> lagrincr  = cmtbridge_->GetStrategy().LagrMultSolveIncr();
+      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
 
       // build residual force norm
       normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
@@ -2564,7 +2579,7 @@ void STR::TimIntImpl::UpdateIterIncrementally
   // not in the case of TSI with contact
   if (DRT::Problem::Instance()->ProblemType()!=prb_tsi)
     if (HaveContactMeshtying() && disi != Teuchos::null)
-      cmtman_->GetStrategy().Recover(disi_);
+      cmtbridge_->Recover(disi_);
 
   // Update using #disi_
   UpdateIterIncrementally();
@@ -2720,10 +2735,10 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   if(HaveContactMeshtying())
   {
     // strategy and system setup types
-    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
-    INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtman_->GetStrategy().Params(),"WEARTYPE");
-    INPAR::CONTACT::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtman_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
+    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
+    INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
+    INPAR::CONTACT::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
 
     if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
     {
@@ -2807,11 +2822,11 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   {
     // only print something for contact, not for meshtying
     INPAR::CONTACT::ApplicationType apptype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
-    if (apptype == INPAR::CONTACT::app_mortarcontact)
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
+    if (apptype == INPAR::CONTACT::app_mortarcontact or apptype == INPAR::CONTACT::app_mortarcontandmt)
     {
       oss << std::setw(10)<< "#active";
-      if (cmtman_->GetStrategy().Friction())
+      if (cmtbridge_->GetStrategy().Friction())
         oss << std::setw(10)<< "#slip";
     }
   }
@@ -2913,10 +2928,10 @@ void STR::TimIntImpl::PrintNewtonIterText
   if(HaveContactMeshtying())
   {
     // strategy and system setup types
-    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
-    INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtman_->GetStrategy().Params(),"WEARTYPE");
-    INPAR::CONTACT::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtman_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
+    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
+    INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
+    INPAR::CONTACT::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
 
     if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
     {
@@ -2977,12 +2992,12 @@ void STR::TimIntImpl::PrintNewtonIterText
   {
     // only print something for contact, not for meshtying
     INPAR::CONTACT::ApplicationType apptype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
-    if (apptype == INPAR::CONTACT::app_mortarcontact)
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
+    if (apptype == INPAR::CONTACT::app_mortarcontact or INPAR::CONTACT::app_mortarcontandmt)
     {
-      oss << std::setw(10) << cmtman_->GetStrategy().NumberOfActiveNodes();
-      if (cmtman_->GetStrategy().Friction())
-        oss << std::setw(10) << cmtman_->GetStrategy().NumberOfSlipNodes();
+      oss << std::setw(10) << cmtbridge_->GetStrategy().NumberOfActiveNodes();
+      if (cmtbridge_->GetStrategy().Friction())
+        oss << std::setw(10) << cmtbridge_->GetStrategy().NumberOfSlipNodes();
     }
   }
 
@@ -3012,10 +3027,10 @@ void STR::TimIntImpl::PrintNewtonIterText
 void STR::TimIntImpl::ExportContactQuantities()
 {
   //add integration time contribution from every newton step
-  inttime_global_+=cmtman_->GetStrategy().Inttime();
+  inttime_global_+=cmtbridge_->GetStrategy().Inttime();
 
   double iteration=(double)iter_+1.0;
-  double curinttime=(cmtman_->GetStrategy().Inttime())/(iteration);
+  double curinttime=(cmtbridge_->GetStrategy().Inttime())/(iteration);
 
   std::cout << "*** averaged inttime per newton step =  " << curinttime << std::endl;
   std::cout << "*** total inttime per time step= " << curinttime*iteration << std::endl;
@@ -3030,8 +3045,8 @@ void STR::TimIntImpl::ExportContactQuantities()
   // store active set
   if (MyFile)
   {
-    fprintf(MyFile, "%d\t", cmtman_->GetStrategy().NumberOfActiveNodes());
-    fprintf(MyFile, "%d\n", cmtman_->GetStrategy().NumberOfSlipNodes());
+    fprintf(MyFile, "%d\t", cmtbridge_->GetStrategy().NumberOfActiveNodes());
+    fprintf(MyFile, "%d\n", cmtbridge_->GetStrategy().NumberOfSlipNodes());
     fclose(MyFile);
   }
   else
@@ -3407,14 +3422,14 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
   //********************************************************************
   // application type
   INPAR::CONTACT::ApplicationType apptype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
 
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
 
   // semi-smooth Newton type
-  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
@@ -3446,11 +3461,11 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     // linearization (=geometrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-    else if (apptype == INPAR::CONTACT::app_mortarcontact && !semismooth)
+    else if ((apptype == INPAR::CONTACT::app_mortarcontact or apptype == INPAR::CONTACT::app_mortarcontandmt )&& !semismooth)
     {
       // active set strategy
       int activeiter = 0;
-      while (cmtman_->GetStrategy().ActiveSetConverged()==false)
+      while (cmtbridge_->GetStrategy().ActiveSetConverged()==false)
       {
         // increase active set iteration index
         ++activeiter;
@@ -3463,7 +3478,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
         if(error) return error;
 
         // update of active set (fixed-point)
-        cmtman_->GetStrategy().UpdateActiveSet();
+        cmtbridge_->GetStrategy().UpdateActiveSet();
       }
     }
 
@@ -3492,7 +3507,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     if(error) return error;
 
     // update constraint norm
-    cmtman_->GetStrategy().UpdateConstraintNorm();
+    cmtbridge_->GetStrategy().UpdateConstraintNorm();
   }
 
   //********************************************************************
@@ -3501,8 +3516,8 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
   else if (soltype == INPAR::CONTACT::solution_auglag)
   {
     // get tolerance and maximum Uzawa steps
-    double eps = cmtman_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
-    int maxuzawaiter = cmtman_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
+    double eps = cmtbridge_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = cmtbridge_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
 
     // Augmented Lagrangian loop (Uzawa)
     int uzawaiter=0;
@@ -3517,7 +3532,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
       if (uzawaiter>1)
       {
         fres_->Scale(-1.0);
-        cmtman_->GetStrategy().InitializeUzawa(stiff_,fres_);
+        cmtbridge_->GetStrategy().InitializeUzawa(stiff_,fres_);
         fres_->Scale(-1.0);
       }
 
@@ -3526,16 +3541,16 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
       if(error) return error;
 
       // update constraint norm and penalty parameter
-      cmtman_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+      cmtbridge_->GetStrategy().UpdateConstraintNorm(uzawaiter);
 
       // store Lagrange multipliers for next Uzawa step
-      cmtman_->GetStrategy().UpdateAugmentedLagrange();
-      cmtman_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+      cmtbridge_->GetStrategy().UpdateAugmentedLagrange();
+      cmtbridge_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
-    } while (cmtman_->GetStrategy().ConstraintNorm() >= eps);
+    } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
 
     // reset penalty parameter
-    cmtman_->GetStrategy().ResetPenalty();
+    cmtbridge_->GetStrategy().ResetPenalty();
   }
 
   return 0;
@@ -3549,8 +3564,8 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
 {
 
   // strategy and system setup types
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
 
   // update information about active slave dofs
   //**********************************************************************
@@ -3565,7 +3580,7 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
       Teuchos::RCP<Epetra_Map> activeDofMap;
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
@@ -3586,7 +3601,7 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
       Teuchos::RCP<Epetra_Map> activeDofMap;
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);

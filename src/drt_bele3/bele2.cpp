@@ -15,6 +15,8 @@ Maintainer: Ursula Mayer
 #include "bele2.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 
 
 DRT::ELEMENTS::Bele2Type DRT::ELEMENTS::Bele2Type::instance_;
@@ -50,13 +52,28 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const int id, const
 
 void DRT::ELEMENTS::Bele2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
+  numdf = 2;
+  dimns = 3;
+  nv = 2;
 }
 
 void DRT::ELEMENTS::Bele2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
+  DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
+void DRT::ELEMENTS::Bele2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BELE2"];
 
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    ;
+
+  defs["LINE3"]
+  .AddIntVector("LINE3",3)
+  ;
+}
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele2::Bele2(int id, int owner) :
@@ -168,5 +185,11 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Surfaces()
   return surfaces;
 }
 
-
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Bele2::ReadElement(const std::string& eletype,
+                                       const std::string& distype,
+                                       DRT::INPUT::LineDefinition* linedef)
+{
+  return true;
+}

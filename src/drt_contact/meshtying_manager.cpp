@@ -348,6 +348,7 @@ discret_(discret)
     std::cout << "Building meshtying strategy object............";
     fflush(stdout);
   }
+
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
@@ -397,7 +398,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   // this is mortar meshtying
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying and
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
     dserror("You should not be here...");
 
   // *********************************************************************
@@ -428,7 +430,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
     dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
   
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
@@ -468,7 +471,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin and
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
     dserror("Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
@@ -513,10 +517,27 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << std::endl;
   
-  // store content of BOTH ParameterLists in local parameter list
+  // get parameter lists
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);
   mtparams.setParameters(wearlist);
+
+  // *********************************************************************
+  // predefined params for meshtying and contact
+  // *********************************************************************
+  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") == INPAR::CONTACT::app_mortarcontandmt)
+  {
+    // set options for mortar coupling
+    mtparams.set<std::string>("SEARCH_ALGORITHM","Binarytree");
+    mtparams.set<double>("SEARCH_PARAM", 0.1);
+    mtparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
+    mtparams.set<std::string>("PARALLEL_REDIST","static");
+    mtparams.set<std::string>("SHAPEFCN","dual");
+    mtparams.set<std::string>("REDUNDANT_STORAGE","Master");
+    mtparams.set<std::string>("INTTYPE","Segments");
+    mtparams.set<std::string>("SYSTEM","condensed");
+    mtparams.set<bool>("NURBS",false);
+  }
 
   // NURBS PROBLEM?
   if(distype=="Nurbs")
@@ -541,7 +562,7 @@ void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool for
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
-  output.WriteVector("lagrmultold",lagrmultoldexp);
+  output.WriteVector("mt_lagrmultold",lagrmultoldexp);
 
   return;
 }

@@ -54,6 +54,7 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_crack/InsertCohesiveElements.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Structure::~Structure()
@@ -200,6 +201,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       break;
     case INPAR::CONTACT::app_mortarcontact:
     case INPAR::CONTACT::app_mortarmeshtying:
+    case INPAR::CONTACT::app_mortarcontandmt:
     case INPAR::CONTACT::app_beamcontact:
       contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
       break;
@@ -616,6 +618,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
       if     (apptype == INPAR::CONTACT::app_mortarcontact) solver->Params().set<bool>("CONTACT",true);
       else if(apptype==INPAR::CONTACT::app_mortarmeshtying) solver->Params().set<bool>("MESHTYING",true);
+      else if(apptype==INPAR::CONTACT::app_mortarcontandmt) solver->Params().set<bool>("CONTACT",true);
       else dserror("this cannot be: no saddlepoint problem for beamcontact or pure structure problem.");
 
       INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams,"STRATEGY");

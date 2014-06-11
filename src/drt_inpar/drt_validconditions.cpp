@@ -691,7 +691,53 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(particleinitfields);
 
   /*--------------------------------------------------------------------*/
-  // mortar coupling (for ALL kinds of interface problems)
+  // mortar contact
+
+  std::vector<Teuchos::RCP<ConditionComponent> > contactcomponents;
+
+  contactcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
+  contactcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Side","Master",
+        Teuchos::tuple<std::string>("Master","Slave","Selfcontact"),
+        Teuchos::tuple<std::string>("Master","Slave","Selfcontact"))));
+  contactcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Initialization","Inactive",
+        Teuchos::tuple<std::string>("Inactive","Active"),
+        Teuchos::tuple<std::string>("Inactive","Active"),true)));
+
+  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound",true)));
+  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
+
+  Teuchos::RCP<ConditionDefinition> linecontact =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D",
+                                         "Contact",
+                                         "Line Contact Coupling",
+                                         DRT::Condition::Contact,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfcontact =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF MORTAR CONTACT CONDITIONS 3D",
+                                         "Contact",
+                                         "Surface Contact Coupling",
+                                         DRT::Condition::Contact,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<contactcomponents.size(); ++i)
+  {
+    linecontact->AddComponent(contactcomponents[i]);
+    surfcontact->AddComponent(contactcomponents[i]);
+  }
+
+  condlist.push_back(linecontact);
+  condlist.push_back(surfcontact);
+
+  /*--------------------------------------------------------------------*/
+  // mortar coupling (for ALL kinds of interface problems except contact)
 
   std::vector<Teuchos::RCP<ConditionComponent> > mortarcomponents;
 
@@ -700,17 +746,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(
       new StringConditionComponent(
         "Side","Master",
-        Teuchos::tuple<std::string>("Master","Slave","Selfcontact"),
-        Teuchos::tuple<std::string>("Master","Slave","Selfcontact"))));
+        Teuchos::tuple<std::string>("Master","Slave"),
+        Teuchos::tuple<std::string>("Master","Slave"))));
   mortarcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
         "Initialization","Inactive",
         Teuchos::tuple<std::string>("Inactive","Active"),
         Teuchos::tuple<std::string>("Inactive","Active"),true)));
-
-  mortarcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound",true)));
-  mortarcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
 
   Teuchos::RCP<ConditionDefinition> linemortar =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR COUPLING CONDITIONS 2D",

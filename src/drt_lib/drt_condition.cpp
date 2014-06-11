@@ -140,6 +140,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==SurfaceInitfield)              os << "Surface Initfield boundary condition: ";
   else if (Type()==VolumeInitfield)               os << "Volume Initfield boundary condition: ";
   else if (Type()==Mortar)                        os << "Mortar coupling boundary condition: ";
+  else if (Type()==Contact)                       os << "Mortar contact boundary condition: ";
   else if (Type()==AleWear)                       os << "ALE Wear boundary condition: ";
   else if (Type()==LineMrtrSym)                   os << "Line contact symmetry condition: ";
   else if (Type()==PointMrtrSym)                  os << "Point contact symmetry condition: ";

@@ -17,7 +17,8 @@ Maintainer: Philipp Farah
  *----------------------------------------------------------------------*/
 #include "wear_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
-
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 /*----------------------------------------------------------------------*
  | Constructor                                              farah 11/13 |
  *----------------------------------------------------------------------*/
@@ -43,7 +44,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // contact/meshtying manager
-  cmtman_= StructureField()->ContactManager();
+  cmtman_= StructureField()->MeshtyingContactBridge()->ContactManager();
 
 }
 

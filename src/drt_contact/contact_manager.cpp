@@ -102,7 +102,7 @@ discret_(discret)
   }
 
   std::vector<DRT::Condition*> contactconditions(0);
-  Discret().GetCondition("Mortar",contactconditions);
+  Discret().GetCondition("Contact",contactconditions);
 
   // there must be more than one contact condition
   // unless we have a self contact problem!
@@ -599,7 +599,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // this is mortar contact
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(contact,"APPLICATION") != INPAR::CONTACT::app_mortarcontact)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(contact,"APPLICATION") != INPAR::CONTACT::app_mortarcontact and
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(contact,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
     dserror("You should not be here...");
 
   // *********************************************************************
@@ -1167,7 +1168,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
     // ***************************************************************************
 
     // evaluate wear (not weighted)
-    //GetStrategy().OutputWear();
+    GetStrategy().OutputWear();
 
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();

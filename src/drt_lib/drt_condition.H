@@ -129,6 +129,7 @@ public:
     SurfaceInitfield,
     VolumeInitfield,
     Mortar,
+    Contact,
     AleWear,
     LineMrtrSym,
     PointMrtrSym,

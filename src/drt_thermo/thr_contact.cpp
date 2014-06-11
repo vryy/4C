@@ -708,6 +708,9 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
+  if(cmtman_->GetStrategy().DMatrix()==Teuchos::null or cmtman_->GetStrategy().MMatrix()==Teuchos::null )
+    dserror("ERROR: D/M - matrix not available!!!");
+
   // dimension of the problem
   int dim = cstrategy.Dim();
   if (dim==2)

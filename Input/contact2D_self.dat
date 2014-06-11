@@ -156,7 +156,7 @@ DSURF                           0
 DLINE                           0
 ---------------------------------------------------------------FORCE SENSORS
 DPOINT                          0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           34
 E 3 - 3 Selfcontact
 E 4 - 2 Selfcontact

@@ -173,7 +173,7 @@ DSURF                           0
 DLINE                           0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 9 - 1 Slave Active
 E 29 - 1 Master Inactive

@@ -335,7 +335,7 @@ E 2 - NUMDOF 1 ONOFF 1 VAL 20.0 CURVE none FUNCT 0
 DVOL                            0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slavesurface
 E 4 - 1 Slave Active FrCoeffOrBound 0.35

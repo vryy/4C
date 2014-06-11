@@ -45,6 +45,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"BEAM3EB");
   PrintElementLines(stream,"BEAM3EBTOR");
   PrintElementLines(stream,"BEAM3EBANISOTROP");
+  PrintElementLines(stream,"BELE2");
   PrintElementLines(stream,"RIGIDSPHERE");
   //PrintElementLines(stream,"Smoothrod");
   //PrintElementLines(stream,"CONSTRELE2");

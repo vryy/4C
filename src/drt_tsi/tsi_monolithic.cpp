@@ -41,6 +41,7 @@ Maintainer: Caroline Danowski
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_node.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_thermo/thr_contact.H"
 
@@ -143,19 +144,22 @@ TSI::Monolithic::Monolithic(
   }  // end BlockMatrixMerge
 
   // structural and thermal contact
-  if (StructureField()->ContactManager() != Teuchos::null)
+  if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
   {
-    cmtman_ = StructureField()->ContactManager();
+    if(StructureField()->MeshtyingContactBridge()->HaveContact())
+    {
+      cmtman_ = StructureField()->MeshtyingContactBridge()->ContactManager();
 
-    // initialise thermal contact manager
-    ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
+      // initialise thermal contact manager
+      ThermoField()->PrepareThermoContact(cmtman_,StructureField()->Discretization());
 
-    // get thermal contact manager
-    thermcontman_ = ThermoField()->ThermoContactManager();
+      // get thermal contact manager
+      thermcontman_ = ThermoField()->ThermoContactManager();
 
-    // check input
-    if (cmtman_->GetStrategy().Friction())
-      dserror ("TSI with contact only for frictionless contact so far!");
+      // check input
+      if (cmtman_->GetStrategy().Friction())
+        dserror ("TSI with contact only for frictionless contact so far!");
+    }
   }
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural

@@ -25,8 +25,6 @@ Maintainer: Georg Hammerl
 
 #include "../drt_inpar/inpar_structure.H"
 
-//#include "../drt_lib/drt_utils_timintmstep.H"
-
 // forward declarations:
 namespace DRT
 {
@@ -53,9 +51,9 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
-namespace MORTAR
+namespace CONTACT
 {
-  class ManagerBase;
+  class MeshtyingContactBridge;
 }
 
 namespace UTILS
@@ -182,8 +180,8 @@ namespace ADAPTER {
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
 
-    /// return contact/meshtying manager
-    virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager() = 0;
+    /// return contact/meshtying bridge
+    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;

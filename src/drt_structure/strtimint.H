@@ -62,14 +62,10 @@ namespace UTILS
 //  class GrowthDisplManager;
 }
 
-namespace MORTAR
-{
-  class ManagerBase;
-}
-
 namespace CONTACT
 {
   class Beam3cmanager;
+  class MeshtyingContactBridge;
 }
 
 namespace STATMECH
@@ -916,17 +912,14 @@ namespace STR
     //! @name Contact and meshtying specific methods
     //@{
 
-    //! use contact solver or not
-    bool UseContactSolver();
-
     //! return bool indicating if contact or meshtying are defined
-    bool HaveContactMeshtying() { return (cmtman_ != Teuchos::null); }
+    bool HaveContactMeshtying() { return (cmtbridge_ != Teuchos::null); }
+
+    //! return contact/meshtying manager
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() {return cmtbridge_;}
 
     //! return bool indicating if contact or meshtying are defined
     bool HaveSemiSmoothPlasticity() { return (plastman_ != Teuchos::null); }
-
-    //! return contact/meshtying manager
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
 
     //! Check if contact / meshtying is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
@@ -1094,8 +1087,8 @@ namespace STR
     //! potential conditions
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
 
-    //! contact / meshtying
-    Teuchos::RCP<MORTAR::ManagerBase>   cmtman_;
+    //! bridge for meshtying and contact
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge>   cmtbridge_;
 
     //! beam contact
     Teuchos::RCP<CONTACT::Beam3cmanager>   beamcman_;

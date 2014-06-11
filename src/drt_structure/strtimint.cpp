@@ -45,6 +45,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_abstract_strategy.H" // for feeding contactsolver with maps
+#include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -134,7 +135,7 @@ STR::TimInt::TimInt
   windkman_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
-  cmtman_(Teuchos::null),
+  cmtbridge_(Teuchos::null),
   beamcman_(Teuchos::null),
   statmechman_(Teuchos::null),
   locsysman_(Teuchos::null),
@@ -493,18 +494,21 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"SHAPEFCN");
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
-  bool semismooth = DRT::INPUT::IntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
 
   // check mortar contact or meshtying conditions
   std::vector<DRT::Condition*> mortarconditions(0);
+  std::vector<DRT::Condition*> contactconditions(0);
+
   discret_->GetCondition("Mortar",mortarconditions);
+  discret_->GetCondition("Contact",contactconditions);
 
   // only continue if mortar contact / meshtying unmistakably chosen in input file
-  if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarmeshtying)
+  if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarmeshtying ||
+      apptype == INPAR::CONTACT::app_mortarcontandmt)
   {
     // double-check for contact conditions
-    if ((int)mortarconditions.size()==0)
-      dserror("ERROR: No contact conditions provided, check your input file!");
+    if ((int)mortarconditions.size()==0 and (int)contactconditions.size()==0 )
+      dserror("ERROR: No contact/meshtying conditions provided, check your input file!");
 
     // store integration parameter alphaf into cmtman_ as well
     // (for all cases except OST, GenAlpha and GEMM this is zero)
@@ -526,14 +530,10 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
         alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
     }
 
-    // decide whether this is meshtying or contact and create manager
-    if (apptype == INPAR::CONTACT::app_mortarmeshtying)
-      cmtman_ = Teuchos::rcp(new CONTACT::MtManager(*discret_,alphaf));
-    else if (apptype == INPAR::CONTACT::app_mortarcontact)
-      cmtman_ = Teuchos::rcp(new CONTACT::CoManager(*discret_,alphaf));
-
-    // store DBC status in contact nodes
-    cmtman_->GetStrategy().StoreDirichletStatus(dbcmaps_);
+    // create instance for meshtying contact bridge
+    cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(*discret_, apptype, alphaf));
+    cmtbridge_->StoreDirichletStatus(dbcmaps_);
+    cmtbridge_->SetState(zeros_);
 
     // create old style dirichtoggle vector (supposed to go away)
     dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
@@ -559,39 +559,37 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
            << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << std::endl;
 #endif // #ifdef CONTACTPSEUDO2D
 
-//      if (probtype!=prb_tsi)
-//        std::cout << RED << "WARNING: Contact and Meshtying are still experimental "
-//             << "for the chosen problem type \"" << probname << "\"!\n" << END_COLOR << std::endl;
-
-      // errors
-      if (probtype!=prb_tsi and probtype!=prb_struct_ale)
-      {
-        if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
-          dserror("ERROR: Multifield problems with LM strategy for meshtying/contact only for dual+semismooth case!");
-        if (soltype == INPAR::CONTACT::solution_auglag)
-          dserror("ERROR: Multifield problems with AL strategy for meshtying/contact not yet implemented");
-      }
     }
 
-    // set zero displacement state
-    cmtman_->GetStrategy().SetState("displacement",zeros_);
-
-    // initialization of contact or meshtying
+    // initialization of meshtying
+    if(cmtbridge_->HaveMeshtying())
     {
       // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
       // (1) Do mortar coupling in reference configuration and
       // perform mesh initialization for rotational invariance
-      cmtman_->GetStrategy().MortarCoupling(zeros_);
-      cmtman_->GetStrategy().MeshInitialization();
+      cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
+      cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+    }
 
+    // initialization of contact
+    if(cmtbridge_->HaveContact())
+    {
       // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
       // (1) Explicitly store gap-scaling factor kappa
-      cmtman_->GetStrategy().SaveReferenceState(zeros_);
+      cmtbridge_->ContactManager()->GetStrategy().SaveReferenceState(zeros_);
     }
 
     // visualization of initial configuration
 #ifdef MORTARGMSH3
-    cmtman_->GetStrategy().VisualizeGmsh(0,0);
+    if(cman_ != Teuchos::null)
+    {
+      cmtman_->GetStrategy().VisualizeGmsh(0,0);
+    }
+
+    if(mtman_ != Teuchos::null)
+    {
+      mtman_->GetStrategy().VisualizeGmsh(0,0);
+    }
 #endif // #ifdef MORTARGMSH3
 
     //**********************************************************************
@@ -709,23 +707,26 @@ void STR::TimInt::PrepareStepContact()
   // just do something here if contact is present
   if (HaveContactMeshtying())
   {
-    // set inttime_ to zero
-    cmtman_->GetStrategy().Inttime_init();
+    if(cmtbridge_->HaveContact())
+    {
+      // set inttime_ to zero
+      cmtbridge_->GetStrategy().Inttime_init();
 
-    // dynamic parallel redistribution of interfaces
-    cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
+      // dynamic parallel redistribution of interfaces
+      cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0));
 
-    // get type of parallel strategy
-    const Teuchos::ParameterList&   paramsmortar = DRT::Problem::Instance()->MortarCouplingParams();
-    INPAR::MORTAR::ParallelStrategy strat =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(paramsmortar,"PARALLEL_STRATEGY");
+      // get type of parallel strategy
+      const Teuchos::ParameterList&   paramsmortar = DRT::Problem::Instance()->MortarCouplingParams();
+      INPAR::MORTAR::ParallelStrategy strat =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(paramsmortar,"PARALLEL_STRATEGY");
 
-    // prepare binstrategy for timestep
-    if(strat==INPAR::MORTAR::binningstrategy)
-      cmtman_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
+      // prepare binstrategy for timestep
+      if(strat==INPAR::MORTAR::binningstrategy)
+        cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
 
-    // evaluation of reference state for friction (only at t=0)
-    cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
+      // evaluation of reference state for friction (only at t=0)
+      cmtbridge_->GetStrategy().EvaluateReferenceState(step_,disn_);
+    }
   }
 
   // bye bye
@@ -777,7 +778,7 @@ void STR::TimInt::EvaluateReferenceState()
 {
   // only do something if contact is present
   if (HaveContactMeshtying())
-    cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
+    cmtbridge_->GetStrategy().EvaluateReferenceState(step_,disn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -974,8 +975,8 @@ void STR::TimInt::UpdateStepTime()
 /* Update contact and meshtying */
 void STR::TimInt::UpdateStepContactMeshtying()
 {
-   if (HaveContactMeshtying())
-     cmtman_->GetStrategy().Update(stepn_,disn_);
+  if(HaveContactMeshtying())
+    cmtbridge_->Update(stepn_,disn_);
 
    // ciao
    return;
@@ -999,7 +1000,7 @@ void STR::TimInt::UpdateStepContactVUM()
   if (HaveContactMeshtying())
   {
     bool do_vum = DRT::INPUT::IntegralValue<int>(
-        cmtman_->GetStrategy().Params(), "VELOCITY_UPDATE");
+        cmtbridge_->GetStrategy().Params(), "VELOCITY_UPDATE");
 
     //********************************************************************
     // VELOCITY UPDATE METHOD
@@ -1007,13 +1008,13 @@ void STR::TimInt::UpdateStepContactVUM()
     if (do_vum)
     {
       // check for actual contact and leave if active set empty
-      bool isincontact = cmtman_->GetStrategy().IsInContact();
+      bool isincontact = cmtbridge_->GetStrategy().IsInContact();
       if (!isincontact)
         return;
 
       // check for contact force evaluation
       bool do_end = DRT::INPUT::IntegralValue<int>(
-          cmtman_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
+          cmtbridge_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
       if (do_end == false)
       {
         std::cout
@@ -1061,13 +1062,13 @@ void STR::TimInt::UpdateStepContactVUM()
       // maps
       const Epetra_Map* dofmap = discret_->DofRowMap();
       Teuchos::RCP<Epetra_Map> activenodemap =
-          cmtman_->GetStrategy().ActiveRowNodes();
+          cmtbridge_->GetStrategy().ActiveRowNodes();
       Teuchos::RCP<Epetra_Map> slavenodemap =
-          cmtman_->GetStrategy().SlaveRowNodes();
+          cmtbridge_->GetStrategy().SlaveRowNodes();
       Teuchos::RCP<Epetra_Map> notredistslavedofmap =
-          cmtman_->GetStrategy().NotReDistSlaveRowDofs();
+          cmtbridge_->GetStrategy().NotReDistSlaveRowDofs();
       Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
-          cmtman_->GetStrategy().NotReDistMasterRowDofs();
+          cmtbridge_->GetStrategy().NotReDistMasterRowDofs();
       Teuchos::RCP<Epetra_Map> notactivenodemap = LINALG::SplitMap(
           *slavenodemap, *activenodemap);
 
@@ -1099,9 +1100,9 @@ void STR::TimInt::UpdateStepContactVUM()
 
       // mortar operator Bc
       Teuchos::RCP<LINALG::SparseMatrix> Mmat =
-          cmtman_->GetStrategy().MMatrix();
+          cmtbridge_->GetStrategy().MMatrix();
       Teuchos::RCP<LINALG::SparseMatrix> Dmat =
-          cmtman_->GetStrategy().DMatrix();
+          cmtbridge_->GetStrategy().DMatrix();
       Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(
           new Epetra_Map(Dmat->RangeMap()));
       Teuchos::RCP<LINALG::SparseMatrix> Bc = Teuchos::rcp(
@@ -1111,7 +1112,7 @@ void STR::TimInt::UpdateStepContactVUM()
       Teuchos::RCP<LINALG::SparseMatrix> D = Teuchos::rcp(
           new LINALG::SparseMatrix(*slavedofmap, 10));
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          cmtman_->GetStrategy().Params(), "PARALLEL_REDIST")
+          cmtbridge_->GetStrategy().Params(), "PARALLEL_REDIST")
           != INPAR::MORTAR::parredist_none)
       {
         M = MORTAR::MatrixColTransform(Mmat, notredistmasterdofmap);
@@ -1129,10 +1130,10 @@ void STR::TimInt::UpdateStepContactVUM()
 
       // matrix of the normal vectors
       Teuchos::RCP<LINALG::SparseMatrix> N =
-          cmtman_->GetStrategy().EvaluateNormals(disn_);
+          cmtbridge_->GetStrategy().EvaluateNormals(disn_);
 
       // lagrange multiplier z
-      Teuchos::RCP<Epetra_Vector> LM = cmtman_->GetStrategy().LagrMult();
+      Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->GetStrategy().LagrMult();
       Teuchos::RCP<Epetra_Vector> Z = LINALG::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> z = LINALG::CreateVector(*activenodemap,
           true);
@@ -1638,19 +1639,18 @@ void STR::TimInt::ReadRestartWindkessel()
 /* Read and set restart values for contact / meshtying */
 void STR::TimInt::ReadRestartContactMeshtying()
 {
+  //**********************************************************************
+  // NOTE: There is an important difference here between contact and
+  // meshtying simulations. In both cases, the current coupling operators
+  // have to be re-computed for restart, but in the meshtying case this
+  // means evaluating DM in the reference configuration!
+  // Thus, both dis_ (current displacement state) and zero_ are handed
+  // in and contact / meshtying managers choose the correct state.
+  //**********************************************************************
+  IO::DiscretizationReader reader(discret_,step_);
+
   if (HaveContactMeshtying())
-  {
-    //**********************************************************************
-    // NOTE: There is an important difference here between contact and
-    // meshtying simulations. In both cases, the current coupling operators
-    // have to be re-computed for restart, but in the meshtying case this
-    // means evaluating DM in the reference configuration!
-    // Thus, both dis_ (current displacement state) and zero_ are handed
-    // in and contact / meshtying managers choose the correct state.
-    //**********************************************************************
-    IO::DiscretizationReader reader(discret_,step_);
-    cmtman_->ReadRestart(reader,(*dis_)(0),zeros_);
-  }
+    cmtbridge_->ReadRestart(reader,(*dis_)(0),zeros_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1910,12 +1910,11 @@ void STR::TimInt::OutputRestart
                           windkman_->GetRefVolValue());
   }
 
-  // contact / meshtying
-  if (HaveContactMeshtying())
+  // contact and meshtying
+  if(HaveContactMeshtying())
   {
-      cmtman_->WriteRestart(*output_);
-
-      cmtman_->PostprocessTractions(*output_);
+    cmtbridge_->WriteRestart(output_);
+    cmtbridge_->PostprocessTractions(output_);
   }
 
   // statistical mechanics
@@ -1985,9 +1984,9 @@ void STR::TimInt::OutputState
   if (surfstressman_->HaveSurfStress() && writesurfactant_)
     surfstressman_->WriteResults(step_, (*time_)[0]);
 
-  // contact / meshtying
+  // meshtying and contact output
   if (HaveContactMeshtying())
-    cmtman_->PostprocessTractions(*output_);
+    cmtbridge_->PostprocessTractions(output_);
 
   if(porositysplitter_!=Teuchos::null)
   {
@@ -2031,11 +2030,9 @@ void STR::TimInt::AddRestartToOutputState()
                           windkman_->GetRefVolValue());
   }
 
-  // contact/meshtying information
-  if (HaveContactMeshtying())
-  {
-    cmtman_->WriteRestart(*output_,true);
-  }
+  // contact/meshtying
+  if(HaveContactMeshtying())
+    cmtbridge_->WriteRestart(output_,true);
 
   // TODO: add missing restart data for surface stress, contact/meshtying and StatMech here
 
@@ -2310,15 +2307,15 @@ void STR::TimInt::OutputContact()
     // THIS IS FOR DEBUGGING ONLY!!!
     // print contact forces with respect to reference configuration
   #ifdef CONTACTFORCEREFCONFIG
-    cmtman_->GetStrategy().ForceRefConfig();
+    cman_->GetStrategy().ForceRefConfig();
   #endif
 
     // print active set
-    cmtman_->GetStrategy().PrintActiveSet();
+    cmtbridge_->GetStrategy().PrintActiveSet();
 
     // check chosen output option
     INPAR::CONTACT::EmOutputType emtype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(cmtman_->GetStrategy().Params(),"EMOUTPUT");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(cmtbridge_->GetStrategy().Params(),"EMOUTPUT");
 
     // get out of here if no enrgy momentum output wanted
     if (emtype==INPAR::CONTACT::output_none) return;
@@ -2326,7 +2323,7 @@ void STR::TimInt::OutputContact()
     // get some parameters from parameter list
     double timen = (*time_)[0];
     double dt    = (*dt_)[0];
-    int dim      = cmtman_->GetStrategy().Dim();
+    int dim      = cmtbridge_->GetStrategy().Dim();
 
     // global linear momentum (M*v)
     Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_->DofRowMap()), true);
@@ -2371,8 +2368,8 @@ void STR::TimInt::OutputContact()
     // global quantities (sum over all processors)
     for (int i=0;i<3;++i)
     {
-      cmtman_->Comm().SumAll(&sumangmom[i],&angmom[i],1);
-      cmtman_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
+      cmtbridge_->Comm().SumAll(&sumangmom[i],&angmom[i],1);
+      cmtbridge_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
     }
 
     //--------------------------Calculation of total kinetic energy
@@ -2475,7 +2472,7 @@ void STR::TimInt::OutputContact()
     }
 
     //-------------------------- Compute and output interface forces
-    cmtman_->GetStrategy().InterfaceForces(true);
+    cmtbridge_->GetStrategy().InterfaceForces(true);
   }
 
   return;
@@ -2929,6 +2926,7 @@ int STR::TimInt::Integrate()
     // integrate time step
     // after this step we hold disn_, etc
     lnonlinsoldiv = IntegrateStep();
+
     // since it is possible that the nonlinear solution fails only on some procs
     // we need to communicate the error
     discret_->Comm().Barrier();
@@ -3038,27 +3036,6 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
   }
   return 0; // make compiler happy
 }
-/*----------------------------------------------------------------------*/
-/* check whether contact solver should be used */
-bool STR::TimInt::UseContactSolver()
-{
-  // no contact possible -> return false
-  if (!HaveContactMeshtying())
-    return false;
-  // contact possible -> check current status
-  else
-  {
-    // currently not in contact -> return false
-    if (!cmtman_->GetStrategy().IsInContact() &&
-        !cmtman_->GetStrategy().WasInContact() &&
-        !cmtman_->GetStrategy().WasInContactLastTimeStep())
-      return false;
-    // currently in contact -> return true
-    else
-      return true;
-  }
-}
-
 
 /*----------------------------------------------------------------------*/
 /* Set forces due to interface with fluid,
