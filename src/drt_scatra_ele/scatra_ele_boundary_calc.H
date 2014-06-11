@@ -222,8 +222,7 @@ public:
         const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
         Epetra_SerialDenseMatrix&           emat,
         Epetra_SerialDenseVector&           erhs,
-        const double                        timefac,
-        const double                        alphaF);
+        const double                        timefac);
 
     //! calculate boundary condition due to convective heat transfer
     void ConvectiveHeatTransfer(
@@ -234,8 +233,7 @@ public:
         Epetra_SerialDenseVector&           erhs,
         const double                        heatranscoeff,
         const double                        surtemp,
-        const double                        timefac,
-        const double                        alphaF);
+        const double                        timefac);
 
     /*!
     \brief Evaluate weak Dirichlet boundary conditions

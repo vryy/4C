@@ -237,8 +237,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
         evelnp,
         elemat1_epetra,
         elevec1_epetra,
-        timefac,
-        alphaF);
+        timefac);
 
     break;
   }
@@ -288,8 +287,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
         elevec1_epetra,
         heatranscoeff,
         surtemp,
-        timefac,
-        alphaF);
+        timefac);
 
     break;
   }
@@ -687,8 +685,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
     Epetra_SerialDenseMatrix&           emat,
     Epetra_SerialDenseVector&           erhs,
-    const double                        timefac,
-    const double                        alphaF)
+    const double                        timefac)
 {
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -808,9 +805,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         // integration factor for right-hand side
         double rhsfac = 0.0;
         if (is_incremental_ and is_genalpha_)
-          rhsfac = lhsfac/my::scatraparamstimint_->AlphaF();
+          rhsfac = lhsfac/scatraparamstimint_->AlphaF();
         else if (not is_incremental_ and is_genalpha_)
-          rhsfac = lhsfac*(1.0-my::scatraparamstimint_->AlphaF())/my::scatraparamstimint_->AlphaF();
+          rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
         else if (is_incremental_ and not is_genalpha_)
           rhsfac = lhsfac;
 
@@ -919,8 +916,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
     Epetra_SerialDenseVector&           erhs,
     const double                        heatranscoeff,
     const double                        surtemp,
-    const double                        timefac,
-    const double                        alphaF)
+    const double                        timefac)
 {
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -964,9 +960,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
       // integration factor for right-hand side
       double rhsfac = 0.0;
       if (is_incremental_ and is_genalpha_)
-        rhsfac = lhsfac/my::scatraparamstimint_->AlphaF();
+        rhsfac = lhsfac/scatraparamstimint_->AlphaF();
       else if (not is_incremental_ and is_genalpha_)
-        rhsfac = lhsfac*(1.0-my::scatraparamstimint_->AlphaF())/my::scatraparamstimint_->AlphaF();
+        rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
       else if (is_incremental_ and not is_genalpha_)
         rhsfac = lhsfac;
 
@@ -1604,9 +1600,9 @@ template <DRT::Element::DiscretizationType bdistype,
         // integration factor for right-hand side
         double rhsfac = 0.0;
         if (is_incremental_ and is_genalpha_)
-          rhsfac = lhsfac/my::scatraparamstimint_->AlphaF();
+          rhsfac = lhsfac/scatraparamstimint_->AlphaF();
         else if (not is_incremental_ and is_genalpha_)
-          rhsfac = lhsfac*(1.0-my::scatraparamstimint_->AlphaF())/my::scatraparamstimint_->AlphaF();
+          rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
         else if (is_incremental_ and not is_genalpha_)
           rhsfac = lhsfac;
 
@@ -1806,9 +1802,9 @@ template <DRT::Element::DiscretizationType bdistype,
       // integration factor for right-hand side
       double rhsfac = 0.0;
       if (is_incremental_ and is_genalpha_)
-        rhsfac = lhsfac/my::scatraparamstimint_->AlphaF();
+        rhsfac = lhsfac/scatraparamstimint_->AlphaF();
       else if (not is_incremental_ and is_genalpha_)
-        rhsfac = lhsfac*(1.0-my::scatraparamstimint_->AlphaF())/my::scatraparamstimint_->AlphaF();
+        rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
       else if (is_incremental_ and not is_genalpha_)
         rhsfac = lhsfac;
 
