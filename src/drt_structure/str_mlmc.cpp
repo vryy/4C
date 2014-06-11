@@ -68,7 +68,7 @@ void STR::mlmc()
   bool param_cont =Teuchos::getIntegralValue<int>(mlmcp,"PARAMETERCONTINUATION");
   if (perform_mlmc==true)
   {
-    STR::MLMC mc(actdis);
+    STR::UQ::MLMC mc(actdis);
     // Use another integrate function if we do not reset the prestress
     if(!param_cont)
     {

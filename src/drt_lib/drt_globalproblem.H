@@ -332,6 +332,7 @@ public:
   const Teuchos::ParameterList& VolmortarParams() const { return getParameterList()->sublist("VOLMORTAR COUPLING"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
+  const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;
 
   const Teuchos::ParameterList& UMFPACKSolverParams();
 

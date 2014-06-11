@@ -311,6 +311,16 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
   reader.ReadGidSection("--UMFPACK SOLVER",*list);
 
+  // read in random field sections
+  // Note: the maximum number of random fields in dat files is hardwired here.
+  // If you change this do not forget to edit the corresponding parts in
+  // drt_validparameters.cpp, too!
+  for (int i = 1; i<4; i++) {
+    std::stringstream ss;
+    ss << "--RANDOM FIELD " << i;
+    reader.ReadGidSection(ss.str(), *list);
+  }
+
   // check for invalid parameters
   setParameterList(list);
 
@@ -354,6 +364,15 @@ const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
 {
   std::stringstream ss;
   ss << "SOLVER " << solverNr;
+  return getParameterList()->sublist(ss.str());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::ParameterList& DRT::Problem::RandomFieldParams(int randomfieldNr) const
+{
+  std::stringstream ss;
+  ss << "RANDOM FIELD " << randomfieldNr;
   return getParameterList()->sublist(ss.str());
 }
 

@@ -52,10 +52,16 @@ namespace IO
   class OutputControl;
   class ErrorFileControl;
 }
-class GenRandomField;
+
 
 namespace STR
 {
+
+namespace UQ
+{
+class GenRandomField;
+class RandomField;
+class MCMatParManager;
 
 /// Multi Level Monte Carlo Simulation of Structures with
 /// some sort of stochastic property
@@ -345,7 +351,12 @@ private:
 
   //! \brief vector to store disp from lower level
   Teuchos::RCP<Epetra_MultiVector> disp_lower_level_;
-  ;
+
+  // ###########################################################################
+  // ##     variables regarding setup and management of stochastic mat params  ##
+  // ###########################################################################
+
+  Teuchos::RCP<MCMatParManager> my_matpar_manager_;
 
 public:
 
@@ -379,11 +390,6 @@ public:
 
   //! \brief  helper function that writes the displacement and stress values of specific DOFs to a separate outputfile
   void HelperFunctionOutput(Teuchos::RCP< Epetra_MultiVector> stress,
-      Teuchos::RCP< Epetra_MultiVector> strain,
-      Teuchos::RCP<Epetra_MultiVector> disp);
-
-  //! \brief  helper function that writes the displacement and stress values of specific DOFs to a separate outputfile
-  void HelperFunctionOutputTube(Teuchos::RCP< Epetra_MultiVector> stress,
       Teuchos::RCP< Epetra_MultiVector> strain,
       Teuchos::RCP<Epetra_MultiVector> disp);
 
@@ -446,9 +452,6 @@ public:
    void ComputePeakAndQuantile(Teuchos::RCP<std::vector <double > >  values , std::vector <int>* corresponding_ele_ids,Teuchos::RCP<std::pair<int, double> > peak,Teuchos::RCP<std::pair<int, double> > quantile99);
 
 
-   //! brief compute maximum value as well as some quantile of some quantity (over all procs)
-   void SetupRF(int myswitch);
-
   // #########################################################################
   // ##     functions needed for Multilevel Monte Carlo only                ##
   // #########################################################################
@@ -492,9 +495,15 @@ public:
   //! brief write calculated statistics to file
   void WriteStatOutput();
 
+  // ###########################################################################
+  // ##     general helper functions  ##
+  // ###########################################################################
 
+  void WriteStdVectorToFile(std::vector<double>, std::string FileNameWithPath);
 
 };  // class MLMC
+
+}  // namespace UQ
 
 }  // namespace STR
 

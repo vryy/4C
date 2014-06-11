@@ -99,37 +99,39 @@ ML_DAMPMED                      0.89                          // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -----------------------------------------------------MULTI LEVEL MONTE CARLO
 CONVTOL                         0.1
-CORRLENGTH                      12.5
-CORRSTRUCT                      gaussian
 DIFF_TO_LOWER_LEVEL             no
 INITRANDOMSEED                  1000
 ITENODEINELE                    20
 LEVELNUMBER                     0
-MARGINALPDF                     lognormal
-MEAN                            0
 MLMC                           yes
 NUMRUNS                         10
-NUM_COS_TERMS                   20
 OUTPUT_FILE_OF_LOWER_LEVEL      level0
-SIZE_PER_DIM                    196
 PROLONGATERES                   no
-RANDOM_FIELD_DIMENSION          3
 REDUCED_OUTPUT                  no
-// used to beSTART_RUN 0
 START_RUN                       0
-SIGMA                           2
-KAPPA_U                         0.5
-CALC_METHOD                     COS
-NONGAUSSPARAM1                  1.08574
-NONGAUSSPARAM2                  0.920457
 WRITESTATS                      1000
 OUTPUT_ELEMENT_IDS 							1 2 
-SPECTRAL_MATCHING               no
 USEDETVALUE                     no
 PARAMETERCONTINUATION           yes
 NUMCONTSTEPS                    2
 CONTBLENDVALUE									1.5
-----------------------------------------------------------DESIGN DESCRIPTION
+PARAMLIST												1 BETA
+------------------------------------------------------------RANDOM FIELD 1
+ACTIVE                          YES
+CORRLENGTH                      12.5
+CORRSTRUCT                      gaussian
+MARGINALPDF                     lognormal
+MEAN                            0
+NUM_COS_TERMS                   20
+SIZE_PER_DIM                    196
+RANDOM_FIELD_DIMENSION          3
+SIGMA                           2
+CALC_METHOD                     COS
+KAPPA_U                         0.5
+NONGAUSSPARAM1                  1.08574
+NONGAUSSPARAM2                  0.920457
+SPECTRAL_MATCHING               no
+---------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          20
 NDSURF                          11

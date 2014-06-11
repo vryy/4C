@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
-\file randomfield.h
-Created on: November 15, 2011
-\brief Class for generating samples of gaussian and non-gaussian random fields based on spectral representation
-using FFT algorithms
+\file randomfield_spectral.h
+Created on: May 15, 2014
+\brief Class for generation of realizations of random fields using a fourier series approximation
 
  <pre>
 Maintainer: Jonas Biehler
@@ -11,10 +10,9 @@ Maintainer: Jonas Biehler
             089 - 289-15276
 </pre>
  *!----------------------------------------------------------------------*/
-
 #ifdef HAVE_FFTW
-#ifndef GENRANDOMFIELD_H_
-#define GENRANDOMFIELD_H_
+#ifndef RANDOMFIELDSPECTRAL_H_
+#define RANDOMFIELDSPECTRAL_H_
 
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
@@ -33,25 +31,24 @@ Maintainer: Jonas Biehler
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include <math.h>
-//#include "../drt_adapter/ad_str_structure.H"
+
 
 #include <cmath>
 #include <ctime>
+#include "randomfield.H"
 
 namespace STR
 {
+
 namespace UQ
 {
 
-
-class GenRandomField {
+class RandomFieldSpectral : public RandomField
+{
 
 private:
   //! \brief do we want/need to perform spectral matching
   bool perform_spectral_matching_;
-
-  //! \brief which proc am I on
-  int myrank_;
 
   //! \brief dimension of stochastic field
   int dim_;
@@ -116,13 +113,6 @@ private:
   //! \brief/ seed for random number generator
   unsigned int  seed_;
 
-  //! \brief parameters for evaluation i.e corners of the bounding box of the discretization
-  //! \brief min bounding box
-  std::vector<double> bb_min_;
-
-  //! \brief max bounding box
-  std::vector<double> bb_max_;
-
   //! \brief we need Pi
   double pi_;
 
@@ -135,16 +125,22 @@ private:
   //! \brief Do not print to stdout
   bool reduced_output_;
 
+  // deterministic value to use for parameter continuation
+  double det_value_paracont_;
+
 
 public:
   //! \brief Standard constructor
-  GenRandomField(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret);
+  RandomFieldSpectral(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret,const Teuchos::ParameterList& rfp);
 
   //! \brief generates new realization of random field
   void CreateNewSample(unsigned int seed);
 
   //! \brief get value of random field at a specific location
   double EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output);
+
+  //! \brief get value of random field at a specific location
+  double EvalFieldAtLocation(std::vector<double> location, double paracont_parameter,  bool writetofile, bool output);
 
   //! \brief write random field To file
   void WriteRandomFieldToFile();
@@ -167,7 +163,7 @@ public:
   //! \brief return dimension of random field (either 2 or 3)
   int Dimension() {return dim_;}
 
-
+  void SayHello();
 
 
 private:
@@ -210,11 +206,8 @@ private:
   //! \brief helper functions for spectral matching
   double Testfunction(double argument_x, double argument_y, double rho);
 
-  //! \brief compute bounding box of random field from discretization
-  void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
-
-}; // class GenRandomField
-} // UQ
-} //STR
+}; // class RandomFieldSpectal
+}
+}
 #endif /* RANDOMFIELD_H_ */
 #endif // HAVE_FFTw

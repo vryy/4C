@@ -1,0 +1,95 @@
+/*!----------------------------------------------------------------------
+/file randomfield.h
+Created on: May 15, 2014
+\brief Interface class for random fields
+using FFT algorithms
+
+ <pre>
+Maintainer: Jonas Biehler
+            biehler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15276
+</pre>
+ *!----------------------------------------------------------------------*/
+
+#ifdef HAVE_FFTW
+#ifndef RANDOMFIELD_H_
+#define RANDOMFIELD_H_
+
+
+#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_CrsGraph.h"
+#include "Epetra_CrsMatrix.h"
+#include "Epetra_Vector.h"
+#include "Epetra_Export.h"
+#include "Epetra_Import.h"
+#include "../drt_lib/drt_discret.H"
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_LAPACK.h"
+#include "Epetra_Vector.h"
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseVector.h>
+#include <math.h>
+
+namespace STR
+{
+
+namespace UQ
+{
+
+class RandomField {
+
+public:
+
+  RandomField() {};
+  //! \brief Standard constructor
+
+  virtual ~RandomField() {};
+
+  //! \brief generates new realization of random field
+  virtual void CreateNewSample(unsigned int seed) =0;
+
+  //! \brief get value of random field at a specific location
+  virtual double EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)=0 ;
+
+  //! \brief write random field To file
+  //virtual  void WriteRandomFieldToFile()=0;
+
+  //! \brief return dimension of random field (either 2 or 3)
+  virtual int Dimension()=0;
+
+  //! \brief compute bounding box of discretization
+  virtual void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
+
+public:
+
+protected:
+ //! \brief which proc am I on
+ int myrank_;
+
+ //! \brief parameters for evaluation i.e corners of the bounding box of the discretization
+ //! \brief min bounding box
+ std::vector<double> bb_min_;
+
+ //! \brief max bounding box
+ std::vector<double> bb_max_;
+
+ double largestlength_;
+
+private:
+
+
+}; // class RandomField
+} // namespace UQ
+} //namespace STR
+
+#endif /* RANDOMFIELD_H_ */
+#endif // HAVE_FFTw
+
+

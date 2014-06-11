@@ -1,8 +1,8 @@
 /*!----------------------------------------------------------------------
-\file randomfield_fft.cpp
-Created on: 15 November, 2011
+\file randomfield_spectral.cpp
+Created on: 15 May, 2014
 \brief Class for generating samples of gaussian and non gaussian random fields based on spectral representation
-using FFT algorithms
+
 
  <pre>
 Maintainer: Jonas Biehler
@@ -10,10 +10,11 @@ Maintainer: Jonas Biehler
             http://www.lnm.mw.tum.de
             089 - 289-15276
 </pre>
- *!----------------------------------------------------------------------*/
+*/
 #ifdef HAVE_FFTW
 #include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "gen_randomfield.H"
+#include "randomfield.H"
+#include "randomfield_spectral.H"
 #include "mlmc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -53,40 +54,37 @@ using  boost::accumulators::stats;
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::UQ::GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret)
+STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret,  const Teuchos::ParameterList& rfp)
 {
    myrank_ = discret->Comm().MyPID();
-  // get input parameters
-  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
   // spatial dimension of random field  only 2 adn 3 supported
-  dim_ = mlmcp.get<int>("RANDOM_FIELD_DIMENSION");
+  dim_ = rfp.get<int>("RANDOM_FIELD_DIMENSION");
   if(dim_!=3&&dim_!=2)
       dserror("Dimension of random field must be 2 or 3, fix your input file");
 
   // do we want to perform spectral matching with PSd
-  perform_spectral_matching_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"SPECTRAL_MATCHING");
-  N_= mlmcp.get<int>("NUM_COS_TERMS");
-  kappa_u_=mlmcp.get<double>("KAPPA_U");
+  perform_spectral_matching_ = DRT::INPUT::IntegralValue<int>(rfp ,"SPECTRAL_MATCHING");
+  N_= rfp.get<int>("NUM_COS_TERMS");
+  kappa_u_=rfp.get<double>("KAPPA_U");
   seed_ = seed;
-  d_ = mlmcp.get<double>("CORRLENGTH");
-  sigma_0_= mlmcp.get<double>("SIGMA");
+  d_ = rfp.get<double>("CORRLENGTH");
+  sigma_0_= rfp.get<double>("SIGMA");
   sigma_ul_g_cur_it_ = 0.0;
   pi_=M_PI;
-  M_=mlmcp.get<int>("SIZE_PER_DIM");
+  M_=rfp.get<int>("SIZE_PER_DIM");
   dkappa_=kappa_u_/N_;
   periodicity_=2.*pi_/dkappa_;
   dx_=periodicity_/M_;
-
-  // for large simulations we do not want to print to stdout
-  reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
+  //det_value_paracont_= rfp.get<double>("DETVALUE");
+  det_value_paracont_= rfp.get<double>("CONTBLENDVALUE");
 
   // distribution parameters of non gaussian pdf
-  distribution_params_.push_back(mlmcp.get<double>("NONGAUSSPARAM1"));
-  distribution_params_.push_back(mlmcp.get<double>("NONGAUSSPARAM2"));
+  distribution_params_.push_back(rfp.get<double>("NONGAUSSPARAM1"));
+  distribution_params_.push_back(rfp.get<double>("NONGAUSSPARAM2"));
 
   // Get correlation structure so far we can only use gaussian
-  INPAR::MLMC::CorrStruct cstruct = DRT::INPUT::IntegralValue<INPAR::MLMC::CorrStruct>(mlmcp,"CORRSTRUCT");
+  INPAR::MLMC::CorrStruct cstruct = DRT::INPUT::IntegralValue<INPAR::MLMC::CorrStruct>(rfp,"CORRSTRUCT");
   switch(cstruct){
     case INPAR::MLMC::corr_gaussian:
       // nothing to do here
@@ -100,7 +98,7 @@ STR::UQ::GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Dis
   double upper_bound;
 
   // compute parameters for non gaussian pdf
-  INPAR::MLMC::MarginalPdf mpdf = DRT::INPUT::IntegralValue<INPAR::MLMC::MarginalPdf>(mlmcp,"MARGINALPDF");
+  INPAR::MLMC::MarginalPdf mpdf = DRT::INPUT::IntegralValue<INPAR::MLMC::MarginalPdf>(rfp,"MARGINALPDF");
   switch(mpdf){
     case INPAR::MLMC::pdf_gaussian:
       marginal_pdf_=normal;
@@ -141,7 +139,7 @@ STR::UQ::GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Dis
 
   // Get calculation method
 
-  INPAR::MLMC::CalcMethod calcm = DRT::INPUT::IntegralValue<INPAR::MLMC::CalcMethod>(mlmcp,"CALC_METHOD");
+  INPAR::MLMC::CalcMethod calcm = DRT::INPUT::IntegralValue<INPAR::MLMC::CalcMethod>(rfp,"CALC_METHOD");
   switch(calcm)
   {
     case INPAR::MLMC::calc_m_fft:
@@ -182,10 +180,12 @@ STR::UQ::GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Dis
     Phi_1_.reserve( N_ * N_ * N_ );
     Phi_2_.reserve( N_ * N_ * N_ );
     Phi_3_.reserve( N_ * N_ * N_ );
+    discrete_PSD_.reserve(int (pow(N_,3.0)));
     break;
   case 2:
     Phi_0_.reserve( N_ * N_ );
     Phi_1_.reserve( N_ * N_ );
+    discrete_PSD_.reserve(int (pow(N_,2.0)));
     break;
   default:
     dserror("Dimension of random field must be 2 or 3, fix your input file");
@@ -216,8 +216,10 @@ STR::UQ::GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Dis
       TranslateToNonGaussian();
 
 
+
+
 }
-void STR::UQ::GenRandomField::CreateNewSample(unsigned int seed)
+void STR::UQ::RandomFieldSpectral::CreateNewSample(unsigned int seed)
 {
   // check wether we use fft
   CreateNewPhaseAngles(seed);
@@ -240,7 +242,7 @@ void STR::UQ::GenRandomField::CreateNewSample(unsigned int seed)
 }
 
 
-void STR::UQ::GenRandomField::CreateNewPhaseAngles(unsigned int seed)
+void STR::UQ::RandomFieldSpectral::CreateNewPhaseAngles(unsigned int seed)
 {
 
   // This defines a random number genrator
@@ -296,7 +298,7 @@ void STR::UQ::GenRandomField::CreateNewPhaseAngles(unsigned int seed)
 }
 
 // compute power spectral density
-void STR::UQ::GenRandomField::CalcDiscretePSD()
+void STR::UQ::RandomFieldSpectral::CalcDiscretePSD()
 {
   // just compute PSD
   //IO::cout<< "sigma_0_" << sigma_0_ << IO::endl;
@@ -317,10 +319,10 @@ void STR::UQ::GenRandomField::CalcDiscretePSD()
     }
   }
   // Write to file
-/*  if (myrank_ == 0)
+/* if (myrank_ == 0)
     {
       std::ofstream File;
-      File.open("DiscretePSD.txt",std::ios::out);
+      File.open("DiscretePSDnewstyle.txt",std::ios::out);
       int size = int (pow(N_,2.0));
       for(int i=0;i<size;i++)
       {
@@ -349,9 +351,8 @@ void STR::UQ::GenRandomField::CalcDiscretePSD()
   }
 }
 
-void STR::UQ::GenRandomField::CalcDiscretePSD3D()
+void STR::UQ::RandomFieldSpectral::CalcDiscretePSD3D()
 {
-   //IO::cout<< "sigma_0_" << sigma_0_ << IO::endl;
   // just compute PSD
   for (int j=0;j<N_;j++)
   {
@@ -370,11 +371,11 @@ void STR::UQ::GenRandomField::CalcDiscretePSD3D()
       }
     }
   }
-/*//  // Write to file
-  if (myrank_ == 0)
+//  // Write to file
+/*  if (myrank_ == 0)
   {
     std::ofstream File;
-    File.open("DiscretePSDoldstyle.txt",std::ios::out);
+    File.open("DiscretePSDnewstyle.txt",std::ios::out);
     int size = int (pow(N_,3.0));
     for(int i=0;i<size;i++)
     {
@@ -387,7 +388,7 @@ void STR::UQ::GenRandomField::CalcDiscretePSD3D()
   if(marginal_pdf_!=normal)
   {
     // compute underlying gaussian distribution based on shields2011
-   // IO::cout<< "NO SPECTRAL MATHCING"<< IO::endl;
+   // IO::cout<< "NO SPECTRAL MATCHING"<< IO::endl;
     if(perform_spectral_matching_)
     {
       SpectralMatching3D();
@@ -408,7 +409,7 @@ void STR::UQ::GenRandomField::CalcDiscretePSD3D()
 }
 
 
-void STR::UQ::GenRandomField::SimGaussRandomFieldFFT()
+void STR::UQ::RandomFieldSpectral::SimGaussRandomFieldFFT()
 {
   double A; // store some stuff
 
@@ -508,7 +509,7 @@ void STR::UQ::GenRandomField::SimGaussRandomFieldFFT()
   fftw_destroy_plan(ifft_of_rows2);
   fftw_destroy_plan(ifft_of_collums);
 }
-void STR::UQ::GenRandomField::SimGaussRandomFieldFFT3D()
+void STR::UQ::RandomFieldSpectral::SimGaussRandomFieldFFT3D()
 {
   double A; // store some stuff
   // store coefficients
@@ -695,7 +696,7 @@ void STR::UQ::GenRandomField::SimGaussRandomFieldFFT3D()
    fftw_destroy_plan(ifft_of_collums2);
    fftw_destroy_plan(ifft_of_rank);
 }
-double STR::UQ::GenRandomField::SimGaussRandomFieldCOS3D(double x, double y, double z)
+double STR::UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y, double z)
 {
   double result = 0;
   for (int j=0;j<N_;j++)
@@ -718,62 +719,8 @@ double STR::UQ::GenRandomField::SimGaussRandomFieldCOS3D(double x, double y, dou
   return sqrt( 2 ) * result;
 }
 
-void STR::UQ::GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
-{
-  // root bounding Box
-  std::vector<double> maxrbb;
 
-  maxrbb.push_back(-10.0e19);
-  maxrbb.push_back(-10.0e19);
-  maxrbb.push_back(-10.0e19);
-
-  std::vector<double> minrbb;
-  minrbb.push_back(10.0e19);
-  minrbb.push_back(10.0e19);
-  minrbb.push_back(10.0e19);
-
-  bb_max_.push_back(-10.0e19);
-  bb_max_.push_back(-10.0e19);
-  bb_max_.push_back(-10.0e19);
-
-  bb_min_.push_back(10.0e19);
-  bb_min_.push_back(10.0e19);
-  bb_min_.push_back(10.0e19);
-  {
-    for (int lid = 0; lid <discret->NumMyColNodes(); ++lid)
-    {
-      const DRT::Node* node = discret->lColNode(lid);
-      // check if greater than maxrbb
-      if (maxrbb[0]<node->X()[0])
-        maxrbb[0]=node->X()[0];
-      if (maxrbb[1]<node->X()[1])
-        maxrbb[1]=node->X()[1];
-      if (maxrbb[2]<node->X()[2])
-        maxrbb[2]=node->X()[2];
-      // check if smaller than minrbb
-      if (minrbb[0]>node->X()[0])
-        minrbb[0]=node->X()[0];
-      if (minrbb[1]>node->X()[1])
-        minrbb[1]=node->X()[1];
-      if (minrbb[2]>node->X()[2])
-        minrbb[2]=node->X()[2];
-    }
-  }
-
-  discret->Comm().MaxAll(&maxrbb[0],&bb_max_[0],3);
-  discret->Comm().MinAll(&minrbb[0],&bb_min_[0],3);
-
-
-  discret->Comm().Barrier();
-
-  if (myrank_ == 0)
-  {
-    IO::cout<< "min " << bb_min_[0] << " "<< bb_min_[1]  << " "<< bb_min_[2] << IO::endl;
-    IO::cout<< "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << IO::endl;
-  }
-
-}
-double STR::UQ::GenRandomField::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
+double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
@@ -827,10 +774,6 @@ double STR::UQ::GenRandomField::EvalFieldAtLocation(std::vector<double> location
            File.close();
          }
      return value;
-    // if (elestress==Teuchos::null)
-    // {
-    //   dserror("vector containing element center stresses/strains not available");
-    // }
    }
    else
    {
@@ -842,9 +785,81 @@ double STR::UQ::GenRandomField::EvalFieldAtLocation(std::vector<double> location
 
 }
 
+double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)
+{
+  // manage the two different variants for evalutation in here so that it cannot be seen from the outside
+  // and so that we can call the same function with the same syntax
+ if (UseFFT_)
+  {
+    int index_x;
+    int index_y;
+    int index_z;
+
+    // Compute indices
+    index_x=int(floor((location[0]-bb_min_[0])/dx_));
+    index_y=int(floor((location[1]-bb_min_[1])/dx_));
+    // HACK for 2D art_aorta_case SET z to y
+     if (myrank_ == 0&& output && dim_==2 )
+     {
+       IO::cout<< "hack in use" << IO::endl;
+     }
+     if (dim_==2)
+       index_y=int(floor((location[2]-bb_min_[2])/dx_));
+       index_z=int(floor((location[2]-bb_min_[2])/dx_));
+    // check index
+    if (index_x>M_||index_y>M_||index_z>M_)
+      dserror("Index out of bounds");
+    if (writetofile && myrank_==0 )
+    {
+      std::ofstream File;
+      File.open("RFatPoint.txt",std::ios::app);
+      // use at() to get an error massage just in case
+      File << std::setprecision (9) << values_[index_x+M_*index_y]<< std::endl;
+      File.close();
+    }
+    if (dim_==2)
+    {
+      return det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*values_[index_x+M_*index_y];
+      //return values_[index_x+M_*index_y];
+    }
+    else
+    {
+      //return values_[index_x+M_*(index_y+M_*index_z)];
+      return det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*values_[index_x+M_*(index_y+M_*index_z)];
+    }
+
+  }
+ else
+ {
+   if(dim_==3)
+   {
+     double value;
+     value=SimGaussRandomFieldCOS3D(location[0], location[1], location[2]);
+     TranslateToNonGaussian( &value);
+     if (writetofile && myrank_==0 )
+         {
+           std::ofstream File;
+           File.open("RFatPoint.txt",std::ios::app);
+           File << std::setprecision (9) << value<< std::endl;
+           File.close();
+         }
+     //return value;
+     return det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*value;
+   }
+   else
+   {
+     dserror("Computation using Cos series only for dim = 3" );
+     return -1;
+   }
+
+ }
+
+}
+
+
 // Translate Gaussian to nonGaussian process based on Mircea Grigoriu's translation process
 // theory
-void STR::UQ::GenRandomField::TranslateToNonGaussian()
+void STR::UQ::RandomFieldSpectral::TranslateToNonGaussian()
 {
   double dim = dim_;
   // check wether pdf is gaussian
@@ -897,7 +912,7 @@ void STR::UQ::GenRandomField::TranslateToNonGaussian()
   }
 }
 // Overloaded function to translate single point only
-void STR::UQ::GenRandomField::TranslateToNonGaussian( double *value)
+void STR::UQ::RandomFieldSpectral::TranslateToNonGaussian( double *value)
 {
   // check wether pdf is gaussian
   switch(marginal_pdf_)
@@ -927,7 +942,7 @@ void STR::UQ::GenRandomField::TranslateToNonGaussian( double *value)
   }
 }
 // Transform PSD of underlying gauusian process
-void STR::UQ::GenRandomField::SpectralMatching()
+void STR::UQ::RandomFieldSpectral::SpectralMatching()
 {
   //error to target psd init with 100 %
   double psd_error=100;
@@ -1174,7 +1189,7 @@ void STR::UQ::GenRandomField::SpectralMatching()
    IO::cout<< "Spectral Matching done "<< IO::endl;
 }
 // Transform PSD of underlying gauusian process
-void STR::UQ::GenRandomField::SpectralMatching3D()
+void STR::UQ::RandomFieldSpectral::SpectralMatching3D()
 {
   //error to target psd init with 100 %
   double psd_error=100;
@@ -1481,7 +1496,7 @@ void STR::UQ::GenRandomField::SpectralMatching3D()
 
 // Routine to calculate
 // Transform PSD of underlying gauusian process using direct 3DFFT routine provided by FFTW
-void STR::UQ::GenRandomField::SpectralMatching3D3D()
+void STR::UQ::RandomFieldSpectral::SpectralMatching3D3D()
 {
   //error to target psd init with 100 %
   double psd_error=100;
@@ -1644,7 +1659,7 @@ void STR::UQ::GenRandomField::SpectralMatching3D3D()
       discrete_PSD_[h]=0.0;
   }
 }
-double STR::UQ::GenRandomField::Integrate(double xmin, double xmax, double ymin, double ymax, double rho)
+double STR::UQ::RandomFieldSpectral::Integrate(double xmin, double xmax, double ymin, double ymax, double rho)
 {
   // get trillios gausspoints with high order
   //Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::quad4, 30 );
@@ -1662,7 +1677,7 @@ double STR::UQ::GenRandomField::Integrate(double xmin, double xmax, double ymin,
   return integral_value;
 }
 
-double STR::UQ::GenRandomField::Testfunction(double argument_x ,double argument_y, double rho)
+double STR::UQ::RandomFieldSpectral::Testfunction(double argument_x ,double argument_y, double rho)
 {
   double result = 0.0;
   boost::math::normal_distribution<double> my_normal(0,sigma_ul_g_cur_it_);
@@ -1695,7 +1710,7 @@ double STR::UQ::GenRandomField::Testfunction(double argument_x ,double argument_
 }
 
 // Write Random Field to file
-void STR::UQ::GenRandomField::WriteRandomFieldToFile()
+void STR::UQ::RandomFieldSpectral::WriteRandomFieldToFile()
 {
   if (myrank_ == 0)
   {
@@ -1710,7 +1725,7 @@ void STR::UQ::GenRandomField::WriteRandomFieldToFile()
   }
 }
 // Compute PSD from current sample
-void STR::UQ::GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
+void STR::UQ::RandomFieldSpectral::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
 {
   //check wether sample_psd has correct size
   if(sample_psd->length()!=M_*M_)
@@ -1777,7 +1792,7 @@ void STR::UQ::GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <doub
   fftw_destroy_plan(fft_of_collums);
 }
 // Compute PSD from current sample
-void STR::UQ::GenRandomField::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
+void STR::UQ::RandomFieldSpectral::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
 {
   //check wether sample_psd has correct size
   if(sample_psd->length()!=M_*M_*M_)
@@ -1810,7 +1825,7 @@ void STR::UQ::GenRandomField::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <do
   fftw_destroy_plan(fft_of_rf);
 }
 // Write Random Field to file
-void STR::UQ::GenRandomField::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
+void STR::UQ::RandomFieldSpectral::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
 {
   if (myrank_ == 0)
   {

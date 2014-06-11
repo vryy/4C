@@ -124,25 +124,28 @@ GENAVG                          TrLike
 THETA                           0.5
 -----------------------------------------------------MULTI LEVEL MONTE CARLO
 CONVTOL                         0.1
-CORRLENGTH                      25
-CORRSTRUCT                      gaussian
 INITRANDOMSEED                  1000
 ITENODEINELE                    20
-MARGINALPDF                     lognormal
-MEAN                            0
 MLMC                            yes
 NUMRUNS                         1
+REDUCED_OUTPUT                  no
+START_RUN                       0
+WRITESTATS                      1000
+PARAMLIST                       1 BETA
+------------------------------------------------------------RANDOM FIELD 1
+ACTIVE                          YES
+CORRLENGTH                      25
+CORRSTRUCT                      gaussian
+MARGINALPDF                     lognormal
+MEAN                            0
 NUM_COS_TERMS                   64
 SIZE_PER_DIM                    2048
 RANDOM_FIELD_DIMENSION          2
-REDUCED_OUTPUT                  no
-START_RUN                       0
 SIGMA                           2
+CALC_METHOD                     FFT
 KAPPA_U                         0.2
 NONGAUSSPARAM1                  1.08574
 NONGAUSSPARAM2                  0.920457
-WRITESTATS                      1000
-CALC_METHOD                     FFT
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_AAANeoHooke YOUNG 0.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7
 ----------------------------------------------------------------------CURVE1

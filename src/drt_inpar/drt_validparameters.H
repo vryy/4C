@@ -86,6 +86,9 @@ namespace INPUT {
   /// set parameters for NOX non-linear solution technique
   void SetValidNoxParameters(Teuchos::ParameterList& list);
 
+  /// set parameters for random field generation in UQ
+  void SetValidRandomFieldParameters(Teuchos::ParameterList& list);
+
   /// print all parameters that have a default value
   void PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list);
 

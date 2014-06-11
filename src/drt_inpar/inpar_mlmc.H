@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_statmech.H
+\file inpar_mlmc.H
 
 <pre>
 Maintainer: Jonas Biehler
@@ -21,23 +21,24 @@ namespace INPAR
   /// Input parameters used in multi level monte carlo
   namespace MLMC
   {
-  enum CorrStruct
-      {
-        corr_gaussian, ///< gaussian correlation structure
-        // more to follow
-      };
-  enum MarginalPdf
-        {
-          pdf_gaussian,// normal distribution
-          pdf_beta,    // beta distribution
-          pdf_lognormal,// lognormal distribution
-          // more to follow
-        };
-  enum CalcMethod
-          {
-    calc_m_fft,// using fftw
-    calc_m_cos, // as cosinus series
-          };
+    enum CorrStruct
+    {
+      corr_gaussian, ///< gaussian correlation structure
+      // more to follow
+    };
+    enum MarginalPdf
+    {
+      pdf_gaussian,// normal distribution
+      pdf_beta,    // beta distribution
+      pdf_lognormal,// lognormal distribution
+      // more to follow
+    };
+    enum CalcMethod
+    {
+      calc_m_fft,// using fftw
+      calc_m_cos, // as cosinus series
+      calc_m_fourier, // as fourier series
+    };
     /// To be filled with input params
   }  // namespace MLMC
 
