@@ -183,7 +183,7 @@ void STR::UQ::RandomFieldFourier::CreateNewPhaseAngles(unsigned int seed)
 double STR::UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,double paracont_parameter, bool writetofile, bool output)
 {
   double tempgp=0.0;
-  for (int i=0;i<(kb_->size());i++)
+  for (unsigned int i=0;i<kb_->size();i++)
   {
     double wk1=(*kb_)[i][0]*pi_/periodicity_;
     double wk2=(*kb_)[i][1]*pi_/periodicity_;
