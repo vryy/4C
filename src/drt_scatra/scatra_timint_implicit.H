@@ -122,6 +122,9 @@ public:
   //! Initialization of system matrix
   virtual void InitSystemMatrix();
 
+  //! setup meshtying system
+  virtual void SetupMeshtying();
+
   //! Initialization of turbulence models
   //TODO: SCATRA_ELE_CLEANING: copy pointer?
   void InitTurbulenceModel(
@@ -490,9 +493,6 @@ protected:
 
   virtual void SetElementTimeParameter()=0;
 
-  //TODO: SCATRA_ELE_CLEANING: ersetzten durch Liste für boundaryElemente
-  virtual void SetElementTimeParameter(Teuchos::ParameterList& eleparams)=0;
-
   virtual void SetElementTimeParameterForForcedIncrementalSolve()=0;
 
   virtual void SetElementTimeParameterInitial()=0;
@@ -509,9 +509,6 @@ protected:
 
   //! Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;
-
-  //! set time for evaluation of Neumann boundary conditions
-  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
   //! create Krylov space projector
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);

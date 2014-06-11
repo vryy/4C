@@ -166,8 +166,9 @@ void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
       numscal_ -= dim;
     }
 
-    //TODO: SCATRA_ELE_CLEANING: Verbindung zwischen Elchtype, DiffCond Liste und Material
-    if(DRT::INPUT::IntegralValue<int>(diffcondparams,"DIFFCOND_FORMULATION"))
+    // The diffusion-conduction formulation does not support all options of the Nernst-Plack formulation
+    // Let's check for valid options
+    if(elchtype_==INPAR::ELCH::elchtype_diffcond)
       ValidParameterDiffCond();
   }
   // set up the concentration-el.potential splitter
@@ -192,45 +193,51 @@ void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
 
     sysmat_ = blocksysmat;
   }
-  else if(msht_!= INPAR::FLUID::no_meshtying)
-  {
-    // Important:
-    // Meshtying in scatra is not tested well!!
-
-    bool onlypotential = (DRT::INPUT::IntegralValue<int>(*params_,"ONLYPOTENTIAL"));
-
-    if(msht_== INPAR::FLUID::condensed_bmat)
-      dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
-              "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
-
-    if ((msht_== INPAR::FLUID::condensed_bmat or
-        msht_== INPAR::FLUID::condensed_bmat_merged) and
-        (equpot_== INPAR::ELCH::equpot_enc))
-      dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
-          "cannot be solved in a block matrix");
-
-    // meshtying: all dofs (all scalars + potential) are coupled
-    int numdof = numscal_+1;
-
-    // define coupling
-    std::vector<int> coupleddof(numdof, 1);
-    if(onlypotential==true)
-    {
-      // meshtying: only potential is coupled
-      // coupleddof = [0, 0, ..., 0, 1]
-      for(int ii=0;ii<numscal_;++ii)
-        coupleddof[ii]=0;
-    }
-
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
-    sysmat_ = meshtying_->Setup(coupleddof);
-  }
   else
-    //TODO: SCATRA_ELE_CLEANING: Gibt es die Möglichkeit, dass meshtying in aTimIntImpl::InitializeSystemMatrix() nochmal vorkommt?
     ScaTraTimIntImpl::InitSystemMatrix();
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | setup meshtying system                                    ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::SetupMeshtying()
+{
+  // Important:
+  // Meshtying in elch is not tested well!!
+
+  bool onlypotential = (DRT::INPUT::IntegralValue<int>(*params_,"ONLYPOTENTIAL"));
+
+  if(msht_== INPAR::FLUID::condensed_bmat)
+    dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
+            "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
+
+  if ((msht_== INPAR::FLUID::condensed_bmat or
+      msht_== INPAR::FLUID::condensed_bmat_merged) and
+      (equpot_== INPAR::ELCH::equpot_enc))
+    dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
+        "cannot be solved in a block matrix");
+
+  // meshtying: all dofs (all scalars + potential) are coupled
+  int numdof = numscal_+1;
+
+  // define coupling
+  std::vector<int> coupleddof(numdof, 1);
+  if(onlypotential==true)
+  {
+    // meshtying: only potential is coupled
+    // coupleddof = [0, 0, ..., 0, 1]
+    for(int ii=0;ii<numscal_;++ii)
+      coupleddof[ii]=0;
+  }
+
+  meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
+  sysmat_ = meshtying_->Setup(coupleddof);
+
+  return;
+} // ScaTraTimIntImpl::SetupMeshtying()
 
 
 /*----------------------------------------------------------------------*
@@ -751,7 +758,6 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   eleparams.set<int>("action",SCATRA::bd_calc_elch_electrode_kinetics);
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status ouput!
-  eleparams.set("frt",frt_);
 
   // parameters for Elch/DiffCond formulation
   eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
@@ -766,7 +772,6 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   // AddTimeIntegrationSpecificVectors cannot be used since we do not want
   // an evaluation for t_{n+\alpha_f} !!!
 
-  // TODO
   // Warning:
   // Specific time integration parameter are set in the following function.
   // In the case of a genalpha-time integration scheme the solution vector phiaf_ at time n+af
@@ -779,7 +784,6 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   //TODO: SCATRA_ELE_CLEANING: Boundary element auf Parameterliste
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
-  SetElementTimeParameter(eleparams);
 
   // add element parameters according to time-integration scheme
   //AddSpecificTimeIntegrationParameters(eleparams);
@@ -1000,9 +1004,6 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
 
     if(DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION"))
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
-
-    //if((elchparams.get<int>("MAGNETICFIELD_FUNCNO"))>0)
-    //  dserror("Simulations including a magnetic field are not supported in the ELCH diffusion-conduction framework!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linar solver!!");
@@ -1530,7 +1531,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
   //TODO: SCATRA_ELE_CLEANING: Boundary element auf Parameterliste
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
-  SetElementTimeParameter(condparams);
 
   std::string condstring("ElectrodeKinetics");
   // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
@@ -1564,7 +1564,6 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_elch_linearize_nernst);
   condparams.set<int>("scatratype",scatratype_);
-  condparams.set("frt",frt_); // factor F/RT
   condparams.set("isale",isale_);
 
   // parameters for Elch/DiffCond formulation

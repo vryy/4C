@@ -459,26 +459,35 @@ void SCATRA::ScaTraTimIntImpl::InitSystemMatrix()
     else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27,false,true));
   }
   else
-  {
-    // Important:
-    // Meshtying in scatra is not tested at all!!
-    if(msht_== INPAR::FLUID::condensed_bmat)
-      dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
-              "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
-
-    // define coupling
-    std::vector<int> coupleddof(numscal_, 1);
-
-    // setup of meshtying
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
-    sysmat_ = meshtying_->Setup(coupleddof);
-  }
+    SetupMeshtying();
 
   return;
 } // ScaTraTimIntImpl::InitSystemMatrix()
 
+
 /*----------------------------------------------------------------------*
- | initialization of system matrix                           ehrl 12/13 |
+ | setup meshtying system                                    ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupMeshtying()
+{
+  // Important:
+  // Meshtying in scatra is not tested at all!!
+  if(msht_== INPAR::FLUID::condensed_bmat)
+    dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
+            "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
+
+  // define coupling
+  std::vector<int> coupleddof(numscal_, 1);
+
+  // setup of meshtying
+  meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
+  sysmat_ = meshtying_->Setup(coupleddof);
+
+  return;
+} // ScaTraTimIntImpl::SetupMeshtying()
+
+/*----------------------------------------------------------------------*
+ | initialization of system matrix                           ehrl 05/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
     const Epetra_Map* dofrowmap,
@@ -2135,7 +2144,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // set time for evaluation of Neumann boundary conditions as parameter
   // depending on time-integration scheme
   Teuchos::ParameterList condparams;
-  SetTimeForNeumannEvaluation(condparams);
   condparams.set<int>("scatratype",scatratype_);
   condparams.set("isale",isale_);
 

@@ -89,7 +89,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(con
     eps_(1.0)
 {
   // pointer to class ScaTraEleParameter
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+  elchpara_ = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance());
 }
 
 
@@ -175,9 +175,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
 
   if (mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
-//    Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
-//    equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
-    equpot_ = static_cast<DRT::ELEMENTS::ScaTraEleParameterElch* >(my::scatraparams_)->EquPot();
+    equpot_ = elchpara_->EquPot();
 
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
@@ -227,7 +225,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  const double time = my::scatraparamstimint_->Time();
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
@@ -424,12 +422,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
     Epetra_SerialDenseVector&         elevec1_epetra
     )
 {
-//    if (mat->MaterialType() == INPAR::MAT::m_elchmat)
-//    {
-//      Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
-//      equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
-//    }
-
   // get the parent element including its material
     DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
     Teuchos::RCP<MAT::Material> mat = parentele->Material();
@@ -440,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
       dserror("Element parameter SCATRATYPE has not been set!");
 
     // type of closing equation for electric potential
-    equpot_ = static_cast<DRT::ELEMENTS::ScaTraEleParameterElch* >(my::scatraparams_)->EquPot();
+    equpot_ = elchpara_->EquPot();
 
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -494,7 +486,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
     }
 
     // access input parameter
-    const double frt = static_cast<DRT::ELEMENTS::ScaTraEleParameterElch* >(my::scatraparams_)->FRT(); // = F/RT
+    const double frt = elchpara_->FRT();
     if (frt<=0.0)
       dserror("A negative factor frt is not possible by definition");
 
@@ -502,10 +494,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
     bool iselch(true);
     if (scatratype != INPAR::SCATRA::scatratype_elch)
       iselch = false;
-    const bool   is_stationary = params.get<bool>("using stationary formulation");
-    const double time = params.get<double>("total time");
+    const bool   is_stationary = my::scatraparamstimint_->IsStationary();
+    const double time = my::scatraparamstimint_->Time();
     double       timefac = 1.0;
-    double       alphaF  = 1.0;
     double       rhsfac  = 1.0;
     // find out whether we shell use a time curve and get the factor
     // this feature can be also used for stationary "pseudo time loops"
@@ -537,6 +528,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
       }
     }
 
+    //TODO: Ist es besser über parameter?
     const bool calc_status = params.get<bool>("calc_status",false);
     if (!calc_status)
     {
@@ -545,12 +537,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
         // One-step-Theta:    timefac = theta*dt
         // BDF2:              timefac = 2/3 * dt
         // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-        timefac = params.get<double>("time factor");
-        alphaF = params.get<double>("alpha_F");
-        timefac *= alphaF;
+        timefac = my::scatraparamstimint_->TimeFac();
         if (timefac < 0.0) dserror("time factor is negative.");
         // for correct scaling of rhs contribution (see below)
-        rhsfac =  1.0/alphaF;
+        rhsfac =  1/my::scatraparamstimint_->AlphaF();
       }
 
       if(zerocur==0)
@@ -597,13 +587,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
           // One-step-Theta:    timefac = theta*dt
           // BDF2:              timefac = 2/3 * dt
           // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-          timefac = params.get<double>("time factor");
-          alphaF = params.get<double>("alpha_F");
-          // realize correct scaling of vector with timefac/alphaF = (gamma/alpha_M) * dt
-          //timefac *= alphaF;
+          timefac = my::scatraparamstimint_->TimeFac();
           if (timefac < 0.0) dserror("time factor is negative.");
-          // for correct scaling of rhs
-          rhsfac = 1.0; //1.0/alphaF;
         }
 
         ElectrodeStatus(
@@ -674,11 +659,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
               " the number of ionic species %d", (*stoich).size(), my::numscal_);
 
     // access input parameter
-    const double frt = params.get<double>("frt"); // = F/RT
+    const double frt = elchpara_->FRT();
     if (frt<0.0)
       dserror("A negative factor frt is not possible by definition");
 
-    const double time = params.get<double>("total time");
+    const double time = my::scatraparamstimint_->Time();
 
     if (scatratype != INPAR::SCATRA::scatratype_elch)
       dserror("Only available ELCH");

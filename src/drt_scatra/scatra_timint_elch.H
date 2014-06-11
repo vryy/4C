@@ -59,6 +59,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! Initialization of system matrix
   virtual void InitSystemMatrix();
 
+  //! setup meshtying system
+  virtual void SetupMeshtying();
+
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/

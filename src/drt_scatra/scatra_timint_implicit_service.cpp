@@ -807,9 +807,6 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_surface_permeability);
   condparams.set<int>("scatratype",scatratype_);
-  // TODO: SCATRA_ELE_CLEANING
-  SetElementTimeParameter(condparams);
-  condparams.set("incremental solver",incremental_);
 
   // provide displacement field in case of ALE
   condparams.set("isale",isale_);

@@ -172,24 +172,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter()
 
 
 /*----------------------------------------------------------------------*
- |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
-{
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<bool>("using generalized-alpha time integration",true);
-  eleparams.set<bool>("using stationary formulation",false);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_-(1-alphaF_)*dta_);
-  eleparams.set<double>("time factor",genalphafac_*dta_);
-  eleparams.set<double>("alpha_F",alphaF_);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  set time parameter for element evaluation                ehrl 11/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::SetElementTimeParameterForForcedIncrementalSolve()
@@ -288,17 +270,6 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
   // compute time derivative of phi at n+alpha_M
   phidtam_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
 
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set time for evaluation of Neumann boundary conditions      vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
-  Teuchos::ParameterList& params)
-{
-  params.set("total time",time_-(1-alphaF_)*dta_);
   return;
 }
 

@@ -143,22 +143,6 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter()
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
-{
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",false);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",theta_*dta_);
-  eleparams.set<double>("alpha_F",1.0);
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation                ehrl 11/13 |
@@ -261,17 +245,6 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
   Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phin_);
   splitter_->InsertCondVector(onlypot, phinp_);
 
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set time for evaluation of Neumann boundary conditions      vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
-  Teuchos::ParameterList& params)
-{
-  params.set("total time",time_);
   return;
 }
 

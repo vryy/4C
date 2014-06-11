@@ -146,23 +146,6 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter()
 
 
 /*----------------------------------------------------------------------*
- |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
-{
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",false);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",theta_*dta_);
-  eleparams.set<double>("alpha_F",1.0);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  set time parameter for element evaluation                ehrl 11/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::SetElementTimeParameterForForcedIncrementalSolve()
@@ -267,17 +250,6 @@ void SCATRA::TimIntBDF2::ExplicitPredictor()
   // for step == 1 phinp_ is already correctly initialized with the
   // initial field phin_
 
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set time for evaluation of Neumann boundary conditions      vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::SetTimeForNeumannEvaluation(
-  Teuchos::ParameterList& params)
-{
-  params.set("total time",time_);
   return;
 }
 

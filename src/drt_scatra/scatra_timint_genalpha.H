@@ -111,10 +111,6 @@ protected:
   /// set time parameter for element evaluation
   virtual void SetElementTimeParameter();
 
-  //TODO: SCATRA_ELE_CLEANING: ersetzten durch Liste für boundaryElemente
-  /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(Teuchos::ParameterList& eleparams);
-
   /// set time parameter for element evaluation for forced incremental solve
   virtual void SetElementTimeParameterForForcedIncrementalSolve();
 
@@ -129,9 +125,6 @@ protected:
 
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   void ExplicitPredictor();
-
-  /// set time for evaluation of Neumann boundary conditions
-  void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
   /// add actual Neumann loads with time factor
   void AddNeumannToResidual();

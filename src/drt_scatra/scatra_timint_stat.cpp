@@ -122,26 +122,6 @@ void SCATRA::TimIntStationary::SetElementTimeParameter()
   return;
 }
 
-/*----------------------------------------------------------------------*
- | set time parameter for element evaluation (usual call)    ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
-{
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",true);
-  eleparams.set<bool>("incremental solver",incremental_);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",1.0);
-  eleparams.set<double>("alpha_F",1.0);
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation                ehrl 11/13 |
@@ -206,17 +186,6 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 {
   hist_->PutScalar(0.0);
 
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set time for evaluation of Neumann boundary conditions      vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(
-  Teuchos::ParameterList& params)
-{
-  params.set("total time",time_);
   return;
 }
 

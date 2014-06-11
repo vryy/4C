@@ -23,6 +23,8 @@ namespace DRT
 
 namespace ELEMENTS
 {
+// forward declarations
+class ScaTraEleParameterElch;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleBoundaryCalcElch : public ScaTraBoundaryImpl<distype>
@@ -121,6 +123,17 @@ private:
       Epetra_SerialDenseMatrix&         elemat1_epetra,
       Epetra_SerialDenseVector&         elevec1_epetra
       );
+
+  /*========================================================================*/
+  //! @name flags and enums
+  /*========================================================================*/
+
+  //! pointer to parameter class elch
+  DRT::ELEMENTS::ScaTraEleParameterElch* elchpara_;
+
+  /*========================================================================*/
+  //! @name scalar degrees of freedom and related
+  /*========================================================================*/
 
   //! flag for closure equation
   enum INPAR::ELCH::EquPot equpot_;

@@ -255,16 +255,6 @@ public:
                        Epetra_SerialDenseMatrix&          elemat_epetra,
                        Epetra_SerialDenseVector&          elevec_epetra);
 
-    //! calculate boundary conditions for expl Taylor Galerkin time integration and ICG2, just for the reinitialization equation
-    template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
-    void TaylorGalerkinBoundaryOutflow(
-        DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
-        Teuchos::ParameterList&            params,               //!< parameter list
-        DRT::Discretization&               discretization,       //!< discretization
-        Teuchos::RCP<const MAT::Material>  material,             //!< material
-        Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
-        Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
-        );
 
     //! calculate boundary conditions for impl. Characteristic Galerkin time integration, just for the reinitialization equation
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
