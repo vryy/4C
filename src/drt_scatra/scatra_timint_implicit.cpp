@@ -266,7 +266,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   discret_->Comm().MaxAll(&mynumscal,&numscal_,1);
   numdofpernode_=numscal_;
 
-  //TODO: SCATRA_ELE_CLEANING: Diese Funktion muss in cardio-spezifische Klasse
+  //TODO: SCATRA_ELE_CLEANING: CARDIO
   if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
   {
     // Activation time at time n+1
@@ -1939,7 +1939,6 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
 
     // set parameters for elements that do not change over mode
     mode_params.set<int>("action",SCATRA::integrate_shape_functions);
-    // TODO: SCATRA_ELEL_CLEANING: Why so?
     mode_params.set<int>("scatratype",scatratype_);
     mode_params.set("isale",isale_);
     if (isale_)
@@ -2259,8 +2258,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     // set action for elements
     mhdbcparams.set<int>("action",SCATRA::bd_calc_weak_Dirichlet);
-    //TODO: SCATRA_ELE_CALC
-    mhdbcparams.set("incremental solver",incremental_);
     mhdbcparams.set("isale",isale_);
 
     mhdbcparams.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
@@ -2849,7 +2846,9 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
 }
 
 
-//TODO: SCATRA_ELE_CLEANING: CARDIO (Cristobal, Andi N., Lasse)
+//TODO: SCATRA_ELE_CLEANING: CARDIO
+// called in the end of SCATRA::TimIntXXXX::Update
+// output_->WriteMesh(step_,time_) in TimIntXXXX::OutputRestart()
 /*----------------------------------------------------------------------*
  | time update of time-dependent materials                    gjb 07/12 |
  *----------------------------------------------------------------------*/
@@ -2861,8 +2860,6 @@ void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
   p.set<int>("action", SCATRA::time_update_material);
   // further required parameters
   p.set<int>("scatratype",scatratype_);
-  //TODO: SCATRA_ELE_CLEANING
-  //p.set("time-step length",dta_);
 
   // set vector values needed by elements
   discret_->ClearState();

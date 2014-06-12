@@ -56,10 +56,6 @@ public:
   /// current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  // TODO: Ursula: after reorganization of level-set handling, move to protected again
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
-
   /// update density field for ELCH natural convection
   void UpdateDensityElch();
 
@@ -112,8 +108,8 @@ protected:
   /// set time parameter for element evaluation for forced incremental solve
   virtual void SetElementTimeParameterForForcedIncrementalSolve();
 
-  /// set time parameter for element evaluation at initial time = 0.0
-  virtual void SetElementTimeParameterInitial();
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

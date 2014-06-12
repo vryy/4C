@@ -494,7 +494,7 @@ protected:
 
   virtual void SetElementTimeParameterForForcedIncrementalSolve()=0;
 
-  virtual void SetElementTimeParameterInitial()=0;
+  //virtual void SetElementTimeParameterInitial()=0;
 
   virtual void SetElementGeneralScaTraParameter();
 
@@ -940,7 +940,7 @@ protected:
   //! @name electrophysiology
   /*========================================================================*/
 
-  //TODO: SCATRA_ELE_CLEANING: heart
+  //TODO: SCATRA_ELE_CLEANING: CARDIO
   //! activation_time at times n+1
   Teuchos::RCP<Epetra_Vector> activation_time_np_;
 
@@ -1039,7 +1039,7 @@ protected:
   //! @name Biofilm specific stuff
   /*========================================================================*/
 
-  //TODO: SCATRA_ELE_CLEANING: biofilm
+  //TODO: SCATRA_ELE_CLEANING: BIOFILM
   //! scatra fluid displacement due to growth
   Teuchos::RCP<Epetra_MultiVector> scfldgrdisp_;
 

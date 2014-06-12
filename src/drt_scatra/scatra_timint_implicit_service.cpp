@@ -361,7 +361,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     {
       Teuchos::ParameterList params;
 
-      // TODO: SCATRA_ELE_CLEANING
       int addflux=0;
       if(condnames[i]=="ScaTraFluxCalc")
       {
@@ -375,15 +374,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // maximal number of fluxes  (numscal+1 -> ionic species + potential) is used if it is
       // specified in the BC
       const int numfluxeval=numscal_+addflux;
-
-//      int numfluxeval=0;
-//      if((cond[condid])->GetInt("output")==INPAR::SCATRA::fluxeval_alldof)
-//      {
-//        numfluxeval=numdofpernode_;
-//        params.set<int>("alldof",INPAR::SCATRA::fluxeval_alldof);
-//      }
-//      else
-//        numfluxeval=numscal_;
 
       // calculate integral of shape functions over indicated boundary and it's area
       params.set("boundaryint",0.0);
@@ -584,11 +574,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   ApplyDirichletBC(time_,phin_,Teuchos::null);
 
   {
-    // TODO: Add coupling condition to potential
     // evaluate Neumann boundary conditions at time t=0
     neumann_loads_->PutScalar(0.0);
     Teuchos::ParameterList p;
-    p.set("total time",time_);
     p.set<int>("scatratype",scatratype_);
     p.set("isale",isale_);
     // provide displacement field in case of ALE
@@ -615,21 +603,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // add additional parameters
     AddTimeIntegrationSpecificVectors();
 
-    // other parameters that are needed by the elements
-//TODO: SCATRA_ELE_CLEANING: ELCH
-//    if (IsElch(scatratype_))
-//      eleparams.set("frt",frt_); // factor F/RT
-
     // provide velocity field and potentially acceleration/pressure field
     // (export to column map necessary for parallel evaluation)
     discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
     discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
     discret_->AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-    //TODO: SCATRA_ELE_CLEANING: ELCH
-    // parameters for Elch/DiffCond formulation
-//    if(IsElch(scatratype_))
-//      eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
 
     //provide displacement field in case of ALE
     if (isale_)
@@ -790,9 +768,9 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
 
 
 
-// TODO: SCATRA_ELE_CLEANING. WHO IS RESPONSIBLE FOR THIS FUNCTION?
+// TODO: SCATRA_ELE_CLEANING: BIOFILM
 /*----------------------------------------------------------------------*
- | Evaluate surface/interface permeability                              |
+ | Evaluate surface/interface permeability                     BIOFILM  |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
     Teuchos::RCP<LINALG::SparseOperator> matrix,
@@ -996,8 +974,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_Neumann_inflow);
   condparams.set<int>("scatratype",scatratype_);
-  // TODO: SCATRA_ELE_CLEANING
-  condparams.set("incremental solver",incremental_);
   condparams.set("isale",isale_);
 
   // provide velocity field and potentially acceleration/pressure field
@@ -1037,8 +1013,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_convective_heat_transfer);
   condparams.set<int>("scatratype",scatratype_);
-  // TODO: SCATRA_ELE_CLEANING
-  condparams.set("incremental solver",incremental_);
   condparams.set("isale",isale_);
 
   // clear state
@@ -1175,7 +1149,9 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
 } // ScaTraTimIntImpl::OutputFlux
 
 
-//TODO: SCATRA_ELE_CLEANING: Mirella
+//TODO: SCATRA_ELE_CLEANING: BIOFILM
+// This action is not called at element level!!
+// Can it be integrated in CalcFlux_domain?
 /*----------------------------------------------------------------------*
  |  output of integral reaction                               mc   03/13|
  *----------------------------------------------------------------------*/
@@ -1193,8 +1169,6 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_integr_reaction);
     eleparams.set<int>("scatratype",scatratype_);
-    //TODO: SCATRA_ELE_CLEANING
-    //eleparams.set("time-step length",dta_);
     Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(numscal_,0.0));
     eleparams.set<Teuchos::RCP<std::vector<double> > >("local reaction integral",myreacnp);
 

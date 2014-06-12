@@ -132,7 +132,9 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   // set parameters for element evaluation
   eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
   eleparams.set<int>("scatratype",scatratype_);
-  SetElementTimeParameterInitial();
+
+  // the time = 0.0, since this function is called BEFORE the first IncrementTimeAndStep() in InitialCalculations()
+  // therefore, the standard SetElementTimeParameter() can be used for this method
 
   // variables for integrals of domain and bodyforce
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -147,9 +149,6 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 
   // set action for elements
   eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
-
-  // TODO: SCATRA_ELE_CLEANING: remove when parameterlists are set in Boundary
-  eleparams.set("total time",0.0);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint      = 0.0;

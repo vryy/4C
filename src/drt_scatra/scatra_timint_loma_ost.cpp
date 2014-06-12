@@ -175,8 +175,6 @@ void SCATRA::TimIntLomaOST::ComputeThermPressure()
 
   // set action for elements
   eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
-  //TODO: SCATRA_ELE_CLEANING
-  eleparams.set("total time",time_);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint      = 0.0;

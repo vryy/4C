@@ -81,8 +81,6 @@ void SCATRA::TimIntGenAlpha::Init()
   if (alphaM_ < EPS12) dserror("factor alpha_M lower than or equal zero");
   genalphafac_ = gamma_/alphaM_;
 
-  //TODO (ehrl): Start step for genalpha
-  //      Disable calculation of Initial  PhiDt
   // fine-scale vector at time n+alpha_F
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
@@ -96,11 +94,6 @@ void SCATRA::TimIntGenAlpha::Init()
   SetElementTimeParameter();
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
-
-  //TODO: SCATRA_ELE_CLEANING
-  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  //if (IsElch(scatratype_))
-  //  ComputeTimeDerivPot0(true);
 
   // for initializing phiaf_, phiam based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor
@@ -189,33 +182,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterForForcedIncrementalSolve()
 
   eleparams.set<double>("time-step length",dta_);
   eleparams.set<double>("total time",time_-(1-alphaF_)*dta_);
-  eleparams.set<double>("time factor",genalphafac_*dta_);
-  eleparams.set<double>("alpha_F",alphaF_);
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation                ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameterInitial()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<bool>("using generalized-alpha time integration",true);
-  eleparams.set<bool>("using stationary formulation",false);
-  eleparams.set<bool>("incremental solver",incremental_);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",0.0); // only different
   eleparams.set<double>("time factor",genalphafac_*dta_);
   eleparams.set<double>("alpha_F",alphaF_);
 
@@ -417,10 +383,6 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
-
-  // TODO: SCATRA_ELE_CLEANING
-  // potential time update of time-dependent materials
-//  ElementMaterialTimeUpdate();
 
   return;
 }

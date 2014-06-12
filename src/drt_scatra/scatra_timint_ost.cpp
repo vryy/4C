@@ -76,16 +76,6 @@ void SCATRA::TimIntOneStepTheta::Init()
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
 
-  //TODO: SCATRA_ELE_CLEANING
-  // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
-  //if (IsElch(scatratype_))
-  //  ComputeTimeDerivPot0(true);
-
-  // Important: this adds the required ConditionID's to the single conditions.
-  // It is necessary to do this BEFORE ReadRestart() is called!
-  // Output to screen and file is suppressed
-  //OutputElectrodeInfo(false,false);
-
   // setup krylov
   PrepareKrylovProjection();
 
@@ -162,33 +152,6 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameterForForcedIncrementalSolv
 
   eleparams.set<double>("time-step length",dta_);
   eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",theta_*dta_);
-  eleparams.set<double>("alpha_F",1.0);
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation                ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameterInitial()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",false);
-  eleparams.set<bool>("incremental solver",incremental_);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",0.0); // only different!
   eleparams.set<double>("time factor",theta_*dta_);
   eleparams.set<double>("alpha_F",1.0);
 
@@ -376,10 +339,6 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
 
-  // TODO: SCATRA_ELE_CLEANING: muss weg
-  // potential time update of time-dependent materials
-//  ElementMaterialTimeUpdate();
-
   return;
 }
 
@@ -396,12 +355,6 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   // for elch problems with moving boundary
   if (isale_)
     output_->WriteVector("trueresidual", trueresidual_);
-
-  //TODO: SCATRA_ELE_CLEANING: muss weg
-  if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
-  {
-   output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
-  }
 
   return;
 }

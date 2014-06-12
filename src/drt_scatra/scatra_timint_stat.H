@@ -96,9 +96,6 @@ protected:
   /// set time parameter for element evaluation for forced incremental solve
   virtual void SetElementTimeParameterForForcedIncrementalSolve();
 
-  /// set time parameter for element evaluation at initial time = 0.0
-  virtual void SetElementTimeParameterInitial();
-
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep(){
     // compute initial field for electric potential (ELCH)

@@ -123,7 +123,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressureIntermediateValues()
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure() //TODO: parameterlist
+void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
 {
   // compute temperature at n+alpha_F
   phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
@@ -164,9 +164,6 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure() //TODO: parameterlist
 
   // set action for elements
   eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
-
-  //TODO: SCATRA_ELE_CLEANING
-  eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint      = 0.0;
