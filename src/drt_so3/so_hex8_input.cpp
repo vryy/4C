@@ -55,7 +55,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   linedef->ExtractString("EAS",buffer);
 
   // full EAS technology
-  if      (buffer=="full")
+  if (buffer=="full")
   {
     eastype_ = soh8_easfull;
     neas_ = 21;               // number of eas parameters for full EAS
@@ -76,6 +76,9 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   }
   else
     dserror("Reading of SO_HEX8 EAS technology failed");
+
+  if (kintype_ == soh8_linear && eastype_ != soh8_easnone)
+    dserror("Linear kinematics and EAS element technology not implemented!");
 
   return true;
 }
