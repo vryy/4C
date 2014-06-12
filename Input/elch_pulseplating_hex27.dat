@@ -232,7 +232,7 @@ NDSURF                          2
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-//                              anode
+//                              cathode
 E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.348 2.408 4.12 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           1
