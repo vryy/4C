@@ -558,7 +558,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 
 
 /*----------------------------------------------------------------------*
- | calculate normals vectors                  moved to here rauch 04/14 |
+ | calculate normals vectors                                   vg 03/09 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcNormalVectors(Teuchos::ParameterList&           params,
@@ -595,7 +595,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcNormalVectors(Teuchos::Para
 
 
 /*----------------------------------------------------------------------*
- | calculate loma therm pressure                moved here rauch 03/14  |
+ | calculate loma therm pressure                              vg 03/09  |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcLomaThermPress(
