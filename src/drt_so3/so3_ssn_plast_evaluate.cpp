@@ -1097,7 +1097,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
         ifactor = shapefunct(inod) * factor;
         for (int jnod=0; jnod<nen_; ++jnod)
         {
-          massfactor = shapefunct(inod) * ifactor;     // intermediate factor
+          massfactor = shapefunct(jnod) * ifactor;     // intermediate factor
           (*massmatrix)(3*inod+0,3*jnod+0) += massfactor;
           (*massmatrix)(3*inod+1,3*jnod+1) += massfactor;
           (*massmatrix)(3*inod+2,3*jnod+2) += massfactor;
