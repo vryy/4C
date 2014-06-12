@@ -317,7 +317,7 @@ void STR::UQ::MCMatParManager::CreateNewRealizationOfRandomFields(unsigned int m
   // loop over num stoch parameter
   for(int i=0;i<numstochparams_; i++)
   {
-    randomfields_[i]->CreateNewSample(myseed);
+    randomfields_[i]->CreateNewSample(myseed+(i*51200));
   }
 }
 

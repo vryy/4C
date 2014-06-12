@@ -27,7 +27,6 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "gen_randomfield.H"
 #include "randomfield.H"
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
@@ -140,12 +139,6 @@ STR::UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
 
 
   reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
-
-
-  // store rf at all element centers
-  rf_values_ = Teuchos::rcp(new std::vector<double>(discret_->NumMyColElements(),0.0));
-
-
 
   write_rv_to_file_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"WRITE_RV_TO_FILE");
 
@@ -297,7 +290,6 @@ void STR::UQ::MLMC::Integrate()
     }
     ResetPrestress();
     const double t1 = Teuchos::Time::wallTime();
-    //SetupStochMat((random_seed+(unsigned int)numb_run_));
     my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),1.0,false);
     const double t2 = Teuchos::Time::wallTime();
     discret_->Comm().Barrier();
@@ -430,8 +422,6 @@ void STR::UQ::MLMC::Integrate()
   {
     WriteStatOutput();
   }
-
-  //ReadResultsFromLowerLevel(12);
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -518,7 +508,6 @@ void STR::UQ::MLMC::IntegrateNoReset()
         {
         
           // for first run do normal integration
-          //SetupStochMatDet(cont_blend_value_);
           my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),0.0,false);
           structadaptor.Integrate();
           // get all information
@@ -678,7 +667,6 @@ int STR::UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned i
        if(!re_use_rf)
        {
          t2_ = Teuchos::Time::wallTime();
-         //BlendStochMat((random_seed+(unsigned int)numb_run_), false , cont_blend_value_ ,gamma);
          my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,re_use_rf);
          t3_ = Teuchos::Time::wallTime();
          // we only want to setupt once hence
@@ -686,7 +674,6 @@ int STR::UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned i
        }
        else if(re_use_rf)
        {
-         //BlendStochMat((random_seed+(unsigned int)numb_run_), true , cont_blend_value_ ,gamma);
          my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,re_use_rf);
        }
        error=structadaptor.Integrate();
@@ -707,7 +694,6 @@ int STR::UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned i
        structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // reset old maxtime
        structadaptor.SetTimeEnd(endtime);
-       //BlendStochMat((random_seed+(unsigned int)numb_run_),true,cont_blend_value_,gamma);
        my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,true);
        error = structadaptor.Integrate();
        if(error)
@@ -721,7 +707,6 @@ int STR::UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned i
        //measure time only if we really compute the random field (k=0)
        if(!k)
          t2_ = Teuchos::Time::wallTime();
-       //BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , cont_blend_value_ ,gamma);
        my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,(bool)k);
        if(!k)
          t3_ = Teuchos::Time::wallTime();
@@ -786,246 +771,6 @@ void STR::UQ::MLMC::SetupStochMatDet(double value)
   }
 
 }
-// Setup Material Parameters in each element based on Random Field
-void STR::UQ::MLMC::SetupStochMat(unsigned int random_seed)
-{
-  // element center
-  std::vector<double> ele_c_location;
-
-  // flag have init stochmat??
-  int stochmat_flag=0;
-  // Get parameters from stochastic matlaw
-  const int myrank = discret_->Comm().MyPID();
-
-  // loop all materials in problem
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-  if (myrank == 0)
-    IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
-  for (curr=mats.begin(); curr != mats.end(); curr++)
-  {
-    const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
-    switch(actmat->Type())
-    {
-       case INPAR::MAT::m_aaaneohooke:
-       {
-         stochmat_flag=1;
-         MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-         if (!params) dserror("Cannot cast material parameters");
-       }
-       break;
-      default:
-      {
-       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
-       break;
-      }
-
-    }
-  } // EOF loop over mats
-  if (!stochmat_flag) // ignore unknown materials ?
-  {
-    dserror("No stochastic material supplied");
-  }
-
-  // for doing quick deterministic computations instead of using a field use det_value instead
-  // we do this so we can use our custom element output while doing deterministic simulation
-  if (!use_det_value_)
-  {
-    if (numb_run_-start_run_== 0 )
-    {
-      random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
-    }
-    else
-    {
-      random_field_->CreateNewSample(random_seed);
-    }
-  }
-
-  // get epetra vector in elecol layout
-  Teuchos::RCP<Epetra_Vector> my_param = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-   // loop over all elements
-  for (int i=0; i< (discret_->NumMyColElements()); i++)
-  {
-    if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke)
-    {
-      std::vector<double> ele_center;
-      ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
-      if(use_det_value_)
-      {
-        (*my_param)[i]=det_value_;
-        IO::cout << "WARNING NOT USING RANDOM FIELD BUT A DET_VALUE OF " << det_value_<<"  INSTEAD" << IO::endl;
-      }
-      else
-      {
-        // get dim of field
-        if(random_field_->Dimension()==2)
-        {
-          //special hack here assuming circular geometry with r=25 mm
-          double phi= acos(ele_center[0]/25);
-          //compute x coord
-          ele_center[0]=phi*25;
-          ele_center[1]=ele_center[2];
-        }
-        if (i==0)
-          (*my_param)[i] = random_field_->EvalFieldAtLocation(ele_center,false,true);
-        else
-          (*my_param)[i] = random_field_->EvalFieldAtLocation(ele_center,false,false);
-      }
-    }
-    else
-    {
-      (*my_param)[i]= 0.0; // set mat param to zero
-    }
-  } // EOF loop elements
-  // now we have filled the vector and we can set it
-
-  // loop all materials in problem
-  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr2;
-  for (curr2=mats.begin(); curr2 != mats.end(); curr2++)
-  {
-    const Teuchos::RCP<MAT::PAR::Material> actmat = curr2->second;
-    switch(actmat->Type())
-    {
-       case INPAR::MAT::m_aaaneohooke:
-       {
-         MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-         if (!params) dserror("Cannot cast material parameters");
-         params->SetParameter(params->beta ,my_param);
-       }
-       break;
-      default:
-      {
-       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
-       break;
-      }
-    }
-  } // EOF loop over mats
-}
-
-// Compute Stochmat parameter as linear combination
-// beta= (1-gamma)beta_old+ gamma* beta_new, where beta_old is used for all elements
-void STR::UQ::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, double beta_old, double gamma)
-{
-  // quick check whether we can reuse rf_values
-  if(reuse_rf_values)
-  {
-    if(rf_values_->size() == 0)
-      dserror("random field has not been initializes");
-  }
-  // element center
-  std::vector<double> ele_c_location;
-
-  // flag have init stochmat??
-  int stochmat_flag=0;
-  // Get parameters from stochastic matlaw
-  const int myrank = discret_->Comm().MyPID();
-
-  // loop all materials in problem
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-  if (myrank == 0)
-    IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
-  for (curr=mats.begin(); curr != mats.end(); curr++)
-  {
-    const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
-    switch(actmat->Type())
-    {
-       case INPAR::MAT::m_aaaneohooke:
-       {
-         stochmat_flag=1;
-         MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-         if (!params) dserror("Cannot cast material parameters");
-       }
-       break;
-      default:
-      {
-       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
-       break;
-      }
-
-    }
-  } // EOF loop over mats
-  if (!stochmat_flag)// ignore unknown materials ?
-  {
-    //IO::cout << "Mat Type   " << actmat->Type() << IO::endl;
-    dserror("No stochastic material supplied");
-  }
-
-  // get epetra vector in elecol layout
-  Teuchos::RCP<Epetra_Vector> my_param = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-  // get elements on proc use col map to init ghost elements as well
-
-  //Teuchos::RCP<Epetra_Vector> my_ele = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-  // for doing quick deterministic computations instead of using a field use det_value instead
-  // we do this so we can use our custom element output while doing deterministic simulation
-  if (!reuse_rf_values)
-  {
-    // first run uses deterministic value for all elements hence create rf here in first real run
-    if (numb_run_-start_run_== 1 )
-    {
-      random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
-    }
-    else
-    {
-      random_field_->CreateNewSample(random_seed);
-    }
-  }
-
-  // loop over all elements
-  for (int i=0; i< (discret_->NumMyColElements()); i++)
-  {
-    if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke)
-    {
-      std::vector<double> ele_center;
-      ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
-      // get dim of field
-      if(random_field_->Dimension()==2)
-      {
-        //special hack here assuming circular geometry with r=25 mm
-        double phi= acos(ele_center[0]/25);
-        //compute x coord
-        ele_center[0]=phi*25;
-        ele_center[1]=ele_center[2];
-      }
-      // store all values in
-      if(!reuse_rf_values)
-      {
-        rf_values_->at(i)=random_field_->EvalFieldAtLocation(ele_center,false,false);
-      }
-      // compute blended stopro parameter
-      (*my_param)[i]= beta_old*(1-gamma) + (gamma)*rf_values_->at(i);
-    }
-    else
-    { // ste zero for other non stochastic elements
-      (*my_param)[i]= 0.0;
-    }
-  } // EOF loop elements
-
-
-  // loop all materials in problem
-   std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr2;
-   for (curr2=mats.begin(); curr2 != mats.end(); curr2++)
-   {
-     const Teuchos::RCP<MAT::PAR::Material> actmat = curr2->second;
-     switch(actmat->Type())
-     {
-        case INPAR::MAT::m_aaaneohooke:
-        {
-          MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-          if (!params) dserror("Cannot cast material parameters");
-          params->SetParameter(params->beta ,my_param);
-        }
-        break;
-       default:
-       {
-        IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
-        break;
-       }
-     }
-   } // EOF loop over mats
-
-}
-
 
 void STR::UQ::MLMC::ResetPrestress()
 {

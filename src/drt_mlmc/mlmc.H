@@ -59,7 +59,6 @@ namespace STR
 
 namespace UQ
 {
-class GenRandomField;
 class RandomField;
 class MCMatParManager;
 
@@ -141,12 +140,6 @@ private:
 
   //! brief flag to reduce output to files as well as stdout
   bool reduced_output_;
-
-  //! brief randomfield stored in class variable so that we can reuse it in every run
-  Teuchos::RCP<GenRandomField> random_field_;
-
-  //! \brief vector to store RF values for efficient parameter continuation
-  Teuchos::RCP<std::vector<double> > rf_values_;
 
   //! brief vector which contains all element numbers we need the output from
   std::vector <int> AllMyOutputEleIds_;

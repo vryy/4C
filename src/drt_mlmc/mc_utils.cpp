@@ -12,7 +12,6 @@ Maintainer: Jonas Biehler
  *!----------------------------------------------------------------------*/
 
 #include "mlmc.H"
-#include "gen_randomfield.H"
 #include "randomfield.H"
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"

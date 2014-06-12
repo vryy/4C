@@ -1501,41 +1501,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      "Write random variables used for random field generation to file",
                                      yesnotuple,yesnovalue,&mlmcp);
 
-
-  // Parameters to simulate random fields
-  IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
-  IntParameter("SIZE_PER_DIM",512,"Number of points per dimension",&mlmcp);
-  DoubleParameter("CORRLENGTH",30,"Correlation length of Random Field",&mlmcp);
-  IntParameter("NUM_COS_TERMS",64,"Number of terms in geometric row ",&mlmcp);
-  setStringToIntegralParameter<int>("SPECTRAL_MATCHING","Yes",
-                                    "Perform spectral matching with psd 1 yes ",
-                                    yesnotuple,yesnovalue,&mlmcp);
-  DoubleParameter("SIGMA",1.0,"sigma of random field",&mlmcp);
-  DoubleParameter("MEAN",0.0,"Mean value of random field",&mlmcp);
-  setStringToIntegralParameter<int>("CORRSTRUCT","gaussian",
-                              "Correlation structure of random field",
-                              tuple<std::string>("Gaussian","gaussian"),
-                              tuple<int>(
-                                  INPAR::MLMC::corr_gaussian,INPAR::MLMC::corr_gaussian),
-                              &mlmcp);
-  setStringToIntegralParameter<int>("MARGINALPDF","gaussian","Target marginal probability distribution function",
-                                    tuple<std::string>("Gaussian","gaussian",
-                                                        "Beta", "beta",
-                                                        "lognormal", "Lognormal"),
-                                    tuple<int>(
-                                        INPAR::MLMC::pdf_gaussian,INPAR::MLMC::pdf_gaussian,
-                                        INPAR::MLMC::pdf_beta,INPAR::MLMC::pdf_beta,
-                                        INPAR::MLMC::pdf_lognormal,INPAR::MLMC::pdf_lognormal),
-                                 &mlmcp);
-  DoubleParameter("NONGAUSSPARAM1",0,"First parameter for non-gaussian pdf",&mlmcp);
-  DoubleParameter("NONGAUSSPARAM2",0,"Second parameter for non-gaussian pdf",&mlmcp);
-  DoubleParameter("KAPPA_U",6.283185307,"CUTOFF WAVE NUMBER FOR PSD",&mlmcp);
-  setStringToIntegralParameter<int>("CALC_METHOD","FFT",
-                                "Calculation method for the random field",
-                                tuple<std::string>("FFT","COS"),
-                                tuple<int>(
-                                    INPAR::MLMC::calc_m_fft,INPAR::MLMC::calc_m_cos),
-                                &mlmcp);
   // For testing
   setStringToIntegralParameter<int>("USEDETVALUE","No",
                                      "Instead of doing proper MC simulation use DETVALUE for the stochastic parameter",
