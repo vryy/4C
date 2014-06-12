@@ -109,10 +109,10 @@ protected:
   TimIntGenAlpha (const TimIntGenAlpha& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter();
+  virtual void SetElementTimeParameter(bool forceiterativesolver=false);
 
-  /// set time parameter for element evaluation for forced incremental solve
-  virtual void SetElementTimeParameterForForcedIncrementalSolve();
+  /// set time parameter for element evaluation applying an iterative backward Euler scheme
+  virtual void SetElementTimeParameterBackwardEuler();
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep();

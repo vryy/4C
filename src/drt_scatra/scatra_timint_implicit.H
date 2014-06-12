@@ -490,15 +490,21 @@ protected:
   //! @name set element parameters
   /*========================================================================*/
 
-  virtual void SetElementTimeParameter()=0;
+  virtual void SetElementTimeParameter(bool forceiterativesolver=false)=0;
 
-  virtual void SetElementTimeParameterForForcedIncrementalSolve()=0;
+  virtual void SetElementTimeParameterBackwardEuler(){return;};
 
-  //virtual void SetElementTimeParameterInitial()=0;
-
+  //! Set general element parameter including stabilization
   virtual void SetElementGeneralScaTraParameter();
 
+  //! Set general element parameter with deactivated stabilization
+  virtual void SetElementGeneralScaTraParameterDeactivatedStab();
+
+  //! Set element parameter specific for turbulence
   void SetElementTurbulenceParameter();
+
+  //! Deactivate element parameter specific for turbulence
+  void SetElementTurbulenceParameterDeactivated();
 
   /*========================================================================*/
   //! @name general framework

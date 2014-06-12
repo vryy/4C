@@ -89,7 +89,7 @@ SCATRA::TimIntStationary::~TimIntStationary()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetElementTimeParameter()
+void SCATRA::TimIntStationary::SetElementTimeParameter(bool forceiterativesolver)
 {
   Teuchos::ParameterList eleparams;
 
@@ -99,35 +99,10 @@ void SCATRA::TimIntStationary::SetElementTimeParameter()
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",true);
-  eleparams.set<bool>("incremental solver",incremental_);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",1.0);
-  eleparams.set<double>("alpha_F",1.0);
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation                ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetElementTimeParameterForForcedIncrementalSolve()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",true);
-  // this is important to have here and the only difference compared to SetElementTimeParameter()
-  eleparams.set<bool>("incremental solver",true);
+  if(forceiterativesolver==false)
+    eleparams.set<bool>("incremental solver",incremental_);
+  else
+    eleparams.set<bool>("incremental solver",true);
 
   eleparams.set<double>("time-step length",dta_);
   eleparams.set<double>("total time",time_);

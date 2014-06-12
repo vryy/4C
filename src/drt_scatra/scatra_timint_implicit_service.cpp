@@ -230,7 +230,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       eleparams.set<int>("scatratype",scatratype_);
 
       // other parameters that might be needed by the elements
-      SetElementTimeParameterForForcedIncrementalSolve();
+      // the resulting system has to be solved incrementally
+      SetElementTimeParameter(true);
 
       // provide velocity field and potentially acceleration/pressure field
       // (export to column map necessary for parallel evaluation)

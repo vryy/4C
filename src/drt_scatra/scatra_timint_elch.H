@@ -69,6 +69,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! set elch-specific parameter
   void SetElementGeneralScaTraParameter();
 
+  //! Set elch-specific parameter with deactivated stabilization
+  virtual void SetElementGeneralScaTraParameterDeactivatedStab();
+
   //! contains the nonlinear iteration loop
   void NonlinearSolve();
 

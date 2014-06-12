@@ -15,6 +15,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
 
 #include "../drt_inpar/inpar_elch.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/ion.H"
@@ -258,12 +259,59 @@ void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameter()
 
   // set flag for writing the flux vector fields
   eleparams.set<int>("writeflux",writeflux_);
-
   //! set vector containing ids of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+  // general elch parameter
+  eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
+  eleparams.set<int>("elchtype",elchtype_);
+  eleparams.set<int>("equpot",equpot_);
+
+  // parameters for diffusion-conduction formulation
+  eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | set all general parameters for element with deactivated stab. ehrl 06/14 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameterDeactivatedStab()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<int>("form of convective term",convform_);
+  eleparams.set("isale",isale_);
+
+  // set flag for writing the flux vector fields
+  eleparams.set<int>("writeflux",writeflux_);
+  //! set vector containing ids of scalars for which flux vectors are calculated
+  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  Teuchos::setStringToIntegralParameter<int>("STABTYPE",
+      "no_stabilization",
+      "type of stabilization (if any)",
+      Teuchos::tuple<std::string>("no_stabilization"),
+      Teuchos::tuple<std::string>("Do not use any stabilization"),
+      Teuchos::tuple<int>(
+          INPAR::SCATRA::stabtype_no_stabilization),
+          &eleparams.sublist("STABILIZATION"));
+  DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
+  DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
+        "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
 
   // general elch parameter
   eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));

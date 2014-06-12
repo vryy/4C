@@ -28,6 +28,7 @@ Maintainer: Andreas Ehrl
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/fluid_meshtying.H"
@@ -702,14 +703,54 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralScaTraParameter()
   eleparams.set<int>("form of convective term",convform_);
   eleparams.set("isale",isale_);
 
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
   // set flag for writing the flux vector fields
   eleparams.set<int>("writeflux",writeflux_);
 
   //! set vector containing ids of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | set all general parameters for element with deactivated stab. ehrl 06/14 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetElementGeneralScaTraParameterDeactivatedStab()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<int>("form of convective term",convform_);
+  eleparams.set("isale",isale_);
+
+  // set flag for writing the flux vector fields
+  eleparams.set<int>("writeflux",writeflux_);
+  //! set vector containing ids of scalars for which flux vectors are calculated
+  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  Teuchos::setStringToIntegralParameter<int>("STABTYPE",
+      "no_stabilization",
+      "type of stabilization (if any)",
+      Teuchos::tuple<std::string>("no_stabilization"),
+      Teuchos::tuple<std::string>("Do not use any stabilization"),
+      Teuchos::tuple<int>(
+          INPAR::SCATRA::stabtype_no_stabilization),
+          &eleparams.sublist("STABILIZATION"));
+  DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
+  DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
+        "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -746,6 +787,43 @@ void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameter()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | deactivate turbulence parameters for element              ehrl 06/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameterDeactivated()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+  Teuchos::setStringToIntegralParameter<int>(
+      "PHYSICAL_MODEL",
+      "no_model",
+      "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
+      Teuchos::tuple<std::string>("no_model"),
+      Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
+      Teuchos::tuple<int>(INPAR::FLUID::no_model),
+      &eleparams.sublist("TURBULENCE MODEL"));
+
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
+  // and set parameters for multifractal subgrid-scale modeling
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  eleparams.set<bool>("turbulent inflow",turbinflow_);
+
+  eleparams.set<int>("fs subgrid diffusivity",INPAR::SCATRA::fssugrdiff_no);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
 
 /*==========================================================================*/
 // general framework
@@ -768,11 +846,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   {
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
-
-    // TODO (ehrl):
-    // Calculation of initial derivative yields in different results for the uncharged particle and
-    // the binary electrolyte solution
-    // -> Check calculation procedure of the method (genalpha)
     if(not skipinitder_)
     {
       if (initialvelset_) PrepareFirstTimeStep();

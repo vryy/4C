@@ -91,10 +91,7 @@ protected:
   TimIntStationary (const TimIntStationary& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter();
-
-  /// set time parameter for element evaluation for forced incremental solve
-  virtual void SetElementTimeParameterForForcedIncrementalSolve();
+  virtual void SetElementTimeParameter(bool forceiterativesolver=false);
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep(){

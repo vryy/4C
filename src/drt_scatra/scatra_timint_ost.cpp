@@ -110,7 +110,7 @@ SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameter()
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forceiterativesolver)
 {
   Teuchos::ParameterList eleparams;
 
@@ -120,35 +120,10 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter()
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",false);
-  eleparams.set<bool>("incremental solver",incremental_);
-
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",theta_*dta_);
-  eleparams.set<double>("alpha_F",1.0);
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation                ehrl 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameterForForcedIncrementalSolve()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",false);
-  // this is important to have here and the only difference compared to SetElementTimeParameter()
-  eleparams.set<bool>("incremental solver",true);
+  if(forceiterativesolver==false)
+    eleparams.set<bool>("incremental solver",incremental_);
+  else
+    eleparams.set<bool>("incremental solver",true);
 
   eleparams.set<double>("time-step length",dta_);
   eleparams.set<double>("total time",time_);
@@ -408,73 +383,17 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   // compute initial field for electric potential (ELCH)
   CalcInitialPotentialField();
 
-  // for calculation of initial time derivative, we have to switch off all stabilization and
-  // turbulence modeling terms
-  // therefore, we have another PerEvaluate call here
-  Teuchos::ParameterList eleparams;
+  // standard general element parameter without stabilization
+  SetElementGeneralScaTraParameterDeactivatedStab();
 
-  eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+  // we also have to modify the time-parameter list (incremental solve)
+  // actually we do not need a time integration scheme for calculating the initial time derivatives,
+  // but the rhs of the standard element routine is used as starting point for this special system of equations.
+  // Therefore, the rhs vector has to be scaled correctly.
+  SetElementTimeParameter(true);
 
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<int>("form of convective term",convform_);
-  eleparams.set("isale",isale_);
-
-  // set flag for writing the flux vector fields
-  eleparams.set<int>("writeflux",writeflux_);
-  //! set vector containing ids of scalars for which flux vectors are calculated
-  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-  Teuchos::setStringToIntegralParameter<int>("STABTYPE",
-      "no_stabilization",
-      "type of stabilization (if any)",
-      Teuchos::tuple<std::string>("no_stabilization"),
-      Teuchos::tuple<std::string>("Do not use any stabilization"),
-      Teuchos::tuple<int>(
-          INPAR::SCATRA::stabtype_no_stabilization),
-          &eleparams.sublist("STABILIZATION"));
-  DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
-  DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
-        "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  // we also have to modify the time-parameter list
-  SetElementTimeParameterForForcedIncrementalSolve();
-
-  // add turbulence list here and set model to no model
-  Teuchos::ParameterList eleturbparams;
-
-  eleturbparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
-
-  // set type of scalar transport problem
-  eleturbparams.set<int>("scatratype",scatratype_);
-
-  eleturbparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
-  Teuchos::setStringToIntegralParameter<int>(
-      "PHYSICAL_MODEL",
-      "no_model",
-      "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
-      Teuchos::tuple<std::string>("no_model"),
-      Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
-      Teuchos::tuple<int>(INPAR::FLUID::no_model),
-      &eleturbparams.sublist("TURBULENCE MODEL"));
-
-  // set model-dependent parameters
-  eleturbparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
-  // and set parameters for multifractal subgrid-scale modeling
-  eleturbparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
-
-  eleturbparams.set<bool>("turbulent inflow",turbinflow_);
-
-  eleturbparams.set<int>("fs subgrid diffusivity",INPAR::SCATRA::fssugrdiff_no);
-
-  // call standard loop over elements
-  discret_->Evaluate(eleturbparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  // deactivate turbulence settings
+  SetElementTurbulenceParameterDeactivated();
 
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
