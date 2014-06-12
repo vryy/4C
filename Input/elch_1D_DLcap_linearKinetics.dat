@@ -29,9 +29,9 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 THETA                           0.67
 TIMEINTEGR                      One_Step_Theta // Gen_Alpha
-ALPHA_M          		0.83333333333333
-ALPHA_F          		0.66666666666666
-GAMMA            		0.66666666666666
+ALPHA_M                         0.83333333333333
+ALPHA_F                         0.66666666666666
+GAMMA                           0.66666666666666
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
@@ -41,20 +41,20 @@ MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
-INITPOTCALC			no
-SCATRATYPE			Elch
+INITPOTCALC                     no
+SCATRATYPE                      Elch
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
-ABSTOLRES			1e-20
+ABSTOLRES                       1e-20
 ITEMAX                          2
 EXPLPREDICT                     no // yes -> oszillations for neutral
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE         		no_stabilization
-DEFINITION_TAU   		Zero
-EVALUATION_MAT   		integration_point
-EVALUATION_TAU   		integration_point
+STABTYPE                        no_stabilization
+DEFINITION_TAU                  Zero
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
 ------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        DiffCond
 ITEMAX                          2

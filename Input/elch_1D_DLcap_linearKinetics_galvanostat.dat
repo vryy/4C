@@ -70,7 +70,7 @@ GSTATCONVTOL                    1e-12
 GSTATCURTOL                     1e-12
 GSTATCURVENO                    4
 GSTATITEMAX                     30
-GSTAT_LENGTH_CURRENTPATH        0.1
+GSTAT_LENGTH_CURRENTPATH        -1.0
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
 EQUPOT                          divi

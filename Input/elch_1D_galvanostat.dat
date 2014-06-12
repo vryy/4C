@@ -64,7 +64,7 @@ GSTATCONVTOL                    1e-8
 GSTATCURTOL                     1e-8
 GSTATCURVENO                    1
 GSTATITEMAX                     30
-GSTAT_LENGTH_CURRENTPATH        0.3
+GSTAT_LENGTH_CURRENTPATH        -1.0
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
 EQUPOT                          ENC
