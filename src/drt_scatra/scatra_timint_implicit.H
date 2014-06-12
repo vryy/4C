@@ -126,7 +126,6 @@ public:
   virtual void SetupMeshtying();
 
   //! Initialization of turbulence models
-  //TODO: SCATRA_ELE_CLEANING: copy pointer?
   void InitTurbulenceModel(
       const Epetra_Map* dofrowmap,
       const Epetra_Map* noderowmap);
@@ -941,7 +940,7 @@ protected:
   //! @name electrophysiology
   /*========================================================================*/
 
-  //TODO: SCATRA_ELE_CLEANING
+  //TODO: SCATRA_ELE_CLEANING: heart
   //! activation_time at times n+1
   Teuchos::RCP<Epetra_Vector> activation_time_np_;
 
@@ -1040,7 +1039,7 @@ protected:
   //! @name Biofilm specific stuff
   /*========================================================================*/
 
-  //TODO: SCATRA_ELE_CLEANING
+  //TODO: SCATRA_ELE_CLEANING: biofilm
   //! scatra fluid displacement due to growth
   Teuchos::RCP<Epetra_MultiVector> scfldgrdisp_;
 

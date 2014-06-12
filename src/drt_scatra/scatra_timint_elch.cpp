@@ -781,12 +781,8 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   // necessary to perform galvanostatic simulations, for instance.
   // Think about: double layer effects for genalpha time-integratio scheme
 
-  //TODO: SCATRA_ELE_CLEANING: Boundary element auf Parameterliste
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
-
-  // add element parameters according to time-integration scheme
-  //AddSpecificTimeIntegrationParameters(eleparams);
 
   // values to be computed
   eleparams.set("currentintegral",0.0);
@@ -1302,12 +1298,16 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const double tol = elchparams_->get<double>("GSTATCONVTOL");
       const double effective_length = elchparams_->get<double>("GSTAT_LENGTH_CURRENTPATH");
 
-      const double potold = cond[condid_cathode]->GetDouble("pot");
-      double potnew = potold;
-      double actualcurrent(0.0);
-      double currtangent(0.0);
-      double currresidual(0.0);
-      double electrodesurface(0.0);
+      // There are maximal two electrode conditions by definition
+      // current flow i at electrodes
+      Teuchos::RCP<std::vector<double> > actualcurrent = Teuchos::rcp(new std::vector<double>(2,0.0));
+      // residual at electrodes = i*timefac
+      Teuchos::RCP<std::vector<double> > currresidual= Teuchos::rcp(new std::vector<double>(2,0.0));
+      Teuchos::RCP<std::vector<double> > currtangent = Teuchos::rcp(new std::vector<double>(2,0.0));
+      Teuchos::RCP<std::vector<double> > electrodesurface = Teuchos::rcp(new std::vector<double>(2,0.0));
+      Teuchos::RCP<std::vector<double> > electrodepot = Teuchos::rcp(new std::vector<double>(2,0.0));
+      Teuchos::RCP<std::vector<double> > meanoverpot = Teuchos::rcp(new std::vector<double>(2,0.0));
+      double meanelectrodesurface(0.0);
       //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
       double newtonrhs(0.0);
 
@@ -1323,173 +1323,203 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       double currtangent_anode(0.0);
       double currtangent_cathode(0.0);
       double potinc_ohm(0.0);
-      double electrodepot(0.0);
-      double meanoverpot(0.0);
-
       double potdiffbulk(0.0);
       double potdiffcell(0.0);
+
+      if(cond.size()>2)
+        dserror("The framework may not work for geometrical setups containing more than two electrodes! \n"
+                "If you need it, check the framework exactly!!");
 
       // loop over all BV
       // degenerated to a loop over 2 (user-specified) BV conditions
       for (unsigned int icond = 0; icond < cond.size(); icond++)
       {
-        // consider only the specified electrode kinetics boundaries!
-        if ((icond != condid_cathode)and((icond != condid_anode)))
-          continue;
-
-        actualcurrent = 0.0;
-        currtangent = 0.0;
-        currresidual = 0.0;
-        electrodepot = 0.0;
-        meanoverpot = 0.0;
-
         // note: only the potential at the boundary with id condid_cathode will be adjusted!
         OutputSingleElectrodeInfo(
             cond[icond],
             icond,
             false,
             false,
-            actualcurrent,
-            currtangent,
-            currresidual,
-            electrodesurface,
-            electrodepot,
-            meanoverpot
+            (*actualcurrent)[icond],
+            (*currtangent)[icond],
+            (*currresidual)[icond],
+            (*electrodesurface)[icond],
+            (*electrodepot)[icond],
+            (*meanoverpot)[icond]
             );
 
-        // bulk voltage loss = V_A - eta_A - V_C + eta_C
-        // cell voltage loss = V_A - V_C
-        if (icond==condid_anode)
+        if(cond.size()==2)
         {
-          potdiffcell += electrodepot;
-          potdiffbulk += (electrodepot - (meanoverpot));
+          // In the case the actual current is zero, we assume that the first electrode is the cathode
+          if((*actualcurrent)[icond]<0.0 and condid_cathode != icond)
+            dserror("The defined GSTATCONDID_CATHODE does not match the actual current flow situation!!");
+          else if((*actualcurrent)[icond]>0.0 and condid_anode != icond)
+            dserror("The defined GSTATCONDID_ANODE does not match the actual current flow situation!!");
         }
-        if (icond==condid_cathode)
+      } // end loop over electrode kinetics
+
+      if(cond.size()==1)
+      {
+        if(condid_cathode != 0 or condid_anode!=1)
+          dserror("The defined GSTATCONDID_CATHODE and GSTATCONDID_ANODE is wrong for a setup with only one electrode!!\n"
+                  "Choose: GSTATCONDID_CATHODE=0 and GSTATCONDID_ANODE=1");
+      }
+
+      // get the applied electrode potential of the cathode
+      const double potold = cond[condid_cathode]->GetDouble("pot");
+      double potnew = potold;
+
+      // bulk voltage loss = V_A - eta_A - (V_C -eta_C)
+      potdiffbulk = ((*electrodepot)[condid_anode]-(*meanoverpot)[condid_anode])-((*electrodepot)[condid_cathode]-(*meanoverpot)[condid_cathode]);
+      // cell voltage loss = V_A - V_C
+      potdiffcell=(*electrodepot)[condid_anode]-(*electrodepot)[condid_cathode];
+      // tanget at anode and cathode
+      currtangent_anode=(*currtangent)[condid_anode];
+      currtangent_cathode=(*currtangent)[condid_cathode];
+
+      // The linarization of potential increment is based on the cathode side!!
+      {
+        //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
+        // newtonrhs = -residual, with the definition:  residual := timefac*(-I + I_target)
+        newtonrhs = + (*currresidual)[condid_cathode] - (timefac*targetcurrent); // newtonrhs is stored only from cathode!
+        if (myrank_==0)
         {
-          potdiffcell -= electrodepot;
-          potdiffbulk -= (electrodepot - (meanoverpot));
+          // format output
+          std::cout.precision(3);
+          std::cout<<"\n  GALVANOSTATIC MODE:\n";
+          std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
+          std::cout<<"  | Convergence check: " <<std::endl;
+          std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
+          std::cout<<"  | iteration:                          "<<setw(7)<<std::right<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
+          std::cout<<"  | actual reaction current at cathode: "<<std::scientific<<setw(12)<<std::right<<(*actualcurrent)[condid_cathode]<<std::endl;
+          std::cout<<"  | required total current at cathode:  "<<setw(12)<<std::right<<targetcurrent<<std::endl;
+          std::cout<<"  | negative residual (rhs):            "<<setw(12)<<std::right<<newtonrhs<<std::endl;
+          std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
         }
 
-        // store the tangent for later usage
-        if (icond==condid_cathode)
-          currtangent_cathode=currtangent;
-        if (icond==condid_anode)
-          currtangent_anode=currtangent;
-
-        if (icond==condid_cathode)
+        if (gstatnumite_ > gstatitemax)
         {
-          //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
-          // newtonrhs = -residual, with the definition:  residual := timefac*(-I + I_target)
-          newtonrhs = + currresidual - (timefac*targetcurrent); // newtonrhs is stored only from cathode!
           if (myrank_==0)
           {
-            std::cout<<"\nGALVANOSTATIC MODE:\n";
-            std::cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
-            std::cout<<"  actual reaction current = "<<std::scientific<<actualcurrent<<std::endl;
-            std::cout<<"  required total current  = "<<targetcurrent<<std::endl;
-            std::cout<<"  negative residual (rhs) = "<<newtonrhs<<std::endl<<std::endl;
+            std::cout<<"  | --> maximum number iterations reached. Not yet converged!"<<std::endl;
+            std::cout<<"  +--------------------------------------------------------------------------" <<std::endl <<std::endl;
           }
-
-          if (gstatnumite_ > gstatitemax)
-          {
-            if (myrank_==0) std::cout<< std::endl <<"  --> maximum number iterations reached. Not yet converged!"<<std::endl<<std::endl;
-            return true; // we proceed to next time step
-          }
-          else if (abs(newtonrhs)< gstatcurrenttol)
-          {
-            if (myrank_==0) std::cout<< std::endl <<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<std::endl<<std::endl;
-            return true; // we proceed to next time step
-          }
-          // electric potential increment of the last iteration
-          else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
-          {
-            if (myrank_==0) std::cout<< std::endl <<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<std::endl<<std::endl;
-            return true; // galvanostatic control has converged
-          }
-
-          // update applied electric potential
-          // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
-          //
-          // I_0 = I_BV1 = I_ohmic = I_BV2
-          // R(I_target, I) = R_BV1(I_target, I) = R_ohmic(I_target, I) = -R_BV2(I_target, I)
-          // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
-          // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
-
-          potinc_ohm=(-1.0*effective_length*newtonrhs)/((*sigma_)[numscal_]*timefac*electrodesurface);
-
-          // print additional information
+          return true; // we proceed to next time step
+        }
+        else if (abs(newtonrhs)< gstatcurrenttol)
+        {
           if (myrank_==0)
           {
-            std::cout<< "  area (condid " << icond <<")               = " << electrodesurface << std::endl;
-            std::cout<< "  actualcurrent - targetcurrent = " << (actualcurrent-targetcurrent) << std::endl;
-            std::cout<< "  conductivity                  = " << (*sigma_)[numscal_] << std::endl;
+            std::cout<<"  | --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" << std::endl;
+            std::cout<<"  +--------------------------------------------------------------------------" <<std::endl <<std::endl;
           }
+          return true; // we proceed to next time step
         }
+        // electric potential increment of the last iteration
+        else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
+        {
+          if (myrank_==0)
+          {
+            std::cout<<"  | --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<std::endl;
+            std::cout<<"  +--------------------------------------------------------------------------" <<std::endl <<std::endl;
+          }
+          return true; // galvanostatic control has converged
+        }
+
+        // update applied electric potential
+        // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
+
+        // 2 different versions:
+        // I_0 = I_BV1 = I_ohmic = I_BV2
+        // R(I_target, I) = R_BV1(I_target, I) = R_ohmic(I_target, I) = -R_BV2(I_target, I)
+        // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
+        // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
+        potinc_ohm=(-1.0*effective_length*newtonrhs)/((*sigma_)[numscal_]*timefac*(*electrodesurface)[condid_cathode]);
+
+        // electrode surface of the cathode
+        meanelectrodesurface=(*electrodesurface)[condid_cathode];
 
         // safety check
-        if (abs(currtangent)<EPS13)
-          dserror("Tangent in galvanostatic control is near zero: %lf",currtangent);
-
+        if (abs((*currtangent)[condid_cathode])<EPS13)
+          dserror("Tangent in galvanostatic control is near zero: %lf",(*currtangent)[condid_cathode]);
       }
-      // end loop over electrode kinetics
 
-      // actual potential difference is used to calculate the current path length
-      // -> it is possible to compute the new ohmic potential step
-      //    without the input parameter GSTAT_LENGTH_CURRENTPATH
-      //
-      // for only one BV boundary condition, keep the original approach using GSTAT_LENGTH_CURRENTPATH
-      if (cond.size()>=2)
+      if(cond.size()==2)
       {
-        if(myrank_==0)
+        // mean electrode surface of the cathode abd anode
+        meanelectrodesurface=((*electrodesurface)[0]+(*electrodesurface)[1])/2;
+
+        // actual potential difference is used to calculate the current path length
+        // -> it is possible to compute the new ohmic potential step
+        //    without the input parameter GSTAT_LENGTH_CURRENTPATH
+        if (effective_length==-1.0)
         {
-          std::cout << std::endl <<"  cell potential difference = "<<potdiffcell<<std::endl;
-          std::cout<<"  bulk potential difference = "<<potdiffbulk<<std::endl;
+          potinc_ohm = (potdiffbulk*newtonrhs)/(timefac*(*actualcurrent)[condid_cathode]);
         }
-        if (abs(actualcurrent) > EPS10)
-        {
-          if(myrank_==0)
-          {
-            std::cout<<"  Defined GSTAT_LENGTH_CURRENTPATH:   "<< effective_length << std::endl;
-            std::cout<<"  Suggested GSTAT_LENGTH_CURRENTPATH: "<< (potdiffbulk/(actualcurrent))*((*sigma_)[numscal_]*electrodesurface)<<std::endl;
-            std::cout<<"  dV/dI =  "<< (-1.0)*potdiffbulk/actualcurrent << std::endl;
-            std::cout<<"  potinc_ohm (CURRENTPATH based): "<< potinc_ohm <<std::endl;
-            std::cout<<"  New guess for potinc_ohm:       "<< (-1.0)*(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<std::endl;
-          }
-          // TODO: Which formulation is the best?
-          potinc_ohm = (-1.0)*(potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
-        }
-        else
-        {
+
+        // Do not update the cell potential for small currents
+        if(abs((*actualcurrent)[condid_cathode]) < EPS10)
           potinc_ohm = 0.0;
+
+        // the current flow at both electrodes has to be the same within the solution tolerances
+        if(abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])>EPS8)
+        {
+          if (myrank_==0)
+          {
+            std::cout.precision(3);
+            std::cout << "Warning!!!" << std::endl;
+            std::cout << "The difference of the current flow at anode and cathode is " << abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])
+                      << " larger than " << EPS8 << std::endl;
+          }
         }
       }
 
       // Newton step:  Jacobian * \Delta pot = - Residual
-      std::cout << "  currtangent_cathode:  " << currtangent_cathode << std::endl;
       const double potinc_cathode = newtonrhs/((-1)*currtangent_cathode);
       double potinc_anode = 0.0;
       if (abs(currtangent_anode)>EPS13) // anode surface overpotential is optional
       {
-        std::cout << "  currtangent_anode:    " << currtangent_anode << std::endl;
         potinc_anode = newtonrhs/((-1)*currtangent_anode);
       }
       gstatincrement_ = (potinc_cathode+potinc_anode+potinc_ohm);
       // update electric potential
       potnew += gstatincrement_;
 
-      // print info to screen
-      if (myrank_==0)
+      if(myrank_==0)
       {
-        std::cout<<std::endl<< "  ohmic overpotential                        = " << potinc_ohm << std::endl;
-        std::cout<< "  overpotential increment cathode (condid " << condid_cathode <<") = " << potinc_cathode << std::endl;
-        if (abs(potinc_anode)>EPS12) // prevents output if an anode is not considered
-          std::cout<< "  overpotential increment anode   (condid " << condid_anode <<") = " << potinc_anode << std::endl;
-
-        std::cout<< "  total increment for potential              = " << potinc_cathode+potinc_anode+potinc_ohm << std::endl;
-        std::cout<< std::endl;
-        std::cout<< "  old electrode potential (condid "<<condid_cathode <<") = "<<potold<<std::endl;
-        std::cout<< "  new electrode potential (condid "<<condid_cathode <<") = "<<potnew<<std::endl<<std::endl;
+        std::cout<<"  | ohmic potential increment is calculated based on" <<std::endl;
+        if(effective_length != -1.0)
+          std::cout<<"  | the GSTAT_LENGTH_CURRENTPATH as defined in the input file!" <<std::endl;
+        else
+          std::cout<<"  | the ohmic resistance calculated from applied potential and current flow!" <<std::endl;
+        std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
+        std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<setw(12)<<std::right<< effective_length << std::endl;
+        if((*actualcurrent)[condid_cathode]!=0.0)
+          std::cout<<"  | Approximated GSTAT_LENGTH_CURRENTPATH:          "<<setw(12)<<std::right<< potdiffbulk/(*actualcurrent)[condid_cathode]*(*sigma_)[numscal_]*meanelectrodesurface <<std::endl;
+        std::cout<<"  | (not directly used to calculate the ohmic potential increment)"<<std::endl;
+        std::cout<<"  | New guess for:                                  "<<std::endl;
+        std::cout<<"  | - ohmic potential increment:                    "<<setw(12)<<std::right<< potinc_ohm <<std::endl;
+        std::cout<<"  | - overpotential increment cathode (condid " << condid_cathode <<"):   " <<setw(12)<<std::right<< potinc_cathode << std::endl;
+        std::cout<<"  | - overpotential increment anode (condid " << condid_anode <<"):     " <<setw(12)<<std::right<< potinc_anode << std::endl;
+        std::cout<<"  | -> total increment for potential:               " <<setw(12)<<std::right<< gstatincrement_ << std::endl;
+        std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
+        std::cout<<"  | old potential at the cathode (condid "<<condid_cathode <<"):     "<<setw(12)<<std::right<<potold<<std::endl;
+        std::cout<<"  | new potential at the cathode (condid "<<condid_cathode <<"):     "<<setw(12)<<std::right<<potnew<<std::endl;
+        std::cout<<"  | new applied potential difference (condid "<<condid_cathode <<"): "<<setw(12)<<std::right<<potdiffcell<<std::endl;
+        std::cout<<"  +--------------------------------------------------------------------------" <<std::endl<<std::endl;
       }
+
+//      // print additional information
+//      if (myrank_==0)
+//      {
+//        std::cout<< "  actualcurrent - targetcurrent = " << ((*actualcurrent)[condid_cathode]-targetcurrent) << std::endl;
+//        std::cout<< "  conductivity                  = " << (*sigma_)[numscal_] << std::endl<< std::endl;
+//        std::cout<< "  currtangent_cathode:  " << currtangent_cathode << std::endl;
+//        std::cout<< "  currtangent_anode:    " << currtangent_anode << std::endl;
+//        std::cout<< "  actualcurrent cathode:    " << (*actualcurrent)[condid_cathode] << std::endl;
+//        std::cout<< "  actualcurrent anode:  " << (*actualcurrent)[condid_anode] << std::endl;
+//      }
+
       // replace potential value of the boundary condition (on all processors)
       cond[condid_cathode]->Add("pot",potnew);
       gstatnumite_++;
@@ -1528,7 +1558,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
   if (isale_)   //provide displacement field in case of ALE
     discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
-  //TODO: SCATRA_ELE_CLEANING: Boundary element auf Parameterliste
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
