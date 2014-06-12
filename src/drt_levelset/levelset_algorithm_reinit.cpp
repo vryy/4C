@@ -83,6 +83,12 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters()
   // parameters for stabilization, which are the same as for the level-set equation (if turned on)
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
+  // set flag for writing the flux vector fields
+  eleparams.set<int>("writeflux",writeflux_);
+
+  //! set vector containing ids of scalars for which flux vectors are calculated
+  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
+
   // set level-set reitialization specific parameters
   eleparams.sublist("REINITIALIZATION") = levelsetparams_->sublist("REINITIALIZATION");
 
