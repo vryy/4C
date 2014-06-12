@@ -171,6 +171,8 @@ private:
     else
       return false;
   }
+  //! brief do we want to write rv to some text file
+  bool write_rv_to_file_;
 
    //! store some time
   double t0_;

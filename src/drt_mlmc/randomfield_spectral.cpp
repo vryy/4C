@@ -1840,4 +1840,9 @@ void STR::UQ::RandomFieldSpectral::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Ar
   }
 }
 
+void STR::UQ::RandomFieldSpectral::WriteRandomVariablesToFile(std::string filename)
+{
+  dserror("WriteRandomVariablesToFile not implemented yet for spectral field");
+}
+
 #endif

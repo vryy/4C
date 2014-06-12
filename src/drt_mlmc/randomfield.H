@@ -61,6 +61,9 @@ public:
   //! \brief write random field To file
   //virtual  void WriteRandomFieldToFile()=0;
 
+  //! \brief write random field to file
+  virtual void WriteRandomVariablesToFile(std::string filename)=0;
+
   //! \brief return dimension of random field (either 2 or 3)
   virtual int Dimension()=0;
 

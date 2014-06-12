@@ -146,6 +146,9 @@ STR::UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   rf_values_ = Teuchos::rcp(new std::vector<double>(discret_->NumMyColElements(),0.0));
 
 
+
+  write_rv_to_file_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"WRITE_RV_TO_FILE");
+
   // meshfile name to be written to controlfile in prolongated results
   std::stringstream meshfilename_helper1;
   std::string meshfilename_helper2;
@@ -381,6 +384,10 @@ void STR::UQ::MLMC::Integrate()
     EvalPeakWallStress(dis_coarse, INPAR::STR::stress_cauchy,INPAR::STR::strain_ea );
 
 
+    // write random variables to file for regression
+    if(write_rv_to_file_)
+    my_matpar_manager_->WriteRandomVariablesToFile(filename_,numb_run_);
+
     if (numb_run_-start_run_== 0 &&  prolongate_res_)
     {
      // not parallel
@@ -581,6 +588,10 @@ void STR::UQ::MLMC::IntegrateNoReset()
       // write parameter continuation data to file
       WriteParamContInfoToFile(paramcont_info);
     }
+
+    // write random variables to file for regression
+    if(write_rv_to_file_)
+    my_matpar_manager_->WriteRandomVariablesToFile(filename_,numb_run_);
 
     t5_ = Teuchos::Time::wallTime();
     numb_run_++;

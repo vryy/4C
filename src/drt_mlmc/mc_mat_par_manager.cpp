@@ -289,6 +289,27 @@ void STR::UQ::MCMatParManager::SetupRandomFields(unsigned int myseed)
 }
 
 /*----------------------------------------------------------------------*
+ |  Write random variables to file                            jb 05/14  |
+ *----------------------------------------------------------------------*/
+void STR::UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename, int numrun)
+{
+  // loop over num stoch parameter
+  for(int i=0;i<numstochparams_; i++)
+  {
+    std::stringstream ss; //create a stringstream
+    ss << filename;
+    ss<< "_";
+    ss << "rf_no_" ;
+    ss << i+1;
+    ss << "_numbrun_";
+    ss <<  numrun;//add number to the stream
+    ss << ".txt";
+    randomfields_[i]->WriteRandomVariablesToFile(ss.str());
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  |  Compute new realizations of random fields                 jb 05/14  |
  *----------------------------------------------------------------------*/
 void STR::UQ::MCMatParManager::CreateNewRealizationOfRandomFields(unsigned int myseed)

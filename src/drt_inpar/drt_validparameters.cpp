@@ -1497,6 +1497,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Set ID's of Output Elements, default is -1 which is none",
                                &mlmcp);
 
+   setStringToIntegralParameter<int>("WRITE_RV_TO_FILE","NO",
+                                     "Write random variables used for random field generation to file",
+                                     yesnotuple,yesnovalue,&mlmcp);
+
+
   // Parameters to simulate random fields
   IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
   IntParameter("SIZE_PER_DIM",512,"Number of points per dimension",&mlmcp);

@@ -57,6 +57,9 @@ public:
   //brief create new realization of all random fields and push parameters down to material
   void SetUpStochMats(unsigned int myseed, double para_cont_parameter, bool reuse_rf);
 
+  //brief write all random variables that are used for the simulation of stochastic processes to file
+  void WriteRandomVariablesToFile(std::string filename, int numrun);
+
 
 private:
 

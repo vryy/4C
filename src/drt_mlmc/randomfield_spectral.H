@@ -163,6 +163,9 @@ public:
   //! \brief return dimension of random field (either 2 or 3)
   int Dimension() {return dim_;}
 
+  //! \brief write random field to file
+  void WriteRandomVariablesToFile(std::string filename);
+
   void SayHello();
 
 

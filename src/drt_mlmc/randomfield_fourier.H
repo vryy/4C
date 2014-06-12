@@ -59,8 +59,11 @@ class RandomFieldFourier : public RandomField
 
   void CreateNewPhaseAngles(unsigned int seed);
 
-  /// brief compute Eigenvalues
+  //! brief compute Eigenvalues
   double ComputeLambda3D(int k);
+
+  //! \brief write random field to file
+  void WriteRandomVariablesToFile(std::string filename);
 
 protected:
 

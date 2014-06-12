@@ -232,4 +232,26 @@ double STR::UQ::RandomFieldFourier::ComputeLambda3D(int k)
 }
 
 
+void STR::UQ::RandomFieldFourier::WriteRandomVariablesToFile(std::string filename)
+{
+  const char * c = filename.c_str();
+  if (myrank_ == 0)
+  {
+    IO::cout << "test " << filename << IO::endl;
+    std::ofstream File;
+    File.open(c,std::ios::out);
+
+    int size1 = xi_->size();
+    for(int i=0;i<size1;i++)
+    {
+      int size2 = xi_->at(i).size();
+      for(int j=0;j<size2;j++)
+      {
+        File << xi_->at(i).at(j)<< std::endl;
+      }
+    }
+    File.close();
+  }
+}
+
 #endif
