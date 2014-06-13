@@ -733,6 +733,8 @@ void STR::TimIntStatMech::NewtonFull()
     InitializeNewtonUzawa();
 
   // equilibrium iteration loop
+  bool fresmnormdivergent = false;
+
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // make negative residual
@@ -821,7 +823,10 @@ void STR::TimIntStatMech::NewtonFull()
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
     if(normfres_>1.0e4 && iter_>4)
+    {
+      fresmnormdivergent = true;
       break;
+    }
   }  // end equilibrium loop
 
   // correct iteration counter
@@ -840,16 +845,18 @@ void STR::TimIntStatMech::NewtonFull()
 //    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
 
   // test whether max iterations was hit
-  if ( (Converged()) && !myrank_ && printscreen_)
+  if ( (Converged()) && !discret_->Comm().MyPID() && printscreen_)
   {
     std::cout<<"Newton-Raphson-iteration converged with..."<<std::endl;
     PrintNewtonIter();
   }
-  else if ( iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_stop )
+  else if (fresmnormdivergent || (iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_stop))
+  {
     dserror("Newton unconverged in %d iterations", iter_);
-  else if ( iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_continue && !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
+    return;
+  }
+  else if (fresmnormdivergent || (iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_continue && !discret_->Comm().MyPID() && soltype != INPAR::CONTACT::solution_auglag))
     printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
-  // get out of here
   return;
 } // STR::TimIntStatMech::FullNewton()
 
