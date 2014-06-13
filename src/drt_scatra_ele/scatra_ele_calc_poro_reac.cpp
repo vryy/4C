@@ -86,37 +86,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
   const int                               iquad     //!< id of current gauss point
   )
 {
-
-// TODO: Do we need this part?? found in ScaTraEleCalc<distype>::MatScaTra
-//  // in case of multifractal subgrid-scales, read Schmidt number
-//  if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales or scatrapara_->RBSubGrVel()
-//      or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky)
-//  {
-//    //access fluid discretization
-//    Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-//    fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-//    //get corresponding fluid element (it has the same global ID as the scatra element)
-//    DRT::Element* fluidele = fluiddis->gElement(eid_);
-//    if (fluidele == NULL)
-//      dserror("Fluid element %i not on local processor", eid_);
-//
-//    // get fluid material
-//    Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
-//    if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
-//      dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
-//
-//    const Teuchos::RCP<const MAT::NewtonianFluid>& actfluidmat = Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat);
-//
-//    // get constant dynamic viscosity
-//    visc = actfluidmat->Viscosity();
-//    densn = actfluidmat->Density();
-//    densnp = actfluidmat->Density();
-//    densam = actfluidmat->Density();
-//
-//    if (densam != 1.0 or densnp != 1.0 or densn != 1.0)
-//       dserror("Check your diffusivity! Dynamic diffusivity required!");
-//   }
-
   if(iquad==-1)
     dserror("no gauss point given for evaluation of scatra material. Check your input file.");
 

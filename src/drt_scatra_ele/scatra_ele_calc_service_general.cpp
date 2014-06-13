@@ -775,8 +775,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::IntegrateShapeFunctions(
   if (dofids.M() < numdofpernode_)
     dserror("Dofids vector is too short. Received not enough flags");
 
-  // TODO (ehrl): order is not effective since integrating shape functions result always in the same result
   // loop over integration points
+  // this order is not efficient since the integration of the shape functions is always the same for all species
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);

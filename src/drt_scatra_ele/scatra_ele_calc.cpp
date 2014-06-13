@@ -395,7 +395,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
-  //TODO: BACI_ELE_CLEANING: TauGP
   if (not scatrapara_->MatGP())
     GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
 
@@ -1176,7 +1175,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatMyoCard(
   double&                                 visc      //!< fluid viscosity
   )
 {
-  // TODO: SCATRA_ELE_CLEANING
+  // TODO: SCATRA_ELE_CLEANING: CARDIO
 #if 0
   // cout << "TEST CRISTOBAL: ESTOY EN EL SEGUNDO myocard en GetMaterialParams" << endl;
   //Teuchos::RCP<MAT::Myocard>& actmat

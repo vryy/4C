@@ -287,9 +287,8 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
     //! Access routine for valence of the single ionic species
     const double GetValence(const int k){return valence_[k];};
 
-    // TODO: ELCH: Has to be moved to scatra_ele_calc_elch_NP.cpp
-    unsigned int LengthVector(){return diff_.size();};
-
+    //! the length of the vector containing the diffusion coefficients is increased by 1
+    //! application: ENC with eliminated species
     void IncreaseLengthVector(const int k, const int numscal)
     {
       if(diff_.size()== (unsigned) numscal)
