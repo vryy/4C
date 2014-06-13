@@ -308,7 +308,7 @@ E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // fluid_wall
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
--------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+-------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // contacting_outer_bag_surface
 E 8 - 1 Master
