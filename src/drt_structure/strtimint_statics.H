@@ -120,11 +120,17 @@ namespace STR
 
     //! Consistent predictor with constant velocities,
     //! extrapolated displacements and consistent accelerations
-    void PredictConstVelConsistAcc() { return; };
+    //! For quasi-static problems this is equivalent to
+    //! a linear extrapolation of the displacement field.
+    //! In the first step we do TangDis
+    void PredictConstVelConsistAcc() ;
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
-    void PredictConstAcc() { return; };
+    //! For quasi-static problems this is equivalent to
+    //! a quadratic extrapolation of the displacement field.
+    //! In the first step we do TangDis, in the second ConstVel
+    void PredictConstAcc() ;
 
     //! Create force residual #fres_ and ist stiffness #stiff_
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params);

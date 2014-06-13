@@ -65,11 +65,6 @@ STR::TimIntStatics::TimIntStatics
     else IO::cout << "with statics" << IO::endl;
   }
 
-
-  // check if predictor is admissible for statics
-  if ( (pred_ == INPAR::STR::pred_constvel) or (pred_ == INPAR::STR::pred_constacc))
-    dserror("Predictor does not make sense for statics, only predictor with constant displacements.");
-
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
@@ -119,6 +114,64 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
   accn_->PutScalar(0.0);
 
   // watch out
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* linear extrapolation of displacement field */
+void STR::TimIntStatics::PredictConstVelConsistAcc()
+{
+  // for the first step we don't have any history to do
+  // an extrapolation. Hence, we do TangDis
+  if (step_==0)
+  {
+    PredictTangDisConsistVelAcc();
+    return;
+  }
+  else
+  {
+    // Displacement increment over last time step
+    Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
+    disp_inc->Update((*dt_)[0],*(*vel_)(0),0.);
+    LINALG::ApplyDirichlettoSystem(disp_inc,zeros_,*(dbcmaps_->CondMap()));
+    disn_->Update(1.0, *(*dis_)(0), 0.0);
+    disn_->Update(1.,*disp_inc,1.);
+    veln_->Update(1.0, *(*vel_)(0), 0.0);
+    accn_->Update(1.0, *(*acc_)(0), 0.0);
+    return;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* quadratic extrapolation of displacement field */
+void STR::TimIntStatics::PredictConstAcc()
+{
+  // for the first step we don't have any history to do
+  // an extrapolation. Hence, we do TangDis
+  if (step_==0)
+  {
+    PredictTangDisConsistVelAcc();
+    return;
+  }
+  else if (step_==1)
+  {
+    PredictConstVelConsistAcc();
+    return;
+  }
+  else
+  {
+    // Displacement increment over last time step
+    Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
+    disp_inc->Update((*dt_)[0],*(*vel_)(0),0.);
+    disp_inc->Update(.5*(*dt_)[0]*(*dt_)[0],*(*acc_)(0),1.);
+    LINALG::ApplyDirichlettoSystem(disp_inc,zeros_,*(dbcmaps_->CondMap()));
+    disn_->Update(1.0, *(*dis_)(0), 0.0);
+    disn_->Update(1.,*disp_inc,1.);
+    veln_->Update(1.0, *(*vel_)(0), 0.0);
+    accn_->Update(1.0, *(*acc_)(0), 0.0);
+    return;
+  }
   return;
 }
 
@@ -278,21 +331,26 @@ void STR::TimIntStatics::UpdateIterIteratively()
 /* update after time step */
 void STR::TimIntStatics::UpdateStepState()
 {
+  // calculate pseudo velocity and acceleration for predictor before updates
+  if (pred_==INPAR::STR::pred_constvel || pred_==INPAR::STR::pred_constacc)
+    veln_->Update(1./(*(*dt_)(0)),*disn_,-1./(*(*dt_)(0)),*(*dis_)(0),0.);
+  if (pred_==INPAR::STR::pred_constacc)
+    accn_->Update(1./(*(*dt_)(0)),*veln_,-1./(*(*dt_)(0)),*(*vel_)(0),0.);
+
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
   dis_->UpdateSteps(*disn_);
-
   //new material displacements
   if( (dismatn_!=Teuchos::null))
     dism_->UpdateSteps(*dismatn_);
 
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
-  vel_->UpdateSteps(*veln_);  // this simply copies zero vectors
+  vel_->UpdateSteps(*veln_);
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
-  acc_->UpdateSteps(*accn_);  // this simply copies zero vectors
+  acc_->UpdateSteps(*accn_);
 
   // update surface stress
   UpdateStepSurfstress();

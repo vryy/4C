@@ -1501,6 +1501,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
 
     // tangential predictor
     case INPAR::STR::pred_tangdis:
+    case INPAR::STR::pred_constvel:
+    case INPAR::STR::pred_constacc:
       // do nothing
       break;
 
