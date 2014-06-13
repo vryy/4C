@@ -89,7 +89,7 @@ SCATRA::TimIntStationary::~TimIntStationary()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetElementTimeParameter(bool forceiterativesolver)
+void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsolver)
 {
   Teuchos::ParameterList eleparams;
 
@@ -99,7 +99,7 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forceiterativesolver
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",true);
-  if(forceiterativesolver==false)
+  if(forcedincrementalsolver==false)
     eleparams.set<bool>("incremental solver",incremental_);
   else
     eleparams.set<bool>("incremental solver",true);
@@ -159,7 +159,7 @@ void SCATRA::TimIntStationary::AVM3Separation()
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors()
+void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
   //SetElementTimeParameter();
 

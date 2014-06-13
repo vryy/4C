@@ -140,7 +140,7 @@ SCATRA::TimIntGenAlpha::~TimIntGenAlpha()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forceiterativesolver)
+void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolver)
 {
   Teuchos::ParameterList eleparams;
 
@@ -150,7 +150,7 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forceiterativesolver)
 
   eleparams.set<bool>("using generalized-alpha time integration",true);
   eleparams.set<bool>("using stationary formulation",false);
-  if(forceiterativesolver==false)
+  if(forcedincrementalsolver==false)
     eleparams.set<bool>("incremental solver",incremental_);
   else
     eleparams.set<bool>("incremental solver",true);
@@ -311,16 +311,17 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors()
+void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
   discret_->SetState("phinp",phiaf_);
 
-  if (not incremental_)
+  if (incremental_ or forcedincrementalsolver)
+    discret_->SetState("hist",phidtam_);
+  else
   {
     discret_->SetState("hist",hist_);
     discret_->SetState("phin",phin_);
   }
-  else discret_->SetState("hist",phidtam_);
 
   return;
 }

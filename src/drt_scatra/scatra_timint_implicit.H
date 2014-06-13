@@ -490,7 +490,7 @@ protected:
   //! @name set element parameters
   /*========================================================================*/
 
-  virtual void SetElementTimeParameter(bool forceiterativesolver=false)=0;
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false)=0;
 
   virtual void SetElementTimeParameterBackwardEuler(){return;};
 
@@ -527,7 +527,7 @@ protected:
   );
 
   //! add parameters specific for time-integration scheme
-  virtual void AddTimeIntegrationSpecificVectors() = 0;
+  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
 
   /*--- calculate and update -----------------------------------------------*/
 

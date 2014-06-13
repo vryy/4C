@@ -91,7 +91,7 @@ protected:
   TimIntStationary (const TimIntStationary& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(bool forceiterativesolver=false);
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep(){
@@ -113,7 +113,7 @@ protected:
   void AVM3Separation();
 
   /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors();
+  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};

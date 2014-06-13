@@ -99,7 +99,7 @@ protected:
   TimIntBDF2 (const TimIntBDF2& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(bool forceiterativesolver=false);
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep();
@@ -123,7 +123,7 @@ protected:
   void DynamicComputationOfCv();
 
   /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors();
+  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
   /// write additional data required for restart
   virtual void OutputRestart();

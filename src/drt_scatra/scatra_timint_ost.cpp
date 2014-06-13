@@ -110,7 +110,7 @@ SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forceiterativesolver)
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementalsolver)
 {
   Teuchos::ParameterList eleparams;
 
@@ -120,7 +120,7 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forceiterativesolv
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",false);
-  if(forceiterativesolver==false)
+  if(forcedincrementalsolver==false)
     eleparams.set<bool>("incremental solver",incremental_);
   else
     eleparams.set<bool>("incremental solver",true);
@@ -251,7 +251,7 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors()
+void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);

@@ -254,14 +254,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
        AVM3Separation();
 
-      //TODO: BACI_CLEANING: do want to have this dirty action?
-      // we have to perform some dirty action here...
-      bool incremental_old = incremental_;
-      incremental_ = true;
       // add element parameters according to time-integration scheme
-      AddTimeIntegrationSpecificVectors();
-      // undo
-      incremental_ = incremental_old;
+      // we want to have an incremental solver!!
+      AddTimeIntegrationSpecificVectors(true);
+
       // add element parameters according to specific problem
       AddProblemSpecificParametersAndVectors(eleparams);
 

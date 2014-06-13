@@ -109,7 +109,7 @@ protected:
   TimIntGenAlpha (const TimIntGenAlpha& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(bool forceiterativesolver=false);
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
 
   /// set time parameter for element evaluation applying an iterative backward Euler scheme
   virtual void SetElementTimeParameterBackwardEuler();
@@ -136,7 +136,7 @@ protected:
   void DynamicComputationOfCv();
 
   /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors();
+  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
   /// write additional data required for restart
   void OutputRestart();
