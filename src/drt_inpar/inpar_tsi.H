@@ -71,6 +71,32 @@ namespace TSI
     bop_or_singl  //!< or in single field problems
   };
 
+  //! type of solution techniques
+  enum NlnSolTech
+  {
+    soltech_newtonfull,  //!< full Newton-Raphson iteration
+    soltech_ptc,  //!< pseudo transient continuation nonlinear iteration
+  };
+
+  //! Map solution technique enum to std::string
+  static inline const std::string NlnSolTechString(
+    const enum NlnSolTech name  //!< enum to convert
+    )
+  {
+    switch (name)
+    {
+    case soltech_newtonfull :
+      return "fullnewton";
+      break;
+    case soltech_ptc :
+      return "ptc";
+      break;
+    default:
+      dserror("Cannot make std::string for solution technique %d", name);
+      return "";
+    }
+  }
+
   //@}
 
   //! @name General
@@ -94,22 +120,22 @@ namespace TSI
   {
     switch (norm)
     {
-    case INPAR::TSI::norm_vague:
+    case INPAR::TSI::norm_vague :
       return "Vague";
       break;
-    case INPAR::TSI::norm_l1:
+    case INPAR::TSI::norm_l1 :
       return "L1";
       break;
-    case INPAR::TSI::norm_l1_scaled:
+    case INPAR::TSI::norm_l1_scaled :
       return "L1_scaled";
       break;
-    case INPAR::TSI::norm_l2:
+    case INPAR::TSI::norm_l2 :
       return "L2";
       break;
-    case INPAR::TSI::norm_rms:
+    case INPAR::TSI::norm_rms :
       return "Rms";
       break;
-    case INPAR::TSI::norm_inf:
+    case INPAR::TSI::norm_inf :
       return "Inf";
       break;
     default:

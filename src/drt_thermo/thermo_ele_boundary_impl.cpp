@@ -59,7 +59,6 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
       cp8 = new TemperBoundaryImpl<DRT::Element::quad8>(numdofpernode);
     return cp8;
   }
-
   case DRT::Element::quad9:
   {
     static TemperBoundaryImpl<DRT::Element::quad9>* cp9;

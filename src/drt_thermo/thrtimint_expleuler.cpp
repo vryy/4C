@@ -104,8 +104,7 @@ void THR::TimIntExplEuler::IntegrateStep()
     ApplyForceInternal(p, timen_, dt, tempn_, tempinc, fintn_);
   }
 
-  // determine time derivative of capacity vector,
-  // ie \f$\dot{P} = M_capa \dot{T}_{n=1}\f$
+  // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
   Teuchos::RCP<Epetra_Vector> frimpn = LINALG::CreateVector(*dofrowmap_, true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
@@ -130,7 +129,7 @@ void THR::TimIntExplEuler::IntegrateStep()
     Teuchos::RCP<Epetra_Vector> diag
       = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(),false);
     (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
-    // A_{n+1} = M^{-1} . ( -fint + fext )
+    // R_{n+1} = C^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
   }
 
@@ -149,10 +148,10 @@ void THR::TimIntExplEuler::IntegrateStep()
 void THR::TimIntExplEuler::UpdateStepState()
 {
   // new temperatures at t_{n+1} -> t_n
-  // T_{n} := T_{n+1}
+  // T_n := T_{n+1}
   temp_->UpdateSteps(*tempn_);
   // new temperature rates at t_{n+1} -> t_n
-  // R_{n} := R_{n+1}
+  // R_n := R_{n+1}
   rate_->UpdateSteps(*raten_);
 
   // bye

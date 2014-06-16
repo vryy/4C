@@ -796,15 +796,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // in case of a coupled problem (e.g. TSI) the additional stresses are
   // (TSI: thermal stresses) are printed here
   setStringToIntegralParameter<int>("STRUCT_COUPLING_STRESS","No","",
-                                 tuple<std::string>("No","no","NO",
-                                                    "Yes","yes","YES",
-                                                    "Cauchy","cauchy",
-                                                    "2PK", "2pk"),
-                                 tuple<int>(INPAR::STR::stress_none,INPAR::STR::stress_none,INPAR::STR::stress_none,
-                                            INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,
-                                            INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
-                                            INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
-                                 &io);
+                               tuple<std::string>(
+                                 "No","no","NO",
+                                 "Yes","yes","YES",
+                                 "Cauchy","cauchy",
+                                 "2PK", "2pk"),
+                               tuple<int>(
+                                 INPAR::STR::stress_none,INPAR::STR::stress_none,INPAR::STR::stress_none,
+                                 INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,
+                                 INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
+                                 INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
+                               &io);
   setStringToIntegralParameter<int>("STRUCT_STRAIN","No","Output of strains",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
@@ -818,14 +820,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPAR::STR::strain_log,INPAR::STR::strain_log),
                                &io);
   setStringToIntegralParameter<int>("STRUCT_PLASTIC_STRAIN","No","",
-                               tuple<std::string>("No","no","NO",
-                                                  "Yes","yes","YES",
-                                                  "EA","ea",
-                                                  "GL", "gl"),
-                               tuple<int>(INPAR::STR::strain_none,INPAR::STR::strain_none,INPAR::STR::strain_none,
-                                          INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
-                                          INPAR::STR::strain_ea,INPAR::STR::strain_ea,
-                                          INPAR::STR::strain_gl,INPAR::STR::strain_gl),
+                               tuple<std::string>(
+                                 "No","no","NO",
+                                 "Yes","yes","YES",
+                                 "EA","ea",
+                                 "GL", "gl"),
+                               tuple<int>(
+                                 INPAR::STR::strain_none,INPAR::STR::strain_none,INPAR::STR::strain_none,
+                                 INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
+                                 INPAR::STR::strain_ea,INPAR::STR::strain_ea,
+                                 INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
@@ -834,32 +838,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX","None","",
-                               tuple<std::string>("None",
-                                                  "No",
-                                                  "NO",
-                                                  "no",
-                                                  "Current",
-                                                  "Initial"),
-                               tuple<int>(INPAR::THR::heatflux_none,
-                                                               INPAR::THR::heatflux_none,
-                                                               INPAR::THR::heatflux_none,
-                                                               INPAR::THR::heatflux_none,
-                                                               INPAR::THR::heatflux_current,
-                                                               INPAR::THR::heatflux_initial),
+                               tuple<std::string>(
+                                 "None",
+                                 "No",
+                                 "NO",
+                                 "no",
+                                 "Current",
+                                 "Initial"),
+                               tuple<int>(
+                                 INPAR::THR::heatflux_none,
+                                 INPAR::THR::heatflux_none,
+                                 INPAR::THR::heatflux_none,
+                                 INPAR::THR::heatflux_none,
+                                 INPAR::THR::heatflux_current,
+                                 INPAR::THR::heatflux_initial),
                                &io);
   setStringToIntegralParameter<int>("THERM_TEMPGRAD","None","",
-                               tuple<std::string>("None",
-                                                  "No",
-                                                  "NO",
-                                                  "no",
-                                                  "Current",
-                                                  "Initial"),
-                               tuple<int>(INPAR::THR::tempgrad_none,
-                                                               INPAR::THR::tempgrad_none,
-                                                               INPAR::THR::tempgrad_none,
-                                                               INPAR::THR::tempgrad_none,
-                                                               INPAR::THR::tempgrad_current,
-                                                               INPAR::THR::tempgrad_initial),
+                               tuple<std::string>(
+                                 "None",
+                                 "No",
+                                 "NO",
+                                 "no",
+                                 "Current",
+                                 "Initial"),
+                               tuple<int>(
+                                 INPAR::THR::tempgrad_none,
+                                 INPAR::THR::tempgrad_none,
+                                 INPAR::THR::tempgrad_none,
+                                 INPAR::THR::tempgrad_none,
+                                 INPAR::THR::tempgrad_current,
+                                 INPAR::THR::tempgrad_initial),
                                &io);
 
   IntParameter("FILESTEPS",1000,"Amount of timesteps written to a single result file",&io);
@@ -1051,7 +1059,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         INPAR::STR::stc_currsym,
         INPAR::STR::stc_curr),
       &sdyn);
-
 
   IntParameter("STC_LAYER",1,
                "number of STC layers for multilayer case",
@@ -2363,7 +2370,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &tdyn
     );
 
-  // Output type
+  // output type
   IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&tdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
@@ -2549,7 +2556,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Dynamic section for TSI solver with various coupling methods"
      );
 
-  // Coupling strategy for (partitioned and monolithic) TSI solvers
+  // coupling strategy for (partitioned and monolithic) TSI solvers
   setStringToIntegralParameter<int>("COUPALGO","tsi_monolithic",
     "Coupling strategies for TSI solvers",
     tuple<std::string>(
@@ -2573,7 +2580,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("MATCHINGGRID","Yes","is matching grid",&tsidyn);
 
-  // Coupling strategy for BACI-INCA coupling (TFSI)
+  // coupling strategy for BACI-INCA coupling (TFSI)
   setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi_mortar_mortar_dual",
     "Coupling strategies for BACI-INCA coupling (TFSI)",
     tuple<std::string>(
@@ -2582,8 +2589,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<int>(
       INPAR::TSI::conforming,
       INPAR::TSI::mortar_mortar_dual),
-      &tsidyn
-      );
+    &tsidyn
+    );
 
   // scaling factor for AeroTFSI problems when length unit other than SI [m] is used
   setStringToIntegralParameter<double>("TFSI_length_unit","m",
@@ -2593,9 +2600,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "cm",
       "mm"),
     tuple<double>(
-        1.0,
-        100.0,
-        1000.0),
+      1.0,
+      100.0,
+      1000.0),
     &tsidyn
     );
 
@@ -2607,16 +2614,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "ms",
       "mikros"),
     tuple<double>(
-        1.0,
-        1.0e3,
-        1.0e6),
+      1.0,
+      1.0e3,
+      1.0e6),
     &tsidyn
     );
 
-  // Output type
+  // output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
 
-  // Time loop control
+  // time loop control
   IntParameter("NUMSTEP",200,"maximum number of Timesteps",&tsidyn);
   DoubleParameter("MAXTIME",1000.0,"total simulation time",&tsidyn);
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
@@ -2634,16 +2641,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::TSI::convnorm_abs,
       INPAR::TSI::convnorm_rel,
       INPAR::TSI::convnorm_mix),
-      &tsidyn
-      );
+    &tsidyn
+    );
 
   /*----------------------------------------------------------------------*/
   /* parameters for monolithic TSI */
-  Teuchos::ParameterList& tsidynmono = tsidyn.sublist(
-        "MONOLITHIC",false,
-        "Monolithic Thermo Structure Interaction\n"
-        "Dynamic section for monolithic TSI"
-         );
+  Teuchos::ParameterList& tsidynmono = tsidyn.sublist("MONOLITHIC",false,
+    "Monolithic Thermo Structure Interaction\n"
+    "Dynamic section for monolithic TSI"
+    );
 
   // convergence tolerance of tsi residual
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of TSI",&tsidynmono);
@@ -2661,7 +2667,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::TSI::convnorm_rel,
       INPAR::TSI::convnorm_mix),
     &tsidynmono
-      );
+    );
 
   setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","Coupl_And_Singl",
     "binary operator to combine primary variables and residual force values",
@@ -2699,18 +2705,46 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &tsidynmono
     );
 
+  setStringToIntegralParameter<int>("NLNSOL","fullnewton",
+    "Nonlinear solution technique",
+    tuple<std::string>(
+      "fullnewton",
+      "ptc"),
+    tuple<int>(
+      INPAR::TSI::soltech_newtonfull,
+      INPAR::TSI::soltech_ptc),
+    &tsidynmono
+    );
+
+  DoubleParameter("PTCDT",0.1,
+    "pseudo time step for pseudo-transient continuation (PTC) stabilised Newton procedure",
+    &tsidynmono
+    );
+
   // number of linear solver used for monolithic TSI
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI problems",&tsidynmono);
+  IntParameter("LINEAR_SOLVER",-1,
+    "number of linear solver used for monolithic TSI problems",
+    &tsidynmono
+    );
 
   // convergence criteria adaptivity of monolithic TSI solver
   setStringToIntegralParameter<int>("ADAPTCONV","No",
-                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
-                               yesnotuple,yesnovalue,&tsidynmono);
-  DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tsidynmono);
+    "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+    yesnotuple,
+    yesnovalue,
+    &tsidynmono
+    );
+  DoubleParameter("ADAPTCONV_BETTER",0.1,
+    "The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",
+    &tsidynmono
+    );
 
   setStringToIntegralParameter<int>("INFNORMSCALING","yes",
     "Scale blocks of matrix with row infnorm?",
-    yesnotuple,yesnovalue,&tsidynmono);
+    yesnotuple,
+    yesnovalue,
+    &tsidynmono
+    );
 
   // merge TSI block matrix to enable use of direct solver in monolithic TSI
   // default: "No", i.e. use block matrix
@@ -2719,7 +2753,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // in case of monolithic TSI nodal values (displacements, temperatures and
   // reaction forces) at fix points of the body can be calculated
   // default: "No", i.e. nothing is calculated
-  BoolParameter("CALC_NECKING_TSI_VALUES","No","Calculate nodal values for evaluation and validation of necking",&tsidynmono);
+  BoolParameter("CALC_NECKING_TSI_VALUES","No",
+    "Calculate nodal values for evaluation and validation of necking",
+    &tsidynmono
+    );
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned TSI */

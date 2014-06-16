@@ -84,10 +84,13 @@ TSI::Monolithic::Monolithic(
   k_st_(Teuchos::null),
   k_ts_(Teuchos::null),
   merge_tsi_blockmatrix_(DRT::INPUT::IntegralValue<bool>(tsidynmono_,"MERGE_TSI_BLOCK_MATRIX")),
+  soltech_(DRT::INPUT::IntegralValue<INPAR::TSI::NlnSolTech>(tsidynmono_,"NLNSOL")),
   iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(tsidynmono_,"ITERNORM")),
   iter_(0),
   sdyn_(sdynparams),
   timernewton_(comm),
+  ptcdt_(tsidynmono_.get<double>("PTCDT")),
+  dti_(1.0/ptcdt_),
   veln_(Teuchos::null)
 {
   // access the thermal parameter lists
@@ -437,8 +440,25 @@ void TSI::Monolithic::TimeLoop()
     // predict solution of both field (call the adapter)
     PrepareTimeStep();
 
+    // choose solution technique according to input file
+    switch (soltech_)
+    {
     // Newton-Raphson iteration
-    NewtonFull();
+    case INPAR::TSI::soltech_newtonfull :
+      NewtonFull();
+      break;
+    // Pseudo-transient continuation
+    case INPAR::TSI::soltech_ptc :
+      PTC();
+      break;
+    // catch problems
+    default :
+      dserror(
+        "Solution technique \"%s\" is not implemented",
+        INPAR::TSI::NlnSolTechString(soltech_).c_str()
+        );
+      break;
+    }  // end switch (soltechnique_)
 
     // calculate stresses, strains, energies
     PrepareOutput();
@@ -477,7 +497,7 @@ void TSI::Monolithic::NewtonFull()
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
   // --> On #rhs_ is the positive force residuum
-  // --> On #systemmatrix_ is the effective dynamic tangent matrix
+  // --> On #systemmatrix_ is the effective dynamic TSI tangent matrix
 
   // initialise equilibrium loop
   iter_ = 1;
@@ -497,7 +517,7 @@ void TSI::Monolithic::NewtonFull()
     // reset timer
     timernewton_.ResetStartTime();
 
-    // compute residual forces #rhs_ and tangent #tang_
+    // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
     // build linear system stiffness matrix and rhs/force residual for each
     // field, here e.g. for structure field: field want the iteration increment
@@ -531,13 +551,200 @@ void TSI::Monolithic::NewtonFull()
     solver_->ResetTolerance();
 
     // --------------------------------------------- build residual norms
-    // here the new convergence test stuff has to be included
+    // include all stuff here related with convergence test
     normrhs_ = CalculateVectorNorm(iternorm_, rhs_);
     // vector of displacement and temperature residual
     Teuchos::RCP<Epetra_Vector> strrhs;
     Teuchos::RCP<Epetra_Vector> thrrhs;
     // extract field vectors
-    ExtractFieldVectors(rhs_,strrhs,thrrhs);
+    ExtractFieldVectors(rhs_, strrhs, thrrhs);
+    normstrrhs_ = CalculateVectorNorm(iternormstr_, strrhs);
+    normthrrhs_ = CalculateVectorNorm(iternormthr_, thrrhs);
+
+    // --------------------------------- build residual incremental norms
+    // vector of displacement and temperature increments
+    Teuchos::RCP<Epetra_Vector> sx;
+    Teuchos::RCP<Epetra_Vector> tx;
+    // extract field vectors
+    ExtractFieldVectors(iterinc_,sx,tx);
+    norminc_ = CalculateVectorNorm(iternorm_, iterinc_);
+    normdisi_ = CalculateVectorNorm(iternormstr_, sx);
+    normtempi_ = CalculateVectorNorm(iternormthr_, tx);
+
+    // in case of 'Mix'-convergence criterion: save the norm of the 1st
+    // iteration in (norm . iter0_)
+    if (iter_ == 1)
+    {
+      // save initial residual norms
+      normrhsiter0_ = normrhs_;
+      normstrrhsiter0_ = normstrrhs_;
+      normthrrhsiter0_ = normthrrhs_;
+      // save initial incremental norms
+      norminciter0_ = norminc_;
+      normdisiiter0_ = normdisi_;
+      normtempiiter0_ = normtempi_;
+
+      // set the minimum of iter0_ and tolrhs_, because we want to prevent the
+      // case of a zero characteristic initial norm
+      if (normrhsiter0_ == 0.0) normrhsiter0_ = tolrhs_;
+      if (normstrrhsiter0_ == 0.0) normstrrhsiter0_ = tolstrrhs_;
+      if (normthrrhsiter0_ == 0.0) normthrrhsiter0_ = tolthrrhs_;
+      if (norminciter0_ == 0.0) norminciter0_ = tolinc_;
+      if (normdisiiter0_ == 0.0) normdisiiter0_ = toldisi_;
+      if (normtempiiter0_ == 0.0) normtempiiter0_ = toltempi_;
+    }
+
+    // print stuff
+    PrintNewtonIter();
+
+    // increment equilibrium loop index
+    iter_ += 1;
+
+  }  // end equilibrium loop
+
+  // ----------------------------------------------------- iteration loop
+
+  // correct iteration counter
+  iter_ -= 1;
+
+  // test whether max iterations was hit
+  if ( (Converged()) and (Comm().MyPID() == 0) )
+  {
+    PrintNewtonConv();
+  }
+  else if (iter_ >= itermax_)
+    dserror("Newton unconverged in %d iterations", iter_);
+
+  // for validation with literature calculate nodal TSI values
+  if ((DRT::INPUT::IntegralValue<bool>(tsidynmono_, "CALC_NECKING_TSI_VALUES")) == true)
+    CalculateNeckingTSIResults();
+
+}  // NewtonFull()
+
+
+/*----------------------------------------------------------------------*
+ | solution with pseudo-transient continuation               dano 06/14 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::PTC()
+{
+  // do a PTC iteration here
+  // implementation is based on the work of Gee, Kelley, Lehouq (2009):
+  // "Pseudo-transient continuation for nonlinear transient elasticity"
+
+#ifdef TSI_DEBUG
+  #ifndef TFSI
+  if (Comm().MyPID() == 0)
+    std::cout << "TSI::Monolithic::PTC()" << std::endl;
+  #endif  // TFSI
+#endif  // TSI_DEBUG
+
+  // the specific time integration has set the following
+  // --> On #rhs_ is the positive force residuum
+  // --> On #systemmatrix_ is the effective dynamic TSI tangent matrix
+
+  // initialise equilibrium loop
+  iter_ = 1;
+
+  // incremental solution vector with length of all TSI DOFs
+  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_->PutScalar(0.0);
+  // a zero vector of full length
+  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_->PutScalar(0.0);
+
+  // create full monolithic rhs vector
+  // make negative residual not necessary: rhs_ is already negative
+  // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
+  SetupRHS();
+
+  // ----------------------------------------------- special stuff of PTC
+
+  // compute the PTC parameters
+  double ptcdt = ptcdt_;
+  // norm of residual of old iteration step
+  double nc = 0.0;
+  // as recommended by Michael, apply PTC to the whole TSI system, i.e. use TSI
+  // residual here
+  // here the new convergence test stuff has to be included
+
+  normrhs_ = CalculateVectorNorm(iternorm_, rhs_);
+  rhs_->NormInf(&nc);
+  // define the pseudo time step delta^{-1}
+  double dti = 1/ptcdt;
+
+  //------------------------------------------------------ iteration loop
+
+  // equilibrium iteration loop (loop over k)
+  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  {
+    // reset timer
+    timernewton_.ResetStartTime();
+
+    // compute residual forces #rhs_ and tangent #systemmatrix_
+    // whose components are globally oriented
+    // build linear TSI tangent matrix and rhs/force residual for each field,
+    // here e.g. for structure field: STR field wants the iteration increment
+    // 1.) Update(iterinc_),
+    // 2.) EvaluateForceStiffResidual(),
+    // 3.) PrepareSystemForNewtonSolve() --> if (locsysman_ != null) k_ss is rotated
+    Evaluate(iterinc_);
+
+    // ---------- modify diagonal blocks of systemmatrix according to PTC
+
+    // modify structural diagonal block k_ss
+    {
+      Teuchos::RCP<Epetra_Vector> tmp_SS
+        = LINALG::CreateVector(StructureField()->SystemMatrix()->RowMap(),false);
+      tmp_SS->PutScalar(dti);
+      Teuchos::RCP<Epetra_Vector> diag_SS
+        = LINALG::CreateVector(StructureField()->SystemMatrix()->RowMap(),false);
+      StructureField()->SystemMatrix()->ExtractDiagonalCopy(*diag_SS);
+
+      diag_SS->Update(1.0, *tmp_SS, 1.0);
+
+      StructureField()->SystemMatrix()->ReplaceDiagonalValues(*diag_SS);
+    }
+    // modify thermal diagonal block k_tt
+    {
+      Teuchos::RCP<Epetra_Vector> tmp_tt
+        = LINALG::CreateVector(ThermoField()->SystemMatrix()->RowMap(),false);
+      tmp_tt->PutScalar(dti);
+      Teuchos::RCP<Epetra_Vector> diag_tt
+        = LINALG::CreateVector(ThermoField()->SystemMatrix()->RowMap(),false);
+      ThermoField()->SystemMatrix()->ExtractDiagonalCopy(*diag_tt);
+      diag_tt->Update(1.0, *tmp_tt, 1.0);
+      ThermoField()->SystemMatrix()->ReplaceDiagonalValues(*diag_tt);
+    }
+
+    // create the linear system including PTC-modified systemmatrices k_ss and k_tt
+    // \f$J(x_i) \Delta x_i = - R(x_i)\f$
+    // create the systemmatrix
+    SetupSystemMatrix();
+
+    // check whether we have a sanely filled tangent matrix
+    if (not systemmatrix_->Filled())
+      dserror("Effective tangent matrix must be filled here");
+
+    // create full monolithic rhs vector
+    // make negative residual not necessary: rhs_ is already negative
+    // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
+    SetupRHS();
+
+    // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
+    // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
+    LinearSolve();
+
+    // reset solver tolerance
+    solver_->ResetTolerance();
+
+    // --------------------------------------------- build residual norms
+    // include all stuff here related with convergence test
+    normrhs_ = CalculateVectorNorm(iternorm_, rhs_);
+    // vector of displacement and temperature residual
+    Teuchos::RCP<Epetra_Vector> strrhs;
+    Teuchos::RCP<Epetra_Vector> thrrhs;
+    // extract field vectors
+    ExtractFieldVectors(rhs_, strrhs, thrrhs);
     normstrrhs_ = CalculateVectorNorm(iternormstr_, strrhs);
     normthrrhs_ = CalculateVectorNorm(iternormthr_, thrrhs);
 
@@ -580,6 +787,18 @@ void TSI::Monolithic::NewtonFull()
     // increment equilibrium loop index
     iter_ += 1;
 
+    // save old pseudo-time step in dti_
+    dti_ = dti;
+
+    // update ptc
+    {
+      double np = 0.0;
+      rhs_->NormInf(&np);
+      dti *= (np/nc);
+      dti = std::max(dti,0.0);
+      nc = np;
+    }
+
   }  // end equilibrium loop
 
   // ----------------------------------------------------- iteration loop
@@ -593,14 +812,9 @@ void TSI::Monolithic::NewtonFull()
     PrintNewtonConv();
   }
   else if (iter_ >= itermax_)
-    dserror("Newton unconverged in %d iterations", iter_);
+    dserror("PTC unconverged in %d iterations", iter_);
 
-  // for validation with literature calculate nodal TSI values
-
-  if ((DRT::INPUT::IntegralValue<bool>(tsidynmono_,"CALC_NECKING_TSI_VALUES")) == true)
-    CalculateNeckingTSIResults();
-
-}  // NewtonFull()
+}  // PTC()
 
 
 /*----------------------------------------------------------------------*
@@ -1001,9 +1215,11 @@ void TSI::Monolithic::SetupSystemMatrix()
   k_ts_->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
   k_ts_->UnComplete();
   systemmatrix_->Assign(1,0,View,*k_ts_);
+
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
+
 }  // SetupSystemMatrix()
 
 
@@ -1024,7 +1240,7 @@ void TSI::Monolithic::SetupRHS()
   // create full monolithic rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  // fill the TSI rhs vector rhs_ with the single field rhss
+  // fill the TSI rhs vector rhs_ with the single field rhs
   SetupVector(
     *rhs_,
     StructureField()->RHS(),
@@ -1056,8 +1272,8 @@ void TSI::Monolithic::LinearSolve()
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
 
-  // Dirichlet boundary conditions are already applied to TSI system, i.e.
-  // TSI system is prepared for solve, i.e. TSI systemmatrix, TSI rhs, TSI inc
+  // Dirichlet boundary conditions are already applied to TSI system, i.e. TSI
+  // system is prepared for solve, i.e. TSI systemmatrix, TSI rhs, TSI inc
   // --> in PrepareSystemForNewtonSolve(): done for rhs and diagonal blocks
   // --> in SetupSystemMatrix() done for off-diagonal blocks k_st, k_ts
 
@@ -1089,6 +1305,7 @@ void TSI::Monolithic::LinearSolve()
 
   // Infnormscaling: unscale system after solving
   UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
+
   }  // use block matrix
 
   else // (merge_tsi_blockmatrix_ == true)
@@ -1442,6 +1659,11 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
+  if (soltech_ == INPAR::TSI::soltech_ptc)
+  {
+    oss << std::setw(16)<< "        PTC-dti";
+  }
+
   // add solution time
   oss << std::setw(12)<< "wct";
 
@@ -1577,6 +1799,11 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     dserror("You should not turn up here.");
     break;
   }  // switch (normtypetempi_)
+
+  if (soltech_ == INPAR::TSI::soltech_ptc)
+  {
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << dti_;
+  }
 
   // add solution time of to print to screen
   oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();

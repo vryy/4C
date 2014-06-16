@@ -203,6 +203,15 @@ namespace TSI
     //! outer iteration loop
     void NewtonFull();
 
+    //! do pseudo-transient continuation nonlinear iteration
+    //!
+    //! Pseudo-transient continuation is a variant of a full newton which has a
+    //! larger convergence radius than newton and is therefore more stable
+    //! and/or can do larger time steps
+    //!
+    //! originally by mwgee for structural analysis \date 03/12
+    void PTC();
+
     //! @name Output
 
     //! print to screen information about residual forces and displacements
@@ -385,6 +394,9 @@ namespace TSI
 
     //! @name iterative solution technique
 
+    enum INPAR::TSI::NlnSolTech soltech_;  //!< kind of iteration technique or
+                                           //!< nonlinear solution technique
+
     enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for increments
     enum INPAR::TSI::ConvNorm normtyperhs_;  //!< convergence check for residual forces
     enum INPAR::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
@@ -425,6 +437,13 @@ namespace TSI
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
     Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
+
+    //@}
+
+    //! @name Pseudo-transient continuation parameters
+
+    double ptcdt_;  //!< pseudo time step size for PTC
+    double dti_;  //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
 
     //@}
 
