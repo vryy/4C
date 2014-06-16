@@ -25,6 +25,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class ScaTraEleParameterElch;
+class ScaTraEleDiffManagerElchDiffCond;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleBoundaryCalcElch : public ScaTraBoundaryImpl<distype>
@@ -138,8 +139,8 @@ private:
   //! flag for closure equation
   enum INPAR::ELCH::EquPot equpot_;
 
-  //! porosity
-  double eps_;
+  //! manager for diffusion
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;
 
 }; // class ScaTraEleBoundaryCalcElch
 

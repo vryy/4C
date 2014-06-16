@@ -195,6 +195,15 @@ namespace ELEMENTS
       const std::vector<int>&               lm              //!< location matrix
     );
 
+    //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
+    virtual void CorrectRHSFromCalcRHSLinMass(
+      Epetra_SerialDenseVector&     erhs,
+      const int                     k,
+      const double                  fac,
+      const double                  densnp,
+      const double                  phinp
+    );
+
     //!  integrate shape functions over domain
     void IntegrateShapeFunctions(
       const DRT::Element*             ele,       //!< the element we are dealing with

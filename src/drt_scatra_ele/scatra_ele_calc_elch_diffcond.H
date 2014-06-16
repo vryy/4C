@@ -401,6 +401,15 @@ private:
     Epetra_SerialDenseVector&  elevec1_epetra   //!< element rhs
   );
 
+  //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
+  virtual void CorrectRHSFromCalcRHSLinMass(
+    Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
+    const int                     k,           //!< index of current scalar
+    const double                  fac,         //!< domain-integration factor
+    const double                  densnp,      //!< density at time_(n+1)
+    const double                  phinp        //!< scalar at time_(n+1)
+  );
+
   // Get conductivity from material
   virtual void GetConductivity(
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
@@ -456,10 +465,6 @@ private:
 
   //! nodal current density values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
-
-  std::vector<double> eps_;
-  std::vector<double> tort_;
-  std::vector<double> epstort_;
 };
 
 
@@ -481,10 +486,17 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElch
     cond_(0.0),
     derivcond_(numscal,0.0),
     thermfac_(1.0),
-    derivthermfac_(numscal,0.0)
+    derivthermfac_(numscal,0.0),
+    // In the moment, we have only one phase but the framework is flexible
+    eps_(1,1.0),
+    tort_(1,1.0)
     {return;}
 
     ~ScaTraEleDiffManagerElchDiffCond(){};
+
+    /*========================================================================*/
+    //! @name access methods for transport parameter
+    /*========================================================================*/
 
     //! Set derivative of diffusion coefficients with respect to concentrations
     void SetDerivIsoDiffCoef(const double derivdiffcoef,const int k,const int iscal)
@@ -599,6 +611,38 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElch
       return;
     };
 
+    /*========================================================================*/
+    //! @name access methods for geometrical parameter
+    /*========================================================================*/
+
+    //! Set transference numbers with respect to single ionic species
+    void SetPhasePoro(const double eps,const int phase)
+    {
+      eps_[phase]= eps;
+      return;
+    }
+
+    const double GetPhasePoro(const int phase){return eps_[phase];};
+
+    //! Set transference numbers with respect to single ionic species
+    void SetPhaseTort(const double tort,const int phase)
+    {
+      tort_[phase]= tort;
+      return;
+    }
+
+    // get geometrical parameter: tortuosity
+    const double GetPhaseTort(const int phase){return tort_[phase];};
+
+    // get geometrical parameter: porosity*tortuosity
+    const double GetPhasePoroTort(const int phase){
+      double epstort =eps_[phase]*tort_[phase];
+      return epstort;};
+
+    /*========================================================================*/
+    //! @name output
+    /*========================================================================*/
+
     //! Output of transport parameter (to screen)
     void OutputTransportParams(const int numscal)
     {
@@ -646,6 +690,10 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElch
 
   private:
 
+    /*========================================================================*/
+    //! @name transport parameter
+    /*========================================================================*/
+
     //! derivative of diffusion coefficients with respect to concentrations
     std::vector< std::vector<double> > derivdiffcoef_;
 
@@ -667,6 +715,17 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElch
 
     //! derivative of thermodynamic factor with respect to concentrations
     std::vector<double> derivthermfac_;
+
+
+    /*========================================================================*/
+    //! @name geometrical parameter of the porous medium
+    /*========================================================================*/
+
+    //! porosity
+    std::vector<double> eps_;
+    //! tortuosity
+    std::vector<double> tort_;
+
 };
 
 

@@ -18,6 +18,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_action.H"
 #include "scatra_ele.H"
+// diffusion manager
+#include "scatra_ele_calc_elch_diffcond.H"
 
 #include "../drt_lib/drt_globalproblem.H" // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
@@ -85,11 +87,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
   : DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal),
-    equpot_(INPAR::ELCH::equpot_undefined),
-    eps_(1.0)
+    equpot_(INPAR::ELCH::equpot_undefined)
 {
   // pointer to class ScaTraEleParameter
   elchpara_ = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance());
+
+  // initialization of diffusion manager
+  dmedc_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
 }
 
 
@@ -188,7 +192,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
       {
         const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
-        eps_ = actsinglemat->Epsilon();
+        dmedc_->SetPhasePoro(actsinglemat->Epsilon(),iphase);
       }
     }
   }
@@ -291,7 +295,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
         for (int node=0;node<my::nen_;++node)
         {
           //TODO: with or without eps_
-          elevec1[node*my::numdofpernode_+dof] += my::funct_(node)*val_fac_functfac*eps_;
+          elevec1[node*my::numdofpernode_+dof] += my::funct_(node)*val_fac_functfac*dmedc_->GetPhasePoro(0);
         }
       } // if ((*onoff)[dof])
     }
@@ -522,7 +526,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
           {
             const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
-            eps_ = actsinglemat->Epsilon();
+            dmedc_->SetPhasePoro(actsinglemat->Epsilon(),iphase);
           }
         }
       }
@@ -988,7 +992,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
           for (int vi=0; vi<my::nen_; ++vi)
           {
-            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
+            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
             //double fac_i0_funct_vi = fac*i0*my::funct_(vi);
             // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
             for (int ui=0; ui<my::nen_; ++ui)
@@ -1048,7 +1052,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
           for (int vi=0; vi<my::nen_; ++vi)
           {
-            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
+            fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
             // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
             for (int ui=0; ui<my::nen_; ++ui)
             {
@@ -1118,7 +1122,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
+          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
           // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
           {
@@ -1189,7 +1193,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
+          fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
           const int fvi = vi*my::numdofpernode_+k;
           // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
@@ -1317,7 +1321,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         {
           // see Wittmann, Erweiterte Reaktionsmodelle für die numerische Simulation von
           // elektrochemischen Systemen, p.20, equ. 3.4
-          const double fac_fns_funct_vi = faraday*nume*fac*fns*my::funct_(vi)*eps_;
+          const double fac_fns_funct_vi = faraday*nume*fac*fns*my::funct_(vi)*dmedc_->GetPhasePoro(0);
           for (int ui=0; ui<my::nen_; ++ui)
           {
             //loop over the columns of the matrix, makes sure that the linearisation w.r.t the first concentration is added to the first column
@@ -1429,7 +1433,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          const double fac_i0_funct_vi = fac*fns*i0*my::funct_(vi)*eps_;
+          const double fac_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
           // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
           {

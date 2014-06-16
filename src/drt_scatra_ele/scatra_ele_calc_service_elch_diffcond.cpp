@@ -92,6 +92,42 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
     }
   }
 
+  // In the moment the diffusion manager contains the porosity at the last Gauss point (previous call my::CalcInitialTimeDerivative())
+  // Since the whole approach is valid only for constant porosities
+  // we do not fill the diffusion manager again at the element center
+
+  // dynamic cast to elch-specific diffusion manager
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
+
+  // The solution variable is the initial time derivative
+  // Therefore, we have to correct rhs by the initial porosity
+  // attention: this procedure is only valid for a constant porosity in the beginning
+  elevec1_epetra.Scale(1.0/dmedc->GetPhasePoro(0));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  CorrectRHSFromCalcRHSLinMass                             ehrl 06/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLinMass(
+    Epetra_SerialDenseVector&     erhs,
+    const int                     k,
+    const double                  fac,
+    const double                  densnp,
+    const double                  phinp
+  )
+{
+  // dynamic cast to elch-specific diffusion manager
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
+
+  // fac->-fac to change sign of rhs
+  if (my::scatraparatimint_->IsIncremental())
+     my::CalcRHSLinMass(erhs,k,0.0,-fac,0.0,dmedc->GetPhasePoro(0),phinp,0.0);
+  else
+    dserror("Must be incremental!");
+
   return;
 }
 
@@ -157,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPote
 
       for (int iscal=0; iscal < my::numscal_; ++iscal)
       {
-        erhs[fvi] -= fac*epstort_[0]*vmdc->RTFFC()*dmedc->GetCond()*(dmedc->GetThermFac())*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*vmdc->ConIntInv(iscal)*laplawf;
+        erhs[fvi] -= fac*dmedc->GetPhasePoroTort(0)*vmdc->RTFFC()*dmedc->GetCond()*(dmedc->GetThermFac())*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*vmdc->ConIntInv(iscal)*laplawf;
       }
     }
 
@@ -182,12 +218,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPote
       const int fui = ui*my::numdofpernode_+my::numscal_;
       double laplawf(0.0);
       my::GetLaplacianWeakForm(laplawf,ui,vi);
-      emat(fvi,fui) += fac*epstort_[0]*vmdc->InvF()*dmedc->GetCond()*laplawf;
+      emat(fvi,fui) += fac*dmedc->GetPhasePoroTort(0)*vmdc->InvF()*dmedc->GetCond()*laplawf;
     }
 
     double laplawf(0.0);
     my::GetLaplacianWeakFormRHS(laplawf,vmdc->GradPot(),vi);
-    erhs[fvi] -= fac*epstort_[0]*vmdc->InvF()*dmedc->GetCond()*laplawf;
+    erhs[fvi] -= fac*dmedc->GetPhasePoroTort(0)*vmdc->InvF()*dmedc->GetCond()*laplawf;
   }
 
   return;

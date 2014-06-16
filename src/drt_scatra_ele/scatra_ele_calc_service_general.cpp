@@ -644,7 +644,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
 
   if (not scatrapara_->MatGP() or not scatrapara_->TauGP())
   {
-
     GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
 
     if (not scatrapara_->TauGP())
@@ -725,6 +724,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       //----------------------------------------------------------------
       // element matrix: stabilization of transient term
       //----------------------------------------------------------------
+      // the stabilization term is deactivated in PrepareFirstTimeStep()
       if(scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
       {
         // subgrid-scale velocity (dummy)
@@ -739,15 +739,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
         }
       }
 
-      if (scatraparatimint_->IsIncremental())
-      {
-         // zero for quantities only required for gen-alpha which is not the case here
-         // fac->-fac to change sign of rhs
-         CalcRHSLinMass(erhs,k,0.0,-fac,0.0,densnp,phinp,0.0);
-      }
-      else
-        dserror("Must be incremental!");
-
+      // we solve: (w,dc/dt) = rhs
+      // whereas the rhs is based on the standard element evaluation routine
+      // including contributions resulting from the time discretization.
+      // The contribution from the time discretization has to be removed before solving the system:
+      CorrectRHSFromCalcRHSLinMass(erhs,k,fac,densnp,phinp);
     } // loop over each scalar k
   } // integration loop
 
@@ -756,6 +752,28 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
 
   return;
 } // ScaTraEleCalc::CalcInitialTimeDerivative()
+
+
+/*----------------------------------------------------------------------*
+ |  CorrectRHSFromCalcRHSLinMass                             ehrl 06/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::CorrectRHSFromCalcRHSLinMass(
+    Epetra_SerialDenseVector&     erhs,
+    const int                     k,
+    const double                  fac,
+    const double                  densnp,
+    const double                  phinp
+  )
+{
+  // fac->-fac to change sign of rhs
+  if (scatraparatimint_->IsIncremental())
+     CalcRHSLinMass(erhs,k,0.0,-fac,0.0,densnp,phinp,0.0);
+  else
+    dserror("Must be incremental!");
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
