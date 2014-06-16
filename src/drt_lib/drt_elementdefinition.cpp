@@ -112,7 +112,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"ALE2");
   PrintElementLines(stream,"ALE3");
 
-  //PrintElementLines(stream,"BELE3");
+  //PrintElementLines(stream,"BELE3_3");
   //PrintElementLines(stream,"VELE3");
 
   PrintSectionHeader(stream,"THERMO ELEMENTS");

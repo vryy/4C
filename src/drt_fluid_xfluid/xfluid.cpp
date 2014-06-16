@@ -2241,7 +2241,7 @@ void FLD::XFluid::Init()
   // -------------------------------------------------------------------
 
   // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well (if you change this take care for numdof in boundary output!)
-  string element_name = "BELE3";
+  string element_name = "BELE3_3";
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not discret_->HaveDofs() )
@@ -6447,7 +6447,7 @@ void FLD::XFluid::ReadRestartBound(int step)
     { finalids[0] = nodeids[2]; finalids[2] = nodeids[0]; }
 
     int neweleid = boundarydis_->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","tri3", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3_3","tri3", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
     spr->SetNodeIds( 3, finalids );
     //spr->Print(std::cout);
     boundarydis_->AddElement( spr );
@@ -6464,7 +6464,7 @@ void FLD::XFluid::ReadRestartBound(int step)
     { finalids[0] = nodeids[3]; finalids[1] = nodeids[2]; finalids[2] = nodeids[1]; finalids[3] = nodeids[0]; }
 
     int neweleid = boundarydis_->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3_3","quad4", neweleid, boundarydis_->gNode(nodeids[0])->Owner() );
     spr->SetNodeIds( 4, finalids );
     spr->Print(std::cout);
     boundarydis_->AddElement( spr );

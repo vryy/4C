@@ -72,7 +72,7 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     conditions_to_copy.push_back(condname);
 
     surfdiscret_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, condname,
-                                                                 "boundary", "BELE3",
+                                                                 "boundary", "BELE3_3",
                                                                  conditions_to_copy);
     surfdiscret_->FillComplete();
     std::string outfile = file_prefix + "_" + condname;

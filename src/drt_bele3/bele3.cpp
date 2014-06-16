@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Raffaela Kruse
+            kruse@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include <sstream>
 
 
 DRT::ELEMENTS::Bele3Type DRT::ELEMENTS::Bele3Type::instance_;
@@ -33,11 +34,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const std::string e
                                                              const int id,
                                                              const int owner )
 {
-  if ( eletype=="BELE3" )
+  std::size_t pos = eletype.rfind("_");
+  if (pos!=std::string::npos)
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id,owner));
-    return ele;
+    if(eletype.substr(0, pos) == "BELE3")
+    {
+      std::istringstream is(eletype.substr(pos+1));
+
+      int numdof = -1;
+      is >> numdof;
+      Teuchos::RCP<DRT::ELEMENTS::Bele3> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id,owner));
+      ele->SetNumDofPerNode(numdof);
+      return ele;
+    }
   }
+
   return Teuchos::null;
 }
 
@@ -68,7 +79,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3LineType::Create( const int id, c
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
-DRT::Element(id,owner)
+DRT::Element(id,owner),
+numdofpernode_(-1)
 {
   return;
 }
@@ -76,7 +88,8 @@ DRT::Element(id,owner)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(const DRT::ELEMENTS::Bele3& old) :
-DRT::Element(old)
+DRT::Element(old),
+numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -102,6 +115,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3::Shape() const
   case  9: return quad9;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }
@@ -118,6 +132,8 @@ void DRT::ELEMENTS::Bele3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
   // add base class Element
   Element::Pack(data);
+  // numdofpernode_
+  AddtoPack(data,numdofpernode_);
 
   return;
 }
@@ -136,6 +152,8 @@ void DRT::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  // numdofpernode_
+  numdofpernode_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
@@ -154,7 +172,7 @@ DRT::ELEMENTS::Bele3::~Bele3()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::Print(std::ostream& os) const
 {
-  os << "Bele3 " << DRT::DistypeToString(Shape());
+  os << "Bele3_" << numdofpernode_ << " " << DRT::DistypeToString(Shape());
   Element::Print(os);
   return;
 }
@@ -205,6 +223,7 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Ele
         break;
     default:
         dserror("unknown number of nodes for gaussrule initialization");
+        break;
   }
   return rule;
 }

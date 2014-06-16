@@ -23,7 +23,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 {
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
-  dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3",conditions_to_copy);
+  dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3_3",conditions_to_copy);
   dis_->FillComplete();
 
   coup_ = Teuchos::rcp(new ADAPTER::Coupling());

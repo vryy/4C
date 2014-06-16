@@ -18,7 +18,6 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #include <fstream>
 
 #include "../drt_bele3/bele3.H"
-#include "../drt_bele3/bele3_4.H"
 
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "fluid_ele_calc_xfem_coupling_impl.H"
@@ -45,39 +44,40 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 {
   SideInterface * si = NULL;
 
-  if (side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance()) // three dofs per node, for standard Dirichlet coupling
-  {
-    const int numdofpernode = 3;
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
+  if (numdofpernode == 3) // three dofs per node, for standard Dirichlet coupling
+  {
     switch ( side->Shape() )
     {
     //            case DRT::Element::tri3:
     //            {
-    //              typedef SideImpl<distype,DRT::Element::tri3, numdofpernode> SideImplType;
+    //              typedef SideImpl<distype,DRT::Element::tri3, 3> SideImplType;
     //              si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
     //              break;
     //            }
     //            case DRT::Element::tri6:
     //            {
-    //              typedef SideImpl<distype,DRT::Element::tri6, numdofpernode> SideImplType;
+    //              typedef SideImpl<distype,DRT::Element::tri6, 3> SideImplType;
     //              si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
     //              break;
     //            }
     case DRT::Element::quad4:
     {
-      typedef SideImpl<distype,DRT::Element::quad4, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad4, 3> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
       break;
     }
     case DRT::Element::quad8:
     {
-      typedef SideImpl<distype,DRT::Element::quad8, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad8, 3> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
       break;
     }
     //            case DRT::Element::quad9:
       //            {
-    //              typedef SideImpl<distype,DRT::Element::quad9, numdofpernode> SideImplType;
+    //              typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
     //              si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
     //              break;
     //            }
@@ -85,39 +85,37 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
+  else if (numdofpernode == 4) // four dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 4;
-
     switch ( side->Shape() )
     {
 //    case DRT::Element::tri3:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri3, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri3, 4> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri6, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri6, 4> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
-      typedef SideImpl<distype,DRT::Element::quad4, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad4, 4> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
       break;
     }
     case DRT::Element::quad8:
     {
-      typedef SideImpl<distype,DRT::Element::quad8, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad8, 4> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
       break;
     }
 //    case DRT::Element::quad9:
 //    {
-//      typedef SideImpl<distype,DRT::Element::quad9, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
 //      break;
 //    }
@@ -145,39 +143,40 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 {
   SideInterface * si = NULL;
 
-  if (side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance()) // three dofs per node, for coupling
-  {
-    const int numdofpernode = 3;
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
+  if (numdofpernode == 3) // three dofs per node, for coupling
+  {
     switch ( side->Shape() )
     {
 //    case DRT::Element::tri3:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri3, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri3, 3> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri6, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri6, 3> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
-      typedef SideImpl<distype,DRT::Element::quad4, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad4, 3> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
       break;
     }
     case DRT::Element::quad8:
     {
-      typedef SideImpl<distype,DRT::Element::quad8, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad8, 3> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
       break;
     }
 //    case DRT::Element::quad9:
 //    {
-//      typedef SideImpl<distype,DRT::Element::quad9, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
 //      break;
 //    }
@@ -185,39 +184,37 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for coupling
+  else if (numdofpernode == 4) // four dofs per node, for coupling
   {
-    const int numdofpernode = 4;
-
     switch ( side->Shape() )
     {
 //    case DRT::Element::tri3:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri3, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri3, 4> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri6, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri6, 4> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
-      typedef SideImpl<distype,DRT::Element::quad4, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad4, 4> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
       break;
     }
     case DRT::Element::quad8:
     {
-      typedef SideImpl<distype,DRT::Element::quad8, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad8, 4> SideImplType;
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
       break;
     }
 //    case DRT::Element::quad9:
 //    {
-//      typedef SideImpl<distype,DRT::Element::quad9, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
 //      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
 //      break;
 //    }
@@ -241,39 +238,40 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 {
   SideInterface * si = NULL;
 
-  if (side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance()) // three dofs per node, for standard Dirichlet coupling
-  {
-    const int numdofpernode = 3;
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
+  if (numdofpernode == 3) // three dofs per node, for standard Dirichlet coupling
+  {
     switch ( side->Shape() )
     {
 //    case DRT::Element::tri3:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri3, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri3, 3> SideImplType;
 //      si = new SideImplType(side,side_xyze);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri6, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri6, 3> SideImplType;
 //      si = new SideImplType(side,side_xyze);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
-      typedef SideImpl<distype,DRT::Element::quad4, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad4, 3> SideImplType;
       si = new SideImplType(side,side_xyze);
       break;
     }
     case DRT::Element::quad8:
     {
-      typedef SideImpl<distype,DRT::Element::quad8, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad8, 3> SideImplType;
       si = new SideImplType(side,side_xyze);
       break;
     }
 //    case DRT::Element::quad9:
 //    {
-//      typedef SideImpl<distype,DRT::Element::quad9, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
 //      si = new SideImplType(side,side_xyze);
 //      break;
 //    }
@@ -281,39 +279,37 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // three dofs per node, for standard Dirichlet coupling
+  else if (numdofpernode == 4) // three dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 4;
-
     switch ( side->Shape() )
     {
 //    case DRT::Element::tri3:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri3, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri3, 4> SideImplType;
 //      si = new SideImplType(side,side_xyze);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
-//      typedef SideImpl<distype,DRT::Element::tri6, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::tri6, 4> SideImplType;
 //      si = new SideImplType(side,side_xyze);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
-      typedef SideImpl<distype,DRT::Element::quad4, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad4, 4> SideImplType;
       si = new SideImplType(side,side_xyze);
       break;
     }
     case DRT::Element::quad8:
     {
-      typedef SideImpl<distype,DRT::Element::quad8, numdofpernode> SideImplType;
+      typedef SideImpl<distype,DRT::Element::quad8, 4> SideImplType;
       si = new SideImplType(side,side_xyze);
       break;
     }
 //    case DRT::Element::quad9:
 //    {
-//      typedef SideImpl<distype,DRT::Element::quad9, numdofpernode> SideImplType;
+//      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
 //      si = new SideImplType(side,side_xyze);
 //      break;
 //    }

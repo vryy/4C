@@ -815,8 +815,6 @@ set(OBJS_DRT_ELCH
 set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/bele2.cpp
   src/drt_bele3/bele2_evaluate.cpp
-  src/drt_bele3/bele3_4.cpp
-  src/drt_bele3/bele3_4_evaluate.cpp
   src/drt_bele3/bele3.cpp
   src/drt_bele3/bele3_evaluate.cpp
   src/drt_bele3/bele3_line.cpp

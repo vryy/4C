@@ -991,7 +991,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
       {
         eleids.push_back(currele->Id() );
         // structural surface elements cannot be distributed --> Bele3 element is used
-        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory("BELE3","Polynomial", currele->Id(), currele->Owner());
+        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory("BELE3_3","Polynomial", currele->Id(), currele->Owner());
         wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
         particlewalldis->AddElement( wallele );
       }

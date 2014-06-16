@@ -13,7 +13,6 @@ Maintainer: Benedikt Schott
 
 
 #include "../drt_bele3/bele3.H"
-#include "../drt_bele3/bele3_4.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -24,8 +23,8 @@ Maintainer: Benedikt Schott
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
+#include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_intersection.H"
 #include "../drt_cut/cut_position.H"
 
@@ -1989,71 +1988,69 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(
     LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
 )
 {
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
-  if (side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance()) // three dofs per node, for standard Dirichlet coupling
+  if (numdofpernode == 3) // three dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 3;
-
     switch ( side->Shape() )
     {
 //      case DRT::Element::tri3:
 //      {
-//        getNormalSide_tn<DRT::Element::tri3, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+//        getNormalSide_tn<DRT::Element::tri3, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
-//        getNormalSide_tn<DRT::Element::tri6, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+//        getNormalSide_tn<DRT::Element::tri6, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
 //        break;
 //      }
     case DRT::Element::quad4:
     {
-      getNormalSide_tn<DRT::Element::quad4, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+      getNormalSide_tn<DRT::Element::quad4, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
       break;
     }
     case DRT::Element::quad8:
     {
-      getNormalSide_tn<DRT::Element::quad8, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+      getNormalSide_tn<DRT::Element::quad8, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
       break;
     }
 //      case DRT::Element::quad9:
 //      {
-//        getNormalSide_tn<DRT::Element::quad9, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+//        getNormalSide_tn<DRT::Element::quad9, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
 //        break;
 //      }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
+  else if (numdofpernode == 4) // four dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 4;
-
     switch ( side->Shape() )
     {
 //      case DRT::Element::tri3:
 //      {
-//        getNormalSide_tn<DRT::Element::tri3, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+//        getNormalSide_tn<DRT::Element::tri3, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
-//        getNormalSide_tn<DRT::Element::tri6, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+//        getNormalSide_tn<DRT::Element::tri6, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
 //        break;
 //      }
     case DRT::Element::quad4:
     {
-      getNormalSide_tn<DRT::Element::quad4, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+      getNormalSide_tn<DRT::Element::quad4, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
       break;
     }
     case DRT::Element::quad8:
     {
-      getNormalSide_tn<DRT::Element::quad8, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+      getNormalSide_tn<DRT::Element::quad8, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
       break;
     }
 //      case DRT::Element::quad9:
 //      {
-//        getNormalSide_tn<DRT::Element::quad9, numdofpernode>(normal, side_xyze, lm, proj_x_n, xi_side);
+//        getNormalSide_tn<DRT::Element::quad9, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
 //        break;
 //      }
     default:
@@ -2150,31 +2147,29 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   DRT::Element::LocationArray cutla( 1 );
   line->LocationVector(*boundarydis_,cutla,false);
 
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
-  if(side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance())
+  if(numdofpernode == 3)
   {
-    const int numdofpernode = 3;
-
     switch ( line->Shape() )
     {
     case DRT::Element::line2:
     {
-      get_projxn_Line<DRT::Element::line2, numdofpernode>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
+      get_projxn_Line<DRT::Element::line2, 3>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
       break;
     }
     default:
       dserror( "unsupported line shape %d", line->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
+  else if (numdofpernode == 4) // four dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 4;
-
     switch ( line->Shape() )
     {
     case DRT::Element::line2:
     {
-      get_projxn_Line<DRT::Element::line2, numdofpernode>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
+      get_projxn_Line<DRT::Element::line2, 4>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
       break;
     }
     default:
@@ -2300,70 +2295,69 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   DRT::Element::LocationArray cutla( 1 );
   side->LocationVector(*boundarydis_,cutla,false);
 
-  if (side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance()) // three dofs per node, for standard Dirichlet coupling
-  {
-    const int numdofpernode = 3;
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
+  if (numdofpernode == 3) // three dofs per node, for standard Dirichlet coupling
+  {
     switch ( side->Shape() )
     {
 //      case DRT::Element::tri3:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri3,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side);
+//        on_side = ProjectOnSide<DRT::Element::tri3,3>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri6,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side);
+//        on_side = ProjectOnSide<DRT::Element::tri6,3>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side);
 //        break;
 //      }
     case DRT::Element::quad4:
     {
-      on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+      on_side = ProjectOnSide<DRT::Element::quad4,3>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
 //    case DRT::Element::quad8:
 //    {
-//      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//      on_side = ProjectOnSide<DRT::Element::quad8,3>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //      break;
 //    }
 //      case DRT::Element::quad9:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::quad9,3>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
+  else if (numdofpernode == 4) // four dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 4;
-
     switch ( side->Shape() )
     {
 //      case DRT::Element::tri3:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri3,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::tri3,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri6,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::tri6,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
     case DRT::Element::quad4:
     {
-      on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+      on_side = ProjectOnSide<DRT::Element::quad4,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
 //    case DRT::Element::quad8:
 //    {
-//      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//      on_side = ProjectOnSide<DRT::Element::quad8,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //      break;
 //    }
 //      case DRT::Element::quad9:
 //      {
-//        //      on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+//        //      on_side = ProjectOnSide<DRT::Element::quad9,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
     default:
@@ -2456,31 +2450,29 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   DRT::Element::LocationArray cutla( 1 );
   line->LocationVector(*boundarydis_,cutla,false);
 
+  // get number of dofs for this side element
+  const int numdofpernode = side->NumDofPerNode(*side->Nodes()[0]);
 
-  if(side->ElementType() == DRT::ELEMENTS::Bele3Type::Instance())
+  if(numdofpernode == 3)
   {
-    const int numdofpernode = 3;
-
     switch ( line->Shape() )
     {
     case DRT::Element::line2:
     {
-      on_line = ProjectOnLine<DRT::Element::line2,numdofpernode>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
+      on_line = ProjectOnLine<DRT::Element::line2,3>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
       break;
     }
     default:
       dserror( "unsupported line shape %d", line->Shape() ); break;
     }
   }
-  else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
+  else if (numdofpernode == 4) // four dofs per node, for standard Dirichlet coupling
   {
-    const int numdofpernode = 4;
-
     switch ( line->Shape() )
     {
     case DRT::Element::line2:
     {
-      on_line = ProjectOnLine<DRT::Element::line2,numdofpernode>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
+      on_line = ProjectOnLine<DRT::Element::line2,4>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
       break;
     }
     default:

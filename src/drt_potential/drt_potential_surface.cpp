@@ -50,7 +50,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   if(prob_dim_ == 2)
     potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE2", conditions_to_copy);
   else if(prob_dim_ == 3)
-    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
+    potentialdis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3_3", conditions_to_copy);
   else
     dserror("problem dimension not correct");
   dsassert(potentialdis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");

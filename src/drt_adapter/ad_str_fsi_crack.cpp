@@ -174,7 +174,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3", conditions_to_copy);
+  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
   boundary_dis->ReplaceDofSet(newdofset);
@@ -186,7 +186,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
 
 
     int neweleid = boundary_dis->NumGlobalElements();
-    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, 0/*boundary_dis2_->gNode(nodeids[0])->Owner()*/ );
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3_3","quad4", neweleid, 0/*boundary_dis2_->gNode(nodeids[0])->Owner()*/ );
     spr->SetNodeIds( 4, finalids );
     boundary_dis->AddElement( spr );
 
@@ -325,7 +325,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3", conditions_to_copy);
+  temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
   temp_dis->ReplaceDofSet(newdofset);
@@ -533,7 +533,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
     if( temp_dis->HaveGlobalElement( *it ) )
     {
       DRT::Element* elem = temp_dis->gElement( *it );
-      //Teuchos::RCP<DRT::Element> adelem = DRT::UTILS::Factory("BELE3","quad4", total_num+incr_id, elem->Owner() );
+      //Teuchos::RCP<DRT::Element> adelem = DRT::UTILS::Factory("BELE3_3","quad4", total_num+incr_id, elem->Owner() );
       if( elem->Owner() == temp_dis->Comm().MyPID() )
       {
         lmaster = temp_dis->Comm().MyPID();
@@ -545,7 +545,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
     temp_dis->Comm().SumAll( &lmaster, &gmaster, 1 );
     temp_dis->Comm().Broadcast( &numnodes, 1, gmaster );
     temp_dis->Comm().Broadcast( &nodeids[0], 4, gmaster );
-    Teuchos::RCP<DRT::Element> adelem = DRT::UTILS::Factory("BELE3","quad4", total_num++, gmaster );
+    Teuchos::RCP<DRT::Element> adelem = DRT::UTILS::Factory("BELE3_3","quad4", total_num++, gmaster );
     adelem->SetNodeIds( numnodes, nodeids );
     boundary_dis->AddElement( adelem );
     incr_id++;

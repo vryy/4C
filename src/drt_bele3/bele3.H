@@ -1,12 +1,12 @@
 /*!
  * \file bele3.H
  *
- * <pre>
- * Maintainer: Axel Gerstenberger
- *             gerstenberger@lnm.mw.tum.de
- *             http://www.lnm.mw.tum.de
- *             089 - 289-15236
- * </pre>
+<pre>
+Maintainer: Raffaela Kruse
+            kruse@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
+</pre>
  */
 
 #ifndef BELE3_H
@@ -65,13 +65,17 @@ private:
  * This element is meant to have no physics. It can be used to have a boundary discretization
  * of surface/boundary elements. They can be of any 2d shape (quad4,quad9,tri3,...)
  *
- * The number of dof per node is set to 3, so we can define displacement vectors by
- * using FillComplete on the boundary discretization.
+ * The number of dof per node is set to 3 per default, so we can define displacement vectors by
+ * using FillComplete on the boundary discretization. Furthermore numdofpernode can be adapted
+ * if necessary.
  *
- * \author axelchen (gerstenberger@lnm.mw.tum.de)
+ * \author kruse (kruse@lnm.mw.tum.de)
  */
 class Bele3 : public DRT::Element
 {
+  // friend class to fill number of dofs per node exclusively during creation
+  friend class Bele3Type;
+
 public:
 
   //@}
@@ -123,7 +127,7 @@ public:
 
   //! @name Access methods
 
-  virtual int NumDofPerNode(const DRT::Node&) const {return 3;}
+  virtual int NumDofPerNode(const DRT::Node&) const {return numdofpernode_;}
   virtual int NumDofPerElement() const { return 0; }
   void Print(std::ostream& os) const;
   virtual DRT::ElementType & ElementType() const { return Bele3Type::Instance(); }
@@ -160,6 +164,15 @@ public:
 
 private:
 
+  /*!
+    \brief Set number of dofs
+
+    \param numdofpernode: number of degress of freedom for one node
+   */
+  virtual void SetNumDofPerNode(int numdofpernode) { numdofpernode_ = numdofpernode; }
+
+  int numdofpernode_; ///< number of degrees of freedom
+
   //! action parameters recognized by bele3
   enum ActionType
   {
@@ -185,6 +198,7 @@ private:
             break;
           default:
             dserror("distype unknown!");
+            break;
       }
       return hoel;
     };
@@ -286,7 +300,7 @@ public:
 
   For this 3D boundary element, we have 3 displacements, if needed
   */
-  virtual int NumDofPerNode(const DRT::Node&) const { return 3; }
+  virtual int NumDofPerNode(const DRT::Node&) const { return numdofpernode_; }
 
   virtual int NumDofPerElement() const { return 0; }
 
@@ -320,6 +334,15 @@ public:
   //@}
 
 private:
+
+  /*!
+    \brief Set number of dofs
+
+    \param numdofpernode: number of degress of freedom for one node
+   */
+  virtual void SetNumDofPerNode(int numdofpernode) { numdofpernode_ = numdofpernode; }
+
+  int numdofpernode_; ///< number of degrees of freedom
 
   //! action parameters recognized by Bele3Line
   enum ActionType

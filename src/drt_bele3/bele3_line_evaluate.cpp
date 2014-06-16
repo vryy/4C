@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Raffaela Kruse
+            kruse@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -68,7 +68,8 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
       break;
     }
     default:
-        dserror("Unknown type of action for Bele3Line");
+      dserror("Unknown type of action for Bele3Line");
+      break;
     } // end of switch(act)
 
     return 0;
@@ -209,7 +210,8 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(const Disc
       rule = DRT::UTILS::intrule_line_3point;
       break;
     default:
-    dserror("unknown number of nodes for gaussrule initialization");
+      dserror("unknown number of nodes for gaussrule initialization");
+      break;
     }
   return rule;
 }

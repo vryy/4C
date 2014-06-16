@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Raffaela Kruse
+            kruse@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -34,6 +34,7 @@ DRT::Element(id,owner)
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   SetParentMasterElement(parent,lline);
+  SetNumDofPerNode(parent->NumDofPerNode(*nodes[0]));
   return;
 }
 
@@ -41,7 +42,8 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3Line::Bele3Line(const DRT::ELEMENTS::Bele3Line& old) :
-DRT::Element(old)
+DRT::Element(old),
+numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -68,6 +70,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3Line::Shape() const
   case 3: return line3;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }
@@ -107,7 +110,7 @@ DRT::ELEMENTS::Bele3Line::~Bele3Line()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3Line::Print(std::ostream& os) const
 {
-  os << "Bele3Line ";
+  os << "Bele3_" << numdofpernode_ << "Line ";
   Element::Print(os);
   return;
 }

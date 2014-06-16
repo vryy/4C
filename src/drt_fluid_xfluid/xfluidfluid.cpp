@@ -2102,7 +2102,7 @@ void FLD::XFluidFluid::Init()
   switch (boundIntType_)
   {
   case INPAR::XFEM::BoundaryTypeSigma:
-    element_name = "BELE3"; // use 3 dofs, (REMARK: also BELE3_4 with Xfluid-Mortaring possible, but more expensive!)
+    element_name = "BELE3_3"; // use 3 dofs, (REMARK: also BELE3_4 with Xfluid-Mortaring possible, but more expensive!)
     IO::cout << "XFEM interface method: BoundaryTypeSigma" << IO::endl;
     if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("choose Xfluid_Sided_Coupling for BoundaryTypeSigma");

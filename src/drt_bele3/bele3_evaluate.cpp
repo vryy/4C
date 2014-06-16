@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Raffaela Kruse
+            kruse@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
