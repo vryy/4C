@@ -542,22 +542,6 @@ protected:
   //! Evaluate Hex8 Weights to keep them static
   const std::vector<double> soh8_weights();
 
-  //! Calculate linear stiffness and mass matrix
-  virtual void linstiffmass(
-    std::vector<int>& lm,  ///< location matrix
-    std::vector<double>& disp,  ///< current displacements
-    std::vector<double>& residual,  ///< current residual displ
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
-    LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain, ///< strains at GP
-    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
-    Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  ///< stress output option
-    const INPAR::STR::StrainType iostrain, ///< strain output option
-    const INPAR::STR::StrainType ioplstrain); ///< plastic strain output option
-
   //! push forward of material stresses to the current, spatial configuration
   void PK2toCauchy(
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
