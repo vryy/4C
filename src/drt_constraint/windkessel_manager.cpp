@@ -5,31 +5,31 @@
 
 ************************************************************************************************************************************
 A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
-C * dp/dt + (p-p_ref)/R_p - (1 + Z_c/R_p) Q - (C R_c  + L/R_p) * dQ/dt - L * C * d2Q/dt2 = 0
+C * dp/dt + (p-p_ref)/R_p - (1 + Z_c/R_p) q - (C R_c  + L/R_p) * dq/dt - L * C * d2q/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
                ____
             __|Z_c_|__
-____->Q____|          |_________
+____->q____|          |_________
            |||| L  ||||   |    _|_
 p-p_ref                  |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
-____   ___________________|_____|    [Q = -dVolume/dt: flux, p: pressure]
-    <-Q
+____   ___________________|_____|    [q = -dVolume/dt: flux, p: pressure]
+    <-q
 
 B) an arterial Windkessel model governing the arterial pressure with a four-element Windkessel with an additional valve law
 (resistive Windkessel) infront of it (DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS):
-Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = K_ar*(p_v-p_ar) + K_p*(p_ar-p_at) if p_v > p_ar
+q = K_at*(p_v-p_at) if p_v < p_at, q = K_p*(p_v-p_at) if p_at < p_v < p_ar, q = K_ar*(p_v-p_ar) + K_p*(p_ar-p_at) if p_v > p_ar
 "penalty parameters" (inverse resistances) K_at, K_ar >> K_p
 (cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity", Comp. & Struct. 84 (2006) 1743-1759),
 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-proximal mass balance: C_arp * d(p_arp)/dt + y_arp = Q_av
+proximal mass balance: C_arp * d(p_arp)/dt + y_arp = q_av
 proximal lin momentum balance: L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
 distal mass balance: C_ard * d(p_ard)/dt + y_ard = y_arp
 distal lin momentum balance: R_ard * y_ard = p_ard - p_ref
 
-combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
+combined with laws for the mitral valve (mv): p_at - p_v = R_mv * q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * q_av, with
 R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
 R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_av_min, k_p << 1
 
@@ -144,6 +144,7 @@ UTILS::WindkesselManager::WindkesselManager
       dserror("theta for Windkessel time integration out of range (0.0,1.0] !");
 
     pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(params,"PRESTRESS");
+    pstime_ = params.get("PRESTRESSTIME",0.0);
 
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //build Epetra_Map used as domainmap and rowmap for result vectors
@@ -270,6 +271,8 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   p.set("scale_theta",theta);
   p.set("time_step_size",ts_size);
 
+  totaltime_ = time;
+
   Teuchos::RCP<Epetra_Vector> voldummy = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> vnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> wkdofnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
@@ -304,7 +307,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   vn_->Export(*vnredundant,*windkimpo_,Add);
 
   // no flux within the time-step when we have quasi-static prestressing: thus set volume at t_{n+1} to initial volume
-  if (pstype_ == INPAR::STR::prestress_mulf) vn_->Update(1.0,*v_,0.0);
+  if (pstype_ == INPAR::STR::prestress_mulf && totaltime_ <= pstime_) vn_->Update(1.0,*v_,0.0);
 
   // solution and volume at generalized mid-point
   wkdofm_->Update(theta, *wkdofn_, 1.-theta, *wkdof_, 0.0);
@@ -315,8 +318,8 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   dwkdofn_->Update((theta-1.)/theta,*dwkdof_,1./(theta*ts_size));
   dwkdofm_->Update(theta, *dwkdofn_, 1.-theta, *dwkdof_, 0.0);
 
-  // update flux
-  qn_->Update(1.0,*vn_,-1.0,*v_,0.0);
+  // update flux - watch the signs! q = -dv/dt
+  qn_->Update(-1.0,*vn_,1.0,*v_,0.0);
   qn_->Update((theta-1.)/theta,*q_,1./(theta*ts_size));
   qm_->Update(theta, *qn_, 1.-theta, *q_, 0.0);
 
@@ -372,8 +375,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   mat_dstruct_dwkdof_->Complete(*windkesselmap_,*dofrowmap);
 
   // no flux, thus no change of vol w.r.t. displacements when prestressing
-  if (pstype_ == INPAR::STR::prestress_mulf) mat_dwindk_dd_->Zero();
-
+  if (pstype_ == INPAR::STR::prestress_mulf && totaltime_ <= pstime_) mat_dwindk_dd_->Zero();
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
@@ -393,8 +395,9 @@ void UTILS::WindkesselManager::UpdateTimeStep()
   dq_->Update(1.0,*dqn_,0.0);
   ddq_->Update(1.0,*ddqn_,0.0);
 
+
   // reset arterial pressure to initial one after each step when we have quasi-static prestressing!
-  if (pstype_ == INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::prestress_mulf && totaltime_ <= pstime_)
   {
     Teuchos::ParameterList p;
     p.set("OffsetID",offsetID_);
@@ -406,6 +409,8 @@ void UTILS::WindkesselManager::UpdateTimeStep()
     wk_heartvalvearterial_proxdist_->Reset(p,wkdofredundant);
 
     wkdof_->Export(*wkdofredundant,*windkimpo_,Insert);
+    wkdofn_->Export(*wkdofredundant,*windkimpo_,Insert);
+
   }
 
 }

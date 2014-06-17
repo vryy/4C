@@ -5,31 +5,31 @@
 
 ************************************************************************************************************************************
 A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
-C * dp/dt + (p-p_ref)/R_p - (1 + Z_c/R_p) Q - (C R_c  + L/R_p) * dQ/dt - L * C * d2Q/dt2 = 0
+C * dp/dt + (p-p_ref)/R_p - (1 + Z_c/R_p) q - (C R_c  + L/R_p) * dq/dt - L * C * d2q/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
                ____
             __|Z_c_|__
-____->Q____|          |_________
+____->q____|          |_________
            |||| L  ||||   |    _|_
 p-p_ref                  |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
-____   ___________________|_____|    [Q = -dVolume/dt: flux, p: pressure]
-    <-Q
+____   ___________________|_____|    [q = -dVolume/dt: flux, p: pressure]
+    <-q
 
 B) an arterial Windkessel model governing the arterial pressure with a four-element Windkessel with an additional valve law
 (resistive Windkessel) infront of it (DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS):
-Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = K_ar*(p_v-p_ar) + K_p*(p_ar-p_at) if p_v > p_ar
+q = K_at*(p_v-p_at) if p_v < p_at, q = K_p*(p_v-p_at) if p_at < p_v < p_ar, q = K_ar*(p_v-p_ar) + K_p*(p_ar-p_at) if p_v > p_ar
 "penalty parameters" (inverse resistances) K_at, K_ar >> K_p
 (cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity", Comp. & Struct. 84 (2006) 1743-1759),
 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-proximal mass balance: C_arp * d(p_arp)/dt + y_arp = Q_av
+proximal mass balance: C_arp * d(p_arp)/dt + y_arp = q_av
 proximal lin momentum balance: L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
 distal mass balance: C_ard * d(p_ard)/dt + y_ard = y_arp
 distal lin momentum balance: R_ard * y_ard = p_ard - p_ref
 
-combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
+combined with laws for the mitral valve (mv): p_at - p_v = R_mv * q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * q_av, with
 R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
 R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_av_min, k_p << 1
 
@@ -414,9 +414,9 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     {
       factor_wkdof = 1./R_p;
       factor_dwkdof = C;
-      factor_q = 1. + Z_c/R_p;
-      factor_dq = Z_c*C + L/R_p;
-      factor_ddq = L*C;
+      factor_q = -(1. + Z_c/R_p);
+      factor_dq = -(Z_c*C + L/R_p);
+      factor_ddq = -L*C;
       factor_1 = -p_ref/R_p;
     }
 
@@ -541,7 +541,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex;
-        elevector2.Scale(-(factor_q/ts_size + factor_dq/(theta*ts_size*ts_size) + factor_ddq/(theta*theta*ts_size*ts_size*ts_size)));
+        elevector2.Scale(factor_q/ts_size + factor_dq/(theta*ts_size*ts_size) + factor_ddq/(theta*theta*ts_size*ts_size*ts_size));
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
       }
       if (assvec7)
@@ -851,7 +851,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       {
         factor_wkdof[0] = 1./Rav + 1./Rmv;
         factor_dwkdof[0] = 0.;
-        factor_q[0] = 1.;
+        factor_q[0] = -1.;
         factor_dq[0] = 0.;
         factor_ddq[0] = 0.;
         factor_1[0] = -p_at/Rmv - p_ar/Rav;
@@ -863,7 +863,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         {
           factor_wkdof[0] = K_at;
           factor_dwkdof[0] = 0.;
-          factor_q[0] = 1.;
+          factor_q[0] = -1.;
           factor_dq[0] = 0.;
           factor_ddq[0] = 0.;
           factor_1[0] = -K_at*p_at;
@@ -872,7 +872,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         {
           factor_wkdof[0] = K_p;
           factor_dwkdof[0] = 0.;
-          factor_q[0] = 1.;
+          factor_q[0] = -1.;
           factor_dq[0] = 0.;
           factor_ddq[0] = 0.;
           factor_1[0] = -K_p*p_at;
@@ -881,7 +881,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         {
           factor_wkdof[0] = K_ar;
           factor_dwkdof[0] = 0.;
-          factor_q[0] = 1.;
+          factor_q[0] = -1.;
           factor_dq[0] = 0.;
           factor_ddq[0] = 0.;
           factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
@@ -902,9 +902,9 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       {
         factor_wkdof[1] = 1./R_p;
         factor_dwkdof[1] = C;
-        factor_q[1] = 1. + Z_c/R_p;
-        factor_dq[1] = Z_c*C + L/R_p;
-        factor_ddq[1] = L*C;
+        factor_q[1] = -(1. + Z_c/R_p);
+        factor_dq[1] = -(Z_c*C + L/R_p);
+        factor_ddq[1] = -L*C;
         factor_1[1] = -p_ref/R_p;
       }
 
@@ -1079,9 +1079,9 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         std::vector<int> colvec2(1);
         colvec1[0]=gindex;
         colvec2[0]=gindex2;
-        elevector2a.Scale(-factor_q[0]/ts_size);
+        elevector2a.Scale(factor_q[0]/ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
-        elevector2b.Scale(-(factor_q[1]/ts_size + factor_dq[1]/(theta*ts_size*ts_size) + factor_ddq[1]/(theta*theta*ts_size*ts_size*ts_size)));
+        elevector2b.Scale(factor_q[1]/ts_size + factor_dq[1]/(theta*ts_size*ts_size) + factor_ddq[1]/(theta*theta*ts_size*ts_size*ts_size));
         //elevector2b.Scale(0.);
         sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
 
@@ -1383,7 +1383,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       // fill multipliers for rhs vector
       factor_wkdof[0] = 1./Rav + 1./Rmv;
       factor_dwkdof[0] = 0.;
-      factor_q[0] = 1.;
+      factor_q[0] = -1.;
       factor_1[0] = -p_at/Rmv - p_arp/Rav;
 
       factor_wkdof[1] = 1./Rav;
@@ -1582,7 +1582,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec1(1);
         colvec1[0]=gindex;
-        elevector2.Scale(-factor_q[0]/ts_size);
+        elevector2.Scale(factor_q[0]/ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec1);
 
       }

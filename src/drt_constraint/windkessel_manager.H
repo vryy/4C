@@ -332,6 +332,8 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
     INPAR::STR::PreStress pstype_;
+    double pstime_;
+    double totaltime_;
 
   }; //class
 }
