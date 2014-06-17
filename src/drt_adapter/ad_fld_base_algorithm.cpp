@@ -571,6 +571,24 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->set<bool>("shape derivatives", DRT::INPUT::IntegralValue<int>(prbdyn,"SHAPEDERIVATIVES"));
   }
 
+// =================================================================================
+// Safety Check for usage of DESIGN SURF VOLUMETRIC FLOW CONDITIONS       AN 06/2014
+// =================================================================================
+  if (NULL != actdis->GetCondition("VolumetricSurfaceFlowCond"))
+  {
+      if (prb_fluid_redmodels != probtype)
+      {
+        dserror("ERROR: Given Volumetric Womersly infow condition only works with Problemtyp Fluid_RedModels. \n"
+            " --> If you want to use this conditions change Problemtyp to Fluid_RedModels. \n"
+            " --> If you don't want to use this condition comment the respective bcFluid section." );
+      }
+  }
+
+//  if ( prb_fluid_redmodels != probtype)
+//  {
+//
+//  }
+
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
