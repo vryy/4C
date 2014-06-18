@@ -1625,13 +1625,7 @@ void STR::TimInt::ReadRestartWindkessel()
   if (windkman_->HaveWindkessel())
   {
     IO::DiscretizationReader reader(discret_, step_);
-    Teuchos::RCP<Epetra_Map> windkmap=windkman_->GetWindkesselMap();
-    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*windkmap, true);
-    reader.ReadVector(tempvec, "wkdof");
-    windkman_->SetWkDofVector(tempvec);
-    reader.ReadVector(tempvec, "refwindkval");
-    windkman_->SetRefBaseValues(tempvec, (*time_)[0]);
-
+    windkman_->ReadRestart(reader,(*time_)[0]);
   }
 }
 

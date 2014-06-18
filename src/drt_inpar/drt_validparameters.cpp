@@ -1077,6 +1077,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("WINDKESSEL_TIMINT_THETA",0.5,
                   "theta for one-step-theta time-integration scheme of Windkessel",
                   &sdyn);
+  setStringToIntegralParameter<int>("RESTART_WITH_WINDKESSEL","No","Must be chosen if a non-Windkessel simulation is to be restarted with Windkessel",
+                                 yesnotuple,yesnovalue,&sdyn);
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
                &sdyn);

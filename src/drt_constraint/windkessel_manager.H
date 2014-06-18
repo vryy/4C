@@ -23,6 +23,11 @@ Maintainer: Marc Hirschvogel
 
 
 
+namespace IO
+{
+  class DiscretizationReader;
+}
+
 namespace DRT
 {
   class Condition;
@@ -227,6 +232,17 @@ namespace UTILS
         return (*vn_)[i];
     };
 
+    /*!
+     \brief Read restart information
+    */
+    void ReadRestart(
+        IO::DiscretizationReader& reader,
+        const double& time);
+    /*!
+     \brief Return input parameter list
+    */
+    Teuchos::ParameterList& Params() { return params_; }
+
     /// Reset reference base values for restart computations
     void SetRefBaseValues
     (
@@ -334,7 +350,7 @@ namespace UTILS
     INPAR::STR::PreStress pstype_;
     double pstime_;
     double totaltime_;
-
+    Teuchos::ParameterList params_; ///< input parameters
   }; //class
 }
 #endif /*WINDKESSELMANAGER_H*/

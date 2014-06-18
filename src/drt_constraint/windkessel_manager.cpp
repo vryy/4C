@@ -56,6 +56,7 @@ Maintainer: Marc Hirschvogel
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_windkessel_merged.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition.H"
 #include "windkessel_manager.H"
@@ -230,6 +231,8 @@ UTILS::WindkesselManager::WindkesselManager
     wk_heartvalvearterial_proxdist_->Initialize(p,vredundant,solredundant);
     v_->Export(*vredundant,*windkimpo_,Add);
     wkdof_->Export(*solredundant,*windkimpo_,Insert);
+
+    params_ = params;
 
   }
 
@@ -429,6 +432,29 @@ void UTILS::WindkesselManager::UpdateWkDof(Teuchos::RCP<Epetra_Vector> wkdofincr
 }
 
 /*----------------------------------------------------------------------*
+|(public)                                                  pfaller 06/14|
+|Read restart information                                               |
+ *-----------------------------------------------------------------------*/
+void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
+{
+  // check if restart from non-Windkessel simulation is desired
+  bool restartwithwindkessel = DRT::INPUT::IntegralValue<int>(Params(),"RESTART_WITH_WINDKESSEL");
+
+  if(!restartwithwindkessel)
+  {
+    Teuchos::RCP<Epetra_Map> windkmap=GetWindkesselMap();
+    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*windkmap, true);
+
+    reader.ReadVector(tempvec, "wkdof");
+    SetWkDofVector(tempvec);
+    reader.ReadVector(tempvec, "refwindkval");
+    SetRefBaseValues(tempvec, time);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
 |(public)                                                      mhv 12/13|
 |Reset reference base values for restart                                |
  *-----------------------------------------------------------------------*/
@@ -533,13 +559,14 @@ void UTILS::WindkesselManager::PrintPresFlux() const
       if (wk_heartvalvearterial_proxdist_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
+        printf("%2d vol: %10.5e \n",currentID[i],(*vmredundant)[4*i]);
         printf("%2d pres ventricle: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i]);
         printf("%2d pres artery prox: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i+1]);
-        printf("%2d flux artery prox: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+2]);
         printf("%2d pres artery dist: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i+3]);
         printf("%2d pres rate ventricle: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i]);
         printf("%2d pres rate artery prox: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+1]);
         printf("%2d pres rate artery dist: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+3]);
+        printf("%2d flux artery prox: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+2]);
       }
     }
   }
