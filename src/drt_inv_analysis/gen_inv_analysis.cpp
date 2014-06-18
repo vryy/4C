@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/growth_law.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -1120,7 +1121,19 @@ void STR::GenInvAnalysis::ReadInParameters()
           //p_(j+1) = params->k1_;
           //p_(j+2) = params->k2_;
           //p_(j) = params->prestretchcollagen_;
-          p_(j) = params->growthfactor_;
+          p_(j) = params->GetParameter(params->growthfactor,-1);
+        }
+      }
+      break;
+      case INPAR::MAT::m_growth_linear:
+      {
+        if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
+        {
+          MAT::PAR::GrowthLawLinear* params = dynamic_cast<MAT::PAR::GrowthLawLinear*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          const int j = p_.Length();
+          p_.Resize(j+1);
+          p_(j) = params->kthetaplus_;
         }
       }
       break;
@@ -1509,7 +1522,7 @@ void STR::GenInvAnalysis::ReadInParameters()
         }
         break;
       }
-      
+
       // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block or an interface to a micro material
       case INPAR::MAT::mes_couplogneohooke:
       case INPAR::MAT::mes_coupneohooke:
@@ -2355,9 +2368,27 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
         //const_cast<double&>(params->k1_)  = p_cur[j+1];
         //const_cast<double&>(params->k2_)  = p_cur[j+2];
         //const_cast<double&>(params->prestretchcollagen_) = p_cur[j];
-        const_cast<double&>(params->growthfactor_) = abs(p_cur[j]);
+
+        Epetra_Map dummy_map(1,1,0,*gcomm);
+        Teuchos::RCP <Epetra_Vector> parameter= Teuchos::rcp(new Epetra_Vector(dummy_map,true));
+        parameter->PutScalar(double (p_cur[j]));
+        params->SetParameter(params->growthfactor, parameter);
         if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
-        if (lmyrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->growthfactor_,params->k1_,params->k2_);
+        if (lmyrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e\n",p_cur[j]);
+        j += 1;
+      }
+    }
+    break;
+    case INPAR::MAT::m_growth_linear:
+    {
+      if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
+      {
+        MAT::PAR::GrowthLawLinear* params = dynamic_cast<MAT::PAR::GrowthLawLinear*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        // This is a tiny little bit brutal!!!
+        const_cast<double&>(params->kthetaplus_) = p_cur[j];
+        if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
+        if (lmyrank == 0) printf("MAT::PAR::Growth %20.15e\n",params->kthetaplus_);
         j += 1;
       }
     }

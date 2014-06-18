@@ -34,12 +34,6 @@ namespace MAT
 
   namespace PAR
   {
-    enum GrowthFunctionType
-    {
-      growth_linear,
-      growth_exp_degreasing
-    };
-
     /*----------------------------------------------------------------------*/
     /// material parameters
     class Growth : public Parameter

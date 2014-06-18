@@ -1492,6 +1492,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"CURVE","number of timecurve for increase of prestretch in time",0);
     AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp, ExpVar)","Lin");
     AddNamedReal(m,"MAXMASSPRODFAC","maximal factor of mass production");
+    AddNamedReal(m,"ELASTINFAC","factor for elastin content",true);
     AddNamedBool(m,"STOREHISTORY","store all history variables, not recommended for forward simulations",false,true);
 
     AppendMaterialDefinition(matlist,m);

@@ -90,12 +90,10 @@ namespace MAT
       const double Smax_;
       /// dilatation modulus
       const double kappa_;
-      // basal rate of mass production
-//      const double massprodbasal_;
       /// lifetime of collagen fibers
       const double lifetime_;
       /// growth factor for stress
-      const double growthfactor_;
+      //const double growthfactor_;
       /// homeostatic target value of scalar stress measure
       const std::vector<double> homstress_;
       /// growth factor for shear
@@ -130,6 +128,11 @@ namespace MAT
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      void OptParams(std::map<std::string,int>* pnames);
+
+      // !brief enum for mapping between material parameter and entry in the matparams_ vector
+      enum matparamnames_ {growthfactor, elastin_survival, first=growthfactor, last=elastin_survival};
 
     };  // class ConstraintMixture
 
@@ -329,7 +332,7 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       const int firstiter,  ///< iteration index, different for explicit and implicit integration
       double time,  ///< time
-      double elastin_survival   ///< amount of elastin which is still there
+      double elastin_survival  ///< amount of elastin which is still there
     );
 
     /// elastic response for one collagen fiber family
@@ -393,7 +396,8 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
       LINALG::Matrix<4,1>* massstress,  ///< growth stress measure
       double inner_radius,  ///< inner radius
-      LINALG::Matrix<4,1>* massprodcomp  ///< mass production rate
+      LINALG::Matrix<4,1>* massprodcomp,  ///< mass production rate
+      double growthfactor  ///< growth factor for stress
     );
 
     /// computes mass production rate for one fiber family
@@ -406,7 +410,8 @@ namespace MAT
       double inner_radius,  ///< inner radius
       double* massprodcomp,  ///< mass production rate
       LINALG::Matrix<3,1> a,  ///< fiber vector
-      const int idfiber  ///< number of fiber family 0,1,2,3
+      const int idfiber,  ///< number of fiber family 0,1,2,3
+      double growthfactor  ///< growth factor for stress
     );
 
     /// function for massproduction
@@ -425,7 +430,7 @@ namespace MAT
     void ElastinDegradation
     (
       LINALG::Matrix<1,3> coord,   ///< gp coordinate in reference configuration
-      double& degr   ///< amount of elastin which is still left
+      double& elastin_survival  ///< amount of elastin which is still there
     );
 
     /// compute stress and cmat for implicit integration with whole stress as driving force
@@ -439,7 +444,9 @@ namespace MAT
       double dt,  ///< delta time
       double time,  ///< time
       LINALG::Matrix<4,1> massprodcomp,  ///< mass production rate
-      LINALG::Matrix<4,1> massstress  ///< growth stress measure
+      LINALG::Matrix<4,1> massstress,  ///< growth stress measure
+      double elastin_survival,   ///< amount of elastin which is still there
+      double growthfactor  ///< growth factor for stress
     );
 
     /// compute stress and cmat for implicit integration with fiber stress as driving force
@@ -451,7 +458,9 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       double dt,  ///< delta time
-      double time  ///< time
+      double time,  ///< time
+      double elastin_survival,   ///< amount of elastin which is still there
+      double growthfactor  ///< growth factor for stress
     );
 
     /// derivative of stress with respect to massproduction of a single fiber family
@@ -477,7 +486,8 @@ namespace MAT
       double J,  ///< determinant of F
       double massstress,  ///< growth stress measure
       double homstress,  ///< homeostatic stress
-      double actcollstretch  ///< actual collagen stretch
+      double actcollstretch,  ///< actual collagen stretch
+      double growthfactor  ///< growth factor for stress
     );
 
     /// derivative of massproduction of a single fiber family with respect to stretch
@@ -492,7 +502,8 @@ namespace MAT
       double massstress,  ///< growth stress measure
       double homstress,  ///< homeostatic stress
       double actcollstretch,  ///< actual collagen stretch
-      double dt  ///< delta time
+      double dt,  ///< delta time
+      double growthfactor  ///< growth factor for stress
     );
 
   };
