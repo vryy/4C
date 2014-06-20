@@ -1438,10 +1438,10 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
           std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
           std::cout<<"  | Convergence check: " <<std::endl;
           std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-          std::cout<<"  | iteration:                          "<<setw(7)<<std::right<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
-          std::cout<<"  | actual reaction current at cathode: "<<std::scientific<<setw(12)<<std::right<<(*actualcurrent)[condid_cathode]<<std::endl;
-          std::cout<<"  | required total current at cathode:  "<<setw(12)<<std::right<<targetcurrent<<std::endl;
-          std::cout<<"  | negative residual (rhs):            "<<setw(12)<<std::right<<newtonrhs<<std::endl;
+          std::cout<<"  | iteration:                          "<<std::setw(7)<<std::right<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
+          std::cout<<"  | actual reaction current at cathode: "<<std::scientific<<std::setw(12)<<std::right<<(*actualcurrent)[condid_cathode]<<std::endl;
+          std::cout<<"  | required total current at cathode:  "<<std::setw(12)<<std::right<<targetcurrent<<std::endl;
+          std::cout<<"  | negative residual (rhs):            "<<std::setw(12)<<std::right<<newtonrhs<<std::endl;
           std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
         }
 
@@ -1541,19 +1541,19 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         else
           std::cout<<"  | the ohmic resistance calculated from applied potential and current flow!" <<std::endl;
         std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-        std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<setw(12)<<std::right<< effective_length << std::endl;
+        std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<std::setw(12)<<std::right<< effective_length << std::endl;
         if((*actualcurrent)[condid_cathode]!=0.0)
-          std::cout<<"  | Approximated GSTAT_LENGTH_CURRENTPATH:          "<<setw(12)<<std::right<< potdiffbulk/(*actualcurrent)[condid_cathode]*(*sigma_)[numscal_]*meanelectrodesurface <<std::endl;
+          std::cout<<"  | Approximated GSTAT_LENGTH_CURRENTPATH:          "<<std::setw(12)<<std::right<< potdiffbulk/(*actualcurrent)[condid_cathode]*(*sigma_)[numscal_]*meanelectrodesurface <<std::endl;
         std::cout<<"  | (not directly used to calculate the ohmic potential increment)"<<std::endl;
         std::cout<<"  | New guess for:                                  "<<std::endl;
-        std::cout<<"  | - ohmic potential increment:                    "<<setw(12)<<std::right<< potinc_ohm <<std::endl;
-        std::cout<<"  | - overpotential increment cathode (condid " << condid_cathode <<"):   " <<setw(12)<<std::right<< potinc_cathode << std::endl;
-        std::cout<<"  | - overpotential increment anode (condid " << condid_anode <<"):     " <<setw(12)<<std::right<< potinc_anode << std::endl;
-        std::cout<<"  | -> total increment for potential:               " <<setw(12)<<std::right<< gstatincrement_ << std::endl;
+        std::cout<<"  | - ohmic potential increment:                    "<<std::setw(12)<<std::right<< potinc_ohm <<std::endl;
+        std::cout<<"  | - overpotential increment cathode (condid " << condid_cathode <<"):   " <<std::setw(12)<<std::right<< potinc_cathode << std::endl;
+        std::cout<<"  | - overpotential increment anode (condid " << condid_anode <<"):     " <<std::setw(12)<<std::right<< potinc_anode << std::endl;
+        std::cout<<"  | -> total increment for potential:               " <<std::setw(12)<<std::right<< gstatincrement_ << std::endl;
         std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-        std::cout<<"  | old potential at the cathode (condid "<<condid_cathode <<"):     "<<setw(12)<<std::right<<potold<<std::endl;
-        std::cout<<"  | new potential at the cathode (condid "<<condid_cathode <<"):     "<<setw(12)<<std::right<<potnew<<std::endl;
-        std::cout<<"  | new applied potential difference (condid "<<condid_cathode <<"): "<<setw(12)<<std::right<<potdiffcell<<std::endl;
+        std::cout<<"  | old potential at the cathode (condid "<<condid_cathode <<"):     "<<std::setw(12)<<std::right<<potold<<std::endl;
+        std::cout<<"  | new potential at the cathode (condid "<<condid_cathode <<"):     "<<std::setw(12)<<std::right<<potnew<<std::endl;
+        std::cout<<"  | new applied potential difference (condid "<<condid_cathode <<"): "<<std::setw(12)<<std::right<<potdiffcell<<std::endl;
         std::cout<<"  +--------------------------------------------------------------------------" <<std::endl<<std::endl;
       }
 
