@@ -246,6 +246,12 @@ namespace ADAPTER {
     /// Get time step size \f$\Delta t_n\f$
     virtual double Dt() const = 0;
 
+    /// Return current step number $n$
+    virtual int StepOld() const = 0;
+
+    /// Return current step number $n+1$
+    virtual int Step() const = 0;
+
     /// Get number of time steps
     virtual int NumStep() const = 0;
 

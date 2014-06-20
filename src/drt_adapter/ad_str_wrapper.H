@@ -217,6 +217,14 @@ namespace ADAPTER
     virtual double Dt() const
     { return structure_->Dt(); }
 
+    /// Return current step number $n$
+    virtual int StepOld() const
+    { return structure_->StepOld(); }
+
+    /// Return current step number $n+1$
+    virtual int Step() const
+    { return structure_->Step(); }
+
     /// get number of time steps
     virtual int NumStep() const
     { return structure_->NumStep(); }

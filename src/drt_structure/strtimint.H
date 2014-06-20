@@ -840,13 +840,13 @@ namespace STR
     virtual void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
 
     //! Return current step number $n$
-    int StepOld() const { return step_; }
+    virtual int StepOld() const { return step_; }
 
     //! Return current step number $n+1$
-    int Step() const { return stepn_; }
+    virtual int Step() const { return stepn_; }
 
     //! Get number of time steps
-    int NumStep() const { return stepmax_; }
+    virtual int NumStep() const { return stepmax_; }
 
 
     //! Return MapExtractor for Dirichlet boundary conditions

@@ -489,8 +489,11 @@ namespace THR
     //! Return domain map
     const Epetra_Map& DomainMap() { return tang_->DomainMap(); }
 
-    //! Return current step number $n$
+    //! Return current time \f$t_{n}\f$
     virtual double TimeOld() const { return (*time_)[0]; }
+
+    //! Return target time \f$t_{n+1}\f$
+    virtual double Time() const { return timen_; }
 
     //! Get upper limit of time range of interest
     virtual double GetTimeEnd() const { return timemax_; }
@@ -504,6 +507,9 @@ namespace THR
 
     //! Return current step number $n$
     virtual int StepOld() const { return step_; }
+
+    //! Return current step number $n+1$
+    virtual int Step() const { return stepn_; }
 
     //! Get number of time steps
     virtual int NumStep() const { return stepmax_; }
