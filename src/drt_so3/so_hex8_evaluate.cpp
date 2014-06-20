@@ -56,7 +56,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-  // elevec3 is not used anyway
+  LINALG::Matrix<NUMDOF_SOH8,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
@@ -128,8 +128,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
 
       else // standard analysis
-        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,matptr,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,matptr,NULL,&elevec1,NULL,&elevec3,NULL,NULL,NULL,params,
+                                    INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
       break;
     }
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
-      nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+      nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
         INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
       break;
@@ -199,7 +199,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
       else // standard analysis
-        nlnstiffmass(lm,mydisp,&myvel,&myacc,myres,mydispmat,&elemat1,&elemat2,&elevec1,&elevec2,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,&myvel,&myacc,myres,mydispmat,&elemat1,&elemat2,&elevec1,&elevec2,&elevec3,NULL,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -277,7 +277,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
           invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
         else // standard analysis
-          nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+          nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
 
         {
           DRT::PackBuffer data;
@@ -930,8 +930,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
-      else // standard analysis
-        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+        else // standard analysis
+          nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
 
       // add stresses to global map
       //get EleID Id()
@@ -1194,6 +1194,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,                 // element internal force vector
       LINALG::Matrix<NUMDOF_SOH8,1>* forceinert,                 // element inertial force vector
+      LINALG::Matrix<NUMDOF_SOH8,1>* force_str,                 // element structural force vector
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
@@ -1262,6 +1263,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   Epetra_SerialDenseMatrix* oldfeas = NULL;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv = NULL; // EAS history
   Epetra_SerialDenseMatrix* oldKda = NULL;    // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = NULL;   // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -1281,7 +1283,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
     LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
@@ -1289,24 +1292,44 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     {
       res_d_eas(i) = residual[i];
     }
+
+    // this is a line search step, i.e. the direction of the eas increments
+    // has been calculated by a Newton step and now it is only scaled
+    if (params.isParameter("alpha_ls"))
+    {
+      double alpha_ls=params.get<double>("alpha_ls");
+      // undo step
+      eas_inc->Scale(-1.);
+      alpha->operator +=(*eas_inc);
+      // scale increment
+      eas_inc->Scale(-1.*alpha_ls);
+      // add reduced increment
+      alpha->operator +=(*eas_inc);
+    }
     // add Kda . res_d to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    switch(eastype_)
+    else
     {
-    case DRT::ELEMENTS::So_hex8::soh8_easfull:
-      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
-      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,soh8_easfull,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
-      break;
-    case DRT::ELEMENTS::So_hex8::soh8_easmild:
-      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
-      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,soh8_easmild,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
-      break;
-    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-      LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
-      LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
-      break;
-    case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+      switch(eastype_)
+      {
+      case DRT::ELEMENTS::So_hex8::soh8_easfull:
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,soh8_easfull,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+        LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(1.,*alpha,1.,*eas_inc);
+        break;
+      case DRT::ELEMENTS::So_hex8::soh8_easmild:
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,soh8_easmild,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+        LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(1.,*alpha,1.,*eas_inc);
+        break;
+      case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+        LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(1.,*alpha,1.,*eas_inc);
+        break;
+      case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+      }
     }
     /* end of EAS Update ******************/
 
@@ -1331,6 +1354,12 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   // build new jacobian mapping with respect to the material configuration
   if (structale_==true)
     InitJacobianMapping(dispmat);
+
+  // check if we need to split the residuals (for Newton line search)
+  // if true an additional global vector is assembled containing
+  // the internal forces without the condensed EAS entries and the norm
+  // of the EAS residual is calculated
+  bool split_res = params.isParameter("cond_rhs_norm");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1784,6 +1813,10 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
 
+    // structural force vector
+    if (split_res && force_str!=NULL)
+      force_str->MultiplyTN(detJ_w,bop,stress,1.);
+
     // update stiffness matrix
     if (stiffmatrix != NULL)
     {
@@ -1924,6 +1957,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
           }
         }
 
+        // internal force vector without EAS terms
         if (forceinert != NULL)
         {
           //integrate nonlinear inertia force term
@@ -1940,6 +1974,12 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+
+  // rhs norm of eas equations
+  if (eastype_!=soh8_easnone && split_res && force!=NULL)
+    // only add for row-map elements
+    if (params.get<int>("MyPID")==Owner())
+      params.get<double>("cond_rhs_norm") += pow(feas.Norm2(),2.);
 
   if (force != NULL && stiffmatrix != NULL)
   {

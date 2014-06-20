@@ -49,6 +49,10 @@ Maintainer: Alexander Popp
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
+#include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_hex8p1j1.H"
+#include "../drt_so3/so_shw6.H"
+#include "../drt_so3/so_sh8p8.H"
 
 #include "../drt_crack/crackUtils.H"
 
@@ -106,6 +110,10 @@ STR::TimIntImpl::TimIntImpl
   normpres_(0.0),
   normcontconstr_(0.0),  // < norm of contact constraints (saddlepoint formulation)
   normlagr_(0.0),        // < norm of lagrange multiplier increment (saddlepoint formulation)
+  alpha_ls_(sdynparams.get<double>("ALPHA_LS")),
+  sigma_ls_(sdynparams.get<double>("SIGMA_LS")),
+  ls_maxiter_(sdynparams.get<int>("LSMAXITER")),
+  cond_res_(0.0),
   disi_(Teuchos::null),
   fres_(Teuchos::null),
   freact_(Teuchos::null),
@@ -234,6 +242,9 @@ STR::TimIntImpl::TimIntImpl
   else
     dserror("Received more than one KrylovSpaceCondition for solid field");
 
+  // prepare line search
+  if (itertype_==INPAR::STR::soltech_newtonls)
+    PrepareLineSearch();
 
   // done so far
   return;
@@ -326,8 +337,22 @@ void STR::TimIntImpl::Predict()
   // set predictor type
   params.set<INPAR::STR::PredEnum>("predict_type",pred_);
 
+  // residual of condensed variables (e.g. EAS) for NewtonLS
+  if (fresn_str_!=Teuchos::null)
+  {
+    params.set<double>("cond_rhs_norm",0.);
+    params.set<int>("MyPID",myrank_);
+  }
+
   // compute residual forces fres_ and stiffness stiff_
   EvaluateForceStiffResidual(params);
+
+  // get residual of condensed variables (e.g. EAS) for NewtonLS
+  if (fresn_str_!=Teuchos::null)
+  {
+    double loc=params.get<double>("cond_rhs_norm");
+    discret_->Comm().SumAll(&loc,&cond_res_,1);
+  }
 
   // rotate to local coordinate systems
   if (locsysman_ != Teuchos::null)
@@ -445,6 +470,42 @@ void STR::TimIntImpl::PreparePartitionStep()
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/* Check for LS with condensed variables and do preparations */
+void STR::TimIntImpl::PrepareLineSearch()
+{
+  // each proc searchs through his elements
+  int haveCondensationLocal=0;
+  int haveCondensationGlobal=0;
+
+  // for semi-smooth Newton plasticity we need it anyway
+  if (!HaveSemiSmoothPlasticity())
+  {
+    // each proc searchs through his elements
+    for (int i=0; i<discret_->NumMyRowElements(); i++)
+    {
+      DRT::Element* actele = discret_->lRowElement(i);
+      DRT::ELEMENTS::So_hex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(actele);
+      if (
+          (ele_hex8!=NULL && ele_hex8->HaveEAS()==true)
+          || (actele->ElementType() == DRT::ELEMENTS::So_Hex8P1J1Type::Instance())
+          || (actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance())
+      )
+        haveCondensationLocal=1;
+      if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
+        dserror("no line search for this element implemented.\n"
+                "Feel free to implement similar to hex8 with EAS");
+    }
+    discret_->Comm().MaxAll(&haveCondensationLocal,&haveCondensationGlobal,1);
+  }
+  if (haveCondensationGlobal || HaveSemiSmoothPlasticity())
+  {
+    fresn_str_ = LINALG::CreateVector(*DofRowMapView(), true);
+    fintn_str_ = LINALG::CreateVector(*DofRowMapView(), true);
+  }
+  return;
+}
 /*----------------------------------------------------------------------*/
 /* predict solution as constant displacements, velocities
  * and accelerations */
@@ -1203,6 +1264,9 @@ int STR::TimIntImpl::Solve()
     case INPAR::STR::soltech_newtonfull :
       nonlin_error = NewtonFull();
       break;
+    case INPAR::STR::soltech_newtonls :
+      nonlin_error = NewtonLS();
+      break;
     case INPAR::STR::soltech_newtonuzawanonlin :
       nonlin_error = UzawaNonLinearNewtonFull();
       break;
@@ -1504,6 +1568,485 @@ int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
   }
 
 }
+
+/*---------------------------------------------------------------------*/
+/* solution with line search algorithm                  hiermeier 08/13*/
+/*---------------------------------------------------------------------*/
+int STR::TimIntImpl::NewtonLS()
+{
+  // The specific time integration has set the following
+  // --> On #fres_ is the positive force residuum
+  // --> On #stiff_ is the effective dynamic stiffness matrix
+
+  int linsolve_error= 0;
+  int fscontrol = 0;             // integer for a first step control (equal 1: deactivation) // fixme check if this is necessary for structural mechanics
+  bool eval_error = false;       // an error occurred in the structure evaluation
+
+  // check whether we have a sanely filled stiffness matrix
+  if (not stiff_->Filled())
+    dserror("Effective stiffness matrix must be filled here");
+
+  // initialize equilibrium loop (outer Full Newton loop)
+  iter_ = 1;
+  normfres_ = CalcRefNormForce();
+  // normdisi_ was already set in predictor; this is strictly >0
+  timer_->ResetStartTime();
+
+  // Merit function at current stage and for ls step
+  std::vector<double> merit_fct (2);
+
+  // Temporal copies of different vectors. Necessary for the sufficient decrease check.
+  Teuchos::RCP<Epetra_Vector> tdisn = Teuchos::rcp(new Epetra_Vector(*disn_));
+  Teuchos::RCP<Epetra_Vector> tveln = Teuchos::rcp(new Epetra_Vector(*veln_));
+  Teuchos::RCP<Epetra_Vector> taccn = Teuchos::rcp(new Epetra_Vector(*accn_));
+
+  // equilibrium iteration loop (outer full Newton loop)
+  while ( ( (not Converged() and (not linsolve_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  {
+    // initialize the Newton line search iteration counter
+    int iter_ls  = 0;
+    double step_red = 1.0;
+
+    /**************************************************************
+    ***           Save successful iteration state               ***
+    ***************************************************************/
+
+    // It's necessary to save a temporal copy of the end-point displacements,
+    // before any update is performed (because of the pseudo energy norm):
+    tdisn->Update(1.0, *disn_, 0.0);                  // copy of the displ vector
+    tveln->Update(1.0, *veln_, 0.0);                  // copy of the velocity vector
+    taccn->Update(1.0, *accn_, 0.0);                  // copy of the acceleration vector
+
+    /**************************************************************
+    ***                       Solver Call                       ***
+    ***************************************************************/
+    linsolve_error = LsSolveNewtonStep();
+
+    // Evaluate merit function
+    if (iter_==1)
+      LsEvalMeritFct(merit_fct[0]);
+    else
+      merit_fct[0]=merit_fct[1];
+
+    // Check if pred_constdis is used. If yes, the first step is not controlled.
+    if (pred_ == INPAR::STR::pred_constdis or pred_ == INPAR::STR::pred_constdisvelacc)
+      fscontrol = 1;
+    else if ((pred_==INPAR::STR::pred_tangdis || pred_==INPAR::STR::pred_constacc ||
+             pred_==INPAR::STR::pred_constvel)|| (iter_ > 1))
+      fscontrol=0;
+    else
+      dserror("The behavior of the chosen predictor is not yet tested in the line search framework.");
+
+    /**************************************************************
+    ***      Update right-hand side and stiffness matrix        ***
+    ***************************************************************/
+    Teuchos::ParameterList params;
+    params.set<bool>("tolerate_errors",true);
+    params.set<bool>("eval_error",false);
+    if (fresn_str_!=Teuchos::null)
+    {
+      // attention: though it is called rhs_norm it actually contains sum x_i^2, i.e. the square of the L2-norm
+      params.set<double>("cond_rhs_norm",0.);
+      // need to know the processor id
+      params.set<int>("MyPID",myrank_);
+    }
+    {
+      int exceptcount = 0;
+      fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+      EvaluateForceStiffResidual(params);
+      if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW)
+          || fetestexcept(FE_DIVBYZERO) || params.get<bool>("eval_error")==true)
+        exceptcount  = 1;
+      int tmp=0;
+      discret_->Comm().SumAll(&exceptcount,&tmp,1);
+      if (tmp)
+        eval_error=true;
+      feclearexcept(FE_ALL_EXCEPT);
+      feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+    }
+
+    // get residual of condensed variables (e.g. EAS) for NewtonLS
+    if (fresn_str_!=Teuchos::null)
+    {
+      double loc=params.get<double>("cond_rhs_norm");
+      discret_->Comm().SumAll(&loc,&cond_res_,1);
+    }
+
+    // blank residual at (locally oriented) Dirichlet DOFs
+    // rotate to local co-ordinate systems
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateGlobalToLocal(fres_);
+
+    // extract reaction forces
+    // reactions are negative to balance residual on DBC
+    freact_->Update(-1.0, *fres_, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+    // rotate reaction forces back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(freact_);
+
+    // blank residual at DOFs on Dirichlet BC
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+    // rotate back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(fres_);
+
+    // cancel in residual those forces that would excite rigid body modes and
+    // that thus vanish in the Krylov space projection
+    if (projector_!=Teuchos::null)
+      projector_->ApplyPT(*fres_);
+
+    /**************************************************************
+    ***           merit function (current iteration)            ***
+    ***************************************************************/
+    int err=LsEvalMeritFct(merit_fct[1]);
+    eval_error = (eval_error || err);
+    /**************************************************************
+    ***          1st inner LINE SEARCH loop                     ***
+    ***************************************************************/
+
+    while ((iter_-fscontrol > 0) && ((!LsConverged(& merit_fct[0], step_red) || eval_error) && (iter_ls < ls_maxiter_)))
+    {
+      /**************************************************************
+      ***           Display line search information               ***
+      ***************************************************************/
+      if (iter_ls==0)
+        LsPrintLineSearchIter(&merit_fct[0],iter_ls,step_red);
+
+      // increase inner loop count
+      ++iter_ls;
+
+      /**************************************************************
+      ***                   Step size control                     ***
+      ***************************************************************/
+      step_red *= alpha_ls_;
+      // >>>> displacement, velocity, acceleration <<<<<<<<<<<<<<<
+      // scale displ. increment
+      disi_->Scale(alpha_ls_);
+      // load old displ. vector
+      disn_->Update(1.0, *tdisn, 0.0);
+      // load old vel. vector
+      veln_->Update(1.0, *tveln, 0.0);
+      // load old acc. vector
+      accn_->Update(1.0, *taccn, 0.0);
+
+      // Update nodal displ., vel., acc., etc.
+      UpdateIter(iter_);
+      /**************************************************************
+      ***   Update right-hand side (and part. stiffness matrix)   ***
+      ***************************************************************/
+      LsUpdateStructuralRHSandStiff(eval_error,merit_fct[1]);
+
+      /**************************************************************
+      ***           Display line search information               ***
+      ***************************************************************/
+      LsPrintLineSearchIter(&merit_fct[0],iter_ls,step_red);
+
+    }
+
+    if (iter_ls!=0)
+    {
+      if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
+      {
+        std::ostringstream oss;
+        std::string dashline;
+        dashline.assign(64,'-');
+        oss << dashline ;
+        // print to screen (could be done differently...)
+        if (printerrfile_)
+        {
+          fprintf(errfile_, "%s\n", oss.str().c_str());
+          fflush(errfile_);
+        }
+
+        fprintf(stdout, "%s\n", oss.str().c_str());
+        fflush(stdout);
+      }
+    }
+
+    /**************************************************************
+    ***      Print Newton Step information                      ***
+    ***************************************************************/
+
+    // build residual force norm
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+    // build residual displacement norm
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+
+    PrintNewtonIter();
+
+    // increment equilibrium loop index
+    iter_ += 1;
+  } // end equilibrium loop
+
+  // correct iteration counter
+  iter_ -= 1;
+
+  // call monitor
+  if (conman_->HaveMonitor())
+    conman_->ComputeMonitorValues(disn_);
+
+  //do nonlinear solver error check
+  return NewtonFullErrorCheck(linsolve_error);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*   Solver Call (line search)                          hiermeier 09/13 */
+/*----------------------------------------------------------------------*/
+int STR::TimIntImpl::LsSolveNewtonStep()
+{
+  int linsolve_error = 0;
+  /**************************************************************
+  ***           Prepare the solution procedure                ***
+  ***************************************************************/
+  // make negative residual
+  fres_->Scale(-1.0);
+
+  // transform to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+
+  // STC preconditioning
+  STCPreconditioning();
+
+  // apply Dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
+  /**************************************************************
+  ***                     Solver Call                         ***
+  ***************************************************************/
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+
+  // solve for disi_
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  if (solveradapttol_ and (iter_ > 1))
+  {
+    double worst = normfres_;
+    double wanted = tolfres_;
+    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+  }
+
+  linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1, projector_);
+  // check for problems in linear solver
+  // however we only care about this if we have a fancy divcont action (meaning function will return 0 )
+  linsolve_error = LinSolveErrorCheck(linsolve_error);
+
+  solver_->ResetTolerance();
+
+  // recover standard displacements
+  RecoverSTCSolution();
+
+  // *********** time measurement ***********
+  dtsolve_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
+
+  // update end-point displacements etc
+  UpdateIter(iter_);
+
+  return(linsolve_error);
+}
+
+/*----------------------------------------------------------------------*/
+/*   Update structural RHS and stiff (line search)      hiermeier 09/13 */
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::LsUpdateStructuralRHSandStiff(bool& isexcept,double& merit_fct)
+{
+  // --- Checking for floating point exceptions
+  fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+
+  // compute residual forces #fres_ and stiffness #stiff_
+  // whose components are globally oriented
+  int exceptcount = 0;
+  Teuchos::ParameterList params;
+  // elements may tolerate errors usually leading to dserrors
+  // in such cases the elements force the line search to reduce
+  // the step size by setting "eval_error" to true
+  params.set<bool>("tolerate_errors",true);
+  params.set<bool>("eval_error",false);
+  // condensed degrees of freedom need to know the step reduction
+  params.set<double>("alpha_ls",alpha_ls_);
+  // line search needs to know the residuals of additional condensed dofs
+  if (fresn_str_!=Teuchos::null)
+  {
+    params.set<double>("cond_rhs_norm",0.);
+    // need to know the processor id
+    params.set<int>("MyPID",myrank_);
+  }
+  EvaluateForceStiffResidual(params);
+
+  // get residual of condensed variables (e.g. EAS) for NewtonLS
+  if (fresn_str_!=Teuchos::null)
+  {
+    double loc=params.get<double>("cond_rhs_norm");
+    discret_->Comm().SumAll(&loc,&cond_res_,1);
+  }
+
+  if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW)
+      || fetestexcept(FE_DIVBYZERO) || params.get<bool>("eval_error")==true)
+    exceptcount  = 1;
+
+  // synchronize the exception flag isexcept on all processors
+  int exceptsum = 0;
+  discret_->Comm().SumAll(& exceptcount, & exceptsum, 1);
+  if (exceptsum > 0)
+    isexcept = true;
+  else
+    isexcept=false;
+
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+  feclearexcept(FE_ALL_EXCEPT);
+  // blank residual at (locally oriented) Dirichlet DOFs
+  // rotate to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(fres_);
+
+  // extract reaction forces
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  // rotate reaction forces back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
+
+  // blank residual at DOFs on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  // rotate back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(fres_);
+
+  // cancel in residual those forces that would excite rigid body modes and
+  // that thus vanish in the Krylov space projection
+  if (projector_!=Teuchos::null)
+    projector_->ApplyPT(*fres_);
+
+  /**************************************************************
+  ***          merit function (current iteration)             ***
+  ***************************************************************/
+  int err=LsEvalMeritFct(merit_fct);
+  isexcept = (isexcept || err);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*   Evaluate the merit function (line search)          hiermeier 08/13 */
+/*----------------------------------------------------------------------*/
+int STR::TimIntImpl::LsEvalMeritFct(double& merit_fct)
+{
+  fedisableexcept(FE_OVERFLOW);
+  int err=0;
+  // Calculate the quadratic norm of the right-hand side as merit function
+  // Calculate the merit function value: (1/2) * <RHS,RHS>
+  if (fresn_str_==Teuchos::null)
+  {
+    err=fres_->Dot(*fres_,& merit_fct);
+  }
+  else
+  {
+    merit_fct=0.;
+    err=fresn_str_->Dot(*fresn_str_,&merit_fct);
+    merit_fct+=cond_res_;
+  }
+  merit_fct *= 0.5 ;
+
+  int exceptcount=0;
+  if (fetestexcept(FE_OVERFLOW))
+      exceptcount  = 1;
+  int exceptsum = 0;
+  discret_->Comm().SumAll(& exceptcount, & exceptsum, 1);
+  if (exceptsum!=0)
+    return err;
+  feclearexcept(FE_ALL_EXCEPT);
+  feenableexcept(FE_OVERFLOW);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*   Print information about the last line search step  hiermeier 09/13 */
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red)
+{
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  // print to standard out
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
+  {
+    std::ostringstream oss;
+    if (iter_ls== 0)
+    {
+      std::string dashline;
+      dashline.assign(64,'-');
+      oss << dashline << std::endl;
+      oss << std::setw(6) << "ls_iter";
+      oss << std::setw(16) << "step_scale";
+      oss << std::setw(16) << "abs-dis-norm";
+      oss << std::setw(16) << "merit-fct";
+      oss << std::setw(10)<< "te";
+      if (HaveSemiSmoothPlasticity())
+        oss << std::setw(10) << "#active";
+      oss << std::endl;
+    }
+
+    oss << std::setw(7) << iter_ls;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << step_red;
+    // build residual displacement norm
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
+    if (iter_ls==0)
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << mf_value[0];
+    else
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << mf_value[1];
+    oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
+    if (HaveSemiSmoothPlasticity())
+      oss << std::setw(10) << std::scientific << plastman_->NumActivePlasticGP();
+
+    // finish oss
+    oss << std::ends;
+
+      // print to screen (could be done differently...)
+    if (printerrfile_)
+    {
+      fprintf(errfile_, "%s\n", oss.str().c_str());
+      fflush(errfile_);
+    }
+
+    fprintf(stdout, "%s\n", oss.str().c_str());
+    fflush(stdout);
+  }
+
+  // see you
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*   Inner convergence check (line search)              hiermeier 08/13 */
+/*----------------------------------------------------------------------*/
+bool STR::TimIntImpl::LsConverged(double* mf_value,double step_red)
+{
+  bool check_ls_mf = false;
+
+  /**************************************************************
+  ***           Check for sufficient descent                  ***
+  ***************************************************************/
+  // mf_value[1]: NEW merit function value
+  //            --> f(x + alpha_ls * dx)
+  // mf_value[0]: OLD merit function value (initial value at the beginning of the time step
+  //              or function value of the last converged iteration step. Converged means that
+  //              the last step fulfilled the LsConverged test.)
+  //            --> f(x)
+  // The check follows to
+  //            f(x + alpha_ls * dx) - f(x) <= - 2 * sigma_ls * step_red_ * f(x).
+  check_ls_mf = ((mf_value[1] - mf_value[0]) <= - 2.0 * sigma_ls_ * step_red * mf_value[0]);
+
+
+  return (check_ls_mf);
+}
+
 
 /*----------------------------------------------------------------------*/
 /* do non-linear Uzawa iteration within a full NRI is called,

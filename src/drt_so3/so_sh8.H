@@ -245,6 +245,7 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMDOF_SOH8,1>* force_str,                 // element structural force vector
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time

@@ -163,6 +163,8 @@ STR::TimInt::TimInt
   veln_(Teuchos::null),
   accn_(Teuchos::null),
   fifc_(Teuchos::null),
+  fresn_str_(Teuchos::null),
+  fintn_str_(Teuchos::null),
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
   damp_(Teuchos::null),
@@ -677,14 +679,14 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   return;
 }
 /*----------------------------------------------------------------------*/
-/* calculate stresses and strains on micro-scale */
+/* Check for semi-smooth Newton type of plasticity and do preparations */
 void STR::TimInt::PrepareSemiSmoothPlasticity()
 {
   int HavePlasticity_local=0;
   int HavePlasticity_global=0;
-  for (int i=0; i<discret_->NumMyColElements(); i++)
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
-    DRT::Element* actele = discret_->lColElement(i);
+    DRT::Element* actele = discret_->lRowElement(i);
     if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
         || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
         || actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance()
@@ -822,6 +824,16 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     p.set("delta time", (*dt_)[0]);
     p.set<int>("young_temp", young_temp_);
     if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+    if (fresn_str_!=Teuchos::null)
+    {
+      p.set<int>("MyPID",myrank_);
+      p.set<double>("cond_rhs_norm",0.);
+    }
+
+    //plastic parameters
+    if (HaveSemiSmoothPlasticity())
+      plastman_->SetPlasticParams(p);
+
     // set vector values needed by elements
     discret_->ClearState();
     // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -831,8 +843,12 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"acceleration", (*acc_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
 
-    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
+    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
+
+  //plastic parameters
+  if (HaveSemiSmoothPlasticity())
+    plastman_->GetPlasticParams(p);
   }
 
   // finish mass matrix
@@ -2709,7 +2725,15 @@ void STR::TimInt::ApplyForceStiffInternal
   if( (dismatn_!=Teuchos::null) )
     discret_->SetState(0,"material_displacement",dismatn_);
 
-  discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, Teuchos::null);
+  // Additionally we hand in "fint_str_"
+  // This is usually Teuchos::null unless we do line search in
+  // combination with elements that perform a local condensation
+  // e.g. hex8 with EAS or semi-smooth Newton plasticity.
+  // In such cases, fint_str_ contains the right hand side
+  // without the modifications due to the local condenation procedure.
+  if (fintn_str_!=Teuchos::null)
+    fintn_str_->PutScalar(0.);
+  discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
   discret_->ClearState();
 
   // get plasticity data
@@ -2786,7 +2810,14 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
     discret_->SetState(0,"velocity", vel);
     discret_->SetState(0,"acceleration", acc);
 
-    discret_->Evaluate(params, stiff, mass, fint, finert, Teuchos::null);
+
+    // Additionally we hand in "fint_str_"
+    // This is usually Teuchos::null unless we do line search in
+    // combination with elements that perform a local condensation
+    // e.g. hex8 with EAS or semi-smooth Newton plasticity.
+    // In such cases, fint_str_ contains the right hand side
+    // without the modifications due to the local condenation procedure.
+    discret_->Evaluate(params, stiff, mass, fint, finert, fintn_str_);
     discret_->ClearState();
 
     // get plasticity data

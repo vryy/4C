@@ -43,7 +43,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-  // elevec3 is not used anyway
+  LINALG::Matrix<NUMDOF_SOH8,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
@@ -90,7 +90,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      ForceStiffMass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+      ForceStiffMass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elevec3,NULL,NULL,params,
                                INPAR::STR::stress_none,INPAR::STR::strain_none);
 
     }
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
-      ForceStiffMass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+      ForceStiffMass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
                                INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      ForceStiffMass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+      ForceStiffMass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,&elevec3,NULL,NULL,params,
                                INPAR::STR::stress_none,INPAR::STR::strain_none);
 
       // lump mass
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> strain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        ForceStiffMass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        ForceStiffMass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -277,6 +277,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,          // element internal force vector
+  LINALG::Matrix<NUMDOF_SOH8,1>* force_str,          // structure force
   LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,      // stresses at GP
   LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,      // strains at GP
   Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
@@ -317,26 +318,46 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
     disi(i,0) = residual[i];
   }
 
+  // check if we need to split the residuals (for Newton line search)
+  // if true an additional global vector is assembled containing
+  // the internal forces without the condensed EAS entries and the norm
+  // of the EAS residual is calculated
+  bool split_res = params.isParameter("cond_rhs_norm");
 
 /* ============================================================================*
 ** UPDATE OF ELEMENT VOLUME AND PRESSURE                                       *
 ** ============================================================================*/
 
-  // dt= K_tp_^-1*(-R_p_-K_pu_*du)
-  LINALG::Matrix<1,1> dt(true);
-  dt.MultiplyNN(-1.0/K_pt_, K_pu_, disi);
-  dt.Update(-1.0/K_pt_, R_p_, 1.0);
+  // this is a line search step, i.e. the direction of the eas increments
+  // has been calculated by a Newton step and now it is only scaled
+  if (params.isParameter("alpha_ls"))
+  {
+    double alpha_ls=params.get<double>("alpha_ls");
+    // undo step
+    t_-=dt_;
+    p_-=dp_;
+    // scale increment
+    dt_.Scale(alpha_ls);
+    dp_.Scale(alpha_ls);
+    // add reduced increment
+    t_+=dt_;
+    p_+=dp_;
+  }
+  else
+  {
+    // dt= K_tp_^-1*(-R_p_-K_pu_*du)
+    dt_.MultiplyNN(-1.0/K_pt_, K_pu_, disi);
+    dt_.Update(-1.0/K_pt_, R_p_, 1.0);
 
-  // dp= K_tp_^-1 * (-R_t_ - K_tu_*du - K_tt*dt)
-  LINALG::Matrix<1,1> dp(true);
-  dp.MultiplyNN(1.0, K_tu_, disi);
-  dp.Update(K_tt_, dt, 1.0);
-  dp.Update(1.0, R_t_, 1.0);
-  dp.Scale(-1.0/K_pt_);
+    // dp= K_tp_^-1 * (-R_t_ - K_tu_*du - K_tt*dt)
+    dp_.MultiplyNN(1.0, K_tu_, disi);
+    dp_.Update(K_tt_, dt_, 1.0);
+    dp_.Update(1.0, R_t_, 1.0);
+    dp_.Scale(-1.0/K_pt_);
 
-  t_ += dt;
-  p_ += dp;
-
+    t_ += dt_;
+    p_ += dp_;
+  }
   K_tt_ = 0.0;
   K_pu_.PutScalar(0.0);
   K_tu_.PutScalar(0.0);
@@ -372,6 +393,23 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
 
     // modified deformation gradient modF = (t_/J)^1/3 * F
     const double J = defgrd.Determinant();
+    // check for negative jacobian
+    if ((t_(0,0)/J)<=0.)
+    {
+      // check, if errors are tolerated or should throw a dserror
+      bool error_tol=false;
+      if (params.isParameter("tolerate_errors"))
+        error_tol=params.get<bool>("tolerate_errors");
+      if (error_tol)
+      {
+        params.set<bool>("eval_error",true);
+        stiffmatrix->Clear();
+        force->Clear();
+        return;
+      }
+      else
+        dserror("negative jacobian determinant");
+    }
     const double scalar = std::pow((t_(0,0)/J), 1.0/3.0);
     mod_defgrd.Update(scalar, defgrd);
 
@@ -519,6 +557,8 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
       // integrate internal force vector f = f + (B^T . sigma) * Theta * detJ * w(gp)
       force->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
     }
+    if (split_res)
+      force_str->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
 
     // update of stiffness matrix
     if (stiffmatrix != NULL)
@@ -635,6 +675,9 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
   //F_u_.PutScalar(0.0);
   F_u_.Update(1.0, *force);
 
+  if (split_res)
+    if (params.get<int>("MyPID")==Owner())
+      params.get<double>("cond_rhs_norm")+=R_p_(0,0)*R_p_(0,0)+R_t_(0,0)*R_t_(0,0);
 
   // K_t= K_uu + K_ut * K_pt^-1 * K_pu + K_up * K_tp^-1 * K_tu + K_up * K_tp^-1 * K_tt K_pt^-1 * K_pu
   const double scalar = 1.0/K_pt_ * K_tt_ * 1.0/K_pt_;

@@ -326,6 +326,8 @@ namespace STR
 
     Teuchos::RCP<Epetra_Vector> fviscm_;  //!< viscous force
 
+    Teuchos::RCP<Epetra_Vector> fint_str_;  //!< pure structural global internal force at \f$t_n\f$
+                                            //!< i.e. no condensation of EAS,pasticity,...
     //@}
 
   };  // class TimIntGenAlpha

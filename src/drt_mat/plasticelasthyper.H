@@ -311,10 +311,11 @@ private:
   protected:
 
     /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluateKinQuantPlast(
+    virtual int EvaluateKinQuantPlast(
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<3,3>* deltaLp,
         const int gp,
+        Teuchos::ParameterList& params,
         LINALG::Matrix<3,3>& invpldefgrd,
         LINALG::Matrix<6,1>& Cpi,
         LINALG::Matrix<6,1>& CpiCCpi,

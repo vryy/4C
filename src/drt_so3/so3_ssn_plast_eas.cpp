@@ -42,6 +42,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
     alpha_eas_                          = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
     alpha_eas_last_timestep_            = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
     alpha_eas_delta_over_last_timestep_ = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+    alpha_eas_inc_                      = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
     Kba_                                = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(5,neas_)));
   }
 

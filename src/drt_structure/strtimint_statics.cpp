@@ -223,6 +223,14 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   fres_->Update(-1.0, *fextn_, 0.0);
   fres_->Update(1.0, *fintn_, 1.0);
 
+  // build pure structural residual (only LS with EAS)
+  if (fresn_str_!=Teuchos::null)
+  {
+    fresn_str_->Update(1.,*fintn_str_,0.);
+    fresn_str_->Update(-1.,*fextn_,1.);
+    LINALG::ApplyDirichlettoSystem(fresn_str_,zeros_,*(dbcmaps_->CondMap()));
+  }
+
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = K_{T}
   // i.e. do nothing here

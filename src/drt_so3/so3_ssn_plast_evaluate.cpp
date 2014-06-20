@@ -98,7 +98,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     LINALG::Matrix<numdofperelement_,numdofperelement_> myemat(true);
 
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    nln_stiffmass(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+    nln_stiffmass(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
         INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
 
 
@@ -114,6 +114,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     LINALG::Matrix<numdofperelement_,numdofperelement_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
     LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
+    LINALG::Matrix<numdofperelement_,1> elevec3(elevec3_epetra.A(),true);
 
     // need current displacement and residual forces
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -125,7 +126,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    nln_stiffmass(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+    nln_stiffmass(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,&elevec3,NULL,NULL,params,
         INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
 
     break;
@@ -150,9 +151,11 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
      LINALG::Matrix<numdofperelement_,numdofperelement_> elemat2(elemat2_epetra.A(),true);
      // internal force
      LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
+     // internal force without condensation
+     LINALG::Matrix<numdofperelement_,1> elevec3(elevec3_epetra.A(),true);
 
      // default: geometrically non-linear analysis with Total Lagrangean approach
-     nln_stiffmass(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+     nln_stiffmass(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,&elevec3,NULL,NULL,params,
          INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
 
      if(act==calc_struct_nlnstifflmass)
@@ -200,7 +203,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      nln_stiffmass(la[0].lm_,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
+      nln_stiffmass(la[0].lm_,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,params,
           iostress,iostrain,discretization.Comm().MyPID());
       {
         DRT::PackBuffer data;
@@ -587,6 +590,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
     LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
     LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+    LINALG::Matrix<numdofperelement_,1>* force_str,          // structure force
     LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
     LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
     Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
@@ -676,6 +680,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   if (params.isParameter("eval_tang_pred"))
     tang_pred = params.get<bool>("eval_tang_pred");
 
+  // check if we need to split the residuals (for Newton line search)
+  // if true an additional global vector is assembled containing
+  // the internal forces without the condensed EAS entries and the norm
+  // of the EAS residual is calculated
+  bool split_res = params.isParameter("cond_rhs_norm");
+
   /* evaluation of EAS variables (which are constant for the following):
   ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
   ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
@@ -684,7 +694,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
   LINALG::SerialDenseMatrix M;      // EAS matrix M at current GP
   double detJ0;                     // detJ(origin)
-  Epetra_SerialDenseVector delta_alpha_eas(neas_); // incremental change of the alphas in this iteration
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
   // here we already get the inverse transposed T0
@@ -697,42 +706,57 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     /* end of EAS Update ******************/
     // add Kda . res_d to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    delta_alpha_eas.Size(neas_);
     if (stiffmatrix!=NULL)
     {
-      // constant predictor
-      if (pred == INPAR::STR::pred_constdis)
-        alpha_eas_=alpha_eas_last_timestep_;
-
-      // tangential predictor
-      else if (pred == INPAR::STR::pred_tangdis)
-        for (int i=0; i<neas_; i++)
-          (*alpha_eas_)(i) = 0.
-          + (*alpha_eas_last_timestep_)(i)
-          + (*alpha_eas_delta_over_last_timestep_)(i)
-          ;
-
-      // do usual recovery
-      else if (pred == INPAR::STR::pred_vague)
+      // this is a line search step, i.e. the direction of the eas increments
+      // has been calculated by a Newton step and now it is only scaled
+      if (params.isParameter("alpha_ls"))
       {
-        switch(eastype_)
+        double alpha_ls=params.get<double>("alpha_ls");
+        // undo step
+        alpha_eas_inc_->Scale(-1.);
+        alpha_eas_->operator +=(*alpha_eas_inc_);
+        // scale increment
+        alpha_eas_inc_->Scale(-1.*alpha_ls);
+        // add reduced increment
+        alpha_eas_->operator +=(*alpha_eas_inc_);
+      }
+      else
+      {
+        // constant predictor
+        if (pred == INPAR::STR::pred_constdis)
+          alpha_eas_=alpha_eas_last_timestep_;
+
+        // tangential predictor
+        else if (pred == INPAR::STR::pred_tangdis)
+          for (int i=0; i<neas_; i++)
+            (*alpha_eas_)(i) = 0.
+            + (*alpha_eas_last_timestep_)(i)
+            + (*alpha_eas_delta_over_last_timestep_)(i)
+            ;
+
+        // do usual recovery
+        else if (pred == INPAR::STR::pred_vague)
         {
-        case soh8p_easmild:
-          LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
-          LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(0.0,delta_alpha_eas,-1.0,*KaaInv_,*feas_);
-          LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(1.0,*alpha_eas_,-1.0,*KaaInv_,*feas_);
-          break;
-        case soh8p_easfull:
-          LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
-          LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(0.0,delta_alpha_eas,-1.0,*KaaInv_,*feas_);
-          LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(1.0,*alpha_eas_,-1.0,*KaaInv_,*feas_);
-          break;
-        case soh8p_easnone: break;
-        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          switch(eastype_)
+          {
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
+            LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
+            LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
+            break;
+          case soh8p_easnone: break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
         }
       }
     }
-    eas_inc += pow(delta_alpha_eas.Norm2(),2.);
+    eas_inc += pow(alpha_eas_inc_->Norm2(),2.);
 
     // reset EAS matrices
     KaaInv_->Shape(neas_,neas_);
@@ -898,8 +922,21 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
 
     // check for element distortion
     if (detF<=0. || detF_0<=0.)
-      dserror("element distortion too large");
-
+    {
+      // check, if errors are tolerated or should throw a dserror
+      bool error_tol=false;
+      if (params.isParameter("tolerate_errors"))
+        error_tol=params.get<bool>("tolerate_errors");
+      if (error_tol)
+      {
+        params.set<bool>("eval_error",true);
+        stiffmatrix->Clear();
+        force->Clear();
+        return;
+      }
+      else
+        dserror("element distortion too large");
+    }
     // modify deformation gradient
     // ATTENTION: defgrd_mod now contains the F-bar deformation gradient
     // The compatible displacement-based deformation gradient is still
@@ -915,16 +952,16 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     if (HavePlasticSpin())
     {
       if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,deltaLp,lp_inc,(stiffmatrix!=NULL),&delta_alpha_eas);
+        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL),&(*alpha_eas_inc_));
       else
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,deltaLp,lp_inc,(stiffmatrix!=NULL));
+        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL));
     }
     else
     {
       if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,deltaLp,lp_inc,(stiffmatrix!=NULL),&delta_alpha_eas);
+        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL),&(*alpha_eas_inc_));
       else
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,deltaLp,lp_inc,(stiffmatrix!=NULL));
+        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL));
     }
 
     // material call *********************************************
@@ -990,6 +1027,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
         force->MultiplyTN(detJ_w/f_bar_factor, bop, pk2, 1.0);
       else
         force->MultiplyTN(detJ_w, bop, pk2, 1.0);
+    }
+    if (force_str != NULL && split_res)
+    {
+      if (fbar_)
+        force_str->MultiplyTN(detJ_w/f_bar_factor, bop, pk2, 1.0);
+      else
+        force_str->MultiplyTN(detJ_w, bop, pk2, 1.0);
     }
 
     // additional f-bar derivatives
@@ -1165,6 +1209,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     }
     eas_res += pow(feas_uncondensed.Norm2(),2.);
   }
+
+  // rhs norm of eas equations
+  if (eastype_!=soh8p_easnone)
+    if (split_res)
+      // only add for row-map elements
+      if (params.get<int>("MyPID")==Owner())
+        params.get<double>("cond_rhs_norm") += pow(feas_uncondensed.Norm2(),2.);
+
   return;
 }
 
@@ -1356,8 +1408,19 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     solve_for_kbbinv.SetMatrix(KbbInv_[gp]);
     int err = solve_for_kbbinv.Invert();
     if (err != 0)
-      dserror("Inversion of Kbb failed");
-
+    {
+      // check, if errors are tolerated or should throw a dserror
+      bool error_tol=false;
+      if (params.isParameter("tolerate_errors"))
+        error_tol=params.get<bool>("tolerate_errors");
+      if (error_tol)
+      {
+        params.set<bool>("eval_error",true);
+        return;
+      }
+      else
+        dserror("Inversion of Kbb failed");
+    }
     // temporary  Kdb.Kbb^-1
     LINALG::Matrix<numdofperelement_,spintype> KdbKbb;
     LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,spintype,spintype>
@@ -1459,13 +1522,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
       }
     }
 
-    KbbInv_[gp].Scale(0.);
-    fbeta_[gp].Scale(0.);
+    KbbInv_[gp].Scale(0.); for (int i=0; i<KbbInv_[gp].RowDim(); ++i) KbbInv_[gp](i,i)=1./(plmat->cpl());
+    fbeta_[gp].Scale(0.);fbeta_[gp]=dDp_last_iter_[gp]; fbeta_[gp].Scale(plmat->cpl());
     Kbd_[gp].Scale(0.);
     if (eastype_!=soh8p_easnone)
       Kba_->at(gp).Shape(spintype,neas_);
-    dDp_last_iter_[gp].Scale(0.);
   }
+
+  // rhs norm of eas equations
+  if (params.isParameter("cond_rhs_norm"))
+    // only add for row-map elements
+    if (params.get<int>("MyPID")==Owner())
+      params.get<double>("cond_rhs_norm") += detJ_w*detJ_w*pow(fbeta_[gp].Norm2(),2.);
 
   return;
 }
@@ -1480,10 +1548,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
     const INPAR::STR::PredEnum& pred,
     const int gp,
     const int MyPID,
+    const Teuchos::ParameterList& params,
     LINALG::Matrix<3,3>& deltaLp,
     double& lp_inc,
     bool recover,
-    Epetra_SerialDenseVector* delta_alpha_eas
+    Epetra_SerialDenseVector* eas_increment
     )
 {
   // recover condensed variables from last iteration step *********
@@ -1508,63 +1577,59 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
 
     // do usual recovery
     case INPAR::STR::pred_vague:
-      // first part
-      LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,1>
-        (0.,tmp_v.A(),1.,KbbInv_[gp].A(),fbeta_[gp].A());
+      // this is a line search step, i.e. the direction of the eas increments
+      // has been calculated by a Newton step and now it is only scaled
+      if (params.isParameter("alpha_ls"))
+      {
+        double alpha_ls=params.get<double>("alpha_ls");
+        // undo step
+        dDp_inc_[gp].Scale(-1.);
+        dDp_last_iter_[gp] += dDp_inc_[gp];
+        // scale increment
+        dDp_inc_[gp].Scale(-1.*alpha_ls);
+        // add reduced increment
+        dDp_last_iter_[gp] += dDp_inc_[gp];
+      }
+      // do recovery
+      else
+      {
+        // first part
+        LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,1>
+        (0.,dDp_inc_[gp].A(),-1.,KbbInv_[gp].A(),fbeta_[gp].A());
 
-      // second part
-      LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,numdofperelement_>
+        // second part
+        LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,numdofperelement_>
         (0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kbd_[gp].A());
-      LINALG::DENSEFUNCTIONS::multiply<double,spintype,numdofperelement_,1>
-        (1.,tmp_v.A(),1.,tmp_m.A(),res_d.A());
+        LINALG::DENSEFUNCTIONS::multiply<double,spintype,numdofperelement_,1>
+        (1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),res_d.A());
 
-      // EAS part
-      if (eastype_!=soh8p_easnone)
-      {
-        tmp_m.Shape(spintype,neas_);
-        switch (eastype_)
+        // EAS part
+        if (eastype_!=soh8p_easnone)
         {
-        case soh8p_easmild:
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easmild>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easmild,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
-          break;
-        case soh8p_easfull:
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
-          break;
-        case soh8p_eassosh8:
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
-          LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,tmp_v.A(),1.,tmp_m.A(),delta_alpha_eas->A());
-          break;
-        case soh8p_easnone:
-          break;
-        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          tmp_m.Shape(spintype,neas_);
+          switch (eastype_)
+          {
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easmild>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easmild,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),eas_increment->A());
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),eas_increment->A());
+            break;
+          case soh8p_eassosh8:
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),eas_increment->A());
+            break;
+          case soh8p_easnone:
+            break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
         }
+        LINALG::DENSEFUNCTIONS::update<double,spintype,1>(1.,dDp_last_iter_[gp],1.,dDp_inc_[gp]);
       }
-      LINALG::DENSEFUNCTIONS::update<double,spintype,1>(1.,dDp_last_iter_[gp],-1.,tmp_v);
-
       if (MyPID==Owner())
-      {
-        if (spintype==zerospin)
-        {
-          lp_inc +=tmp_v(0)*tmp_v(0)
-                    +tmp_v(1)*tmp_v(1)
-                    +(-tmp_v(0)-tmp_v(1))*(-tmp_v(0)-tmp_v(1))
-                    +tmp_v(2)*tmp_v(2)*2.
-                    +tmp_v(3)*tmp_v(3)*2.
-                    +tmp_v(4)*tmp_v(4)*2.;
-        }
-        else if (spintype==plspin)
-        {
-          lp_inc +=tmp_v(0)*tmp_v(0)
-                    +tmp_v(1)*tmp_v(1)
-                    +(-tmp_v(0)-tmp_v(1))*(-tmp_v(0)-tmp_v(1));
-          for (int i=2; i<8; i++)
-            lp_inc +=tmp_v(i)*tmp_v(i)*2.;
-        }
-        else
-          dserror("Don't know what to do with Spin type %d", spintype);
-      }
+        lp_inc += pow(dDp_inc_[gp].Norm2(),2.);
       break;
 
     // unknown predictor type

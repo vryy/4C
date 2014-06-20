@@ -442,8 +442,19 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
     }
 
     if (iter==maxiter)
-      dserror("Local Newton iteration unconverged in %i iterations",iter);
-
+    {
+      // check, if errors are tolerated or should throw a dserror
+      bool error_tol=false;
+      if (params.isParameter("tolerate_errors"))
+        error_tol=params.get<bool>("tolerate_errors");
+      if (error_tol)
+      {
+        params.set<bool>("eval_error",true);
+        return;
+      }
+      else
+      dserror("Local Newton iteration unconverged in %i iterations. Residual: %d",iter,res);
+    }
     // flow vector (7.54a)
     LINALG::Matrix<3,1> flow_vector(dev_KH_trial);
     flow_vector.Scale(1.0 / (sqrt(2.0/3.0) * abs_dev_KH_trial) );

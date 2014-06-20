@@ -617,8 +617,9 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
 
-  EvaluateKinQuantPlast(defgrd,deltaDp,gp,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
-                        id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv);
+  if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
+                        id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
+    return;
   EvaluateGammaDelta(prinv,gamma,delta);
 
   // blank resulting quantities
@@ -931,8 +932,9 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
 
-  EvaluateKinQuantPlast(defgrd,deltaLp,gp,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
-                        id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv);
+  if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
+                        id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
+    return;
   EvaluateGammaDelta(prinv,gamma,delta);
 
   // blank resulting quantities
@@ -1040,16 +1042,16 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
   tmp11.MultiplyTN(eta_v_strainlike,tmp61);
   double abseta_H=0.;
   if (tmp11(0,0)<-1.e-16) dserror("this should not happen. tmp=%f",tmp11(0,0));
-  else if (tmp11(0,0)>0.) abseta_H=sqrt(tmp11(0,0));
-  else dserror("this should not happen");
+  else if (tmp11(0,0)>=0.) abseta_H=sqrt(tmp11(0,0));
+  else dserror("this should not happen. tmp=%f",tmp11(0,0));
   tmp11.MultiplyTN(deltaDp_v_strainlike,tmp61);
   double dDpHeta=tmp11(0,0);
   tmp61.Multiply(PlAniso_full_,etatr_v);
   tmp11.MultiplyTN(etatr_v_strainlike,tmp61);
   double absetatr_H=0.;
   if (tmp11(0,0)<-1.e-16) dserror("this should not happen. tmp=%f",tmp11(0,0));
-  else if (tmp11(0,0)>0.) absetatr_H=sqrt(tmp11(0,0));
-  else dserror("this should not happen");
+  else if (tmp11(0,0)>=0.) absetatr_H=sqrt(tmp11(0,0));
+  else dserror("this should not happen. tmp=%f",tmp11(0,0));
   LINALG::Matrix<6,1> HdDp;
   HdDp.Multiply(PlAniso_full_,deltaDp_v);
   LINALG::Matrix<6,1> HdDp_strainlike;
@@ -1416,10 +1418,11 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateKinQuantPlast(
+int MAT::PlasticElastHyper::EvaluateKinQuantPlast(
     const LINALG::Matrix<3,3>* defgrd,
     const LINALG::Matrix<3,3>* deltaLp,
     const int gp,
+    Teuchos::ParameterList& params,
     LINALG::Matrix<3,3>& invpldefgrd,
     LINALG::Matrix<6,1>& Cpi,
     LINALG::Matrix<6,1>& CpiCCpi,
@@ -1518,12 +1521,21 @@ void MAT::PlasticElastHyper::EvaluateKinQuantPlast(
   tmp33.Multiply(tmp,CeM);
   Matrix3x3to9x1(tmp33,CFpiCe);
 
+  double det=CeM.Determinant();
+  if (det > -1e-30 and det < 1e-30)
+    if (params.isParameter("tolerate_errors"))
+      if (params.get<bool>("tolerate_errors")==true)
+      {
+        params.get<bool>("eval_error")=true;
+        return 1;
+      }
+
   tmp.Invert(CeM);
   tmp33.Multiply(invpldefgrd,tmp);
   tmp.Multiply(RCG,tmp33);
   Matrix3x3to9x1(tmp,CFpiCei);
 
-  return;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*

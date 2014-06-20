@@ -38,6 +38,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   Kbd_(std::vector<Epetra_SerialDenseMatrix>(0)),
   fbeta_(std::vector<Epetra_SerialDenseVector>(0)),
   dDp_last_iter_(std::vector<Epetra_SerialDenseVector>(0)),
+  dDp_inc_(std::vector<Epetra_SerialDenseVector>(0)),
   plspintype_(plspin),
   KaaInv_(Teuchos::null),
   Kad_(Teuchos::null),
@@ -46,6 +47,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   alpha_eas_(Teuchos::null),
   alpha_eas_last_timestep_(Teuchos::null),
   alpha_eas_delta_over_last_timestep_(Teuchos::null),
+  alpha_eas_inc_(Teuchos::null),
   eastype_(soh8p_easnone),
   neas_(0)
 {
@@ -308,6 +310,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      alpha_eas_                          =Teuchos::null;
      alpha_eas_last_timestep_            =Teuchos::null;
      alpha_eas_delta_over_last_timestep_ =Teuchos::null;
+     alpha_eas_inc_                      =Teuchos::null;
    }
    else
    {
@@ -318,12 +321,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      alpha_eas_                          =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      alpha_eas_last_timestep_            =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      alpha_eas_delta_over_last_timestep_ =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+     alpha_eas_inc_                      =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
    }
 
      KbbInv_        .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_));
      Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
      fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
      dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+     dDp_inc_       .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
 
    if (eastype_!=soh8p_easnone)
    {
@@ -518,6 +523,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
   fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
   dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+  dDp_inc_       .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
 
   return true;
 

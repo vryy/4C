@@ -1162,6 +1162,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fint_;   //!< global internal force
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;   //!< interface force in e.g. FSI
+    Teuchos::RCP<Epetra_Vector> fresn_str_;   //!< pure structural global internal force
+                                             //!< i.e. no condensation of EAS,pasticity,...
+    Teuchos::RCP<Epetra_Vector> fintn_str_; //!< pure structural global internal force at \f$t_n\f$
+                                            //!< i.e. no condensation of EAS,pasticity,...
     //@}
 
 

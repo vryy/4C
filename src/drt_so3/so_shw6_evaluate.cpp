@@ -42,7 +42,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
   LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_WEG6,1> elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_WEG6,1> elevec2(elevec2_epetra.A(),true);
-  // elevec3 is not used anyway
+  LINALG::Matrix<NUMDOF_WEG6,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
@@ -73,7 +73,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -88,7 +88,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elevec3,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> myemat(true);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+      soshw6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,&elevec3,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
     }
@@ -155,7 +155,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D> strain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -274,6 +274,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
       LINALG::Matrix<NUMDOF_WEG6,1>* force,                 // element internal force vector
+      LINALG::Matrix<NUMDOF_WEG6,1>* force_str,          // structure force
       LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
       Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
@@ -319,6 +320,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   Epetra_SerialDenseMatrix* oldfeas = NULL;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv = NULL; // EAS history
   Epetra_SerialDenseMatrix* oldKda = NULL;    // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = NULL;   // EAS increment
+
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
   // here we already get the inverse transposed T0
@@ -337,17 +340,36 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
     Epetra_SerialDenseVector res_d(NUMDOF_WEG6);
     for (int i = 0; i < NUMDOF_WEG6; ++i) {
       res_d(i) = residual[i];
     }
-    // add Kda . res_d to feas
-    LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick, NUMDOF_WEG6,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-    // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick,soshw6_easpoisthick,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
+
+    // this is a line search step, i.e. the direction of the eas increments
+    // has been calculated by a Newton step and now it is only scaled
+    if (params.isParameter("alpha_ls"))
+    {
+      double alpha_ls=params.get<double>("alpha_ls");
+      // undo step
+      eas_inc->Scale(-1.);
+      alpha->operator +=(*eas_inc);
+      // scale increment
+      eas_inc->Scale(-1.*alpha_ls);
+      // add reduced increment
+      alpha->operator +=(*eas_inc);
+    }
+    else
+    {
+      // add Kda . res_d to feas
+      LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick, NUMDOF_WEG6,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+      // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+      LINALG::DENSEFUNCTIONS::multiply<double,soshw6_easpoisthick,soshw6_easpoisthick,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+      LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(1.,*alpha,1.,*eas_inc);
+    }
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -389,6 +411,12 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   // necessary for ANS interpolation
   const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_wedge_6point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+
+  // check if we need to split the residuals (for Newton line search)
+  // if true an additional global vector is assembled containing
+  // the internal forces without the condensed EAS entries and the norm
+  // of the EAS residual is calculated
+  bool split_res = params.isParameter("cond_rhs_norm");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -614,6 +642,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
+    if (split_res)
+      force_str->MultiplyTN(detJ_w, bop, stress, 1.0);
 
     // update stiffness matrix
     if (stiffmatrix != NULL)
@@ -707,6 +737,12 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+
+  // rhs norm of eas equations
+  if (eastype_!=soshw6_easnone && split_res)
+    // only add for row-map elements
+    if (params.get<int>("MyPID")==Owner())
+      params.get<double>("cond_rhs_norm") += pow(feas.Norm2(),2.);
 
   if (force != NULL && stiffmatrix != NULL) {
     // EAS technology: ------------------------------------------------------ EAS
@@ -920,6 +956,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
   Epetra_SerialDenseMatrix invKaa(neas_,neas_);
   // EAS matrix K_{d alpha}
   Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_WEG6);
+  // EAS increment
+  Epetra_SerialDenseMatrix eas_inc(neas_,1);
 
   // save EAS data into element container
   data_.Add("alpha",alpha);
@@ -927,6 +965,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
   data_.Add("feas",feas);
   data_.Add("invKaa",invKaa);
   data_.Add("Kda",Kda);
+  data_.Add("eas_inc",eas_inc);
 
   return;
 }

@@ -106,7 +106,8 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   finert_(Teuchos::null),
   finertm_(Teuchos::null),
   finertn_(Teuchos::null),
-  fviscm_(Teuchos::null)
+  fviscm_(Teuchos::null),
+  fint_str_(Teuchos::null)
 {
   // info to users
   if (myrank_ == 0)
@@ -168,8 +169,19 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   // viscous mid-point force vector F_visc
   fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-    // create parameter list
-    Teuchos::ParameterList params;
+  // structural rhs for newton line search
+  if (fresn_str_!=Teuchos::null)
+    fint_str_=LINALG::CreateVector(*DofRowMapView(), true);
+
+  // create parameter list
+  Teuchos::ParameterList params;
+
+  // for line search
+  if (fintn_str_!=Teuchos::null)
+  {
+    params.set("cond_rhs_norm",0.);
+    params.set("MyPID",myrank_);
+  }
 
   if (HaveNonlinearMass()==INPAR::STR::ml_none)
   {
@@ -192,6 +204,10 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     }
 
   }
+
+  // init old time step value
+  if (fintn_str_!=Teuchos::null)
+    fint_str_->Update(1.,*fintn_str_,0.);
 
   // have a nice day
   return;
@@ -430,6 +446,20 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
   ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
 
+  // calculate RHS without local condensations (for NewtonLs)
+  if (fresn_str_!=Teuchos::null)
+  {
+    // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
+    // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
+    fresn_str_->Update(1.,*fintn_str_,0.);
+    fresn_str_->Update(alphaf_, *fint_str_, 1.-alphaf_);
+    fresn_str_->Update(-1.0, *fextm_, 1.0);
+    fresn_str_->Update( 1.0, *finertm_, 1.0);
+    if (damping_ == INPAR::STR::damp_rayleigh)
+      fresn_str_->Update(1.0, *fviscm_, 1.0);
+    LINALG::ApplyDirichlettoSystem(fresn_str_,zeros_,*(dbcmaps_->CondMap()));
+  }
+
   // close stiffness matrix
   stiff_->Complete();
 
@@ -627,6 +657,10 @@ void STR::TimIntGenAlpha::UpdateStepState()
   // update new inertial force
   //    F_{inert;n} := F_{inert;n+1}
   finert_->Update(1.0, *finertn_, 0.0);
+
+  // update residual force vector for NewtonLS
+  if (fresn_str_!=Teuchos::null)
+    fint_str_->Update(1.,*fintn_str_,0.);
 
   // update surface stress
   UpdateStepSurfstress();

@@ -234,6 +234,7 @@ private:
           LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
           LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
           LINALG::Matrix<NUMDOF_WEG6,1>* force,                 // element internal force vector
+          LINALG::Matrix<NUMDOF_WEG6,1>* force_str,          // structure force
           LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
           LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
           Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time

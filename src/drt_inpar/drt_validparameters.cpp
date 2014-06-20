@@ -1118,6 +1118,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "vague",
                                  "fullnewton",
                                  "modnewton",
+                                 "lsnewton",
                                  "ptc",
                                  "newtonlinuzawa",
                                  "augmentedlagrange",
@@ -1127,12 +1128,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_vague,
                                  INPAR::STR::soltech_newtonfull,
                                  INPAR::STR::soltech_newtonmod,
+                                 INPAR::STR::soltech_newtonls,
                                  INPAR::STR::soltech_ptc,
                                  INPAR::STR::soltech_newtonuzawalin,
                                  INPAR::STR::soltech_newtonuzawanonlin,
                                  INPAR::STR::soltech_noxnewtonlinesearch,
                                  INPAR::STR::soltech_noxgeneral),
                                &sdyn);
+
+  IntParameter("LSMAXITER",30,
+               "maximum number of line search steps",
+               &sdyn);
+  DoubleParameter("ALPHA_LS",0.5,
+                  "step reduction factor alpha in (Newton) line search scheme",
+                  &sdyn);
+  DoubleParameter("SIGMA_LS",1.e-4,
+                  "sufficient descent factor in (Newton) line search scheme",
+                  &sdyn);
 
   // Currently not used, but structure will be kept if someone wants to reimplement
   // 																																		AN 2013_05

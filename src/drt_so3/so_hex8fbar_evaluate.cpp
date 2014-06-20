@@ -689,6 +689,23 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
     cauchygreen.MultiplyTN(defgrd,defgrd);
 
+    // check for negative jacobian
+    if (detF_0<0. || detF<0.)
+    {
+      // check, if errors are tolerated or should throw a dserror
+      bool error_tol=false;
+      if (params.isParameter("tolerate_errors"))
+        error_tol=params.get<bool>("tolerate_errors");
+      if (error_tol)
+      {
+        params.set<bool>("eval_error",true);
+        stiffmatrix->Clear();
+        force->Clear();
+        return;
+      }
+      else
+        dserror("negative jacobian determinant");
+    }
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd_bar(defgrd);
     double f_bar_factor=pow(detF_0/detF,1.0/3.0);

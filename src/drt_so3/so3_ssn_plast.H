@@ -340,6 +340,7 @@ namespace ELEMENTS
         LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
         LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
         LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+        LINALG::Matrix<numdofperelement_,1>* force_str,          // structure force
         LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
         LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
         Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
@@ -446,10 +447,11 @@ namespace ELEMENTS
         const INPAR::STR::PredEnum& pred,
         const int gp,
         const int MyPID,
+        const Teuchos::ParameterList& params,
         LINALG::Matrix<3,3>& deltaLp,
         double& lp_inc,
         bool recover,
-        Epetra_SerialDenseVector* delta_alpha_eas=NULL
+        Epetra_SerialDenseVector* eas_increment=NULL
         );
 
 
@@ -477,9 +479,11 @@ namespace ELEMENTS
     // f_b at each Gauss point for recovery of inner variables
     std::vector<Epetra_SerialDenseVector> fbeta_;
 
-    // plastic increment at each Gauss point at last Newton iteration
-    // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
+    // plastic flow at each Gauss point at last Newton iteration
     std::vector<Epetra_SerialDenseVector> dDp_last_iter_;
+
+    // increment of plastic flow over last Newton step (needed for Newton line search)
+    std::vector<Epetra_SerialDenseVector> dDp_inc_;
 
     PlSpinType       plspintype_;
 
@@ -491,6 +495,7 @@ namespace ELEMENTS
     Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_;
     Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_last_timestep_;
     Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_delta_over_last_timestep_;
+    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_inc_;
     EASType                  eastype_;
     int                      neas_;
 

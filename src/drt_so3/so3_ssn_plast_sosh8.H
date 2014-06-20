@@ -167,6 +167,7 @@ protected:
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
       LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+      LINALG::Matrix<numdofperelement_,1>* force_str,          // structure force
       LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
       LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
       Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
@@ -176,7 +177,7 @@ protected:
       );
 
   //! Evaluate all ANS related data at the ANS sampling points
-  void Anssetup( // todo: check
+  void Anssetup(
             const LINALG::Matrix<nen_,nsd_>& xrefe, ///< material element coords
             const LINALG::Matrix<nen_,nsd_>& xcurr, ///< current element coords
             std::vector<LINALG::Matrix<nsd_,nen_> >** deriv_sp,   ///< derivs eval. at all sampling points
@@ -186,13 +187,13 @@ protected:
 
   //! Evaluate transformation matrix T (parameter->material) at gp
   void EvaluateT(const LINALG::Matrix<nsd_,nsd_>& jac,///< actual jacobian
-                       LINALG::Matrix<numstr_,numstr_>& TinvT);///< T^{-T}// todo:check
+                       LINALG::Matrix<numstr_,numstr_>& TinvT);///< T^{-T}
 
   //! Find "thin"=thickness direction
-  ThicknessDirection findthickdir();// todo:check
+  ThicknessDirection findthickdir();
 
   //! Find parametric co-ordinate which directs in enforced thickness direction
-  ThicknessDirection enfthickdir( // todo:check
+  ThicknessDirection enfthickdir(
     LINALG::Matrix<nsd_,1>& glothickdir  ///< global direction of enforced thickness direction
     );
 

@@ -111,6 +111,10 @@ namespace STR
     //! does.
     void PreparePartitionStep();
 
+    //! Check if line search is applied in combination with elements
+    //! that perform a local condensation (e.g. EAS)
+    void PrepareLineSearch();
+
     //! Predict constant displacements, velocities and accelerations,
     //! i.e. the initial guess is equal to the last converged step
     //! except Dirichlet BCs
@@ -302,6 +306,43 @@ namespace STR
     //! the initial tangent is kept and not adapted to the current
     //! state of the displacement solution
     void NewtonModified() { dserror("Not impl."); }
+
+    //! Do Linesearch iteration
+    //!
+    //! This routines expects a prepared negative residual force #fres_
+    //! and associated effective stiffness matrix #stiff_
+    int NewtonLS();
+
+    //! Solver call (line search)
+    int LsSolveNewtonStep();
+
+    //! Update structural RHS and stiffness matrix (line search)
+    void LsUpdateStructuralRHSandStiff(bool& isexcept,double& merit_fct);
+
+    //! Evaluate the specified merit function (line search)
+    //! (for pure structural problems this routine is rather short.
+    //! However, to incorporate contact problems more easily the
+    //! evaluation of the merit function is performed here.)
+    //! return 0 if successful
+    int LsEvalMeritFct(double& merit_fct);
+
+    //! Check the inner linesearch loop for convergence (line search)
+    bool LsConverged(double* mf_value, double step_red);
+
+    //! Print information concerning the last line search step (line search)
+    void LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red);
+
+    //! Contains text to LsPrintLineSearchIter
+    void LsPrintLsIterText
+    (
+      FILE* ofile  //!< output file handle
+    );
+
+    //! Contains header to LsPrintLineSearchIter
+    void LsPrintLsIterHeader
+    (
+      FILE* ofile  //!< output file handle
+    );
 
     //! Do classical augmented lagrange for volume constraint
     //!
@@ -867,6 +908,13 @@ namespace STR
     double normwrhs_;
     double normwm_;     //!< norm of wear master
     double normwmrhs_;
+    double alpha_ls_; //!< line search step reduction
+    double sigma_ls_; //!< line search sufficient descent factor
+    double ls_maxiter_; //!< maximum number of line search steps
+    double cond_res_; //!< residual norm of condensed variables (e.g. EAS) needed for line search
+
+
+
 
     Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$

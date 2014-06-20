@@ -40,6 +40,8 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
   Epetra_SerialDenseMatrix invKaa(neas_,neas_);
   // EAS matrix K_{d alpha}
   Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_SOH8);
+  // EAS increment over last Newton step
+  Epetra_SerialDenseMatrix eas_inc(neas_,1);
 
   // save EAS data into element container
   data_.Add("alpha",alpha);
@@ -47,6 +49,7 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
   data_.Add("feas",feas);
   data_.Add("invKaa",invKaa);
   data_.Add("Kda",Kda);
+  data_.Add("eas_inc",eas_inc);
 
   return;
 }
@@ -70,18 +73,21 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   Epetra_SerialDenseMatrix* feas = NULL;   // EAS history
   Epetra_SerialDenseMatrix* Kaainv = NULL; // EAS history
   Epetra_SerialDenseMatrix* Kda = NULL;    // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = NULL;// EAS history
   alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get alpha of previous iteration
   alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");   // get alpha of previous iteration
   feas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
   Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
   Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  if (!alpha || !Kaainv || !Kda || !feas) dserror("Missing EAS history-data");
+  eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+  if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
 
   alpha->Reshape(neas_,1);
   alphao->Reshape(neas_,1);
   feas->Reshape(neas_,1);
   Kaainv->Reshape(neas_,neas_);
   Kda->Reshape(neas_,NUMDOF_SOH8);
+  eas_inc->Reshape(neas_,1);
 
   return;
 }

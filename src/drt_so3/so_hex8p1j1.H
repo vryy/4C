@@ -239,6 +239,7 @@ public:
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+    LINALG::Matrix<NUMDOF_SOH8,1>* force_str,          // structure force
     LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
     LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
@@ -304,8 +305,10 @@ private:
   //@{
   LINALG::Matrix<1,1> p_;  ///< pressure at current time/load step
   LINALG::Matrix<1,1> p_o_;  ///< (old) pressure at last converged time/load step
+  LINALG::Matrix<1,1> dp_;  ///< pressure increment
   LINALG::Matrix<1,1> t_;  ///< determinant of deformation gradient at current time/load step
   LINALG::Matrix<1,1> t_o_;  ///< (old) Jacobian of deformation gradient at last converged time/load step
+  LINALG::Matrix<1,1> dt_; ///< jacobian increment
   //@}
 
   double K_pt_;

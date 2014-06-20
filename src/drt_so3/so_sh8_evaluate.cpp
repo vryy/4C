@@ -49,7 +49,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-  // elevec3 is not used anyway
+  LINALG::Matrix<NUMDOF_SOH8,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
 
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elevec3,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
 
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,&elevec3,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+        sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
 
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,&elevec3,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
 
@@ -195,7 +195,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // lump mass
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
 
         // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
         if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
-          sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         } else {
 
           std::vector<double> mydispmat(lm.size());
@@ -242,7 +242,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
             DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
           }
 
-          nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+          nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         {
           DRT::PackBuffer data;
@@ -454,6 +454,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,                 // element internal force vector
+      LINALG::Matrix<NUMDOF_SOH8,1>* force_str,                 // element structural force vector
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
       Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
@@ -498,6 +499,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   Epetra_SerialDenseMatrix* oldfeas = NULL;       // EAS history
   Epetra_SerialDenseMatrix* oldKaainv = NULL;     // EAS history
   Epetra_SerialDenseMatrix* oldKda = NULL;        // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = NULL;       // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -518,17 +520,35 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
     LINALG::SerialDenseVector res_d(NUMDOF_SOH8);
     for (int i = 0; i < NUMDOF_SOH8; ++i) {
       res_d(i) = residual[i];
     }
-    // add Kda . res_d to feas
-    LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8, NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-    // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
+    // this is a line search step, i.e. the direction of the eas increments
+    // has been calculated by a Newton step and now it is only scaled
+    if (params.isParameter("alpha_ls"))
+    {
+      double alpha_ls=params.get<double>("alpha_ls");
+      // undo step
+      eas_inc->Scale(-1.);
+      alpha->operator +=(*eas_inc);
+      // scale increment
+      eas_inc->Scale(-1.*alpha_ls);
+      // add reduced increment
+      alpha->operator +=(*eas_inc);
+    }
+    else
+    {
+      // add Kda . res_d to feas
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8, NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+      // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+      LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(1.,alpha->A(),1.,eas_inc->A());
+    }
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -574,6 +594,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
   const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
 
+  // check if we need to split the residuals (for Newton line search)
+  // if true an additional global vector is assembled containing
+  // the internal forces without the condensed EAS entries and the norm
+  // of the EAS residual is calculated
+  bool split_res = params.isParameter("cond_rhs_norm");
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -603,8 +629,25 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 
     // compute determinant of Jacobian by Sarrus' rule
     double detJ_cur = jac_cur.Determinant();
-    if (detJ_cur == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ_cur < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+    if (detJ_cur <=0.0)
+    {
+      // check, if errors are tolerated or should throw a dserror
+      bool error_tol=false;
+      if (params.isParameter("tolerate_errors"))
+        error_tol=params.get<bool>("tolerate_errors");
+      if (error_tol)
+      {
+        params.set<bool>("eval_error",true);
+        stiffmatrix->Clear();
+        force->Clear();
+        return;
+      }
+      else
+      {
+        if (detJ_cur == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+        else if (detJ_cur < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+      }
+    }
 
     // set up B-Operator in local(parameter) element space including ANS
     LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop_loc;
@@ -851,6 +894,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }  // if (force!=NULL)
 
+    // structural force vector
+    if (split_res)
+      force_str->MultiplyTN(detJ_w, bop, stress, 1.0);
+
     // update stiffness matrix
     if (stiffmatrix != NULL)
     {
@@ -948,6 +995,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+
+  // rhs norm of eas equations
+  if (eastype_!=soh8_easnone && split_res)
+    // only add for row-map elements
+    if (params.get<int>("MyPID")==Owner())
+      params.get<double>("cond_rhs_norm") += pow(feas.Norm2(),2.);
 
   if (force != NULL && stiffmatrix != NULL)
   {
