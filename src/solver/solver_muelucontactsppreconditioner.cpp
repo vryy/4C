@@ -288,8 +288,13 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::ArrayRCP<unsigned int> aggStat;
     if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/numdf);
     for(LocalOrdinal i=0; i<nDofRows; ++i) {
-      aggStat[i/numdf] = MueLu::NodeState::READY;
-      //aggStat[i/numdf] = MueLu::NodeStats::READY;
+#ifdef HAVE_Trilinos_Q3_2014
+      // The enum has been moved and renamed in MueLu, such that it is not accessible from outside (at least not with non C++11 extensions)
+      // TODO be careful to match with the enum declaration in MueLu_AggregationAlgorithmBase.hpp
+      aggStat[i/numdf] = 1; //MueLu::NodeState::READY;
+#else
+      aggStat[i/numdf] = MueLu::NodeStats::READY;
+#endif
     }
 
     ///////////////////////////////////////////////////////////////////////
