@@ -314,22 +314,19 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
   sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
 
-  // initialize time loop / Attention the Functions give back the
-  // time and the step not timen and stepn value that is why we have
-  // to use < instead of <= for the while loop
-  double time = sti_->GetTime();
-  const double timemax = sti_->GetTimeEnd();
-  int step = sti_->GetStep();
-  const int stepmax = sti_->GetTimeNumStep();
-
+  // initialize time loop
+  const int stepmax = sti_->NumStep();
   Epetra_SerialDenseVector cvector(2*stepmax);
 
   // time loop
-  while ( (time < timemax) && (step < stepmax) )
+  while ( sti_->NotFinished() )
   {
+    // call the predictor
+    sti_->PrepareTimeStep();
+
     // integrate time step
     // after this step we hold disn_, etc
-    sti_->IntegrateStep();
+    sti_->Solve();
 
     // calculate stresses, strains, energies
     sti_->PrepareOutput();
@@ -338,8 +335,11 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
     // after this call we will have disn_==dis_, etc
     sti_->UpdateStepState();
 
-    // gets the displacments per timestep
+    // gets the displacements per timestep
     {
+      // get current step n
+      int step = sti_->StepOld();
+
       Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve();
       cvector[2*step]   = cvector_arg[0];
       cvector[2*step+1] = cvector_arg[1];
@@ -357,11 +357,6 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
 
     // write output
     if (outputtofile) sti_->OutputStep();
-
-    // get current time ...
-    time = sti_->GetTime();
-    // ... and step
-    step = sti_->GetStep();
 
   }
   return cvector;

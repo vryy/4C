@@ -95,6 +95,9 @@ namespace TSI
     /// initialise TSI system
     virtual void SetupSystem() = 0;
 
+    /// non-linear solve, i.e. (multiple) corrector
+    virtual void Solve() = 0;
+
     //! read restart data
     virtual void ReadRestart(
       int step  //!< step number where the calculation is continued

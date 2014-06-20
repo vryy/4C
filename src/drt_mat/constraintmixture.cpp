@@ -3049,7 +3049,7 @@ bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double
  this needs to be copied to STR::TimInt::OutputStep() to enable debug output
  {
    discret_->SetState("displacement",Dis());
-   MAT::ConstraintMixtureOutputToGmsh(discret_, GetStep(), 1);
+   MAT::ConstraintMixtureOutputToGmsh(discret_, StepOld(), 1);
  }
  just works with strtimint!
  don't forget to include constraintmixture.H */

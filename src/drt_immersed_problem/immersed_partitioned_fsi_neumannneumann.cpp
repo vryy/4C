@@ -121,7 +121,7 @@ IMMERSED::ImmersedPartitionedFSINeumannNeumann::StructOp(Teuchos::RCP<Epetra_Vec
     // normal structure solve
     StructureField()->ApplyInterfaceForces(iforce);
     StructureField()->Solve();
-    return StructureField()->ExtractInternalForceVector(StructureField()->GetTime(),StructureField()->Dt(),StructureField()->Dispnp(),fintn_);
+    return StructureField()->ExtractInternalForceVector(StructureField()->TimeOld(),StructureField()->Dt(),StructureField()->Dispnp(),fintn_);
   }
 }
 

@@ -207,7 +207,7 @@ void TSI::Monolithic::ReadRestart(int step)
   ThermoField()->ReadRestart(step);
   StructureField()->ReadRestart(step);
 
-  SetTimeStep(ThermoField()->GetTime(),step);
+  SetTimeStep(ThermoField()->TimeOld(),step);
 
   // Material pointers to other field were deleted during ReadRestart().
   // They need to be reset.
@@ -429,6 +429,35 @@ void TSI::Monolithic::CreateLinearSolver()
 
 
 /*----------------------------------------------------------------------*
+ | non-linear solve, i.e. (multiple) corrector (public)      dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::Solve()
+{
+  // choose solution technique according to input file
+  switch (soltech_)
+  {
+  // Newton-Raphson iteration
+  case INPAR::TSI::soltech_newtonfull :
+    NewtonFull();
+    break;
+  // Pseudo-transient continuation
+  case INPAR::TSI::soltech_ptc :
+    PTC();
+    break;
+  // catch problems
+  default :
+    dserror(
+      "Solution technique \"%s\" is not implemented",
+      INPAR::TSI::NlnSolTechString(soltech_).c_str()
+      );
+    break;
+  }  // end switch (soltechnique_)
+
+  return;
+}  // Solve()
+
+
+/*----------------------------------------------------------------------*
  | time loop of the monolithic system                        dano 11/10 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::TimeLoop()
@@ -440,25 +469,8 @@ void TSI::Monolithic::TimeLoop()
     // predict solution of both field (call the adapter)
     PrepareTimeStep();
 
-    // choose solution technique according to input file
-    switch (soltech_)
-    {
-    // Newton-Raphson iteration
-    case INPAR::TSI::soltech_newtonfull :
-      NewtonFull();
-      break;
-    // Pseudo-transient continuation
-    case INPAR::TSI::soltech_ptc :
-      PTC();
-      break;
-    // catch problems
-    default :
-      dserror(
-        "Solution technique \"%s\" is not implemented",
-        INPAR::TSI::NlnSolTechString(soltech_).c_str()
-        );
-      break;
-    }  // end switch (soltechnique_)
+    // integrate time step
+    Solve();
 
     // calculate stresses, strains, energies
     PrepareOutput();

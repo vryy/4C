@@ -104,7 +104,7 @@ public:
   \brief Return time from parameter list
 
   */
-  double GetTime()
+  double TimeOld()
   {
     return time_;
   }

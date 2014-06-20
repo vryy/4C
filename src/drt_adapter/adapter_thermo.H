@@ -166,9 +166,8 @@ namespace ADAPTER
 
     //! @name Time step helpers
     //@{
-
-    /// Get the current time
-    virtual double GetTime() const = 0;
+    //! Return current time \f$t_{n}\f$
+    virtual double TimeOld() const = 0;
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;
@@ -176,20 +175,20 @@ namespace ADAPTER
     /// Get time step size \f$\Delta t_n\f$
     virtual double Dt() const = 0;
 
-    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const = 0;
+    /// Return current step number $n$
+    virtual int StepOld() const = 0;
 
     /// Get number of time steps
-    virtual int GetTimeNumStep() const = 0;
+    virtual int NumStep() const = 0;
 
     /// Set time step size for the current step
     virtual void SetDt(double timestepsize) = 0;
 
-    /// Set time step size for the first step
-    virtual void SetInitialDtAndTime(double timestepsize) = 0;
-
     /// Take the time and integrate (time loop)
     void Integrate();
+    
+    /// tests if there are more time steps to do
+    virtual bool NotFinished() const = 0;
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
@@ -234,11 +233,11 @@ namespace ADAPTER
     //! @name Solver calls
     //@{
 
-    //! Do time integration of single step
-    virtual void IntegrateStep() = 0;
-
-    //! Solve dynamic equilibrium
-    //! This is a general wrapper around the specific techniques.
+    //! non-linear solve
+    //!
+    //! Do the nonlinear solve, i.e. (multiple) corrector,
+    //! for the time step. All boundary conditions have
+    //! been set.
     virtual void Solve() = 0;
 
     /// get the linear solver object used for this field

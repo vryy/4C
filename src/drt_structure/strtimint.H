@@ -241,7 +241,10 @@ namespace STR
     virtual void PrepareTimeStep() = 0;
 
     //! Do time integration of multiple steps
-    int Integrate();
+    virtual int Integrate();
+
+    /// tests if there are more time steps to do
+    virtual bool NotFinished() const { return timen_ <= timemax_+1.0e-8*(*dt_)[0] and stepn_ <= stepmax_; }
 
     //! do something in case nonlinear solution does not converge for some reason
     int PerformErrorAction(int nonlinsoldiv);
@@ -252,7 +255,8 @@ namespace STR
 
     /// non-linear solve
     ///
-    /// Do the nonlinear solve for the time step. All boundary conditions have
+    /// Do the nonlinear solve, i.e. (multiple) corrector,
+    /// for the time step. All boundary conditions have
     /// been set.
     virtual int Solve() = 0;
 
@@ -812,10 +816,10 @@ namespace STR
     //@{
 
     //! Return current time \f$t_{n}\f$
-    virtual double GetTime() const { return (*time_)[0]; }
+    virtual double TimeOld() const { return (*time_)[0]; }
 
-    //! Return target time of current step \f$t_{n+1}\f$
-    virtual double GetTimeNew() const { return timen_; }
+    //! Return target time \f$t_{n+1}\f$
+    virtual double Time() const { return timen_; }
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time) { (*time_)[0]=time; }
@@ -835,21 +839,14 @@ namespace STR
     //! Set time step size \f$\Delta t_n\f$
     virtual void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
 
-    //! Set time step size and time in the first step \f$\Delta t_n\f$
-    virtual void SetInitialDtAndTime(const double dt)
-    {
-    	(*dt_)[0] = dt;
-    	timen_ = (*time_)[0] + (*dt_)[0];
-    }
+    //! Return current step number $n$
+    int StepOld() const { return step_; }
 
-    //! Return current step number map
-    int GetStep() const { return step_; }
-
-    //! Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const { return step_; }
+    //! Return current step number $n+1$
+    int Step() const { return stepn_; }
 
     //! Get number of time steps
-    int GetTimeNumStep() const { return stepmax_; }
+    int NumStep() const { return stepmax_; }
 
 
     //! Return MapExtractor for Dirichlet boundary conditions

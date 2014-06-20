@@ -99,11 +99,6 @@ namespace FS3I
     const double dt  ///< time step size to be applied to BACI
     );
 
-    /// apply time step from INCA to BACI
-    void SetInitialDtAndTime(
-    const double timestepsize  ///< time step size to be applied to BACI
-    );
-
     /// counter and print header; predict solution of both fields
     void PrepareTimeStep();
 

@@ -231,11 +231,11 @@ namespace ADAPTER {
     /// return Newmark parameter \f$beta\f$
     virtual const double GetNewmarkBeta() const = 0;
 
-    /// Get the current time \f$t_{n}\f$
-    virtual double GetTime() const = 0;
+    //! Return current time \f$t_{n}\f$
+    virtual double TimeOld() const = 0;
 
-    /// Get the current target time \f$t_{n+1}\f$
-    virtual double GetTimeNew() const = 0;
+    //! Return target time \f$t_{n+1}\f$
+    virtual double Time() const = 0;
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;
@@ -246,18 +246,15 @@ namespace ADAPTER {
     /// Get time step size \f$\Delta t_n\f$
     virtual double Dt() const = 0;
 
-    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const = 0;
-
     /// Get number of time steps
-    virtual int GetTimeNumStep() const = 0;
+    virtual int NumStep() const = 0;
 
     /// Take the time and integrate (time loop)
     /// \date 11/08
     virtual int Integrate() = 0;
 
-    /// integrate a single time step
-    virtual int IntegrateStep() = 0;
+    /// tests if there are more time steps to do
+    virtual bool NotFinished() const = 0;
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
@@ -270,9 +267,6 @@ namespace ADAPTER {
     
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time) = 0;
-
-    /// set time step size and time
-    virtual void SetInitialDtAndTime(double timestepsize) = 0;
 
     /*!
     \brief update displacement and evaluate elements
@@ -361,7 +355,8 @@ namespace ADAPTER {
     /*!
     \brief nonlinear solve
 
-    Do the nonlinear solve for the time step. All boundary conditions have
+    Do the nonlinear solve, i.e. (multiple) corrector,
+    for the time step. All boundary conditions have
     been set.
     */
     virtual int Solve() = 0;

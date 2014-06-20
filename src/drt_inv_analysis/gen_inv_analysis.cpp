@@ -673,22 +673,20 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   // create time integrator
   sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
-  // initialize time loop / Attention the Functions give back the
-  // time and the step not timen and stepn value that is why we have
-  // to use < instead of <= for the while loop
-  double time = sti_->GetTime();
-  const double timemax = sti_->GetTimeEnd();
-  int step = sti_->GetStep();
+
   int writestep=0;
-  const int stepmax = sti_->GetTimeNumStep();
   Epetra_SerialDenseVector cvector(nmp_);
 
   // time loop
-  while ( (time < timemax) && (step < stepmax) )
+  while ( sti_->NotFinished() )
   {
+
+    // call the predictor
+    sti_->PrepareTimeStep();
+
     // integrate time step
     // after this step we hold disn_, etc
-    sti_->IntegrateStep();
+    sti_->Solve();
 
     // calculate stresses, strains, energies
     sti_->PrepareOutput();
@@ -709,10 +707,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     // write output
     if (outputtofile) sti_->OutputStep();
 
-    // get current time ...
-    time = sti_->GetTime();
-    // ... and step
-    step = sti_->GetStep();
+    // get current time
+    double time = sti_->TimeOld();
 
     // get the displacements of the monitored timesteps
     {
@@ -770,22 +766,18 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   fflush(stdout);
   gcomm->Barrier();
 
-  // initialize time loop / Attention the Functions give back the
-  // time and the step not timen and stepn value that is why we have
-  // to use < instead of <= for the while loop
-  double time = sti_->GetTime();
-  const double timemax = sti_->GetTimeEnd();
-  int step = sti_->GetStep();
   int writestep=0;
-  const int stepmax = sti_->GetTimeNumStep();
   Epetra_SerialDenseVector cvector(nmp_);
 
   // time loop
-  while ( (time < timemax) && (step < stepmax) )
+  while ( sti_->NotFinished() )
   {
+    // call the predictor
+    sti_->PrepareTimeStep();
+
     // integrate time step
     // after this step we hold disn_, etc
-    sti_->IntegrateStep();
+    sti_->Solve();
 
     // calculate stresses, strains, energies
     sti_->PrepareOutput();
@@ -806,10 +798,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
     // write output
     if (outputtofile) sti_->OutputStep();
 
-    // get current time ...
-    time = sti_->GetTime();
-    // ... and step
-    step = sti_->GetStep();
+    // get current time
+    double time = sti_->TimeOld();
 
     // get the displacements of the monitored timesteps
     {

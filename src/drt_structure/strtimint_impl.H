@@ -286,7 +286,9 @@ namespace STR
 
     //! Solve dynamic equilibrium
     //!
-    //! This is a general wrapper around the specific techniques.
+    //! Do the nonlinear solve, i.e. (multiple) corrector,
+    //! for the time step. All boundary conditions have
+    //! been set.
     int Solve();
 
     //! Do full Newton-Raphson iteration

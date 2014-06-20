@@ -330,12 +330,6 @@ namespace FSI
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
     virtual Teuchos::RCP<Epetra_Vector> GetLambda () {dserror ("GetLambda not implemented in the base class"); return Teuchos::null;};
 
-    //! Get time step size
-    double GetDt() const { return Dt(); };
-
-    //! Get time step size
-    double GetTime() const { return Time(); };
-
     //! Get number of time step repetitions in case of time step adaptivity
     int GetNumAdaptSteps() const { return adaptstep_; }
 

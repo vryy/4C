@@ -1746,7 +1746,7 @@ int STR::TimIntImpl::NewtonLS()
 
     if (iter_ls!=0)
     {
-      if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
+      if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0) and  printiter_ )
       {
         std::ostringstream oss;
         std::string dashline;
@@ -1975,7 +1975,7 @@ void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, doubl
 {
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
   // print to standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0) and  printiter_ )
   {
     std::ostringstream oss;
     if (iter_ls== 0)
@@ -3137,7 +3137,7 @@ void STR::TimIntImpl::UpdateIterIncrementally
 void STR::TimIntImpl::PrintPredictor()
 {
   // only master processor
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
     IO::cout << "Structural predictor "
              << INPAR::STR::PredEnumString(pred_)
@@ -3182,7 +3182,7 @@ void STR::TimIntImpl::PrintPredictor()
 void STR::TimIntImpl::PrintNewtonIter()
 {
   // print to standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0) and  printiter_ )
   {
     if (iter_== 1)
       PrintNewtonIterHeader(stdout);
@@ -3646,7 +3646,7 @@ void STR::TimIntImpl::PrintNewtonConv()
 void STR::TimIntImpl::PrintStep()
 {
   // print out (only on master CPU)
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
     PrintStepText(stdout);
   }

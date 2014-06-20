@@ -70,7 +70,7 @@ void THR::TimIntExpl::Update()
 void THR::TimIntExpl::PrintStep()
 {
   // print out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_ == 0) )
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_ == 0) )
   {
     PrintStepText(stdout);
   }

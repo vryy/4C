@@ -194,10 +194,15 @@ namespace STR
       return Teuchos::null;
     }
 
-    //! Prepare time step for coupled problems with monolithic approach
+    //! Prepare time step
     virtual void PrepareTimeStep()
     {
-      // do nothing
+      // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
+      SetTimen( (*time_)[0]+(*dt_)[0] );
+
+      // prepare contact for new time step
+      PrepareStepContact();
+
       return;
     }
 
@@ -311,9 +316,9 @@ namespace STR
       return;
     }
 
-    ///  Do the nonlinear solve for the time step. All boundary conditions have
-    ///  been set.
-    /// eventually renamed here or IntegrateStep()
+    /// Do the nonlinear solve, i.e. (multiple) corrector,
+    /// for the time step. All boundary conditions have
+    /// been set.
     virtual int Solve()
     {
       IntegrateStep();

@@ -74,6 +74,9 @@ namespace TSI
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop();
 
+    //! non-linear solve, i.e. (multiple) corrector
+    virtual void Solve();
+
     //! initialise internal variables needed as guess for the partitioned TSI algorithm
     virtual void SetupSystem();
 

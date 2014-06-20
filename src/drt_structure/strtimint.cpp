@@ -1940,7 +1940,7 @@ void STR::TimInt::OutputRestart
   }
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
     IO::cout << "====== Restart written in step " << step_ << IO::endl;
   }
@@ -2051,7 +2051,7 @@ void STR::TimInt::AddRestartToOutputState()
   output_->WriteMesh(step_, (*time_)[0]);
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
     IO::cout << "====== Restart written in step " << step_ << IO::endl;
   }
@@ -2937,20 +2937,15 @@ int STR::TimInt::Integrate()
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  // (NOTE: popp 03/2010: we have to add eps to avoid the very
-  // awkward effect that the time loop stops one step too early)
-  double eps = 1.0e-8;
-  if ((*dt_)[0] < eps)
-    dserror("Time step is smaller than the total time tolerance eps! Enhance time step size or reduce the tolerance!");
-
-  while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) and (not nonlinsoldiv) )
+  while ( NotFinished() and (not nonlinsoldiv) )
   {
-    // prepare contact for new time step
-    PrepareStepContact();
 
-    // integrate time step
+    // call the predictor
+    PrepareTimeStep();
+
+    // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc
-    lnonlinsoldiv = IntegrateStep();
+    lnonlinsoldiv = Solve();
 
     // since it is possible that the nonlinear solution fails only on some procs
     // we need to communicate the error

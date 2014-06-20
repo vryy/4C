@@ -163,10 +163,6 @@ namespace ADAPTER
     virtual void ResetStep()
     { structure_->ResetStep(); }
 
-    /// integrate a single time step
-    virtual int IntegrateStep()
-    { return structure_->IntegrateStep(); }
-
     /*
     \brief Shorten the Dirichlet DOF set
 
@@ -201,13 +197,13 @@ namespace ADAPTER
     virtual void SetTimen(const double time)
     { structure_->SetTimen(time); }
 
-    /// get the current time at \f$t_{n}\f$
-    virtual double GetTime() const
-    { return structure_->GetTime(); }
+    //! Return current time \f$t_{n}\f$
+    virtual double TimeOld() const
+    { return structure_->TimeOld(); }
 
-    /// get the current target time at \f$t_{n+1}\f$
-    virtual double GetTimeNew() const
-    { return structure_->GetTimeNew(); }
+    //! Return target time \f$t_{n+1}\f$
+    virtual double Time() const
+    { return structure_->Time(); }
 
     /// get upper limit of time range of interest
     virtual double GetTimeEnd() const
@@ -221,24 +217,20 @@ namespace ADAPTER
     virtual double Dt() const
     { return structure_->Dt(); }
 
-    /// get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const
-    { return structure_->GetTimeStep(); }
-
     /// get number of time steps
-    virtual int GetTimeNumStep() const
-    { return structure_->GetTimeNumStep(); }
+    virtual int NumStep() const
+    { return structure_->NumStep(); }
 
     /// integrate from t1 to t2
     virtual int Integrate() { return structure_->Integrate(); }
 
+    /// tests if there are more time steps to do
+    virtual bool NotFinished() const
+    { return structure_->NotFinished(); }
+
     /// set time step size
     virtual void SetDt(const double dtnew)
     { return structure_->SetDt(dtnew); }
-
-    /// set time step size and time
-    virtual void SetInitialDtAndTime(double timestepsize)
-    { return structure_->SetInitialDtAndTime(timestepsize); }
 
     /// start new time step
     virtual void PrepareTimeStep()

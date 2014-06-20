@@ -405,15 +405,9 @@ void FS3I::AeroTFSI::GetAndSetDt()
 
   const double dt = timen - tsi_->Time();
 
-  // set time step in TSI and initially timen_ needs to be overwritten
-  if(DRT::Problem::Instance()->Restart() == tsi_->Step())
-  {
-   SetInitialDtAndTime(dt);
-  }
-  else
-  {
-    SetDt(dt);
-  }
+  // set time step in TSI; timen_ is overwritten in PrepareTimeStep()
+  SetDt(dt);
+
 
   return;
 }
@@ -465,22 +459,6 @@ void FS3I::AeroTFSI::SetDt(
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | apply first time step and adapt time                     ghamm 12/11 |
- *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::SetInitialDtAndTime(
-  const double timestepsize
-  )
-{
-  tsi_->StructureField()->SetInitialDtAndTime(timestepsize);
-
-  tsi_->ThermoField()->SetInitialDtAndTime(timestepsize);
-
-  tsi_->SetDt(timestepsize);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | prepare time step, increment counters                    ghamm 12/11 |

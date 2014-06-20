@@ -143,14 +143,17 @@ namespace THR
     //! prepare time step
     virtual void PrepareTimeStep() = 0;
 
-    //! Do time integration of multiple steps
-    void Integrate();
-
     //! Do time integration of single step
     virtual void IntegrateStep() = 0;
 
-    //! Solve dynamic equilibrium
-    //! This is a general wrapper around the specific techniques.
+    /// tests if there are more time steps to do
+    virtual bool NotFinished() const { return timen_ <= timemax_+1.0e-8*(*dt_)[0] and stepn_ <= stepmax_; }
+
+    //! non-linear solve
+    //!
+    //! Do the nonlinear solve, i.e. (multiple) corrector,
+    //! for the time step. All boundary conditions have
+    //! been set.
     virtual void Solve() = 0;
 
     //! build linear system tangent matrix, rhs/force residual
@@ -486,8 +489,8 @@ namespace THR
     //! Return domain map
     const Epetra_Map& DomainMap() { return tang_->DomainMap(); }
 
-    //! Return current step number map
-    virtual double GetTime() const { return (*time_)[0]; }
+    //! Return current step number $n$
+    virtual double TimeOld() const { return (*time_)[0]; }
 
     //! Get upper limit of time range of interest
     virtual double GetTimeEnd() const { return timemax_; }
@@ -499,18 +502,11 @@ namespace THR
     virtual void SetDt(double timestepsize)
     { (*dt_)[0] = timestepsize; }
 
-    //! Set time step size \f$\Delta t_n\f$ and timen_
-    virtual void SetInitialDtAndTime(double timestepsize)
-    { (*dt_)[0] = timestepsize; timen_ = (*time_)[0] + (*dt_)[0]; }
-
-    //! Return current step number map
-    virtual int GetStep() const { return step_; }
-
-    //! Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const { return step_; }
+    //! Return current step number $n$
+    virtual int StepOld() const { return step_; }
 
     //! Get number of time steps
-    virtual int GetTimeNumStep() const { return stepmax_; }
+    virtual int NumStep() const { return stepmax_; }
 
     //! Get communicator
     virtual inline const Epetra_Comm& Comm() const {return discret_->Comm();}

@@ -272,7 +272,7 @@ void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
   if ( quantity == "dt" )
   {
     unknownquantity = false;
-    result = fsi_->GetDt();
+    result = fsi_->Dt();
   }
 
   // test for number of repetitions of time step in case of time step size adaptivity
@@ -286,7 +286,7 @@ void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
   if ( quantity == "time" )
   {
     unknownquantity = false;
-    result = fsi_->GetTime();
+    result = fsi_->Time();
   }
 
   // catch quantity strings, which are not handled by fsi result test

@@ -335,7 +335,8 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
 void AIRWAY::RedAirwayTissue::DoStructureStep()
 {
   structure_->SetPressure(couppres_ip_);
-  structure_->IntegrateStep();
+  structure_->PrepareTimeStep();
+  structure_->Solve();
   structure_->CalcFlux(coupflux_ip_,coupvol_ip_,Dt());
 
 }

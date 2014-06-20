@@ -50,6 +50,9 @@ namespace ADAPTER
     /// tests if there are more time steps to do
     bool NotFinished() const { return step_ < nstep_ and time_+1e-8*dt_ < maxtime_; }
 
+    /// time step size
+    double Dt() const { return dt_; }
+
     /// set time step size
     void SetDt(const double stepsize) { dt_ = stepsize; }
 
@@ -65,9 +68,6 @@ namespace ADAPTER
                      );
 
   protected:
-
-    /// time step size
-    double Dt() const { return dt_; }
 
     /// total number of time steps
     int NStep() const { return nstep_;}

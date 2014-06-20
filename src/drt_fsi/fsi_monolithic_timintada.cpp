@@ -803,13 +803,13 @@ bool FSI::Monolithic::CheckIfTimesSame()
 {
   // get time from all fields
   const double tfsi = Time();
-  const double tstruct = StructureField()->GetTimeNew();
+  const double tstruct = StructureField()->Time();
   const double tfluid = FluidField().Time();
   const double tale = AleField().Time();
 
   double tstrada = tstruct;
   if (IsAdaStructure())
-    tstrada = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->GetTimeNew();
+    tstrada = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->Time();
 
   // print time in all fields
   if (Comm().MyPID() == 0)

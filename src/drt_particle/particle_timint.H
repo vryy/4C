@@ -297,10 +297,10 @@ namespace PARTICLE
     //@{
 
     //! Return current time map
-    double GetTime() const { return (*time_)[0]; }
+    double TimeOld() const { return (*time_)[0]; }
 
-    //! Return current step number map
-    int GetStep() const { return step_; }
+    //! Return current step number $n$
+    int StepOld() const { return step_; }
 
     //! Set current time and step number map
     void SetTimeStep(const double time, const int step)

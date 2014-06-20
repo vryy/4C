@@ -887,7 +887,7 @@ void WEAR::Partitioned::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
   AleField().ReadRestart(step);
-  SetTimeStep(StructureField()->GetTime(),step);
+  SetTimeStep(StructureField()->TimeOld(),step);
 
   return;
 }

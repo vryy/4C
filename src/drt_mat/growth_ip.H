@@ -259,7 +259,7 @@ namespace MAT
   /* this needs to be copied to STR::TimInt::OutputStep() to enable debug output
   {
     discret_->SetState("displacement",Dis());
-    MAT::GrowthOutputToGmsh(discret_, GetStep(), 1);
+    MAT::GrowthOutputToGmsh(discret_, StepOld(), 1);
   }
   don't forget to include growth_ip.H */
   void GrowthOutputToGmsh

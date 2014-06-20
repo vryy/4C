@@ -67,7 +67,7 @@ void SSI::SSI_Base::ReadRestart( int restart)
     scatra_->ScaTraField()->ReadRestart(restart);
     structure_->ReadRestart(restart);
 
-    SetTimeStep(structure_->GetTime(), restart);
+    SetTimeStep(structure_->TimeOld(), restart);
   }
 
   return;

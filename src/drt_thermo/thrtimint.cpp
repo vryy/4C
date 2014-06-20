@@ -452,7 +452,7 @@ void THR::TimInt::OutputRestart(bool& datawritten)
   firstoutputofrun_ = false;
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_ == 0) )
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_ == 0) )
   {
     printf("====== Restart written in step %d\n", step_);
     // print a beautiful line made exactly of 80 dashes
@@ -511,7 +511,7 @@ void THR::TimInt::AddRestartToOutputState()
   output_->WriteMesh(step_, (*time_)[0]);
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_ == 0) )
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_ == 0) )
   {
     printf("====== Restart written in step %d\n", step_);
     // print a beautiful line made exactly of 80 dashes

@@ -255,7 +255,7 @@ namespace STR
     virtual const double Dt() const { return stepsize_; }
 
     //! Access to target time \f$t_{n+1}\f$ of current time step
-    virtual const double GetTimeNew() const { return time_ + stepsize_; }
+    virtual const double Time() const { return time_ + stepsize_; }
 
     //! Check whether step size output file is attached
     bool AttachedFileStepSize()

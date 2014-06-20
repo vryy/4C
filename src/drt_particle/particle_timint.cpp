@@ -672,7 +672,7 @@ void PARTICLE::TimInt::AddRestartToOutputState()
   }
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
     IO::cout << "====== Restart written in step " << step_ << IO::endl;
   }

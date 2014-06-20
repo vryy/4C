@@ -121,7 +121,7 @@ void TSI::Partitioned::ReadRestart(int step)
 {
   ThermoField()->ReadRestart(step);
   StructureField()->ReadRestart(step);
-  SetTimeStep(ThermoField()->GetTime(),step);
+  SetTimeStep(ThermoField()->TimeOld(),step);
 
   // Material pointers to other field were deleted during ReadRestart().
   // They need to be reset.
@@ -159,6 +159,47 @@ void TSI::Partitioned::SetupSystem()
 
 
 /*----------------------------------------------------------------------*
+ | non-linear solve, i.e. (multiple) corrector (public)      dano 12/09 |
+ *----------------------------------------------------------------------*/
+void TSI::Partitioned::Solve()
+{
+  // switch TSI algorithm (synchronous)
+  // only the one field knows the 2nd field, that contains the coupling
+  // variable
+  // choose algorithm depending on solution type
+  switch (coupling_)
+  {
+  case INPAR::TSI::OneWay :
+  {
+    TimeLoopOneWay();
+    break;
+  }
+  // complete volume coupling system
+  // sequential staggered scheme
+  case INPAR::TSI::SequStagg :
+  {
+    TimeLoopSequStagg();
+    break;
+  }
+  // iterative staggered scheme
+  case INPAR::TSI::IterStagg :
+  case INPAR::TSI::IterStaggAitken :
+  case INPAR::TSI::IterStaggAitkenIrons :
+  case INPAR::TSI::IterStaggFixedRel :
+  {
+    TimeLoopFull();
+    break;
+  }
+  default :
+    dserror("desired type of thermo-structure interaction algorithm not supported");
+    break;
+  }  // end switch
+
+  return;
+}  // Solve()
+
+
+/*----------------------------------------------------------------------*
  | time loop                                                 dano 12/09 |
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::TimeLoop()
@@ -183,37 +224,8 @@ void TSI::Partitioned::TimeLoop()
       // but at this point the coupling variables are not known, yet!
       // call PrepareTimeStep() after ApplyCouplingState()/ApplyStructVariables()
 
-      // switch TSI algorithm (synchronous)
-      // only the one field knows the 2nd field, that contains the coupling
-      // variable
-      // choose algorithm depending on solution type
-      switch (coupling_)
-      {
-      case INPAR::TSI::OneWay :
-      {
-        TimeLoopOneWay();
-        break;
-      }
-      // complete volume coupling system
-      // sequential staggered scheme
-      case INPAR::TSI::SequStagg :
-      {
-        TimeLoopSequStagg();
-        break;
-      }
-      // iterative staggered scheme
-      case INPAR::TSI::IterStagg :
-      case INPAR::TSI::IterStaggAitken :
-      case INPAR::TSI::IterStaggAitkenIrons :
-      case INPAR::TSI::IterStaggFixedRel :
-      {
-        TimeLoopFull();
-        break;
-      }
-      default :
-        dserror("desired type of thermo-structure interaction algorithm not supported");
-        break;
-      }  // end switch
+      // integrate time step
+      Solve();
 
       // calculate stresses, strains, energies
       PrepareOutput();
@@ -563,8 +575,8 @@ void TSI::Partitioned::OuterIterationLoop()
     std::cout<<"\n";
     std::cout<<"**************************************************************\n";
     std::cout<<"      OUTER ITERATION LOOP \n";
-    printf("      Time Step %3d/%3d \n",ThermoField()->GetTimeStep(),
-      ThermoField()->GetTimeNumStep());
+    printf("      Time Step %3d/%3d \n",ThermoField()->StepOld(),
+      ThermoField()->NumStep());
     std::cout<<"**************************************************************\n";
   }
 

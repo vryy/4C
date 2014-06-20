@@ -376,7 +376,7 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
 
   // now, correct map layouts are available and states can be read
   particles_->ReadRestart(restart);
-  SetTimeStep(particles_->GetTime(),restart);
+  SetTimeStep(particles_->TimeOld(),restart);
 
   // read restart for walls
   if(structure_ != Teuchos::null)
