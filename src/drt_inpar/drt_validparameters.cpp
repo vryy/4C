@@ -2305,8 +2305,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
   DoubleParameter("DeltaR_LINK",0.0,"Absolute value of difference between maximal/minimal and mean cross linker length",&statmech);
-  // upper bound of the interval within which uniformly distributed random numbers are generated
-  DoubleParameter("MaxRandValue",0.0,"Upper bound of the interval within which uniformly distributed random numbers are generated (usually equal to PeriodLength)",&statmech);
   // Three values representing the size of the periodic box in each spatial direction
   setNumericStringParameter("PERIODLENGTH","0.0 0.0 0.0", "Values representing the size of the periodic box in each spatial direction",&statmech);
   //angle between filament axes at crosslinked points with zero potential energy
@@ -2366,6 +2364,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMRASTERPOINTS",3,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied", yesnotuple,yesnovalue,&statmech);
+  // cutoff for random forces, which determines the maximal value
+  DoubleParameter("MAXRANDFORCE",-1.0,"Any (absolute) random force beyond this value will not be used. A new random number will be pulled instead. -1.0 means no bounds.'",&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

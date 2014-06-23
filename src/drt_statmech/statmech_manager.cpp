@@ -3850,9 +3850,23 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
   //multivector for stochastic forces evaluated by each element based on row map
   Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()), randomnumbers->NumVectors()));
 
-  for (int i=0; i<randomnumbersrow->MyLength(); i++)
-    for (int j=0; j<randomnumbersrow->NumVectors(); j++)
-      (*randomnumbersrow)[j][i] = standarddeviation*(*normalgen_)() + meanvalue;
+  if(statmechparams_.get<double>("MAXRANDFORCE",-1.0)==-1.0)
+  {
+    for (int i=0; i<randomnumbersrow->MyLength(); i++)
+      for (int j=0; j<randomnumbersrow->NumVectors(); j++)
+        (*randomnumbersrow)[j][i] = standarddeviation*(*normalgen_)() + meanvalue;
+  }
+  else
+  {
+    for (int i=0; i<randomnumbersrow->MyLength(); i++)
+      for (int j=0; j<randomnumbersrow->NumVectors(); j++)
+      {
+        double randforce_dof = 2.0*statmechparams_.get<double>("MAXRANDFORCE",0.0);
+        while(fabs(randforce_dof)>statmechparams_.get<double>("MAXRANDFORCE",0.0))
+          randforce_dof = standarddeviation*(*normalgen_)() + meanvalue;
+        (*randomnumbersrow)[j][i] = randforce_dof;
+      }
+  }
 
   //export stochastic forces from row map to column map (unusual CommunicateMultiVector() call but does the job!)
   CommunicateMultiVector(randomnumbers,randomnumbersrow,true,false,false);

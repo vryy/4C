@@ -175,6 +175,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     dserror("This linker model needs zero value of DELTABELLSEQ! Check your input file!");
   if((linkermodel_==statmech_linker_stdintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && riseperbspot_->at(0)<=0.0)
     dserror("The input parameter RISEPERBSPOT has an invalid value %f", riseperbspot_->at(0));
+  if(statmechparams_.get<double>("MAXRANDFORCE",-1.0)< 0.0 && statmechparams_.get<double>("MAXRANDFORCE",-1.0)!= -1.0)
+    dserror("Choose a positive value for MAXRANDFORCE! Default value: -1.0 (no threshold for random forces!)");
 
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
   {
