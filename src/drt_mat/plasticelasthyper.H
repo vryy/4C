@@ -355,6 +355,16 @@ private:
         LINALG::Matrix<8,1>& delta
         );
 
+    /// convert modified gammas and deltas to unmodified formulation
+    /// takes the modified gammas and deltas and ADDS them to gamma and delta
+    virtual void ConvertModToPrinc(
+        const LINALG::Matrix<3,1>& prinv,
+        const LINALG::Matrix<3,1>& modgamma,
+        const LINALG::Matrix<5,1>& moddelta,
+        LINALG::Matrix<3,1>& gamma,
+        LINALG::Matrix<8,1>& delta
+    );
+
     /// add a contribution to the derivative of the PK2 stress with respect to the plastic deformation gradient
     /// in index notation this method does:
     /// dPK2dFpinv_IJKL += fac*( A_IK * B_JL + A_JK * B_IL )

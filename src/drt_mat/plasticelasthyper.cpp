@@ -320,14 +320,11 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   // calculated derivatives have to be extended.
   if (anisomod_==true || anisoprinc_==true)
     dserror("PlasticElastHyper only for isotropic elastic material!");
-  if (isomod_==true)
-    dserror("PlasticElastHyper only for isotropic elastic material without volumetric split!"
-        "\n(Extension without major changes possilble.)");
 
-    // check if either zero or three fiber directions are given
-    if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
-      if (!linedef->HaveNamed("FIBER1") || !linedef->HaveNamed("FIBER2") || !linedef->HaveNamed("FIBER3"))
-        dserror("so3 expects no fibers or 3 fiber directions");
+  // check if either zero or three fiber directions are given
+  if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
+    if (!linedef->HaveNamed("FIBER1") || !linedef->HaveNamed("FIBER2") || !linedef->HaveNamed("FIBER3"))
+      dserror("so3 expects no fibers or 3 fiber directions");
 
     // plastic anisotropy
     SetupHillPlasticity(linedef);
@@ -569,11 +566,14 @@ void MAT::PlasticElastHyper::EvaluateElast(
   // ... even if it is an implicit law that cmat is zero upon input
   pk2->Clear();
   cmat->Clear();
-
-  if (isoprinc_)
+  
+  // isotropic elasticity in coupled strain energy format
+  // isotropic elasticity in decoupled ("mod") format go here as well
+  // as the modified gammas and deltas have been converted
+  if (isoprinc_ || isomod_)
     EvaluateIsotropicPrincElast(*pk2,*cmat,Cpi,CpiCCpi,ircg,gamma,delta);
-  if (isomod_ || isomodvisco_ || anisoprinc_ || anisomod_)
-    dserror("only isotropic materials in coupled form supported");
+  else
+    dserror("only isotropic hyperelastic materials");
 
   return;
 }
@@ -614,8 +614,6 @@ void MAT::PlasticElastHyper::EvaluatePlast(
 
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
-  LINALG::Matrix<3,1> modgamma(true);
-  LINALG::Matrix<5,1> moddelta(true);
 
   if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
@@ -636,14 +634,16 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,9> dPK2dFpinv;
 
   // isotropic elasticity in coupled strain energy format
-  if (isoprinc_)
+  // isotropic elasticity in decoupled ("mod") format go here as well
+  // as the modified gammas and deltas have been converted
+  if (isoprinc_ || isomod_)
   {
     EvaluateIsotropicPrincPlast(dPK2dFpinv,mStr,dMdC,dMdFpinv,
         Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,id2V,id2,CpiC,FpiCe,
         invpldefgrd,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,gamma,delta);
   }
-  if (isomod_ || isomodvisco_ || anisoprinc_ || anisomod_)
-    dserror("only isotropic materials in coupled form supported");
+  else
+    dserror("only isotropic hypereleastic materials");
 
   EvaluateNCP(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaDp,gp,NCP,dNCPdC,dNCPdDp,dPK2dDp,active,elast,as_converged);
 
@@ -929,8 +929,6 @@ void MAT::PlasticElastHyper::EvaluatePlast(
 
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
-  LINALG::Matrix<3,1> modgamma(true);
-  LINALG::Matrix<5,1> moddelta(true);
 
   if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
@@ -951,14 +949,16 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,9> dPK2dFpinv;
 
   // isotropic elasticity in coupled strain energy format
-  if (isoprinc_)
+  // isotropic elasticity in decoupled ("mod") format go here as well
+  // as the modified gammas and deltas have been converted
+  if (isoprinc_ || isomod_)
   {
     EvaluateIsotropicPrincPlast(dPK2dFpinv,mStr,dMdC,dMdFpinv,
         Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,id2V,id2,CpiC,FpiCe,
         invpldefgrd,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,gamma,delta);
   }
   else
-    dserror("only isotropic materials in coupled form supported");
+    dserror("only isotropic hypereleastic materials");
 
   EvaluateNCPandSpin(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaLp,gp,NCP,dNCPdC,dNCPdLp,dPK2dLp,active,elast,as_converged);
 
@@ -1558,21 +1558,75 @@ void MAT::PlasticElastHyper::EvaluateGammaDelta(
     LINALG::Matrix<3,1>& gamma,
     LINALG::Matrix<8,1>& delta
     )
-
 {
+  // temporary modified invariants
+  LINALG::Matrix<3,1> modgamma;
+  LINALG::Matrix<5,1> moddelta;
   // principal coefficients
   if (isoprinc_)
-  {
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
-    {
       potsum_[p]->AddCoefficientsPrincipal(gamma,delta,prinv);
-    }
-  }
 
   // modified coefficients
   if (isomod_)
-    dserror("Plasticelasthyper only for isotropic elasticity only in coupled form (yet?)");
+  {
+    // calculate modified invariants
+    LINALG::Matrix<3,1> modinv;
+    InvariantsModified(modinv,prinv);
+
+    // loop map of associated potential summands
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+      potsum_[p]->AddCoefficientsModified(modgamma,moddelta,modinv);
+
+    // convert modified gammas and deltas to usual ones
+    ConvertModToPrinc(prinv,modgamma,moddelta,gamma,delta);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::PlasticElastHyper::ConvertModToPrinc(
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modgamma,
+    const LINALG::Matrix<5,1>& moddelta,
+    LINALG::Matrix<3,1>& gamma,
+    LINALG::Matrix<8,1>& delta
+)
+{
+  const double fac = pow(prinv(2),-1./3.); // = I3 ^ (-1/3) = J ^ (-2/3)
+  const double tcsq = prinv(0)*prinv(0)-2.*prinv(1); // = tr ( C^2 )
+  gamma(0) += fac*modgamma(0);
+  gamma(1) += fac*fac*modgamma(1);
+  gamma(2) += sqrt(prinv(2))*modgamma(2)
+             -1./3.*prinv(0)*fac*modgamma(0)
+             -1./3.*fac*fac*tcsq*modgamma(1);
+
+  // P : Cbar : P^T
+  delta(0) += fac*fac*moddelta(0);
+  delta(1) += fac*fac*fac*moddelta(1);
+  delta(2) += -1./3.*(fac*fac*prinv(0)*moddelta(0)+fac*fac*fac*tcsq*moddelta(1));
+  delta(3) += fac*fac*fac*fac*moddelta(2);
+  delta(4) += -1./3.*fac*fac*(fac*prinv(0)*moddelta(1)+fac*fac*tcsq*moddelta(2)+moddelta(3));
+  delta(5) += 1./9.*(fac*fac*prinv(0)*prinv(0)*moddelta(0)+2.*fac*fac*fac*prinv(0)*tcsq*moddelta(1)
+                     +fac*fac*fac*fac*tcsq*tcsq*moddelta(2)+fac*fac*tcsq*moddelta(3));
+  delta(7) += fac*fac*moddelta(3);
+
+//  // P tilde
+  delta(6) +=         2./3.*(fac*prinv(0)*modgamma(0)+fac*fac*tcsq*modgamma(1));
+  delta(5) += -1./3.*(2./3.*(fac*prinv(0)*modgamma(0)+fac*fac*tcsq*modgamma(1)));
+
+  // C_inv S_iso
+  delta(2) += -2./3.*fac*modgamma(0);
+  delta(4) += -2./3.*fac*fac*modgamma(1);
+  delta(5) += -4./3.*fac*(-1./3.*prinv(0)*modgamma(0)-1./3.*fac*tcsq*modgamma(1));
+
+  // C_vol
+  delta(5) += sqrt(prinv(2))*moddelta(4);
+  delta(6) += -2.*sqrt(prinv(2))*modgamma(2);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
