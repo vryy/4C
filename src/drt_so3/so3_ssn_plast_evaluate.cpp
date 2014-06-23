@@ -296,8 +296,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     break;
   }
 
-// calc_struct_stifftemp
-
   //============================================================================
   default:
     dserror("Unknown type of action for So3_Plast");
