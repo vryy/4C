@@ -455,9 +455,8 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
                                            //!< \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
-                                        //!< \f${V}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> vel_;  //!< global velocities
+                                       //!< \f${V}_{n+1}\f at \f$t_{n+1}\f$
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

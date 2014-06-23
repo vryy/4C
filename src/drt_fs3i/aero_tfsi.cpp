@@ -119,7 +119,7 @@ void FS3I::AeroTFSI::Timeloop()
     // sending initial data to INCA
     Teuchos::RCP<const Epetra_Vector> idispnStart = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Dispn());
     Teuchos::RCP<const Epetra_Vector> ivelnStart = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Veln());
-    Teuchos::RCP<const Epetra_Vector> ithermoloadStart = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->ExtractTempn());
+    Teuchos::RCP<const Epetra_Vector> ithermoloadStart = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->WriteAccessTempn());
 
     std::vector<double> aerosenddata;
     switch(tfsi_coupling_)
@@ -289,7 +289,7 @@ void FS3I::AeroTFSI::Timeloop()
         // gather data and send it to INCA
         Teuchos::RCP<Epetra_Vector> idispnp = aerocoupling_->StrExtractInterfaceVal(interf,tsi_->StructureField()->Dispnp());
         Teuchos::RCP<Epetra_Vector> ivelnp = aerocoupling_->StrExtractInterfaceVal(interf,tsi_->StructureField()->Velnp());
-        Teuchos::RCP<Epetra_Vector> itempnp = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->ExtractTempnp());
+        Teuchos::RCP<Epetra_Vector> itempnp = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->WriteAccessTempnp());
 
         std::vector<double> aerosenddata;
         switch(tfsi_coupling_)

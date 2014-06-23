@@ -254,10 +254,10 @@ namespace ADAPTER
     //! @name Extract temperature values needed for TSI
     //@{
     /// extract temperatures for inserting in structure field
-    virtual Teuchos::RCP<Epetra_Vector> ExtractTempn() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTempn() = 0;
 
     /// extract current temperatures for inserting in structure field
-    virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() = 0;
     //@}
 
     /// Identify residual

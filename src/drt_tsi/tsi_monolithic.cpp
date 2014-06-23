@@ -91,7 +91,7 @@ TSI::Monolithic::Monolithic(
   timernewton_(comm),
   ptcdt_(tsidynmono_.get<double>("PTCDT")),
   dti_(1.0/ptcdt_),
-  veln_(Teuchos::null)
+  vel_(Teuchos::null)
 {
   // access the thermal parameter lists
   const Teuchos::ParameterList& tdyn
@@ -118,11 +118,11 @@ TSI::Monolithic::Monolithic(
 
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
-  // new velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-  veln_->PutScalar(0.0);
+  // initialise internal varible with new velocities V_{n+1} at t_{n+1}
+  vel_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+  vel_->PutScalar(0.0);
 
-  // tsi solver: create a linear solver
+  // --------------------------------- TSI solver: create a linear solver
   
   // get iterative solver
   if (merge_tsi_blockmatrix_ == false)
@@ -298,10 +298,10 @@ void TSI::Monolithic::CreateLinearSolver()
   // plausibility check
   switch (azprectype)
   {
-  case INPAR::SOLVER::azprec_BGS2x2:
+  case INPAR::SOLVER::azprec_BGS2x2 :
     break;
-  case INPAR::SOLVER::azprec_BGSnxn:
-  case INPAR::SOLVER::azprec_TekoSIMPLE:
+  case INPAR::SOLVER::azprec_BGSnxn :
+  case INPAR::SOLVER::azprec_TekoSIMPLE :
   {
 #ifdef HAVE_TEKO
     // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
@@ -323,8 +323,8 @@ void TSI::Monolithic::CreateLinearSolver()
 #endif
     break;
   }
-  case INPAR::SOLVER::azprec_MueLuAMG_sym:
-  case INPAR::SOLVER::azprec_AMGnxn:
+  case INPAR::SOLVER::azprec_MueLuAMG_sym :
+  case INPAR::SOLVER::azprec_AMGnxn :
   {
     // no plausibility checks here
     // if you forget to declare an xml file you will get an error message anyway
@@ -339,10 +339,10 @@ void TSI::Monolithic::CreateLinearSolver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-  case INPAR::SOLVER::azprec_BGS2x2:
-  case INPAR::SOLVER::azprec_BGSnxn:
-  case INPAR::SOLVER::azprec_TekoSIMPLE:
-  case INPAR::SOLVER::azprec_AMGnxn:
+  case INPAR::SOLVER::azprec_BGS2x2 :
+  case INPAR::SOLVER::azprec_BGSnxn :
+  case INPAR::SOLVER::azprec_TekoSIMPLE :
+  case INPAR::SOLVER::azprec_AMGnxn :
   {
     // This should be the default case (well-tested and used)
     solver_ = Teuchos::rcp(new LINALG::Solver(
@@ -362,11 +362,11 @@ void TSI::Monolithic::CreateLinearSolver()
 
     // prescribe rigid body modes
     StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                          solver_->Params().sublist("Inverse1")
-                                          );
+      solver_->Params().sublist("Inverse1")
+      );
     ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                       solver_->Params().sublist("Inverse2")
-                                       );
+      solver_->Params().sublist("Inverse2")
+      );
     break;
   }
   case INPAR::SOLVER::azprec_MueLuAMG_sym:
@@ -391,11 +391,11 @@ void TSI::Monolithic::CreateLinearSolver()
     // ... BACI calculates the null space vectors. These are then stored in the sublists
     //     Inverse1 and Inverse2 from where they...
     StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                          solver_->Params().sublist("Inverse1")
-                                          );
+      solver_->Params().sublist("Inverse1")
+      );
     ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                       solver_->Params().sublist("Inverse2")
-                                       );
+      solver_->Params().sublist("Inverse2")
+      );
 
     // ... are copied from here to ...
     const Teuchos::ParameterList& inv1source = solver_->Params().sublist("Inverse1").sublist("ML Parameters");
@@ -417,9 +417,8 @@ void TSI::Monolithic::CreateLinearSolver()
     inv2.set<Teuchos::RCP<std::vector<double> > >("nullspace", inv2source.get<Teuchos::RCP<std::vector<double> > >("nullspace"));
 
     solver_->Params().sublist("MueLu Parameters").set("TSI",true);
-
+    break;
   }
-  break;
   default:
     dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
     break;
@@ -482,8 +481,8 @@ void TSI::Monolithic::TimeLoop()
     Output();
 
 #ifdef TSIMONOLITHASOUTPUT
-    printf("Ende Timeloop ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
-    printf("Ende Timeloop ThermoField()->ExtractTempn[0] %12.8f\n",(*ThermoField()->ExtractTempn())[0]);
+    printf("Ende Timeloop ThermoField()->Tempnp[0] %12.8f\n",(*ThermoField()->Tempnp())[0]);
+    printf("Ende Timeloop ThermoField()->Tempn[0] %12.8f\n",(*ThermoField()->Tempn())[0]);
 
     printf("Ende Timeloop disp %12.8f\n",(*StructureField()->Dispn())[0]);
     std::cout << "dispn\n" << *(StructureField()->Dispn()) <<  std::endl;
@@ -865,7 +864,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   // else (x == Teuchos::null): initialise the system
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "Tempnp vor UpdateNewton\n" << *(ThermoField()->Tempnp()) <<  std::endl;
-  printf("Tempnp vor UpdateNewton ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
+  printf("Tempnp vor UpdateNewton ThermoField()->Tempnp[0] %12.8f\n",(*ThermoField()->Tempnp())[0]);
 #endif // TSIMONOLITHASOUTPUT
 
   // Newton update of the thermo field
@@ -875,7 +874,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "Tempnp nach UpdateNewton\n" << *(ThermoField()->Tempnp()) <<  std::endl;
-  printf("Tempnp nach UpdateNewton ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
+  printf("Tempnp nach UpdateNewton ThermoField()->Tempnp[0] %12.8f\n",(*ThermoField()->Tempnp())[0]);
 #endif // TSIMONOLITHASOUTPUT
 
   // call all elements and assemble rhs and matrices
@@ -933,21 +932,20 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   if (strmethodname_ == INPAR::STR::dyna_statics)
   {
     // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
-    veln_ = CalcVelocity(StructureField()->Dispnp());
+    vel_ = CalcVelocity(StructureField()->Dispnp());
   }
+  // else: use velnp
   else
-  {
-    // evaluation is at t_{n+1} for one-step-theta and TR-like genalpha
-    veln_ = StructureField()->WriteAccessVelnp();
-  }
+    vel_ = StructureField()->WriteAccessVelnp();
+
 #ifndef MonTSIwithoutSTR
   // pass the structural values to the thermo field
-  ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
+  ApplyStructCouplingState(StructureField()->Dispnp(),vel_);
 #endif
 
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "d_n+1 inserted in THR field\n" << *(StructureField()->Dispnp()) <<  std::endl;
-  std::cout << "v_n+1\n" << *veln_ <<  std::endl;
+  std::cout << "v_n+1\n" << *vel_ <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
 
   // monolithic TSI accesses the linearised thermo problem
@@ -2004,8 +2002,8 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   ThermoField()->Discretization()->ClearState(true);
   // set the variables that are needed by the elements
   ThermoField()->Discretization()->SetState(0,"temperature",ThermoField()->Tempnp());
-  
-  ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
+
+  ApplyStructCouplingState(StructureField()->Dispnp(),vel_);
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
@@ -2044,7 +2042,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
   std::vector<DRT::Condition*> cond;
   std::string condstring("ThermoConvections");
   ThermoField()->Discretization()->GetCondition(condstring,cond);
-  if (cond.size()>0)
+  if (cond.size() > 0)
   {
     // create the parameters for the discretization
     Teuchos::ParameterList tparams;
@@ -2104,7 +2102,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
     ThermoField()->Discretization()->ClearState(true);
     // set the variables that are needed by the elements
     ThermoField()->Discretization()->SetState(0,"temperature",ThermoField()->Tempnp());
-    ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
+    ApplyStructCouplingState(StructureField()->Dispnp(),vel_);
 
     // build specific assemble strategy for the thermal-mechanical system matrix
     // from the point of view of ThermoField:
@@ -2226,7 +2224,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
 
    // scalar inversion of diagonal values
    err = diag->Reciprocal(*diag);
-   if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+   if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
    // re-insert inverted diagonal into invd
    err = invd->ReplaceDiagonalValues(*diag);
@@ -2418,7 +2416,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
@@ -2654,7 +2652,7 @@ void TSI::Monolithic::AssembleLinDM(
     = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
-  if (interface.size()>1)
+  if (interface.size() > 1)
     dserror("Error in TSI::Algorithm::AssembleLinDM: Only for one interface yet.");
 
   // slave nodes
@@ -2710,16 +2708,16 @@ void TSI::Monolithic::AssembleLinDM(
         double val = lm*(scolcurr->second);
         ++scolcurr;
 
-        if (abs(val)>1.0e-12) lindglobal.FEAssemble(-val,row,col);
+        if (abs(val) > 1.0e-12) lindglobal.FEAssemble(-val,row,col);
       }
 
-        // check for completeness of DerivD-Derivatives-iteration
-        if (scolcurr!=thisdderiv.end())
-          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+      // check for completeness of DerivD-Derivatives-iteration
+      if (scolcurr != thisdderiv.end())
+        dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
     }
 
     // check for completeness of DerivD-Slave-iteration
-    if (scurr!=dderiv.end())
+    if (scurr != dderiv.end())
       dserror("ERROR: AssembleLinDM: Not all DISP slave entries of DerivD considered!");
     /******************************** Finished with LinDMatrix **********/
 
@@ -2753,16 +2751,16 @@ void TSI::Monolithic::AssembleLinDM(
         // might not own the corresponding rows in lindglobal (DISP slave node)
         // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
         //std::cout << "Assemble LinM: " << row << " " << col << " " << val <<  std::endl;
-        if (abs(val)>1.0e-12) linmglobal.FEAssemble(val,row,col);
+        if (abs(val) > 1.0e-12) linmglobal.FEAssemble(val,row,col);
       }
 
       // check for completeness of DerivM-Derivatives-iteration
-      if (mcolcurr!=thismderiv.end())
+      if (mcolcurr != thismderiv.end())
         dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
     }
 
     // check for completeness of DerivM-Master-iteration
-    if (mcurr!=mderiv.end())
+    if (mcurr != mderiv.end())
       dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
     /******************************** Finished with LinMMatrix **********/
   }
@@ -2789,7 +2787,7 @@ void TSI::Monolithic::AssembleThermContCondition(
     = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
-  if (interface.size()>1)
+  if (interface.size() > 1)
     dserror("Error in TSI::Algorithm::AssembleThermContCondition: Only for one interface yet.");
 
   // heat transfer coefficient for slave and master surface
@@ -2811,7 +2809,7 @@ void TSI::Monolithic::AssembleThermContCondition(
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
 
-    if(cnode->Active()!=true)
+    if(cnode->Active() != true)
       break;
 
     int row = StructureField()->Discretization()->Dof(1,nodeges)[0];
@@ -2859,17 +2857,17 @@ void TSI::Monolithic::AssembleThermContCondition(
         double val1 = -beta*Ts*(scolcurr->second);
         ++scolcurr;
 
-        if (abs(val)>1.0e-12) lindisglobal.FEAssemble(val,row,col);
-        if (abs(val1)>1.0e-12) lindisglobal.FEAssemble(val1,row,col);
+        if (abs(val) > 1.0e-12) lindisglobal.FEAssemble(val,row,col);
+        if (abs(val1) > 1.0e-12) lindisglobal.FEAssemble(val1,row,col);
       }
 
       // check for completeness of DerivD-Derivatives-iteration
-      if (scolcurr!=thisdderiv.end())
+      if (scolcurr != thisdderiv.end())
         dserror("ERROR: AssembleThermContCondition: Not all derivative entries of DerivD considered!");
     }
 
     // check for completeness of DerivD-Slave-iteration
-    if (scurr!=dderiv.end())
+    if (scurr != dderiv.end())
       dserror("ERROR: AssembleThermContCondition: Not all DISP slave entries of DerivD considered!");
     /******************************** Finished with LinDMatrix **********/
 
@@ -2907,12 +2905,12 @@ void TSI::Monolithic::AssembleThermContCondition(
       }
 
       // check for completeness of DerivM-Derivatives-iteration
-      if (mcolcurr!=thismderiv.end())
+      if (mcolcurr != thismderiv.end())
         dserror("ERROR: AssembleThermContCondition: Not all derivative entries of DerivM considered!");
     }
 
     // check for completeness of DerivM-Master-iteration
-    if (mcurr!=mderiv.end())
+    if (mcurr != mderiv.end())
       dserror("ERROR: AssembleThermContCondition: Not all master entries of DerivM considered!");
     /******************************** Finished with LinMMatrix **********/
   }
@@ -3224,8 +3222,6 @@ void TSI::Monolithic::SetDefaultParameters()
        )
      )
   {
-    std::cout << "in section TSI DYANMIC: 'ITERNORM == L1_Scaled' and test of single field,"
-      "--> scale the norm of the single fields, too!" << std::endl;
     iternormstr_ = INPAR::TSI::norm_l1_scaled;
     iternormthr_ = INPAR::TSI::norm_l1_scaled;
   }

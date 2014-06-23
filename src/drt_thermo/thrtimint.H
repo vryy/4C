@@ -441,7 +441,7 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> Temp() { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Epetra_Vector> ExtractTempn() { return (*temp_)(0); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessTempn() { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Tempn() { return (*temp_)(0); }
@@ -450,18 +450,15 @@ namespace THR
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> TempNew() { return tempn_; }
-
-    //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ExtractTempnp() { return tempn_; }
+    Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() { return tempn_; }
 
     //! Return temperatures \f$T_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Tempnp() { return tempn_; }
 
-    //! Return temperature rates \f$V_{n}\f$
+    //! Return temperature rates \f$R_{n}\f$
     Teuchos::RCP<Epetra_Vector> Rate() { return (*rate_)(0); }
 
-    //! Return temperature rates \f$V_{n+1}\f$
+    //! Return temperature rates \f$R_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> RateNew() { return raten_; }
 
     //! Return external force \f$F_{ext,n}\f$
@@ -470,16 +467,10 @@ namespace THR
     //! Return reaction forces
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
-    //! right-hand side alias the dynamic force residual
+    //! right-hand side alias the dynamic thermal residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
-    //! Return tangent,
-    //! i.e. force residual differentiated by temperatures
-    //! (SystemMatrix()/stiff_ in STR)
-    Teuchos::RCP<LINALG::SparseMatrix> Tang() { return tang_; }
-
-    //! Return tangent,
-    //! i.e. force residual differentiated by temperatures
+    //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (SystemMatrix()/stiff_ in STR)
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return tang_; }
 

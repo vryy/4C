@@ -142,12 +142,10 @@ namespace TSI
 
   private:
 
-    //! displacements from time step (t_n) or (t_n+1)
+    //! displacements at time step (t_n) or (t_n+1)
     Teuchos::RCP<Epetra_Vector> disp_;
-    //! velocities from time step begin (t_n)
-    Teuchos::RCP<Epetra_Vector> veln_;
-    //! velocities from time step begin (t_n+1)
-    Teuchos::RCP<Epetra_Vector> velnp_;
+    //! velocities at time step (t_n) or (t_n+1)
+    Teuchos::RCP<Epetra_Vector> vel_;
 
     //! temperature at time step (t_n) or (t_n+1)
     Teuchos::RCP<Epetra_Vector> temp_;

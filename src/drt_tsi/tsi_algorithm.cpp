@@ -41,11 +41,11 @@ Maintainer: Caroline Danowski
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
-  : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
-    dispnp_(Teuchos::null),
-    tempnp_(Teuchos::null),
-    matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->TSIDynamicParams(),"MATCHINGGRID")),
-    volcoupl_(Teuchos::null)
+: AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
+  dispnp_(Teuchos::null),
+  tempnp_(Teuchos::null),
+  matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->TSIDynamicParams(),"MATCHINGGRID")),
+  volcoupl_(Teuchos::null)
 {
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -280,7 +280,7 @@ void  TSI::Algorithm::OutputDeformationInThr(
 
   } // for lnodid
 
-return;
+  return;
 
 }  // OutputDeformationInThr()
 
@@ -303,11 +303,13 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
   return vel;
 }  // CalcVelocity()
 
+
 /*----------------------------------------------------------------------*
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp)
 {
-  if(matchinggrid_)
+  if (matchinggrid_)
   {
     if (temp != Teuchos::null)
       StructureField()->Discretization()->SetState(1,"temperature",temp);
@@ -317,9 +319,11 @@ void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> 
     if (temp != Teuchos::null)
       StructureField()->Discretization()->SetState(1,"temperature",volcoupl_->ApplyVectorMappingAB(temp));
   }
-}
+}  // ApplyThermoCouplingState()
+
 
 /*----------------------------------------------------------------------*
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
                                               Teuchos::RCP<const Epetra_Vector> vel)
@@ -338,6 +342,7 @@ void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> 
     if (vel != Teuchos::null)
       ThermoField()->Discretization()->SetState(1,"velocity",volcoupl_->ApplyVectorMappingBA(vel));
   }
-}
+}  // ApplyStructCouplingState()
+
 
 /*----------------------------------------------------------------------*/
