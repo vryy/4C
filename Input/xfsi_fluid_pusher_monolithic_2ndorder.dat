@@ -26,7 +26,7 @@ NUMTHERMDIS                     0
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No //Yes
+STRUCT_STRESS No //Yes
 STRUCT_STRAIN                   No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -85,11 +85,11 @@ DYNAMICTYP                      GenAlpha//OneStepTheta
 TIMESTEP                        0.025
 NUMSTEP                         80
 MAXTIME                         2.0
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
-PREDICT                         ConstDisVelAcc // do not use the ConstDisVelAcc predictor to compute the new interface vel!
+PREDICT                         ConstDisVelAcc                // do not use the ConstDisVelAcc predictor to compute the new interface vel!
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -100,24 +100,24 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         100
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
 NAME Fluid Solver
 SOLVER                          UMFPACK
@@ -137,19 +137,19 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 XFLUID_BOUNDARY                 xfsi_moving_boundary
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
-VISC_STAB_FAC                   35.0                            // in [10;100]
-VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
-VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               none // erstmal aus!!! max_abs_normal_vel //abs_normal_vel // inflow // const // none
+VISC_STAB_FAC                   35.0                          // in [10;100]
+VISC_STAB_SCALING               visc_div_by_hk                // inv_hk // const
+VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
+CONV_STAB_SCALING               none                          // erstmal aus!!! max_abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.05                             // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 //                              MAT_Struct_StVenantKirchhoff
-MAT 2   MAT_Struct_StVenantKirchhoff   YOUNG 1000000000 NUE 0.3 DENS 1.0 THEXPANS 1 
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000000 NUE 0.3 DENS 1.0 THEXPANS 1
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1
 //MAT 3 ELAST_CoupNeoHooke YOUNG 100000000 NUE 0.0
 ----------------------------------------------------------------------CURVE1

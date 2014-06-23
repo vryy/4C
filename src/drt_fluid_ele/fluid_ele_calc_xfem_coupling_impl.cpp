@@ -37,8 +37,8 @@ namespace XFLUID
 /*--------------------------------------------------------------------------------
  * add side's interface displacements and set current side node coordinates
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::addeidisp(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::addeidisp(
     const DRT::Discretization &  cutdis,       ///< cut discretization
     const std::string            state,        ///< state
     const std::vector<int>&      lm            ///< local map
@@ -55,9 +55,9 @@ void SideImpl<distype, side_distype, numdof>::addeidisp(
 
   for (int inode=0; inode<side_nen_; ++inode)  // number of nodes
   {
-    for(int idim=0; idim<3; ++idim) // number of dimensions
+    for(int idim=0; idim<nsd_; ++idim) // number of dimensions
     {
-      (eidisp_)(idim,inode) = mymatrix[idim+(inode*numdof)]; // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
+      (eidisp_)(idim,inode) = mymatrix[idim+(inode*side_numdof)]; // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
     }
   }
 
@@ -76,8 +76,8 @@ void SideImpl<distype, side_distype, numdof>::addeidisp(
 /*--------------------------------------------------------------------------------
  * extract/set side's interface velocity
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::eivel(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::eivel(
     const DRT::Discretization &  cutdis,  ///< cut discretization
     const std::string            state,   ///< state
     const std::vector<int>&      lm       ///< local map
@@ -94,21 +94,21 @@ void SideImpl<distype, side_distype, numdof>::eivel(
 
   for (int inode=0; inode<side_nen_; ++inode)  // number of nodes
   {
-    for(int idim=0; idim<3; ++idim) // number of dimensions
+    for(int idim=0; idim<nsd_; ++idim) // number of dimensions
     {
-      (eivel_)(idim,inode) = mymatrix[idim+(inode*numdof)];  // state vector includes velocity and pressure
+      (eivel_)(idim,inode) = mymatrix[idim+(inode*side_numdof)];  // state vector includes velocity and pressure
     }
-    if(numdof == 4) (eipres_)(inode,0) = mymatrix[3+(inode*numdof)];
+    if (side_numdof == nsd_+1) (eipres_)(inode,0) = mymatrix[nsd_+(inode*side_numdof)];
   }
 
   return;
-} // eivel
+} // eVel
 
 /*--------------------------------------------------------------------------------
  * extract/set side's interface velocity
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::getivelint(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::getivelint(
     LINALG::Matrix<nsd_,1>& ivelint  ///< interface velocity at embedded side
     )
 {
@@ -122,8 +122,8 @@ void SideImpl<distype, side_distype, numdof>::getivelint(
  * evaluate shape function, derivatives, normal and transformation w.r.t
  * side element at gaussian point
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::Evaluate(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::Evaluate(
     const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element
     LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
     LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
@@ -144,22 +144,22 @@ void SideImpl<distype, side_distype, numdof>::Evaluate(
 /*--------------------------------------------------------------------------------
  * compute interface force for side nodes
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::InterfaceForce(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::InterfaceForce(
     Epetra_SerialDenseVector &   iforce,     ///< interface force vector
     LINALG::Matrix<nsd_,1> &     traction,   ///< traction vector at gaussian point
     const double &               fac         ///< integration factor
     )
 {
 
-  if(numdof != nsd_) dserror(" pay attention in buildInterfaceForce: numdof != nsd_");
+  if(side_numdof != nsd_) dserror(" pay attention in buildInterfaceForce: side_numdof != nsd_");
 
   for (int inode = 0; inode < side_nen_; ++inode)
   {
     for(int idim=0; idim<nsd_; ++idim )
     {
       // f^i = ( N^i, t ) = ( N^i, (-pI+2mu*eps(u))*n )
-      iforce[idim+(inode*numdof)] += side_funct_(inode) * traction(idim) * fac;
+      iforce[idim+(inode*side_numdof)] += side_funct_(inode) * traction(idim) * fac;
     }
   }
 
@@ -171,8 +171,8 @@ void SideImpl<distype, side_distype, numdof>::InterfaceForce(
  * project gaussian point from linearized interfac in normal direction onto
  * corresponding side
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::ProjectOnSide(
     LINALG::Matrix<3,1> & x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
     LINALG::Matrix<3,1> & x_side,    ///< projected gaussian point on side
     LINALG::Matrix<2,1> & xi_side    ///< local coordinates of projected gaussian point w.r.t side
@@ -382,14 +382,15 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
 
 
 /*--------------------------------------------------------------------------------
- * build coupling matrices for Mixed/Stress/Hybrid (MSH) method
+ * build side coupling matrices for mixed/hybrid Cauchy stress-based LM
+ * (MHCS) coupling
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::MSH_buildCouplingMatrices(
-    LINALG::Matrix<nsd_,1> &                             normal,     ///< normal vector
-    const double                                         fac,        ///< integration factor
-    LINALG::Matrix<nen_,1> &                             funct,      ///< shape function
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &  rhs         ///< rhs block matrix
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::MHCS_buildCouplingMatrices(
+    const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
+    const double &                                                fac,        ///< integration factor
+    const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< rhs block matrix
 )
 {
   LINALG::Matrix<nen_,side_nen_> bKi_ss;
@@ -397,6 +398,85 @@ void SideImpl<distype, side_distype, numdof>::MSH_buildCouplingMatrices(
 
   // interface velocity vector in gausspoint
   LINALG::Matrix<nsd_,1> ivelint;
+  getivelint(ivelint);
+
+  const unsigned Sigmaxx = 0;
+  const unsigned Sigmaxy = 1;
+  const unsigned Sigmaxz = 2;
+  const unsigned Sigmayx = 1;
+  const unsigned Sigmayy = 3;
+  const unsigned Sigmayz = 4;
+  const unsigned Sigmazx = 2;
+  const unsigned Sigmazy = 4;
+  const unsigned Sigmazz = 5;
+  const unsigned Velxi = 0;
+  const unsigned Velyi = 1;
+  const unsigned Velzi = 2;
+
+  for(int i=0;i<nen_;++i)
+  {
+    for(int j=0;j<side_nen_;++j)
+    {
+      bKi_ss(i,j) = funct(i)*side_funct_(j);
+    }
+  }
+
+  // G_sui (coupling only for sigma and u (not for sigma and p)
+  BG_sui_( Sigmaxx, Velxi )->Update( fac*normal(0), bKi_ss, 1.0 );
+  BG_sui_( Sigmaxy, Velxi )->Update( fac*normal(1), bKi_ss, 1.0 );
+  BG_sui_( Sigmaxz, Velxi )->Update( fac*normal(2), bKi_ss, 1.0 );
+  BG_sui_( Sigmayx, Velyi )->Update( fac*normal(0), bKi_ss, 1.0 );
+  BG_sui_( Sigmayy, Velyi )->Update( fac*normal(1), bKi_ss, 1.0 );
+  BG_sui_( Sigmayz, Velyi )->Update( fac*normal(2), bKi_ss, 1.0 );
+  BG_sui_( Sigmazx, Velzi )->Update( fac*normal(0), bKi_ss, 1.0 );
+  BG_sui_( Sigmazy, Velzi )->Update( fac*normal(1), bKi_ss, 1.0 );
+  BG_sui_( Sigmazz, Velzi )->Update( fac*normal(2), bKi_ss, 1.0 );
+
+
+  rhs_s( Sigmaxx, 0 )->Update( -fac*normal(0)*ivelint(0), funct, 1.0 );
+  rhs_s( Sigmaxy, 0 )->Update( -fac*normal(1)*ivelint(0), funct, 1.0 );
+  rhs_s( Sigmaxz, 0 )->Update( -fac*normal(2)*ivelint(0), funct, 1.0 );
+  rhs_s( Sigmayx, 0 )->Update( -fac*normal(0)*ivelint(1), funct, 1.0 );
+  rhs_s( Sigmayy, 0 )->Update( -fac*normal(1)*ivelint(1), funct, 1.0 );
+  rhs_s( Sigmayz, 0 )->Update( -fac*normal(2)*ivelint(1), funct, 1.0 );
+  rhs_s( Sigmazx, 0 )->Update( -fac*normal(0)*ivelint(2), funct, 1.0 );
+  rhs_s( Sigmazy, 0 )->Update( -fac*normal(1)*ivelint(2), funct, 1.0 );
+  rhs_s( Sigmazz, 0 )->Update( -fac*normal(2)*ivelint(2), funct, 1.0 );
+
+  bKiT_ss.UpdateT(bKi_ss);
+
+  // G_uis
+  BG_uis_( Velxi, Sigmaxx )->Update( fac*normal(0), bKiT_ss, 1.0 );
+  BG_uis_( Velxi, Sigmaxy )->Update( fac*normal(1), bKiT_ss, 1.0 );
+  BG_uis_( Velxi, Sigmaxz )->Update( fac*normal(2), bKiT_ss, 1.0 );
+  BG_uis_( Velyi, Sigmayx )->Update( fac*normal(0), bKiT_ss, 1.0 );
+  BG_uis_( Velyi, Sigmayy )->Update( fac*normal(1), bKiT_ss, 1.0 );
+  BG_uis_( Velyi, Sigmayz )->Update( fac*normal(2), bKiT_ss, 1.0 );
+  BG_uis_( Velzi, Sigmazx )->Update( fac*normal(0), bKiT_ss, 1.0 );
+  BG_uis_( Velzi, Sigmazy )->Update( fac*normal(1), bKiT_ss, 1.0 );
+  BG_uis_( Velzi, Sigmazz )->Update( fac*normal(2), bKiT_ss, 1.0 );
+
+  return;
+}// MHCS_buildCouplingMatrices
+
+/*--------------------------------------------------------------------------------
+ * build side coupling matrices for mixed/hybrid viscous stress-based LM
+ * (MHCS) coupling
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::MHVS_buildCouplingMatrices(
+    const LINALG::Matrix<nsd_,1> &                                    normal,     ///< normal vector
+    const double &                                                    fac,        ///< integration factor
+    const LINALG::Matrix<nen_,1> &                                    funct,      ///< background element shape functions
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> &     rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
+    const double &                                                    press,      ///< background element pressure
+    LINALG::Matrix<nen_,1> &                                          rhs_pui     ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
+)
+{
+  const unsigned Velx = 0;
+  const unsigned Vely = 1;
+  const unsigned Velz = 2;
+  const unsigned Pres = 3;
 
   const unsigned Sigmaxx = 0;
   const unsigned Sigmaxy = 1;
@@ -408,357 +488,411 @@ void SideImpl<distype, side_distype, numdof>::MSH_buildCouplingMatrices(
   const unsigned Sigmazy = 4;
   const unsigned Sigmazz = 5;
 
-  const unsigned Velxi = 0;
-  const unsigned Velyi = 1;
-  const unsigned Velzi = 2;
+  // interface velocity at gauss-point (current gauss-point in calling method)
+  LINALG::Matrix<nsd_,1> ivelint(true);
+  getivelint(ivelint);
 
-  // get velocity at integration point
-  // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  ivelint.Multiply(eivel_,side_funct_);
+  // block submatrices for side-background coupling; i: interface, b: background
+  LINALG::Matrix<nen_, side_nen_> bG_bi(true);
+  LINALG::Matrix<side_nen_, nen_> bG_ib(true);
 
-  for(int i=0;i<nen_;++i)
+  bG_bi.MultiplyNT(funct, side_funct_);
+  bG_ib.MultiplyNT(side_funct_, funct);
+
+  /*
+   * G_sui
+   *
+   * from:
+   *   /            \
+   *  | \tau n, u^i  |
+   *   \            /
+   */
+  BG_sui_(Sigmaxx, Velx)->Update(fac * normal(Velx), bG_bi, 1.0);
+  BG_sui_(Sigmaxy, Velx)->Update(fac * normal(Vely), bG_bi, 1.0);
+  BG_sui_(Sigmaxz, Velx)->Update(fac * normal(Velz), bG_bi, 1.0);
+  BG_sui_(Sigmayx, Vely)->Update(fac * normal(Velx), bG_bi, 1.0);
+  BG_sui_(Sigmayy, Vely)->Update(fac * normal(Vely), bG_bi, 1.0);
+  BG_sui_(Sigmayz, Vely)->Update(fac * normal(Velz), bG_bi, 1.0);
+  BG_sui_(Sigmazx, Velz)->Update(fac * normal(Velx), bG_bi, 1.0);
+  BG_sui_(Sigmazy, Velz)->Update(fac * normal(Vely), bG_bi, 1.0);
+  BG_sui_(Sigmazz, Velz)->Update(fac * normal(Velz), bG_bi, 1.0);
+
+  /*
+   *  G_uis
+   *
+   *  from:
+   *   /               \
+   *  | v^i, \sigma n   |
+   *   \               /
+   *
+   */
+  BG_uis_(Velx, Sigmaxx)->Update(fac * normal(Velx), bG_ib, 1.0);
+  BG_uis_(Velx, Sigmaxy)->Update(fac * normal(Vely), bG_ib, 1.0);
+  BG_uis_(Velx, Sigmaxz)->Update(fac * normal(Velz), bG_ib, 1.0);
+  BG_uis_(Vely, Sigmayx)->Update(fac * normal(Velx), bG_ib, 1.0);
+  BG_uis_(Vely, Sigmayy)->Update(fac * normal(Vely), bG_ib, 1.0);
+  BG_uis_(Vely, Sigmayz)->Update(fac * normal(Velz), bG_ib, 1.0);
+  BG_uis_(Velz, Sigmazx)->Update(fac * normal(Velx), bG_ib, 1.0);
+  BG_uis_(Velz, Sigmazy)->Update(fac * normal(Vely), bG_ib, 1.0);
+  BG_uis_(Velz, Sigmazz)->Update(fac * normal(Velz), bG_ib, 1.0);
+
+  rhs_s(Sigmaxx, 0)->Update(-fac * normal(Velx) * ivelint(Velx), funct, 1.0);
+  rhs_s(Sigmayy, 0)->Update(-fac * normal(Vely) * ivelint(Vely), funct, 1.0);
+  rhs_s(Sigmazz, 0)->Update(-fac * normal(Velz) * ivelint(Velz), funct, 1.0);
+
+  rhs_s(Sigmaxy, 0)->Update(-fac * (normal(Vely) * ivelint(Velx) + normal(Velx) * ivelint(Vely)), funct, 1.0);
+  rhs_s(Sigmaxz, 0)->Update(-fac * (normal(Velz) * ivelint(Velx) + normal(Velx) * ivelint(Velz)), funct, 1.0);
+  rhs_s(Sigmayz, 0)->Update(-fac * (normal(Velz) * ivelint(Vely) + normal(Vely) * ivelint(Velz)), funct, 1.0);
+
+
+  //Build cross-interface pressure-velocity coupling matrices G_uip, G_pui!
+
+  //G_pui
+  /*
+   *  /          \
+   *  | q, u^i n  |
+   *  \          /
+   *
+   */
+
+  BG_pui_(0,Velx)->Update(fac * normal(Velx), bG_bi, 1.0);
+  BG_pui_(0,Vely)->Update(fac * normal(Vely), bG_bi, 1.0);
+  BG_pui_(0,Velz)->Update(fac * normal(Velz), bG_bi, 1.0);
+
+
+  //G_uip
+  /*
+   *  /           \
+   *  | -v^i, p n  |
+   *  \           /
+   *
+   */
+
+  BG_uip_(Velx,0)->Update(-fac * normal(Velx), bG_ib, 1.0);
+  BG_uip_(Vely,0)->Update(-fac * normal(Vely), bG_ib, 1.0);
+  BG_uip_(Velz,0)->Update(-fac * normal(Velz), bG_ib, 1.0);
+
+  // add normal interface velocity to rhs vector (pressure row)
+  const double ivelnormal = ivelint.Dot(normal);
+
+  // (Viscous) stress/Velocities
+
+  // rhs_p_u, residual from:
+  /*
+   *  /         \
+   *  | q, u^i n |
+   *  \         /
+   *
+   */
+  rhs_pui.Update(-fac * ivelnormal, funct, 1.0);
+
+  // rhs_ui_p, residual from:
+  /*
+   *  /          \
+   *  | -v^i, p n |
+   *  \          /
+   *
+   */
+  // belongs to the side and therefore contributes to rhC_ui_!
+  for (int ir = 0; ir < side_nen_; ++ir)
   {
-    for(int j=0;j<side_nen_;++j)
-    {
-      bKi_ss(i,j) = funct(i)*side_funct_(j);
-    }
+    unsigned velxrow = ir * side_numdof + Velx;
+    unsigned velyrow = ir * side_numdof + Vely;
+    unsigned velzrow = ir * side_numdof + Velz;
+    unsigned presrow = ir * side_numdof + Pres;
+
+    rhC_ui_(velxrow, 0) += press * fac * normal(Velx) * side_funct_(ir);
+    rhC_ui_(velyrow, 0) += press * fac * normal(Vely) * side_funct_(ir);
+    rhC_ui_(velzrow, 0) += press * fac * normal(Velz) * side_funct_(ir);
+    rhC_ui_(presrow, 0) = 0.0;
   }
 
-  // G_sui (coupling only for sigma and u (not for sigma and p)
-  BK_sui_( Sigmaxx, Velxi )->Update( fac*normal(0), bKi_ss, 1.0 );
-  BK_sui_( Sigmaxy, Velxi )->Update( fac*normal(1), bKi_ss, 1.0 );
-  BK_sui_( Sigmaxz, Velxi )->Update( fac*normal(2), bKi_ss, 1.0 );
-  BK_sui_( Sigmayx, Velyi )->Update( fac*normal(0), bKi_ss, 1.0 );
-  BK_sui_( Sigmayy, Velyi )->Update( fac*normal(1), bKi_ss, 1.0 );
-  BK_sui_( Sigmayz, Velyi )->Update( fac*normal(2), bKi_ss, 1.0 );
-  BK_sui_( Sigmazx, Velzi )->Update( fac*normal(0), bKi_ss, 1.0 );
-  BK_sui_( Sigmazy, Velzi )->Update( fac*normal(1), bKi_ss, 1.0 );
-  BK_sui_( Sigmazz, Velzi )->Update( fac*normal(2), bKi_ss, 1.0 );
-
-
-  rhs( Sigmaxx, 0 )->Update( -fac*normal(0)*ivelint(0), funct, 1.0 );
-  rhs( Sigmaxy, 0 )->Update( -fac*normal(1)*ivelint(0), funct, 1.0 );
-  rhs( Sigmaxz, 0 )->Update( -fac*normal(2)*ivelint(0), funct, 1.0 );
-  rhs( Sigmayx, 0 )->Update( -fac*normal(0)*ivelint(1), funct, 1.0 );
-  rhs( Sigmayy, 0 )->Update( -fac*normal(1)*ivelint(1), funct, 1.0 );
-  rhs( Sigmayz, 0 )->Update( -fac*normal(2)*ivelint(1), funct, 1.0 );
-  rhs( Sigmazx, 0 )->Update( -fac*normal(0)*ivelint(2), funct, 1.0 );
-  rhs( Sigmazy, 0 )->Update( -fac*normal(1)*ivelint(2), funct, 1.0 );
-  rhs( Sigmazz, 0 )->Update( -fac*normal(2)*ivelint(2), funct, 1.0 );
-
-
-  bKiT_ss.UpdateT(bKi_ss);
-
-  // G_uis
-  BK_uis_( Velxi, Sigmaxx )->Update( fac*normal(0), bKiT_ss, 1.0 );
-  BK_uis_( Velxi, Sigmaxy )->Update( fac*normal(1), bKiT_ss, 1.0 );
-  BK_uis_( Velxi, Sigmaxz )->Update( fac*normal(2), bKiT_ss, 1.0 );
-  BK_uis_( Velyi, Sigmayx )->Update( fac*normal(0), bKiT_ss, 1.0 );
-  BK_uis_( Velyi, Sigmayy )->Update( fac*normal(1), bKiT_ss, 1.0 );
-  BK_uis_( Velyi, Sigmayz )->Update( fac*normal(2), bKiT_ss, 1.0 );
-  BK_uis_( Velzi, Sigmazx )->Update( fac*normal(0), bKiT_ss, 1.0 );
-  BK_uis_( Velzi, Sigmazy )->Update( fac*normal(1), bKiT_ss, 1.0 );
-  BK_uis_( Velzi, Sigmazz )->Update( fac*normal(2), bKiT_ss, 1.0 );
-
   return;
-}// MSH_buildCouplingMatrices
-
+}// MHVS_buildCouplingMatrices
 
 /*--------------------------------------------------------------------------------
  * build final coupling matrices for Mixed/Stress/Hybrid (MSH) method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::MSH_buildFinalCouplingMatrices(
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> &  BinvK_ss,     ///< block inverse K_sigma_sigma matrix
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,4,6> &  K_iK,         ///< block K_iK matrix
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,4> &  K_su,         ///< block K_su matrix
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::HybridLM_buildFinalCouplingMatrices(
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,numstressdof_> &     BinvK_ss,   ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,bg_numdof_,numstressdof_> &        BKusInvKss, ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,bg_numdof_> &        BK_su,      ///< block matrix \f$ K_{\sigma u} \f$
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,1>, numstressdof_,1>      &              rhs_s       ///< block rhs vector \f$ rhs_{\sigma}\f$
 )
 {
-  LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,6>      BKi_iK;   //G_uis*Inv(K_ss)
-  LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,4,3>      BCuui;    //K_iK*G_sui
-  LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,4>      BCuiu;    //Ki_iK*K_su
-  LINALG::BlockMatrix<LINALG::Matrix<side_nen_,side_nen_>,3,3> BCuiui;   //Ki_iK*G_sui
-  LINALG::BlockMatrix<LINALG::Matrix<side_nen_, 1>,3,1>       extrhsi;   //G_uis*Inv(K_ss)*rhs
+  // final coupling matrices in block form
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,bg_numdof_,nsd_>     BCuui;
+  LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,nsd_,bg_numdof_>     BCuiu;
 
+  // auxiliary matrices for intermediate calculation results of the matrix product
+  LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,nsd_,numstressdof_>  BGuisInvKss;
+  LINALG::BlockMatrix<LINALG::Matrix<side_nen_,1>,nsd_,1>                 BGuisinvKssrhs_s;
 
-  BCuui  .Multiply( K_iK   , BK_sui_  );
-  BKi_iK .Multiply( BK_uis_, BinvK_ss );
-  BCuiu  .Multiply( BKi_iK , K_su     );
-  BCuiui .Multiply( BKi_iK , BK_sui_  );
-  extrhsi.Multiply( BKi_iK , rhs      );
+  // BKusInvKss:
+  // (K_us + G_us) * K_ss^-1 (MHVS) or
+  // G_us * K_ss^-1 (MHCS)
 
+  // (K_us + G_us) * K_ss^-1 G_sui (MHVS) or
+  // G_us * K_ss^-1 G_sui (MHCS)
+  BCuui.Multiply(BKusInvKss,BG_sui_);
 
+  // G_uis * K_ss^-1
+  BGuisInvKss.Multiply(BG_uis_,BinvK_ss);
 
-  // build C_uiu
-  for ( unsigned icb=0; icb<4; ++icb ) // u1,u2,u3,p
+  // G_uis * K_ss^-1 * (K_su + G_su) (MHVS) or
+  // G_uis * K_ss^-1 * (K_su + G_su + K_sp) (MHCS)
+  BCuiu.Multiply(BGuisInvKss,BK_su);
+
+  // G_uis K_ss^-1 rhs_s
+  BGuisinvKssrhs_s.Multiply(BGuisInvKss,rhs_s);
+
+  // transfer the entries from Cuui,Cuiu, rhCui (in case of MHCS, coupling term ui-p is
+  // included in Cuiu!)
+
+  // loop over side velocity dof
+  for (int isivel = 0; isivel < nsd_; ++ isivel)
   {
-    for ( unsigned irb=0; irb<3; ++irb ) // no pressure coupling required (one-sided mortaring)
+    // loop over background element dof (velocity & pressure)
+    for (int ibgdof = 0; ibgdof < bg_numdof_; ++ ibgdof)
     {
-      if ( BCuiu.IsUsed( irb, icb ) )
+      // (u-ui)
+      if (BCuui.IsUsed(ibgdof,isivel))
       {
-        LINALG::Matrix<side_nen_,nen_> & local_BCuiu = *BCuiu( irb, icb );
-        for ( int ic=0; ic<nen_; ++ic ) // ele-nodes
+        const LINALG::Matrix<nen_,side_nen_> & bCuui = *BCuui(ibgdof,isivel);
+        // loop over side element nodes
+        for (int isin = 0; isin < side_nen_; ++ isin)
         {
-          int c = ( 4 )*ic + icb;
-          for ( int ir=0; ir<side_nen_; ++ir )
+          unsigned col = isivel + side_numdof * isin;
+          // loop over background element nodes
+          for (int ibgn = 0; ibgn < nen_; ++ ibgn)
           {
-            int r = ( numdof )*ir + irb;
-            C_uiu_( r, c ) -= local_BCuiu( ir, ic );
+            unsigned row = ibgdof + bg_numdof_ * ibgn;
+            C_uui_(row,col) -= bCuui(ibgn,isin);
+          }
+        }
+      } // (u-ui)
+
+      // (ui-u), MHCS: (ui-p)
+      if (BCuiu.IsUsed(isivel,ibgdof))
+      {
+        const LINALG::Matrix<side_nen_,nen_> & bCuiu = *BCuiu(isivel,ibgdof);
+        // loop over side element nodes
+        for (int isin = 0; isin < side_nen_; ++ isin)
+        {
+          unsigned row = isivel + side_numdof * isin;
+          // loop over background element nodes
+          for (int ibgn = 0; ibgn < nen_; ++ ibgn)
+          {
+            unsigned col = ibgdof + bg_numdof_ * ibgn;
+            C_uiu_(row,col) -= bCuiu(isin,ibgn);
+          }
+        }
+      } // (ui-u), MHCS: (ui-p)
+    }
+
+    // add surface-based pressure coupling terms (only MHVS)
+
+    // (ui-p)
+    if (BG_uip_.IsUsed(isivel,0))
+    {
+      const LINALG::Matrix<side_nen_, nen_> & bGuip = *BG_uip_(isivel,0);
+      // loop over side element nodes
+      for (int isin = 0; isin < side_nen_; ++ isin)
+      {
+        unsigned row = isivel + side_numdof * isin;
+        // loop over background element nodes
+        for (int ibgn = 0; ibgn < nen_; ++ ibgn)
+        {
+          unsigned col = nsd_ + bg_numdof_ * ibgn;
+          C_uiu_(row,col) = bGuip(isin,ibgn);
+        }
+      }
+    } // (ui-p)
+
+    // (p-ui)
+    if (BG_pui_.IsUsed(0,isivel))
+    {
+      const LINALG::Matrix<nen_, side_nen_> & bGpui = *BG_pui_(0,isivel);
+      // loop over side element nodes
+      for (int isin = 0; isin < side_nen_; ++ isin)
+      {
+        unsigned col = isivel + side_numdof * isin;
+        // loop over background element nodes
+        for (int ibgn = 0; ibgn < nen_; ++ ibgn)
+        {
+          unsigned row = nsd_ + bg_numdof_ * ibgn;
+          C_uui_(row,col) = bGpui(ibgn,isin);
+        }
+      }
+    } // (p-ui)
+
+    // rhs - ui
+    if (BGuisinvKssrhs_s.IsUsed(isivel,0))
+    {
+      const LINALG::Matrix<side_nen_,1> & bGuisinvKssrhs_s = *BGuisinvKssrhs_s(isivel,0);
+
+      // loop over side element nodes
+      for (int isin = 0; isin < side_nen_; ++ isin)
+      {
+        unsigned row = isivel + side_numdof * isin;
+        rhC_ui_(row,0) -= bGuisinvKssrhs_s(isin,0);
+      }
+    } // rhs - ui
+  } // end loop over side velocity dof
+
+  // finally, build G_uis & G_uis for C_uiui
+
+  // G_sui
+  // loop over block rows
+  for (int ibr = 0; ibr < numstressdof_; ++ibr)
+  {
+    // loop over block columns (interface velocity)
+    for (int ibc = 0; ibc < nsd_; ++ibc)
+    {
+      // extract the stress-velocity coupling submatrix
+      if (BG_sui_.IsUsed(ibr,ibc))
+      {
+        LINALG::Matrix<nen_,side_nen_> & bGsui = * BG_sui_(ibr,ibc);
+
+        // transfer the entries
+        for (int ir =0; ir<nen_; ++ir)
+        {
+          unsigned stressrow = ibr + ir * numstressdof_;
+
+          for (int ic = 0; ic < side_nen_; ++ic)
+          {
+            unsigned sidevelcol = ibc + ic * side_numdof;
+
+            G_sui_(stressrow,sidevelcol) = bGsui(ir,ic);
           }
         }
       }
     }
-  }
+  } // G_sui filled
 
-  // irb = 3, pressure component
-  if(numdof == 4)
-  {
-    int irb = 3;
-    for ( unsigned icb=0; icb<4; ++icb )
-    {
-      for ( int ic=0; ic<nen_; ++ic )
-      {
-        int c = ( numdof )*ic + icb;
-        for ( int ir=0; ir<side_nen_; ++ir )
-        {
-          int r = ( numdof )*ir + irb;
-          C_uiu_( r , c) = 0.0;
-        }
-      }
-    }
-  }
+  // fill G_uis_ from BG_uis_
 
-  // build C_uui
-  for ( unsigned icb=0; icb<3; ++icb )  // no pressure coupling required (one-sided mortaring)
+  // loop over block columns (sigmaxx, sigmaxy, ...)
+  for (int ibc = 0; ibc < numstressdof_; ++ibc)
   {
-    for ( unsigned irb=0; irb<4; ++irb )
+    // loop over block rows (interface velocity)
+    for (int ibr = 0; ibr < nsd_; ++ibr)
     {
-      if ( BCuui.IsUsed( irb, icb ) )
+      if (BG_uis_.IsUsed(ibr,ibc))
       {
-        LINALG::Matrix<nen_,side_nen_> & local_BCuui = *BCuui( irb, icb );
-        for ( int ic=0; ic<side_nen_; ++ic )
+        LINALG::Matrix< side_nen_, nen_> & bGuis = * BG_uis_(ibr,ibc);
+
+        // transfer the entries
+        for (int ic=0; ic<nen_; ++ic)
         {
-          int c = ( numdof )*ic + icb;
-          for ( int ir=0; ir<nen_; ++ir )
+          unsigned stresscol = ibc + ic * numstressdof_;
+
+          for (int ir=0; ir<side_nen_; ++ir)
           {
-            int r = ( 4 )*ir + irb;
-            C_uui_( r, c ) -= local_BCuui( ir, ic );
+            unsigned sidevelrow = ibr + ir * side_numdof;
+
+            G_uis_(sidevelrow,stresscol) = bGuis(ir,ic);
           }
         }
       }
     }
-  }
-
-  if(numdof == 4)
-  {
-    // icb=3
-    int icb=3;
-    for ( unsigned irb=0; irb<4; ++irb )
-    {
-      for ( int ic=0; ic<side_nen_; ++ic )
-      {
-        int c = ( numdof )*ic + icb;
-        for ( int ir=0; ir<nen_; ++ir )
-        {
-          int r = ( 4 )*ir + irb;
-          C_uui_( r, c ) = 0.0;
-        }
-      }
-    }
-  }
-
-
-  // build C_ui (right hand side)
-  for ( unsigned irb=0; irb<3; ++irb )  // no pressure coupling required (one-sided mortaring)
-  {
-    if ( extrhsi.IsUsed( irb, 0 ) )
-    {
-      LINALG::Matrix<side_nen_,1> & local_extrhsi = *extrhsi( irb, 0 );
-      for ( int ir=0; ir<side_nen_; ++ir )
-      {
-        unsigned r = numdof*ir + irb;
-        rhC_ui_( r, 0 ) -= local_extrhsi( ir, 0 );
-      }
-    }
-  }
-
-  if(numdof == 4)
-  {
-    int irb = 3;
-    for ( int ir=0; ir<side_nen_; ++ir )
-    {
-      unsigned r = numdof*ir + irb;
-      rhC_ui_( r,0) = 0.0;
-    }
-  }
-
-  // build K_sui_
-  // icb und irb: Richtungen
-  for ( unsigned icb=0; icb<3; ++icb )
-  {
-    for ( unsigned irb=0; irb<6; ++irb )
-    {
-      if ( BK_sui_.IsUsed( irb, icb ) )
-      {
-        LINALG::Matrix<nen_,side_nen_> & local_BK_sui = *BK_sui_( irb, icb );
-        for ( int ic=0; ic<side_nen_; ++ic )
-        {
-          int c = ( numdof )*ic + icb;
-          for ( int ir=0; ir<nen_; ++ir )
-          {
-            int r = ( 6 )*ir + irb;
-            K_sui_( r, c ) = local_BK_sui( ir, ic );
-          }
-        }
-      }
-    }
-  }
-
-  // build K_uis_
-  for ( unsigned icb=0; icb<6; ++icb )
-  {
-    for ( unsigned irb=0; irb<3; ++irb )
-    {
-      if ( BK_uis_.IsUsed( irb, icb ) )
-      {
-        LINALG::Matrix<side_nen_,nen_> & local_BK_uis = *BK_uis_( irb, icb );
-        for ( int ic=0; ic<nen_; ++ic )
-        {
-          int c = ( 6 )*ic + icb;
-          for ( int ir=0; ir<side_nen_; ++ir )
-          {
-            int r = ( numdof )*ir + irb;
-            K_uis_( r, c ) = local_BK_uis( ir, ic );
-          }
-        }
-      }
-    }
-  }
+  } // G_uis filled
 
   return;
-}// MSH_buildFinalCouplingMatrices
+} // Hybrid_LM_buildFinalCouplingMatrices
 
 
 
 /*--------------------------------------------------------------------------------
- * build convective/inflow stabilization MSH
+ * build convective/inflow stabilization for hybrid LM approach
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
-    Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
-    Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
-    const bool &                        coupling,         ///< assemble coupling terms (yes/no)
-    const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-    const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
-    const double &                      timefacfac,       ///< theta*dt
-    const double &                      visceff_1,        ///< viscosity in background fluid
-    const double &                      visceff_2,        ///< viscosity in embedded fluid
-    const double &                      kappa1,           ///< mortaring weighting
-    const double &                      kappa2,           ///< mortaring weighting
-    const double &                      stabfac,         ///< Nitsche penalty
-    const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
-    const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
-    const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
-    const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
-    const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
-    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-    INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
-    INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling,///< Inflow term strategies xfluidfluid
-    std::string                         coupl_method      ///< coupling method (NIT or MSH)
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::HybridLM_Stab_InflowCoercivity(
+    Epetra_SerialDenseMatrix &          C_uu_,                ///< standard bg-bg-matrix
+    Epetra_SerialDenseVector &          rhs_Cu_,              ///< standard bg-rhs
+    const bool &                        coupling,             ///< indicates the need to assemble coupling terms for the side (yes/no)
+    const bool &                        bg_mortaring,         ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+    const LINALG::Matrix<nsd_,1> &      normal,               ///< normal vector
+    const double &                      timefacfac,           ///< theta*dt
+    const double &                      visceff_1,            ///< viscosity in background fluid
+    const double &                      visceff_2,            ///< viscosity in embedded fluid
+    const double &                      kappa1,               ///< mortaring weighting
+    const double &                      kappa2,               ///< mortaring weighting
+    const double &                      stabfac,              ///< Nitsche penalty
+    const double &                      stabfac_avg,          ///< Nitsche convective non-dimensionless stabilization factor
+    const LINALG::Matrix<nen_,1> &      funct_,               ///< bg shape functions
+    const LINALG::Matrix<nsd_,nen_> &   derxy_,               ///< bg deriv
+    const LINALG::Matrix<nsd_,nsd_> &   vderxy_,              ///< bg deriv^n
+    const LINALG::Matrix<nsd_,1> &      velint,               ///< bg u^n
+    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,    ///< Dirichlet velocity vector or prescribed jump vector
+    INPAR::XFEM::ConvStabScaling        conv_stab_scaling,    ///< Inflow term strategies xfluid
+    INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling ///< Inflow term strategies xfluidfluid
   )
 {
+  // if we don't have a reasonable convective stabilization factor, leave
+  if(stabfac_avg <= 0.0) return;
+  //--------------------------------------------
 
-  if ( coupl_method != "MixedStressHybrid" ) dserror("Call Stab_InflowCoercivity just for MixedStressHybrid");
+  // get velocity at integration point
+  // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+  // interface velocity vector in gausspoint
+  LINALG::Matrix<nsd_,1> ivelint;
+  ivelint.Multiply(eivel_,side_funct_);
 
-  if(stabfac_avg > 0.0)
+  // funct_ * timefac * fac * funct_ (dyadic product)
+  LINALG::Matrix<nen_,1> funct_timefacfac(true);
+  funct_timefacfac.Update(timefacfac,funct_,0.0);
+
+  //  LINALG::Matrix<nen_,1> funct_timefacfac_k1(true);
+  //  funct_timefacfac_k1.Update(kappa1,funct_timefacfac,0.0);
+
+  LINALG::Matrix<side_nen_,1> side_funct_timefacfac(true);
+  side_funct_timefacfac.Update(timefacfac,side_funct_,0.0);
+
+  LINALG::Matrix<side_nen_,1> side_funct_timefacfac_k1(true);
+  side_funct_timefacfac_k1.Update(kappa1,side_funct_timefacfac,0.0);
+
+  LINALG::Matrix<nen_,nen_> funct_dyad_timefacfac(true);
+  funct_dyad_timefacfac.MultiplyNT(funct_timefacfac, funct_);
+
+  LINALG::Matrix<side_nen_,nen_> side_funct_dyad_timefacfac(true);
+  side_funct_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, funct_);
+
+  LINALG::Matrix<nen_,side_nen_> funct_side_dyad_timefacfac(true);
+  funct_side_dyad_timefacfac.MultiplyNT(funct_timefacfac, side_funct_);
+
+  LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
+  side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
+
+  if(!coupling)
   {
-    //--------------------------------------------
+    //-----------------------------------------------------------------
+    // same as Nitsche's viscous stability term
+    // REMARK: this term includes inflow coercivity in case of XFSI
 
-    // get velocity at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    // interface velocity vector in gausspoint
-    LINALG::Matrix<nsd_,1> ivelint;
-    ivelint.Multiply(eivel_,side_funct_);
-
-    // funct_ * timefac * fac * funct_ (dyadic product)
-    LINALG::Matrix<nen_,1> funct_timefacfac(true);
-    funct_timefacfac.Update(timefacfac,funct_,0.0);
-
-    //  LINALG::Matrix<nen_,1> funct_timefacfac_k1(true);
-    //  funct_timefacfac_k1.Update(kappa1,funct_timefacfac,0.0);
-
-    LINALG::Matrix<side_nen_,1> side_funct_timefacfac(true);
-    side_funct_timefacfac.Update(timefacfac,side_funct_,0.0);
-
-    LINALG::Matrix<side_nen_,1> side_funct_timefacfac_k1(true);
-    side_funct_timefacfac_k1.Update(kappa1,side_funct_timefacfac,0.0);
-
-    LINALG::Matrix<nen_,nen_> funct_dyad_timefacfac(true);
-    funct_dyad_timefacfac.MultiplyNT(funct_timefacfac, funct_);
-
-    LINALG::Matrix<side_nen_,nen_> side_funct_dyad_timefacfac(true);
-    side_funct_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, funct_);
-
-    LINALG::Matrix<nen_,side_nen_> funct_side_dyad_timefacfac(true);
-    funct_side_dyad_timefacfac.MultiplyNT(funct_timefacfac, side_funct_);
-
-    LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
-    side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
-
-
-
-    if(!coupling)
+    NIT_Stab_ViscCoercivity(
+        C_uu_,          // standard bg-bg-matrix
+        rhs_Cu_,        // standard bg-rhs
+        velint,
+        ivelint,
+        ivelint_WDBC_JUMP,
+        funct_timefacfac,
+        funct_dyad_timefacfac,
+        side_funct_timefacfac,
+        side_funct_dyad_timefacfac,
+        stabfac,       //Nitsche parameter
+        false,         // assemble coupling terms (Cuiu, Cuui, etc.) (yes/no)
+        normal         // normal vector
+    );
+  }
+  else
+  {
+    if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow or
+       xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+       xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
     {
-      //-----------------------------------------------------------------
-      // same as Nitsche's viscous stability term
-      // REMARK: this term includes inflow coercivity in case of XFSI
-
-      NIT_Stab_ViscCoercivity(
-          C_uu_,          // standard bg-bg-matrix
-          rhs_Cu_,        // standard bg-rhs
-          velint,
-          ivelint,
-          ivelint_WDBC_JUMP,
-          funct_timefacfac,
-          funct_dyad_timefacfac,
-          side_funct_timefacfac,
-          side_funct_dyad_timefacfac,
-          stabfac, //Nitsche parameter
-          coupling,       // assemble coupling terms (yes/no)
-          normal         // normal vector
-
-      );
-    }
-    else
-    {
-      if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow or
-         xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-         xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
-      {
-        NIT_Stab_ViscCoercivity(C_uu_,          // standard bg-bg-matrix
-        		                rhs_Cu_,        // standard bg-rhs
-                                velint,
-                                ivelint,
-                                ivelint_WDBC_JUMP,
-                                funct_timefacfac,
-                                funct_dyad_timefacfac,
-                                side_funct_timefacfac,
-                                side_funct_dyad_timefacfac,
-                                stabfac,
-                                coupling,       // assemble coupling terms (yes/no)
-                                normal         // normal vector
-                                );
-      }
-
-      if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged or
-          conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow or
-          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
-          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
-          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
-      {
-        NIT_Stab_ConvAveraged(C_uu_,          // standard bg-bg-matrix
+      NIT_Stab_ViscCoercivity(C_uu_,          // standard bg-bg-matrix
                               rhs_Cu_,        // standard bg-rhs
                               velint,
                               ivelint,
@@ -767,12 +901,33 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
                               funct_dyad_timefacfac,
                               side_funct_timefacfac,
                               side_funct_dyad_timefacfac,
-                              stabfac_avg,
-                              coupling,       // assemble coupling terms (yes/no)
+                              stabfac,
+                              true,       // assemble coupling terms (yes/no)
                               normal         // normal vector
-                     	      );
-     }
+                              );
     }
+
+    if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged or
+        conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
+    {
+      NIT_Stab_ConvAveraged(C_uu_,          // standard bg-bg-matrix
+                            rhs_Cu_,        // standard bg-rhs
+                            velint,
+                            ivelint,
+                            ivelint_WDBC_JUMP,
+                            funct_timefacfac,
+                            funct_dyad_timefacfac,
+                            side_funct_timefacfac,
+                            side_funct_dyad_timefacfac,
+                            stabfac_avg,
+                            coupling,       // assemble coupling terms (yes/no)
+                            normal         // normal vector
+                          );
+   }
   }
   return;
 }
@@ -780,12 +935,12 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
 /*--------------------------------------------------------------------------------
  * build coupling matrices and assemble terms for Nitsche's (NIT) method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_buildCouplingMatrices(
     Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
     const bool &                        coupling,         ///< assemble coupling terms (yes/no)
-    const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+    const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring, two-sided impl)
     const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
     const double &                      timefacfac,       ///< theta*dt
     const double &                      visceff_1,        ///< viscosity in background fluid
@@ -988,9 +1143,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
 //      int iVely = ic*(nsd_+1)+1;
 //      int iVelz = ic*(nsd_+1)+2;
 //
-//      double tmp_x = funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velx);
-//      double tmp_y = funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Vely);
-//      double tmp_z = funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velz);
+//      double tmp_x = funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(iVelx);
+//      double tmp_y = funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(iVely);
+//      double tmp_z = funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(iVelz);
 //
 //      C_uu_(idVelx, iVelx) += tmp_x*normal(Velx);
 //      C_uu_(idVelx, iVely) += tmp_x*normal(Vely);
@@ -1034,8 +1189,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
 /*--------------------------------------------------------------------------------
  * evaluate pressure-consistency term for Nitsche's method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_p_Consistency(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_p_Consistency(
     Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
     const double &                           press,                            ///< pressure
@@ -1095,9 +1250,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_Consistency(
     for(int ir = 0; ir<side_nen_; ir++)
     {
 
-      int idVelx = ir*side_numdof_ + 0;
-      int idVely = ir*side_numdof_ + 1;
-      int idVelz = ir*side_numdof_ + 2;
+      int idVelx = ir*side_numdof + 0;
+      int idVely = ir*side_numdof + 1;
+      int idVelz = ir*side_numdof + 2;
 
       // (v,Dp*n)
       for(int ic =0; ic<nen_; ic++)
@@ -1125,8 +1280,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_Consistency(
 /*--------------------------------------------------------------------------------
  * evaluate pressure-adjoint-consistency term for Nitsche's method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_p_AdjointConsistency(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_p_AdjointConsistency(
     Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
     double &                                 velint_normal,                    ///< velocity in normal direction
@@ -1143,7 +1298,6 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_AdjointConsistency(
   const unsigned Velx = 0;
   const unsigned Vely = 1;
   const unsigned Velz = 2;
-
 
       /*                   \     /              i   \
    - |  { q }*n ,[ Du ]     | = |  { q }*n  ,[ u ]   |
@@ -1200,9 +1354,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_AdjointConsistency(
       // -(q*n,Du)
       for(int ic =0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*side_numdof_+0;
-        int iVely = ic*side_numdof_+1;
-        int iVelz = ic*side_numdof_+2;
+        int iVelx = ic*side_numdof+0;
+        int iVely = ic*side_numdof+1;
+        int iVelz = ic*side_numdof+2;
 
         double tmp = alpha_p*side_funct_dyad_k1_timefacfac(ic,ir);
 
@@ -1224,8 +1378,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_AdjointConsistency(
 /*--------------------------------------------------------------------------------
  * evaluate viscous-consistency term for Nitsche's method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_visc_Consistency(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_visc_Consistency(
     Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
     const LINALG::Matrix<nsd_,nen_> &        derxy,                            ///< bg deriv
@@ -1313,9 +1467,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_Consistency(
   //-----------------------------------------------
   for(int ir = 0; ir<side_nen_; ir++)
   {
-    int idVelx = ir*side_numdof_ + 0;
-    int idVely = ir*side_numdof_ + 1;
-    int idVelz = ir*side_numdof_ + 2;
+    int idVelx = ir*side_numdof + 0;
+    int idVely = ir*side_numdof + 1;
+    int idVelz = ir*side_numdof + 2;
 
     for(int ic =0; ic<nen_; ic++)
     {
@@ -1374,8 +1528,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_Consistency(
 /*--------------------------------------------------------------------------------
  * evaluate viscous-adjoint-consistency term for Nitsche's method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_visc_AdjointConsistency(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_visc_AdjointConsistency(
     Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
     const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity
@@ -1496,9 +1650,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_AdjointConsistency(
       // -(2mu*eps(v1)*n, Du2)
       for(int ic =0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*side_numdof_ + 0;
-        int iVely = ic*side_numdof_ + 1;
-        int iVelz = ic*side_numdof_ + 2;
+        int iVelx = ic*side_numdof + 0;
+        int iVely = ic*side_numdof + 1;
+        int iVelz = ic*side_numdof + 2;
 
         //(x,x)
         C_uui_(idVelx, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy(Velx,ir)
@@ -1552,8 +1706,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_AdjointConsistency(
 /*--------------------------------------------------------------------------------
  * evaluate stabilizing viscous term for Nitsche's method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_Stab_ViscCoercivity(
     Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
     const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
@@ -1597,15 +1751,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
 
     for(int ic=0; ic<nen_; ic++)
     {
-      int iVelx = ic*bg_numdof_ + 0;
-      int iVely = ic*bg_numdof_ + 1;
-      int iVelz = ic*bg_numdof_ + 2;
+      int Velx = ic*bg_numdof_ + 0;
+      int Vely = ic*bg_numdof_ + 1;
+      int Velz = ic*bg_numdof_ + 2;
 
       double tmp = funct_dyad_timefacfac(ir,ic)*stabfac;
 
-      C_uu_(idVelx, iVelx) += tmp;
-      C_uu_(idVely, iVely) += tmp;
-      C_uu_(idVelz, iVelz) += tmp;
+      C_uu_(idVelx, Velx) += tmp;
+      C_uu_(idVely, Vely) += tmp;
+      C_uu_(idVelz, Velz) += tmp;
     }
 
     double tmp = funct_timefacfac(ir)*stabfac;
@@ -1637,9 +1791,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
 
       for(int ic=0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*side_numdof_+0;
-        int iVely = ic*side_numdof_+1;
-        int iVelz = ic*side_numdof_+2;
+        int iVelx = ic*side_numdof+0;
+        int iVely = ic*side_numdof+1;
+        int iVelz = ic*side_numdof+2;
 
         double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac;
 
@@ -1662,9 +1816,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
     // - gamma*mu/h_K (v2, u1))
     for(int ir=0; ir<side_nen_; ir++)
     {
-      int idVelx = ir*side_numdof_ + 0;
-      int idVely = ir*side_numdof_ + 1;
-      int idVelz = ir*side_numdof_ + 2;
+      int idVelx = ir*side_numdof + 0;
+      int idVely = ir*side_numdof + 1;
+      int idVelz = ir*side_numdof + 2;
 
       for(int ic=0; ic<nen_; ic++)
       {
@@ -1694,15 +1848,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
     // + gamma*mu/h_K (v2, u2))
     for(int ir=0; ir<side_nen_; ir++)
     {
-      int idVelx = ir*side_numdof_ + 0;
-      int idVely = ir*side_numdof_ + 1;
-      int idVelz = ir*side_numdof_ + 2;
+      int idVelx = ir*side_numdof + 0;
+      int idVely = ir*side_numdof + 1;
+      int idVelz = ir*side_numdof + 2;
 
       for(int ic=0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*side_numdof_+0;
-        int iVely = ic*side_numdof_+1;
-        int iVelz = ic*side_numdof_+2;
+        int iVelx = ic*side_numdof+0;
+        int iVely = ic*side_numdof+1;
+        int iVelz = ic*side_numdof+2;
 
         double tmp = side_side_dyad_timefacfac(ir,ic)*stabfac;
 
@@ -1727,8 +1881,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
 /*--------------------------------------------------------------------------------
  * evaluate stabilizing viscous term for Nitsche's method
  *--------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::NIT_Stab_ConvAveraged(
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
+void SideImpl<distype, side_distype, side_numdof>::NIT_Stab_ConvAveraged(
     Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
     const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
@@ -1761,16 +1915,16 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ConvAveraged(
 
     for(int ic=0; ic<nen_; ic++)
     {
-      int iVelx = ic*(bg_numdof_)+0;
-      int iVely = ic*(bg_numdof_)+1;
-      int iVelz = ic*(bg_numdof_)+2;
+      int Velx = ic*(bg_numdof_)+0;
+      int Vely = ic*(bg_numdof_)+1;
+      int Velz = ic*(bg_numdof_)+2;
 
       //minus?
       double tmp = 0.5*funct_dyad_timefacfac(ir,ic)*stabfac_avg;
 
-      C_uu_(idVelx, iVelx) += tmp;
-      C_uu_(idVely, iVely) += tmp;
-      C_uu_(idVelz, iVelz) += tmp;
+      C_uu_(idVelx, Velx) += tmp;
+      C_uu_(idVely, Vely) += tmp;
+      C_uu_(idVelz, Velz) += tmp;
     }
 
     double tmp = 0.5*funct_timefacfac(ir)*stabfac_avg;
@@ -1789,15 +1943,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ConvAveraged(
 
     for(int ic=0; ic<side_nen_; ic++)
     {
-      int iVelx = ic*(side_numdof_)+0;
-      int iVely = ic*(side_numdof_)+1;
-      int iVelz = ic*(side_numdof_)+2;
+      int Velx = ic*(side_numdof)+0;
+      int Vely = ic*(side_numdof)+1;
+      int Velz = ic*(side_numdof)+2;
 
       double tmp = -0.5*side_funct_dyad_timefacfac(ic,ir)*stabfac_avg;
 
-      C_uui_(idVelx, iVelx) += tmp;
-      C_uui_(idVely, iVely) += tmp;
-      C_uui_(idVelz, iVelz) += tmp;
+      C_uui_(idVelx, Velx) += tmp;
+      C_uui_(idVely, Vely) += tmp;
+      C_uui_(idVelz, Velz) += tmp;
     }
 
     double tmp = -0.5*funct_timefacfac(ir)*stabfac_avg;
@@ -1810,9 +1964,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ConvAveraged(
   //  [rho * (beta * n^e)] (k1*ve,ub)
   for(int ir=0; ir<side_nen_; ir++)
   {
-    int idVelx = ir*(side_numdof_) + 0;
-    int idVely = ir*(side_numdof_) + 1;
-    int idVelz = ir*(side_numdof_) + 2;
+    int idVelx = ir*(side_numdof) + 0;
+    int idVely = ir*(side_numdof) + 1;
+    int idVelz = ir*(side_numdof) + 2;
 
     for(int ic=0; ic<nen_; ic++)
     {
@@ -1837,15 +1991,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ConvAveraged(
   //-[rho * (beta * n^e)] (k1*ve,ue)
   for(int ir=0; ir<side_nen_; ir++)
   {
-    int idVelx = ir*(side_numdof_) + 0;
-    int idVely = ir*(side_numdof_) + 1;
-    int idVelz = ir*(side_numdof_) + 2;
+    int idVelx = ir*(side_numdof) + 0;
+    int idVely = ir*(side_numdof) + 1;
+    int idVelz = ir*(side_numdof) + 2;
 
     for(int ic=0; ic<side_nen_; ic++)
     {
-      int iVelx = ic*(side_numdof_)+0;
-      int iVely = ic*(side_numdof_)+1;
-      int iVelz = ic*(side_numdof_)+2;
+      int iVelx = ic*(side_numdof)+0;
+      int iVely = ic*(side_numdof)+1;
+      int iVelz = ic*(side_numdof)+2;
 
       double tmp = -0.5*side_funct_dyad_timefacfac(ir,ic)*stabfac_avg;
 
@@ -1972,7 +2126,6 @@ template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationT
 void EmbImpl<distype, emb_distype>::element_length( double & hk_emb )
 {
   //const double vol = VolumeViaNumIntegration<DISTYPE>(emb_xyze_);
-  
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<emb_distype>::numNodePerElement;
 
   // use one point integration rule to calculate hk at element center
@@ -1999,6 +2152,7 @@ void EmbImpl<distype, emb_distype>::element_length( double & hk_emb )
     default:
       dserror("invalid discretization type for fluid3");
       integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
+      break;
   }
 
   // integration points
@@ -2883,7 +3037,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        //(y,z)
 	        C_uiu_(idVely, iVelz) -= alpha*e_funct_visc2_timefacfac(ic)*    0.5 * normal(Vely)*emb_derxy_(Velz,ir);
 	        //(z,z)
-	        C_uiu_(idVelz, iVelz) -= alpha*e_funct_visc2_timefacfac(ic)*(   0.5 * normal(Velx)*emb_derxy_(Velx,ir)
+	        C_uiu_(idVelz, Velz) -= alpha*e_funct_visc2_timefacfac(ic)*(   0.5 * normal(Velx)*emb_derxy_(Velx,ir)
 	            + 0.5 * normal(Vely)*emb_derxy_(Vely,ir)
 	            +       normal(Velz)*emb_derxy_(Velz,ir)  );
 	      }
@@ -3221,10 +3375,10 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	    } // presscoupling_interface_stab
 
 //   if(coupling)
-   {if(xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-	   xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
-	   xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
-	   xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
+	 if(  xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
+        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
    {
 
    	    NIT2_Stab_ConvAveraged(C_uu,          // standard bg-bg-matrix
@@ -3241,11 +3395,9 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
    	                            normal         // normal vector
    	      );
 
-   	}
    }
 
-
-     return;
+   return;
 }
 
 /*--------------------------------------------------------------------------------
@@ -3387,47 +3539,45 @@ void EmbImpl<distype, emb_distype>::NIT2_Stab_ConvAveraged(
   return;
 }
 
-
 } // namespace XFLUID
 } // namespace ELEMENTS
 } // namespace DRT
 
-
-
 // pairs with numdof=3
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad4,3>;
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad8,3>;
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad4,3>;
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad8,3>;
 
 
 // pairs with numdof=4
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad4,4>;
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad8,4>;
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad4,4>;
-template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad8,4>;
 
 
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8, DRT::Element::hex20>;
+
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex20>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex20>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4, DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex20>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex20>;
 

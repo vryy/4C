@@ -596,6 +596,13 @@ namespace FLD
     */
     void SetElementTimeParameter();
 
+    /*!
+     * \brief fill the element parameter list with entries,
+     * that do not change over runtime
+     * \author kruse \date 06/14
+     */
+    void AddBasicElementParametersToList(Teuchos::ParameterList & eleparams);
+
     //! @name Set general parameter in class f3Parameter
     /*!
 
@@ -687,14 +694,13 @@ namespace FLD
     int startfuncno_;
 
     /// mixed stress hybrid l2 projection
-    enum INPAR::XFEM::MSH_L2_Proj msh_l2_proj_;
+    enum INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
 
     //! @name nitsche stabilization factors
     double visc_stab_fac_;     ///< viscous stabilization parameter for Nitsche's method/MSH
 
     enum INPAR::XFEM::ViscStabScaling visc_stab_scaling_;     ///< viscous stabilization scaling for Nitsche's method/MSH
     enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;     ///< convective stabilization scaling for inflow terms (xfluid)
-    enum INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_; ///< convective stabilization scaling for inflow terms (xfluidfluid)
 
     enum INPAR::XFEM::ViscStab_hk visc_stab_hk_; ///< definition of characteristic element length
     //@}

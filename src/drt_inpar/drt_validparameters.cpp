@@ -6553,12 +6553,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
 
   // Boundary-Coupling options
-  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","method how to enforce embedded boundary/coupling conditions at the interface",
-                               tuple<std::string>("BoundaryTypeSigma", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
+  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","Nitsche","method how to enforce embedded boundary/coupling conditions at the interface",
+                               tuple<std::string>("Hybrid_LM_Cauchy_stress", "Hybrid_LM_viscous_stress", "Nitsche", "Neumann"),
                                tuple<int>(
-                                   INPAR::XFEM::BoundaryTypeSigma,       // stress/hybrid formulation
-                                   INPAR::XFEM::BoundaryTypeNitsche,     // Nitsche's formulation
-                                   INPAR::XFEM::BoundaryTypeNeumann      // interior Neumann condition
+                                   INPAR::XFEM::Hybrid_LM_Cauchy_stress,  // Cauchy stress-based mixed/hybrid formulation
+                                   INPAR::XFEM::Hybrid_LM_viscous_stress, // viscous stress-based mixed/hybrid formulation
+                                   INPAR::XFEM::Nitsche,                  // Nitsche's formulation
+                                   INPAR::XFEM::Neumann                   // interior Neumann condition
                                    ),
                                &xfluid_stab);
 
@@ -6573,18 +6574,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &xfluid_stab);
 
-  setStringToIntegralParameter<int>("MSH_L2_PROJ","part_ele_proj","perform the L2 projection between stress fields on whole element or on fluid part?",
+  setStringToIntegralParameter<int>("HYBRID_LM_L2_PROJ","part_ele_proj","perform the L2 projection between stress fields on whole element or on fluid part?",
                                tuple<std::string>("full_ele_proj", "part_ele_proj"),
                                tuple<int>(
-                                   INPAR::XFEM::MSH_L2_Proj_full,   // L2 stress projection on whole fluid element
-                                   INPAR::XFEM::MSH_L2_Proj_part    // L2 stress projection on partial fluid element volume
+                                   INPAR::XFEM::Hybrid_LM_L2_Proj_full,   // L2 stress projection on whole fluid element
+                                   INPAR::XFEM::Hybrid_LM_L2_Proj_part    // L2 stress projection on partial fluid element volume
                                    ),
                                &xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
-  DoubleParameter("VISC_STAB_FAC",      1.0, "define stabilization parameter for viscous part of interface stabilization (Nitsche, MSH)",&xfluid_stab);
+  DoubleParameter("VISC_STAB_FAC", 35.0, "define stabilization parameter for viscous part of interface stabilization (Nitsche, hybrid stress-based LM)",&xfluid_stab);
 
-  setStringToIntegralParameter<int>("VISC_STAB_SCALING","visc_div_by_hk","scaling factor for viscous interface stabilization (Nitsche, MSH)",
+  setStringToIntegralParameter<int>("VISC_STAB_SCALING","visc_div_by_hk","scaling factor for viscous interface stabilization (Nitsche, hybrid stress-based LM)",
                                tuple<std::string>("visc_div_by_hk", "inv_hk", "const"),
                                tuple<int>(
                                    INPAR::XFEM::ViscStabScaling_visc_div_by_hk,   // scaling with mu/hk

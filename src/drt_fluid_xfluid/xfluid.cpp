@@ -281,10 +281,11 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   }
 
   xfluid_.boundarydofrowmap_ = xfluid_.boundarydis_->DofRowMap();
-//TODO: set the savegraph flag to true, analog in Xfluidfluid
-  C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  // savegraph flag set to true, as there is no change in the matrix graph expected for the lifetime
+  // of XfluidState
+  C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+  C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+  C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
   rhC_s_ = LINALG::CreateVector(*xfluid.boundarydofrowmap_,true);
   rhC_s_col_= LINALG::CreateVector(*(xfluid.boundarydis_->DofColMap()),true);
 
@@ -378,9 +379,13 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   eleparams.set("visc_stab_hk", xfluid_.visc_stab_hk_);
 
   eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
-  eleparams.set("xff_conv_stab_scaling", xfluid_.xff_conv_stab_scaling_);
 
-  eleparams.set("msh_l2_proj", xfluid_.msh_l2_proj_);
+  eleparams.set("hybrid_lm_l2_proj", xfluid_.hybrid_lm_l2_proj_);
+
+  // both stress-based LM methods share an evaluation routine;
+  // in order to distinguish:
+  if (xfluid_.boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress || xfluid_.boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
+    eleparams.set("boundIntType", xfluid_.boundIntType_);
 
 
   //----------------------------------------------------------------------
@@ -546,9 +551,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                   couplingmatrices.resize(3);
 
                   // no coupling for pressure in stress based method, but the coupling matrices include entries for pressure coupling
-                  couplingmatrices[0].Reshape(ndof_i,ndof);  //C_sf = C_uiu
-                  couplingmatrices[1].Reshape(ndof,ndof_i);  //C_fs = C_uui
-                  couplingmatrices[2].Reshape(ndof_i,1);     //rhC_s = rhs_ui
+                  couplingmatrices[0].Shape(ndof_i,ndof);  //C_sf = C_uiu
+                  couplingmatrices[1].Shape(ndof,ndof_i);  //C_fs = C_uui
+                  couplingmatrices[2].Shape(ndof_i,1);     //rhC_s = rhs_ui
 
                 }
               }
@@ -557,8 +562,10 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               const size_t nui = patchelementslm.size();
               Epetra_SerialDenseMatrix C_ss(nui,nui); // coupling matrix for monolithic fluid-structure interaction
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
-                impl->ElementXfemInterfaceMSH(   ele,
+              if(xfluid_.BoundIntType() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                 xfluid_.BoundIntType() == INPAR::XFEM::Hybrid_LM_viscous_stress)
+                impl->ElementXfemInterfaceHybridLM(
+                                                 ele,
                                                  discret,
                                                  la[0].lm_,
                                                  intpoints_sets[set_counter],
@@ -571,10 +578,10 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  strategy.Elevector1(),
                                                  C_ss,
                                                  xfluid_.VolumeCellGaussPointBy_,
-                                                 cells,
-                                                 coupling);
+                                                 cells
+                                                 );
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
+              if(xfluid_.BoundIntType() == INPAR::XFEM::Nitsche)
                 impl->ElementXfemInterfaceNIT(   ele,
                                                  discret,
                                                  la[0].lm_,
@@ -586,8 +593,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
                                                  C_ss,
-                                                 cells,
-                                                 coupling);
+                                                 cells
+                                                 );
 
               //------------------------------------------------------------------------------------------
               // Assemble bgele-side coupling matrices for monolithic fluid-structure interaction
@@ -739,8 +746,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
               Epetra_SerialDenseMatrix  Cuiui(1,1);
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
-                 impl->ElementXfemInterfaceMSH( ele,
+              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeMHCS)
+                 impl->ElementXfemInterfaceMHCS( ele,
                                                 discret,
                                                 la[0].lm_,
                                                 intpoints[count],
@@ -2182,11 +2189,10 @@ void FLD::XFluid::Init()
   boundIntType_       = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(params_xf_stab,"EMBEDDED_BOUNDARY");
   coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
 
-  msh_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MSH_L2_Proj>(params_xf_stab, "MSH_L2_PROJ");
+  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
   visc_stab_fac_         = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
   visc_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
-  xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(params_xf_stab,"XFF_CONV_STAB_SCALING"); //relevant for xff
   conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
   visc_stab_hk_          = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
@@ -2266,8 +2272,9 @@ void FLD::XFluid::Init()
   }
   boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
 
-  // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
+  // for parallel jobs we have to call TransparentDofSet with additional flag true
+  bool parallel = discret_->Comm().NumProc() > 1;
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,parallel,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
@@ -2430,7 +2437,6 @@ void FLD::XFluid::Init()
   // ---------------------------------------------------------------------
   SetElementGeneralFluidParameter();
   SetElementTurbulenceParameter();
-
 
 }
 
@@ -2598,8 +2604,9 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                 std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
                 Epetra_SerialDenseMatrix  Cuiui(1,1);
 
-                if(BoundIntType() == INPAR::XFEM::BoundaryTypeSigma or
-                   BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
+                if(BoundIntType() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                   BoundIntType() == INPAR::XFEM::Hybrid_LM_viscous_stress or
+                   BoundIntType() == INPAR::XFEM::Nitsche)
                 {
                   impl->ComputeErrorInterface(
                       ele,
@@ -2915,8 +2922,6 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     // ----------------------------------------------------------------------
     // check XFLUID DYNAMIC/STABILIZATION parameter list
     // ----------------------------------------------------------------------
-    if (xff_conv_stab_scaling_ != INPAR::XFEM::XFF_ConvStabScaling_none)
-      dserror("INPAR::XFEM::XFF_ConvStabScaling should be set to XFF_ConvStabScaling_none for XFluid!");
 
     // check for unreasonable transient ghost penalty stabilization
     if ((timealgo_ == INPAR::FLUID::timeint_stationary) and (ghost_penalty_transient_ == true ))
@@ -3066,10 +3071,10 @@ void FLD::XFluid::PrintStabilizationParams()
     IO::cout << "Stabilization type:      " << interfstabparams->get<string>("EMBEDDED_BOUNDARY") << "\n";
     IO::cout << "Coupling strategy:       " << interfstabparams->get<string>("COUPLING_STRATEGY") << "\n"<< IO::endl;
 
-    if(boundIntType_ == INPAR::XFEM::BoundaryTypeSigma)
-      IO::cout << "MSH_L2_PROJ:                       " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
+    if(boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
+      IO::cout << "HYBRID_LM_L2_PROJ:                       " << interfstabparams->get<string>("HYBRID_LM_L2_PROJ") << "\n";
 
-    if(boundIntType_ == INPAR::XFEM::BoundaryTypeNitsche)
+    if(boundIntType_ == INPAR::XFEM::Nitsche)
     {
       IO::cout << "VISC_STAB_FAC:                     " << visc_stab_fac_ << "\n";
       IO::cout << "VISC_STAB_SCALING:                 " << interfstabparams->get<string>("VISC_STAB_SCALING") << "\n";

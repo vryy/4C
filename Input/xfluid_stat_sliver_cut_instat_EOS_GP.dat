@@ -42,7 +42,7 @@ LINEAR_SOLVER                   1
 INITIALFIELD field_by_function //zero_field
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
-NONLINITER Newton //fixed_point_like //Newton
+NONLINITER                      Newton //fixed_point_like //Newton 
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
@@ -52,7 +52,7 @@ NUMSTEP                         80
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        0.01//0.1
-THETA 1.0 //0.55 //0.5 //0.67
+THETA                           1.0 //0.55 //0.5 //0.67      
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -62,7 +62,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall 
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -72,12 +72,12 @@ GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos                // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
@@ -95,39 +95,39 @@ VEL_FUNCT_NO                    2
 INTERFACE_DISP                  interface_disp_by_funct
 DISP_FUNCT_NO                   3
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 VISC_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                              // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      1.0                             // fill-in for ILUT
-IFPACKGFILL                     3                               // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08                         // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-//AZSUB                         150                             // size of krylov space for gmres
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE 1 //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2                             // damping fine grid
-ML_DAMPMED                      0.2                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-08                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+//AZSUB                         150                           // size of krylov space for gmres
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                           // damping fine grid
+ML_DAMPMED                      0.2                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
@@ -144,15 +144,15 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -1+10.0*x// pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0+30.0*y+60.0*z
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0+30.0*y+60.0*z 
+FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ---------------------------------------------FUNCT3 // displacement function
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(0.05-10^(-0.07/0.01))
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(0.05-10^(-0.07/0.01)) 
+FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT3                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6

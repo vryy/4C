@@ -52,10 +52,10 @@ STEADYTOL                       1e-06
 THETA                           1.0
 TIMEINTEGR One_Step_Theta //BDF2
 TIMESTEP                        0.01
-NONLINEARBC                   no
+NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based                      // residual_based //
+STABTYPE                        edge_based                    // residual_based //
 DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -66,14 +66,14 @@ GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos                // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin                        // classic_lin
+ALE_TYPE                        incr_lin                      // classic_lin
 TIMESTEP                        0.005
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
@@ -83,40 +83,40 @@ NUMSTEP                         3
 RESTARTEVRY                     0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER Aztec_MSR //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                              // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC ILU //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1                               // how often to recompute some preconditioners
-IFPACKGFILL                     3                               // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08                         // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           1000                            // size of krylov space for gmres
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE 1 //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 3 3 0 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2                             // damping fine grid
-ML_DAMPMED                      0.2                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Aztec_MSR //Aztec_MSR         // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU //MLFLUID2                // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                             // how often to recompute some preconditioners
+IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-08                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           1000                          // size of krylov space for gmres
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 0                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                           // damping fine grid
+ML_DAMPMED                      0.2                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma               // BoundaryTypeNitsche // BoundaryTypeNeumann
+EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   1.0
-XFF_CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 RELAXING_ALE                    Yes
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved         // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues //// //
-MONOLITHIC_XFFSI_APPROACH xffsi_fixedALE_partitioned// xffsi_full_newton // xffsi_fixedALE_interpolation
+XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved       // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues //// //
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned// xffsi_full_newton  // xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.3 DENS 1 THEXPANS 0

@@ -8,7 +8,7 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 Monolithic XFFSI: Pseudo 1D example.
-Prescribed inflow velocity of u(t)=t^2. 
+Prescribed inflow velocity of u(t)=t^2.
 The structure is fixed at the dry end.
 Expecting linear pressure field along the channel.
 FSI interface: 1st order interpolation, structuresplit
@@ -64,9 +64,9 @@ SOLVER                          UMFPACK
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY		        BoundaryTypeSigma
+EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress
 COUPLING_STRATEGY               xfluid_sided_coupling
-XFF_CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING           none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50 NUE 0.4 DENS 2.0 THEXPANS 0.0
@@ -84,7 +84,7 @@ DPOINT                          3
 // bgFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.1 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 // fluid fsi
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // str fsi
 E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -98,7 +98,7 @@ E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 // embedded volume
 E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // structure volume
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // embedded volume
@@ -111,7 +111,7 @@ E 1 - 1
 E 5 - 1
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
-// xfem
+//                              xfem
 E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           1

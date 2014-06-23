@@ -75,6 +75,7 @@ namespace ADAPTER {
     virtual void Update();
 
     /// @name Accessors
+    //@{
 
     /// get time scaling from FSI interface interpolation
     virtual double TimeScaling() const;
@@ -189,7 +190,6 @@ namespace ADAPTER {
     /// ALE dof map
     Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
 
-    //! @name local copies of input parameters
     // fluid discretization
     Teuchos::RCP<DRT::Discretization>      embfluiddis_;
 
@@ -204,8 +204,6 @@ namespace ADAPTER {
 
     /// output writer
     Teuchos::RCP<IO::DiscretizationWriter> output_;
-
-    //@}
 
     /// Dirichlet-free, merged velocity DOF
     Teuchos::RCP<Epetra_Map>       innervelmap_;

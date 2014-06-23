@@ -57,7 +57,7 @@ SIMPLER                         No
 CALCERROR                       kimmoin_instat_navier_stokes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -67,12 +67,12 @@ GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos                // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 -----------------------------------------------------------------FSI DYNAMIC
 SECONDORDER                     No
 ----------------------------------------------------------------XFEM GENERAL
@@ -80,8 +80,8 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation 
+BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation 
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
@@ -90,20 +90,20 @@ INTERFACE_VEL                   interface_vel_by_funct
 VEL_FUNCT_NO                    2
 INTERFACE_DISP                  interface_disp_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche
-VISC_STAB_FAC                   35.0                            // in [10;100]
-VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
-VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING max_abs_normal_vel //max_abs_normal_vel //abs_normal_vel //inflow //abs_normal_vel //abs_normal_vel //abs_normal_vel //abs_normal_vel // inflow // const // none
+EMBEDDED_BOUNDARY               Nitsche
+VISC_STAB_FAC                   35.0                          // in [10;100]
+VISC_STAB_SCALING               visc_div_by_hk                // inv_hk // const
+VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
+CONV_STAB_SCALING               max_abs_normal_vel //max_abs_normal_vel //abs_normal_vel //inflow //abs_normal_vel //abs_normal_vel //abs_normal_vel //abs_normal_vel  // inflow // const // none
 GHOST_PENALTY_STAB              yes
-GHOST_PENALTY_FAC               0.01                            // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.01                          // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                              // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-//AZPREC                        ILU                             // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-//IFPACKGFILL                   0                               // (3 for edgebased stabilization pattern) graph fill for ILU
+SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+//AZPREC                        ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+//IFPACKGFILL                   0                             // (3 for edgebased stabilization pattern) graph fill for ILU
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
@@ -118,7 +118,7 @@ CURVE3 on EXPR FUNC 2.0*pi/3.0*cos(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // veloc
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 0 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2 KIMMOIN-UP MAT 1 ISSTAT 0
+FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 0    
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5

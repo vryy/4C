@@ -135,9 +135,9 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
   else if( VCellGaussPts=="DirectDivergence")  // DirectDivergence approach
   {
 
-    LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat1(elemat1_epetra,true);
+    LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elemat1(elemat1_epetra,true);
     //LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat2(elemat2_epetra,true);
-    LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elevec1(elevec1_epetra,true);
+    LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elevec1(elevec1_epetra,true);
 
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -155,9 +155,9 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
       int mainPtno = 0;
       for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
       {
-        Epetra_SerialDenseMatrix elematTemp1((my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_); //Sudhakar : Is this efficient?
-        Epetra_SerialDenseMatrix elematTemp2((my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_);
-        Epetra_SerialDenseVector elevecTemp1((my::nsd_+1)*my::nen_);
+        Epetra_SerialDenseMatrix elematTemp1(my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_); //Sudhakar : Is this efficient?
+        Epetra_SerialDenseMatrix elematTemp2(my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_);
+        Epetra_SerialDenseVector elevecTemp1(my::numdofpernode_*my::nen_);
 
         // get internal Gaussian rule for every main Gauss point
         DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
@@ -176,9 +176,9 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
         if(err)
           return err;
 
-        LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elem1(elematTemp1,true);
-        LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elem2(elematTemp2,true);
-        LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elev1(elevecTemp1,true);
+        LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elem1(elematTemp1,true);
+        LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elem2(elematTemp2,true);
+        LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elev1(elevecTemp1,true);
 
         elemat1.Update(iquad.Weight(), elem1, 1.0);
         //elemat2.Update(1.0, elem2, 1.0);
@@ -233,7 +233,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
   else if( VCellGaussPts=="DirectDivergence" )  // DirectDivergence approach
   {
 
-    LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elevec1(elevec1_epetra,true);
+    LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elevec1(elevec1_epetra,true);
 
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -246,7 +246,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
       int mainPtno = 0;
       for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
       {
-        Epetra_SerialDenseVector elevecTemp1((my::nsd_+1)*my::nen_);
+        Epetra_SerialDenseVector elevecTemp1(my::numdofpernode_*my::nen_);
 
         // get internal Gaussian rule for every main Gauss point
         DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
@@ -262,7 +262,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
         if(err)
           return err;
 
-        LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elev1(elevecTemp1,true);
+        LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elev1(elevecTemp1,true);
 
         elevec1.Update(iquad.Weight(), elev1, 1.0);
       }
@@ -1538,113 +1538,148 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
   return 0;
 }
 
-
-
 /*--------------------------------------------------------------------------------
- * add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
+ * add mixed/hybrid stress-based LM interface condition to element matrix and rhs
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
-    DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-    DRT::Discretization &                                               dis,               ///< background discretization
-    const std::vector<int> &                                            lm,                ///< element local map
-    const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
-    DRT::Discretization &                                               cutdis,            ///< cut discretization
-    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-    std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-    Teuchos::ParameterList&                                             params,            ///< parameter list
-    Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
-    Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-    Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-    std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-    const GEO::CUT::plain_volumecell_set&                               cells,             ///< Volumecells in the present set
-    bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
-  )
+void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
+    DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element
+    DRT::Discretization &                                             dis,                      ///< background discretization
+    const std::vector<int> &                                          lm,                       ///< element local map
+    const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,                ///< element gauss points
+    DRT::Discretization &                                             cutdis,                   ///< boundary discretization
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> >&       bcells,                   ///< boundary cells
+    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,               ///< boundary integration points
+    std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,            ///< side coupling matrices
+    Teuchos::ParameterList&                                           params,                   ///< parameter list
+    Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
+    Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
+    Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
+    std::string&                                                      VCellGaussPoints,         ///< type of gauss point generation for volume cells
+    const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
+    bool                                                              fluidfluidcoupling        ///< indicates fluid-fluid coupling context
+)
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
+  //--------------------------------------------------------
+  // determine, whether this is a Cauchy stress-based (MHCS)
+  // or viscous stress-based LM approach (MHVS)
+  //--------------------------------------------------------
+  INPAR::XFEM::BoundaryIntegralType boundary_type = params.get<INPAR::XFEM::BoundaryIntegralType>("boundIntType");
 
-  const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
-  bool assemble_iforce = false;
-  if(iforcecol != Teuchos::null) assemble_iforce = true;
-
-  // convective stabilization type for xfluid
-  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
-  // convective stabilization type for xfluidfluid
-  INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
-  //-------------------------------------------
-  //       evaluate element length
-  //-------------------------------------------
-
-  // element length
-  double h_k = 0.0;
-  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
-  if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
+  // check for valid boundary integration type
+  switch (boundary_type)
   {
-    h_k = HK(vol);
+  case INPAR::XFEM::Hybrid_LM_viscous_stress:
+  case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
+    break;
+  case INPAR::XFEM::Nitsche:
+    dserror("Wrong evaluation routine for Nitsche coupling. Try ElementXfemInterfaceNIT/NIT2 instead.");
+    break;
+  default:
+    dserror("Landed in evaluation routine for stress-based LM, given an unknown or unsupported coupling method.");
+    break;
   }
-  else dserror("unknown type of characteristic element length");
 
-  if( h_k <= 0.0 ) dserror("element length is <= 0.0");
+  const bool is_MHVS(boundary_type == INPAR::XFEM::Hybrid_LM_viscous_stress);
 
+  // flag, that indicates whether we have side coupling terms Cuiu, Cuui,...
+  // generally, this is the case for fluid-fluid coupling and monolithic XFSI
+  // we distinguish by examination of side_coupling
+  const bool eval_side_coupling = !side_coupling.empty();
+
+  // plausibility check
+  if (!eval_side_coupling && fluidfluidcoupling)
+    dserror("You have to evaluate side coupling terms in fluid-fluid coupling");
+
+  // REMARK: to avoid confusion -
+  // 'side' = boundary element, part of cutdis (can be warped)
+  // 'boundary cell' = belongs to volume-cell
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+  // get nodal coordinates
+  GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> > (ele,my::xyze_);
 
-  // get element-wise velocity/pressure field
-  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
-  LINALG::Matrix<my::nen_,1> epreaf(true);
+  // extract the current velocity & pressure values for current element
+  LINALG::Matrix<my::nsd_,my::nen_>  evelaf(true);
+  LINALG::Matrix<my::nen_,1>         epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
-  my::eid_ = ele->Id();
+  // reconstruct interface force vector
+  const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
+  bool assemble_iforce = false;
+  if (iforcecol != Teuchos::null) assemble_iforce = true;
 
-  //--------------------------------------------
+  // compute characteristic element length
+  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
+  const double h_k = Compute_h_k(visc_stab_hk,vcSet,bcells,bintpoints);
 
-  LINALG::Matrix<my::nen_,my::nen_> bK_ss;                // (N * N^T)
-  LINALG::Matrix<my::nen_,my::nen_> invbK_ss( true );     // (N * N^T)^(-1)
-  LINALG::Matrix<my::nen_,my::nen_> half_invbK_ss;        // 1/2 * (N * N^T)^(-1)
+  //--------------------------------------------------------
+  // declaration of matrices & rhs
+  //--------------------------------------------------------
 
-  // block matrices for couplings between stress-components and (ux,uy,uz,p)-components
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_su;
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,(my::nsd_+1),6> K_us;
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,6>            invK_ss;
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>                rhs;
+  // sub-blocks of matrix K_{\sigma\sigma} (-->K_ss)
+  LINALG::Matrix<my::nen_,my::nen_>  bK_ss(true);        // N * N^T
+  LINALG::Matrix<my::nen_,my::nen_>  invbK_ss(true);     // inverse of bK_ss, (N * N^T)^-1
+  LINALG::Matrix<my::nen_,my::nen_>  halfInvbK_ss(true); // inverse scaled by 1/2
 
-  //--------------------------------------------
+  // The block matrices K_... result from the volume integrals on the cut element.
+  // In case of a viscous stress-based approach (MHVS), there is no term like K_sp,
+  // that couples the Lagrange multiplier stresses with the pressure.
+  // Instead, we have contributions G_up and G_pu from surface coupling terms, that don't play a role
+  // in the condensation of the stress-based LM (in contrast to velocity coupling terms s-u and u-s).
+  // For compatibility reasons, we include column- & row-blocks for the pressure in K_su and K_us.
+  // In the case of a MHVS-approach, these remain empty, as we have G_up and G_pu.
 
-  const unsigned Velx = 0;
-  const unsigned Vely = 1;
-  const unsigned Velz = 2;
-  //const unsigned Pres = 3;
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_> K_su; // s-u, s-p
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::numdofpernode_,numstressdof_> K_us; // u-s, p-s
 
-  const unsigned Sigmaxx = 0;
-  const unsigned Sigmaxy = 1;
-  const unsigned Sigmaxz = 2;
-  const unsigned Sigmayx = 1;
-  const unsigned Sigmayy = 3;
-  const unsigned Sigmayz = 4;
-  const unsigned Sigmazx = 2;
-  const unsigned Sigmazy = 4;
-  const unsigned Sigmazz = 5;
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,numstressdof_>      invK_ss; // K_ss^-1
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1>                         rhs_s;
 
+  // Only for MHVS:
 
-  INPAR::XFEM::MSH_L2_Proj msh_l2_proj =  params.get<INPAR::XFEM::MSH_L2_Proj>("msh_l2_proj");
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,my::nsd_>      K_uu;
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_,1>                    rhs_uu;
 
-  MSH_Build_K_Matrices(msh_l2_proj, intpoints, VCellGaussPts, cells, evelaf, epreaf, bK_ss, invbK_ss, K_su,rhs);
+  // surface-based pressure terms, analogous to Nitsche
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,1>             G_up;
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,1,my::nsd_>             G_pu;
 
+  // rhs-contributions from interface integration
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_,1>                    rhs_up;
+  LINALG::Matrix<my::nen_,1>                                                    rhs_pu(true);
 
-  //----------------------------------------------------------------------------
-  //            surface integral --- build G_su, G_us matrices and rhs
-  //----------------------------------------------------------------------------
+  //--------------------------------------------------------
+  // build matrices K (based on volume terms)
+  //--------------------------------------------------------
+
+  // L2-projection between stress fields on whole or on physical element volume?
+  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj = params.get<INPAR::XFEM::Hybrid_LM_L2_Proj>("hybrid_lm_l2_proj");
+
+  // in case of MHVS we have a stabilizing parameter!
+  double mhvs_param = 1.0;
+  if (is_MHVS)
+  {
+    // MHVS-stabilization parameter n (corresponds to Nitsche's penalty parameter)
+    double mhvs_param = params.get<double>("visc_stab_fac");
+    if ( fabs(mhvs_param) < 1.e-8 )
+      dserror("MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
+  }
+
+  // build volumetric coupling matrices
+  HybridLM_Build_VolBased(
+      hybrid_lm_l2_proj,
+      intpoints, VCellGaussPoints, vcSet,
+      evelaf, epreaf,
+      bK_ss, invbK_ss, K_su, rhs_s, K_us, K_uu, rhs_uu,
+      is_MHVS, mhvs_param);
+
+  /*--------------------------------------------------------
+    build surface coupling terms
+  --------------------------------------------------------*/
 
   DRT::Element::LocationArray cutla( 1 );
 
@@ -1668,26 +1703,16 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
 
   // lm vector of all intersecting boundary elements that intersect the current background element
-  std::vector<int> patchelementslmv;
+  std::vector<int> patchelementslm;
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, "MixedStressHybrid");
-
-
-  // coupling between domain and all sides (boundary elements) that cut the element
-  Epetra_SerialDenseMatrix Gsui(my::nen_*6,patchelementslmv.size());
-  Epetra_SerialDenseMatrix Guis(patchelementslmv.size(),my::nen_*6);
-  Epetra_SerialDenseMatrix InvKss(my::nen_*6,my::nen_*6);
-  Epetra_SerialDenseMatrix GuisInvKss(patchelementslmv.size(),my::nen_*6);
-
+  PatchLocationVector(begids,cutdis,patchelementslm,patchelementslmowner, Cuiui_coupling, "MixedStressHybrid");
 
   // evaluate shape function derivatives
   bool eval_deriv = false;
 
   if(!fluidfluidcoupling) eval_deriv = true; // evaluate derivatives to evaluate traction vector
-
-
 
   //--------------------------------------------
   // loop intersecting sides
@@ -1724,10 +1749,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     }
 
     // create side impl
-    if(fluidfluidcoupling)
+    if(eval_side_coupling)
     {
       std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
       std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+
+      if (side_matrices.size() != 3)
+        dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
 
       // coupling matrices between background element and one! side
       Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
@@ -1747,7 +1775,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
       si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,side_xyze);
     }
 
-
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
@@ -1759,7 +1786,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     // define interface force vector w.r.t side
     Epetra_SerialDenseVector iforce;
     iforce.Size(cutla[0].lm_.size());
-
 
     //--------------------------------------------
     // loop boundary cells w.r.t current cut side
@@ -1853,74 +1879,23 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
             - |  (virt tau) * n^f , Du  |
                \                      */
 
-        // G_su
-
-        K_su( Sigmaxx, Velx )->Update( -fac*normal(0), bK_ss, 1.0 );
-        K_su( Sigmaxy, Velx )->Update( -fac*normal(1), bK_ss, 1.0 );
-        K_su( Sigmaxz, Velx )->Update( -fac*normal(2), bK_ss, 1.0 );
-        K_su( Sigmayx, Vely )->Update( -fac*normal(0), bK_ss, 1.0 );
-        K_su( Sigmayy, Vely )->Update( -fac*normal(1), bK_ss, 1.0 );
-        K_su( Sigmayz, Vely )->Update( -fac*normal(2), bK_ss, 1.0 );
-        K_su( Sigmazx, Velz )->Update( -fac*normal(0), bK_ss, 1.0 );
-        K_su( Sigmazy, Velz )->Update( -fac*normal(1), bK_ss, 1.0 );
-        K_su( Sigmazz, Velz )->Update( -fac*normal(2), bK_ss, 1.0 );
-
-        rhs( Sigmaxx, 0 )->Update( fac*normal(0)*my::velint_(0), my::funct_, 1.0 );
-        rhs( Sigmaxy, 0 )->Update( fac*normal(1)*my::velint_(0), my::funct_, 1.0 );
-        rhs( Sigmaxz, 0 )->Update( fac*normal(2)*my::velint_(0), my::funct_, 1.0 );
-        rhs( Sigmayx, 0 )->Update( fac*normal(0)*my::velint_(1), my::funct_, 1.0 );
-        rhs( Sigmayy, 0 )->Update( fac*normal(1)*my::velint_(1), my::funct_, 1.0 );
-        rhs( Sigmayz, 0 )->Update( fac*normal(2)*my::velint_(1), my::funct_, 1.0 );
-        rhs( Sigmazx, 0 )->Update( fac*normal(0)*my::velint_(2), my::funct_, 1.0 );
-        rhs( Sigmazy, 0 )->Update( fac*normal(1)*my::velint_(2), my::funct_, 1.0 );
-        rhs( Sigmazz, 0 )->Update( fac*normal(2)*my::velint_(2), my::funct_, 1.0 );
-
-
-               /*               \
-            - |  v , Dtau * n^f  |
-               \               */
-
-        // G_us
-        K_us( Velx, Sigmaxx )->Update( -fac*normal(0), bK_ss, 1.0 );
-        K_us( Velx, Sigmaxy )->Update( -fac*normal(1), bK_ss, 1.0 );
-        K_us( Velx, Sigmaxz )->Update( -fac*normal(2), bK_ss, 1.0 );
-        K_us( Vely, Sigmayx )->Update( -fac*normal(0), bK_ss, 1.0 );
-        K_us( Vely, Sigmayy )->Update( -fac*normal(1), bK_ss, 1.0 );
-        K_us( Vely, Sigmayz )->Update( -fac*normal(2), bK_ss, 1.0 );
-        K_us( Velz, Sigmazx )->Update( -fac*normal(0), bK_ss, 1.0 );
-        K_us( Velz, Sigmazy )->Update( -fac*normal(1), bK_ss, 1.0 );
-        K_us( Velz, Sigmazz )->Update( -fac*normal(2), bK_ss, 1.0 );
-
-
-        //--------------------------------------------
-        // evaluate weak dirichlet boundary term or build coupling matrices
-
-        if( fluidfluidcoupling )
-        {
-          si->MSH_buildCouplingMatrices(normal,fac,my::funct_,rhs);
-        }
-        else
-        {
-
-          /*                   _  \
-         |  (virt tau) * n^f , u   |
-          \                      */
-
-          LINALG::Matrix<my::nsd_,1> velint_WDBC(true);
-          si->get_vel_WeakDBC(velint_WDBC);
-
-          rhs( Sigmaxx, 0 )->Update( -fac*normal(0)*velint_WDBC(0), my::funct_, 1.0 );
-          rhs( Sigmaxy, 0 )->Update( -fac*normal(1)*velint_WDBC(0), my::funct_, 1.0 );
-          rhs( Sigmaxz, 0 )->Update( -fac*normal(2)*velint_WDBC(0), my::funct_, 1.0 );
-          rhs( Sigmayx, 0 )->Update( -fac*normal(0)*velint_WDBC(1), my::funct_, 1.0 );
-          rhs( Sigmayy, 0 )->Update( -fac*normal(1)*velint_WDBC(1), my::funct_, 1.0 );
-          rhs( Sigmayz, 0 )->Update( -fac*normal(2)*velint_WDBC(1), my::funct_, 1.0 );
-          rhs( Sigmazx, 0 )->Update( -fac*normal(0)*velint_WDBC(2), my::funct_, 1.0 );
-          rhs( Sigmazy, 0 )->Update( -fac*normal(1)*velint_WDBC(2), my::funct_, 1.0 );
-          rhs( Sigmazz, 0 )->Update( -fac*normal(2)*velint_WDBC(2), my::funct_, 1.0 );
-        }
-
-#if(1)
+        HybridLM_Evaluate_SurfBased(
+            si,
+            bK_ss,
+            K_su,
+            K_us,
+            rhs_s,
+            epreaf,
+            K_uu,
+            rhs_uu,
+            G_up,
+            G_pu,
+            rhs_up,
+            rhs_pu,
+            normal,
+            fac,
+            eval_side_coupling,
+            is_MHVS);
 
         //--------------------------------------------
         // compute stabilization factors
@@ -1932,23 +1907,43 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
         double presscoupling_interface_fac = 0.0;
         double gamma_press_coupling = 0.0;
         bool nitsche_evp = false;
+        double NIT_stab_fac = 0.0;
 
-        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-        		           params,
-                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
-                           stabfac_avg,                // stabfac 2 for additional stabilization term to set
-                           0.0,                        // viscous Nitsche prefactor
-                           conv_stab_scaling,          // type of scaling for convective stabilization term of xfluid
-                           xff_conv_stab_scaling,      // type of scaling for convective stabilization term of xfluidfluid
-                           my::velint_.Dot(normal),    // velocity in normal direction
-                           my::velint_,                // velocity at GP
-                           gamma_ghost_penalty,
-                           velgrad_interface_fac,
-                           gamma_press_coupling,
-                           presscoupling_interface_fac,
-                           nitsche_evp,
-                           sid,
-                           h_k);
+        // convective stabilization type for xfluid
+        INPAR::XFEM::ConvStabScaling conv_stab_scaling = INPAR::XFEM::ConvStabScaling_none;
+        // convective stabilization type for xfluidfluid
+        INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = INPAR::XFEM::XFF_ConvStabScaling_none;
+
+        if (fluidfluidcoupling)
+        {
+          xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
+          NIT_ComputeStabfacFluidFluid(
+              params,
+              stabfac_visc,
+              stabfac_avg,
+              velgrad_interface_fac,
+              presscoupling_interface_fac,
+              xff_conv_stab_scaling,
+              my::velint_.Dot(normal),
+              my::velint_,
+              h_k,
+              NIT_stab_fac,
+              gamma_ghost_penalty,
+              gamma_press_coupling,
+              nitsche_evp,
+              sid);
+        }
+        else
+        {
+          conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
+          NIT_ComputeStabfac(
+              params,
+              stabfac_visc,
+              NIT_stab_fac,
+              conv_stab_scaling,
+              my::velint_.Dot(normal),
+              h_k);
+        }
 
         //--------------------------------------------
         // evaluate additional inflow/convective stabilization terms
@@ -1961,10 +1956,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
 
-          si->MSH_Stab_InflowCoercivity(
+          si->HybridLM_Stab_InflowCoercivity(
               elemat1_epetra,          // standard bg-bg-matrix
               elevec1_epetra,          // standard bg-rhs
-              fluidfluidcoupling,      // assemble coupling terms (yes/no)
+              eval_side_coupling,      // assemble coupling terms (yes/no)
               bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
               normal,                  // normal vector
               fac,                     // theta*dt
@@ -1980,13 +1975,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
               my::velint_,             // bg u^n
               ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector,
               conv_stab_scaling,       // Inflow term strategies xfluid
-              xff_conv_stab_scaling,   // Inflow term strategies xfluidfluid
-              "MixedStressHybrid"      // coupling method
+              xff_conv_stab_scaling    // Inflow term strategies xfluidfluid
             );
 
         }
-
-        if(!fluidfluidcoupling)
+        else
         {
           // case for one-sided weak Dirichlet
           bool bg_mortaring = true; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
@@ -1995,12 +1988,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
           si->get_vel_WeakDBC(ivelint_WDBC_JUMP);
 
-
-
-          si->MSH_Stab_InflowCoercivity(
+          si->HybridLM_Stab_InflowCoercivity(
               elemat1_epetra,          // standard bg-bg-matrix
               elevec1_epetra,          // standard bg-rhs
-              fluidfluidcoupling,      // assemble coupling terms (yes/no)
+              eval_side_coupling,      // assemble coupling terms (yes/no)
               bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
               normal,                  // normal vector
               fac,                     // theta*dt
@@ -2016,11 +2007,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
               my::velint_,             // bg u^n
               ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
               conv_stab_scaling,       // Inflow term strategies xfluid
-              xff_conv_stab_scaling,   // Inflow term strategies xfluidfluid
-              "MixedStressHybrid"
+              xff_conv_stab_scaling    // Inflow term strategies xfluidfluid
             );
         }
-#endif
 
         //--------------------------------------------
         // calculate interface forces for XFSI
@@ -2053,53 +2042,344 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
   } // end loop cut sides
 
+  /*--------------------------------------------------------
+    build final element and coupling matrices
+  --------------------------------------------------------*/
 
-  // construct views
-  LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat1(elemat1_epetra,true);
-  LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elevec1(elevec1_epetra,true);
+  // compute inverse K_ss^-1
+  LINALG::FixedSizeSerialDenseSolver<my::nen_, my::nen_> invsolver;
+  invsolver.SetMatrix(invbK_ss);
+  invsolver.Invert();
+
+  // the non-diagonal entries (shear stresses) lead to the factor 2 in the
+  // K_ss matrix; inversion leads to 1/2 in the matrix blocks of the shear stress
+  halfInvbK_ss.Update(0.5, invbK_ss, 0.0);
+
+  invK_ss.AddView(Sigmaxx, Sigmaxx, invbK_ss);
+  invK_ss.AddView(Sigmaxy, Sigmaxy, halfInvbK_ss);
+  invK_ss.AddView(Sigmaxz, Sigmaxz, halfInvbK_ss);
+  invK_ss.AddView(Sigmayy, Sigmayy, invbK_ss);
+  invK_ss.AddView(Sigmayz, Sigmayz, halfInvbK_ss);
+  invK_ss.AddView(Sigmazz, Sigmazz, invbK_ss);
+
+  // create views
+  LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elemat(elemat1_epetra, true);
+  LINALG::Matrix<my::numdofpernode_*my::nen_,1>                           elevec(elevec1_epetra, true);
+
+  // now the matrix products involving the inverse matrix will be computed!
+
+  // REMARK: at this step, the K matrices already include contributions from surface terms G_us, G_su
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>, my::numdofpernode_,numstressdof_> KusinvKss;
+
+  // (K_us + G_us) K_ss^-1 (MHVS) or G_us K_ss^-1 (MHCS)
+  KusinvKss.Multiply(K_us,invK_ss);
+
+  // (K_us + G_us) K_ss^-1 (K_su + G_su) (MHVS) or G_us  K_ss^-1 (K_su + G_su + K_sp) (MHCS)
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_, my::nen_>, my::numdofpernode_, my::numdofpernode_> KusinvKssKsu;
+  KusinvKssKsu.Multiply(KusinvKss, K_su);
+
+  // (K_us + G_us) K_ss^-1 rhs_s (MHVS) or G_us K_ss^-1 rhs_s (MHCS)
+  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::numdofpernode_,1> KusinvKssrhs_s;
+
+  KusinvKssrhs_s.Multiply(KusinvKss,rhs_s);
+
+  //REMARK: The following term goes into the interface element's rhs-vector rhC_ui!
+  /*
+   *  G_uis  *(K_ss^-1 rhs_s)
+   *  |___________________|
+   *        |
+   *        |
+   *    -->side-impl
+   */
 
 
+  /*--------------------------------------------------------
+    setup element matrix
+  --------------------------------------------------------*/
+  /*
+   * Matrix of intersected fluid element for VISCOUS stress-based LM
+   *  _                                                                          _
+   * |                                                                            |
+   *             _
+   *      K_uu + K_uu - (K_us + G_us) K_ss^-1 (K_su + G_su) | K_up + G_up
+   *
+   *  ----------------------------------------------------- |------------
+   *
+   *      K_pu + G_pu                                       | K_pp
+   * |_                                                                          _|
+   *
+   * Matrix of intersected fluid element for CAUCHY stress-based LM
+   *
+   *  _                                                                          _
+   * |                                                                            |
+   *
+   *      K_uu  - G_us  K_ss^-1 (K_su + G_su) | K_up - G_us K_ss^-1 K_sp
+   *
+   *  ----------------------------------------|------------
+   *
+   *      K_pu                                | K_pp
+   * |_                                                                          _|
+   *
+   */
 
-  // invert block mass matrix
-  LINALG::FixedSizeSerialDenseSolver<my::nen_,my::nen_> solver;
-  solver.SetMatrix( invbK_ss );
-  solver.Invert();
+  // -KusinvKssKsu --> -(K_us + G_us) K_ss^-1 (K_su + G_su) (MHVS) or -G_us  K_ss^-1 (K_su + G_su) -G_us K_ss^-1 K_sp (MHCS)
 
-  half_invbK_ss.Update( 0.5, invbK_ss, 0.0 );
+  // complete the background element matrix with the calculated entries:
 
-  invK_ss.AddView( Sigmaxx, Sigmaxx,      invbK_ss );
-  invK_ss.AddView( Sigmaxy, Sigmaxy, half_invbK_ss );
-  invK_ss.AddView( Sigmaxz, Sigmaxz, half_invbK_ss );
-  invK_ss.AddView( Sigmayy, Sigmayy,      invbK_ss );
-  invK_ss.AddView( Sigmayz, Sigmayz, half_invbK_ss );
-  invK_ss.AddView( Sigmazz, Sigmazz,      invbK_ss );
+  // number of column blocks
+  const unsigned numbcol = (is_MHVS ? my::nsd_ : my::numdofpernode_); // we have (u,p)-block for MHCS (-G_us K_ss^-1 K_sp)
+  // number of row blocks
+  const unsigned numbrow = my::nsd_; // no (p,u)-block for MHVS & MHCS
 
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,(my::nsd_+1),6>            K_iK;
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,(my::nsd_+1),(my::nsd_+1)> extK;
-  LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,(my::nsd_+1),1>                extrhs;
-
-  K_iK  .Multiply( K_us, invK_ss );
-  extK  .Multiply( K_iK, K_su );
-  extrhs.Multiply( K_iK, rhs );
-
-
-  //--------------------------------------------
-  // fill element matrix
-  //--------------------------------------------
-  for ( unsigned icb=0; icb<my::nsd_+1; ++icb )
+  // loop over row blocks (only velocities)
+  for (unsigned ibr=0; ibr<numbrow; ++ibr)
   {
-    for ( unsigned irb=0; irb<my::nsd_+1; ++irb )
+    // loop over column blocks (only velocities for MHVS!)
+    for (unsigned ibc=0; ibc<numbcol; ++ibc)
     {
-      if ( extK.IsUsed( irb, icb ) )
+      // add -KusinvKssKsu
+      if ( KusinvKssKsu.IsUsed(ibr,ibc) )
       {
-        LINALG::Matrix<my::nen_,my::nen_> & local_extK = *extK( irb, icb );
+        LINALG::Matrix<my::nen_, my::nen_> & bKusinvKssKsu = * KusinvKssKsu(ibr,ibc);
+
+        for (int ir=0; ir<my::nen_; ++ir)
+        {
+          // row position in the final element matrix
+          unsigned row = ibr + ir * my::numdofpernode_;
+
+          for (int ic = 0; ic<my::nen_; ++ic)
+          {
+            // column position in the final element matrix
+            unsigned col = ibc + ic * my::numdofpernode_;
+
+            // - (K_us + G_us) K_ss^-1 (K_su + G_su ) (MHVS) or
+            // - G_us  K_ss^-1 (K_su + G_su + K_sp) (MHCS)
+            elemat(row, col) -= bKusinvKssKsu(ir,ic);
+          }
+        }
+      } // -KusinvKssKsu
+
+      if (!is_MHVS) continue;
+
+      /*
+       * ONLY MHVS:
+       * add contribution from viscous term scaled by (-1/n) (n: MHVS-parameter):
+       * _
+       * K_uu = (-1/n) * K_uu^{viscous}
+       *
+       * */
+
+      if (K_uu.IsUsed(ibr,ibc))
+      {
+        LINALG::Matrix<my::nen_, my::nen_> & bK_uu = * K_uu(ibr,ibc);
+
+        for (int ir=0; ir<my::nen_; ++ir)
+        {
+          // row position in the final element matrix
+          unsigned velrow = ibr + ir * my::numdofpernode_;
+
+          for (int ic=0; ic<my::nen_; ++ic)
+          {
+            // column position in the final element matrix
+            unsigned velcol = ibc + ic * my::numdofpernode_;
+
+            // + K_uu
+            elemat(velrow, velcol) += bK_uu(ir,ic);
+          }
+        }
+      } // K_uu
+    }//end column block loop
+
+    if (!is_MHVS) continue;
+
+    // ONLY MHVS: velocity-pressure coupling entries G_up
+    // loop over row blocks
+    if ( G_up.IsUsed(ibr,0) )
+    {
+      LINALG::Matrix<my::nen_, my::nen_> & bGup = * G_up(ibr, 0);
+
+      for (int ic=0; ic<my::nen_; ++ic)
+      {
+        // column position in final element matrix
+        unsigned prescol = my::nsd_ + ic * my::numdofpernode_;
+
+        // loop over rows of velocity-pressure submatrix
+        for (int ir=0; ir<my::nen_; ++ir)
+        {
+          // row position in the final element matrix
+          unsigned velrow = ibr + ir * my::numdofpernode_;
+
+          // + G_up
+          elemat(velrow, prescol) += bGup(ir, ic);
+        }
+      }
+    } // G_up
+  }// end row block loop
+
+  if (is_MHVS)
+  {
+    // ONLY MHVS: pressure-velocity coupling entries G_pu
+    // loop over column blocks
+    for (unsigned ibc = 0; ibc < numbcol; ++ibc)
+    {
+      if ( G_pu.IsUsed(0,ibc) )
+      {
+        LINALG::Matrix<my::nen_, my::nen_> & bGpu = * G_pu(0, ibc);
+
+        // pressure-velocity entries
+        for (int ir=0; ir<my::nen_; ++ir)
+        {
+          // row position in final element matrix
+          unsigned presrow = my::nsd_ + ir * my::numdofpernode_;
+
+          for (int ic=0; ic<my::nen_; ++ic)
+          {
+            // column position in final element matrix
+            unsigned velcol = ibc + ic * my::numdofpernode_;
+
+            // + Gpu
+            elemat(presrow,velcol) += bGpu(ir,ic);
+          }
+        }
+      } // G_pu
+    } // end column block loop
+  }
+  //element matrix complete!
+
+  /*--------------------------------------------------------
+    setup rhs-vector
+  --------------------------------------------------------*/
+  /*
+   *  for MHVS:
+   *  - (K_us + G_us) K_ss^-1 * rhs_s + rhs_uu + rhs_up
+   *          +
+   *  rhs_pu + rhs_pui
+   *  |_______________|
+   *        |
+   *       united in rhs_pu!
+   *
+   *  for MHCS:
+   *  - G_us K_ss^-1 * rhs_s
+   *
+   */
+  // loop over row blocks
+  for (unsigned ibr = 0; ibr<numbrow; ++ibr)
+  {
+    if ( KusinvKssrhs_s.IsUsed(ibr,0) )
+    {
+      LINALG::Matrix<my::nen_,1> & bKusinvKssrhs_s = * KusinvKssrhs_s(ibr,0);
+
+      for (int ir=0; ir<my::nen_; ++ir)
+      {
+        // row position in final element matrix
+        unsigned int velrow = ibr + ir * my::numdofpernode_;
+
+        // - (K_us + G_us) K_ss^-1 * rhs_s (MHVS) or
+        // - G_us K_ss^-1 * rhs_s (MHCS)
+        elevec(velrow,0) -= bKusinvKssrhs_s(ir,0);
+      }
+    } // -KusinvKssrhs_s
+
+    // ONLY MHVS!
+    if (! is_MHVS) continue;
+
+    if ( rhs_uu.IsUsed(ibr,0) )
+    {
+      LINALG::Matrix<my::nen_,1> & brhs_uu = * rhs_uu(ibr,0);
+
+      for (int ir=0; ir<my::nen_; ++ir)
+      {
+        // row position in final element matrix
+        unsigned velrow = ibr + ir * my::numdofpernode_;
+
+        // + rhs_uu
+        elevec(velrow,0) += brhs_uu(ir,0);
+      }
+    } // rhs_uu
+
+    if ( rhs_up.IsUsed(ibr,0) )
+    {
+      LINALG::Matrix<my::nen_, 1> & brhs_up = * rhs_up(ibr,0);
+
+      for (int ir=0; ir<my::nen_; ++ir)
+      {
+        // row position in final element matrix
+        unsigned int velrow = ibr + ir * my::numdofpernode_;
+        // + rhs_up
+        elevec(velrow,0) += brhs_up(ir,0);
+      }
+    } // rhs_up
+  } // end row block loop
+
+  if (is_MHVS)
+  {
+    // add rhs_pu
+    for (int ir=0; ir<my::nen_; ++ir)
+    {
+      // row position in final element matrix
+      unsigned int presrow = my::nsd_ + ir * my::numdofpernode_;
+      // + rhs_pu + rhs_pui
+      elevec(presrow,0) += rhs_pu(ir,0);
+    } // rhs_pu
+  }
+
+  // coupling contributions are added matrix & rhs-vector for background element!
+
+  // in case of WDBC, we are done here
+  if (! eval_side_coupling)
+    return;
+
+  //-------------------------------------------------
+  // finalize creation of side coupling terms
+  // Cuiu, Cuui, rhCui & Gsui, Guis (-->Cuiui)
+  //-------------------------------------------------
+
+  // build interface coupling matrices - therefore iterate through the interface elements
+  for (typename std::map<int,Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > >::iterator sit=side_impl.begin();
+      sit!=side_impl.end(); ++sit)
+  {
+    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si = sit->second;
+
+    // creation of Cuiu,Cuui,rhCui,Guis and Gsui:
+    si->HybridLM_buildFinalCouplingMatrices(invK_ss,KusinvKss,K_su,rhs_s);
+  }
+
+  //-------------------------------------------------
+  // build C_uiui
+  //-------------------------------------------------
+
+  /*
+   * "patchelementslm" includes u,v,w,p- DOFs
+   * Therefore, the final matrices G_sui and G_uis have pressure columns/rows.
+   * The pressure entries are set to zero.
+   * The task is now, to build the final G_uis and G_sui matrices
+   * out of the element submatrices collected in vector 'Cuiui_matrices'.
+   * In there, the G_sui & G_uis contributions from the sides are collected!
+   */
+  Epetra_SerialDenseMatrix G_sui(numstressdof_*my::nen_,patchelementslm.size());
+  Epetra_SerialDenseMatrix G_uis(patchelementslm.size(),numstressdof_*my::nen_);
+
+  // transform the block matrix invK_ss to an EpetraSerialDenseMatrix,
+  // to be later multiplied with G_sui & G_uis!
+  Epetra_SerialDenseMatrix InvKss(my::nen_*numstressdof_, my::nen_*numstressdof_);
+
+  //--------------------------------------------
+  // Build InvKss ( K_ss^(-1) )
+  //--------------------------------------------
+  for (int ibc=0; ibc<numstressdof_; ++ibc)
+  {
+    for (int ibr=0; ibr<numstressdof_; ++ibr)
+    {
+      if (invK_ss.IsUsed(ibr,ibc))
+      {
+        LINALG::Matrix<my::nen_,my::nen_> & binvK_ss = *invK_ss(ibr,ibc);
         for ( int ic=0; ic<my::nen_; ++ic )
         {
-          unsigned c = ( my::nsd_+1 )*ic + icb;
+          unsigned col = ibc + numstressdof_ * ic;
           for ( int ir=0; ir<my::nen_; ++ir )
           {
-            unsigned r = ( my::nsd_+1 )*ir + irb;
-            elemat1( r, c ) -= local_extK( ir, ic );
+            unsigned row = ibr + numstressdof_ * ir;
+            InvKss(row,col) -= binvK_ss(ir,ic);
           }
         }
       }
@@ -2107,278 +2387,236 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   }
 
   //--------------------------------------------
-  // fill element vector
+  // assemble G_sui & G_uis
   //--------------------------------------------
-  for ( unsigned irb=0; irb<my::nsd_+1; ++irb )
+  int ipatchsizesbefore = 0;
+
+  for (std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator m=Cuiui_coupling.begin();
+       m!=Cuiui_coupling.end(); ++m)
   {
-    if ( extrhs.IsUsed( irb, 0 ) )
+    const int bid = m->first;
+
+    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[bid];
+
+    // assemble Gsui
+    for ( int ibc=0; ibc<Cuiui_matrices[0].N(); ++ibc )
     {
-      LINALG::Matrix<my::nen_,1> & local_extrhs = *extrhs( irb, 0 );
-      for ( int ir=0; ir<my::nen_; ++ir )
+      for ( int ibr=0; ibr<numstressdof_*my::nen_; ++ibr )
       {
-        unsigned r = ( my::nsd_+1 )*ir + irb;
-        elevec1( r, 0 ) -= local_extrhs( ir, 0 );
+        G_sui(ibr,ibc+ipatchsizesbefore) = Cuiui_matrices[0](ibr,ibc);
       }
     }
+
+    // assemble Guis
+    for ( int ibc=0; ibc <numstressdof_*my::nen_; ++ibc )
+    {
+      for ( int ibr=0; ibr<Cuiui_matrices[1].M(); ++ibr )
+      {
+        G_uis(ibr+ipatchsizesbefore, ibc) = Cuiui_matrices[1](ibr,ibc);
+      }
+    }
+
+    ipatchsizesbefore += Cuiui_matrices[0].N();
   }
 
+  Epetra_SerialDenseMatrix GuisInvKss(patchelementslm.size(),numstressdof_*my::nen_);
 
-  //----------------------------------------------------------------------------
-  //  build G_sui, G_uis coupling matrices and finally build condensed G_uis * K_ss^(-1) * G_sui
-  //----------------------------------------------------------------------------
+  // G_uis * K_ss^-1
+  GuisInvKss.Multiply('N', 'N', 1.0, G_uis, InvKss, 1.0);
 
-  if ( fluidfluidcoupling )
-  {
-    // build fluid-fluid matrices
-    for (typename std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > >::iterator i=side_impl.begin();  i!=side_impl.end(); ++i)
-    {
-      DRT::ELEMENTS::XFLUID::SideInterface<distype> * si = &*i->second;
-      si->MSH_buildFinalCouplingMatrices(invK_ss,K_iK,K_su,rhs);
-    }
-    //--------------------------------------------
-    // build InvKss ( K_ss^(-1) )
-    //--------------------------------------------
-    for ( unsigned icb=0; icb<6; ++icb )
-    {
-      for ( unsigned irb=0; irb<6; ++irb )
-      {
-        if ( invK_ss.IsUsed( irb, icb ) )
-        {
-          LINALG::Matrix<my::nen_,my::nen_> & local_invK_ss = *invK_ss( irb, icb );
-          for ( int ic=0; ic<my::nen_; ++ic )
-          {
-            int c = ( 6 )*ic + icb;
-            for ( int ir=0; ir<my::nen_; ++ir )
-            {
-              int r = ( 6 )*ir + irb;
-              InvKss( r, c ) -= local_invK_ss( ir, ic );
-            }
-          }
-        }
-      }
-    }
-
-    //--------------------------------------------
-    // assemble Gsui and Guis
-    //--------------------------------------------
-    int ipatchsizesbefore = 0;
-    for (std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator m=Cuiui_coupling.begin();
-         m!=Cuiui_coupling.end(); ++m)
-    {
-      int bid = m->first;
-      std::vector<Epetra_SerialDenseMatrix> & Cuiui_mats = Cuiui_coupling[bid];
-
-      // assemble Gsui
-      for ( int icb=0; icb<Cuiui_mats[0].N(); ++icb ) // Cuiui includes only ui,ui coupling, not (ui,p) ...
-      {
-        for ( unsigned irb=0; irb<6*my::nen_; ++irb )
-        {
-          Gsui(irb,icb+ipatchsizesbefore) = Cuiui_mats[0](irb,icb);
-        }
-      }
-
-      // assemble Guis
-      for ( unsigned icb=0; icb<6*my::nen_; ++icb )
-      {
-        for ( int irb=0; irb<Cuiui_mats[1].M(); ++irb )
-        {
-          Guis(irb+ipatchsizesbefore,icb) = Cuiui_mats[1](irb,icb);
-        }
-      }
-
-      ipatchsizesbefore += Cuiui_mats[0].N();
-
-    }
-
-    //----------------------------------------------------------------------------
-    //  build condensed   C_uiui=[ G_uis * K_ss^(-1) * G_sui ]
-    //----------------------------------------------------------------------------
-
-    GuisInvKss.Multiply('N','N',1.0,Guis,InvKss,1.0);
-    Cuiui.Multiply('N','N',1.0,GuisInvKss,Gsui,1.0);
-
-  } // end build coupling matrices
-
-
-
-//   std::cout << elemat1;
-//   std::cout << elevec1;
-
-//   elemat1_epetra.Print( std::cout );
-
-  return;
-
-} // ElementXfemInterface
-
-
+  // Cuiui <--> (-)G_uis * K_ss^-1 * G_sui
+  Cuiui.Multiply('N', 'N', 1.0, GuisInvKss, G_sui, 1.0);
+}
 
 /*--------------------------------------------------------------------------------
- * build volume-based K matrices for coupling stress fields
+ * setup volume-based terms
+ * (mixed/hybrid viscous stress-based LM approach)
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
-    INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,   ///< full or partial l2 projection for MSH method
-    const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,     ///< background element integration points
-    std::string &                                                          VCellGaussPts, ///< volumecell gaussian points method
-    const GEO::CUT::plain_volumecell_set&                                  cells,         ///< volumecells in the present set
-    LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,        ///< element velocity
-    LINALG::Matrix<my::nen_,1>&                                            epreaf,        ///< element pressure
-    LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,         ///< block K_ss matrix
-    LINALG::Matrix<my::nen_,my::nen_>&                                     invbK_ss,      ///< inverse of block K_ss matrix
-    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,          ///< K_su matrix
-    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs            ///< rhs vector
-    )
+void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
+    const INPAR::XFEM::Hybrid_LM_L2_Proj                                                        hybrid_lm_l2_proj,
+    const std::vector<DRT::UTILS::GaussIntegration> &                                           intpoints,
+    const std::string&                                                                          VCellGaussPoints,
+    const GEO::CUT::plain_volumecell_set&                                                       cells,
+    const LINALG::Matrix<my::nsd_, my::nen_> &                                                  evelaf,            ///< element velocity
+    const LINALG::Matrix<my::nen_,1>&                                                           epreaf,            ///< element pressure
+    LINALG::Matrix<my::nen_,my::nen_>&                                                          bK_ss,             ///< block K_ss matrix
+    LINALG::Matrix<my::nen_,my::nen_>&                                                          invbK_ss,          ///< inverse of block K_ss matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_> &   K_su,              ///< K_su matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1> &                           rhs_s,             ///< rhs_s vector
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::numdofpernode_,numstressdof_> &   K_us,              ///< K_us matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,my::nsd_> &                  K_uu,              ///< K_uu matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_, 1> &                               rhs_uu,            ///< rhs_u(u) vector
+    const bool                                                                                  is_MHVS,           ///< viscous (true) or Cauchy (false) stress-based LM
+    const double                                                                                mhvs_param         ///< stabilizing parameter for viscous stress-based LM
+)
 {
-
-  //----------------------------------------------------------------------------
-  //            volume integral --- build K_su, K_sp matrices and rhs
-  //----------------------------------------------------------------------------
-  if( msh_l2_proj == INPAR::XFEM::MSH_L2_Proj_full ) // projection over the full background element
+  // full L2-projection means integration over the full background element,
+  // not only the physical part
+  if (hybrid_lm_l2_proj == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
   {
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
+    // get the standard set of gauss-points from the intersected element
+    for (DRT::UTILS::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
+        iquad != my::intpoints_.end(); ++iquad)
     {
-      // evaluate shape functions and derivatives at integration point
-      my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
-      MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
+      my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
+
+      if (is_MHVS)
+      {
+        MHVS_Evaluate_VolBased(evelaf, bK_ss, invbK_ss, K_su, rhs_s, K_us, K_uu, rhs_uu, mhvs_param);
+      }
+      else
+      {
+        MHCS_Evaluate_VolBased(evelaf, epreaf, bK_ss, invbK_ss, K_su, rhs_s);
+      }
     }
   }
-  else //projection over the volumecells (partial projection)
+  else if (VCellGaussPoints == "Tessellation" or VCellGaussPoints == "MomentFitting")
   {
-    if( VCellGaussPts=="Tessellation" ) // standard case for tessellation and momentfitting
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
-      for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+      const DRT::UTILS::GaussIntegration intcell = *i;
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
       {
-        const DRT::UTILS::GaussIntegration intcell = *i;
-        for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+        // evaluate shape functions and derivatives at integration point
+        my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+        if (is_MHVS)
         {
-          // evaluate shape functions and derivatives at integration point
-          my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
-          MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
+          MHVS_Evaluate_VolBased(evelaf, bK_ss, invbK_ss, K_su, rhs_s, K_us, K_uu, rhs_uu, mhvs_param);
+        }
+        else
+        {
+          MHCS_Evaluate_VolBased(evelaf, epreaf, bK_ss, invbK_ss, K_su, rhs_s);
         }
       }
     }
-    else if( VCellGaussPts=="MomentFitting" ) // standard case for momentfitting
+  }
+  else if (VCellGaussPoints == "DirectDivergence" )  // DirectDivergence method
+  {
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
-      for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-      {
-        const DRT::UTILS::GaussIntegration intcell = *i;
-        for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-        {
-          // evaluate shape functions and derivatives at integration point
-          my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
-          MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
-        }
-      }
-    }
-    else if( VCellGaussPts=="DirectDivergence" )  // DirectDivergence method
-    {
-      for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-      {
-        const DRT::UTILS::GaussIntegration intcell = *i;
-        GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
-        //----------------------------------------------------------------------
-        //integration over the main gauss points to get the required integral
-        //----------------------------------------------------------------------
-        int mainPtno = 0;
-        for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-        {
-          LINALG::Matrix<my::nen_,my::nen_> invbK_ssTemp( true );
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_suTemp;
-          LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>                rhsTemp;
+      const DRT::UTILS::GaussIntegration intcell = *i;
+      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
 
-          // get internal Gaussian rule for every main Gauss point
-          DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
-          mainPtno++;
+      //----------------------------------------------------------------------
+      //integration over the main gauss points to get the required integral
+      //----------------------------------------------------------------------
+      int mainPtno = 0;
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+      {
+        // to store values temporarily
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_>     K_suTemp;
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::numdofpernode_,numstressdof_>     K_usTemp;
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1>                             rhs_sTemp;
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,my::nsd_>                    K_uuTemp;
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_, 1>                                 rhs_uuTemp;
+        LINALG::Matrix<my::nen_,my::nen_>                                                           invbK_ssTemp;
 
-          //----------------------------------------------------------------------
-          //integration over the internal gauss points - to get modified integrand
-          //----------------------------------------------------------------------
-          for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+        // get internal Gaussian rule for every main Gauss point
+        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule(mainPtno);
+        mainPtno++;
+
+        //----------------------------------------------------------------------
+        //integration over the internal gauss points - to get modified integrand
+        //----------------------------------------------------------------------
+        for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+        {
+          my::EvalShapeFuncAndDerivsAtIntPoint( quadint.Point(), quadint.Weight() );
+          if (is_MHVS)
           {
-            my::EvalShapeFuncAndDerivsAtIntPoint( quadint.Point(), quadint.Weight() );
-            MSH_EvaluateMatrices( evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhsTemp );
+            MHVS_Evaluate_VolBased(
+                evelaf, bK_ss, invbK_ssTemp, K_suTemp, rhs_sTemp, K_usTemp, K_uuTemp, rhs_uuTemp, mhvs_param);
           }
+          else
+          {
+            MHCS_Evaluate_VolBased(
+                evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhs_sTemp);
+          }
+        }
 
-          my::EvalShapeFuncAndDerivsAtIntPoint( iquad.Point(),iquad.Weight() );
-          bK_ss.MultiplyNT( my::funct_, my::funct_ );
+        // Update
+        invbK_ss.Update( iquad.Weight(), invbK_ssTemp, 1.0);
 
-          invbK_ss.Update( iquad.Weight(), invbK_ssTemp, 1.0 );
+        // add main diagonal blocks
+        K_su(Sigmaxx,Velx)->Update( iquad.Weight(), *K_suTemp(Sigmaxx,Velx), 1.0);
+        K_su(Sigmayy,Vely)->Update( iquad.Weight(), *K_suTemp(Sigmayy,Vely), 1.0);
+        K_su(Sigmazz,Velz)->Update( iquad.Weight(), *K_suTemp(Sigmazz,Velz), 1.0);
 
-          const unsigned Velx = 0;
-          const unsigned Vely = 1;
-          const unsigned Velz = 2;
-          const unsigned Pres = 3;
+        // add off-diagonal blocks
+        K_su(Sigmaxy,Velx)->Update( iquad.Weight(), *K_suTemp(Sigmaxy,Velx), 1.0);
+        K_su(Sigmaxz,Velx)->Update( iquad.Weight(), *K_suTemp(Sigmaxz,Velx), 1.0);
+        K_su(Sigmayx,Vely)->Update( iquad.Weight(), *K_suTemp(Sigmayx,Vely), 1.0);
+        K_su(Sigmayz,Vely)->Update( iquad.Weight(), *K_suTemp(Sigmayz,Vely), 1.0);
+        K_su(Sigmazx,Velz)->Update( iquad.Weight(), *K_suTemp(Sigmazx,Velz), 1.0);
+        K_su(Sigmazy,Velz)->Update( iquad.Weight(), *K_suTemp(Sigmazy,Velz), 1.0);
 
-          const unsigned Sigmaxx = 0;
-          const unsigned Sigmaxy = 1;
-          const unsigned Sigmaxz = 2;
-          const unsigned Sigmayx = 1;
-          const unsigned Sigmayy = 3;
-          const unsigned Sigmayz = 4;
-          const unsigned Sigmazx = 2;
-          const unsigned Sigmazy = 4;
-          const unsigned Sigmazz = 5;
+        rhs_s(Sigmaxx,0)->Update( iquad.Weight(), *rhs_sTemp(Sigmaxx,0), 1.0);
+        rhs_s(Sigmaxy,0)->Update( iquad.Weight(), *rhs_sTemp(Sigmaxy,0), 1.0);
+        rhs_s(Sigmaxz,0)->Update( iquad.Weight(), *rhs_sTemp(Sigmaxz,0), 1.0);
+        rhs_s(Sigmayy,0)->Update( iquad.Weight(), *rhs_sTemp(Sigmayy,0), 1.0);
+        rhs_s(Sigmayz,0)->Update( iquad.Weight(), *rhs_sTemp(Sigmayz,0), 1.0);
+        rhs_s(Sigmazz,0)->Update( iquad.Weight(), *rhs_sTemp(Sigmazz,0), 1.0);
 
-          K_su( Sigmaxx, Velx )->Update( iquad.Weight(), *K_suTemp( Sigmaxx, Velx ), 1.0 );
-          K_su( Sigmaxy, Velx )->Update( iquad.Weight(), *K_suTemp( Sigmaxy, Velx ), 1.0 );
-          K_su( Sigmayx, Vely )->Update( iquad.Weight(), *K_suTemp( Sigmayx, Vely ), 1.0 );
-          K_su( Sigmaxz, Velx )->Update( iquad.Weight(), *K_suTemp( Sigmaxz, Velx ), 1.0 );
-          K_su( Sigmazx, Velz )->Update( iquad.Weight(), *K_suTemp( Sigmazx, Velz ), 1.0 );
-          K_su( Sigmayy, Vely )->Update( iquad.Weight(), *K_suTemp( Sigmayy, Vely ), 1.0 );
-          K_su( Sigmayz, Vely )->Update( iquad.Weight(), *K_suTemp( Sigmayz, Vely ), 1.0 );
-          K_su( Sigmazy, Velz )->Update( iquad.Weight(), *K_suTemp( Sigmazy, Velz ), 1.0 );
-          K_su( Sigmazz, Velz )->Update( iquad.Weight(), *K_suTemp( Sigmazz, Velz ), 1.0 );
-
-          rhs( Sigmaxx, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmaxx, 0 ), 1.0 );
-          rhs( Sigmaxy, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmaxy, 0 ), 1.0 );
-          rhs( Sigmaxz, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmaxz, 0 ), 1.0 );
-          rhs( Sigmayy, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmayy, 0 ), 1.0 );
-          rhs( Sigmayz, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmayz, 0 ), 1.0 );
-          rhs( Sigmazz, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmazz, 0 ), 1.0 );
-
+        // in case of a Cauchy stress-based approach, fill the pressure column block of K_su
+        // and we're done
+        if (! is_MHVS)
+        {
           K_su( Sigmaxx, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmaxx, Pres ), 1.0 );
           K_su( Sigmayy, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmayy, Pres ), 1.0 );
           K_su( Sigmazz, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmazz, Pres ), 1.0 );
+
+          continue;
         }
+        // add main diagonal submatrices
+        K_us(Velx, Sigmaxx)->Update( iquad.Weight(), *K_usTemp(Velx, Sigmaxx), 1.0);
+        K_us(Vely, Sigmayy)->Update( iquad.Weight(), *K_usTemp(Vely, Sigmayy), 1.0);
+        K_us(Velz, Sigmazz)->Update( iquad.Weight(), *K_usTemp(Velz, Sigmazz), 1.0);
+
+        // add off-diagonal blocks
+        K_us(Velx, Sigmaxy)->Update( iquad.Weight(), *K_usTemp(Velx, Sigmaxy), 1.0);
+        K_us(Velx, Sigmaxz)->Update( iquad.Weight(), *K_usTemp(Velx, Sigmaxz), 1.0);
+        K_us(Vely, Sigmayx)->Update( iquad.Weight(), *K_usTemp(Vely, Sigmayx), 1.0);
+        K_us(Vely, Sigmayz)->Update( iquad.Weight(), *K_usTemp(Vely, Sigmayz), 1.0);
+        K_us(Velz, Sigmazx)->Update( iquad.Weight(), *K_usTemp(Velz, Sigmazx), 1.0);
+        K_us(Velz, Sigmazy)->Update( iquad.Weight(), *K_usTemp(Velz, Sigmazy), 1.0);
+
+        // add main diagonal submatrices
+        K_uu(Velx, Velx)->Update( iquad.Weight(), *K_uuTemp(Velx, Velx), 1.0);
+        K_uu(Vely, Vely)->Update( iquad.Weight(), *K_uuTemp(Vely, Vely), 1.0);
+        K_uu(Velz, Velz)->Update( iquad.Weight(), *K_uuTemp(Velz, Velz), 1.0);
+
+        // add off-diagonal blocks
+        K_uu(Velx, Vely)->Update( iquad.Weight(), *K_uuTemp(Velx, Vely), 1.0);
+        K_uu(Velx, Velz)->Update( iquad.Weight(), *K_uuTemp(Velx, Velz), 1.0);
+        K_uu(Vely, Velx)->Update( iquad.Weight(), *K_uuTemp(Vely, Velx), 1.0);
+        K_uu(Vely, Velz)->Update( iquad.Weight(), *K_uuTemp(Vely, Velz), 1.0);
+        K_uu(Velz, Velx)->Update( iquad.Weight(), *K_uuTemp(Velz, Velx), 1.0);
+        K_uu(Velz, Vely)->Update( iquad.Weight(), *K_uuTemp(Velz, Vely), 1.0);
+
+        rhs_uu(Velx,0)->Update( iquad.Weight(), *rhs_uuTemp(Velx,0),1.0);
+        rhs_uu(Vely,0)->Update( iquad.Weight(), *rhs_uuTemp(Vely,0),1.0);
+        rhs_uu(Velz,0)->Update( iquad.Weight(), *rhs_uuTemp(Velz,0),1.0);
       }
     }
-    else dserror("unsupported type of VCellGaussPts");
-    
   }
 
   return;
-
-} // Build_K_Matrices_MSH
-
+}
 
 /*--------------------------------------------------------------------------------
- * evaluate volume-based K matrix terms at Gaussian point
+ * evaluate volume-based terms for current gauss point
+ * (mixed/hybrid Cauchy stress-based LM approach)
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
-    LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,                                ///< element velocity
-    LINALG::Matrix<my::nen_,1>&           epreaf,                                ///< element pressure
-    LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,                                 ///< block K_ss matrix
-    LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,                              ///< inverse of block K_ss matrix
-    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
-    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
-    )
+void FluidEleCalcXFEM<distype>::MHCS_Evaluate_VolBased(
+    const LINALG::Matrix<my::nsd_,my::nen_>&                                                  evelaf,   ///< element velocity
+    const LINALG::Matrix<my::nen_,1>&                                                         epreaf,   ///< element pressure
+    LINALG::Matrix<my::nen_,my::nen_>&                                                        bK_ss,    ///< block K_ss matrix
+    LINALG::Matrix<my::nen_,my::nen_>&                                                        invbK_ss, ///< inverse of block K_ss matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_>&  K_su,     ///< K_su matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1> &                         rhs_s     ///< rhs_s vector
+)
 {
-  const unsigned Velx = 0;
-  const unsigned Vely = 1;
-  const unsigned Velz = 2;
-  const unsigned Pres = 3;
-
-  const unsigned Sigmaxx = 0;
-  const unsigned Sigmaxy = 1;
-  const unsigned Sigmaxz = 2;
-  const unsigned Sigmayx = 1;
-  const unsigned Sigmayy = 3;
-  const unsigned Sigmayz = 4;
-  const unsigned Sigmazx = 2;
-  const unsigned Sigmazy = 4;
-  const unsigned Sigmazz = 5;
-
   LINALG::Matrix<my::nen_,1> dx;
   LINALG::Matrix<my::nen_,1> dy;
   LINALG::Matrix<my::nen_,1> dz;
@@ -2391,9 +2629,6 @@ void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
   // set time-integration factors for left- and right-hand side
   // (two right-hand-side factors: general and for residuals)
   //----------------------------------------------------------------------
-
-  // TODO: check if this parameter should be fac*1.0*dt (full implicit stabilization)
-  const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
 
   const double viscfac = 1.0/(2.0*my::visceff_);
 
@@ -2408,6 +2643,9 @@ void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
   // get pressure at integration point
   // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
   double press = my::funct_.Dot(epreaf);
+
+  // time integration factor & spatial integration factor
+  const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
 
 
   //--------------------------------------------
@@ -2452,12 +2690,12 @@ void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
 
    // r_su
 
-   rhs( Sigmaxx, 0 )->Update( - timefacfac* my::vderxy_(0, 0)                     , my::funct_, 1.0 );
-   rhs( Sigmaxy, 0 )->Update( - timefacfac*(my::vderxy_(0, 1) + my::vderxy_(1, 0)), my::funct_, 1.0 );
-   rhs( Sigmaxz, 0 )->Update( - timefacfac*(my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0 );
-   rhs( Sigmayy, 0 )->Update( - timefacfac* my::vderxy_(1, 1)                     , my::funct_, 1.0 );
-   rhs( Sigmayz, 0 )->Update( - timefacfac*(my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0 );
-   rhs( Sigmazz, 0 )->Update( - timefacfac* my::vderxy_(2, 2)                     , my::funct_, 1.0 );
+   rhs_s( Sigmaxx, 0 )->Update( - timefacfac* my::vderxy_(0, 0)                     , my::funct_, 1.0 );
+   rhs_s( Sigmaxy, 0 )->Update( - timefacfac*(my::vderxy_(0, 1) + my::vderxy_(1, 0)), my::funct_, 1.0 );
+   rhs_s( Sigmaxz, 0 )->Update( - timefacfac*(my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0 );
+   rhs_s( Sigmayy, 0 )->Update( - timefacfac* my::vderxy_(1, 1)                     , my::funct_, 1.0 );
+   rhs_s( Sigmayz, 0 )->Update( - timefacfac*(my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0 );
+   rhs_s( Sigmazz, 0 )->Update( - timefacfac* my::vderxy_(2, 2)                     , my::funct_, 1.0 );
 
    // stressbar-pressure coupling
    /*
@@ -2469,19 +2707,351 @@ void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
     */
 
    // K_sp
-
    K_su( Sigmaxx, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
    K_su( Sigmayy, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
    K_su( Sigmazz, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
 
    // r_sp
-   rhs( Sigmaxx, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
-   rhs( Sigmayy, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
-   rhs( Sigmazz, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+   rhs_s( Sigmaxx, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+   rhs_s( Sigmayy, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+   rhs_s( Sigmazz, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
 
   return;
 
 } //EvaluateMatricesMSH
+
+/*--------------------------------------------------------------------------------
+ * evaluate volume-based matrices K for current gauss point
+ * (mixed/hybrid viscous stress-based LM approach)
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::MHVS_Evaluate_VolBased(
+    const LINALG::Matrix<my::nsd_,my::nen_> &                                                 evelaf,
+    LINALG::Matrix<my::nen_,my::nen_> &                                                       bK_ss,
+    LINALG::Matrix<my::nen_,my::nen_> &                                                       invbK_ss,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_> & K_su,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1> &                         rhs_s,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::numdofpernode_,numstressdof_> & K_us,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,my::nsd_> &                K_uu,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_, 1> &                             rhs_uu,
+    const double &                                                                            mhvs_param
+)
+{
+  // velocities at current gauss point
+  my::velint_.Multiply(evelaf, my::funct_);
+
+  // velocity gradient at current gauss point
+  my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+
+  // compute shape function derivatives:
+  // get derivatives of nodal shape function vector w. r. t. x,y,z
+  LINALG::Matrix<my::nen_,1> dx;
+  LINALG::Matrix<my::nen_,1> dy;
+  LINALG::Matrix<my::nen_,1> dz;
+
+  // derxy(coordinate,node)
+  for (int i = 0; i < my::nen_; ++i)
+  {
+    dx(i) = my::derxy_(0,i);
+    dy(i) = my::derxy_(1,i);
+    dz(i) = my::derxy_(2,i);
+  }
+
+  // fill the (nen_ x nen_) matrix block of K_ss
+  bK_ss.MultiplyNT(my::funct_, my::funct_); //N * N^T
+
+  // leads to terms, that are analogous to a symmetric/non-symmetric Nitsche-formulation
+  // REMARK: behaves unstable for betau=-1.0 in fluid-fluid problems, so keep that in mind!
+  // betau (-)1 <--> symmetric Nitsche
+  // betau (+)1 <--> non-symmetric Nitsche
+  // the stabilizing parameter n has been applied to timefacfac
+  const double betau = 1.0;
+
+  // scaling with inverse dynamic effective viscosity
+  const double viscfac = -1.0 / (2.0 * my::visceff_);
+
+  // time integration factor & spatial integration factor, scaled with mhvs-parameter 1/n
+  const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_ / mhvs_param;
+
+
+  /* K_ss
+   *
+   *       1        /                \
+   * (-)  ---   *  |  \tau, \sigma    |
+   *   (2n \mu)     \                /
+   */
+  invbK_ss.Update(viscfac * timefacfac, bK_ss, 1.0);
+
+  /*
+   *  K_su
+   *  from:
+   *
+   *  1     /                    \
+   *  - *  |  \tau, \epsilon(u)   |
+   *  n     \                    /
+   *
+   */
+
+  // create blocks
+  LINALG::Matrix<my::nen_,my::nen_> NdNdxT;
+  LINALG::Matrix<my::nen_,my::nen_> NdNdyT;
+  LINALG::Matrix<my::nen_,my::nen_> NdNdzT;
+
+  NdNdxT.MultiplyNT(my::funct_, dx);
+  NdNdyT.MultiplyNT(my::funct_, dy);
+  NdNdzT.MultiplyNT(my::funct_, dz);
+
+  // add main diagonal blocks
+  K_su(Sigmaxx, Velx)->Update(timefacfac, NdNdxT, 1.0);
+  K_su(Sigmayy, Vely)->Update(timefacfac, NdNdyT, 1.0);
+  K_su(Sigmazz, Velz)->Update(timefacfac, NdNdzT, 1.0);
+
+  // add off-diagonal blocks
+  K_su(Sigmaxy, Velx)->Update(timefacfac, NdNdyT, 1.0);
+  K_su(Sigmaxz, Velx)->Update(timefacfac, NdNdzT, 1.0);
+  K_su(Sigmayx, Vely)->Update(timefacfac, NdNdxT, 1.0);
+  K_su(Sigmayz, Vely)->Update(timefacfac, NdNdzT, 1.0);
+  K_su(Sigmazx, Velz)->Update(timefacfac, NdNdxT, 1.0);
+  K_su(Sigmazy, Velz)->Update(timefacfac, NdNdyT, 1.0);
+
+  /*
+   * rhs_s contribution
+   * from:
+   *
+   *  1     /                   \
+   *  -  * |  \tau, \epsilon(u)  |
+   *  n     \                   /
+   *
+   */
+
+  rhs_s(Sigmaxx, 0)->Update(-timefacfac * my::vderxy_(0,0),my::funct_, 1.0);
+  rhs_s(Sigmaxy, 0)->Update(-timefacfac * (my::vderxy_(1,0) + my::vderxy_(0,1)),my::funct_, 1.0);
+  rhs_s(Sigmaxz, 0)->Update(-timefacfac * (my::vderxy_(0,2) + my::vderxy_(2,0)),my::funct_, 1.0);
+  rhs_s(Sigmayy, 0)->Update(-timefacfac * my::vderxy_(1,1),my::funct_,1.0);
+  rhs_s(Sigmayz, 0)->Update(-timefacfac * (my::vderxy_(1,2) + my::vderxy_(2,1)),my::funct_, 1.0);
+  rhs_s(Sigmazz, 0)->Update(-timefacfac * my::vderxy_(2,2),my::funct_, 1.0);
+
+  // nothing like K_sp here, as this is a purely viscous stress-based approach
+
+  /*
+   * coupling matrix K_us which results from testing the LM-stress field with
+   * test strains computed from the test velocities
+   *
+   *     1     /                         \
+   * (-) -  * |  \epsilon(v), \sigma      | * \beta_u
+   *     n     \                         /
+   *
+   */
+
+  // as the viscous stresses are condensed, there is no contribution of this term to
+  // the RHS vector
+  LINALG::Matrix<my::nen_,my::nen_> dNdxNT;
+  LINALG::Matrix<my::nen_,my::nen_> dNdyNT;
+  LINALG::Matrix<my::nen_,my::nen_> dNdzNT;
+
+  dNdxNT.UpdateT(NdNdxT);
+  dNdyNT.UpdateT(NdNdyT);
+  dNdzNT.UpdateT(NdNdzT);
+
+  // add main diagonal submatrices
+  K_us(Velx, Sigmaxx)->Update(-betau * timefacfac, dNdxNT, 1.0);
+  K_us(Vely, Sigmayy)->Update(-betau * timefacfac, dNdyNT, 1.0);
+  K_us(Velz, Sigmazz)->Update(-betau * timefacfac, dNdzNT, 1.0);
+
+  // add off-diagonal blocks
+  K_us(Velx, Sigmaxy)->Update(-betau * timefacfac, dNdyNT, 1.0);
+  K_us(Velx, Sigmaxz)->Update(-betau * timefacfac, dNdzNT, 1.0);
+  K_us(Vely, Sigmayx)->Update(-betau * timefacfac, dNdxNT, 1.0);
+  K_us(Vely, Sigmayz)->Update(-betau * timefacfac, dNdzNT, 1.0);
+  K_us(Velz, Sigmazx)->Update(-betau * timefacfac, dNdxNT, 1.0);
+  K_us(Velz, Sigmazy)->Update(-betau * timefacfac, dNdyNT, 1.0);
+
+  // computation of additional stress term, scaled with inverse MHVS-parameter
+
+  // build K_uu coupling matrix
+  /*
+   *   /                           \     1
+   *  |  \epsilon(v), \epsilon(u)   | *  - * 2 \mu * \beta
+   *   \                           /     n
+   *
+   */
+
+  // factor 2 from above is cancelled out
+  const double visc_timefac_mhvs = betau * my::visceff_ * timefacfac;
+
+  std::vector<const LINALG::Matrix<my::nen_,1> *> dN;
+  dN.push_back(&dx);
+  dN.push_back(&dy);
+  dN.push_back(&dz);
+
+  LINALG::Matrix<my::nen_,my::nen_> dNidxj(true);
+  LINALG::Matrix<my::nen_,my::nen_> dNjdxj(true);
+
+  for (int idim = 0; idim < my::nsd_; ++idim)
+  {
+    for (int jdim = 0; jdim < my::nsd_; ++jdim)
+    {
+      dNidxj.MultiplyNT(*dN[jdim],*dN[idim]);
+      K_uu(idim, jdim)->Update(visc_timefac_mhvs, dNidxj, 1.0);
+      dNjdxj.MultiplyNT(*dN[jdim],*dN[jdim]);
+      K_uu(idim, idim)->Update(visc_timefac_mhvs, dNjdxj, 1.0);
+      rhs_uu(idim, 0)->Update(-visc_timefac_mhvs * (my::vderxy_(idim, jdim) + my::vderxy_(jdim, idim)), *dN[jdim], 1.0);
+    }
+  }
+}
+
+/*--------------------------------------------------------------------------------
+ * build surface-based terms for current gauss point
+ * (mixed/hybrid Cauchy or viscous stress-based LM approach)
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::HybridLM_Evaluate_SurfBased(
+    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > &                            si,
+    const LINALG::Matrix<my::nen_,my::nen_> &                                                 bK_ss,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_> & K_su,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::numdofpernode_,numstressdof_> & K_us,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1> &                         rhs_s,
+    const LINALG::Matrix<my::nen_,1> &                                                        epreaf,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,my::nsd_> &                K_uu,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_, 1> &                             rhs_uu,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,1> &                       G_up,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,1,my::nsd_> &                       G_pu,
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_,1> &                              rhs_up,
+    LINALG::Matrix<my::nen_,1> &                                                              rhs_pu,
+    const LINALG::Matrix<3,1> &                                                               normal,
+    const double &                                                                            timesurffac,
+    const bool                                                                                eval_side_coupling,
+    const bool                                                                                is_MHVS
+)
+{
+  K_us(Velx, Sigmaxx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
+  K_us(Velx, Sigmaxy)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
+  K_us(Velx, Sigmaxz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+  K_us(Vely, Sigmayx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
+  K_us(Vely, Sigmayy)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
+  K_us(Vely, Sigmayz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+  K_us(Velz, Sigmazx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
+  K_us(Velz, Sigmazy)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
+  K_us(Velz, Sigmazz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+
+
+  // K_su - add the blocks from the surface contribution
+  // viscous stress-tested interface continuity term
+  /*
+  *
+  *     /                             \
+  *   - |       \tau_{ij} * n_j, u^i   |
+  *     \                             /
+  */
+  K_su(Sigmaxx, Velx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
+  K_su(Sigmaxy, Velx)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
+  K_su(Sigmaxz, Velx)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+  K_su(Sigmayx, Vely)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
+  K_su(Sigmayy, Vely)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
+  K_su(Sigmayz, Vely)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+  K_su(Sigmazx, Velz)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
+  K_su(Sigmazy, Velz)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
+  K_su(Sigmazz, Velz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+
+  //Add surface integral contribution to rhs_s
+
+  // from diagonal terms
+  rhs_s(Sigmaxx, 0)->Update(timesurffac * normal(Velx) * my::velint_(Velx), my::funct_, 1.0);
+  rhs_s(Sigmayy, 0)->Update(timesurffac * normal(Vely) * my::velint_(Vely), my::funct_, 1.0);
+  rhs_s(Sigmazz, 0)->Update(timesurffac * normal(Velz) * my::velint_(Velz), my::funct_, 1.0);
+
+  // from off-diagonal terms
+  rhs_s(Sigmaxy, 0)->Update(timesurffac * (normal(Vely) * my::velint_(Velx) + normal(Velx) * my::velint_(Vely)), my::funct_, 1.0);
+  rhs_s(Sigmaxz, 0)->Update(timesurffac * (normal(Velz) * my::velint_(Velx) + normal(Velx) * my::velint_(Velz)), my::funct_, 1.0);
+  rhs_s(Sigmayz, 0)->Update(timesurffac * (normal(Velz) * my::velint_(Vely) + normal(Vely) * my::velint_(Velz)), my::funct_, 1.0);
+
+  // get pressure at current integration point
+  double press = my::funct_.Dot(epreaf);
+
+  // MHVS terms
+  if (is_MHVS)
+  {
+    // interface pressure term
+    /*
+    *
+    *     /          \
+    *    |   v, p n   |
+    *     \          /
+    */
+    G_up(Velx, 0)->Update(timesurffac * normal(0), bK_ss, 1.0);
+    G_up(Vely, 0)->Update(timesurffac * normal(1), bK_ss, 1.0);
+    G_up(Velz, 0)->Update(timesurffac * normal(2), bK_ss, 1.0);
+
+    // velocity residual rhs_up
+    rhs_up(Velx,0)->Update(-timesurffac * normal(Velx) * press, my::funct_, 1.0);
+    rhs_up(Vely,0)->Update(-timesurffac * normal(Vely) * press, my::funct_, 1.0);
+    rhs_up(Velz,0)->Update(-timesurffac * normal(Velz) * press, my::funct_, 1.0);
+
+    // pressure-tested interface continuity term
+    /*
+    *
+    *      /         \
+    *    -|  q n, u   |
+    *      \         /
+    */
+    G_pu(0, Velx)->Update(-timesurffac * normal(0), bK_ss, 1.0);
+    G_pu(0, Vely)->Update(-timesurffac * normal(1), bK_ss, 1.0);
+    G_pu(0, Velz)->Update(-timesurffac * normal(2), bK_ss, 1.0);
+
+    // pressure residual rhs_pu
+    // this results from -(q, u_i * n_i)_{\Gamma} (pressure-tested kinematic continuity)
+    const double normalvel = my::velint_.Dot(normal);
+    rhs_pu.Update(timesurffac*normalvel, my::funct_, 1.0);
+  }
+
+  // the terms involving side-DOF are treated by the side implementation class,
+  // as the sides have their own shape functions!
+  if (eval_side_coupling)
+  {
+    if (is_MHVS)
+      si->MHVS_buildCouplingMatrices(normal, timesurffac, my::funct_, rhs_s, press, rhs_pu);
+    else
+      si->MHCS_buildCouplingMatrices(normal, timesurffac, my::funct_, rhs_s);
+  }
+  else
+  {
+    // from velocity jump tested with viscous test stresses
+    /*
+    *
+    *     /                    _     \
+    *   +|  \tau_{ij} * n_j,   u^i    |
+    *     \                          /
+    */
+    LINALG::Matrix<my::nsd_,1> velint_WDBC(true);
+    si->get_vel_WeakDBC(velint_WDBC);
+
+    // add surface integral contribution to rhs_s
+
+    // from diagonal terms
+    rhs_s(Sigmaxx, 0)->Update(-timesurffac * normal(Velx) * velint_WDBC(Velx), my::funct_, 1.0);
+    rhs_s(Sigmayy, 0)->Update(-timesurffac * normal(Vely) * velint_WDBC(Vely), my::funct_, 1.0);
+    rhs_s(Sigmazz, 0)->Update(-timesurffac * normal(Velz) * velint_WDBC(Velz), my::funct_, 1.0);
+
+    // from off-diagonal terms
+    rhs_s(Sigmaxy, 0)->Update(-timesurffac * (normal(Vely) * velint_WDBC(Velx) + normal(Velx) * velint_WDBC(Vely)), my::funct_, 1.0);
+    rhs_s(Sigmaxz, 0)->Update(-timesurffac * (normal(Velz) * velint_WDBC(Velx) + normal(Velx) * velint_WDBC(Velz)), my::funct_, 1.0);
+    rhs_s(Sigmayz, 0)->Update(-timesurffac * (normal(Velz) * velint_WDBC(Vely) + normal(Vely) * velint_WDBC(Velz)), my::funct_, 1.0);
+
+    if (! is_MHVS) return;
+
+    // ONLY MHVS:
+    // pressure-tested kinematic continuity term
+    /*
+     *
+     *      /      _  \
+     *    +|  q n, u   |
+     *      \         /
+     */
+    const double normalvel = velint_WDBC.Dot(normal);
+
+    rhs_pu.Update(-timesurffac * normalvel, my::funct_, 1.0);
+  }
+}
 
 /*--------------------------------------------------------------------------------
  * add Nitsche (NIT) interface condition to element matrix and rhs
@@ -2503,10 +3073,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
   )
 {
-  bool compute_meas_surf = false;
-  bool compute_meas_vol  = false;
-
-
   const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
 
   bool assemble_iforce = false;
@@ -2514,39 +3080,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   double nitsche_stab        = params.get<double>("visc_stab_fac");
   INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
-  // convective stabilization type for xfluid
-  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
-  // convective stabilization type for xfluidfluid
-  INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
   INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
-
-  if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
-  {
-    compute_meas_surf = true;
-    compute_meas_vol  = true;
-  }
-
-
-  //----------------------------------------------------------------------------
-  //     pre-evaluate fluid volume measure and intersecting surface measure
-  //----------------------------------------------------------------------------
-  double meas_partial_volume = 0.0;
-  double meas_surf = 0.0;
-
-  if(compute_meas_vol)
-  {
-    meas_partial_volume = 0.0;
-    for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
-    {
-      GEO::CUT::VolumeCell* vc = *i;
-      meas_partial_volume += vc->Volume();
-    }
-  }
-
-  if(compute_meas_surf)
-  {
-    meas_surf = ComputeMeasSurf(bintpoints, bcells);
-  }
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -2554,15 +3088,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
-
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
+
+  // flag, that indicates whether we have side coupling terms Cuiu, Cuui,...
+  // generally, this is the case for fluid-fluid coupling and monolithic XFSI
+  // we distinguish by examination of side_coupling
+  bool eval_side_coupling = !side_coupling.empty();
 
 
   //----------------------------------------------------------------------------
@@ -2603,23 +3137,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //-----------------------------------------------------------------------------------
 
   // element length
-  double h_k = 0.0;
-
-  if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
-  {
-    h_k = HK(vol);
-  }
-  else if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
-  {
-    h_k = meas_partial_volume / meas_surf;
-  }
-  else if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_longest_ele_length)
-  {
-    dserror("longest element length for hk not supported yet");
-  }
-  else dserror("unknown type of characteristic element length");
-
-  if( h_k <= 0.0 ) dserror("element length is <= 0.0");
+  double h_k = Compute_h_k(visc_stab_hk, vcSet, bcells, bintpoints);
 
 
   //------------------------------
@@ -2640,13 +3158,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   }
   else dserror("unknown scaling for viscous stabilization term");
 
-
-
   //------------------------------
   // define average weights
   double kappa1 = 1.0;      // Xfluid-sided mortaring
-
-  if(meas_partial_volume < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
 
   if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
 
@@ -2692,25 +3206,32 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       std::copy( x, x+3, &side_xyze( 0, i ) );
     }
 
-
     // create side impl
-    if(fluidfluidcoupling)
-    {
 
+    if (eval_side_coupling)
+    {
       std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
       std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
 
-      // coupling matrices between background element and one! side
-      Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
-      Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
-      Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+      // do consistency check
+      if (side_matrices.size() == 3)
+      {
+        // coupling matrices between background element and one side
+        Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+        Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+        Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
 
-      // coupling matrices between one side and itself
-      std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
-      std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
-      Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
+        // coupling matrices between one side and itself
+        std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+        std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+        Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
 
-      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+        si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+      }
+      else
+      {
+        dserror("Got an invalid number of %d side coupling matrices for Nitsche-coupling.", side_matrices.size());
+      }
     }
     else
     {
@@ -2825,93 +3346,83 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         double stabfac_visc = 0.0;
         double stabfac_avg = 0.0;
-        double velgrad_interface_fac = 0.0;
-        double gamma_ghost_penalty = 0.0;
-        double presscoupling_interface_fac = 0.0;
-        double gamma_press_coupling = 0.0;
-        bool nitsche_evp = false;
 
-        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-                           params,
-                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
-                           stabfac_avg,                // stabfac 2 for additional stabilization term to set
-                           NIT_stab_fac,               // viscous Nitsche prefactor
-                           conv_stab_scaling,          // type of scaling for convective stabilization term of xfluid
-                           xff_conv_stab_scaling,      // type of scaling for convective stabilization term of xfluidfluid
-                           my::velint_.Dot(normal),    // velocity in normal direction
-                           my::velint_,                // velocity at GP
-                           gamma_ghost_penalty,
-                           velgrad_interface_fac,
-                           gamma_press_coupling,
-                           presscoupling_interface_fac,
-                           nitsche_evp,
-                           sid,
-                           h_k);
+        // set convective stabilization types first to none
+        // and read the correct one later from parameter list
+        INPAR::XFEM::ConvStabScaling conv_stab_scaling = INPAR::XFEM::ConvStabScaling_none;
+        INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = INPAR::XFEM::XFF_ConvStabScaling_none;
 
+        bool bg_mortaring = true; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
+
+        // prescribed velocity vector at weak Dirichlet boundary, stays zero for fluid-fluid coupling
+        LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
 
         if(fluidfluidcoupling)
         {
-          bool bg_mortaring = true; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
+          // convective stabilization type for xfluidfluid
+          xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
 
-          //zero velocity jump for fluidfluidcoupling
-          LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
+          double velgrad_interface_fac = 0.0;
+          double gamma_ghost_penalty = 0.0;
+          double presscoupling_interface_fac = 0.0;
+          double gamma_press_coupling = 0.0;
+          bool nitsche_evp = false;
 
-          si->NIT_buildCouplingMatrices(
-              elemat1_epetra,          // standard bg-bg-matrix
-              elevec1_epetra,          // standard bg-rhs
-              fluidfluidcoupling,      // assemble coupling terms (yes/no)
-              bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-              normal,                  // normal vector
-              timefacfac,              // theta*dt
-              my::visceff_,            // dynamic viscosity in background fluid
-              my::visceff_,            // dynamic viscosity in embedded fluid
-              kappa1,                  // mortaring weighting
-              kappa2,                  // mortaring weighting
-              stabfac_visc,            // Nitsche non-dimensionless stabilization factor
-              stabfac_avg,             // Nitsche convective non-dimensionless stabilization factor
-              my::funct_,              // bg shape functions
-              my::derxy_,              // bg deriv
-              my::vderxy_,             // bg deriv^n
-              press,                   // bg p^n
-              my::velint_,             // bg u^n
-              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
-              conv_stab_scaling,
-              xff_conv_stab_scaling
-          );
-
+          NIT_ComputeStabfacFluidFluid(
+              params,
+              stabfac_visc,
+              stabfac_avg,
+              velgrad_interface_fac,
+              presscoupling_interface_fac,
+              xff_conv_stab_scaling,
+              my::velint_.Dot(normal),
+              my::velint_,
+              h_k,
+              NIT_stab_fac,
+              gamma_ghost_penalty,
+              gamma_press_coupling,
+              nitsche_evp,
+              sid);
         }
-        if(!fluidfluidcoupling)
+        else
         {
-          // case for one-sided weak Dirichlet
-          bool bg_mortaring = true; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
+          // convective stabilization type for xfluid
+          conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
+
+          NIT_ComputeStabfac(
+              params,
+              stabfac_visc,
+              NIT_stab_fac,
+              conv_stab_scaling,
+              my::velint_.Dot(normal),
+              h_k);
 
           // prescribed velocity vector at weak Dirichlet boundary
-          LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
           si->get_vel_WeakDBC(ivelint_WDBC_JUMP);
-
-          si->NIT_buildCouplingMatrices(
-              elemat1_epetra,          // standard bg-bg-matrix
-              elevec1_epetra,          // standard bg-rhs
-              fluidfluidcoupling,      // assemble coupling terms (yes/no)
-              bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-              normal,                  // normal vector
-              timefacfac,              // theta*dt
-              my::visceff_,            // dynamic viscosity in background fluid
-              0.0,                     // dynamic viscosity in embedded fluid
-              kappa1,                  // mortaring weighting
-              kappa2,                  // mortaring weighting
-              stabfac_visc,            // Nitsche non-dimensionless stabilization factor
-              stabfac_avg,             // Nitsche convective non-dimensionless stabilization factor
-              my::funct_,              // bg shape functions
-              my::derxy_,              // bg deriv
-              my::vderxy_,             // bg deriv^n
-              press,                   // bg p^n
-              my::velint_,             // bg u^n
-              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
-              conv_stab_scaling,
-              xff_conv_stab_scaling
-            );
         }
+
+        si->NIT_buildCouplingMatrices(
+            elemat1_epetra,          // standard bg-bg-matrix
+            elevec1_epetra,          // standard bg-rhs
+            eval_side_coupling,      // assemble coupling terms (yes/no)
+            bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+            normal,                  // normal vector
+            timefacfac,              // theta*dt
+            my::visceff_,            // dynamic viscosity in background fluid
+            my::visceff_,            // dynamic viscosity in embedded fluid
+            kappa1,                  // mortaring weighting
+            kappa2,                  // mortaring weighting
+            stabfac_visc,            // Nitsche non-dimensionless stabilization factor
+            stabfac_avg,             // Nitsche convective non-dimensionless stabilization factor
+            my::funct_,              // bg shape functions
+            my::derxy_,              // bg deriv
+            my::vderxy_,             // bg deriv^n
+            press,                   // bg p^n
+            my::velint_,             // bg u^n
+            ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
+            conv_stab_scaling,
+            xff_conv_stab_scaling
+        );
 
 
         //--------------------------------------------
@@ -2946,7 +3457,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   // build Cuiui coupling matrix (includes patch of Cuiui matrices for all sides)
   //----------------------------------------------------------------------------
 
-  if ( fluidfluidcoupling )
+  if ( eval_side_coupling )
     NIT_BuildPatchCuiui(Cuiui, Cuiui_coupling);
 
   return;
@@ -2974,68 +3485,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     const GEO::CUT::plain_volumecell_set &                              vcSet
   )
 {
-
-  bool compute_meas_surf = false;
-  bool compute_meas_vol  = false;
-
-  INPAR::XFEM::CouplingStrategy coupling_strategy = params.get<INPAR::XFEM::CouplingStrategy>("coupling_strategy");
-  if(coupling_strategy == INPAR::XFEM::Two_Sided_Coupling) compute_meas_surf = true;
-
-  double nitsche_stab      = params.get<double>("visc_stab_fac");
-  INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
-  // convective stabilization type for xfluid
-  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
-  // convective stabilization type for xfluidfluid
-  INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
-  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
-
-  bool velgrad_interface_stab = params.get<bool>("velgrad_interface_stab");
-
-  bool presscoupling_interface_stab = params.get<bool>("PRESSCOUPLING_INTERFACE_STAB");
-
-  bool nitsche_evp = params.get<bool>("NITSCHE_EVP");
-
-  if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
-  {
-    compute_meas_surf = true;
-    compute_meas_vol  = true;
-  }
-
-  //----------------------------------------------------------------------------
-  //     pre-evaluate fluid volume measure and intersecting surface measure
-  //----------------------------------------------------------------------------
-  double meas_partial_volume = 0.0;
-  double meas_surf = 0.0;
-
-  // for two-sided mortaring the stabilization parameter depends on interface/volume fraction
-  if(coupling_strategy == INPAR::XFEM::Two_Sided_Coupling)
-  {
-    if(compute_meas_vol)
-    {
-      meas_partial_volume = 0.0;
-      for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
-      {
-        GEO::CUT::VolumeCell* vc = *i;
-        meas_partial_volume += vc->Volume();
-      }
-    }
-  }
-
-  if(compute_meas_surf)
-  {
-    meas_surf = ComputeMeasSurf(bintpoints, bcells);
-  }
-
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
@@ -3084,32 +3539,17 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   //         evaluate element length, stabilization factors and average weights
   //-----------------------------------------------------------------------------------
 
-  // element length
-  double h_k = 0.0;
+  // compute characteristic element length
+  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
+  double h_k = Compute_h_k(visc_stab_hk, vcSet, bcells, bintpoints);
 
   // scaling factors for stabilization terms
   double visceff_max = my::visceff_;
 
-  if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Coupling)
-  {
-    if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
-    {
-      h_k = HK(vol);
-    }
-    else if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
-    {
-      h_k = meas_partial_volume / meas_surf;
-    }
-    else if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_longest_ele_length)
-    {
-      dserror("longest element length for hk not supported yet");
-    }
-    else dserror("unknown type of characteristic element length");
+  //------------------------------
+  // define average weights
 
-    if( h_k <= 0.0 ) dserror("element length is <= 0.0");
-  }
-
-
+  INPAR::XFEM::CouplingStrategy coupling_strategy = params.get<INPAR::XFEM::CouplingStrategy>("coupling_strategy");
   double kappa1;
 
   if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
@@ -3118,25 +3558,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   }
   else if(coupling_strategy == INPAR::XFEM::Two_Sided_Coupling)
   {
-    //if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
-
     if( h_k <= 0.0 ) dserror("element length is <= 0.0");
 
     kappa1 = 0.5;
   }
   else dserror("coupling strategy not known");
 
-
-  //------------------------------
-  // define average weights
-  if(meas_partial_volume < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
-
   if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
 
   double kappa2 = 1.0-kappa1;
-
-
-
 
   // evaluate shape function derivatives
   bool eval_deriv = true;
@@ -3187,6 +3617,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
     std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
 
+    // Todo: the number of coupling matrices between element and intersecting sides
+    // is not a valid criterion to distinguish between fluidfluid-coupling and monolithic XFSI!
     if ( side_matrices.size()==3 )
       fluidfluidcoupling = true;
 
@@ -3208,6 +3640,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     }
     else
     {
+      // Todo: It is planned to use this method also for two-phase flow...
       dserror("InterfaceNitscheTwoSided should not be called for non-fluidfluidcoupling!");
     }
 
@@ -3236,6 +3669,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
     //------------------------------
     // scaling factors for Nitsche's standard stabilization term
+
+    // dimensionless part of Nitsche's parameter
+    double nitsche_stab      = params.get<double>("visc_stab_fac");
+    INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
+
+    // final Nitsche-parameter
     double NIT_stab_fac         = 1.0;
 
     if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_visc_div_by_hk)
@@ -3337,8 +3776,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
           DRT::UTILS::shape_function<distype>( rst, my::funct_ );
         }
 
-
-
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         my::velint_.Multiply(evelaf,my::funct_);
@@ -3359,41 +3796,43 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         double velgrad_interface_fac = 0.0;
         double presscoupling_interface_fac = 0.0;
 
-        double gamma_ghost_penalty= 0.0;
+        double gamma_ghost_penalty = 0.0;
+        bool velgrad_interface_stab = params.get<bool>("velgrad_interface_stab");
         if (velgrad_interface_stab)
           gamma_ghost_penalty = params.get<double>("GHOST_PENALTY_FAC");
 
         double gamma_press_coupling = 0.0;
+        bool presscoupling_interface_stab = params.get<bool>("PRESSCOUPLING_INTERFACE_STAB");
         if (presscoupling_interface_stab)
           gamma_press_coupling = params.get<double>("PRESSCOUPLING_INTERFACE_FAC");
 
-        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-                           params,
-                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
-                           stabfac_avg,                // stabfac 2 for additional stabilization term to set
-                           NIT_stab_fac,               // viscous Nitsche prefactor
-                           conv_stab_scaling,          // type of scaling for convective stabilization term of xfluid
-                           xff_conv_stab_scaling,      // type of scaling for convective stabilization term of xfluidfluid
-                           my::velint_.Dot(normal),    // velocity in normal direction
-                           my::velint_,                // velocity at GP
-                           gamma_ghost_penalty,
-                           velgrad_interface_fac,
-                           gamma_press_coupling,
-                           presscoupling_interface_fac,
-                           nitsche_evp,
-                           sid,
-                           h_k);
-
-
-        if(fluidfluidcoupling)
+        if (fluidfluidcoupling)
         {
-          bool bg_mortaring = false; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
+          bool bg_mortaring = false;
 
-          if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Coupling) bg_mortaring = true;
+          // convective stabilization type for xfluidfluid
+          INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
+
+          bool nitsche_evp = params.get<bool>("NITSCHE_EVP");
+
+          NIT_ComputeStabfacFluidFluid(
+              params,
+              stabfac_visc,
+              stabfac_avg,
+              velgrad_interface_fac,
+              presscoupling_interface_fac,
+              xff_conv_stab_scaling,
+              my::velint_.Dot(normal),
+              my::velint_,
+              h_k,
+              NIT_stab_fac,
+              gamma_ghost_penalty,
+              gamma_press_coupling,
+              nitsche_evp,
+              sid);
 
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
-
           emb->NIT2_buildCouplingMatrices(
               elemat1_epetra,              // standard bg-bg-matrix
               elevec1_epetra,              // standard bg-rhs
@@ -3479,178 +3918,182 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
 }
 
 /*--------------------------------------------------------------------------------
- *    compute stabilization factor for Nitsche's method
+ *    compute stabilization factor for Nitsche's method (xfluid/xfsi)
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
-    bool                             fluidfluidcoupling,
-    Teuchos::ParameterList&          params,            ///< parameter list
-    double &                         stabfac_visc,         ///< Nitsche stabilization factor
-    double &                         stabfac_avg,         ///< stabilization factor 2
-    const double                     NIT_stab_fac,         ///< stabilization factor for Nitsche term
-    INPAR::XFEM::ConvStabScaling     conv_stab_scaling,     ///< convective stabilization method for xfluid
-    INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling,  ///< convective stabilization method for xfluidfluid
-    const double                     veln_normal, // u.n^s or u.n^e (structure or embedded fluid outward pointing normals)
-    LINALG::Matrix<3,1>              velint,
-    const double                     gamma_ghost_penalty,
-    double &                         velgrad_interface_fac,
-    const double                     gamma_press_coupling,
-    double &                         press_coupling_fac,
-    bool                             nitsche_evp,
-    int                              sid,
-    const double                     h_k)
+    Teuchos::ParameterList&          params,                ///< parameter list
+    double &                         stabfac_visc,          ///< Nitsche's stabilization parameter
+    const double                     NIT_stab_fac,          ///< Nitsche's viscous parameter (alpha)
+    INPAR::XFEM::ConvStabScaling     conv_stab_scaling,     ///< type of convective stabilization for xfluid
+    const double                     veln_normal,           ///< interface-normal velocity contribution
+    const double                     h_k                    ///< characteristic element length
+)
 {
   // additional stabilization for convective stabilization
   double conv_stabfac = 0.0;
 
-  if (!fluidfluidcoupling)
+  if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_abs_normal_vel)
   {
-    if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_abs_normal_vel)
-    {
-      //      | u*n |
-      conv_stabfac =  fabs(veln_normal);
-    }
-    else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel)
-    {
-      //    max(1.0,| u*n |)
-      conv_stabfac =  std::max(1.0, fabs(veln_normal));
-    }
-    else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
-    {
-      //      ( -u*n ) if (u*n)<0 (inflow), conv_stabfac >= 0
-      conv_stabfac = std::max(0.0,-veln_normal);
-    }
-    else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_none)
-    {
-      conv_stabfac = 0.0;
-    }
-    else
-	  dserror("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
+    //      | u*n |
+    conv_stabfac =  fabs(veln_normal);
   }
-
-  if(fluidfluidcoupling)
+  else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel)
   {
-    if(xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-       xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
-       xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
-       xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
-    {
-      // (beta .normal_e)({v},||u||)
-      //--conv_stabfac---
-      conv_stabfac = veln_normal;
-    }
-    else if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_none)
-    {
-      conv_stabfac = 0.0;
-    }
-    else
-	  dserror("No valid INPAR::XFEM::XFF_ConvStabScaling for xfluidfluid/xffsi problems");
-    }
+    //    max(1.0,| u*n |)
+    conv_stabfac =  std::max(1.0, fabs(veln_normal));
+  }
+  else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
+  {
+    //      ( -u*n ) if (u*n)<0 (inflow), conv_stabfac >= 0
+    conv_stabfac = std::max(0.0,-veln_normal);
+  }
+  else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_none)
+  {
+    conv_stabfac = 0.0;
+  }
+  else
+  dserror("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
 
   // Nitsche penalty scaling, Combined convective and viscous scaling
-  if (!fluidfluidcoupling)
-  {
-    //=================================================================================
-    // definition in Burman 2007
-    // Interior penalty variational multiscale method for the incompressible Navier-Stokes equation:
-    // Monitoring artificial dissipation
-    /*
-    //      viscous_Nitsche-part, convective inflow part
-    //
-    //                    mu                                               /       _      \
-    //  max( gamma_Nit * ----  , gamma_conv * | u_h * n | )       *       |  u_h - u, v_h  |
-    //                    h_k                                              \              /
-    */
 
-    // final stabilization factors
-    stabfac_visc = std::max(NIT_stab_fac, conv_stabfac*my::densaf_);
-    stabfac_avg = 0.0; //unused for xfluid/xfsi
-    //=================================================================================
+  //=================================================================================
+  // definition in Burman 2007
+  // Interior penalty variational multiscale method for the incompressible Navier-Stokes equation:
+  // Monitoring artificial dissipation
+  /*
+  //      viscous_Nitsche-part, convective inflow part
+  //
+  //                    mu                                               /       _      \
+  //  max( gamma_Nit * ----  , gamma_conv * | u_h * n | )       *       |  u_h - u, v_h  |
+  //                    h_k                                              \              /
+  */
+
+  // final stabilization factors
+  stabfac_visc = std::max(NIT_stab_fac, conv_stabfac*my::densaf_);
+  //=================================================================================
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------
+ *    compute stabilization factor for Nitsche's method
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::NIT_ComputeStabfacFluidFluid(
+    Teuchos::ParameterList&          params,                        ///< parameter list
+    double &                         stabfac_visc,                  ///< Nitsche's stabilization parameter
+    double &                         stabfac_avg,                   ///< stabilization factor 2
+    double &                         velgrad_interface_fac,         ///< stabilization parameter for velocity-gradients penalty term
+    double &                         press_coupling_fac,            ///< stabilization parameter for pressure-coupling penalty term
+    INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling,         ///< type of convective stabilization for fluid-fluid problem
+    const double                     veln_normal,                   ///< interface-normal velocity contribution
+    LINALG::Matrix<my::nsd_,1>       velint,                        ///< interface velocity
+    const double                     h_k,                           ///< characteristic element length
+    const double                     NIT_stab_fac,                  ///< Nitsche's viscous parameter (alpha)
+    const double                     gamma_ghost_penalty,           ///< ghost-penalty parameter
+    const double                     gamma_press_coupling,          ///< factor of stabilization parameter for pressure-coupling penalty term
+    bool                             nitsche_evp,                   ///< indicates solution of local eigenvalue problem applying Nitsche's method
+    int                              sid                            ///< current side id
+)
+{
+  // additional stabilization for convective stabilization
+  double conv_stabfac = 0.0;
+
+  if(xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
+     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
+     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
+  {
+    // (beta .normal_e)({v},||u||)
+    //--conv_stabfac---
+    conv_stabfac = veln_normal;
+  }
+  else if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_none)
+  {
+    conv_stabfac = 0.0;
+  }
+  else
+    dserror("No valid INPAR::XFEM::XFF_ConvStabScaling for xfluidfluid/xffsi problems");
+
+  /*
+  //    /                                           \        /                        i                   \
+  //   |  gamma_conv * ( u * n^e ) *  { v } , [ Du ] | =   - |  gamma_conv*  ( u * n^e ) * { v }, [ u ]   |
+  //    \                                           /        \                                            /
+  //
+  */
+  stabfac_avg = my::densaf_*conv_stabfac;
+
+
+  // nitsche_stab_conv := conv_stab in input-file (usually one)
+  // conv_stabfac := v*n;
+  // NIT_stab_fac := alpha (Nitsche parameter)
+
+  // stabilization parameter for velocity-gradients penalty term
+  velgrad_interface_fac = gamma_ghost_penalty*my::visceff_*h_k;
+
+
+  // stabilization parameter for pressure-coupling penalty term
+  // no scaling with density here. The scaling with the density follows...
+
+
+  // parameter \gamma_p of pressure-stabilizing term
+  /*
+   *   /                                  \
+   *   | \gamma_p * \rho^-1 * [ Dq] [ Dp ] |
+   *   \                                  /
+   */
+  press_coupling_fac = gamma_press_coupling;
+  double kinvisc = my::visceff_/my::densaf_;
+
+  //  nu-weighted definition
+  // \gamma_p = \alpha_p * h_k^2 / ( 1+ \nu/h_k )
+  press_coupling_fac /= (1.0 + (kinvisc/h_k));
+
+  // to have a consistent formulation we need only one density factor for
+  // pressure coupling. That is because we have two times pressure (test
+  // functions and the shape function) in the formuation. If we do not
+  // cross out one density, we would multiply the term two times with
+  // density, which is not correct.
+  press_coupling_fac /= my::densaf_;
+
+  /*
+  //      viscous_Nitsche-part
+  //   /                                   \        /                           i   \
+  //  |  gamma*mu/h_K *  [ v ] , [ Du ]     | =  - |   gamma*mu/h_K * [ v ], [ u ]   |
+  //   \                                   /        \                               /
+  */
+
+  if (nitsche_evp)
+  {
+    // get the nitsche parameter from the eigenvalue problem
+    std::map<int,double > sideidtonitschepar = *params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar");
+    std::map<int, double >::const_iterator iter = sideidtonitschepar.find(sid);
+
+      if (iter != sideidtonitschepar.end())
+        stabfac_visc = iter->second;
+      else
+        dserror("No Nitsche-parameter found for side ID %d", sid);
+  }
+  else
+  {
+    stabfac_visc = NIT_stab_fac;
   }
 
-  if (fluidfluidcoupling)
+  // if additional penalty factor is on..
+  // stabfac_visc = max(my::densaf_*|u*n|_inf,stabfac_visc);
+  if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty or
+      xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
   {
+    stabfac_visc = std::max(my::densaf_*fabs(velint.NormInf()),stabfac_visc);
+  }
 
-    // nitsche_stab_conv := conv_stab in input-file (usually one)
-    // conv_stabfac := v*n;
-    // NIT_stab_fac := alpha (Nitsche parameter)
-
-    // stabilization parameter for velocity-gradients penalty term
-    velgrad_interface_fac = gamma_ghost_penalty*my::visceff_*h_k;
-
-    // stabilization parameter for pressure-gradients penalty term
-//     double gamma_p = 5.0 / 100;
-//     pressgrad_interface_fac = gamma_p*(1/my::visc_)*h_k*h_k*h_k;
-
-    // stabilization parameter for pressure-coupling penalty term
-    // no scaling with density here. The scaling with the density follows...
-
-    bool nu_weighting = true;
-    press_coupling_fac = gamma_press_coupling;
-    double kinvisc = my::visceff_/my::densaf_;
-    if (nu_weighting)
-    {
-      press_coupling_fac /= (1.0 + (kinvisc/h_k));
-    }
-    else
-    {
-      press_coupling_fac *= (1/kinvisc)*h_k;
-    }
-
-    // to have a consistent formulation we need only one density factor for
-    // pressure coupling. That is because we have two times pressure (test
-    // functions and the shape function) in the formuation. If we do not
-    // cross out one density, we would multiply the term two times with
-    // density, which is not correct.
-    press_coupling_fac /= my::densaf_;
-
-    /*
-    //      viscous_Nitsche-part
-    //   /                                   \        /                           i   \
-    //  |  gamma*mu/h_K *  [ v ] , [ Du ]     | =  - |   gamma*mu/h_K * [ v ], [ u ]   |
-    //   \                                   /        \                               /
-    */
-
-    if (nitsche_evp)
-    {
-    	// get the nitsche parameter from the eigenvalue problem
-    	std::map<int,double > sideidtonitschepar = *params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar");
-    	std::map<int, double >::const_iterator iter = sideidtonitschepar.find(sid);
-
-        if (iter != sideidtonitschepar.end())
-        	stabfac_visc = iter->second;
-        else
-      	  dserror("no stabfac_visc found!");
-    }
-    else
-    {
-    	stabfac_visc = NIT_stab_fac;
-    }
-
-    // if additional penalty factor is on..
-    //stabfac_visc = max(my::densaf_*|u*n|_inf,stabfac_visc);
-    if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty or
-    	xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
-    {
-      double NIT_tmp = stabfac_visc;
-      stabfac_visc= std::max(my::densaf_*fabs(velint.NormInf()),NIT_tmp);
-    }
-
-    // if ConvStabScaling_inflow the Nitsche viscous parameter also changes..
-    // (\rho 0.5 |beta.n^e| ||v||,||u||)
-    if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-        xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
-    {
-    	stabfac_visc += fabs(veln_normal)*my::densaf_*0.5;
-    }
-
-    /*
-    //    /                                           \        /                        i                   \
-    //   |  gamma_conv * ( u * n^e ) *  { v } , [ Du ] | =   - |  gamma_conv*  ( u * n^e ) * { v }, [ u ]   |
-    //    \                                           /        \                                            /
-    //
-    */
-    stabfac_avg = my::densaf_*conv_stabfac;
+  // if ConvStabScaling_inflow the Nitsche viscous parameter also changes..
+  // (\rho 0.5 |beta.n^e| ||v||,||u||)
+  if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+      xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
+  {
+    stabfac_visc += fabs(veln_normal)*my::densaf_*0.5;
   }
 
   return;
@@ -3778,15 +4221,15 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     if(coupl_method == "MixedStressHybrid")
     {
       Cuiui_matrices.resize(2);
-      Cuiui_matrices[0].Reshape(my::nen_*6,patchlm.size()); //Gsui (coupling between background elements sigma and current side!)
-      Cuiui_matrices[1].Reshape(patchlm.size(),my::nen_*6); //Guis
+      Cuiui_matrices[0].Shape(my::nen_*numstressdof_,patchlm.size()); //Gsui (coupling between background elements sigma and current side!)
+      Cuiui_matrices[1].Shape(patchlm.size(),my::nen_*numstressdof_); //Guis
     }
     else if(coupl_method == "Nitsche")
     {
       Cuiui_matrices.resize(1);
-      Cuiui_matrices[0].Reshape(patchlm.size(),patchlm.size()); //Cuiui
+      Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
     }
-    else dserror("not supported coupling method");
+    else dserror("not supported coupling method %s", coupl_method.c_str());
 
   }
 
@@ -3835,10 +4278,9 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     else if(coupl_method == "Nitsche")
     {
       Cuiui_matrices.resize(1);
-      Cuiui_matrices[0].Reshape(patchlm.size(),patchlm.size()); //Cuiui
+      Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
     }
-    else dserror("not supported coupling method");
-
+    else dserror("not supported coupling method %s", coupl_method.c_str());
   }
 
   return;
@@ -4014,8 +4456,8 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
     const DRT::UTILS::GaussIntegration & intpoints       ///< integration points
   )
 {
-  LINALG::Matrix<(my::nsd_+1)*my::nen_,1> elevec1(elevec1_epetra,true);
-  LINALG::Matrix<my::nsd_+1,my::nen_>    tmpvel;
+  LINALG::Matrix<my::numdofpernode_*my::nen_,1> elevec1(elevec1_epetra,true);
+  LINALG::Matrix<my::numdofpernode_,my::nen_>   tmpvel;
   my::eid_ = ele->Id();
 
   // get node coordinates and number of elements per node
@@ -4035,7 +4477,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
        for (int idim = 0; idim <my::nsd_; ++idim)
        {
          // Bloecke ueber Knoten
-         const int fui = (my::nsd_+1)*ui;
+         const int fui = my::numdofpernode_*ui;
          /* continuity term */
          /*
               /           \
@@ -4071,10 +4513,63 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
                           my::intpoints_);
 }
 
+/*--------------------------------------------------------------------------------
+ * compute characteristic element length
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double FluidEleCalcXFEM<distype>::Compute_h_k(
+    INPAR::XFEM::ViscStab_hk visc_stab_hk,
+    const GEO::CUT::plain_volumecell_set & vcSet,
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints
+)
+{
+  double h_k = 0.0;
+  double meas_surf, meas_partial_volume = 0.0;
+
+  switch (visc_stab_hk)
+  {
+    // volume-equivalent diameter
+    case INPAR::XFEM::ViscStab_hk_vol_equivalent:
+      // evaluate shape functions and derivatives at element center
+      my::EvalShapeFuncAndDerivsAtEleCenter();
+      // compute h_k as volume-equivalent diameter
+      h_k = HK(my::fac_);
+      break;
+
+    // compute h_k as physical volume/interface fraction
+    case INPAR::XFEM::ViscStab_hk_vol_div_by_surf:
+      for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
+      {
+        GEO::CUT::VolumeCell* vc = *i;
+        meas_partial_volume += vc->Volume();
+      }
+
+      if(meas_partial_volume < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
+
+      meas_surf = ComputeMeasSurf(bintpoints, bcells);
+
+      if (fabs(meas_surf) < 1.e-8)  dserror("Element contribution to interface has zero size.");
+      h_k = meas_partial_volume / meas_surf;
+      break;
+
+    case INPAR::XFEM::ViscStab_hk_longest_ele_length:
+      dserror("longest element length for hk not supported yet");
+      break;
+
+    default:
+      dserror("unknown type of characteristic element length");
+      break;
+  }
+
+  // check plausibility
+  if( h_k <= 0.0 ) dserror("element length is <= 0.0");
+
+  return h_k;
+}
 
   } // end namespace ELEMENTS
 } // end namespace DRT
-
 
 
 

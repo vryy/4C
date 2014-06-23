@@ -119,7 +119,7 @@ XFLUID_BOUNDARY                 xfsi_moving_boundary
 INTERFACE_VEL                   interface_vel_by_disp
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress //Which Boundary method shall be used to enforce interface conditions?
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0

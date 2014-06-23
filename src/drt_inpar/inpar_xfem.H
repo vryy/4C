@@ -26,9 +26,10 @@ namespace INPAR
     /// which method is used to enforce the boundary condition
     enum BoundaryIntegralType
     {
-      BoundaryTypeSigma,
-      BoundaryTypeNitsche,
-      BoundaryTypeNeumann
+      Hybrid_LM_Cauchy_stress,
+      Hybrid_LM_viscous_stress,
+      Nitsche,
+      Neumann
     };
 
     /// which type of boundary movement
@@ -73,10 +74,10 @@ namespace INPAR
     };
 
     /// L2 stress projection on whole fluid element or on partial fluid element
-    enum MSH_L2_Proj
+    enum Hybrid_LM_L2_Proj
     {
-      MSH_L2_Proj_full,
-      MSH_L2_Proj_part
+      Hybrid_LM_L2_Proj_full,
+      Hybrid_LM_L2_Proj_part
     };
 
     /// scaling of viscous interface stabilization

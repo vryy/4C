@@ -43,36 +43,38 @@ namespace DRT
      */
     template<DRT::Element::DiscretizationType distype,
     DRT::Element::DiscretizationType side_distype,
-    const int numdof>
+    const int side_numdof>
 
     class SideImpl : public SideInterface<distype>
     {
     public:
-      SideImpl();
 
-      //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
+      //! number of boundary element nodes
       static const int side_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
-      static const int side_numdof_ = numdof;
-
+      //! number of background element nodes (P. Hughes: The Finite Element Method)
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      //! number of spatial dimensions
       static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      //! number of fluid dof
       static const int bg_numdof_ = nsd_ + 1;
+      //! number of independent stress-dof
+      static const int numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
-      //! Mixed/Stress/Hybrid (MSH) coupling
+      //! Mixed/hybrid stress-based Lagrange multiplier (MHCS or MHVS) coupling between background element and side element
       SideImpl(
           DRT::Element *              side,            ///< side element
           Epetra_SerialDenseMatrix &  C_uiu,           ///< C_uiu coupling matrix
           Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
           Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
-          Epetra_SerialDenseMatrix &  Gsui,            ///< interface sigma-u_interface coupling
-          Epetra_SerialDenseMatrix &  Guis,            ///< interface u_interface-sigma coupling
+          Epetra_SerialDenseMatrix &  Gsui,            ///< interface \f$G_{\sigma u^i}\f$ coupling matrix
+          Epetra_SerialDenseMatrix &  Guis,            ///< interface \f$G_{u^i \sigma}\f$ coupling matrix
           Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
       )
       : C_uiu_(C_uiu.A(),true),
         C_uui_(C_uui.A(),true),
         rhC_ui_(rhC_ui.A(),true),
-        K_sui_(Gsui.A(),true),
-        K_uis_(Guis.A(),true),
+        G_sui_(Gsui.A(),true),
+        G_uis_(Guis.A(),true),
         xyze_(side_xyze.A(),true)
       {
       }
@@ -150,43 +152,55 @@ namespace DRT
           LINALG::Matrix<2,1> & xi_side              ///< local coordinates of projected gaussian point w.r.t side
       );
 
-      //! build coupling matrices for Mixed/Stress/Hybrid (MSH) method
-      virtual void MSH_buildCouplingMatrices(
-          LINALG::Matrix<nsd_,1> &                             normal,     ///< normal vector
-          const double                                         fac,        ///< integration factor
-          LINALG::Matrix<nen_,1> &                             funct,      ///< shape function
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &  rhs         ///< rhs block matrix
+      //! evaluate interface coupling matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
+      virtual void MHCS_buildCouplingMatrices(
+          const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
+          const double &                                                fac,        ///< integration factor
+          const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< block rhs vector \f$ rhs_{\sigma} \f$
       );
 
-      //! build final coupling matrices for Mixed/Stress/Hybrid (MSH) method
-      virtual void MSH_buildFinalCouplingMatrices(
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> &  BinvK_ss,     ///< block inverse K_sigma_sigma matrix
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,4,6> &  K_iK,         ///< block K_iK matrix
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,4> &  K_su,         ///< block K_su matrix
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
+      //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
+      //! \author kruse \date 06/14
+      virtual void MHVS_buildCouplingMatrices(
+          const LINALG::Matrix<nsd_,1> &                                    normal,     ///< normal vector
+          const double &                                                    fac,        ///< integration factor
+          const LINALG::Matrix<nen_,1> &                                    funct,      ///< background element shape functions
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> &     rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
+          const double &                                                    press,      ///< background element pressure
+          LINALG::Matrix<nen_,1> &                                          rhs_pui     ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
       );
 
-      virtual void MSH_Stab_InflowCoercivity(
-          Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
-          Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
-          const bool &                        coupling,         ///< assemble coupling terms (yes/no)
-          const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-          const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
-          const double &                      timefacfac,       ///< theta*dt
-          const double &                      visceff_1,        ///< viscosity in background fluid
-          const double &                      visceff_2,        ///< viscosity in embedded fluid
-          const double &                      kappa1,           ///< mortaring weighting
-          const double &                      kappa2,           ///< mortaring weighting
-          const double &                      stabfac,         ///< Nitsche penalty
-          const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
-          const LINALG::Matrix<nen_,1> &      funct_,            ///< bg shape functions
-          const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
-          const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
-          const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
-          const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
-          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling,///< Inflow term strategies xfluidfluid
-          std::string                         coupl_method      ///< coupling method (NIT or MSH)
+      //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based coupling (MHCS or MHVS)
+      //! \author kruse \date 06/14
+      virtual void HybridLM_buildFinalCouplingMatrices(
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,numstressdof_> &     BinvK_ss,   ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,bg_numdof_,numstressdof_> &        BKusInvKss, ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,bg_numdof_> &        BK_su,      ///< block matrix \f$ K_{\sigma u} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>, numstressdof_,1>      &              rhs_s       ///< block rhs vector \f$ rhs_{\sigma}\f$
+      );
+
+      //! build stabilizing inflow terms
+      virtual void HybridLM_Stab_InflowCoercivity(
+          Epetra_SerialDenseMatrix &          C_uu_,                ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &          rhs_Cu_,              ///< standard bg-rhs
+          const bool &                        coupling,             ///< indicates the need to assemble coupling terms for the side (yes/no)
+          const bool &                        bg_mortaring,         ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+          const LINALG::Matrix<nsd_,1> &      normal,               ///< normal vector
+          const double &                      timefacfac,           ///< theta*dt
+          const double &                      visceff_1,            ///< viscosity in background fluid
+          const double &                      visceff_2,            ///< viscosity in embedded fluid
+          const double &                      kappa1,               ///< mortaring weighting
+          const double &                      kappa2,               ///< mortaring weighting
+          const double &                      stabfac,              ///< Nitsche penalty
+          const double &                      stabfac_avg,          ///< Nitsche convective non-dimensionless stabilization factor
+          const LINALG::Matrix<nen_,1> &      funct_,               ///< bg shape functions
+          const LINALG::Matrix<nsd_,nen_> &   derxy_,               ///< bg deriv
+          const LINALG::Matrix<nsd_,nsd_> &   vderxy_,              ///< bg deriv^n
+          const LINALG::Matrix<nsd_,1> &      velint,               ///< bg u^n
+          const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,    ///< Dirichlet velocity vector or prescribed jump vector
+          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,    ///< Inflow term strategies xfluid
+          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling ///< Inflow term strategies xfluidfluid
         );
 
       //! build coupling matrices and assemble terms for Nitsche's (NIT) method
@@ -202,7 +216,7 @@ namespace DRT
           const double &                      kappa1,           ///< mortaring weighting
           const double &                      kappa2,           ///< mortaring weighting
           const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
-          const double &                      stabfac_avg,     ///< Nitsche convective non-dimensionless stabilization factor
+          const double &                      stabfac_avg,      ///< Nitsche convective non-dimensionless stabilization factor
           const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
           const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
           const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
@@ -211,7 +225,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
           INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
           INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling///< Inflow term strategies xfluidfluid
-        );
+      );
 
       //! evaluate pressure-consistency term for Nitsche's method
       virtual void NIT_p_Consistency(
@@ -303,22 +317,23 @@ namespace DRT
 
     private:
 
-      LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,6,3> BK_sui_;  ///< block K_sui matrix
-      LINALG::BlockMatrix<LINALG::Matrix<nen_,   1>,6,1>      rhsi_;    ///< block rhs ui matrix
-      LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,6> BK_uis_;  ///< block K_sui_ matrix
+      LINALG::Matrix<side_numdof*side_nen_,bg_numdof_*nen_>                   C_uiu_;       ///< coupling matrix row: sidenode1:u1,u2,u3(,p), sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
+      LINALG::Matrix<bg_numdof_*nen_,side_numdof*side_nen_>                   C_uui_;       ///< coupling matrix includes (ui,pi)
+      LINALG::Matrix<side_numdof*side_nen_,1>                                 rhC_ui_;      ///< coupling matrix includes (ui,pi)
+      LINALG::Matrix<side_numdof*side_nen_,side_numdof*side_nen_>             C_uiui_;      ///< includes (ui,pi) just for Nitsche coupling
+      LINALG::Matrix<side_nen_,1>                                             side_funct_;  ///< side's shape functions
+      LINALG::Matrix<nsd_-1,side_nen_>                                        side_deriv_;  ///< side's shape derivatives
+      LINALG::Matrix<numstressdof_*nen_,side_numdof*side_nen_>                G_sui_;       ///< G_sui coupling matrix
+      LINALG::Matrix<side_numdof*side_nen_,numstressdof_*nen_>                G_uis_;       ///< G_uis coupling matrix
+      LINALG::Matrix<nsd_,side_nen_>                                          eivel_;       ///< side interface velocity
+      LINALG::Matrix<side_nen_,1>                                             eipres_;      ///< side interface pressure
+      LINALG::Matrix<nsd_,side_nen_>                                          eidisp_;      ///< side interface displacements
+      LINALG::Matrix<nsd_,side_nen_>                                          xyze_;        ///< side's node coordinates
+      LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,numstressdof_,nsd_>  BG_sui_;      ///< block G_uis matrix
+      LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,nsd_,numstressdof_>  BG_uis_;      ///< block G_sui matrix
+      LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,1,nsd_>              BG_pui_;      ///< block G_pui matrix
+      LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,nsd_,1>              BG_uip_;      ///< block G_uip matrix
 
-      LINALG::Matrix<side_numdof_*side_nen_,4*nen_>                  C_uiu_;       ///< coupling matrix row: sidenode1:u1,u2,u3(,p), sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
-      LINALG::Matrix<4*nen_,side_numdof_*side_nen_>                  C_uui_;       ///< coupling matrix includes ui(,pi)
-      LINALG::Matrix<side_numdof_*side_nen_,1>                       rhC_ui_;      ///< coupling matrix includes (ui,pi)
-      LINALG::Matrix<side_numdof_*side_nen_,side_numdof_*side_nen_>  C_uiui_;      ///< includes (ui,pi) just for Nitsche coupling
-      LINALG::Matrix<side_nen_,1>                                    side_funct_;  ///< side's shape functions
-      LINALG::Matrix<nsd_-1,side_nen_>                               side_deriv_;  ///< side's shape derivatives
-      LINALG::Matrix<6*nen_,side_numdof_*side_nen_>                  K_sui_;       ///< G_sui coupling matrix
-      LINALG::Matrix<side_numdof_*side_nen_,6*nen_>                  K_uis_;       ///< G_uis coupling matrix
-      LINALG::Matrix<3,side_nen_>                                    eivel_;       ///< side interface velocity
-      LINALG::Matrix<side_nen_,1>                                    eipres_;      ///< side interface pressure
-      LINALG::Matrix<3,side_nen_>                                    eidisp_;      ///< side interface displacements
-      LINALG::Matrix<3,side_nen_>                                    xyze_;        ///< side's node coordinates
     };
 
 
@@ -343,10 +358,14 @@ namespace DRT
     {
     public:
 
-      //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
+      //! number of element nodes (P. Hughes: The Finite Element Method)
       static const int emb_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<emb_distype>::numNodePerElement;
+      //! number of background element nodes
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      //! number of spatial dimensions
       static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      //! number of fluid dof per node
+      static const int bg_numdof_ = nsd_ + 1;
 
 
       //! Nitsche (NIT) coupling between background element and embedded element
@@ -429,8 +448,8 @@ namespace DRT
           const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
           const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
           const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
-          const LINALG::Matrix<emb_nen_,1>&       emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
-          const LINALG::Matrix<emb_nen_,nen_>&    emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+          const LINALG::Matrix<emb_nen_,1>&        emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
+          const LINALG::Matrix<emb_nen_,nen_>&     emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
           const double &                           stabfac_avg,                          ///< stabilization factor
           const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
           const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
@@ -438,20 +457,20 @@ namespace DRT
 
     private:
 
-      LINALG::Matrix<4*emb_nen_ ,4*nen_>     C_uiu_;       ///< coupling matrix row: sidenode1:u1,u2,u3,p, sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
-      LINALG::Matrix<4*nen_,4*emb_nen_>      C_uui_;       ///< coupling matrix includes (ui,pi)
-      LINALG::Matrix<4*emb_nen_,1>           rhC_ui_;      /// includes (ui,pi)
-      LINALG::Matrix<4*emb_nen_,4*emb_nen_>  C_uiui_;      ///< coupling matrix includes (ui,pi)
-      LINALG::Matrix<emb_nen_,1>             emb_funct_;   ///< element's shape functions
-      LINALG::Matrix<nsd_,emb_nen_>          emb_deriv_;   ///< element's shape derivatives
-      LINALG::Matrix<nsd_,nsd_>              emb_vderxy_;  ///< velocity derivatives
-      LINALG::Matrix<nsd_,emb_nen_>          emb_derxy_;   ///< element's global derivatives
-      LINALG::Matrix<3,emb_nen_>             emb_vel_;     ///< element node velocity
-      LINALG::Matrix<emb_nen_,1>             emb_pres_;    ///< element node pressure
-      LINALG::Matrix<3,emb_nen_>             emb_disp_;    ///< element node displacements
-      LINALG::Matrix<3,emb_nen_>             emb_xyze_;    ///< element node coordinates
+      LINALG::Matrix<bg_numdof_*emb_nen_ ,bg_numdof_*nen_>      C_uiu_;       ///< coupling matrix row: sidenode1:u1,u2,u3,p, sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
+      LINALG::Matrix<bg_numdof_*nen_,bg_numdof_*emb_nen_>       C_uui_;       ///< coupling matrix includes (ui,pi)
+      LINALG::Matrix<bg_numdof_*emb_nen_,1>                     rhC_ui_;      /// includes (ui,pi)
+      LINALG::Matrix<bg_numdof_*emb_nen_,bg_numdof_*emb_nen_>   C_uiui_;      ///< coupling matrix includes (ui,pi)
+      LINALG::Matrix<emb_nen_,1>                                emb_funct_;   ///< element's shape functions
+      LINALG::Matrix<nsd_,emb_nen_>                             emb_deriv_;   ///< element's shape derivatives
+      LINALG::Matrix<nsd_,nsd_>                                 emb_vderxy_;  ///< velocity derivatives
+      LINALG::Matrix<nsd_,emb_nen_>                             emb_derxy_;   ///< element's global derivatives
+      LINALG::Matrix<nsd_,emb_nen_>                             emb_vel_;     ///< element node velocity
+      LINALG::Matrix<emb_nen_,1>                                emb_pres_;    ///< element node pressure
+      LINALG::Matrix<nsd_,emb_nen_>                             emb_disp_;    ///< element node displacements
+      LINALG::Matrix<nsd_,emb_nen_>                             emb_xyze_;    ///< element node coordinates
 
-      LINALG::Matrix<nsd_,1>                 emb_prederxy_; ///< pressure derivatives at GP
+      LINALG::Matrix<nsd_,1>                                    emb_prederxy_; ///< pressure derivatives at GP
 
     };
 

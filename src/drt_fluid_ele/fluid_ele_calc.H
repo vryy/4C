@@ -370,22 +370,23 @@ public:
                        const double&                                       Cs_delta_sq,
                        const double&                                       l_tau);
 
-  virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid *                                         ele,
-                                     DRT::Discretization &                                             dis,
-                                     const std::vector<int> &                                          lm,
-                                     const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
-                                     DRT::Discretization &                                             cutdis,
-                                     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
-                                     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
-                                     std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
-                                     Teuchos::ParameterList&                                           params,
-                                     Epetra_SerialDenseMatrix&                                         elemat1_epetra,
-                                     Epetra_SerialDenseVector&                                         elevec1_epetra,
-                                     Epetra_SerialDenseMatrix&                                         Cuiui,
-                                     std::string&                                                      VCellGaussPts,
-                                     const GEO::CUT::plain_volumecell_set &                            cells,
-                                     bool                                                              fluidfluidcoupling
-    ) {dserror("Implemented in derived xfem class!"); return;}
+  virtual void ElementXfemInterfaceHybridLM(
+      DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element
+      DRT::Discretization &                                             dis,                      ///< background discretization
+      const std::vector<int> &                                          lm,                       ///< element local map
+      const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,                ///< element gauss points
+      DRT::Discretization &                                             cutdis,                   ///< boundary discretization
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> >&       bcells,                   ///< boundary cells
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,               ///< boundary integration points
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,            ///< side coupling matrices
+      Teuchos::ParameterList&                                           params,                   ///< parameter list
+      Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
+      Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
+      Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
+      std::string&                                                      VCellGaussPoints,         ///< type of gauss point generation for volume cells
+      const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
+      bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
+    ){dserror("Implemented in derived xfem class!"); return;}
 
   virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                            ele,
                                            DRT::Discretization &                                             dis,
@@ -399,7 +400,7 @@ public:
                                            Epetra_SerialDenseVector&                                         elevec1_epetra,
                                            Epetra_SerialDenseMatrix&                                         Cuiui,
                                            const GEO::CUT::plain_volumecell_set&                             vcSet,
-                                           bool                                                              fluidfluidcoupling
+                                           bool                                                              fluidfluidcoupling = false
     ) {dserror("Implemented in derived xfem class!"); return;}
 
   virtual void ElementXfemInterfaceNIT2(

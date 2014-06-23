@@ -512,7 +512,6 @@ void fluid_fluid_fsi_drt()
   int numglobalnodes = bgfluiddis->NumGlobalNodes();
   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  IO::cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << IO::endl;
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 

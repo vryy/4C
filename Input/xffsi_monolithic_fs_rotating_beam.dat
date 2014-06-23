@@ -26,7 +26,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD zero_field //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -39,18 +39,18 @@ START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1//0.66
-TIMEINTEGR                      One_Step_Theta //Stationary
-TIMESTEP                        0.01//0.003125 //0.00625
+TIMEINTEGR One_Step_Theta //Stationary
+TIMESTEP 0.01//0.003125 //0.00625
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no //yes
-SUPG                            no //yes
+PSPG no //yes
+SUPG no //yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -105,10 +105,10 @@ GMSH_DISCRET_OUT                no//yes
 GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling
 VISC_STAB_FAC                   35// in [10;100]             
-XFF_CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 VELGRAD_INTERFACE_STAB          yes
 PRESSCOUPLING_INTERFACE_STAB    yes
@@ -159,9 +159,9 @@ DSURF                           4
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE 0 none none none none none FUNCT 0 0 0 0 0 0
 //                              xFluid__outflow
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              fluid fsi
+// fluid fsi
 E 3 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              structure fsi
+// structure fsi
 E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            3
@@ -177,9 +177,9 @@ DVOL                            1
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
-//                              fluid fsi
+// fluid fsi
 E 3 - 1
-//                              structure fsi
+// structure fsi
 E 5 - 1
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
@@ -16817,4 +16817,4 @@ NODE 6336 COORD 1.36494889432 1.49156612093 -0.03
 FLUID DIS fluid NODE 8 QUANTITY velx VALUE -3.08459399160917136e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 8 QUANTITY pressure VALUE -4.08731906323510252e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

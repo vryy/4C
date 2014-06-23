@@ -31,13 +31,13 @@ TIMEINTEGR                      One_Step_Theta
 LINEAR_SOLVER                   1
 PREDICTOR                       steady_state
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based                    
+STABTYPE                        edge_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no
 VSTAB                           no_vstab
-GRAD_DIV                        no 
+GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -46,7 +46,7 @@ EOS_CONV_STREAM                 std_eos                       // none, std_eos, 
 EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
 EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_surf_with_max_diameter // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_surf_with_max_diameter  // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
@@ -75,9 +75,9 @@ SHAPEDERIVATIVES                yes
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
-XFF_CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
@@ -97,7 +97,7 @@ DPOINT                          3
 // bgFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 // fluid fsi
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // str fsi
 E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -109,7 +109,7 @@ DVOL                            2
 // bgfluid volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // embedded volume
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // embedded volume
@@ -118,11 +118,11 @@ E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 DSURF                           2
 // fluid fsi
 E 1 - 1
-// str fsi 
+// str fsi
 E 5 - 1
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
-// xfem
+//                              xfem
 E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           1

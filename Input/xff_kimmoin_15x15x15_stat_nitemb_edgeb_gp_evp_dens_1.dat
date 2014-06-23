@@ -57,70 +57,70 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 CALCERROR                       kimmoin_stat_navier_stokes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based                      // residual_based //
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+STABTYPE                        edge_based                    // residual_based //
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG no// yes //
-SUPG                            no                              // yes //
+PSPG                            no// yes                      //
+SUPG                            no                            // yes //
 VSTAB                           no_vstab
 GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos                // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_surf_with_max_diameter   // EOS_he_max_dist_to_opp_surf
+EOS_H_DEFINITION                EOS_he_surf_with_max_diameter  // EOS_he_max_dist_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    yes
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation 
+BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation 
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY BoundaryTypeNitsche /// BoundaryTypeSigma // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               Nitsche /// BoundaryTypeSigma  // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling
-VISC_STAB_FAC                   35                              // in [10;100]
-VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
-VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
-XFF_CONV_STAB_SCALING    none 
+VISC_STAB_FAC                   35                            // in [10;100]
+VISC_STAB_SCALING               visc_div_by_hk                // inv_hk // const
+VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
+XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB yes //
-GHOST_PENALTY_FAC               0.003                           // in [0.1;0.5]
-PRESSCOUPLING_INTERFACE_STAB       no
+GHOST_PENALTY_FAC               0.003                         // in [0.1;0.5]
+PRESSCOUPLING_INTERFACE_STAB    no
 PRESSCOUPLING_INTERFACE_FAC     0.1
 VELGRAD_INTERFACE_STAB          no//
 NITSCHE_EVP                     yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER Aztec_MSR //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                              // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC ILU //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1                               // how often to recompute some preconditioners
-IFPACKGFILL                     3                               // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08                         // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           1000                            // size of krylov space for gmres
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE 1 //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 3 3 0 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2                             // damping fine grid
-ML_DAMPMED                      0.2                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Aztec_MSR //Aztec_MSR         // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU //MLFLUID2                // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                             // how often to recompute some preconditioners
+IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-08                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           1000                          // size of krylov space for gmres
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 0                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                           // damping fine grid
+ML_DAMPMED                      0.2                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
@@ -135,7 +135,7 @@ CURVE3 on EXPR FUNC 2.0*pi/3.0*cos(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // veloc
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2 KIMMOIN-UP MAT 1 ISSTAT 1
+FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 1    
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
@@ -154,17 +154,17 @@ E 2 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Live Mid 1 1 1 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              pressure_point
-E 1 - NUMDOF 4 ONOFF 0 0 1 1 VAL 0.0 0.0 0.0 1.0 CURVE none none none none  FUNCT 0 0 0 2 
+E 1 - NUMDOF 4 ONOFF 0 0 1 1 VAL 0.0 0.0 0.0 1.0 CURVE none none none none FUNCT 0 0 0 2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              Fluid_1_wall
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0  CURVE none none none none  FUNCT 2 2 2 0 
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 2 2 2 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 //                              fluid_2_volume
-E 2 - NUMDOF 4 ONOFF 0 0 1 0  VAL 0.0 0.0 0.0 0.0 CURVE none none none none  FUNCT 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              fluid_1_volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0  VAL 0.0 0.0 0.0 0.0  CURVE none none none none  FUNCT 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
 //                              xfem

@@ -4,7 +4,7 @@
 // necessary defines: D_FLUID3 BINIO
 //
 ==================================================================
-                  General Data File BACI
+General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 Pseudo 2D monolithic fluid-fluid FSI case (structuresplit).
@@ -20,7 +20,7 @@ RESTART                         0//215//
 --------------------------------------------------------------------------IO
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8
-TIMESTEP                        0.003 //0.00625
+TIMESTEP 0.003 //0.00625
 NUMSTEP                         2//400
 RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
@@ -38,7 +38,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD zero_field //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -52,18 +52,18 @@ START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1//0.66
-TIMEINTEGR                      One_Step_Theta //Stationary
-TIMESTEP                        0.003//0.003125 //0.00625
+TIMEINTEGR One_Step_Theta //Stationary
+TIMESTEP 0.003//0.003125 //0.00625
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based //
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+STABTYPE residual_based //
+DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes //no /                   
-SUPG                            yes //no//yes
+SUPG yes //no//yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
@@ -135,17 +135,17 @@ AZPOLY                          5                             // polynomial orde
 AZSCAL                          infnorm                       // none sym infnorm scaling of the system
 AZCONV                          AZ_noscaled                   // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  no //yes
-GMSH_SOL_OUT                    no// yes
-GMSH_DISCRET_OUT                no// yes//yes
+GMSH_DEBUG_OUT no //yes
+GMSH_SOL_OUT no// yes
+GMSH_DISCRET_OUT no// yes//yes
 GMSH_CUT_OUT                    no//yes
 GMSH_EOS_OUT                    no//yes
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
-COUPLING_STRATEGY               embedded_sided_coupling //xfluid_sided_mortaring
+EMBEDDED_BOUNDARY               Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_STRATEGY embedded_sided_coupling //xfluid_sided_mortaring
 VISC_STAB_FAC                   35// in [10;100]             
-XFF_CONV_STAB_SCALING               none
+XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 VELGRAD_INTERFACE_STAB          yes
 PRESSCOUPLING_INTERFACE_STAB    yes
@@ -189,41 +189,41 @@ NDSURF                          6
 NDVOL                           5
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-// xFluid__inflow
+//                              xFluid__inflow
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.3 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 2 0 0 0 0 0
-// no_bc
+//                              no_bc
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
-// Fluid__outflow
+//                              Fluid__outflow
 E 2 - none 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5
 // fluid fsi
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// structure_bottom
+//                              structure_bottom
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// xFluid__upper_and_lower_surface
+//                              xFluid__upper_and_lower_surface
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// bottom_dirichlet_fluid
+//                              bottom_dirichlet_fluid
 E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // structure fsi
 E 6 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            3
-// embFluid_volume
+//                              embFluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// bgFluid_volume
+//                              bgFluid_volume
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// structure_volume
+//                              structure_volume
 E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
-// bottom_dirichlet_fluid1
+//                              bottom_dirichlet_fluid1
 E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
-// embFluid_volume
+//                              embFluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
@@ -233,15 +233,15 @@ E 1 - 1
 E 6 - 1
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
-// xfem
+//                              xfem
 E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           1
-// fluid-fluid
+//                              fluid-fluid
 E 2 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
-// embFluid_volume
+//                              embFluid_volume
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
@@ -32210,4 +32210,4 @@ FLUID DIS xfluid NODE 10969 QUANTITY velx VALUE 2.10723483962820587e-03 TOLERANC
 FLUID DIS xfluid NODE 10969 QUANTITY pressure VALUE 3.51735233215795695e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 12443 QUANTITY dispx VALUE 4.72001503875062899e-06 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

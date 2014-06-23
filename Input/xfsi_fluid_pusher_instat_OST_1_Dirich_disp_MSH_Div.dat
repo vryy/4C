@@ -46,7 +46,7 @@ SECONDORDER                     Yes
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
-COUPVARIABLE                    Force //Displacement
+COUPVARIABLE Force //Displacement
 ITEMAX                          100
 PREDICTOR                       d(n)
 RELAX                           1.0
@@ -108,7 +108,7 @@ VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_disp
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma
+EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

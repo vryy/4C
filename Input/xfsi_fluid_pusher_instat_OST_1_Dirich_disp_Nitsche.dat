@@ -61,11 +61,11 @@ NUMSTEP                         130
 UPRES                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
-SECONDORDER                     Yes //No
+SECONDORDER Yes //No
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
-COUPVARIABLE                    Force //Displacement
+COUPVARIABLE Force //Displacement
 ITEMAX                          100
 PREDICTOR                       d(n)
 RELAX                           1.0
@@ -122,7 +122,7 @@ VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_disp
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche
+EMBEDDED_BOUNDARY               Nitsche
 VISC_STAB_FAC                   10.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes

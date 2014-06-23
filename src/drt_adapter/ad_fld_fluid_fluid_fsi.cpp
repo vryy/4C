@@ -70,7 +70,6 @@ void ADAPTER::FluidFluidFSI::Init()
   // map extractor for embedded fluid discretization
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   interface_->Setup(*embfluiddis_);
-  xfluidfluid_->SetSurfaceSplitter(&(*interface_));
   
   // map extractor for transfer of ALE-displacements to embedded discretization
   meshmap_ = Teuchos::rcp(new LINALG::MapExtractor());
