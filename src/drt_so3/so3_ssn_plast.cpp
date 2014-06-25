@@ -24,6 +24,10 @@
 #include "so_surface.H"
 #include "so_line.H"
 
+// include this thermo-implementation to make sure, that the same Gauss-rule
+// is used in the structural and the thermal part in a TSI problem
+#include "../drt_thermo/thermo_ele_impl_utils.H"
+
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |
@@ -411,14 +415,14 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     {
     case 8:
     {
-      DRT::UTILS::GaussIntegration ip(distype,3);
-      numgpt_=ip.NumPoints();
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::intrule_hex_8point);
+      numgpt_=intpoints.IP().nquad;
       xsi_.resize(numgpt_);
       wgt_.resize(numgpt_);
       for (int gp=0; gp<numgpt_; ++gp)
       {
-       wgt_[gp]=ip.Weight(gp);
-        const double* gpcoord = ip.Point(gp);
+        wgt_[gp]=(intpoints.IP().qwgt)[gp];
+        const double* gpcoord = (intpoints.IP().qxg)[gp];
         for (int idim=0; idim<nsd_; idim++)
           xsi_[gp](idim) = gpcoord[idim];
       }
@@ -446,14 +450,14 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
     }
     case 27:
     {
-      DRT::UTILS::GaussIntegration ip(distype,4);
-      numgpt_=ip.NumPoints();
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::UTILS::intrule_hex_27point);
+      numgpt_=intpoints.IP().nquad;
       xsi_.resize(numgpt_);
       wgt_.resize(numgpt_);
       for (int gp=0; gp<numgpt_; ++gp)
       {
-       wgt_[gp]=ip.Weight(gp);
-        const double* gpcoord = ip.Point(gp);
+        wgt_[gp]=(intpoints.IP().qwgt)[gp];
+        const double* gpcoord = (intpoints.IP().qxg)[gp];
         for (int idim=0; idim<nsd_; idim++)
           xsi_[gp](idim) = gpcoord[idim];
       }
@@ -466,14 +470,14 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   }
   else // default integration
   {
-    DRT::UTILS::GaussIntegration ip(distype,3);
-    numgpt_=ip.NumPoints();
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    numgpt_=intpoints.IP().nquad;
     xsi_.resize(numgpt_);
     wgt_.resize(numgpt_);
     for (int gp=0; gp<numgpt_; ++gp)
     {
-     wgt_[gp]=ip.Weight(gp);
-      const double* gpcoord = ip.Point(gp);
+      wgt_[gp]=(intpoints.IP().qwgt)[gp];
+      const double* gpcoord = (intpoints.IP().qxg)[gp];
       for (int idim=0; idim<nsd_; idim++)
         xsi_[gp](idim) = gpcoord[idim];
     }
@@ -665,21 +669,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
   if (distype!=DRT::Element::hex8)
     dserror("soh8_expol called from non-hex8 element");
 
-  // reorder GP
-  // as the GPs are ordered differently in the hex8 element and the GP repository
-  LINALG::Matrix<numgpt_post,numstr_> stresses_ordered(false);
-  for (int i=0; i<numstr_; ++i)
-  {
-    stresses_ordered(6,i) = stresses(0,i);
-    stresses_ordered(7,i) = stresses(1,i);
-    stresses_ordered(5,i) = stresses(2,i);
-    stresses_ordered(4,i) = stresses(3,i);
-    stresses_ordered(2,i) = stresses(4,i);
-    stresses_ordered(3,i) = stresses(5,i);
-    stresses_ordered(1,i) = stresses(6,i);
-    stresses_ordered(0,i) = stresses(7,i);
-  }
-
   // static variables, that are the same for every element
   static LINALG::Matrix<nen_,numgpt_post> expol;
   static bool isfilled;
@@ -737,7 +726,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
   }
 
   LINALG::Matrix<nen_,numstr_> nodalstresses;
-  nodalstresses.Multiply(expol, stresses_ordered);
+  nodalstresses.Multiply(expol, stresses);
 
   // "assembly" of extrapolated nodal stresses
   for (int i=0;i<nen_;++i)
