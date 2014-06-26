@@ -99,6 +99,8 @@ VSTAB                           no_vstab
 GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+--------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf// EOS_he_max_dist_to_opp_surf //EOS_he_surf_with_max_diameter // EOS_he_surf_with_max_diameter
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SCATRATYPE                      LevelSet
