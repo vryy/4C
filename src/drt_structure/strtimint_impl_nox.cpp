@@ -333,11 +333,9 @@ bool STR::TimIntImpl::computeF
   // HINT: a negative residual is returned
   PrepareSystemForNewtonSolve();
 
-  // associate the RHS
-  // scale back to positive residual as expected by NOX
+  // associate the RHS and scale back to positive residual as expected by NOX
   RHS.Update(-1.0, *fres_, 0.0);
 
-  // deliver
   return true;
 }
 
@@ -345,8 +343,8 @@ bool STR::TimIntImpl::computeF
 /* Compute effective dynamic stiffness matrix */
 bool STR::TimIntImpl::computeJacobian
 (
-  const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
-  Epetra_Operator& Jac  //!< a reference to the Jacobian operator
+  const Epetra_Vector& x,
+  Epetra_Operator& Jac
 )
 {
   // deliver
@@ -461,15 +459,15 @@ int STR::TimIntImpl::NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::
         noxutils_->out() << "Nonlinear solver failed to converge!" << std::endl;
       return 1;
     }
-    else if (divcontype_==INPAR::STR::divcont_continue)
+    else if (divcontype_ == INPAR::STR::divcont_continue)
     {
-      if(myrank_ == 0)
-      IO::cout <<"Nonlinear solver failed to converge! continuing " << IO::endl;
+      if (myrank_ == 0)
+        IO::cout << "Nonlinear solver failed to converge! continuing " << IO::endl;
       return 0;
     }
     else
     {
-      dserror( "Nonlinear solver failed to converge!");
+      dserror("Nonlinear solver failed to converge!");
       return 1; //make compiler happy
     }
   }

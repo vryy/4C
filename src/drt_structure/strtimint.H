@@ -1140,29 +1140,40 @@ namespace STR
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dis_;
+
     //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dism_;
+
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > vel_;
+
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acc_;
-    Teuchos::RCP<Epetra_Vector> disn_;   //!< global displacements
-                                         //!< \f${D}_{n+1}\f$
-                                         //!< at \f$t_{n+1}\f$
+
+    //!< global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> disn_;
+
+    //!< global material displacements
     Teuchos::RCP<Epetra_Vector> dismatn_;//!< global material displacements
-    Teuchos::RCP<Epetra_Vector> veln_;   //!< global velocities
-                                         //!< \f${V}_{n+1}\f$
-                                         //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> accn_;   //!< global accelerations
-                                         //!< \f${A}_{n+1}\f$
-                                         //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fint_;   //!< global internal force
-    //! additional external forces
-    Teuchos::RCP<Epetra_Vector> fifc_;   //!< interface force in e.g. FSI
-    Teuchos::RCP<Epetra_Vector> fresn_str_;   //!< pure structural global internal force
-                                             //!< i.e. no condensation of EAS,pasticity,...
-    Teuchos::RCP<Epetra_Vector> fintn_str_; //!< pure structural global internal force at \f$t_n\f$
-                                            //!< i.e. no condensation of EAS,pasticity,...
+
+    //!< global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> veln_;
+
+    //!< global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> accn_;
+
+    //!< global internal force
+    Teuchos::RCP<Epetra_Vector> fint_;
+
+    //! additional external forces (e.g. interface force in FSI)
+    Teuchos::RCP<Epetra_Vector> fifc_;
+
+    //!< pure structural global internal force, i.e. no condensation of EAS, plasticity,...
+    Teuchos::RCP<Epetra_Vector> fresn_str_;
+
+    //!< pure structural global internal force at \f$t_n\f$, i.e. no condensation of EAS, plasticity,...
+    Teuchos::RCP<Epetra_Vector> fintn_str_;
+
     //@}
 
 
@@ -1170,8 +1181,10 @@ namespace STR
     //@{
     //! holds eventually effective stiffness
     Teuchos::RCP<LINALG::SparseOperator> stiff_;
+
     //! mass matrix (constant)
     Teuchos::RCP<LINALG::SparseOperator> mass_;
+
     //! damping matrix
     Teuchos::RCP<LINALG::SparseOperator> damp_;
     //@}

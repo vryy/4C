@@ -13,7 +13,7 @@ Maintainer: Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -35,7 +35,6 @@ NOX::STR::Group::Group
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
@@ -51,7 +50,6 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
   }
   return ret;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -69,7 +67,6 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
   return ret;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::STR::Group::computeNewton
@@ -81,6 +78,5 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeNewton
     = NOX::Epetra::Group::computeNewton(p);
   return status;
 }
-
 
 /*----------------------------------------------------------------------*/

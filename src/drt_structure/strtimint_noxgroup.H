@@ -22,7 +22,7 @@ Maintainer: Alexander Popp
 #include "strtimint_impl.H"
 
 /*----------------------------------------------------------------------*/
-/* foward declarations */
+/* forward declarations */
 namespace STR
 {
   class TimIntImpl;
@@ -54,11 +54,9 @@ namespace NOX
       (
         ::STR::TimIntImpl& sti,  //!< time integrator
         Teuchos::ParameterList& printParams,  //!< printing parameters
-        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified
-                                                                  //!< time integrator
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified time integrator
         const NOX::Epetra::Vector& x,  //!< current solution vector
-        const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system,
-                                                               //!< i.e. matrix and RHS etc.
+        const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system, matrix and RHS etc.
       );
 
       //! Compute and store \f$F(x)\f$
@@ -67,7 +65,7 @@ namespace NOX
       //! Compute and store Jacobian \f$\frac{\partial F(x)}{\partial x}\f$
       virtual NOX::Abstract::Group::ReturnType computeJacobian();
 
-      //! Compute the Newton direction, using parameters for the linear solvexs
+      //! Compute the Newton direction, using parameters for the linear solvers
       NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
 
     private:
