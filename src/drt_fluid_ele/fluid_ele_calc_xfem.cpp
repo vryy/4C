@@ -2126,10 +2126,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
   // complete the background element matrix with the calculated entries:
 
-  // number of column blocks
-  const unsigned numbcol = (is_MHVS ? my::nsd_ : my::numdofpernode_); // we have (u,p)-block for MHCS (-G_us K_ss^-1 K_sp)
   // number of row blocks
   const unsigned numbrow = my::nsd_; // no (p,u)-block for MHVS & MHCS
+  // number of column blocks
+  const unsigned numdofpernode = my::numdofpernode_; // avoid possible linker error on some compilers
+  const unsigned numbcol = (is_MHVS ? numbrow : numdofpernode); // we have (u,p)-block for MHCS (-G_us K_ss^-1 K_sp)
 
   // loop over row blocks (only velocities)
   for (unsigned ibr=0; ibr<numbrow; ++ibr)
