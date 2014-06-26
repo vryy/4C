@@ -113,8 +113,8 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
  * cut routine for parallel framework in XFSI and XFLUIDFLUID                        schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::CutParallel( bool include_inner,
-                                  std::string VCellgausstype,
-                                  std::string BCellgausstype,
+                                  INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+                                  INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
                                   bool tetcellsonly,
                                   bool screenoutput)
 {
@@ -252,7 +252,12 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
 /*------------------------------------------------------------------------------------------------*
  *cut routine for standard non-parallel framework (only for cuttest)                 schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizard::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype, bool screenoutput )
+void GEO::CutWizard::Cut(
+    bool include_inner,
+    INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+    INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
+    bool screenoutput
+)
 {
   mesh_->Cut( include_inner, VCellgausstype, BCellgausstype,screenoutput );
 }

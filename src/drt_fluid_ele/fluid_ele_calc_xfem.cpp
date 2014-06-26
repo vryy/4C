@@ -26,8 +26,11 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #include "../linalg/linalg_utils.H"
 
 #include "fluid_ele.H"
-#include "fluid_ele_parameter_std.H"
+#include "fluid_ele_parameter_xfem.H"
 #include "fluid_ele_calc_xfem.H"
+
+#include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_cut.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -76,7 +79,7 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
 {
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
-  my::fldpara_=DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_=DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
 }
 
 
@@ -100,13 +103,15 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
                                             Epetra_SerialDenseVector&                         elevec2_epetra,
                                             Epetra_SerialDenseVector&                         elevec3_epetra,
                                             const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                            std::string&                                      VCellGaussPts,
                                             const GEO::CUT::plain_volumecell_set &            cells,
                                             bool                                              offdiag )
 {
   int err=0;
 
-  if( VCellGaussPts=="Tessellation" ) // standard "Tessellation" or "MomentFitting" method
+  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
+  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem->VolumeCellGaussPoints();
+
+  if( vcellgausspts == INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation"
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -119,7 +124,7 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
         return err;
     }
   }
-  else if( VCellGaussPts=="MomentFitting" ) // standard "MomentFitting" method
+  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_MomentFitting ) // standard "MomentFitting" method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -132,7 +137,7 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
         return err;
     }
   }
-  else if( VCellGaussPts=="DirectDivergence")  // DirectDivergence approach
+  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_DirectDivergence)  // DirectDivergence approach
   {
 
     LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elemat1(elemat1_epetra,true);
@@ -196,17 +201,20 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
 *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
-                                            DRT::ELEMENTS::Fluid*                             ele,
-                                            DRT::Discretization &                             discretization,
-                                            const std::vector<int> &                          lm,
-                                            Epetra_SerialDenseVector&                         elevec1_epetra,
-                                            const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                            std::string&                                      VCellGaussPts,
-                                            const GEO::CUT::plain_volumecell_set &            cells)
+    DRT::ELEMENTS::Fluid*                             ele,
+    DRT::Discretization &                             discretization,
+    const std::vector<int> &                          lm,
+    Epetra_SerialDenseVector&                         elevec1_epetra,
+    const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+    const GEO::CUT::plain_volumecell_set &            cells
+)
 {
   int err=0;
 
-  if( VCellGaussPts=="Tessellation" ) // standard "Tessellation" or "MomentFitting" method
+  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
+  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem->VolumeCellGaussPoints();
+
+  if( vcellgausspts==INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation" or "MomentFitting" method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -218,7 +226,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
         return err;
     }
   }
-  else if( VCellGaussPts=="MomentFitting" ) // standard "Tessellation" or "MomentFitting" method
+  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_MomentFitting ) // standard "Tessellation" or "MomentFitting" method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -230,7 +238,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
         return err;
     }
   }
-  else if( VCellGaussPts=="DirectDivergence" )  // DirectDivergence approach
+  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_DirectDivergence )  // DirectDivergence approach
   {
 
     LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elevec1(elevec1_epetra,true);
@@ -1555,7 +1563,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
     Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
     Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
-    std::string&                                                      VCellGaussPoints,         ///< type of gauss point generation for volume cells
     const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
     bool                                                              fluidfluidcoupling        ///< indicates fluid-fluid coupling context
 )
@@ -1580,7 +1587,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     break;
   }
 
-  const bool is_MHVS(boundary_type == INPAR::XFEM::Hybrid_LM_viscous_stress);
+  const bool is_MHVS = (boundary_type == INPAR::XFEM::Hybrid_LM_viscous_stress);
 
   // flag, that indicates whether we have side coupling terms Cuiu, Cuui,...
   // generally, this is the case for fluid-fluid coupling and monolithic XFSI
@@ -1672,7 +1679,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   // build volumetric coupling matrices
   HybridLM_Build_VolBased(
       hybrid_lm_l2_proj,
-      intpoints, VCellGaussPoints, vcSet,
+      intpoints, vcSet,
       evelaf, epreaf,
       bK_ss, invbK_ss, K_su, rhs_s, K_us, K_uu, rhs_uu,
       is_MHVS, mhvs_param);
@@ -2437,7 +2444,6 @@ template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
     const INPAR::XFEM::Hybrid_LM_L2_Proj                                                        hybrid_lm_l2_proj,
     const std::vector<DRT::UTILS::GaussIntegration> &                                           intpoints,
-    const std::string&                                                                          VCellGaussPoints,
     const GEO::CUT::plain_volumecell_set&                                                       cells,
     const LINALG::Matrix<my::nsd_, my::nen_> &                                                  evelaf,            ///< element velocity
     const LINALG::Matrix<my::nen_,1>&                                                           epreaf,            ///< element pressure
@@ -2452,6 +2458,10 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
     const double                                                                                mhvs_param         ///< stabilizing parameter for viscous stress-based LM
 )
 {
+
+  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
+  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem->VolumeCellGaussPoints();
+
   // full L2-projection means integration over the full background element,
   // not only the physical part
   if (hybrid_lm_l2_proj == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
@@ -2472,8 +2482,9 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
       }
     }
   }
-  else if (VCellGaussPoints == "Tessellation" or VCellGaussPoints == "MomentFitting")
+  else if (vcellgausspts == INPAR::CUT::VCellGaussPts_Tessellation or vcellgausspts == INPAR::CUT::VCellGaussPts_MomentFitting)
   {
+
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
       const DRT::UTILS::GaussIntegration intcell = *i;
@@ -2492,7 +2503,7 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
       }
     }
   }
-  else if (VCellGaussPoints == "DirectDivergence" )  // DirectDivergence method
+  else if (vcellgausspts==INPAR::CUT::VCellGaussPts_DirectDivergence )  // DirectDivergence method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {

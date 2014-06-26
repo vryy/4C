@@ -25,6 +25,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_inpar/inpar_artnet.H"
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_cut.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -3670,20 +3671,29 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   //! this parameter selects how the element length of Edge-based stabilization is defined
   setStringToIntegralParameter<int>("EOS_H_DEFINITION",
-                                    "EOS_he_max_dist_to_opp_surf",
+                                    "EOS_he_max_diameter_to_opp_surf",
                                     "Definition of element length for edge-based stabilization",
                                     tuple<std::string>(
+                                    "EOS_he_max_diameter_to_opp_surf",
                                     "EOS_he_max_dist_to_opp_surf",
                                     "EOS_he_surf_with_max_diameter",
+                                    "EOS_hk_max_diameter",
+                                    "EOS_he_surf_diameter",
                                     "EOS_he_vol_eq_diameter"),
                                     tuple<std::string>(
-                                      "take the maximal distance along 1D edge to opposite surface for both parent elements",
+                                      "take the maximal (nsd-1)D diameter of faces that connect the internal face to its opposite faces",
+                                      "take the maximal 1D distance along 1D edge to opposite surface for both parent elements",
                                       "take the maximal (nsd-1)D face diameter of all faces for both parent elements",
+                                      "maximal nD diameter of the neighboring elements",
+                                      "maximal (n-1)D diameter of the internal face/edge",
                                       "take the maximal volume eqivalent diameter of adjecent elements"
                                       ),
                                     tuple<int>(
+                                    INPAR::FLUID::EOS_he_max_diameter_to_opp_surf,
                                     INPAR::FLUID::EOS_he_max_dist_to_opp_surf,
                                     INPAR::FLUID::EOS_he_surf_with_max_diameter,
+                                    INPAR::FLUID::EOS_hk_max_diameter,
+                                    INPAR::FLUID::EOS_he_surf_diameter,
                                     INPAR::FLUID::EOS_he_vol_eq_diameter) ,
                                     &fdyn_edge_based_stab);
 
@@ -6457,12 +6467,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
                                tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),
-                               tuple<int>(0,1,2),
+                               tuple<int>(
+                                   INPAR::CUT::VCellGaussPts_Tessellation,
+                                   INPAR::CUT::VCellGaussPts_MomentFitting,
+                                   INPAR::CUT::VCellGaussPts_DirectDivergence
+                                   ),
                                &xfem_general);
 
   setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the boundary cells",
                                  tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),
-                                 tuple<int>(0,1,2),
+                                 tuple<int>(
+                                     INPAR::CUT::BCellGaussPts_Tessellation,
+                                     INPAR::CUT::BCellGaussPts_MomentFitting,
+                                     INPAR::CUT::BCellGaussPts_DirectDivergence
+                                     ),
                                  &xfem_general);
 
   /*----------------------------------------------------------------------*/

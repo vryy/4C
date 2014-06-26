@@ -29,16 +29,16 @@ Maintainer: Benedikt Schott
 /*-------------------------------------------------------------*
 * Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)*
 *--------------------------------------------------------------*/
-void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut within the structure
-                              const Epetra_Vector & idispcol, //!< col vector holding interface displacements
-                              std::string VCellgausstype,     //!< Gauss point generation method for Volumecell
-                              std::string BCellgausstype,     //!< Gauss point generation method for Boundarycell
-                              bool parallel,                  //!< use parallel cut algorithms
-                              bool gmsh_output,               //!< print write gmsh output for cut
-                              bool positions,                 //!< set inside and outside point, facet and volumecell positions
-                              bool tetcellsonly,              //!< generate only tet cells
-                              bool screenoutput,              //!< print screen output
-                              bool cutinrefconf               //!< do not try to update node coordinates
+void XFEM::FluidWizard::Cut(  bool include_inner,                         //!< perform cut within the structure
+                              const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
+                              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
+                              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
+                              bool parallel,                              //!< use parallel cut algorithms
+                              bool gmsh_output,                           //!< print write gmsh output for cut
+                              bool positions,                             //!< set inside and outside point, facet and volumecell positions
+                              bool tetcellsonly,                          //!< generate only tet cells
+                              bool screenoutput,                          //!< print screen output
+                              bool cutinrefconf                           //!< do not try to update node coordinates
                               )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );

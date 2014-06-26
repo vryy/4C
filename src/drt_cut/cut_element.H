@@ -4,6 +4,8 @@
 #include "cut_side.H"
 #include "cut_integrationcell.H"
 
+#include "../drt_inpar/inpar_cut.H"
+
 namespace GEO
 {
 
@@ -118,12 +120,12 @@ public:
   /*!
   \brief Construct quadrature rules for the volumecells by solving the moment fitting equations
    */
-  void MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype );
+  void MomentFitGaussWeights( Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype );
 
   /*!
   \brief Construct quadrature rules for the volumecells by triangulating the facets and applying divergence theorem
    */
-  void DirectDivergenceGaussRule( Mesh & mesh, bool include_inner, std::string Bcellgausstype );
+  void DirectDivergenceGaussRule( Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype );
 
   /// After the integration and boundary cells have been created, there might
   /// still be some empty volume cells. Those are artificial cells with zero

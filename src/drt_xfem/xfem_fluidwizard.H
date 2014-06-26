@@ -18,6 +18,7 @@ Maintainer: Benedikt Schott
 #include <Teuchos_RCP.hpp>
 #include "../drt_geometry/geo_utils.H"
 #include "physics.H"
+#include "../drt_inpar/inpar_cut.H"
 
 
 class Epetra_Vector;
@@ -69,16 +70,16 @@ public:
   /*!
   \brief Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)
   */
-  void Cut(   bool include_inner,             //!< perform cut within the structure
-              const Epetra_Vector & idispcol, //!< col vector holding interface displacements
-              std::string VCellgausstype,     //!< Gauss point generation method for Volumecell
-              std::string BCellgausstype,     //!< Gauss point generation method for Boundarycell
-              bool parallel,                  //!< use parallel cut algorithms
-              bool gmsh_output,               //!< print write gmsh output for cut
-              bool positions = true,          //!< set inside and outside point, facet and volumecell positions);
-              bool tetcellsonly = false,      //!< generate only tet cells
-              bool screenoutput = true,       //!< print screen output
-              bool cutinrefconf = false       //!< do not try to perform coordinate update
+  void Cut(   bool include_inner,                         //!< perform cut within the structure
+              const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
+              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
+              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
+              bool parallel,                              //!< use parallel cut algorithms
+              bool gmsh_output,                           //!< print write gmsh output for cut
+              bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
+              bool tetcellsonly = false,                  //!< generate only tet cells
+              bool screenoutput = true,                   //!< print screen output
+              bool cutinrefconf = false                   //!< do not try to perform coordinate update
   );
 
   //! create a new fluid dofset and reserve a dofs for a maximal number of dofsets

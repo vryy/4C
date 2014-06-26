@@ -1011,8 +1011,8 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   {
      wizard->Cut(  true,            // include_inner
                    *idispcol,       // interface displacements
-                   "Tessellation",  // how to create volume cell Gauss points?
-                   "Tessellation",  // how to create boundary cell Gauss points?
+                   INPAR::CUT::VCellGaussPts_Tessellation,  // how to create volume cell Gauss points?
+                   INPAR::CUT::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
                    true,            // parallel cut framework
                    false,           // gmsh output for cut library
                    true,            // find point positions
@@ -1061,8 +1061,8 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
 
     wizard->Cut(  true,                // include_inner
                   *idispcol,           // interface displacements
-                  "DirectDivergence",  // how to create volume cell Gauss points?
-                  "DirectDivergence",  // how to create boundary cell Gauss points?
+                  INPAR::CUT::VCellGaussPts_DirectDivergence,  // how to create volume cell Gauss points?
+                  INPAR::CUT::BCellGaussPts_DirectDivergence,  // how to create boundary cell Gauss points?
                   true,                // parallel cut framework
                   false,               // gmsh output for cut library
                   true,                // find point positions

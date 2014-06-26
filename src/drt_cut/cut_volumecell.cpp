@@ -767,7 +767,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
                                                   const GEO::CUT::Point::PointPosition posi,
                                                   Element *elem,
                                                   int BaseNos,
-                                                  std::string BCellgausstype )
+                                                  INPAR::CUT::BCellGaussPts BCellgausstype )
 {
   const plain_facet_set & facete = Facets();
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
@@ -823,7 +823,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
    }
    else
    {
-      if(BCellgausstype=="Tessellation")//generate boundarycell gausspoints by triangulation
+      if(BCellgausstype==INPAR::CUT::BCellGaussPts_Tessellation)//generate boundarycell gausspoints by triangulation
       {
 #if 1 // create only triangles - result in more number of Gauss points
         // Use "corners" for triangulation - no points are deleted
@@ -855,7 +855,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
         }
      }
 
-     else if(BCellgausstype=="MomentFitting")//generate boundarycell gausspoints by solving moment fitting equations
+     else if(BCellgausstype==INPAR::CUT::BCellGaussPts_MomentFitting)//generate boundarycell gausspoints by solving moment fitting equations
      {
         BoundarycellIntegration bcell_inte(elem,fac,posi,BaseNos);
         Bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
@@ -1013,7 +1013,7 @@ void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
 void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
                                                  Mesh & mesh,
                                                  bool include_inner,
-                                                 std::string BCellgausstype)
+                                                 INPAR::CUT::BCellGaussPts BCellgausstype)
 {
 
   //position is used to decide whether the ordering of points are in clockwise or not
@@ -1049,7 +1049,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
                                                       Mesh & mesh,
                                                       bool include_inner,
-                                                      std::string BCellgausstype )
+                                                      INPAR::CUT::BCellGaussPts BCellgausstype )
 {
 
   //position is used to decide whether the ordering of points are in clockwise or not
@@ -1098,7 +1098,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 #endif
 
   // generate boundary cells -- when using tessellation this is automatically done
-  GenerateBoundaryCells( mesh, posi, elem, 0, "Tessellation" );
+  GenerateBoundaryCells( mesh, posi, elem, 0, INPAR::CUT::BCellGaussPts_Tessellation );
 }
 
 /*-------------------------------------------------------------------------------------*

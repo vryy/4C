@@ -62,7 +62,6 @@ namespace ELEMENTS
                                            const std::vector<int>&                           lm            ,
                                            Epetra_SerialDenseVector&                         elevec1,
                                            const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                           std::string&                                      VCellGaussPts,
                                            const GEO::CUT::plain_volumecell_set &            cells)
     {dserror("Not implemented!"); return 1;};
 
@@ -208,10 +207,10 @@ namespace ELEMENTS
                              Epetra_SerialDenseVector&                         elevec2_epetra,
                              Epetra_SerialDenseVector&                         elevec3_epetra,
                              const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                             std::string&                                      VCellGaussPts,
                              const GEO::CUT::plain_volumecell_set &            cells,
                              bool                                              offdiag = false
     ) {dserror("Not implemented!"); return 1;}
+
 
     virtual void ElementXfemInterfaceHybridLM(
         DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element
@@ -226,7 +225,6 @@ namespace ELEMENTS
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
         Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
         Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
-        std::string&                                                      VCellGaussPoints,         ///< type of gauss point generation for volume cells
         const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
         bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
       ) {dserror("Not implemented!"); return;}

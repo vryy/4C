@@ -21,7 +21,9 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_poro.H"
+#include "fluid_ele_parameter_xfem.H"
 #include "fluid_ele_parameter_timint.H"
+#include "fluid_ele_parameter_intface.H"
 #include "fluid_ele_tds.H"
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -91,6 +93,14 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   {
     Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
     fldpara->SetElementAdjointTimeParameter(p);
+  }
+  else if (action == FLD::set_general_fluid_xfem_parameter)
+  {
+    DRT::ELEMENTS::FluidEleParameterXFEM* fldpara = DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
+
+    fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
+    fldpara->SetElementTurbulenceParameter(p);
+    fldpara->SetElementXFEMParameter(p);
   }
 
   return;
@@ -833,3 +843,32 @@ int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList&    params,
 }
 
 
+/*----------------------------------------------------------------------*
+ | pre-evaluation of FluidIntFaceType class (public)        schott Jun14|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(
+    DRT::Discretization&                 dis,
+    Teuchos::ParameterList&              p,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>          systemvector1,
+    Teuchos::RCP<Epetra_Vector>          systemvector2,
+    Teuchos::RCP<Epetra_Vector>          systemvector3
+)
+{
+  const FLD::Action action = DRT::INPUT::get<FLD::Action>(p,"action");
+
+  if (action == FLD::set_general_face_fluid_parameter)
+  {
+    DRT::ELEMENTS::FluidEleParameterIntFace* fldintfacepara = DRT::ELEMENTS::FluidEleParameterIntFace::Instance();
+    fldintfacepara->SetFaceGeneralFluidParameter(p,dis.Comm().MyPID());
+  }
+  else if (action == FLD::set_general_face_xfem_parameter)
+  {
+    DRT::ELEMENTS::FluidEleParameterIntFace* fldintfacepara = DRT::ELEMENTS::FluidEleParameterIntFace::Instance();
+    fldintfacepara->SetFaceGeneralXFEMParameter(p,dis.Comm().MyPID());
+  }
+  else dserror("unknown action type for FluidIntFaceType::PreEvaluate");
+
+  return;
+}

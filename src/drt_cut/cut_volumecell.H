@@ -4,6 +4,7 @@
 #include "cut_facet.H"
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../drt_inpar/inpar_cut.H"
 
 namespace GEO
 {
@@ -72,18 +73,18 @@ public:
   /*!
   \brief Construct the Gaussian quadrature rule by performing moment fitting over the volumecells
    */
-  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner, std::string BCellgausstype );
+  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype );
 
   /*!
   \brief Construct the Gaussian quadrature rule by triangulating the facets of volumecell and applying divergence theorem
    */
-  void DirectDivergenceGaussRule(Element *elem, Mesh & mesh, bool include_inner, std::string BCellgausstype );
+  void DirectDivergenceGaussRule(Element *elem, Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype );
 
   /*!
   \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by momentfitting and boundarycells
   are by tessellation
    */
-  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos, std::string BCellgausstype);
+  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
 
   /*!
   \brief Get the boundarycells generated from this volumecell

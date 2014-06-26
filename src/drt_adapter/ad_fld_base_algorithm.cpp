@@ -397,17 +397,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     const Teuchos::ParameterList& xdyn =
       DRT::Problem::Instance()->XFEMGeneralParams();
 
-    fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
-    fluidtimeparams->sublist("XFEM").set<string>("VOLUME_GAUSS_POINTS_BY", xdyn.get<std::string>("VOLUME_GAUSS_POINTS_BY"));
-    fluidtimeparams->sublist("XFEM").set<string>("BOUNDARY_GAUSS_POINTS_BY", xdyn.get<std::string>("BOUNDARY_GAUSS_POINTS_BY"));
+    fluidtimeparams->sublist("XFEM") = xdyn;
 
-    // GMSH solution output
-    fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT",        DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT"));
-    fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT_SCREEN", DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT_SCREEN"));
-    fluidtimeparams->sublist("XFEM").set<int>("GMSH_EOS_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_EOS_OUT"));
-    fluidtimeparams->sublist("XFEM").set<int>("GMSH_SOL_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_SOL_OUT"));
-    fluidtimeparams->sublist("XFEM").set<int>("GMSH_DISCRET_OUT",      DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DISCRET_OUT"));
-    fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));
   }
 
   // ----------------------------- sublist for xfem-specific fluid parameters

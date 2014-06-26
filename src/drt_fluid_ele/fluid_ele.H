@@ -750,6 +750,15 @@ public:
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
+  /// pre-evaluation
+  virtual void PreEvaluate(DRT::Discretization&                dis,
+                          Teuchos::ParameterList&              p,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector1,
+                          Teuchos::RCP<Epetra_Vector>          systemvector2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector3);
+
 private:
 
   static FluidIntFaceType instance_;
@@ -900,6 +909,23 @@ public:
         element dofs that are condensed internally should NOT be considered.
   */
   virtual int NumDofPerElement() const { return 0; }
+
+  /*!
+  \brief create the location vector for patch of master and slave element
+
+  \note All dofs shared by master and slave element are contained only once. Dofs from interface nodes are also included.
+  */
+  void PatchLocationVector(
+      DRT::Discretization & discretization,       ///< discretization
+      std::vector<int>&     nds_master,           ///< nodal dofset w.r.t master parent element
+      std::vector<int>&     nds_slave,            ///< nodal dofset w.r.t slave parent element
+      std::vector<int>&     patchlm,              ///< local map for gdof ids for patch of elements
+      std::vector<int>&     lm_masterToPatch,     ///< local map between lm_master and lm_patch
+      std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
+      std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
+      std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+      std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+      );
 
   /*!
   \brief create the location vector for patch of master and slave element

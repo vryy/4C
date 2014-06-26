@@ -17,7 +17,6 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #ifndef FLUID_ELE_CALC_XFEM_H
 #define FLUID_ELE_CALC_XFEM_H
 
-#include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_utils.H"
 
 #include "fluid_ele_calc.H"
@@ -114,7 +113,6 @@ public:
       Epetra_SerialDenseVector&                         elevec2_epetra,
       Epetra_SerialDenseVector&                         elevec3_epetra,
       const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-      std::string&                                      VCellGaussPts,
       const GEO::CUT::plain_volumecell_set &            cells,
       bool                                              offdiag = false);
 
@@ -125,7 +123,6 @@ public:
       const std::vector<int> &                          lm,
       Epetra_SerialDenseVector&                         elevec1_epetra,
       const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-      std::string&                                      VCellGaussPts,
       const GEO::CUT::plain_volumecell_set &            cells);
 
   /// error computation
@@ -174,6 +171,7 @@ public:
       std::map<int,int> &                                                 boundary_emb_gid_map
   );
 
+
   /// add terms from mixed/hybrid LM coupling approach to element matrix and rhs
   virtual void ElementXfemInterfaceHybridLM(
       DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element
@@ -188,7 +186,6 @@ public:
       Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
       Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
       Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
-      std::string&                                                      VCellGaussPoints,         ///< type of gauss point generation for volume cells
       const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
       bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
   );
@@ -207,7 +204,7 @@ public:
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
       Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-      const GEO::CUT::plain_volumecell_set&                               vcSet,						 ///< volumecell sets in this element
+      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
       bool                                                                fluidfluidcoupling = false ///< indicates fluid-fluid coupling context
   );
 
@@ -351,7 +348,6 @@ private:
   void HybridLM_Build_VolBased(
       const INPAR::XFEM::Hybrid_LM_L2_Proj                                                        hybrid_lm_l2_proj,
       const std::vector<DRT::UTILS::GaussIntegration> &                                           intpoints,
-      const std::string&                                                                          VCellGaussPoints,
       const GEO::CUT::plain_volumecell_set&                                                       cells,
       const LINALG::Matrix<my::nsd_, my::nen_> &                                                  evelaf,            ///< element velocity
       const LINALG::Matrix<my::nen_,1>&                                                           epreaf,            ///< element pressure

@@ -1584,7 +1584,9 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_parameter.cpp
   src/drt_fluid_ele/fluid_ele_parameter_std.cpp
   src/drt_fluid_ele/fluid_ele_parameter_poro.cpp
+  src/drt_fluid_ele/fluid_ele_parameter_xfem.cpp
   src/drt_fluid_ele/fluid_ele_parameter_timint.cpp
+  src/drt_fluid_ele/fluid_ele_parameter_intface.cpp
   src/drt_fluid_ele/fluid_ele_tds.cpp
   src/drt_fluid_ele/fluid_ele_poro.cpp
   src/drt_fluid_ele/fluid_ele_poro_evaluate.cpp

@@ -20,6 +20,9 @@ Maintainer: Benedikt Schott
 #include "cut_pointpool.H"
 #include "cut_options.H"
 
+#include "../drt_inpar/inpar_cut.H"
+
+
 namespace DRT
 {
   class Discretization;
@@ -152,8 +155,8 @@ public:
 
   /// standard cut routine for non-parallel frameworks and cuttest
   void Cut( bool include_inner,
-            std::string VCellgausstype="Tessellation",
-            std::string BCellgausstype="Tessellation",
+            INPAR::CUT::VCellGaussPts VCellgausstype = INPAR::CUT::VCellGaussPts_Tessellation,
+            INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation,
             bool tetcellsonly=true,
             bool screenoutput=true);
 
@@ -168,8 +171,8 @@ public:
   integration rules by moment fitting equations
    */
   void Cut_Finalize( bool include_inner,
-                     std::string VCellgausstype,
-                     std::string BCellgausstype,
+                     INPAR::CUT::VCellGaussPts VCellgausstype,
+                     INPAR::CUT::BCellGaussPts BCellgausstype,
                      bool tetcellsonly =false,
                      bool screenoutput=true);
 
@@ -265,7 +268,7 @@ public:
   void PrintCellStats();
 
   /// status
-  void Status(std::string gausstype="Tessellation");
+  void Status(INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
 
 
 

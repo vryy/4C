@@ -6,6 +6,8 @@
 #include "cut_volumecellgenerator.H"
 #include "cut_facetgraph.H"
 
+#include "../drt_inpar/inpar_cut.H"
+
 //#include "cut_createVolumeCell.H"
 
 #include <string>
@@ -1351,7 +1353,7 @@ void GEO::CUT::Element::integrateSpecificFunctionsTessellation()
       The Gauss rules for each cut element is constructed by performing moment fitting for each volumecells.
            Unless specified moment fitting is performed only for cells placed in the fluid region
 *-------------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype )
+void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype )
 {
   if ( not active_ )
     return;
@@ -1386,7 +1388,7 @@ void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, 
    The Gauss rules for each cut element is constructed by triangulating the facets and applying divergence theorem
             Unless specified moment fitting is performed only for cells placed in the fluid region
 *-------------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inner, std::string Bcellgausstype )
+void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype )
 {
   if ( not active_ )
     return;

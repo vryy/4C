@@ -846,7 +846,7 @@ void test_alex53()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  /*intersection.Cut( true, "Tessellation" );
+  /*intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,momFitVol;
 
@@ -866,7 +866,7 @@ void test_alex53()
               ++i )
   {
     GEO::CUT::VolumeCell * vc = &**i;
-    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,"Tessellation");
+    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
     momFitVol.push_back(vc->Volume());
   }
 

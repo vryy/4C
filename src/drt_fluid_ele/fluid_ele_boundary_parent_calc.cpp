@@ -55,11 +55,11 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   /*case DRT::Element::line3:
   {
     return FluidBoundaryParent<DRT::Element::line3>::Instance();
-  }
+  }*/
   case DRT::Element::tri3:
   {
     return FluidBoundaryParent<DRT::Element::tri3>::Instance();
-  }
+  }/*
   case DRT::Element::tri6:
   {
     return FluidBoundaryParent<DRT::Element::tri6>::Instance();
@@ -340,6 +340,22 @@ template <DRT::Element::DiscretizationType distype>
           elevec);
     }
     else dserror("expected combination line2/quad4 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::tri3:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::tet4)
+    {
+      EvaluateWeakDBC<DRT::Element::tri3,DRT::Element::tet4>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination tri3/tet4 for surface/parent pair");
     break;
   }
   // 3D:

@@ -18,6 +18,7 @@ Maintainer: Benedikt Schott
 
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 namespace LINALG
 {
@@ -37,6 +38,7 @@ namespace ELEMENTS
   class FluidIntFace;
   class FluidEleParameter;
   class FluidEleParameterTimInt;
+  class FluidEleParameterIntFace;
 
 /// Interface base class for FluidIntFaceImpl
 /*!
@@ -50,7 +52,7 @@ class FluidIntFaceImplInterface : DRT::SingletonDestruction
 
 public:
   /// Empty constructor
-    FluidIntFaceImplInterface() {}
+  FluidIntFaceImplInterface() {}
 
   /// Empty destructor
   virtual ~FluidIntFaceImplInterface() {}
@@ -60,8 +62,9 @@ public:
                        DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
                        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                        std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
+                       const INPAR::XFEM::FaceType &        face_type,       ///< which type of face std, ghost, ghost-penalty
                        Teuchos::ParameterList&              params,          ///< parameter list
-                       DRT::DiscretizationFaces&             discretization,  ///< faces discretization
+                       DRT::DiscretizationFaces&            discretization,  ///< faces discretization
                        Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
                        Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                        ) = 0;
@@ -112,8 +115,6 @@ public:
 template<DRT::Element::DiscretizationType distype>
 class FluidIntFaceImpl: public FluidIntFaceImplInterface
 {
-  friend class FluidEleParameterTimInt;
-  friend class FluidEleParameterStd;
 
 public:
 
@@ -132,8 +133,9 @@ public:
                               DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
                               std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                               std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
+                              const INPAR::XFEM::FaceType &        face_type,       ///< which type of face std, ghost, ghost-penalty
                               Teuchos::ParameterList&              params,          ///< parameter list
-                              DRT::DiscretizationFaces&             discretization,  ///< faces discretization
+                              DRT::DiscretizationFaces&            discretization,  ///< faces discretization
                               Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
                               Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                               );
@@ -153,17 +155,14 @@ public:
       std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
   );
 
-  //! decide which terms have to be assembled and decide the assembly pattern, return if no assembly required
-  bool PrepareAssemble(
-      Teuchos::ParameterList &   stabparams,
-      Teuchos::ParameterList &   faceparams);
 
 private:
 
-  //! pointer to parameter lists
-  DRT::ELEMENTS::FluidEleParameter* fldpara_;
   //! pointer to parameter list for time integration
   DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+  //! pointer to parameter list for internal faces
+  DRT::ELEMENTS::FluidEleParameterIntFace* fldpara_intface_;
+
 
   };  // end class FluidIntFaceImpl
 

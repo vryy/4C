@@ -1223,7 +1223,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset, bool tetc
 /*-------------------------------------------------------------------------------------*
  * Call the moment fitting method for each element to generate the Gaussian integration rule
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, std::string Bcellgausstype)
+void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -1261,7 +1261,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, std::string Bcell
 /*-------------------------------------------------------------------------------------*
  * Call the DirectDivergence method for each element to generate the Gaussian integration rule
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, std::string Bcellgausstype)
+void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();

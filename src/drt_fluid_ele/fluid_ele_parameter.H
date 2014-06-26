@@ -114,21 +114,6 @@ public:
   //! (sign) factor for viscous and reactive stabilization terms
   double ViscReaStabFac() const {return viscreastabfac_;};
 
-
-  /// parameter for edge-based stabilizations
-  //! Flag to (de)activate pressure stabilization
-  INPAR::FLUID::EOS_Pres EOS_Pres() const {return EOS_pres_;};
-  //! Flag to (de)activate convective streamline stabilization
-  INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream() const {return EOS_conv_stream_;};
-  //! Flag to (de)activate convective crosswind stabilization
-  INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross() const {return EOS_conv_cross_;};
-  //! Flag to (de)activate divergence stabilization
-  INPAR::FLUID::EOS_Div EOS_Div() const {return EOS_div_;};
-  //! Flag to define element length
-  INPAR::FLUID::EOS_ElementLength EOS_element_length() const {return EOS_element_lenght_;};
-  //! Flag to define tau for edge-based stabilization
-  INPAR::FLUID::EOS_TauType EOS_WhichTau() const {return EOS_whichtau_;};
-
   //! Flag to (de)activate polynomial pressure projection stabilization
   bool PPP() const {return ppp_;};
 
@@ -257,20 +242,6 @@ protected:
   INPAR::FLUID::CharEleLengthPC charelelengthpc_;
   //! (sign) factor for viscous and reactive stabilization terms
   double viscreastabfac_;
-
-  /// parameter for edge-based (EOS,CIP) stabilizations
-  //! Flag to (de)activate pressure stabilization
-  INPAR::FLUID::EOS_Pres EOS_pres_;
-  //! Flag to (de)activate convective streamline stabilization
-  INPAR::FLUID::EOS_Conv_Stream EOS_conv_stream_;
-  //! Flag to (de)activate convective crosswind stabilization
-  INPAR::FLUID::EOS_Conv_Cross EOS_conv_cross_;
-  //! Flag to (de)activate divergence stabilization
-  INPAR::FLUID::EOS_Div EOS_div_;
-  //! Flag to define tau
-  INPAR::FLUID::EOS_TauType EOS_whichtau_;
-  //! element length definition for edge-base stabilization
-  INPAR::FLUID::EOS_ElementLength EOS_element_lenght_;
 
   //! Flag to (de)activate PPP (polynomial pressure projection) stabilization
   bool ppp_;

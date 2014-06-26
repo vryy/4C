@@ -329,6 +329,14 @@ public:
   */
   virtual void SetElementTurbulenceParameter();
 
+  //! @name Set general parameter in class fluid_ele_parameter_intface
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+
+  */
+  virtual void SetFaceGeneralFluidParameter();
+
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value

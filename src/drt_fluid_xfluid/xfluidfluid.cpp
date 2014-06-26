@@ -259,7 +259,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   stepinc_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
 
   // create object for edgebased stabilization
-  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
+  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
 
   // allocate memory for fluid-fluid coupling matrices
@@ -703,7 +703,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
                                         strategy.Elevector2(),
                                         strategy.Elevector3(),
                                         intpoints_sets[set_counter],
-                                        xfluid_.VolumeCellGaussPointBy_,
                                         cells);
 
           if (err)
@@ -803,7 +802,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui,
-                                              xfluid_.VolumeCellGaussPointBy_,
                                               cells,
                                               true);
           else if (xfluid_.action_ == "coupling nitsche xfluid sided")
@@ -1034,7 +1032,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui,
-                                              xfluid_.VolumeCellGaussPointBy_,
                                               cells,
                                               true);
 
@@ -1149,9 +1146,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
 
     Teuchos::ParameterList faceparams;
 
-    faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
-    faceparams.set("u_p_ghost_penalty_2nd",xfluid_.ghost_penalty_2ndorder_);
-    faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
+    // set additional faceparams according to ghost-penalty terms due to Nitsche's method
+    faceparams.set("ghost_penalty_reconstruct", false); // no XFEM timeintegration reconstruction call
 
     //------------------------------------------------------------
     // loop over row faces
@@ -1270,15 +1266,14 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
   } // end of loop over embedded discretization
 
   // call edge stabilization
-  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
+  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
     Teuchos::ParameterList faceparams;
 
-    faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
-    faceparams.set("u_p_ghost_penalty_2nd",xfluid_.ghost_penalty_2ndorder_);
-    faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
+    // set additional faceparams according to ghost-penalty terms due to Nitsche's method
+    faceparams.set("ghost_penalty_reconstruct", false); // no XFEM timeintegration reconstruction call
 
     //------------------------------------------------------------
     Teuchos::RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*embdis->DofColMap(),true);
@@ -1723,7 +1718,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
 
   // facet based output for cut volumes
   // integrationcells are not available because tessellation is not used
-  if( xfluid_.VolumeCellGaussPointBy_!="Tessellation" )
+  if( xfluid_.VolumeCellGaussPointBy_!=INPAR::CUT::VCellGaussPts_Tessellation )
   {
     const GEO::CUT::plain_facet_set & facete = vc->Facets();
     for(GEO::CUT::plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
@@ -2091,8 +2086,8 @@ void FLD::XFluidFluid::Init()
 
   // get general XFEM specific parameters
   maxnumdofsets_           = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
-  VolumeCellGaussPointBy_  = params_->sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
-  BoundCellGaussPointBy_   = params_->sublist("XFEM").get<string>("BOUNDARY_GAUSS_POINTS_BY");
+  VolumeCellGaussPointBy_  = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_   = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
 
   // get interface stabilization specific parameters
   boundIntType_       = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(params_xf_stab,"EMBEDDED_BOUNDARY");
@@ -2113,9 +2108,12 @@ void FLD::XFluidFluid::Init()
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
 
-  ghost_penalty_          = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
-  ghost_penalty_2ndorder_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB");
-  ghost_penalty_fac_      = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
+  // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
+  ghost_penalty_                    = (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
+                                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
+                                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
+
+  ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
 
   velgrad_interface_stab_ =  (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
 
@@ -2135,13 +2133,13 @@ void FLD::XFluidFluid::Init()
   gmsh_count_ = 0;
 
   // load GMSH output flags
-  gmsh_sol_out_          = (bool)params_xfem.get<int>("GMSH_SOL_OUT");
-  gmsh_debug_out_        = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_));
-  gmsh_discret_out_      = (bool)params_xfem.get<int>("GMSH_DISCRET_OUT");
+  gmsh_sol_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
+  gmsh_debug_out_        = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
+  gmsh_EOS_out_          = ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_discret_out_      = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
   gmsh_step_diff_        = 500;
-  gmsh_cut_out_          = (bool)params_xfem.get<int>("GMSH_CUT_OUT");
+  gmsh_cut_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
 
   // set the element name for boundary elements BELE3_4
   std::string element_name;
@@ -2328,7 +2326,7 @@ void FLD::XFluidFluid::Init()
 
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
-  if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
+  if(edge_based_ or ghost_penalty_)
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
     actembdis->CreateInternalFacesExtension();
@@ -2434,8 +2432,8 @@ void FLD::XFluidFluid::Init()
   // -----------------------------------------------------------------
   // set general fluid parameter
   // -----------------------------------------------------------------
-  SetElementGeneralFluidParameter();
-  SetElementTurbulenceParameter();
+  SetElementGeneralFluidXFEMParameter();
+  SetFaceGeneralFluidXFEMParameter();
 
   //--------------------------------------------------
   // XFluidFluid State
@@ -2942,9 +2940,11 @@ void FLD::XFluidFluid::PrintStabilizationParams()
     if(boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
       IO::cout << "HYBRID_LM_L2_PROJ                 : " << interfstabparams->get<string>("HYBRID_LM_L2_PROJ") << "\n";
 
-    IO::cout << "GHOST_PENALTY               : " << interfstabparams->get<string>("GHOST_PENALTY_STAB")    << IO::endl;
-    IO::cout << "GHOST_PENALTY_2nd_STAB      : " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << IO::endl;
-    IO::cout << "GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << IO::endl;
+    IO::cout << "GHOST_PENALTY_STAB:           " << interfstabparams->get<string>("GHOST_PENALTY_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_TRANSIENT_STAB: " << interfstabparams->get<string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_FAC:            " << interfstabparams->get<double>("GHOST_PENALTY_FAC") << "\n";
+    IO::cout << "GHOST_PENALTY_TRANSIENT_FAC:  " << interfstabparams->get<double>("GHOST_PENALTY_TRANSIENT_FAC") << "\n";
+    IO::cout << "GHOST_PENALTY_2nd_STAB:       " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << "\n";
     IO::cout << "INFLOW_CONV_STAB_STRATEGY   : " << interfstabparams->get<string>("XFF_CONV_STAB_SCALING") << IO::endl;
     IO::cout << "VELGRAD_INTERFACE_STAB      : " << interfstabparams->get<string>("VELGRAD_INTERFACE_STAB")<< IO::endl;
     IO::cout << "PRESSCOUPLING_INTERFACE_STAB: " << interfstabparams->get<string>("PRESSCOUPLING_INTERFACE_STAB")<< IO::endl;
@@ -4248,7 +4248,7 @@ void FLD::XFluidFluid::Output()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    if( xdiscret->FilledExtension() == true && (ghost_penalty_ or ghost_penalty_2ndorder_)) // stabilization output
+    if( xdiscret->FilledExtension() == true && ghost_penalty_ ) // stabilization output
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
@@ -4746,14 +4746,15 @@ void FLD::XFluidFluid::ExtractNodeVectors(DRT::Discretization & dis,
 
 
 // -------------------------------------------------------------------
-// set general fluid parameter (AE 01/2011)
+// set general face fluid parameter (BS 06/2014)
 // -------------------------------------------------------------------
-void FLD::XFluidFluid::SetElementGeneralFluidParameter()
+void FLD::XFluidFluid::SetElementGeneralFluidXFEMParameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",FLD::set_general_fluid_parameter);
+  eleparams.set<int>("action",FLD::set_general_fluid_xfem_parameter); // do not call another action as then another object of the std-class will be created
 
+  //------------------------------------------------------------------------------------------------------
   // set general element parameters
   eleparams.set("form of convective term",convform_);
   eleparams.set<int>("Linearisation",newton_);
@@ -4761,26 +4762,11 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
-  eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
-  // call standard loop over elements
-  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-}
-
-// -------------------------------------------------------------------
-// set turbulence parameters                         rasthofer 11/2011
-// -------------------------------------------------------------------
-void FLD::XFluidFluid::SetElementTurbulenceParameter()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",FLD::set_turbulence_parameter);
-
+  //------------------------------------------------------------------------------------------------------
   // set general parameters for turbulent flow
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
@@ -4788,8 +4774,55 @@ void FLD::XFluidFluid::SetElementTurbulenceParameter()
   eleparams.sublist("SUBGRID VISCOSITY") = params_->sublist("SUBGRID VISCOSITY");
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
-  // call standard loop over elements
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  //------------------------------------------------------------------------------------------------------
+  // set general XFEM element parameters
+
+  eleparams.sublist("XFEM")                         = params_->sublist("XFEM");
+  eleparams.sublist("XFLUID DYNAMIC/GENERAL")       = params_->sublist("XFLUID DYNAMIC/GENERAL");
+  eleparams.sublist("XFLUID DYNAMIC/STABILIZATION") = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
+
+
+  //------------------------------------------------------------------------------------------------------
+  // set the params in the XFEM-parameter-list class
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+// -------------------------------------------------------------------
+// set general face fluid parameter (BS 06/2014)
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::SetFaceGeneralFluidXFEMParameter()
+{
+
+  //------------------------------------------------------------------------------------------------------
+  // set general fluid stabilization parameter for faces
+  {
+    Teuchos::ParameterList faceparams;
+
+    faceparams.set<int>("action",FLD::set_general_face_fluid_parameter);
+
+    faceparams.sublist("EDGE-BASED STABILIZATION")     = params_->sublist("EDGE-BASED STABILIZATION");
+
+    faceparams.set<int>("STABTYPE", DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>( params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
+
+    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  }
+
+  //------------------------------------------------------------------------------------------------------
+  // set XFEM specific parameter for faces
+  {
+    Teuchos::ParameterList faceparams;
+
+    faceparams.set<int>("action",FLD::set_general_face_xfem_parameter);
+
+    // set general fluid face parameters are contained in the following two sublists
+    faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
+
+    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  }
+
   return;
 }
 
@@ -4826,11 +4859,11 @@ void FLD::XFluidFluid::SetElementTimeParameter()
     eleparams.set("total time",time_);
   }
 
-  // call standard loop over elements
-  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
   DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*embdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // not necessary
+  //DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*embdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
 }
 
 // -------------------------------------------------------------------

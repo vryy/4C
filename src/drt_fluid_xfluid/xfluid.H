@@ -18,6 +18,7 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_cut.H"
 
 #include "../drt_fluid/fluid_timint.H"
 
@@ -576,7 +577,7 @@ namespace FLD
 
   private:
 
-    //! @name Set general parameter in class f3Parameter
+    //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
 
     \brief parameter (fix over all time step) are set in this method.
@@ -584,7 +585,7 @@ namespace FLD
     and in the fluid boundary element
 
     */
-    void SetElementGeneralFluidParameter();
+    void SetElementGeneralFluidXFEMParameter();
 
     //! @name Set general parameter in class f3Parameter
     /*!
@@ -596,22 +597,14 @@ namespace FLD
     */
     void SetElementTimeParameter();
 
-    /*!
-     * \brief fill the element parameter list with entries,
-     * that do not change over runtime
-     * \author kruse \date 06/14
-     */
-    void AddBasicElementParametersToList(Teuchos::ParameterList & eleparams);
-
-    //! @name Set general parameter in class f3Parameter
+    //! @name Set general parameter in parameter list class for fluid internal face elements
     /*!
 
     \brief parameter (fix over all time step) are set in this method.
-           Therefore, these parameter are accessible in the fluid element
-           and in the fluid boundary element
+           Therefore, these parameter are accessible in the fluid intfaces element
 
     */
-    void SetElementTurbulenceParameter();
+    void SetFaceGeneralFluidXFEMParameter();
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
@@ -706,19 +699,15 @@ namespace FLD
     //@}
 
     //! @name
-    std::string VolumeCellGaussPointBy_;
-    std::string BoundCellGaussPointBy_;
+    INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
+    INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;
 
     /// edgebased stabilization
     bool edge_based_;
 
-    /// ghost penalty stabilization (1st order, 2nd order derivatives) due to Nitsche's method
+    /// ghost penalty stabilization (1st order, 2nd order derivatives, viscous, transient) due to Nitsche's method
     bool ghost_penalty_;
-    bool ghost_penalty_transient_;
 
-    bool ghost_penalty_2ndorder_;
-    double ghost_penalty_fac_;
-    double ghost_penalty_transient_fac_;
 
 
     //! @name flags for gmsh output

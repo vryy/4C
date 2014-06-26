@@ -46,12 +46,6 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     charelelengthu_(INPAR::FLUID::streamlength_u),
     charelelengthpc_(INPAR::FLUID::volume_equivalent_diameter_pc),
     viscreastabfac_(0.0),
-    EOS_pres_(INPAR::FLUID::EOS_PRES_none),
-    EOS_conv_stream_(INPAR::FLUID::EOS_CONV_STREAM_none),
-    EOS_conv_cross_(INPAR::FLUID::EOS_CONV_CROSS_none),
-    EOS_div_(INPAR::FLUID::EOS_DIV_none),
-    EOS_whichtau_(INPAR::FLUID::EOS_tau_burman_fernandez),
-    EOS_element_lenght_(INPAR::FLUID::EOS_he_max_dist_to_opp_surf),
     ppp_(false),
     mat_gp_(false),     // standard evaluation of the material at the element center
     tau_gp_(false),      // standard evaluation of tau at the element center
@@ -166,7 +160,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
   Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
-  Teuchos::ParameterList& stablist_edgebased = params.sublist("EDGE-BASED STABILIZATION");
 
   stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
 
@@ -273,32 +266,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
     }
 
-    // case of xfem check whether additional xfem-stabilization terms in the form of
-    // edge-based terms are activated (i.e., ghost penalties)
-    if (stablist_edgebased.get<std::string>("EOS_PRES") == "xfem_gp" or
-        stablist_edgebased.get<std::string>("EOS_CONV_STREAM") == "xfem_gp" or
-        stablist_edgebased.get<std::string>("EOS_CONV_CROSS") == "xfem_gp" or
-        stablist_edgebased.get<std::string>("EOS_DIV") == "xfem_gp")
-    {
-      EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
-      EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
-      EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
-      EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
-
-      EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
-      // set correct stationary definition of stabilization parameter automatically
-      if (fldparatimint_->IsStationary())
-      {
-        if (EOS_whichtau_ == INPAR::FLUID::EOS_tau_burman_fernandez_hansbo)
-          EOS_whichtau_ = INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt;
-        if (EOS_whichtau_ == INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino)
-          EOS_whichtau_ = INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt;
-      }
-    }
-    // setting the EOS element length outside of the if-statement is not very beautiful,
-    // but there is an input parameter in the XFEM STABILIZATION section, which requires that
-    // this parameter has been set
-    EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
+    // XFEM specific ghost penalty stabilization are set in the fluid_ele_parameter_intface-class
   }
   else if (stabtype_ == INPAR::FLUID::stabtype_edgebased)
   {
@@ -322,18 +290,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
 
-    // --------------------------------
-    // edge-based fluid stabilization can be used as standard fluid stabilization or
-    // as ghost-penalty stabilization in addition to residual-based stabilizations in the XFEM
-
-    // set parameters if single stabilization terms are switched on/off or which type of stabilization is chosen
-    EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
-    EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
-    EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
-    EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
-
-    EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
-    EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+    // all edge-based flags are set in the fluid_ele_parameter_intface-class
   }
   else if (stabtype_ == INPAR::FLUID::stabtype_pressureprojection)
   {

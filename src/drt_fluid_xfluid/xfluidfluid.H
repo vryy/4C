@@ -29,6 +29,7 @@ Maintainer:  Shadan Shahmiri
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_cut.H"
 
 #include "../drt_fluid/fluid_timint.H"
 
@@ -523,7 +524,7 @@ namespace FLD
     /// that contribute to the fluid-fluid interface with at least one face
     void CreateEmbeddedBoundarydis();
 
-    //! @name Set general parameter in class f3Parameter
+    //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
 
     \brief parameter (fix over all time step) are set in this method.
@@ -531,7 +532,7 @@ namespace FLD
     and in the fluid boundary element
 
     */
-    void SetElementGeneralFluidParameter();
+    void SetElementGeneralFluidXFEMParameter();
 
     //! @name Set general parameter in class f3Parameter
     /*!
@@ -543,14 +544,14 @@ namespace FLD
     */
     void SetElementTimeParameter();
 
-    //! @name Set general parameter in class f3Parameter
+    //! @name Set general parameter in parameter list class for fluid internal face elements
     /*!
 
     \brief parameter (fix over all time step) are set in this method.
-           Therefore, these parameter are accessible in the fluid element
-           and in the fluid boundary element
+           Therefore, these parameter are accessible in the fluid intfaces element
+
     */
-    void SetElementTurbulenceParameter();
+    void SetFaceGeneralFluidXFEMParameter();
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
@@ -748,7 +749,6 @@ namespace FLD
 
     /// flag for ghost penalty stabilization
     bool ghost_penalty_;
-    bool ghost_penalty_2ndorder_;
 
     /// ghost-penalty parameter
     double ghost_penalty_fac_;
@@ -872,9 +872,8 @@ namespace FLD
     int minnumdofsets_;
 
     /// gauss integration rule for volume-cells
-    std::string VolumeCellGaussPointBy_;
-    /// gauss integration rule for boundary-cells
-    std::string BoundCellGaussPointBy_;
+    INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
+    INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;
 
     int gmsh_count_;
 

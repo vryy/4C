@@ -292,7 +292,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
              ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,"DirectDivergence");
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
      dirDivVol.push_back(vc->Volume());
    }*/
 
@@ -341,7 +341,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
              ++i )
      {
        GEO::CUT::VolumeCell * vc = &**i;
-       vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,"DirectDivergence");
+       vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
        dirDivVol.push_back(vc->Volume());
      }
 

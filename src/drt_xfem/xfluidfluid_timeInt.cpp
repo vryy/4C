@@ -32,6 +32,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_element.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_cut.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_volumecell.H"
 #include "../drt_fluid_ele/fluid_ele.H"
@@ -62,7 +63,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
     params_ = params;
 
     Teuchos::ParameterList&   params_xfem  = params_.sublist("XFEM");
-    gmsh_debug_out_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
+    gmsh_debug_out_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
 
     Teuchos::ParameterList&   params_xf_gen = params_.sublist("XFLUID DYNAMIC/GENERAL");
     searchradius_fac_= params_xf_gen.get<double>("XFLUIDFLUID_SEARCHRADIUS");
@@ -1963,7 +1964,7 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const Teuchos::
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
-      std::string VolumeCellGaussPointBy =  params_.sublist("XFEM").get<std::string>("VOLUME_GAUSS_POINTS_BY");
+      INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_.sublist("XFEM"), "VOLUME_GAUSS_POINTS_BY");
 
       e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy );
 

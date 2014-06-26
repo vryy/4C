@@ -186,8 +186,11 @@ namespace INPAR
     /// Element length for edge-oriented / continuous interior penalty stabilization
     enum EOS_ElementLength
     {
+      EOS_he_max_diameter_to_opp_surf,
       EOS_he_max_dist_to_opp_surf,
       EOS_he_surf_with_max_diameter,
+      EOS_hk_max_diameter,           // maximal nD diameter of the neighboring elements
+      EOS_he_surf_diameter,          // maximal (n-1)D diameter of the internal face/edge
       EOS_he_vol_eq_diameter
     };
 

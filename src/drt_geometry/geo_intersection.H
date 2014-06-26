@@ -17,6 +17,9 @@ Maintainer: Benedikt Schott
 
 #include <Teuchos_RCP.hpp>
 
+#include "../drt_inpar/inpar_cut.H"
+
+
 
 class Epetra_Map;
 class Epetra_SerialDenseMatrix;
@@ -92,8 +95,8 @@ namespace GEO
     \brief Cut routine for parallel framework in XFSI and XFLUIDFLUID
     */
     void CutParallel( bool include_inner,
-                      std::string VCellgausstype,
-                      std::string BCellgausstype,
+                      INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+                      INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
                       bool tetcellsonly =false,
                       bool screenoutput = true);
 
@@ -105,7 +108,12 @@ namespace GEO
     /*!
     \brief Cut routine for standard non-parallel framework which is used only for cut_test
     */
-    void Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype, bool screenoutput=true );
+    void Cut(
+        bool include_inner,
+        INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+        INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
+        bool screenoutput=true
+    );
 
 //     Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap );
 

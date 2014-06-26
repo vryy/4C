@@ -38,6 +38,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_fluid_turbulence/turbulence_hit_forcing.H"
 #include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
 #include "fluid_utils_infnormscaling.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 #include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -534,6 +535,10 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
   //the following two functions are overloaded (switched off) in TimIntPoro
   SetElementGeneralFluidParameter();
   SetElementTurbulenceParameter();
+
+  // set special parameter for faces/edges when using edge-based fluid stabilizations
+  if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
+    SetFaceGeneralFluidParameter();
 
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
@@ -4979,6 +4984,25 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
   return;
 }
 
+// -------------------------------------------------------------------
+// set general face fluid parameter for face/edge-oriented fluid stabilizations (BS 06/2014)
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetFaceGeneralFluidParameter()
+{
+
+  Teuchos::ParameterList faceparams;
+
+  faceparams.set<int>("action",FLD::set_general_face_fluid_parameter);
+
+  // set general fluid face parameters are contained in the following two sublists
+  faceparams.sublist("EDGE-BASED STABILIZATION")     = params_->sublist("EDGE-BASED STABILIZATION");
+
+  faceparams.set<int>("STABTYPE", DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>( params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
+
+  DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+}
+
 /*----------------------------------------------------------------------*
  | update Newton step                                                   |
  *----------------------------------------------------------------------*/
@@ -5087,12 +5111,12 @@ void FLD::FluidImplicitTimeInt::PrintStabilizationDetails() const
       std::cout << "|           face discretization currently only available for pure fluid problems  |\n";
       std::cout << "+---------------------------------------------------------------------------------+\n";
 
-      std::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
-      std::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
-      std::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
-      std::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
-      std::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
-      std::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
+      std::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<std::string>("EOS_PRES")      <<"\n";
+      std::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<std::string>("EOS_CONV_STREAM")      <<"\n";
+      std::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<std::string>("EOS_CONV_CROSS")      <<"\n";
+      std::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<std::string>("EOS_DIV")      <<"\n";
+      std::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<std::string>("EOS_DEFINITION_TAU")      <<"\n";
+      std::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<std::string>("EOS_H_DEFINITION")      <<"\n";
       std::cout << "+---------------------------------------------------------------------------------+\n" << std::endl;
     }
   }

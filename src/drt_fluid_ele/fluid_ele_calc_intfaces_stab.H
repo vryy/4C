@@ -30,6 +30,7 @@ Maintainer: Benedikt Schott
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
+#include "fluid_ele_parameter_intface.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
@@ -78,7 +79,7 @@ namespace DRT
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
           DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,       ///< time-integration parameter
-          DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< general paramter
+          DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,      ///< general parameter for internal face
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map
@@ -128,6 +129,7 @@ namespace DRT
              DRT::Element::DiscretizationType ndistype>
     class FluidInternalSurfaceStab: public FluidIntFaceStab
     {
+
     public:
 
       /// Singleton access method
@@ -180,27 +182,29 @@ namespace DRT
 
       */
       virtual int EvaluateEdgeBasedStabilization(
-          DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
-          DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,       ///< time-integration parameter
-          DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< general paramter
-          Teuchos::ParameterList&            params,                    ///< parameter list
-          DRT::Discretization&               discretization,            ///< discretization
-          std::vector<int>&                  patchlm,                   ///< patch local map
-          std::vector<int>&                  lm_masterToPatch,          ///< local map between master dofs and patchlm
-          std::vector<int>&                  lm_slaveToPatch,           ///< local map between slave dofs and patchlm
-          std::vector<int>&                  lm_faceToPatch,            ///< local map between face dofs and patchlm
-          std::vector<int>&                  lm_masterNodeToPatch,      ///< local map between master nodes and nodes in patch
-          std::vector<int>&                  lm_slaveNodeToPatch,       ///< local map between slave nodes and nodes in patch
-          std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-          std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+          DRT::ELEMENTS::FluidIntFace*             intface,              ///< internal face element
+          DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,        ///< time-integration parameter
+          DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,       ///< general parameter for internal face
+          Teuchos::ParameterList&                  params,               ///< parameter list
+          DRT::Discretization&                     discretization,       ///< discretization
+          std::vector<int>&                        patchlm,              ///< patch local map
+          std::vector<int>&                        lm_masterToPatch,     ///< local map between master dofs and patchlm
+          std::vector<int>&                        lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+          std::vector<int>&                        lm_faceToPatch,       ///< local map between face dofs and patchlm
+          std::vector<int>&                        lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&                        lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+          std::vector<Epetra_SerialDenseMatrix>&   elemat_blocks,        ///< element matrix blocks
+          std::vector<Epetra_SerialDenseVector>&   elevec_blocks         ///< element vector blocks
       );
 
     private:
 
+      int Degree( const DRT::Element::DiscretizationType parent_ele_distype);
+
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
       void ReassembleMATBlock(
-          int                                                          row_block,            ///< row block
-          int                                                          col_block,            ///< column block
+          const int                                                    row_block,            ///< row block
+          const int                                                    col_block,            ///< column block
           Epetra_SerialDenseMatrix&                                    mat_block,            ///< matrix block
           LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&    elematrix_mm,         ///< element matrix master-master block
           LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&    elematrix_ms,         ///< element matrix master-slave block
@@ -212,7 +216,7 @@ namespace DRT
 
       //! reassemble rhs block from master/slave rhs to patch-node block for field (row)
       void ReassembleRHSBlock(
-          int                                         row_block,            ///< row block
+          const int                                   row_block,            ///< row block
           Epetra_SerialDenseVector&                   rhs_block,            ///< rhs block
           LINALG::Matrix<numdofpernode_*piel, 1>&     elevector_m,          ///< element vector master block
           LINALG::Matrix<numdofpernode_*niel, 1>&     elevector_s,          ///< element vector slave block
@@ -225,8 +229,6 @@ namespace DRT
           FluidIntFace*              surfele,          ///< surface FluidIntFace element
           Fluid*                     master_ele,       ///< master parent element
           Fluid*                     slave_ele,        ///< slave  parent element
-          double &                   kinvisc,          ///< patch kinematic viscosity
-          double &                   dens,             ///< patch density
           std::vector<double>&       mypvelaf,         ///< master velaf
           std::vector<double>&       mypvelnp,         ///< master velnp
           std::vector<double>&       mypedispnp,       ///< master dispnp
@@ -236,6 +238,7 @@ namespace DRT
           std::vector<double>&       mynedispnp        ///< slave dispnp
       );
 
+      //! evaluate shape functions and derivatives at integr. point
       double EvalShapeFuncAndDerivsAtIntPoint(
           const double                             wquad,                ///< Gaussian weight
           const LINALG::Matrix<facensd_,1> &       xi_gp,                ///< local coordinates of gaussian point w.r.t the master's face
@@ -254,6 +257,9 @@ namespace DRT
           bool                                     use2ndderiv = false    ///< flag to use 2nd order derivatives
       );
 
+      //! evaluate velocity and pressure and derivatives at integr. point
+      void EvalVelPresAndDerivsAtIntPoint(bool use2ndderiv);
+
       //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order derivatives
       void GhostPenalty2nd(
                   LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
@@ -264,8 +270,8 @@ namespace DRT
                   LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
                   const double &                                                timefacfac,
                   const double &                                                timefacfacpre,
-                  double &                                                      tau_u_2nd,
-                  double &                                                      tau_p_2nd
+                  const double &                                                tau_u_2nd,
+                  const double &                                                tau_p_2nd
                   );
 
       //! Provide pressure (EOS) stabilization assembly for fluid
@@ -278,7 +284,7 @@ namespace DRT
           LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
           const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-          double &                                                       tau_p          ///< pressure stabilization parameter
+          const double &                                                 tau_pres       ///< pressure stabilization parameter
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
@@ -291,7 +297,7 @@ namespace DRT
           LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,         ///< element vector slave block
           const double &                                                 timefacfac,          ///< timefac x integration factor
           const double &                                                 timefacfacrhs,       ///< (time factor rhs) x (integration factor)
-          double &                                                       tau_div_streamline,  ///< streamline stabilization parameter
+          const double &                                                 tau_div_streamline,  ///< streamline stabilization parameter
           LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
       );
 
@@ -305,17 +311,195 @@ namespace DRT
           LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
           const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-          double &                                                       tau_div        ///< combined penalty parameter for divergence stabilization terms
+          const double &                                                 tau_div        ///< combined penalty parameter for divergence stabilization terms
       );
 
 
       //! compute h_k w.r.t master and slave element
-      void compute_patch_hk ( double &   patch_hk,   ///< patch h_k
-                              Fluid*    master,     ///< master fluid element
-                              Fluid*    slave,       ///< slave fluid element
-                              DRT::ELEMENTS::FluidIntFace*       intface,
-                              const INPAR::FLUID::EOS_ElementLength&    eos_element_length
+      double compute_patch_hk(
+          Fluid*                                    master,            ///< master fluid element
+          Fluid*                                    slave,             ///< slave fluid element
+          DRT::ELEMENTS::FluidIntFace*              intface,           ///< intface element
+          const INPAR::FLUID::EOS_ElementLength&    eos_element_length ///< which definition of element length?
       );
+
+      //! compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element
+      double compute_patch_hk_surf_with_max_diameter(
+          Fluid*                                    master,            ///< master fluid element
+          Fluid*                                    slave,             ///< slave fluid element
+          DRT::ELEMENTS::FluidIntFace*              intface            ///< intface element
+      );
+
+      //! compute h_e based on the diameter of the intfaace surface(3D) and the length of the intface line(2D)
+      double compute_surf_diameter(
+          DRT::ELEMENTS::FluidIntFace*              intface            ///< intface element
+      );
+
+      //! compute h_k based on distance of quadrilateral element to opposite surface/edge - just for quadrilateral/hexahedral elements
+      double compute_patch_hk_dist_to_opp_surf(
+          Fluid*                                    master,            ///< master fluid element
+          Fluid*                                    slave,             ///< slave fluid element
+          DRT::ELEMENTS::FluidIntFace*              intface            ///< intface element
+      );
+
+      //! compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element,
+      //! however do not take into account the face itself (and its opposite face/line) for hex/quad elements)
+      double compute_patch_hk_diameter_to_opp_surf(
+          Fluid*                                    master,            ///< master fluid element
+          Fluid*                                    slave,             ///< slave fluid element
+          DRT::ELEMENTS::FluidIntFace*              intface            ///< intface element
+      );
+
+      //! compute h_k based on the maximal diameter of the master and slave element
+      double compute_patch_hk_ele_diameter(
+          Fluid*                                    master,            ///< master fluid element
+          Fluid*                                    slave              ///< slave fluid element
+      );
+
+      //! compute the minimum of viscous/convective scaling factors depending on polynomial degree
+      inline void determine_poly_degree(double& r_min_visc, double & r_min_conv)
+      {
+        double r_visc_master = 0.0;
+        double r_conv_master = 0.0;
+
+        double r_visc_slave  = 0.0;
+        double r_conv_slave  = 0.0;
+
+        // get the polynomial scaling factors for the viscous and the convective regime for master and slave parent element
+        r_pow_alpha(pdistype, r_visc_master, r_conv_master);
+        r_pow_alpha(ndistype, r_visc_slave , r_conv_slave );
+
+        // get the minimal degree as the stabilization parameters scale with 1/(r^alpha), not to loose stability
+        r_min_visc = std::min(r_visc_master, r_visc_slave);
+        r_min_conv = std::min(r_conv_master, r_conv_slave);
+      }
+
+      /*!
+        \brief provide parameter r_alpha depending on polynomial degree and shape of element
+        for each parent distype required for certain stabilization parameter definitions
+       */
+      inline void r_pow_alpha(DRT::Element::DiscretizationType parent_distype, double & r_visc, double & r_conv)
+      {
+        // the scaling factor for face/edge-oriented stabilizations is r^alpha with
+        // *    r_triangle      = highest polynomial degree on triangle/tet
+        // *    r_quadrilateral = highest polynomial degree in each direction
+        // and
+        // *    alpha = 4   for viscous terms
+        // *    alpha = 7/2 for convective terms
+        // independent of dimension,
+        // see Braack et al 2007 and hp-paper by Erik Burman 2006
+
+        switch (parent_distype)
+        {
+        case DRT::Element::hex8:
+        case DRT::Element::tet4:
+        case DRT::Element::pyramid5:
+        case DRT::Element::wedge6:
+        case DRT::Element::quad4:
+        case DRT::Element::tri3:
+        case DRT::Element::line2:
+        {
+          r_visc = 1.0; ///< 1.0^4
+          r_conv = 1.0; ///< 1.0^(7/2)
+          break;
+        }
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+        case DRT::Element::tet10:
+        case DRT::Element::wedge15:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
+        case DRT::Element::tri6:
+        case DRT::Element::line3:
+        {
+          r_visc = 16.0;                  ///< 2.0^4
+          r_conv = 11.313708498984761164; ///< 2.0^(7/2)
+          break;
+        }
+        default:
+          dserror("Element shape not supported."); break;
+        }
+      };
+
+      //! compute volumetric element diameter w.r.t to parent master element or parent slave element (flag master=true/false)
+      template <int numnode>
+      void diameter(     bool                master,           ///< master or slave parent element
+                         double &            h_k               ///< diameter of parent element
+      )
+      {
+
+        int numnodes_to_check = -1;
+
+        if(master)
+        {
+          if(nsd_ == 3)
+          {
+            if(      piel == 8 or piel == 20 or piel == 27) numnodes_to_check = 8; // 3D hexahedral elements
+            else if (piel == 4 or piel == 10 )              numnodes_to_check = 4; // 3D tetrahedral elements
+            else dserror("unknown element type");
+          }
+          else if (nsd_ == 2)
+          {
+            if(      piel == 4 or piel == 8 or piel == 9) numnodes_to_check = 4; // 2D quadrilateral elements
+            else if (piel == 3 or piel == 6 )             numnodes_to_check = 3; // 2D triangle elements
+            else dserror("unknown element type");
+          }
+          else dserror("invalid nsd");
+
+          for(int i = 0; i< numnodes_to_check; i++)
+          {
+            for(int j=i+1; j< numnodes_to_check; j++)
+            {
+              // squared length
+              double length = 0.0;
+
+              for(int k=0; k< nsd_; k++)
+              {
+                length += (pxyze_(k,j) - pxyze_(k,i))*(pxyze_(k,j) - pxyze_(k,i));
+              }
+              length = sqrt(length);
+              h_k = std::max(length, h_k);
+            }
+          }
+        }
+        else
+        {
+          if(nsd_ == 3)
+          {
+            if(      niel == 8 or niel == 20 or niel == 27) numnodes_to_check = 8; // 3D hexahedral elements
+            else if (niel == 4 or niel == 10 )              numnodes_to_check = 4; // 3D tetrahedral elements
+            else dserror("unknown element type");
+          }
+          else if (nsd_ == 2)
+          {
+            if(      niel == 4 or niel == 8 or niel == 9) numnodes_to_check = 4; // 2D quadrilateral elements
+            else if (niel == 3 or niel == 6 )             numnodes_to_check = 3; // 2D triangle elements
+            else dserror("unknown element type");
+          }
+          else dserror("invalid nsd");
+
+
+          for(int i = 0; i< numnodes_to_check; i++)
+          {
+            for(int j=i+1; j< numnodes_to_check; j++)
+            {
+              // squared length
+              double length = 0.0;
+
+              for(int k=0; k< nsd_; k++)
+              {
+                length += (nxyze_(k,j) - nxyze_(k,i))*(nxyze_(k,j) - nxyze_(k,i));
+              }
+              length = sqrt(length);
+              h_k = std::max(length, h_k);
+            }
+          }
+        }
+
+        if(h_k <= 0.0) dserror("negative or zero diameter for current element!");
+
+        return;
+      };
 
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
       template <int numnode>
@@ -389,7 +573,7 @@ namespace DRT
 
           h_e = std::max(diam1, std::max(diam2, std::max(line0, std::max(line1, std::max(line2, line3)))));
         }
-        else if(numnode == 3) // tri3 surface
+        else if(numnode == 3 or numnode == 6) // tri3 or tri6 surface
         {
           double line0 = 0.0;
           double line1 = 0.0;
@@ -402,7 +586,7 @@ namespace DRT
             // lines
             line0 += (xyz_surf(i,1) - xyz_surf(i,0))*(xyz_surf(i,1) - xyz_surf(i,0));
             line1 += (xyz_surf(i,2) - xyz_surf(i,1))*(xyz_surf(i,2) - xyz_surf(i,1));
-            line2 += (xyz_surf(i,0) - xyz_surf(i,3))*(xyz_surf(i,0) - xyz_surf(i,3));
+            line2 += (xyz_surf(i,0) - xyz_surf(i,2))*(xyz_surf(i,0) - xyz_surf(i,2));
           }
 
           line0 = sqrt(line0);
@@ -419,7 +603,7 @@ namespace DRT
         return;
        }
 
-      //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
+      //! compute line diameter (length) w.r.t to parent master element or parent slave element (flag master=true/false)
       template <int numnode>
       void diameter1D(     bool                master,           ///< master or slave parent element
                            std::vector<int> &  connectivity,     ///< connectivity vector for parent element
@@ -456,7 +640,7 @@ namespace DRT
         }
 
 
-        if(numnode == 2) // line 2 face
+        if(numnode == 2 or numnode == 3) // line 2 or line 3 face
         {
           double diam1 = 0.0;
 
@@ -471,387 +655,258 @@ namespace DRT
           diam1 = sqrt(diam1);
           h_e = diam1;
         }
-        else if(numnode == 3) // line3 face
-        {
-          double diam1 = 0.0;
-
-          for(int i=0; i<nsd_; i++)
-          {
-
-            // diagonals
-            // line nodes (0,2,1) -> (0,1)
-            diam1 += (xyz_surf(i,1) - xyz_surf(i,0))*(xyz_surf(i,1) - xyz_surf(i,0));
-
-          }
-          diam1 = sqrt(diam1);
-          h_e = diam1;
-        }
         else dserror("unknown number of nodes");
 
         if(h_e <= 0.0) dserror("negative or zero diameter for current face!");
 
         return;
-       }
-
-      template <int numnode>
-      void distance2D( bool                              master,           ///< master or slave parent element
-    		           std::map< int,std::vector<int> >  p_lines_nodes,
-                       double &                          h_e               ///< element length w.r.t parent element
-      )
-      {
-    	  LINALG::Matrix<nsd_ ,iel*2> xyze_distance_lines;
-
-    	  if (master == true) // is parent element the master element?
-    	  {
-    		  //find the distance
-    		  int count = 0;
-    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
-    				  iter++)
-    		  {
-    			  std::vector<int> nodesofline = iter->second;
-    			  for(int isd=0; isd<nsd_; isd++)
-    			  {
-    				  xyze_distance_lines(isd,count) = pxyze_(isd, nodesofline.at(0));
-    				  xyze_distance_lines(isd,count+1) = pxyze_(isd, nodesofline.at(1));
-    			  }
-    			  count=count+2;
-    		  }
-    	  }
-    	  else
-    	  {
-    		  //find the distance
-    		  int count = 0;
-    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
-    				  iter++)
-    		  {
-    			  std::vector<int> nodesofline = iter->second;
-    			  for(int isd=0; isd<nsd_; isd++)
-    			  {
-    				  xyze_distance_lines(isd,count) = nxyze_(isd, nodesofline.at(0));
-    				  xyze_distance_lines(isd,count+1) = nxyze_(isd, nodesofline.at(1));
-    			  }
-    			  count=count+2;
-    		  }
-
-       	  }
-          if (numnode == 4 or numnode == 8 or numnode == 9)
-          {
-        	  double line0 = 0.0;
-        	  double line1 = 0.0;
-        	  double line2 = 0.0;
-        	  double line3 = 0.0;
-
-        	  for(int i=0; i<nsd_; i++)
-        	  {
-        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
-        		  line1 += (xyze_distance_lines(i,2) - xyze_distance_lines(i,3))*(xyze_distance_lines(i,2) - xyze_distance_lines(i,3));
-        		  line2 += (xyze_distance_lines(i,4) - xyze_distance_lines(i,5))*(xyze_distance_lines(i,4) - xyze_distance_lines(i,5));
-        		  line3 += (xyze_distance_lines(i,6) - xyze_distance_lines(i,7))*(xyze_distance_lines(i,6) - xyze_distance_lines(i,7));
-        	  }
-
-        	  line0 = sqrt(line0);
-        	  line1 = sqrt(line1);
-        	  line2 = sqrt(line2);
-        	  line3 = sqrt(line3);
-
-        	  h_e = std::max(line0, std::max(line1, std::max(line2, line3)));
-          }
-          if (numnode == 3)
-          {
-        	  double line0 = 0.0;
-
-        	  for(int i=0; i<nsd_; i++)
-        	  {
-        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
-        	  }
-        	  line0 = sqrt(line0);
-
-        	  h_e = line0;
-          }
       }
 
-      template <int numnode>
-      void distance1D( bool                              master,           ///< master or slave parent element
-    		           std::map< int,std::vector<int> >  p_lines_nodes,
-                       double &                          h_e               ///< element length w.r.t parent element
+      template <int numlines>
+      void max_length_of_lines(
+          bool                              master,           ///< master or slave parent element
+          std::map< int,std::vector<int> >  p_lines_nodes,    ///< for each line the vector of start and end nodes
+          double &                          h_e               ///< element length w.r.t parent element
       )
       {
-    	  dserror("The implementation of distance1D is not tested 2D elements!");
-    	  LINALG::Matrix<nsd_ ,iel*2> xyze_distance_lines;
+        // matrix that contains the coordinates of the start and end point of the connecting lines between the two opposite surfaces
+        LINALG::Matrix<nsd_ ,numlines*2> xyze_distance_lines;
 
-    	  if (master == true) // is parent element the master element?
-    	  {
-    		  //find the distance
-    		  int count = 0;
-    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
-    				  iter++)
-    		  {
-    			  std::vector<int> nodesofline = iter->second;
-    			  for(int isd=0; isd<nsd_; isd++)
-    			  {
-    				  xyze_distance_lines(isd,count) = pxyze_(isd, nodesofline.at(0));
-    				  xyze_distance_lines(isd,count+1) = pxyze_(isd, nodesofline.at(1));
-    			  }
-    			  count=count+2;
-    		  }
-    	  }
-    	  else
-    	  {
-    		  //find the distance
-    		  int count = 0;
-    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
-    				  iter++)
-    		  {
-    			  std::vector<int> nodesofline = iter->second;
-    			  for(int isd=0; isd<nsd_; isd++)
-    			  {
-    				  xyze_distance_lines(isd,count) = nxyze_(isd, nodesofline.at(0));
-    				  xyze_distance_lines(isd,count+1) = nxyze_(isd, nodesofline.at(1));
-    			  }
-    			  count=count+2;
-    		  }
-
-       	  }
-          if (numnode == 4) // quad4 parent element
+        if (master == true) // is parent element the master element?
+        {
+          //find the distance
+          int count = 0;
+          for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
+              iter++)
           {
-        	  double line0 = 0.0;
-        	  double line1 = 0.0;
-
-        	  for(int i=0; i<nsd_; i++)
-        	  {
-        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
-        		  line1 += (xyze_distance_lines(i,2) - xyze_distance_lines(i,3))*(xyze_distance_lines(i,2) - xyze_distance_lines(i,3));
-        	  }
-
-        	  line0 = sqrt(line0);
-        	  line1 = sqrt(line1);
-        	  h_e = std::max(line0, line1);
-          }
-          if (numnode == 3) //tri3 parent element
-          {
-        	  double line0 = 0.0;
-
-        	  for(int i=0; i<nsd_; i++)
-        	  {
-        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
-        	  }
-        	  line0 = sqrt(line0);
-
-        	  h_e = line0;
-          }
-      }
-      //! find the surface at the opposite side
-      template <int numnode>
-      void FindOppositeSurface2D(int surfacelocalid,int & surf_neighbor)
-      {
-	  if ((numnode == 4) or (numnode == 8))
-	  {
-	    switch (surfacelocalid)
-	    {
-            case 0:
-    	        surf_neighbor = 5;
-    	    break;
-            case 1:
-             	surf_neighbor = 3;
-    	    break;
-            case 2:
-    	        surf_neighbor = 4;
-    	    break;
-            case 3:
-    	        surf_neighbor = 1;
-    	    break;
-            case 4:
-    	        surf_neighbor = 2;
-    	    break;
-            case 5:
-    	        surf_neighbor = 0;
-    	    break;
-            default:
-    	        dserror("wrong number!!");
-    	    break;
-           }
-	 }
-	 else if (numnode == 3) 
-	 {
-	    switch (surfacelocalid)
-	    {
-	    	case 0:
-	    		surf_neighbor = 3;
-	    		break;
-	    	case 1:
-	    		surf_neighbor = 3;
-	    		break;
-            case 2:
-            	surf_neighbor = 1;
-            	break;
-            case 3:
-            	surf_neighbor = 0;
-            	break;
-            default:
-            	dserror("wrong number!!");
-            break;
-	    } 
-	 }
-     }
-
-     //! find the surface at the opposite side
-     template <int numnodeparentele>
-     void FindOppositeSurface1D(int surfacelocalid,int & surf_neighbor)
-     {
-//    	 dserror("The implementation of FindOppositeSurface1D is not tested 2D elements!");
-    	 if ((numnodeparentele == 4) or (numnodeparentele == 8))
-    	  {
-    	    switch (surfacelocalid)
-    	    {
-                case 0:
-        	        surf_neighbor = 2;
-        	    break;
-                case 1:
-                 	surf_neighbor = 3;
-        	    break;
-                case 2:
-        	        surf_neighbor = 0;
-        	    break;
-                case 3:
-        	        surf_neighbor = 1;
-        	    break;
-                default:
-        	        dserror("wrong number!!");
-        	    break;
-               }
-    	  }
-    	  if ((numnodeparentele == 3) or (numnodeparentele == 6))
-    	  {
-    	    switch (surfacelocalid)
-    	    {
-                case 0:
-        	        surf_neighbor = 1;
-        	    break;
-                case 1:
-                 	surf_neighbor = 0;
-        	    break;
-                case 2:
-        	        surf_neighbor = 0;
-        	    break;
-                default:
-        	        dserror("wrong number!!");
-        	    break;
+            std::vector<int> nodesofline = iter->second;
+            for(int isd=0; isd<nsd_; isd++)
+            {
+              // extract just start and end point of the line
+              xyze_distance_lines(isd,count)   = pxyze_(isd, nodesofline.at(0));
+              xyze_distance_lines(isd,count+1) = pxyze_(isd, nodesofline.at(1));
             }
-    	  }
+            count=count+2;
+          }
+        }
+        else
+        {
+          //find the distance
+          int count = 0;
+          for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
+              iter++)
+          {
+            std::vector<int> nodesofline = iter->second;
+            for(int isd=0; isd<nsd_; isd++)
+            {
+              // extract just start and end point of the line
+              xyze_distance_lines(isd,count)   = nxyze_(isd, nodesofline.at(0));
+              xyze_distance_lines(isd,count+1) = nxyze_(isd, nodesofline.at(1));
+            }
+            count=count+2;
+          }
+        }
+
+        // just reasonable for quadrilateral intfaces
+        if (numlines == 4) // for hex8/20/27 element with quadrilateral intface element
+        {
+          double line0 = 0.0;
+          double line1 = 0.0;
+          double line2 = 0.0;
+          double line3 = 0.0;
+
+          for(int i=0; i<nsd_; i++)
+          {
+            line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
+            line1 += (xyze_distance_lines(i,2) - xyze_distance_lines(i,3))*(xyze_distance_lines(i,2) - xyze_distance_lines(i,3));
+            line2 += (xyze_distance_lines(i,4) - xyze_distance_lines(i,5))*(xyze_distance_lines(i,4) - xyze_distance_lines(i,5));
+            line3 += (xyze_distance_lines(i,6) - xyze_distance_lines(i,7))*(xyze_distance_lines(i,6) - xyze_distance_lines(i,7));
+          }
+
+          line0 = sqrt(line0);
+          line1 = sqrt(line1);
+          line2 = sqrt(line2);
+          line3 = sqrt(line3);
+
+          h_e = std::max(line0, std::max(line1, std::max(line2, line3)));
+        }
+        else if (numlines == 2) // quad4/8/9 parent element with line intface element
+        {
+          double line0 = 0.0;
+          double line1 = 0.0;
+
+          for(int i=0; i<nsd_; i++)
+          {
+            line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
+            line1 += (xyze_distance_lines(i,2) - xyze_distance_lines(i,3))*(xyze_distance_lines(i,2) - xyze_distance_lines(i,3));
+          }
+
+          line0 = sqrt(line0);
+          line1 = sqrt(line1);
+
+          h_e = std::max(line0, line1);
+        }
+        else dserror("call not reasonable for non-quadrilateral or line intface elements");
+
       }
+
+
+
+      //! find the surface at the opposite side, return the local side id of opposite side
+      //! return -1 if not unique!
+      int FindOppositeSurface(DRT::Element::DiscretizationType ele_distype, const int surfacelocalid)
+      {
+        if (ele_distype == DRT::Element::hex8 or ele_distype == DRT::Element::hex20 or ele_distype == DRT::Element::hex27)
+        {
+          switch (surfacelocalid)
+          {
+          case 0:
+            return 5; break;
+          case 1:
+            return 3; break;
+          case 2:
+            return 4; break;
+          case 3:
+            return 1; break;
+          case 4:
+            return 2; break;
+          case 5:
+            return 0; break;
+          default:
+            dserror("wrong number!!"); break;
+          }
+        }
+        else if (ele_distype == DRT::Element::quad4 or ele_distype == DRT::Element::quad8 or ele_distype == DRT::Element::quad9)
+        {
+          switch (surfacelocalid)
+          {
+          case 0:
+            return 2; break;
+          case 1:
+            return 3; break;
+          case 2:
+            return 0; break;
+          case 3:
+            return 1; break;
+          default:
+            dserror("wrong number!!"); break;
+          }
+        }
+        if (   ele_distype == DRT::Element::tet4
+            or ele_distype == DRT::Element::tet10
+            or ele_distype == DRT::Element::tri3
+            or ele_distype == DRT::Element::tri6
+            or ele_distype == DRT::Element::pyramid5)
+        {
+          // no unique opposite side
+          return -1;
+        }
+        else dserror("opposite sides not implemented yet for wedge elements yet!");
+
+        return -1;
+      }
+
 
       //! find the lines which connect this surface to the surface at the other side
-      template <int numnode>
-      void FindConnectingLines2D(std::vector< std::vector<int> > connectivity_line_surf,
-    		                     int                             masterlocalid,
-    		                     int                             slavelocalid,
-    		                     std::set<int>                &  p_lines_m,
-    		                     std::set<int>                &  p_lines_s,
-    		                     int                             p_surf_neighbor_m,
-    		                     int                             p_surf_neighbor_s)
+      void FindHEXConnectingLines2D(
+          const int                       numnode,
+          std::vector< std::vector<int> > connectivity_line_surf,
+          const int                       side_id_master,
+          const int                       side_id_slave,
+          std::set<int>                &  p_lines_m,                   //< to be filled
+          std::set<int>                &  p_lines_s,                   //< to be filled
+          const int                       opposite_side_id_master,
+          const int                       opposite_side_id_slave)
       {
-    	  if (numnode == 4 or numnode == 8 or numnode == 9)
+        if (numnode == 4 or numnode == 8 or numnode == 9)
+        {
+          for (size_t i_line=0; i_line< connectivity_line_surf.size(); i_line++)
           {
-    		    for (size_t i_line=0; i_line< connectivity_line_surf.size(); i_line++)
-    		    {
-    		    	//find all adjacent surfaces to this line
-    		 	    std::vector<int> line_surfs = connectivity_line_surf.at(i_line);
+            //find all adjacent surfaces to this line
+            std::vector<int> line_surfs = connectivity_line_surf.at(i_line);
 
-    		 	    int countsurf_m = 0;
-    		 	    int countsurf_s = 0;
-    		 	    for (size_t i_surf=0; i_surf<line_surfs.size(); i_surf++)
-    		 	    {
-    		 		    if ((line_surfs.at(i_surf) != masterlocalid) and (line_surfs.at(i_surf) != p_surf_neighbor_m))
-    		 		    {
-    		 			    countsurf_m++;
-    		 			    // insert the line, where the two surfaces does not belong to it
-    		 			    if (countsurf_m == 2)
-    		 			      p_lines_m.insert(i_line);
+            int countsurf_m = 0;
+            int countsurf_s = 0;
+            for (size_t i_surf=0; i_surf<line_surfs.size(); i_surf++)
+            {
+              if ((line_surfs.at(i_surf) != side_id_master) and (line_surfs.at(i_surf) != opposite_side_id_master))
+              {
+                countsurf_m++;
+                // insert the line, where the two surfaces does not belong to it
+                if (countsurf_m == 2)
+                  p_lines_m.insert(i_line);
 
-    		 		   }
-    		 		   if ((line_surfs.at(i_surf) != slavelocalid) and (line_surfs.at(i_surf) != p_surf_neighbor_s))
-    		 		   {
-    		 			   countsurf_s++;
-    		 			   // insert the line, where the two surfaces does not belong to it
-    		 			   if (countsurf_s == 2)
-    		 			     p_lines_s.insert(i_line);
+              }
+              if ((line_surfs.at(i_surf) != side_id_slave) and (line_surfs.at(i_surf) != opposite_side_id_slave))
+              {
+                countsurf_s++;
+                // insert the line, where the two surfaces does not belong to it
+                if (countsurf_s == 2)
+                  p_lines_s.insert(i_line);
 
-    		 		   }
-    		 	   }
-    		    }
+              }
+            }
           }
-    	  else if (numnode ==3)
-    	  {
-    		  dserror("The implementation of FindConnectingLines is not tested for Tet4 elements!");
+        }
+        else dserror("The implementation of FindHEXConnectingLines is not available for non-hexahedral elements!");
 
-    		  for (size_t i_line=0; i_line< connectivity_line_surf.size(); i_line++)
-    		  {
-    			  //find all adjacent surfaces to this line
-    			  std::vector<int> line_surfs = connectivity_line_surf.at(i_line);
-
-    			  int countsurf_m = 0;
-    			  int countsurf_s = 0;
-    			  for (size_t i_surf=0; i_surf<line_surfs.size(); i_surf++)
-    			  {
-    				  // take the line if it belongs to both surfaces (original surface and neighbor)
-    				  if ((line_surfs.at(i_surf) == masterlocalid) and (line_surfs.at(i_surf) == p_surf_neighbor_m))
-    				  {
-    					  countsurf_m++;
-    					  // insert the line, where the two surfaces belong to it
-    					  if (countsurf_m == 2)
-    						  p_lines_m.insert(i_line);
-    				  }
-    				  if ((line_surfs.at(i_surf) == slavelocalid) and (line_surfs.at(i_surf) == p_surf_neighbor_s))
-    				  {
-    					  countsurf_s++;
-    					  // insert the line, where the two surfaces belong to it
-    					  if (countsurf_s == 2)
-    						  p_lines_s.insert(i_line);
-    				  }
-    			  }
-    		  }
-    	  }
       }
-      //! find the lines which connect this line (masterlocalid) to the neighboring line (slavelocalid) at the other side
-       template <int numnode>
-       void FindConnectingLines1D(//std::vector< std::vector<int> > connectivity_line_surf,
-     		                     int                              masterlocalid,
-     		                     int                              slavelocalid,
-     		                     std::set<int>                 &  p_lines_m,
-     		                     std::set<int>                 &  p_lines_s,
-     		                     int                              p_surf_neighbor_m,
-     		                     int                              p_surf_neighbor_s)
-       {
-    	  dserror("The implementation of FindConnectingLines is not 2D elements!");
-     	  if (numnode == 4)
-           {
-     		  if (((masterlocalid == 3) and (p_surf_neighbor_m == 1)) or
-     				  ((masterlocalid == 1) and (p_surf_neighbor_m == 3)))
-     		  {
-     			p_lines_m.insert(6);
-     			p_lines_m.insert(4);
-     		  }
-     		  else if (((slavelocalid == 0) and (p_surf_neighbor_s == 2)) or
-     				 ((slavelocalid == 2) and (p_surf_neighbor_s == 0)))
-     		  {
-       			p_lines_s.insert(3);
-       			p_lines_s.insert(1);
-     		  }
-           }
-     	  if (numnode == 3)
-           {
-     		  if (((masterlocalid == 0) and (p_surf_neighbor_m == 1)) or
-     				  ((masterlocalid == 1) and (p_surf_neighbor_m == 0)))
-     		  {
-     			p_lines_m.insert(2);
-     		  }
-     		  else if (((slavelocalid == 0) and (p_surf_neighbor_s == 2)) or
-     				 ((slavelocalid == 2) and (p_surf_neighbor_s == 0)))
-     		  {
-       			p_lines_s.insert(1);
-     		  }
-           }
-       }
+
+      //! find the lines which connect this line to the other opposite line
+      void FindQUADConnectingLines1D(
+          const int                        numnode,
+          const int                        masterlocalid,
+          const int                        slavelocalid,
+          std::set<int>                 &  p_lines_m,
+          std::set<int>                 &  p_lines_s,
+          const int                        opposite_side_id_master,
+          const int                        opposite_side_id_slave)
+      {
+
+        if (numnode == 2 or numnode == 3)
+        {
+          if (((masterlocalid == 3) and (opposite_side_id_master == 1)) or
+              ((masterlocalid == 1) and (opposite_side_id_master == 3)))
+          {
+            p_lines_m.insert(0);
+            p_lines_m.insert(2);
+          }
+          else if (((masterlocalid == 0) and (opposite_side_id_master == 2)) or
+                   ((masterlocalid == 2) and (opposite_side_id_master == 0)))
+          {
+            p_lines_m.insert(1);
+            p_lines_m.insert(3);
+          }
+
+          if (((slavelocalid == 3) and (opposite_side_id_slave == 1)) or
+              ((slavelocalid == 1) and (opposite_side_id_slave == 3)))
+          {
+            p_lines_s.insert(0);
+            p_lines_s.insert(2);
+          }
+          else if (((slavelocalid == 0) and (opposite_side_id_slave == 2)) or
+                   ((slavelocalid == 2) and (opposite_side_id_slave == 0)))
+          {
+            p_lines_s.insert(1);
+            p_lines_s.insert(3);
+          }
+        }
+        else dserror("The implementation of FindQUADConnectingLines is not available for non-line2/3 elements!");
+
+      }
+
+       /*!
+        \brief computation of the EOS-stabilization parameter and ghost penalty parameter
+       */
+       void ComputeStabilizationParams(
+           const INPAR::FLUID::EOS_TauType tautype,
+           const double  normal_vel_lin_space,
+           const double  max_vel_L2_norm,
+           const double  timefac,
+           const bool    instationary,
+           const double  gamma_ghost_penalty_visc,
+           const double  gamma_ghost_penalty_trans
+           );
 
 //      //! pointer to parameter list
 //      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
@@ -976,70 +1031,31 @@ namespace DRT
 
     protected:
 
-      DRT::UTILS::GaussIntegration intpoints_;
-
-    };
-
-
-
-
-    //-----------------------------------------------------------------
-    //-----------------------------------------------------------------
-    //
-    //                    EDGE_BASED_STABILIZATION
-    //
-    //-----------------------------------------------------------------
-    //-----------------------------------------------------------------
-
-    /*!
-      \brief ...
-
-      Literature: ...
-
-      and references therein
-
-    */
-    class FluidEdgeBasedStab
-    {
-    public:
-
-
-      /*! \brief constructor
-      */
-      FluidEdgeBasedStab( double patch_hk );
-
-      /// Empty destructor
-      virtual ~FluidEdgeBasedStab() {}
-
-
-      /*!
-       \brief computation of the EOS-stabilization parameter and ghost penalty parameter
-      */
-      void ComputeStabilizationParams(
-          const INPAR::FLUID::EOS_TauType tautype,
-          double&       tau_grad,
-          double&       tau_u,
-          double&       tau_div,
-          double&       tau_p,
-          const double  kinvisc,
-          const double  density,
-          const double  normal_vel_lin_space,
-          const double  max_vel_L2_norm,
-          const double  timefac,
-          const bool    instationary,
-          const double  gamma_ghost_penalty_visc,
-          const double  gamma_ghost_penalty_trans);
-
+      //! face/edge integration points
+      Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints_;
 
     private:
+
+      // material parameters
+      // ---------------------------------------------------
+      //! kinematic viscosity
+      double kinvisc_;
+
+      //! density
+      double density_;
 
       //! longest edge in parent element
       double p_hk_;
 
+      // effective stabilization parameters
+      // ---------------------------------------------------
+      double tau_grad_; ///< viscous ghost penalty stabilization factor for velocity gradient jump ghost-penalty term
 
+      double tau_u_;    ///< stabilization factor for component-wise velocity gradient jump stabilization terms
+      double tau_div_;  ///< stabilization factor for coupled divergence jump stabilization term
+      double tau_p_;    ///< stabilization factor for pressure gradient jump stabilization term
 
     };
-
 
   } // namespace ELEMENTS
 } // namespace DRT

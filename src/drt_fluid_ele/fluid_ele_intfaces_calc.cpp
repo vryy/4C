@@ -18,6 +18,7 @@ Maintainer: Benedikt Schott
 #include "fluid_ele_intfaces_calc.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
+#include "fluid_ele_parameter_intface.H"
 #include "fluid_ele_calc_intfaces_stab.H"
 
 #include "../drt_inpar/inpar_xfem.H"
@@ -108,114 +109,10 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
   // pointer to class FluidImplParameterTimInt (access to the time-integration parameter)
   fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
-  // pointer to class FluidImplParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  // pointer to class FluidEleParameterIntFace (access to the faces specific parameter)
+  fldpara_intface_ = DRT::ELEMENTS::FluidEleParameterIntFace::Instance();
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
-    Teuchos::ParameterList &   stabparams,
-    Teuchos::ParameterList &   faceparams)
-{
-  // decide which terms have to be assembled and decide the assembly pattern
-
-  INPAR::XFEM::FaceType face_type = faceparams.get<INPAR::XFEM::FaceType>("facetype");
-
-  // final decision which terms are assembled for the current face
-  bool EOS_Pres         = false;
-  bool EOS_Conv_Stream  = false;
-  bool EOS_Conv_Cross   = false;
-  bool EOS_Div_vel_jump = false;
-  bool EOS_Div_div_jump = false;
-  bool GP_visc          = false;
-  bool GP_u_p_2nd       = false;
-  bool GP_trans         = false;
-
-
-  if(face_type == INPAR::XFEM::face_type_std)
-  {
-    EOS_Pres         = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Pres()        == INPAR::FLUID::EOS_PRES_std_eos);
-    EOS_Conv_Stream  = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Stream() == INPAR::FLUID::EOS_CONV_STREAM_std_eos);
-    EOS_Conv_Cross   = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Cross()  == INPAR::FLUID::EOS_CONV_CROSS_std_eos);
-    EOS_Div_vel_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_std_eos);
-    EOS_Div_div_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos);
-
-    GP_visc          = false;
-    GP_trans         = false;
-    GP_u_p_2nd       = false;
-  }
-  else if(face_type == INPAR::XFEM::face_type_ghost_penalty)
-  {
-    EOS_Pres         = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Pres()        != INPAR::FLUID::EOS_PRES_none);
-    EOS_Conv_Stream  = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Stream() != INPAR::FLUID::EOS_CONV_STREAM_none);
-    EOS_Conv_Cross   = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Cross()  != INPAR::FLUID::EOS_CONV_CROSS_none);
-    EOS_Div_vel_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_std_eos
-                     or DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp);
-    EOS_Div_div_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos
-                     or DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp);
-
-    GP_visc          = faceparams.get<bool>("visc_ghost_penalty", false);
-    GP_trans         = faceparams.get<bool>("trans_ghost_penalty", false);
-    GP_u_p_2nd       = faceparams.get<bool>("u_p_ghost_penalty_2nd", false);
-  }
-  else if(face_type == INPAR::XFEM::face_type_ghost)
-  {
-    EOS_Pres         = false;
-    EOS_Conv_Stream  = false;
-    EOS_Conv_Cross   = false;
-    EOS_Div_vel_jump = false;
-    EOS_Div_div_jump = false;
-    GP_visc          = false;
-    GP_trans         = false;
-    GP_u_p_2nd       = false;
-  }
-  else dserror("unknown face_type!!!");
-
-  // which pattern has to be activated?
-  // TODO: this can be improved if only pressure is assembled and so on!
-
-  if(EOS_Div_div_jump)
-  {
-    stabparams.set("eos_gp_pattern",INPAR::FLUID::EOS_GP_Pattern_up);
-  }
-  else
-  {
-    stabparams.set("eos_gp_pattern",INPAR::FLUID::EOS_GP_Pattern_uvwp);
-  }
-
-  stabparams.set<bool>("EOS_Pres",         EOS_Pres);
-  stabparams.set<bool>("EOS_Conv_Stream",  EOS_Conv_Stream);
-  stabparams.set<bool>("EOS_Conv_Cross",   EOS_Conv_Cross);
-  stabparams.set<bool>("EOS_Div_vel_jump", EOS_Div_vel_jump);
-  stabparams.set<bool>("EOS_Div_div_jump", EOS_Div_div_jump);
-  stabparams.set<bool>("GP_visc",          GP_visc);
-  stabparams.set<bool>("GP_trans",         GP_trans);
-  stabparams.set<bool>("GP_u_p_2nd",       GP_u_p_2nd);
-
-
-  stabparams.set("ghost_penalty_reconstruct", faceparams.get<bool>("ghost_penalty_reconstruct", false) );
-  stabparams.set("ghost_penalty_fac",         faceparams.get<double>("GHOST_PENALTY_FAC", 0.0));
-  stabparams.set("ghost_penalty_trans_fac",   faceparams.get<double>("GHOST_PENALTY_TRANSIENT_FAC", 0.0));
-
-
-  stabparams.set("action", faceparams.get<int>("action"));
-
-  // return false if no stabilization is required
-  if( !EOS_Pres and
-      !EOS_Conv_Stream and
-      !EOS_Conv_Cross and
-      !EOS_Div_vel_jump and
-      !EOS_Div_div_jump and
-      !GP_visc and
-      !GP_trans and
-      !GP_u_p_2nd) return false;
-
-  return true;
 }
 
 
@@ -226,16 +123,17 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
     std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
     std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
+    const INPAR::XFEM::FaceType &        face_type,       ///< which type of face std, ghost, ghost-penalty
     Teuchos::ParameterList&              params,          ///< parameter list
-    DRT::DiscretizationFaces&             discretization,  ///< faces discretization
-    Teuchos::RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector>                   systemvector     ///< systemvector
+    DRT::DiscretizationFaces&            discretization,  ///< faces discretization
+    Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
     )
 {
-  Teuchos::ParameterList edgebasedparams;
+  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleInternalFacesUsingNeighborData" );
 
-  //decide which terms have to be assembled and decide the assembly pattern, return if no assembly required
-  bool stab_required = PrepareAssemble(edgebasedparams, params);
+  //decide which terms have to be assembled for the current face and decide the assembly pattern, return if no assembly required
+  bool stab_required = fldpara_intface_->SetFaceSpecificFluidXFEMParameter(face_type, params);
 
   // do not assemble if no stabilization terms activated for this face
   if(!stab_required) return;
@@ -262,10 +160,10 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   // local maps for patch dofs
   std::vector<int> lm_patch;
 
-  // local maps for master/slave/face dofs
-  std::vector<int> lm_master;
-  std::vector<int> lm_slave;
-  std::vector<int> lm_face;
+//  // local maps for master/slave/face dofs
+//  std::vector<int> lm_master;
+//  std::vector<int> lm_slave;
+//  std::vector<int> lm_face;
 
   // local maps between master/slave dofs and position in patch dofs (lm_patch)
   std::vector<int> lm_masterToPatch;
@@ -279,7 +177,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   // create patch location vector combining master element, slave element and face element
   intface->PatchLocationVector(   discretization,
                                   nds_master,nds_slave,
-                                  lm_patch, lm_master, lm_slave, lm_face,
+                                  lm_patch,
+                                  // lm_master, lm_slave, lm_face,
                                   lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch,
                                   lm_masterNodeToPatch, lm_slaveNodeToPatch
                                   );
@@ -322,7 +221,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   // pattern = "u-p-block matrix pattern";                 // assembles u-block and p-block separated
   // pattern = "full matrix pattern";                      // assembles the whole u-p matrix
 
-  INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern = edgebasedparams.get<INPAR::FLUID::EOS_GP_Pattern>("eos_gp_pattern");
+  INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern = fldpara_intface_->Face_EOS_GP_Pattern();
 
 
   int numblocks = 0;
@@ -371,7 +270,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   //---------------------------------------------------------------------
   // call the element specific evaluate method
 
-  int err = EvaluateInternalFaces( intface, edgebasedparams, discretization,
+  int err = EvaluateInternalFaces( intface, params, discretization,
                                    lm_patch,
                                    lm_masterToPatch,lm_slaveToPatch,lm_faceToPatch,
                                    lm_masterNodeToPatch, lm_slaveNodeToPatch,
@@ -475,7 +374,7 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(   DRT::ELEM
     return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->EvaluateEdgeBasedStabilization(
       intface,
       *fldparatimint_,
-      *fldpara_,
+      *fldpara_intface_,
       params,
       discretization,
       patchlm,

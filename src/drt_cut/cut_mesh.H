@@ -22,6 +22,8 @@ Maintainer: Benedikt Schott
 #include "cut_boundingbox.H"
 #include "cut_facet.H"
 
+#include "../drt_inpar/inpar_cut.H"
+
 #ifdef DEBUG
 #include "cut_node.H"
 #include "cut_edge.H"
@@ -237,10 +239,10 @@ public:
   void CreateIntegrationCells( int count, bool levelset,bool tetcellsonly=false );
 
   /// Call the moment fitting method for each element to generate the Gaussian integration rule
-  void MomentFitGaussWeights(bool include_inner, std::string Bcellgausstype);
+  void MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
 
   /// Call the DirectDivergence method for each element to generate the Gaussian integration rule
-  void DirectDivergenceGaussRule(bool include_inner, std::string Bcellgausstype);
+  void DirectDivergenceGaussRule(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
 
 
   /*========================================================================*/

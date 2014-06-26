@@ -23,6 +23,8 @@ Maintainer: Benedikt Schott
 
 #include "cut_meshintersection.H"
 
+#include "../drt_inpar/inpar_cut.H"
+
 #include "../drt_fluid_xfluid/xfluid_defines.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -128,11 +130,12 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
  * standard Cut routine for two phase flow and combustion where dofsets and node positions        *
  * have not to be computed, standard cut for cut_est                                 schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut( bool include_inner,
-                                      std::string VCellgausstype,
-                                      std::string BCellgausstype,
-                                      bool tetcellsonly,
-                                      bool screenoutput)
+void GEO::CUT::MeshIntersection::Cut(
+    bool include_inner,
+    INPAR::CUT::VCellGaussPts VCellgausstype,
+    INPAR::CUT::BCellGaussPts BCellgausstype,
+    bool tetcellsonly,
+    bool screenoutput)
 {
   Status();
 
@@ -248,8 +251,8 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , boo
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
-                                               std::string VCellgausstype,
-                                               std::string BCellgausstype,
+                                               INPAR::CUT::VCellGaussPts VCellgausstype,
+                                               INPAR::CUT::BCellGaussPts BCellgausstype,
                                                bool tetcellsonly,
                                                bool screenoutput)
 {
@@ -263,7 +266,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
 
   Mesh & m = NormalMesh();
 
-  if(VCellgausstype=="Tessellation")
+  if(VCellgausstype==INPAR::CUT::VCellGaussPts_Tessellation)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::Tessellation" );
     m.CreateIntegrationCells( 0, false,tetcellsonly ); // boundary cells will be created within TetMesh.CreateElementTets
@@ -279,7 +282,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
     m.TestElementVolume( true );
 #endif
   }
-  else if(VCellgausstype=="MomentFitting")
+  else if(VCellgausstype==INPAR::CUT::VCellGaussPts_MomentFitting)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::MomentFitting" );
     m.MomentFitGaussWeights(include_inner, BCellgausstype);
@@ -287,7 +290,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
     m.TestFacetArea();
 #endif
   }
-  else if(VCellgausstype=="DirectDivergence")
+  else if(VCellgausstype==INPAR::CUT::VCellGaussPts_DirectDivergence)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::DirectDivergence" );
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
@@ -850,7 +853,7 @@ void GEO::CUT::MeshIntersection::PrintCellStats()
   NormalMesh().PrintCellStats();
 }
 
-void GEO::CUT::MeshIntersection::Status(std::string gausstype)
+void GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
 {
 #ifdef DEBUG
   NormalMesh().Status();
@@ -879,7 +882,7 @@ void GEO::CUT::MeshIntersection::Status(std::string gausstype)
   }
 
   //NormalMesh().DumpGmshVolumeCells( "volumecells" );
-  if(gausstype=="Tessellation")
+  if(gausstype==INPAR::CUT::VCellGaussPts_Tessellation)
   {
     DumpGmshIntegrationCells( "integrationcells.pos" );
     DumpGmshVolumeCells("volumecells.pos");

@@ -47,7 +47,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
  *-----------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cells,
                                                      std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                                     std::string gausstype )
+                                                     INPAR::CUT::VCellGaussPts gausstype )
 {
   /*cells.clear(); //check whether any problems with gmsh output
   GetVolumeCells( cells );*/
@@ -59,7 +59,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
   // we transform this to local coordinates of background ElementHandle
   //----------------
-  if(gausstype == "Tessellation")
+  if(gausstype == INPAR::CUT::VCellGaussPts_Tessellation)
   {
     for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
     {
@@ -117,7 +117,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   // If background ElementHandle is linear, then no need for any mapping
   // Else, we map these points to local coordinates of corresponding Quad element
   //-------------------
-  else if( gausstype == "MomentFitting" )
+  else if( gausstype == INPAR::CUT::VCellGaussPts_MomentFitting)
   {
     for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
     {
@@ -171,7 +171,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   //         --> element volume mapping as done for tessellation and moment fitting do not work
   // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
   //-------------------
-  else if( gausstype=="DirectDivergence" )
+  else if( gausstype==INPAR::CUT::VCellGaussPts_DirectDivergence )
   {
     for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
     {
@@ -299,8 +299,9 @@ void GEO::CUT::ElementHandle::GetVolumeCellsDofSets ( std::vector<plain_volumece
                         The integration rule over all the volumecells are connected.
                         Cannot identify the integration rules separately for each cell
  *---------------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPointsConnected( plain_volumecell_set & cells,
-                                                                                              std::string gausstype )
+Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPointsConnected(
+    plain_volumecell_set & cells,
+    INPAR::CUT::VCellGaussPts gausstype )
 {
 
   Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
@@ -313,7 +314,7 @@ Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPoi
     const plain_integrationcell_set & cells = vc->IntegrationCells();
 
 
-    if(gausstype == "Tessellation")
+    if(gausstype == INPAR::CUT::VCellGaussPts_Tessellation)
     {
       for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
       {
@@ -354,7 +355,7 @@ Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPoi
         }
       }
     }
-    else if( gausstype == "MomentFitting" || gausstype=="DirectDivergence" )
+    else if( gausstype == INPAR::CUT::VCellGaussPts_MomentFitting || gausstype==INPAR::CUT::VCellGaussPts_DirectDivergence )
     {
       Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
       gpc->Append(gp);
@@ -776,7 +777,7 @@ void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells
 void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
                                                                       std::vector< std::vector< int > >  & nds_sets,
                                                                       std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                                                      std::string gausstype)
+                                                                      INPAR::CUT::VCellGaussPts gausstype)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
 
@@ -958,7 +959,7 @@ void GEO::CUT::QuadraticElementHandle::VolumeCells( plain_volumecell_set & cells
 void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
                                                                std::vector< std::vector< int > >  & nds_sets,
                                                                std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                                               std::string gausstype)
+                                                               INPAR::CUT::VCellGaussPts gausstype)
 {
   GetVolumeCellsDofSets( cell_sets, nds_sets );
 

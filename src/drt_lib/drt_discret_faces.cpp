@@ -106,7 +106,7 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
         Teuchos::RCP<Epetra_Vector>          systemvector1
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::EdgeBased" );
+  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::EvaluateEdgeBased" );
 
 
   Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*(this->DofColMap()),true);
@@ -165,12 +165,12 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 
     // set action for elements
     edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
-    edgebasedparams.set("facetype", INPAR::XFEM::face_type_std);
 
     // call the egde-based assemble and evaluate routine
     DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(ele)->AssembleInternalFacesUsingNeighborData(ele,
                                                                                                 nds_master,
                                                                                                 nds_slave,
+                                                                                                INPAR::XFEM::face_type_std,
                                                                                                 edgebasedparams,
                                                                                                 *this,
                                                                                                 sysmat_linalg,

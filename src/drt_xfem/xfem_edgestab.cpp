@@ -554,7 +554,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
                                                         DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                                         std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                                         std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
-                                                        DRT::DiscretizationFaces &              xdiscret,         ///< XFEM discretization
+                                                        DRT::DiscretizationFaces &             xdiscret,         ///< XFEM discretization
                                                         Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
                                                         Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
                                                         )
@@ -566,13 +566,15 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty" );
 
   // set action and facetype for elements
+
+  //TODO: set here the right stab-type LPS or EOS
   eleparams.set<int>("action", FLD::EOS_and_GhostPenalty_stabilization);
-  eleparams.set("facetype", face_type);
 
   // call the egde-based assemble and evaluate routine
   DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(intface)->AssembleInternalFacesUsingNeighborData(     intface,
                                                                                                        nds_master,
                                                                                                        nds_slave,
+                                                                                                       face_type,
                                                                                                        eleparams,
                                                                                                        xdiscret,
                                                                                                        systemmatrix,
