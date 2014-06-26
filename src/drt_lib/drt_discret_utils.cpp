@@ -127,13 +127,46 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
-  Teuchos::ParameterList& mllist = *mllist_ptr; //solveparams.sublist("ML Parameters");
+  Teuchos::ParameterList& mllist = *mllist_ptr;
   Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
   if (ns != Teuchos::null && !recompute) return;
 
   // do the usual tests
   if (!Filled()) dserror("FillComplete was not called on discretization");
   if (!HaveDofs()) dserror("Discretization has no dofs assigned");
+
+  // compute nullspace and fill it into the ML parameter list
+  ComputeNullSpaceML(mllist);
+}
+
+/*--------------------------------------------------------------------------*
+ |  directly compute nullspace (for Krylov projection)   (public) nis Feb13 |
+ *--------------------------------------------------------------------------*/
+void DRT::Discretization::ComputeNullSpaceML(Teuchos::ParameterList& mllist)
+{
+  int numdf = 1; // default value for no. of degrees of freedom per node
+  int dimns = 1; // default value for no. of nullspace vectors
+  int nv=0; // default value for no. of velocity dofs
+  int np=0; // default value for no. of pressure dofs
+
+  // downwinding needs nodal block information, compute it
+  if (NumMyRowElements())
+  {
+    // We assume that all elements are of equal type
+    DRT::Element* dwele = lRowElement(0);
+    dwele->ElementType().NodalBlockInformation( dwele, numdf, dimns, nv, np );
+  }
+
+  // communicate data to procs without row element
+  int ldata[4] = {numdf, dimns, nv, np};
+  int gdata[4] = {0, 0, 0 ,0};
+  Comm().MaxAll(&ldata[0], &gdata[0], 4);
+  numdf = gdata[0];
+  dimns = gdata[1];
+  nv    = gdata[2];
+  np    = gdata[3];
+
+  Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
   // no, we have not previously computed the nullspace
   // or want to recompute it anyway
@@ -158,7 +191,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // compute null space directly. that will call eletypes.
   ComputeNullSpace(ns, numdf, dimns);
 }
-
 
 /*--------------------------------------------------------------------------*
  |  directly compute nullspace (for Krylov projection)   (public) nis Feb13 |

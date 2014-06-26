@@ -1710,13 +1710,24 @@ public:
   system of equations which is then computed here if it does not already exist
   in the parameter list.
 
-  \note This method is supposed to go away and live somewhere else soon....
-
   \param solveparams (in): List of parameters
   \param recompute (in)  : force method to recompute the nullspace
   */
   virtual void ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solveparams,
                                            bool recompute = false);
+
+  /*!
+  \brief Compute the nullspace of the discretization
+
+  A given ML parameter list is filled with the nullspace that is computed within
+  ComputeNullSpace()
+
+  \param mllist (in): List of ML parameters, to be filled with nullspace
+
+  \sa ComputeNullSpaceIfNecessary()
+  \sa ComputeNullSpace()
+  */
+  virtual void ComputeNullSpaceML(Teuchos::ParameterList& mllist);
 
   /*!
   \brief Compute the nullspace of the discretization
