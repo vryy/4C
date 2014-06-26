@@ -923,7 +923,7 @@ namespace UTILS
             break;
         }
         default:
-            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str()); break;
     }
     return pos;
   }

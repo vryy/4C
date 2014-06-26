@@ -778,7 +778,9 @@ inline void BoundaryGPToParentGP2(
     // resize output array
     pqxg.Shape(intpoints.M(),2);
 
-    if(distype==DRT::Element::line2 && pdistype==DRT::Element::quad4)
+    if(    (distype==DRT::Element::line2 && pdistype==DRT::Element::quad4)
+        or (distype==DRT::Element::line3 && pdistype==DRT::Element::quad8)
+        or (distype==DRT::Element::line3 && pdistype==DRT::Element::quad9))
     {
       switch(beleid)
       {
@@ -943,6 +945,43 @@ inline void BoundaryGPToParentGP2(
       }
 
     }
+    else if(    (distype==DRT::Element::line2 && pdistype==DRT::Element::tri3)
+             or (distype==DRT::Element::line3 && pdistype==DRT::Element::tri6))
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 0.5 + 0.5*intpoints(iquad,0);
+          pqxg(iquad,1)= 0.0;
+        }
+        break;
+      }
+      case 1:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 0.5 - 0.5*intpoints(iquad,0);
+          pqxg(iquad,1)= 0.5 + 0.5*intpoints(iquad,0); // r+s=1.0 -> s= 1.0-r
+        }
+        break;
+      }
+      case 2:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 0.0;
+          pqxg(iquad,1)= 0.5-0.5*intpoints(iquad,0);
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of lines, unable to determine intpoint in parent");
+      }
+
+    }
     else if(distype==DRT::Element::nurbs3 && pdistype==DRT::Element::nurbs9)
     {
       switch(beleid)
@@ -1059,7 +1098,7 @@ inline void BoundaryGPToParentGP3(
 
     if(   (distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
        or (distype==DRT::Element::quad8 && pdistype==DRT::Element::hex20)
-       or (distype==DRT::Element::quad9 && pdistype==DRT::Element::hex27)) //schott 05/11
+       or (distype==DRT::Element::quad9 && pdistype==DRT::Element::hex27))
     {
       switch(beleid)
       {
@@ -1204,6 +1243,55 @@ inline void BoundaryGPToParentGP3(
           pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)= intpoints(iquad,1);
           pqxg(iquad,2)= 1.0;
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of surfaces, unable to determine intpoint in parent");
+      }
+    }
+    else if( (distype==DRT::Element::tri3 && pdistype == DRT::Element::tet4)
+          or (distype==DRT::Element::tri6 && pdistype == DRT::Element::tet10))
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= intpoints(iquad,0);
+          pqxg(iquad,1)= 0.0;
+          pqxg(iquad,2)= intpoints(iquad,1);
+        }
+        break;
+      }
+      case 1:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 1.0-intpoints(iquad,0)-intpoints(iquad,1);
+          pqxg(iquad,1)= intpoints(iquad,0);
+          pqxg(iquad,2)= intpoints(iquad,1);
+        }
+        break;
+      }
+      case 2:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 0.0;
+          pqxg(iquad,1)= intpoints(iquad,1);
+          pqxg(iquad,2)= intpoints(iquad,0);
+        }
+        break;
+      }
+      case 3:
+      {
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= intpoints(iquad,1);
+          pqxg(iquad,1)= intpoints(iquad,0);
+          pqxg(iquad,2)= 0.0;
         }
         break;
       }

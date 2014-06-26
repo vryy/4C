@@ -1852,7 +1852,7 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
 
   // FluidBoundary element: line3
   case 3:
-    if ((parentshape == DRT::Element::quad8) || (parentshape == DRT::Element::quad9))
+    if ((parentshape == DRT::Element::quad8) || (parentshape == DRT::Element::quad9 || parentshape == DRT::Element::tri6))
       return DRT::Element::line3;
     else if (parentshape == DRT::Element::nurbs9)
       return DRT::Element::nurbs3;

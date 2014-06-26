@@ -141,6 +141,7 @@ void DRT::UTILS::LineGPToParentGP(
   //derivtrafo.Shape(2,2);
 
   if( (distype==DRT::Element::line2 && pdistype==DRT::Element::quad4) or
+      (distype==DRT::Element::line3 && pdistype==DRT::Element::quad8) or
       (distype==DRT::Element::line3 && pdistype==DRT::Element::quad9) )
   {
     switch(lineid)
@@ -415,7 +416,7 @@ void DRT::UTILS::LineGPToParentGP(
   }
   else
   {
-      dserror("only line2/quad4, line3/quad9 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
+      dserror("only line2/quad4, line3/quad8, line3/quad9 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
   }
 
   return;
