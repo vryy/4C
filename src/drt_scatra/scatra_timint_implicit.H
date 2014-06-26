@@ -634,7 +634,7 @@ protected:
     { return ((step_%upres_==0 )or (step_%uprestart_==0)); };
 
   //! write state vectors (phinp and convective velocity) to BINIO
-  void OutputState();
+  virtual void OutputState();
 
   //! write state vectors (phinp and convective velocity) to Gmsh postprocessing files
   void OutputToGmsh(
@@ -661,8 +661,6 @@ protected:
 
   /*--- calculate and update -----------------------------------------------*/
 
-  //! time update of time-dependent materials
-  void ElementMaterialTimeUpdate();
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -941,35 +939,6 @@ protected:
 
   // options for meshtying
   enum INPAR::FLUID::MeshTying msht_;
-
-  /*========================================================================*/
-  //! @name electrophysiology
-  /*========================================================================*/
-
-  //TODO: SCATRA_ELE_CLEANING: CARDIO
-  //! activation_time at times n+1
-  Teuchos::RCP<Epetra_Vector> activation_time_np_;
-
-  //! activation threshold for postprocessing
-  double activation_threshold_;
-
-  //! maximum expected number of material internal state variables
-  int nb_max_mat_int_state_vars_;
-
-  //! material internal state at times n+1
-  Teuchos::RCP<Epetra_MultiVector> material_internal_state_np_;
-
-  //! one component of the material internal state at times n+1 (for separated postprocessing)
-  Teuchos::RCP<Epetra_Vector> material_internal_state_np_component_;
-
-  //! maximum expected number of material ionic currents
-  int nb_max_mat_ionic_currents_;
-
-  //! material ionic currents at times n+1
-  Teuchos::RCP<Epetra_MultiVector> material_ionic_currents_np_;
-
-  //! one component of the material ionic currents at times n+1 (for separated postprocessing)
-  Teuchos::RCP<Epetra_Vector> material_ionic_currents_np_component_;
 
   /*========================================================================*/
   //! @name AVM3 variables

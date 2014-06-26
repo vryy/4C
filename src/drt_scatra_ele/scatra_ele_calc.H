@@ -268,16 +268,6 @@ namespace ELEMENTS
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
 
-    //! material MyoCard
-    void MatMyoCard(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-      double&                                 densn,    //!< density at t_(n)
-      double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-      double&                                 densam,   //!< density at t_(n+alpha_M)
-      double&                                 diffus,   //!< diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      double&                                 visc      //!< fluid viscosity
-    );
-
     /*========================================================================*/
     //! @name stabilization and related functions
     /*========================================================================*/
@@ -777,7 +767,7 @@ namespace ELEMENTS
     );
 
     //! standard Galerkin diffusive term on right hand side
-    void CalcRHSDiff(
+    virtual void CalcRHSDiff(
       Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
       const int                     k,           //!< index of current scalar
       const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor

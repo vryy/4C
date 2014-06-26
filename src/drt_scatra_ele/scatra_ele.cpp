@@ -269,6 +269,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   // now the element knows its material, and we can use it to determine numdofpernode
   Teuchos::RCP<MAT::Material> mat = Material();
   if(mat->MaterialType() == INPAR::MAT::m_scatra or
+     mat->MaterialType() == INPAR::MAT::m_scatra_aniso or
      mat->MaterialType() == INPAR::MAT::m_myocard or
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
      mat->MaterialType() == INPAR::MAT::m_sutherland or

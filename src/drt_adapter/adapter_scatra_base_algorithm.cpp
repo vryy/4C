@@ -44,6 +44,9 @@ Maintainer: Georg Bauer
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_levelset/levelset_timint_stat.H"
 
+// cardiac monodomain specific files
+#include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -181,7 +184,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch)
+  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain)
   {
     switch(timintscheme)
     {
@@ -356,6 +359,35 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
         break;
     }// switch(timintscheme)
   }
+  else if (probtype == prb_cardiac_monodomain)
+  {
+    Teuchos::RCP<Teuchos::ParameterList> cmonoparams = Teuchos::null;
+    switch(timintscheme)
+    {
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainGenAlpha(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_one_step_theta:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainOST(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_bdf2:
+    {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainBDF2(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
+        break;
+      }
+      default:
+        dserror("Unknown time integration scheme for cardiac monodomain problem!");
+        break;
+    }// switch(timintscheme)
+  }
+
 
   // initialize algorithm for specific time-integration scheme
   scatra_->Init();

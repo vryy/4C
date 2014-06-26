@@ -458,7 +458,7 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard,const st
 }
 
 
-double Myocard_TenTusscher::ComputeReactionCoeff(const double phi, const double dt)
+double Myocard_TenTusscher::ReaCoeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;

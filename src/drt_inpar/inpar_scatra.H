@@ -175,7 +175,8 @@ namespace INPAR
       scatratype_poro,
       scatratype_advreac,
       scatratype_pororeac,
-      scatratype_cardio_monodomain
+      scatratype_anisotrop,
+      scatratype_cardiac_monodomain
     };
 
     //! this parameter is closely connected to ScaTraType
@@ -191,7 +192,9 @@ namespace INPAR
       impltype_poro,
       impltype_advreac,
       impltype_pororeac,
-      impltype_std_meshfree
+      impltype_aniso,
+      impltype_std_meshfree,
+      impltype_cardiac_monodomain
     };
 
     /// type of method for improving consistency of stabilized methods

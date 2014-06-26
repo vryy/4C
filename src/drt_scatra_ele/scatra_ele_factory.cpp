@@ -24,6 +24,9 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_poro.H"
 #include "scatra_ele_calc_advanced_reaction.H"
 #include "scatra_ele_calc_poro_reac.H"
+#include "scatra_ele_calc_aniso.H"
+#include "scatra_ele_calc_cardiac_monodomain.H"
+
 
 #include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
 
@@ -189,6 +192,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal);
   else if (problem == INPAR::SCATRA::impltype_pororeac)
       return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(numdofpernode,numscal);
+  else if (problem == INPAR::SCATRA::impltype_aniso)
+      return DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::Instance(numdofpernode,numscal);
+  else if (problem == INPAR::SCATRA::impltype_cardiac_monodomain)
+      return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");
 

@@ -567,7 +567,7 @@ Myocard_Inada::Myocard_Inada(const double eps0_deriv_myocard,const std::string t
  |  Compute Reaction Coefficient for Material and new State Variables   |
  |                                                (public)  ljag  09/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Inada::ComputeReactionCoeff(const double phi, const double dt)
+double Myocard_Inada::ReaCoeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;

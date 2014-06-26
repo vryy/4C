@@ -4775,7 +4775,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Poroscatra",
                                  "Advanced_Reaction",
                                  "Poro_Scatra_Reaction",
-                                 "Cardio_Monodomain"),
+                                 "AnisotropicDiffusion",
+                                 "Cardiac_Monodomain"),
                                tuple<int>(
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
@@ -4785,7 +4786,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_poro,
                                  INPAR::SCATRA::scatratype_advreac,
                                  INPAR::SCATRA::scatratype_pororeac,
-                                 INPAR::SCATRA::scatratype_cardio_monodomain),
+                                 INPAR::SCATRA::scatratype_anisotrop,
+                                 INPAR::SCATRA::scatratype_cardiac_monodomain),
                                  &scatradyn);
 
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",

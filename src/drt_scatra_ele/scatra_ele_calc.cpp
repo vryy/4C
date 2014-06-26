@@ -1163,61 +1163,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
 
 
 /*----------------------------------------------------------------------*
- |  Material MyoCard                                         ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatMyoCard(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 diffus,   //!< diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  double&                                 visc      //!< fluid viscosity
-  )
-{
-  // TODO: SCATRA_ELE_CLEANING: CARDIO
-#if 0
-  // cout << "TEST CRISTOBAL: ESTOY EN EL SEGUNDO myocard en GetMaterialParams" << endl;
-  //Teuchos::RCP<MAT::Myocard>& actmat
-  Teuchos::RCP<MAT::Myocard> actmat
-    = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
-  if (scatratype != INPAR::SCATRA::scatratype_cardio_monodomain){
-    dserror("ScatraType not compatible with myocard material. Change ScatraType to some Cardio_* type.");
-  }
-
-  dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
-
-  // set specific heat capacity at constant pressure to 1.0
-  shc_ = 1.0;
-
-  // set diffusivity to one
-  diffus_[0] = 1.0;
-
-  //get diffusion tensor
-  actmat->ComputeDiffusivity(diffus3_[0]);
-
-  // set constant density
-  densnp_[0] = 1.0;
-  densam_[0] = 1.0;
-  densn_[0] = 1.0;
-
-  // set reaction and anisotropic flag to true
-  is_reactive_ = true;
-  is_anisotropic_ = true;
-
-  // get reaction coeff. and set temperature rhs for reactive equation system to zero
-  double csnp = funct_.Dot(ephinp_[0]);
-  //cout << "Calling reaction coefficients" << endl;
-  reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
-  reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
-  // cout << "TEST CRISTOBAL: reacterm_ " << reacterm_[0] << endl;
-  reatemprhs_[0] = 0.0;
-#endif
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  calculate the Laplacian for all shape functions (strong form)       |
  |                                                  (private) gjb 04/10 |
  *----------------------------------------------------------------------*/

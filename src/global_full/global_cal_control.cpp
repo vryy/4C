@@ -56,6 +56,7 @@ void ntacal()
     case prb_fluid_redmodels:
       dyn_fluid_drt(restart);
       break;
+    case prb_cardiac_monodomain:
     case prb_scatra:
       scatra_dyn(restart);
       break;

@@ -49,8 +49,9 @@ namespace MAT
       //@{
 
       /// Diffusivity
-      const double maindirdiffusivity;
-      const double offdirdiffusivity;
+      const double diff1;
+      const double diff2;
+      const double diff3;
 
       /// Pertubation for calculation of derivative
       const double dt_deriv;
@@ -150,15 +151,15 @@ public:
   void SetupDiffusionTensor(const LINALG::Matrix<2,1>& fiber1);
 
   /// diffusivity
-  void ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const;
-  void ComputeDiffusivity(LINALG::Matrix<2,2>& diffus3) const;
-  void ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const;
+  void Diffusivity(LINALG::Matrix<1,1>& diffus3) const;
+  void Diffusivity(LINALG::Matrix<2,2>& diffus3) const;
+  void Diffusivity(LINALG::Matrix<3,3>& diffus3) const;
 
   /// compute reaction coefficient
-  double ComputeReactionCoeff(const double phi, const double dt);
+  double ReaCoeff(const double phi, const double dt) const;
 
   /// compute reaction coefficient derivative
-  double ComputeReactionCoeffDeriv(const double csnp, const double dt);
+  double ReaCoeffDeriv(const double csnp, const double dt) const;
 
   /// compute Heaviside step function
   double GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const;

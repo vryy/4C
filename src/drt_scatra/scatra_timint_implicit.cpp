@@ -139,15 +139,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   increment_(Teuchos::null),
   meshtying_(Teuchos::null),
   msht_(DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*params,"MESHTYING")),
-  // Initialization of electrophysiology variables
-  activation_time_np_(Teuchos::null),
-  activation_threshold_(0.0),
-  nb_max_mat_int_state_vars_(0),
-  material_internal_state_np_(Teuchos::null),
-  material_internal_state_np_component_(Teuchos::null),
-  nb_max_mat_ionic_currents_(0),
-  material_ionic_currents_np_(Teuchos::null),
-  material_ionic_currents_np_component_(Teuchos::null),
   // Initialization of AVM3 variables
   sysmat_sd_(Teuchos::null),
   Sep_(Teuchos::null),
@@ -267,27 +258,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   discret_->Comm().MaxAll(&mynumscal,&numscal_,1);
   numdofpernode_=numscal_;
 
-  //TODO: SCATRA_ELE_CLEANING: CARDIO
-  if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
-  {
-    // Activation time at time n+1
-    activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
-    activation_threshold_ = params_->get<double>("ACTTHRES");
-    // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
-    nb_max_mat_int_state_vars_=params_->get<int>("WRITEMAXINTSTATE"); // number of maximal internal state variables to be postprocessed
-    if(nb_max_mat_int_state_vars_)
-    {
-      material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
-      material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
-    }
-    // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
-    nb_max_mat_ionic_currents_=params_->get<int>("WRITEMAXIONICCURRENTS"); // number of maximal internal state variables to be postprocessed
-    if(nb_max_mat_ionic_currents_)
-    {
-      material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
-      material_ionic_currents_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
-    }
-  }
 
   // Initialization of system matrix
   InitSystemMatrix();
@@ -2830,62 +2800,6 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 {
   // solution
   output_->WriteVector("phinp", phinp_);
-  // Compute and write activation time (for electrophysiology)
-  if (activation_time_np_ != Teuchos::null){
-    for(int k=0;k<phinp_->MyLength();k++){
-      if( (*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_*0.9)
-        (*activation_time_np_)[k] =  time_;
-    }
-    output_->WriteVector("activation_time_np", activation_time_np_);
-  }
-
-  // solution at nodes for meshfree problems with non-interpolatory basis functions
-  if(phiatmeshfreenodes_!=Teuchos::null)
-    output_->WriteVector("phiatmeshfreenodes",phiatmeshfreenodes_);
-
-  // Recover internal state of the material (for electrophysiology)
-  if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
-  {
-    Teuchos::ParameterList params;
-    params.set<int>("scatratype", scatratype_);
-    params.set<int>("action", SCATRA::get_material_internal_state);
-    params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state_np_);     // Probably do it once at the beginning
-    discret_->Evaluate(params);
-    material_internal_state_np_ = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
-
-   for(int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
-     {
-       std::ostringstream temp;
-       temp << k+1;
-       material_internal_state_np_component_ = Teuchos::rcp((*material_internal_state_np_)(k),false);
-       output_->WriteVector("mat_int_state_"+temp.str(), material_internal_state_np_component_,IO::DiscretizationWriter::elementvector);
-     }
-
-  }
-
-  // Recover internal ionic currents of the material (for electrophysiology)
-  if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
-  {
-    Teuchos::ParameterList params;
-    params.set<int>("scatratype", scatratype_);
-    params.set<int>("action", SCATRA::get_material_ionic_currents);
-    params.set< Teuchos::RCP<Epetra_MultiVector> >("material_ionic_currents", material_ionic_currents_np_);     // Probably do it once at the beginning
-    discret_->Evaluate(params);
-    material_internal_state_np_ = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_ionic_currents");
-
-   for(int k = 0; k < material_ionic_currents_np_->NumVectors(); ++k)
-     {
-       std::ostringstream temp;
-       temp << k+1;
-       material_ionic_currents_np_component_ = Teuchos::rcp((*material_ionic_currents_np_)(k),false);
-       output_->WriteVector("mat_ionic_currents_"+temp.str(), material_ionic_currents_np_component_,IO::DiscretizationWriter::elementvector);
-     }
-
-  }
-
-
-
-
 
   // convective velocity (not written in case of coupled simulations)
   if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
@@ -2916,33 +2830,6 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
 {
   step_ += 1;
   time_ += dta_;
-}
-
-
-//TODO: SCATRA_ELE_CLEANING: CARDIO
-// called in the end of SCATRA::TimIntXXXX::Update
-// output_->WriteMesh(step_,time_) in TimIntXXXX::OutputRestart()
-/*----------------------------------------------------------------------*
- | time update of time-dependent materials                    gjb 07/12 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
-{
-  // create the parameters for the discretization
-  Teuchos::ParameterList p;
-  // action for elements
-  p.set<int>("action", SCATRA::time_update_material);
-  // further required parameters
-  p.set<int>("scatratype",scatratype_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-
-  // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-      Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
-  return;
 }
 
 /*==========================================================================*/

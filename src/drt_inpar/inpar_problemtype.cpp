@@ -40,6 +40,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Thermo"] =                                    prb_thermo;
     string2prbtype["Low_Mach_Number_Flow"] =                      prb_loma;
     string2prbtype["Electrochemistry"] =                          prb_elch;
+    string2prbtype["Cardiac_Monodomain"] =                        prb_cardiac_monodomain;
     string2prbtype["Combustion"] =                                prb_combust;
     string2prbtype["ArterialNetwork"] =                           prb_art_net;
     string2prbtype["Fluid_Structure_Interaction_Lung"] =          prb_fsi_lung;

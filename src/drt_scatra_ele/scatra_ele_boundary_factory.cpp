@@ -97,7 +97,8 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   case INPAR::SCATRA::scatratype_loma:
   case INPAR::SCATRA::scatratype_levelset:
   case INPAR::SCATRA::scatratype_advreac:
-  case INPAR::SCATRA::scatratype_cardio_monodomain:
+  case INPAR::SCATRA::scatratype_anisotrop:
+  case INPAR::SCATRA::scatratype_cardiac_monodomain:
     {
       return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal);
       break;

@@ -515,6 +515,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/damage.cpp
   src/drt_mat/scatra_mat.cpp
+  src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp
   src/drt_mat/structporo_reaction.cpp
@@ -876,6 +877,8 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_dyn.cpp
   src/drt_scatra/scatra_resulttest.cpp
   src/drt_scatra/scatra_timint_bdf2.cpp
+  src/drt_scatra/scatra_timint_cardiac_monodomain_scheme.cpp
+  src/drt_scatra/scatra_timint_cardiac_monodomain.cpp
   src/drt_scatra/scatra_timint_genalpha.cpp
   src/drt_scatra/scatra_timint_implicit.cpp
   src/drt_scatra/scatra_timint_implicit_service.cpp
@@ -1010,6 +1013,8 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_input.cpp
   src/drt_scatra_ele/scatra_ele_calc.cpp
+  src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
+  src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_std.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_NP.cpp
@@ -1035,6 +1040,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_service_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_cardiac_monodomain.cpp
 )
 set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell.cpp

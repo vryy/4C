@@ -360,12 +360,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
 
-  if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
-  {
-    reader.ReadVector(activation_time_np_, "activation_time_np");
-    reader.ReadMesh(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
-  }
-
   return;
 }
 

@@ -198,6 +198,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+
+  /*----------------------------------------------------------------------*/
+  // anisotropic scalar transport material (with potential reaction coefficient)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_aniso",
+                                            "anisotropic scalar transport material",
+                                            INPAR::MAT::m_scatra_aniso));
+
+    AddNamedReal(m,"DIFF1","kinematic diffusivity component 1");
+    AddNamedReal(m,"DIFF2","kinematic diffusivity component 2");
+    AddNamedReal(m,"DIFF3","kinematic diffusivity component 3");
+    AddNamedReal(m,"REACOEFF","reaction coefficient",true);
+//    AddNamedReal(m,"SCNUM","schmidt number",true);
+//    AddNamedReal(m,"FLDDENSITY","fluid density",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   // Myocard muscle material (with complicated reaction coefficient)
   {
@@ -206,8 +225,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "Myocard muscle material",
                                             INPAR::MAT::m_myocard));
 
-    AddNamedReal(m,"MAIN_DIFFUSIVITY","conductivity in fiber direction");
-    AddNamedReal(m,"OFF_DIFFUSIVITY","conductivity perpendicular to fiber direction");
+    AddNamedReal(m,"DIFF1","conductivity in fiber direction");
+    AddNamedReal(m,"DIFF2","conductivity perpendicular to fiber direction");
+    AddNamedReal(m,"DIFF3","conductivity perpendicular to fiber direction");
     AddNamedReal(m,"PERTUBATION_DERIV","pertubation for calculation of reaction coefficient derivative");
     AddNamedString(m,"MODEL","Model type: MV, FHN, TNNP, SAN or INADA", "MV");
     AddNamedString(m,"TISSUE","Tissue type: M, ENDO, EPI, AN, N or NH", "M");

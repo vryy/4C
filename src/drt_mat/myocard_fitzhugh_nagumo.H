@@ -60,7 +60,7 @@ public:
   virtual ~Myocard_Fitzhugh_Nagumo() { ; }
 
   /// compute reaction coefficient
-  double ComputeReactionCoeff(const double phi, const double dt);
+  double ReaCoeff(const double phi, const double dt);
 
   ///  returns number of internal state variables of the material
   int GetNumberOfInternalStateVariables() const;

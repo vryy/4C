@@ -33,8 +33,9 @@ Maintainer: Cristobal Bertoglio
  *----------------------------------------------------------------------*/
 MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
 : Parameter(matdata),
-  maindirdiffusivity(matdata->GetDouble("MAIN_DIFFUSIVITY")),
-  offdirdiffusivity(matdata->GetDouble("OFF_DIFFUSIVITY")),
+  diff1(matdata->GetDouble("DIFF1")),
+  diff2(matdata->GetDouble("DIFF2")),
+  diff3(0.0),
   dt_deriv(matdata->GetDouble("PERTUBATION_DERIV")),
   model(matdata->Get<std::string>("MODEL")),
   tissue(matdata->Get<std::string>("TISSUE")),
@@ -188,26 +189,6 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
 }
 
 
-void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const
-{
-  diffus3(0,0) = difftensor_(0,0); return;
-}
-
-
-void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<2,2>& diffus3) const
-{
-  for (int i=0; i<2; i++){for (int j=0; j<2; j++){diffus3(i,j) = difftensor_(i,j);}}
-
-  return;
-}
-
-
-void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const
-{
-  for (int i=0; i<3; i++){for (int j=0; j<3; j++){diffus3(i,j) = difftensor_(i,j);}}
-  return;
-}
-
 void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
   {
 
@@ -215,22 +196,22 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
   double fiber1normS = fiber1[0]*fiber1[0]+fiber1[1]*fiber1[1]+fiber1[2]*fiber1[2];
 
   // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
-   const double maindirdiffusivity = params_->maindirdiffusivity;
-   const double offdirdiffusivity  = params_->offdirdiffusivity;
+   const double diff1 = params_->diff1;
+   const double diff2  = params_->diff2;
 
-   // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: offdirdiffusivity*Id + (maindirdiffusivity-offdirdiffusivity)*fiber1*fiber1'
+   // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
    // first row
-   difftensor_(0,0)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1[0]*fiber1[0]/fiber1normS;
-   difftensor_(0,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1[0]*fiber1[1]/fiber1normS;
-   difftensor_(0,2)=(maindirdiffusivity-offdirdiffusivity)*fiber1[0]*fiber1[2]/fiber1normS;
+   difftensor_(0,0)=diff2 + (diff1-diff2)*fiber1[0]*fiber1[0]/fiber1normS;
+   difftensor_(0,1)=(diff1-diff2)*fiber1[0]*fiber1[1]/fiber1normS;
+   difftensor_(0,2)=(diff1-diff2)*fiber1[0]*fiber1[2]/fiber1normS;
    // second row
-   difftensor_(1,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1[1]*fiber1[0]/fiber1normS;
-   difftensor_(1,1)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1[1]*fiber1[1]/fiber1normS;
-   difftensor_(1,2)=(maindirdiffusivity-offdirdiffusivity)*fiber1[1]*fiber1[2]/fiber1normS;
+   difftensor_(1,0)=(diff1-diff2)*fiber1[1]*fiber1[0]/fiber1normS;
+   difftensor_(1,1)=diff2 + (diff1-diff2)*fiber1[1]*fiber1[1]/fiber1normS;
+   difftensor_(1,2)=(diff1-diff2)*fiber1[1]*fiber1[2]/fiber1normS;
    // third row
-   difftensor_(2,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1[2]*fiber1[0]/fiber1normS;
-   difftensor_(2,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1[2]*fiber1[1]/fiber1normS;
-   difftensor_(2,2)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1[2]*fiber1[2]/fiber1normS;
+   difftensor_(2,0)=(diff1-diff2)*fiber1[2]*fiber1[0]/fiber1normS;
+   difftensor_(2,1)=(diff1-diff2)*fiber1[2]*fiber1[1]/fiber1normS;
+   difftensor_(2,2)=diff2 + (diff1-diff2)*fiber1[2]*fiber1[2]/fiber1normS;
    // done
    return;
 
@@ -243,22 +224,22 @@ void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<3,1>& fiber1)
 double fiber1normS = fiber1(0)*fiber1(0)+fiber1(1)*fiber1(1)+fiber1(2)*fiber1(2);
 
 // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
- const double maindirdiffusivity = params_->maindirdiffusivity;
- const double offdirdiffusivity  = params_->offdirdiffusivity;
+ const double diff1 = params_->diff1;
+ const double diff2  = params_->diff2;
 
- // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: offdirdiffusivity*Id + (maindirdiffusivity-offdirdiffusivity)*fiber1*fiber1'
+ // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
  // first row
- difftensor_(0,0)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1(0)*fiber1(0)/fiber1normS;
- difftensor_(0,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1(0)*fiber1(1)/fiber1normS;
- difftensor_(0,2)=(maindirdiffusivity-offdirdiffusivity)*fiber1(0)*fiber1(2)/fiber1normS;
+ difftensor_(0,0)=diff2 + (diff1-diff2)*fiber1(0)*fiber1(0)/fiber1normS;
+ difftensor_(0,1)=(diff1-diff2)*fiber1(0)*fiber1(1)/fiber1normS;
+ difftensor_(0,2)=(diff1-diff2)*fiber1(0)*fiber1(2)/fiber1normS;
  // second row
- difftensor_(1,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1(1)*fiber1(0)/fiber1normS;
- difftensor_(1,1)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1(1)*fiber1(1)/fiber1normS;
- difftensor_(1,2)=(maindirdiffusivity-offdirdiffusivity)*fiber1(1)*fiber1(2)/fiber1normS;
+ difftensor_(1,0)=(diff1-diff2)*fiber1(1)*fiber1(0)/fiber1normS;
+ difftensor_(1,1)=diff2 + (diff1-diff2)*fiber1(1)*fiber1(1)/fiber1normS;
+ difftensor_(1,2)=(diff1-diff2)*fiber1(1)*fiber1(2)/fiber1normS;
  // third row
- difftensor_(2,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1(2)*fiber1(0)/fiber1normS;
- difftensor_(2,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1(2)*fiber1(1)/fiber1normS;
- difftensor_(2,2)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1(2)*fiber1(2)/fiber1normS;
+ difftensor_(2,0)=(diff1-diff2)*fiber1(2)*fiber1(0)/fiber1normS;
+ difftensor_(2,1)=(diff1-diff2)*fiber1(2)*fiber1(1)/fiber1normS;
+ difftensor_(2,2)=diff2 + (diff1-diff2)*fiber1(2)*fiber1(2)/fiber1normS;
  // done
  return;
 
@@ -271,26 +252,54 @@ void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<2,1>& fiber1)
 double fiber1normS = fiber1(0)*fiber1(0)+fiber1(1)*fiber1(1);
 
 // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
- const double maindirdiffusivity = params_->maindirdiffusivity;
- const double offdirdiffusivity  = params_->offdirdiffusivity;
+ const double diff1 = params_->diff1;
+ const double diff2  = params_->diff2;
 
- // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: offdirdiffusivity*Id + (maindirdiffusivity-offdirdiffusivity)*fiber1*fiber1'
+ // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
  // first row
- difftensor_(0,0)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1(0)*fiber1(0)/fiber1normS;
- difftensor_(0,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1(0)*fiber1(1)/fiber1normS;
+ difftensor_(0,0)=diff2 + (diff1-diff2)*fiber1(0)*fiber1(0)/fiber1normS;
+ difftensor_(0,1)=(diff1-diff2)*fiber1(0)*fiber1(1)/fiber1normS;
  // second row
- difftensor_(1,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1(1)*fiber1(0)/fiber1normS;
- difftensor_(1,1)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1(1)*fiber1(1)/fiber1normS;
+ difftensor_(1,0)=(diff1-diff2)*fiber1(1)*fiber1(0)/fiber1normS;
+ difftensor_(1,1)=diff2 + (diff1-diff2)*fiber1(1)*fiber1(1)/fiber1normS;
  // done
  return;
 
 }
 
+void MAT::Myocard::Diffusivity(LINALG::Matrix<1,1>& diffus3) const
+{
+  diffus3(0,0) = difftensor_(0,0); return;
+}
 
-double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
+void MAT::Myocard::Diffusivity(LINALG::Matrix<2,2>& diffus3) const
+{
+  for (int i=0; i<2; i++){
+    for (int j=0; j<2; j++){
+      diffus3(i,j) = difftensor_(i,j);
+    }
+  }
+
+  return;
+}
+
+void MAT::Myocard::Diffusivity(LINALG::Matrix<3,3>& diffus3) const
+{
+  for (int i=0; i<3; i++){
+    for (int j=0; j<3; j++){
+      diffus3(i,j) = difftensor_(i,j);
+    }
+  }
+  return;
+}
+
+
+
+double MAT::Myocard::ReaCoeff(const double phi, const double dt) const
 {
   double reacoeff = params_->time_scale;
-  reacoeff *= myocard_mat_->ComputeReactionCoeff(phi, dt*params_->time_scale);
+  reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale);
+
   return reacoeff;
 }
 
@@ -298,20 +307,14 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |                                                           cbert 09/13 |
  *----------------------------------------------------------------------*/
-double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt)
+double MAT::Myocard::ReaCoeffDeriv(const double phi, const double dt) const
 {
   double ReaCoeffDeriv=0.0;
   if(params_->dt_deriv != 0.0)
   {
-//<<<<<<< .mine
-    double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv), dt*params_->time_scale);
-    double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt*params_->time_scale);
+    double ReaCoeff_t2 = ReaCoeff((phi+params_->dt_deriv), dt);
+    double ReaCoeff_t1 = ReaCoeff(phi, dt);
     ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
-//=======
-  //  double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv*params_->time_scale), dt*params_->time_scale);
-   // double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt*params_->time_scale);
-//    ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv*params_->time_scale);
-//>>>>>>> .r18409
   }
   return ReaCoeffDeriv;
 }
@@ -387,6 +390,7 @@ void MAT::Myocard::Initialize()
 void MAT::Myocard::Update(const double phi, const double dt)
 {
   myocard_mat_->Update(phi, dt*(params_->time_scale));
+
   return;
 }
 

@@ -55,7 +55,7 @@ Myocard_Fitzhugh_Nagumo::Myocard_Fitzhugh_Nagumo(const double eps_deriv_myocard,
 
 }
 
-double Myocard_Fitzhugh_Nagumo::ComputeReactionCoeff(const double phi, const double dt)
+double Myocard_Fitzhugh_Nagumo::ReaCoeff(const double phi, const double dt)
 {
 
      double reacoeff;

@@ -36,6 +36,7 @@ Maintainer: Lena Wiechert
 #include "aaaraghavanvorp_damage.H"
 #include "aaa_mixedeffects.H"
 #include "scatra_mat.H"
+#include "scatra_mat_aniso.H"
 #include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
@@ -232,6 +233,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ScatraMat(curmat));
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_scatra_aniso:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
+    MAT::PAR::ScatraMatAniso* params = static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_myocard:

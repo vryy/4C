@@ -46,7 +46,7 @@ public:
   virtual ~Myocard_General() { ; }
 
   /// compute reaction coefficient
-  virtual double ComputeReactionCoeff(const double phi, const double dt) = 0;
+  virtual double ReaCoeff(const double phi, const double dt) = 0;
 
   ///  returns number of internal state variables of the material
   virtual int GetNumberOfInternalStateVariables() const = 0;

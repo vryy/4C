@@ -299,6 +299,7 @@ int main(
         writer.WriteFiles();
         break;
     }
+    case prb_cardiac_monodomain:
     case prb_scatra:
     {
         std::string basename = problem.outname();

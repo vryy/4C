@@ -146,11 +146,13 @@ int DRT::ELEMENTS::Transport::Evaluate(
   INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
   switch(scatratype)
   {
-  case INPAR::SCATRA::scatratype_condif:    impltype = INPAR::SCATRA::impltype_std;     break;
-  case INPAR::SCATRA::scatratype_loma:      impltype = INPAR::SCATRA::impltype_loma;    break;
-  case INPAR::SCATRA::scatratype_poro:      impltype = INPAR::SCATRA::impltype_poro;    break;
-  case INPAR::SCATRA::scatratype_advreac:   impltype = INPAR::SCATRA::impltype_advreac; break;
+  case INPAR::SCATRA::scatratype_condif:    impltype = INPAR::SCATRA::impltype_std;      break;
+  case INPAR::SCATRA::scatratype_loma:      impltype = INPAR::SCATRA::impltype_loma;     break;
+  case INPAR::SCATRA::scatratype_poro:      impltype = INPAR::SCATRA::impltype_poro;     break;
+  case INPAR::SCATRA::scatratype_advreac:   impltype = INPAR::SCATRA::impltype_advreac;  break;
   case INPAR::SCATRA::scatratype_pororeac:  impltype = INPAR::SCATRA::impltype_pororeac; break;
+  case INPAR::SCATRA::scatratype_anisotrop: impltype = INPAR::SCATRA::impltype_aniso;    break;
+  case INPAR::SCATRA::scatratype_cardiac_monodomain: impltype = INPAR::SCATRA::impltype_cardiac_monodomain;    break;
   case INPAR::SCATRA::scatratype_elch:
   {
     // At this point, we know that we have a parameter class from type ScaTraEleParameterElch
@@ -203,6 +205,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_turbulent_prandtl_number:
     case SCATRA::calc_vreman_scatra:
     case SCATRA::calc_subgrid_diffusivity_matrix:
+    case SCATRA::get_material_parameters:
     case SCATRA::calc_mean_Cai:
     case SCATRA::calc_dissipation:
     case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
@@ -212,6 +215,10 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_elch_initial_potential:
     case SCATRA::calc_elch_electrode_kinetics:
     case SCATRA::calc_integr_grad_reac:
+    case SCATRA::get_material_internal_state:
+    case SCATRA::set_material_internal_state:
+    case SCATRA::get_material_ionic_currents:
+    case SCATRA::time_update_material:
     case SCATRA::calc_integr_pat_rhsvec:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype, numdofpernode, numscal)->EvaluateService(

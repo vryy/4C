@@ -841,8 +841,11 @@ void SCATRA::ScaTraTimIntImpl::PrintScatraType()
   case INPAR::SCATRA::scatratype_pororeac:
     std::cout << "Poro_Scatra_Reaction" << std::endl;
     break;
-  case INPAR::SCATRA::scatratype_cardio_monodomain:
-    std::cout << "Cardio_Monodomain" << std::endl;
+  case INPAR::SCATRA::scatratype_anisotrop:
+    std::cout << "Anisotropic Diffusion" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_cardiac_monodomain:
+    std::cout << "Cardiac_Monodomain" << std::endl;
     break;
   default:
     dserror("Fix your scatratype!");
