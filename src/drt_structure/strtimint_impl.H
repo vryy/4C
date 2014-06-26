@@ -309,7 +309,7 @@ namespace STR
     //! state of the displacement solution
     void NewtonModified() { dserror("Not impl."); }
 
-    //! Do Linesearch iteration
+		//! Do Line search iteration
     //!
     //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
@@ -345,6 +345,12 @@ namespace STR
     (
       FILE* ofile  //!< output file handle
     );
+
+    /*! \brief Use nonlinear solver package NLNSOL
+     *
+     *  \author mayr.mt \date 06/2014
+     */
+    int NlnSolver();
 
     //! Do classical augmented lagrange for volume constraint
     //!
@@ -568,9 +574,6 @@ namespace STR
     //! based on time integration scheme specific formulas.
     virtual void UpdateIterIteratively() = 0;
 
-    //@}
-
-
     //! Update configuration after time step
     //!
     //! This means, the state set
@@ -592,47 +595,11 @@ namespace STR
     //! Update step for Windkessel
     void UpdateStepWindkessel();
 
-    //! @name Output
-    //@{
-
-    //! Print to screen predictor informations about residual norm etc.
-    //! \author lw (originally) \date 12/07
-    void PrintPredictor();
-
-    //! Print to screen information about residual forces and displacements
-    //! \author lw (originally) \date 12/07
-    void PrintNewtonIter();
-
-    //! Contains text to PrintNewtonIter
-    //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText
-    (
-      FILE* ofile  //!< output file handle
-    );
-
-    //! Contains header to PrintNewtonIter
-    //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader
-    (
-      FILE* ofile  //!< output file handle
-    );
-
-    //! print statistics of converged Newton-Raphson iteration
-    void PrintNewtonConv();
-
-    //! print summary after step
-    void PrintStep();
-
-    //! The text for summary print, see #PrintStep
-    void PrintStepText
-    (
-      FILE* ofile  //!< output file handle
-    );
+    //@}
 
     // export contact integration time and active set into textfiles
     // xxx.time and xxx.active
     void ExportContactQuantities();
-    //@}
 
     //! @name Attribute access functions
     //@{
@@ -849,6 +816,45 @@ namespace STR
 
   protected:
 
+    //! @name Output to file or screen
+    //@{
+
+    //! Print to screen predictor informations about residual norm etc.
+    //! \author lw (originally) \date 12/07
+    void PrintPredictor();
+
+    //! Print to screen information about residual forces and displacements
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIter();
+
+    //! Contains text to PrintNewtonIter
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIterText
+    (
+      FILE* ofile  //!< output file handle
+    );
+
+    //! Contains header to PrintNewtonIter
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIterHeader
+    (
+      FILE* ofile  //!< output file handle
+    );
+
+    //! print statistics of converged Newton-Raphson iteration
+    void PrintNewtonConv();
+
+    //! print summary after step
+    void PrintStep();
+
+    //! The text for summary print, see #PrintStep
+    void PrintStepText
+    (
+      FILE* ofile  //!< output file handle
+    );
+
+    //@}
+
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
 
@@ -859,36 +865,36 @@ namespace STR
 
     //! @name Iterative solution technique
     //@{
-    enum INPAR::STR::NonlinSolTech itertype_;  //!< kind of iteration technique
-                                               //!< or non-linear solution technique
-    enum INPAR::STR::ConvNorm normtypedisi_; //!< convergence check for residual displacements
-    enum INPAR::STR::ConvNorm normtypefres_; //!< convergence check for residual forces
-    enum INPAR::STR::ConvNorm normtypepres_; //!< convergence check for residual pressure
-    enum INPAR::STR::ConvNorm normtypepfres_; //!< convergence check for residual pressure forces
-    enum INPAR::STR::ConvNorm normtypecontconstr_; //!< convergence check for contact constraints (saddlepoint formulation only)
-    enum INPAR::STR::ConvNorm normtypeplagrincr_;  //!< convergence check for Lagrange multiplier increment (saddlepoint formulation only)
+    enum INPAR::STR::NonlinSolTech itertype_;       //!< kind of iteration technique or non-linear solution technique
 
-    enum INPAR::STR::BinaryOp combdispre_; //!< binary operator to combine field norms
-    enum INPAR::STR::BinaryOp combfrespfres_; //!< binary operator to combine field norms
-    enum INPAR::STR::BinaryOp combdisifres_; //!< binary operator to combine displacement and forces
-    enum INPAR::STR::BinaryOp combfrescontconstr_; //!< binary operator to combine field norms (forces and contact constraints, contact/meshtying in saddlepoint formulation only)
-    enum INPAR::STR::BinaryOp combdisilagr_; //!< binary operator to combine field norms (displacement increments and LM increments, contact/meshtying in saddlepoint formulation only)
+    enum INPAR::STR::ConvNorm normtypedisi_;        //!< convergence check for residual displacements
+    enum INPAR::STR::ConvNorm normtypefres_;        //!< convergence check for residual forces
+    enum INPAR::STR::ConvNorm normtypepres_;        //!< convergence check for residual pressure
+    enum INPAR::STR::ConvNorm normtypepfres_;       //!< convergence check for residual pressure forces
+    enum INPAR::STR::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints (saddlepoint formulation only)
+    enum INPAR::STR::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier increment (saddlepoint formulation only)
     enum INPAR::STR::BinaryOp combfresplconstr_; //!< binary operator to combine field norms (forces and plastic constraints, semi-smooth plasticity only)
     enum INPAR::STR::BinaryOp combdisiLp_; //!< binary operator to combine field norms (displacement increments and Lp increments, semi-smooth plasticity only)
     enum INPAR::STR::BinaryOp combfresEasres_; //!< binary operator to combine field norms (forces and EAS residuals, semi-smooth plasticity only)
     enum INPAR::STR::BinaryOp combdisiEasIncr_; //!< binary operator to combine field norms (displacement increments and EAS increments, semi-smooth plasticity only)
+
+    enum INPAR::STR::BinaryOp combdispre_;          //!< binary operator to combine field norms
+    enum INPAR::STR::BinaryOp combfrespfres_;       //!< binary operator to combine field norms
+    enum INPAR::STR::BinaryOp combdisifres_;        //!< binary operator to combine displacement and forces
+    enum INPAR::STR::BinaryOp combfrescontconstr_;  //!< binary operator to combine field norms (forces and contact constraints, contact/meshtying in saddlepoint formulation only)
+    enum INPAR::STR::BinaryOp combdisilagr_;        //!< binary operator to combine field norms (displacement increments and LM increments, contact/meshtying in saddlepoint formulation only)
 
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iterations
 
     enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
-    double toldisi_;  //!< tolerance residual displacements
-    double tolfres_;  //!< tolerance force residual
-    double tolpfres_; //!< norm of residual pressure forces
-    double tolpres_; //!< norm of residual pressures
-    double tolcontconstr_; //!< norm of rhs for contact constraints (saddlepoint formulation only)
-    double tollagr_; //!< tolerance of LM multiplier increments (saddlepoint formulation only)
+    double toldisi_;        //!< tolerance residual displacements
+    double tolfres_;        //!< tolerance force residual
+    double tolpfres_;       //!< norm of residual pressure forces
+    double tolpres_;        //!< norm of residual pressures
+    double tolcontconstr_;  //!< norm of rhs for contact constraints (saddlepoint formulation only)
+    double tollagr_;        //!< tolerance of LM multiplier increments (saddlepoint formulation only)
 
     double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
                          //!< with Lagrange multipliers
@@ -918,8 +924,10 @@ namespace STR
 
 
 
-    Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
-                                        //!< \f$\Delta{D}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure) \f$\Delta{D}^{<k>}_{n+1}\f$
+
+    //@}
+
     //! @name Various global forces
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;   //!< force residual used for solution
@@ -928,23 +936,23 @@ namespace STR
 
     //! @name NOX variables
     //@{
-    Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;
-    Teuchos::RCP<Teuchos::ParameterList> noxparams_;
-    Teuchos::RCP<NOX::Utils> noxutils_;
+    Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;  //!< NOX status test for convergence check
+    Teuchos::RCP<Teuchos::ParameterList> noxparams_;      //!< NOX parameter list to configure the NOX solver
+    Teuchos::RCP<NOX::Utils> noxutils_;                   //!< NOX utils for printing
     //@}
 
     //! @name Krylov projection variables
-    bool updateprojection_;                             //!< bool triggering update of Krylov projection
-    Teuchos::RCP<LINALG::KrylovProjector>   projector_; //!< Krylov projector himself
+    bool updateprojection_;                           //!< bool triggering update of Krylov projection
+    Teuchos::RCP<LINALG::KrylovProjector> projector_; //!< Krylov projector himself
     //@}
 
-    //! @name SDC Scaling for thin shell structures
+    //! @name STC Scaling for thin shell structures
     //@{
-    enum INPAR::STR::STC_Scale stcscale_; //!< scale thickness of shells?
-    double stcfact_;  //!< scaling factor for STC
-    int stclayer_;  //! number of layers for multilayered case
-    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
-    bool stccompl_; ///< keep track if stc matrix has been evaluated
+    enum INPAR::STR::STC_Scale stcscale_;       //!< scale thickness of shells?
+    double stcfact_;                            //!< scaling factor for STC
+    int stclayer_;                              //! number of layers for multilayered case
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat_; //!< scaling matrix for STC
+    bool stccompl_;                             //!< keep track if stc matrix has been evaluated
     //@}
 
     //! @name Pseudo Transient Continuation Parameters

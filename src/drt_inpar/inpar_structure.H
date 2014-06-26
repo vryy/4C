@@ -162,19 +162,20 @@ namespace INPAR
     /// type of solution techniques
     enum NonlinSolTech
     {
-      soltech_vague,  ///< undefined
-      soltech_newtonfull,  ///< full Newton-Raphson iteration
-      soltech_newtonls,  ///< line search Newton-Raphson
-      soltech_newtonopp,  ///< oppositely converging Newton-Raphson
-      soltech_newtonmod,  ///< modified Newton-Raphson iteration
-      soltech_newtonuzawalin,  ///< linear Uzawa iteration for
-                               ///< constraint system
+      soltech_vague,              ///< undefined
+      soltech_newtonfull,         ///< full Newton-Raphson iteration
+      soltech_newtonls,           ///< line search Newton-Raphson
+      soltech_newtonopp,          ///< oppositely converging Newton-Raphson
+      soltech_newtonmod,          ///< modified Newton-Raphson iteration
+      soltech_newtonuzawalin,     ///< linear Uzawa iteration for
+                                  ///< constraint system
       soltech_newtonuzawanonlin,  ///< non-linear Uzawa iteration
                                   ///< for constraint system
-      soltech_ptc,  ///< pseudo transient continuation nonlinear iteration
-      soltech_noxnewtonlinesearch,  ///< Line search Newton
-                                    ///< utilising NOX
-      soltech_noxgeneral  ///< non-linear solution with NOX
+      soltech_ptc,                ///< pseudo transient continuation nonlinear iteration
+      soltech_noxnewtonlinesearch,///< Line search Newton
+                                  ///< utilizing NOX
+      soltech_noxgeneral,         ///< non-linear solution with NOX
+      soltech_nlnsol              ///< nonlinear solver toolbox
     };
 
     /// Map solution technique enum to std::string
@@ -214,6 +215,9 @@ namespace INPAR
         break;
       case soltech_ptc :
         return "ptc";
+        break;
+      case soltech_nlnsol :
+        return "NLNSOL";
         break;
       default :
         dserror("Cannot make std::string for solution technique %d", name);

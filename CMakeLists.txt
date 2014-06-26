@@ -1477,6 +1477,26 @@ set(OBJS_SOLVER
   src/solver/muelu/MueLu_ContactSPRepartitionInterface.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
 )
+
+set(OBJS_SOLVER_NONLIN
+  src/solver_nonlin/fas_hierarchy.cpp
+  src/solver_nonlin/fas_nlnlevel.cpp
+  src/solver_nonlin/linesearch_backtracking.cpp
+  src/solver_nonlin/linesearch_base.cpp
+  src/solver_nonlin/linesearch_factory.cpp
+  src/solver_nonlin/linesearch_fullstep.cpp
+  src/solver_nonlin/linesearch_polynomial.cpp
+  src/solver_nonlin/nln_operator_factory.cpp
+  src/solver_nonlin/nln_operator_fas.cpp
+  src/solver_nonlin/nln_operator_ngmres.cpp
+  src/solver_nonlin/nln_operator_nonlincg.cpp
+  src/solver_nonlin/nln_operator_quasinewton.cpp
+  src/solver_nonlin/nln_operator.cpp
+  src/solver_nonlin/nln_problem.cpp
+  src/solver_nonlin/nln_problem_coarselevel.cpp
+  src/solver_nonlin/nln_utils.cpp
+)
+
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
   src/drt_constraint/constraint_manager.cpp
@@ -2069,6 +2089,9 @@ add_library(post_drt_vtu_lib ${OBJS_POST_DRT_VTU})
 add_library(linalg ${OBJS_LINALG})
 add_library(libsolver ${OBJS_SOLVER})
 
+# nonlinear solver objects
+add_library(nlnsolver ${OBJS_SOLVER_NONLIN})
+
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
 #set(baciname baci)
@@ -2097,6 +2120,7 @@ target_link_libraries (${baciname}
   drt_micromat 
   drt_mat
   drt_lib_utils
+  nlnsolver
   libsolver
   linalg
   drt_comm

@@ -1123,7 +1123,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "newtonlinuzawa",
                                  "augmentedlagrange",
                                  "NoxNewtonLineSearch",
-                                 "noxgeneral"),
+                                 "noxgeneral",
+                                 "NLNSOL"),
                                tuple<int>(
                                  INPAR::STR::soltech_vague,
                                  INPAR::STR::soltech_newtonfull,
@@ -1133,7 +1134,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_newtonuzawalin,
                                  INPAR::STR::soltech_newtonuzawanonlin,
                                  INPAR::STR::soltech_noxnewtonlinesearch,
-                                 INPAR::STR::soltech_noxgeneral),
+                                 INPAR::STR::soltech_noxgeneral,
+                                 INPAR::STR::soltech_nlnsol),
                                &sdyn);
 
   IntParameter("LSMAXITER",30,
@@ -6988,13 +6990,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::ACOU::inv_mat_uniform),
                                     &acou_inv);
 
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& nlnsol = list->sublist("NONLINEAR SOLVER", false, "Configuration of nonlinear solver package");
+
+  StringParameter("XML_FILE", "none", "Filename of XML file with configuration of nonlinear solver", &nlnsol);
 
 	/*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks
 
   // Note: the maximum number of solver blocks is hardwired here. If you change this,
   // don't forget to edit the corresponding parts in globalproblems.cpp, too.
-  for (int i = 1; i<10; i++) {
+  for (int i = 1; i<10; i++)
+  {
     std::stringstream ss;
     ss << "SOLVER " << i;
     std::stringstream ss_description;

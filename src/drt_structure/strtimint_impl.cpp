@@ -20,6 +20,7 @@ Maintainer: Alexander Popp
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "stru_aux.H"
+
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -55,6 +56,12 @@ Maintainer: Alexander Popp
 #include "../drt_so3/so_sh8p8.H"
 
 #include "../drt_crack/crackUtils.H"
+
+#include "../solver_nonlin/nln_operator_factory.H"
+#include "../solver_nonlin/nln_operator.H"
+#include "../solver_nonlin/nln_problem.H"
+#include "../solver_nonlin/nln_utils.H"
+#include "strtimint_noxgroup.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -263,7 +270,6 @@ int STR::TimIntImpl::IntegrateStep()
 /* predict solution */
 void STR::TimIntImpl::Predict()
 {
-
   // set iteration step to 0 (predictor)
   iter_ = 0;
 
@@ -1280,9 +1286,12 @@ int STR::TimIntImpl::Solve()
     case INPAR::STR::soltech_ptc :
       nonlin_error = PTC();
       break;
+    case INPAR::STR::soltech_nlnsol :
+      nonlin_error = NlnSolver(); // ToDO: introduce nonlin error code in NlnSolver()
+      break;
     // catch problems
     default :
-      dserror("Solution technique \"%s\" is not implemented",
+      dserror("Solution technique \"%s\" is not implemented.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
       break;
     }
@@ -2114,6 +2123,70 @@ int STR::TimIntImpl::UzawaNonLinearNewtonFull()
   // for output
   iter_ = uziter + 1;
   return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int STR::TimIntImpl::NlnSolver()
+{
+  // Note: fres_ has already been evaluated and comes as 'positive' residual
+
+  // check whether we have a sanely filled stiffness matrix
+  if (not stiff_->Filled())
+  {
+    dserror("Effective stiffness matrix must be filled here");
+  }
+
+  ApplyDirichletBC(timen_,disn_,veln_,accn_,true);
+
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+      GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
+  // ---------------------------------------------------------------------------
+  // Create / read parameter list for configuration of nonlinear solver
+  // ---------------------------------------------------------------------------
+  Teuchos::RCP<Teuchos::ParameterList> params = NLNSOL::UTILS::CreateParamListFromXML();
+
+  // ---------------------------------------------------------------------------
+  // Create NOX linear system and group
+  // ---------------------------------------------------------------------------
+  // create initial guess vector of predictor result
+  NOX::Epetra::Vector noxSoln(disn_, NOX::Epetra::Vector::CreateView);
+
+  // use NOX::STR::Group to enable access to structure time integration
+  Teuchos::RCP<NOX::STR::Group> noxgrp
+    = Teuchos::rcp(new NOX::STR::Group(*this,
+                                       params->sublist("Nonlinear Problem"),
+                                       Teuchos::rcp(this, false),
+                                       noxSoln,
+                                       Teuchos::null  // use dummy here to avoid specifying a linear system
+                                       ));            // that is not needed anyway
+
+  // ---------------------------------------------------------------------------
+  // Create the nonlinear problem evaluator
+  // ---------------------------------------------------------------------------
+  Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem = Teuchos::rcp(new NLNSOL::NlnProblem());
+  nlnproblem->Init(Discretization()->Comm(), params->sublist("Nonlinear Problem"), *noxgrp, stiff_->EpetraOperator());
+  nlnproblem->Setup();
+
+  // ---------------------------------------------------------------------------
+  // Create the nonlinear operator to solve the nonlinear problem
+  // ---------------------------------------------------------------------------
+  // use factory to create the nonlinear operator
+  NLNSOL::NlnOperatorFactory opfactory;
+  Teuchos::RCP<NLNSOL::NlnOperator> nlnoperator = opfactory.Create(params->sublist("Nonlinear Operator"));
+
+  // setup
+  nlnoperator->Init(Discretization()->Comm(), params->sublist("Nonlinear Operator"), nlnproblem);
+  nlnoperator->Setup();
+
+  // solve
+  nlnoperator->ApplyInverse(*fres_, noxSoln.getEpetraVector());
+
+  // ---------------------------------------------------------------------------
+
+  // return error code
+  return 0; // ToDo (mayr) provide meaningful error code
 }
 
 /*----------------------------------------------------------------------*/
@@ -3203,10 +3276,7 @@ void STR::TimIntImpl::PrintNewtonIter()
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::PrintNewtonIterHeader
-(
-  FILE* ofile
-)
+void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
 {
   // open outstd::stringstream
   std::ostringstream oss;
@@ -3396,10 +3466,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen
  * originally by lw 12/07, tk 01/08 */
-void STR::TimIntImpl::PrintNewtonIterText
-(
-  FILE* ofile
-)
+void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
 {
   // open outstd::stringstream
   std::ostringstream oss;
