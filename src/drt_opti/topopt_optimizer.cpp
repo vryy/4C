@@ -206,10 +206,10 @@ void TOPOPT::Optimizer::ComputeGradients(
 
 //  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
 //      i!=fluidvel_->end();i++)
-//    std::cout << "in optimizer at gradients fluidvel of step " << i->first << " is " << *i->second << std::endl;
+//    std::cout << "in optimizer at gradient computation fluidvel of step " << i->first << " is " << *i->second << std::endl;
 //  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
 //      i!=adjointvel_->end();i++)
-//    std::cout << "in optimizer at gradients adjointvel of step " << i->first << " is " << *i->second << std::endl;
+//    std::cout << "in optimizer at gradient computation adjointvel of step " << i->first << " is " << *i->second << std::endl;
 
   optidis_->ClearState();
 
@@ -467,8 +467,6 @@ void TOPOPT::Optimizer::ImportFlowParams(
   opti_ele_params.set("dt",fluidParams_->get<double>("time step size"));
   opti_ele_params.set("maxtimesteps",fluidParams_->get<int>("max number timesteps"));
   opti_ele_params.set("theta",fluidParams_->get<double>("theta"));
-  opti_ele_params.set("theta_pre",fluidParams_->get<double>("theta_pre"));
-  opti_ele_params.set("theta_div",fluidParams_->get<double>("theta_div"));
 
   // objective parameter
   opti_ele_params.set("dissipation",fluidParams_->get<bool>("OBJECTIVE_DISSIPATION"));

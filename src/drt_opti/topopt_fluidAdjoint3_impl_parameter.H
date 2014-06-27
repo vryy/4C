@@ -67,16 +67,8 @@ public:
   double ThetaObj() {return theta_obj_;}
   double Theta() {return theta_;}
   double OmTheta() {return omtheta_;}
-  double ThetaPre() {return theta_pre_;}
-  double OmThetaPre() {return omtheta_pre_;}
-  double ThetaDiv() {return theta_div_;}
-  double OmThetaDiv() {return omtheta_div_;}
   double Timefac() {return timefac_;}
   double TimefacRhs() {return timefacrhs_;}
-  double TimefacPre() {return timefacpre_;}
-  double TimefacPreRhs() {return timefacprerhs_;}
-  double TimefacDiv() {return timefacdiv_;}
-  double TimefacDivRhs() {return timefacdivrhs_;}
 
   double Density() {return dens_;}
   double Viscosity() {return visc_;}
@@ -132,26 +124,10 @@ private:
   double theta_;
   //! factor for right-hand side due to one-step-theta time-integration scheme
   double omtheta_;
-  //! factor for pressure left-hand side due to one-step-theta time-integration scheme
-  double theta_pre_;
-  //! factor for pressure right-hand side due to one-step-theta time-integration scheme
-  double omtheta_pre_;
-  //! factor for continuity left-hand side due to one-step-theta time-integration scheme
-  double theta_div_;
-  //! factor for continuity right-hand side due to one-step-theta time-integration scheme
-  double omtheta_div_;
   //! timefac = dt_ * theta_
   double timefac_;
   //! timefacrhs = dt_ * (1-theta_)
   double timefacrhs_;
-  //! timefac = dt_ * theta_pre_
-  double timefacpre_;
-  //! timefacrhs = dt_ * (1-theta_pre_)
-  double timefacprerhs_;
-  //! timefac = dt_ * theta_div_
-  double timefacdiv_;
-  //! timefacrhs = dt_ * (1-theta_div_)
-  double timefacdivrhs_;
 
   /// physical density
   double dens_;

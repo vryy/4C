@@ -489,9 +489,9 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
 
         if (eadjointvels.find(timestep)==eadjointvels.end())
         {
-          if (timestep==0) // for discrete_adjoints no solution of timestep 0 present
-            continue;
-          else
+//          if (timestep==0) // for discrete_adjoints no solution of timestep 0 present
+//            continue;
+//          else
             dserror("Adjoint solution of time step %i not found!",timestep);
         }
 
@@ -507,19 +507,16 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
 
         if (optiparams_->IsStationary()==false)
         {
+          evel = efluidvels.find(timestep-1)->second;
+          fluidvelint_old_.Multiply(evel,funct_);
+
           if (timestep>1)
           {
-            evel = efluidvels.find(timestep)->second;
-            fluidvelint_old_.Multiply(evel,funct_);
-
-            evel = eadjointvels.find(timestep)->second;
+            evel = eadjointvels.find(timestep-1)->second;
             adjointvelint_old_.Multiply(evel,funct_); // TODO required???
           }
           else
-          {
-            fluidvelint_old_.Clear();
             adjointvelint_old_.Clear();
-          }
         }
 
         CalcStabParameter(fac_);
@@ -538,18 +535,22 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
           if (timestep>0)
           {
             value +=timefac*adjointvelint_.Dot(fluidvelint_)+timefac_old*adjointvelint_.Dot(fluidvelint_old_);
-
             if (optiparams_->PSPG())
             {
               eadjointpres_ = eadjointpress.find(timestep)->second;
               adjointpresxy_.Multiply(derxy_,eadjointpres_);
+
               value+=timefac*(tau_(1)*fluidvelint_.Dot(adjointpresxy_)); // adjoint part
+              if (optiparams_->IsStationary()==false)
+                value+=timefac_old*(tau_(1)*fluidvelint_old_.Dot(adjointpresxy_)); // instationary adjoint part
             }
 
             if (optiparams_->SUPG())
             {
               adjointconvvel_.Multiply(adjointvelxy_,fluidvelint_);
               value+=timefac*(optiparams_->Density()*tau_(0)*fluidvelint_.Dot(adjointconvvel_)); // adjoint part
+              if (optiparams_->IsStationary()==false)
+                value+=timefac_old*(optiparams_->Density()*tau_(0)*fluidvelint_old_.Dot(adjointconvvel_)); // adjoint part
             }
           }
         }

@@ -5601,9 +5601,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("INITFUNCNO",-1,"Function for initial field",&topoptadjointfluiddyn);
 
-  DoubleParameter("THETA_PRES",1.0,"One-Step-Theta-factor for pressure terms",&topoptadjointfluiddyn);
-  DoubleParameter("THETA_DIV",1.0,"One-Step-Theta-factor for divergence terms",&topoptadjointfluiddyn);
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
       "control parameters for a combustion problem");

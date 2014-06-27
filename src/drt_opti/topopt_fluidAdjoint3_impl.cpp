@@ -141,14 +141,15 @@ DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidAdjoint3Impl()
     fluidvelint_old_(true),
     fluidvelxy_old_(true),
     fluidpres_old_(0.0),
-    fluidgradp_old_(true),
-    fluidvisc_old_(true),
     bodyforce_old_(true),
     contforce_old_(0.0),
     vdiv_old_(0.0),
     conv1_old_(true),
     conv2_old_(true),
     fluidvelint_new_(true),
+    fluidvelxy_new_(true),
+    fluidgradp_new_(true),
+    fluidvisc_new_(true),
     fluidbodyforce_new_(true),
     tau_(true),
     intpoints_( distype ),
@@ -375,6 +376,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     // 1) t^n=last iteration 2) t^n+1 = last time step
     fluidvelxy_.MultiplyNT(efluidvelnp,derxy_);
     fluidvelxy_old_.MultiplyNT(efluidveln,derxy_);
+    fluidvelxy_new_.MultiplyNT(efluidvelnpp,derxy_);
 
     // get pressure at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
@@ -394,7 +396,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     // get pressure gradient at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
     fluidgradp_.Multiply(derxy_,efluidprenp);
-    fluidgradp_old_.Multiply(derxy_,efluidpren);
+    fluidgradp_new_.Multiply(derxy_,efluidprenpp);
 
     // get reaction coefficient due to porosity for topology optimization
     // !do this only at gauss point!
@@ -498,7 +500,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
       vdiv_old_ += vderxy_old_(idim,idim);
     }
 
-    CalcDivEps(eveln,evelnp,efluidveln,efluidvelnp);
+    CalcDivEps(eveln,evelnp,efluidvelnp,efluidvelnpp);
 
     if (fldAdPara_->AdjointType() == INPAR::TOPOPT::discrete_adjoint)
     {
@@ -512,11 +514,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     const double timefacfac       = fldAdPara_->Timefac()      * fac_;
     const double timefacfacrhs    = fldAdPara_->TimefacRhs()   * fac_;
 
-    const double timefacfacpre    = fldAdPara_->TimefacPre()   * fac_;
-    const double timefacfacprerhs = fldAdPara_->TimefacPreRhs()* fac_;
+    // TODO change these four factors maybe for genalpha
+    const double timefacfacpre    = fldAdPara_->Timefac()   * fac_;
+    const double timefacfacprerhs = fldAdPara_->TimefacRhs()* fac_;
 
-    const double timefacfacdiv    = fldAdPara_->TimefacDiv()   * fac_;
-    const double timefacfacdivrhs = fldAdPara_->TimefacDivRhs()* fac_;
+    const double timefacfacdiv    = fldAdPara_->Timefac()   * fac_;
+    const double timefacfacdivrhs = fldAdPara_->TimefacRhs()* fac_;
 
     /* ------------------------------------------------------------------------ *
     * standard terms                                                            *
@@ -675,7 +678,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   //------------------------------------------------------------------------
   //  end loop over integration points
   //------------------------------------------------------------------------
-
 
   //------------------------------------------------------------------------
   //  add contributions to element matrix and right-hand-side vector
@@ -1941,10 +1943,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     const int fvi   = nsd_*vi;
 
     value = 0.0;
-
     for (int dim=0;dim<nsd_;++dim)
       value += derxy_(dim,vi)*fluidvelint_(dim);
-
     value *= fldAdPara_->Density()*timefacfac;
 
     for (int ui=0; ui<nen_; ++ui)
@@ -1962,10 +1962,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
   for (int vi=0; vi<nen_; ++vi)
   {
     value = 0.0;
-
     for (int dim=0;dim<nsd_;++dim)
       value += derxy_(dim,vi)*fluidvelint_(dim);
-
     value *= fldAdPara_->Density()*timefacfac;
 
     for (int jdim=0;jdim<nsd_;++jdim)
@@ -1978,10 +1976,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     for (int vi=0; vi<nen_; ++vi)
     {
       value = 0.0;
-
       for (int dim=0;dim<nsd_;++dim)
-        value += derxy_(dim,vi)*fluidvelint_old_(dim);
-
+        value += derxy_(dim,vi)*fluidvelint_(dim);
       value *= fldAdPara_->Density()*timefacfacrhs;
 
       for (int jdim=0;jdim<nsd_;++jdim)
@@ -2021,10 +2017,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
   for (int jdim=0;jdim<nsd_;++jdim)
   {
     value = 0.0; // product of fluid and adjoint velocity
-
     for (int dim=0;dim<nsd_;++dim)
       value+=fluidvelxy_(dim,jdim)*velint_(dim);
-
     value*=fldAdPara_->Density()*timefacfac;
 
     for (int vi=0;vi<nen_;++vi)
@@ -2037,10 +2031,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     for (int jdim=0;jdim<nsd_;++jdim)
     {
       value = 0.0; // product of fluid and adjoint velocity
-
       for (int dim=0;dim<nsd_;++dim)
-        value+=fluidvelxy_old_(dim,jdim)*velint_old_(dim);
-
+        value+=fluidvelxy_(dim,jdim)*velint_old_(dim);
       value*=fldAdPara_->Density()*timefacfacrhs;
 
       for (int vi=0;vi<nen_;++vi)
@@ -2605,8 +2597,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
     const LINALG::Matrix<nsd_,nen_>&      eveln,
     const LINALG::Matrix<nsd_,nen_>&      evelnp,
-    const LINALG::Matrix<nsd_,nen_>&      efluidveln,
-    const LINALG::Matrix<nsd_,nen_>&      efluidvelnp
+    const LINALG::Matrix<nsd_,nen_>&      efluidvelnp,
+    const LINALG::Matrix<nsd_,nen_>&      efluidvelnpp
 )
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -2624,7 +2616,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
   visc_.Clear();
   visc_old_.Clear();
   fluidvisc_.Clear();
-  fluidvisc_old_.Clear();
+  fluidvisc_new_.Clear();
 
   if (nsd_==3)
   {
@@ -2680,7 +2672,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
         for (int jdim=0; jdim<nsd_; ++jdim)
         {
           visc_old_(idim) += visc_shp_(nsd_idim+jdim,inode)*eveln(jdim,inode);
-          fluidvisc_old_(idim) += visc_shp_(nsd_idim+jdim,inode)*efluidveln(jdim,inode);
+          fluidvisc_new_(idim) += visc_shp_(nsd_idim+jdim,inode)*efluidvelnpp(jdim,inode);
         }
       }
     }
@@ -2778,27 +2770,27 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
 
 
   // instationary part
-    if (not fldAdPara_->IsStationary())
+  if (not fldAdPara_->IsStationary())
+  {
+    double fac = fldAdPara_->Density()*fac_*tau; // fac -> mass matrix
+
+    for (int ui=0; ui<nen_; ++ui)
     {
-      double fac = fldAdPara_->Density()*fac_*tau; // fac -> mass matrix
+      const double uifunct = fac*funct_(ui);
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (int idim=0; idim<nsd_; ++idim)
       {
-        const double uifunct = fac*funct_(ui);
+        velforce(idim,ui) -= uifunct*gradp_(idim);
+        if (fldAdPara_->IsInitInstatStep()==false)
+          velforce(idim,ui) += uifunct*gradp_old_(idim);
 
-        for (int idim=0; idim<nsd_; ++idim)
+        for (int vi=0; vi<nen_;vi++)
         {
-          velforce(idim,ui) -= uifunct*gradp_(idim);
-          if (fldAdPara_->IsInitInstatStep()==false)
-            velforce(idim,ui) += uifunct*gradp_old_(idim);
-
-          for (int vi=0; vi<nen_;vi++)
-          {
-            estif_w_q(ui*nsd_+idim,vi) += uifunct*derxy_(idim,vi);
-          }
+          estif_w_q(ui*nsd_+idim,vi) += uifunct*derxy_(idim,vi);
         }
-      } // ui
-    }
+      }
+    } // ui
+  }
 
 
 
@@ -2865,9 +2857,9 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
   supg_vel_old.Scale(fldAdPara_->Density()*tau);
 
   LINALG::Matrix<nsd_,1> conv_fluidvel(true);
-  LINALG::Matrix<nsd_,1> conv_fluidvel_old(true);
+  LINALG::Matrix<nsd_,1> conv_fluidvel_new(true);
   conv_fluidvel.Multiply(fluidvelxy_,fluidvelint_);
-  conv_fluidvel_old.Multiply(fluidvelxy_old_,fluidvelint_old_);
+  conv_fluidvel_new.Multiply(fluidvelxy_new_,fluidvelint_new_);
 
 
   LINALG::Matrix<nsd_,1> momres(true);
@@ -2877,13 +2869,13 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
 
   if (fldAdPara_->IsStationary()==false)
   {
-      const double fac1 = fldAdPara_->Density()/(fldAdPara_->Dt()*fldAdPara_->Theta());
-      const double fac2 = fldAdPara_->OmTheta()/fldAdPara_->Theta();
+    const double fac1 = fldAdPara_->Density()/(fldAdPara_->Dt()*fldAdPara_->Theta());
+    const double fac2 = fldAdPara_->OmTheta()/fldAdPara_->Theta();
 
-      momres.Update(fac1,fluidvelint_,-fac1,fluidvelint_new_,1.0);
-      momres.Update(fac2,fluidgradp_old_,fac2*reacoeff_,fluidvelint_old_,1.0);
-      momres.Update(fac2*fldAdPara_->Density(),conv_fluidvel_old,-2.0*fac2*fldAdPara_->Viscosity(),fluidvisc_old_,1.0);
-      momres.Update(-fldAdPara_->Density()*fac2,fluidbodyforce_new_,1.0);
+    momres.Update(fac1,fluidvelint_,-fac1,fluidvelint_new_,1.0);
+    momres.Update(fac2,fluidgradp_new_,fac2*reacoeff_,fluidvelint_new_,1.0);
+    momres.Update(fac2*fldAdPara_->Density(),conv_fluidvel_new,-2.0*fac2*fldAdPara_->Viscosity(),fluidvisc_new_,1.0);
+    momres.Update(-fldAdPara_->Density()*fac2,fluidbodyforce_new_,1.0);
   }
 
 
@@ -2894,14 +2886,11 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
       const double w = timefacfac*fldAdPara_->Density()*tau*momres(idim)*funct_(ui);
       for(int jdim=0;jdim<nsd_;++jdim)
       {
-        velforce(jdim,ui) -= GalMomTestStat(nsd_*idim+jdim,ui)*supg_vel(idim);
         velforce(jdim,ui) -= w*vderxy_(idim,jdim);
 
+        velforce(jdim,ui) -= GalMomTestStat(nsd_*idim+jdim,ui)*supg_vel(idim);
         if ((fldAdPara_->IsStationary()==false) and (fldAdPara_->IsInitInstatStep()==false))
-        {
           velforce(jdim,ui) -= timefacfacrhs/timefacfac*GalMomTestStat(nsd_*idim+jdim,ui)*supg_vel_old(idim);
-          velforce(jdim,ui) -= timefacfacrhs/timefacfac*w*vderxy_old_(jdim,idim);
-        }
 
         for (int vi=0; vi<nen_; ++vi)
         {
@@ -2971,7 +2960,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteContStab(
 ) const
 {
   double cont_stab_fac=timefacfacdiv*tau_(2);
-  double cont_stab_fac_rhs=timefacfacdivrhs*tau_(2);
 
   /* continuity stabilisation */
   /*
@@ -2993,8 +2981,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteContStab(
 
       /* viscosity term on right-hand side */
       velforce(jdim,vi)-= cont_stab_fac*vdiv_*derxy_(jdim,vi);
-      if ((fldAdPara_->IsStationary()==false) and (fldAdPara_->IsInitInstatStep()==false))
-        velforce(jdim,vi)-= cont_stab_fac_rhs*vdiv_old_*derxy_(jdim,vi);
 
       for (int ui=0; ui<nen_; ++ui)
       {

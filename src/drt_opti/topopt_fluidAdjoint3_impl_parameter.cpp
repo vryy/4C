@@ -59,16 +59,8 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   theta_obj_(0.0),
   theta_(0.0),
   omtheta_(0.0),
-  theta_pre_(0.0),
-  omtheta_pre_(0.0),
-  theta_div_(0.0),
-  omtheta_div_(0.0),
   timefac_(0.0),
-  timefacrhs_(0.0),
-  timefacpre_(0.0),
-  timefacprerhs_(0.0),
-  timefacdiv_(0.0),
-  timefacdivrhs_(0.0)
+  timefacrhs_(0.0)
 {
 }
 
@@ -212,45 +204,29 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
 
     theta_        = params.get<double>("theta");
     omtheta_      = params.get<double>("omtheta");
-    theta_pre_    = params.get<double>("theta_pre");
-    omtheta_pre_  = params.get<double>("omtheta_pre");
-    theta_div_    = params.get<double>("theta_div");
-    omtheta_div_  = params.get<double>("omtheta_div");
   }
   else // is_stationary == true
   {
     theta_obj_ = 1.0;
 
-    dt_ = theta_ = theta_pre_ = theta_div_ =1.0;
-    omtheta_ = omtheta_pre_ = omtheta_div_ = 0.0;
+    dt_ = theta_ =1.0;
+    omtheta_ = 0.0;
   }
 
   timefac_ = theta_*dt_;
   timefacrhs_ = omtheta_*dt_;
 
-  timefacpre_ = theta_pre_*dt_;
-  timefacprerhs_ = omtheta_pre_*dt_;
-
-  timefacdiv_ = theta_div_*dt_;
-  timefacdivrhs_ = omtheta_div_*dt_;
-
 
   double TOL = 1.0e-14;
   if (dt_ < 0.0 or time_ < -TOL
       or theta_obj_ < 0.0 or theta_obj_ > 1.0
-      or theta_ < 0.0 or omtheta_ < 0.0
-      or theta_pre_ < 0.0 or omtheta_pre_ < 0.0
-      or theta_div_ < 0.0 or omtheta_div_ < 0.0)
+      or theta_ < 0.0 or omtheta_ < 0.0)
   {
     std::cout<<"dt_: "<<dt_<<std::endl;
     std::cout<<"time_ "<<time_<<std::endl;
     std::cout<<"theta_obj_ "<<theta_obj_<<std::endl;
     std::cout<<"theta_ "<<theta_<<std::endl;
     std::cout<<"omtheta_ "<<omtheta_<<std::endl;
-    std::cout<<"theta_pre_ "<<theta_pre_<<std::endl;
-    std::cout<<"omtheta_pre_ "<<omtheta_pre_<<std::endl;
-    std::cout<<"theta_div_ "<<theta_div_<<std::endl;
-    std::cout<<"omtheta_div_ "<<omtheta_div_<<std::endl;
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
   }
 }
@@ -313,25 +289,9 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   std::cout << "|    theta:    " << theta_ << std::endl;
   //! factor for right-hand side due to one-step-theta time-integration scheme
   std::cout << "|    (1-theta):    " << omtheta_ << std::endl;
-  //! factor for left-hand side due to one-step-theta time-integration scheme
-  std::cout << "|    theta_pre:    " << theta_pre_ << std::endl;
-  //! factor for right-hand side due to one-step-theta time-integration scheme
-  std::cout << "|    (1-theta_pre):    " << omtheta_pre_ << std::endl;
-  //! factor for left-hand side due to one-step-theta time-integration scheme
-  std::cout << "|    theta_div:    " << theta_div_ << std::endl;
-  //! factor for right-hand side due to one-step-theta time-integration scheme
-  std::cout << "|    (1-theta_div):    " << omtheta_div_ << std::endl;
   //! timefac = dt_ * theta_
   std::cout << "|    time factor:    " << timefac_ << std::endl;
   //! timefacrhs = dt_ * (1-theta_)
   std::cout << "|    time factor rhs:    " << timefacrhs_ << std::endl;
-  //! timefac = dt_ * theta_pre_
-  std::cout << "|    time factor pre:    " << timefacpre_ << std::endl;
-  //! timefacrhs = dt_ * (1-theta_pre_)
-  std::cout << "|    time factor pre rhs:    " << timefacprerhs_ << std::endl;
-  //! timefac = dt_ * theta_div_
-  std::cout << "|    time factor div:    " << timefacdiv_ << std::endl;
-  //! timefacrhs = dt_ * (1-theta_div_)
-  std::cout << "|    time factor div rhs:    " << timefacdivrhs_ << std::endl;
   std::cout << "|---------------------------------------------------------------------------" << std::endl;
 }

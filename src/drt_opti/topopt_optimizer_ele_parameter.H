@@ -68,8 +68,6 @@ public:
   const int NumTimesteps() {return max_timesteps_;}
   const double ThetaObj() {return theta_obj_;}
   const double Theta() {return theta_;}
-  const double ThetaPre() {return theta_pre_;}
-  const double ThetaDiv() {return theta_div_;}
 
   double VolBd() {return vol_bd_;}
 
@@ -129,10 +127,6 @@ private:
   double theta_obj_;
   /// theta in one-step-theta scheme
   double theta_;
-  /// theta for pressure terms in one-step-theta scheme
-  double theta_pre_;
-  /// theta for divergence terms in one-step-theta scheme
-  double theta_div_;
 
   //@}
 

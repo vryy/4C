@@ -180,10 +180,6 @@ protected:
   //! @name time-integration-scheme factors
   double theta_;
   double omtheta_;
-  double theta_pre_;
-  double omtheta_pre_;
-  double theta_div_;
-  double omtheta_div_;
   //@}
 
   //! @name norms for convergence check

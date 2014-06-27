@@ -261,10 +261,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     fluidadjointtimeparams->set<int>                        ("time int algo",timeint);
     // parameter theta for time-integration schemes
     fluidadjointtimeparams->set<double>                     ("theta"                    ,fdyn.get<double>("THETA"));
-    // parameter theta for time-integration schemes
-    fluidadjointtimeparams->set<double>                     ("theta_pre"                ,adjointfdyn.get<double>("THETA_PRES"));
-    // parameter theta for time-integration schemes
-    fluidadjointtimeparams->set<double>                     ("theta_div"                ,adjointfdyn.get<double>("THETA_DIV"));
     // number of steps for potential start algorithm
     fluidadjointtimeparams->set<int>                        ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
     // parameter theta for potential start algorithm

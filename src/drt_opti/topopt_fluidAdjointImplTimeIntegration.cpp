@@ -46,12 +46,8 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
 
   // parameter theta for time-integration schemes
   theta_      = params_->get<double>("theta");
-  theta_pre_  = params_->get<double>("theta_pre");
-  theta_div_  = params_->get<double>("theta_div");
   // compute or set 1.0 - theta for time-integration schemes
   omtheta_ = 1.0 - theta_;
-  omtheta_pre_ = 1.0 - theta_pre_;
-  omtheta_div_ = 1.0 - theta_div_;
 
 
   // -------------------------------------------------------------------
@@ -1139,10 +1135,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
   eleparams.set("dt",dt_);
   eleparams.set("theta",theta_);
   eleparams.set("omtheta",omtheta_);
-  eleparams.set("theta_pre",theta_pre_);
-  eleparams.set("omtheta_pre",omtheta_pre_);
-  eleparams.set("theta_div",theta_div_);
-  eleparams.set("omtheta_div",omtheta_div_);
 
   eleparams.set("theta_obj",params_->get<double>("theta_obj"));
 

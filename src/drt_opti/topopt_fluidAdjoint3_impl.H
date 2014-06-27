@@ -284,8 +284,8 @@ private:
   void CalcDivEps(
       const LINALG::Matrix<nsd_,nen_>&      eveln,
       const LINALG::Matrix<nsd_,nen_>&      evelnp,
-      const LINALG::Matrix<nsd_,nen_>&      efluidveln,
-      const LINALG::Matrix<nsd_,nen_>&      efluidvelnp
+      const LINALG::Matrix<nsd_,nen_>&      efluidvelnp,
+      const LINALG::Matrix<nsd_,nen_>&      efluidvelnpp
   );
 
   //! Compute element matrix entries: PSPG
@@ -457,10 +457,6 @@ private:
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_old_;
   //! fluid pressure in gausspoint
   double fluidpres_old_;
-  //! fluid pressure gradient in gausspoint
-  LINALG::Matrix<nsd_,1> fluidgradp_old_;
-  //! viscous fluid velocity in gausspoint
-  LINALG::Matrix<nsd_,1> fluidvisc_old_;
   //! body force of adjoint momentum equation
   LINALG::Matrix<nsd_,1> bodyforce_old_;
   //! body force of adjoint continuity equation
@@ -474,10 +470,16 @@ private:
   //@}
 
 
-  //! @name fluid variable values at next time step (= t^n+2)
+  //! @name variable values at next time step (= t^n-1)
 
   //! fluid velocity vector in gausspoint
   LINALG::Matrix<nsd_,1> fluidvelint_new_;
+  //! global fluid derivative of velocity w.r.t x,y,z
+  LINALG::Matrix<nsd_,nsd_> fluidvelxy_new_;
+  //! fluid pressure gradient in gausspoint
+  LINALG::Matrix<nsd_,1> fluidgradp_new_;
+  //! viscous fluid velocity in gausspoint
+  LINALG::Matrix<nsd_,1> fluidvisc_new_;
   //! body force of momentum equation
   LINALG::Matrix<nsd_,1> fluidbodyforce_new_;
   //@}

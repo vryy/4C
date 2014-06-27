@@ -57,8 +57,6 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   max_timesteps_(-1),
   theta_obj_(-1.0),
   theta_(-1.0),
-  theta_pre_(-1.0),
-  theta_div_(-1.0),
   vol_bd_(-1.0),
   opti_case_(INPAR::TOPOPT::optitest_no)
 {
@@ -160,14 +158,12 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
     dt_ = params.get<double>("dt");
     max_timesteps_ = params.get<int>("maxtimesteps");
     theta_ = params.get<double>("theta");
-    theta_pre_ = params.get<double>("theta_pre");
-    theta_div_ = params.get<double>("theta_div");
   }
   else
   {
     theta_obj_ = 1.0;
 
-    dt_ = theta_ = theta_pre_ = theta_div_ = 1.0;
+    dt_ = theta_ = 1.0;
     max_timesteps_ = 1;
   }
 
@@ -227,10 +223,6 @@ void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
   std::cout << "|    theta_obj:     " << theta_obj_ << std::endl;
   /// theta
   std::cout << "|    theta:     " << theta_ << std::endl;
-  /// theta for pressure terms
-  std::cout << "|    theta:     " << theta_pre_ << std::endl;
-  /// theta for divergence terms
-  std::cout << "|    theta:     " << theta_div_ << std::endl;
   std::cout << "|---------------------------------------------------------------------------" << std::endl;
 }  /// @name objective parameters
 
