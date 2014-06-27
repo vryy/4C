@@ -58,8 +58,6 @@ ADJOINT_TYPE			discrete_adjoint
 INITFUNCNO                      8
 INITIALFIELD                    zero_field//field_by_function
 TESTCASE                        test_primal
-THETA_DIV                       1
-THETA_PRES                      1
 ------------------------------------------------------FLUID DYNAMIC
 CONVTOL                         1e-10
 GMSH_OUTPUT                     Yes

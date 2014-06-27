@@ -64,8 +64,6 @@ ADJOINT_TYPE                    cont_adjoint
 INITIALFIELD                    field_by_function
 TESTCASE                        test_instat_varying_theta
 INITFUNCNO                      3
-THETA_DIV                       0.8
-THETA_PRES                      0.6
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
