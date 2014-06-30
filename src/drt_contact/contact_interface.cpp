@@ -7353,14 +7353,14 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
   }
 
   // create active node map and active dof map
-  activenodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
-  activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
+  activenodes_ = LINALG::CreateMap(mynodegids,Comm());
+  activedofs_  = LINALG::CreateMap(mydofgids,Comm());
 
   if (friction_)
   {
     // create slip node map and slip dof map
-    slipnodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)myslipnodegids.size(),&myslipnodegids[0],0,Comm()));
-    slipdofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)myslipdofgids.size(),&myslipdofgids[0],0,Comm()));
+    slipnodes_ = LINALG::CreateMap(myslipnodegids,Comm());
+    slipdofs_  = LINALG::CreateMap(myslipdofgids,Comm());
   }
 
   // split active dofs and slip dofs

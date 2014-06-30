@@ -882,9 +882,7 @@ void LINALG::SparseMatrix::UnComplete()
       dsassert(idx[c]!=-1, "illegal gid");
     }
     int rowgid = rowmap.GID(i);
-    err = mat->InsertGlobalValues(rowgid,NumEntries,Values,&idx[0]);
-    if (err)
-      dserror("InsertGlobalValues err=%d",err);
+    LINALG::InsertGlobalValues(mat,rowgid,NumEntries,Values,&idx[0]);
   }
   sysmat_ = mat;
   graph_  = Teuchos::null;

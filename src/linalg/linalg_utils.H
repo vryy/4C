@@ -114,6 +114,20 @@ namespace LINALG
   */
   void Export(const Epetra_IntVector& source, Epetra_IntVector& target);
 
+   /*
+   \brief Insert a list of elements in a given global row of the matrix with
+          out-of-bound and error check
+
+   \param A (in):           Considered matrix
+   \param GlobalRow(in):    Row number (in global coordinates) to put elements.
+   \param NumEntries(in):   Number of entries.
+   \param Values(in):       Values to enter.
+   \param Indices(in):      Global column indices corresponding to values.
+   */
+   void InsertGlobalValues(Teuchos::RCP<Epetra_CrsMatrix> mat,
+                           int GlobalRow, int NumEntries,
+                           double* Values, int* Indices);
+
   /*!
   \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices
 
@@ -932,6 +946,15 @@ namespace LINALG
     \param comm The map's communicator
    */
   Teuchos::RCP<Epetra_Map> CreateMap(const std::set<int>& gids, const Epetra_Comm& comm);
+
+  /// create an Epetra_Map from a vector of gids
+  /*!
+    This is one of the basic operations that is needed every so often.
+
+    \param gids The local gids of this map
+    \param comm The map's communicator
+   */
+  Teuchos::RCP<Epetra_Map> CreateMap(const std::vector<int> & gids, const Epetra_Comm& comm);
 
   /*!
   \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)

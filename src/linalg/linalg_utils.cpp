@@ -1768,6 +1768,25 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
   return Aunknown;
 }
 
+/*----------------------------------------------------------------------*
+ | fill matrix row and check for success                     farah 06/14|
+ *----------------------------------------------------------------------*/
+void LINALG::InsertGlobalValues(Teuchos::RCP<Epetra_CrsMatrix> mat,
+                                int GlobalRow, int NumEntries,
+                                double* Values, int* Indices)
+{
+  int err;
+
+  if (NumEntries>0)
+    err = mat->InsertGlobalValues(GlobalRow,NumEntries,Values,Indices);
+  else
+    err = mat->InsertGlobalValues(GlobalRow,NumEntries,Values,0);
+
+  if (err)
+    dserror("InsertGlobalValues err=%d",err);
+
+  return ;
+}
 
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
@@ -1854,6 +1873,20 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epet
   return map;
 }
 
+/*----------------------------------------------------------------------*
+ | create epetra_map with out-of-bound check                 farah 06/14|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int> & gids, const Epetra_Comm& comm)
+{
+  Teuchos::RCP<Epetra_Map> map;
+
+  if((int)gids.size()>0)
+    map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, comm));
+  else
+    map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), 0, 0, comm));
+
+  return map;
+}
 
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps            popp 02/08|
