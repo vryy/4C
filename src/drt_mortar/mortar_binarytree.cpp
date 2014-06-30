@@ -594,29 +594,29 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
     for (int i=0;i<kdop_;i++) position(i,2)=0.0;
 
     //point 0
-    position(0,0)=(sqrt(2)*slabs_(2,0))-slabs_(1,0);
+    position(0,0)=(sqrt(2.0)*slabs_(2,0))-slabs_(1,0);
     position(0,1)=slabs_(1,0);
     //point 1
-    position(1,0)=slabs_(1,0)-(sqrt(2)*slabs_(3,0));
+    position(1,0)=slabs_(1,0)-(sqrt(2.0)*slabs_(3,0));
     position(1,1)=slabs_(1,0);
     //point 2
     position(2,0)=slabs_(0,1);
-    position(2,1)=slabs_(0,1)+(sqrt(2)*slabs_(3,0));
+    position(2,1)=slabs_(0,1)+(sqrt(2.0)*slabs_(3,0));
     //point 3
     position(3,0)=slabs_(0,1);
-    position(3,1)=-slabs_(0,1)+(sqrt(2)*slabs_(2,1));
+    position(3,1)=-slabs_(0,1)+(sqrt(2.0)*slabs_(2,1));
     //point 4
-    position(4,0)=(sqrt(2)*slabs_(2,1))-slabs_(1,1);
+    position(4,0)=(sqrt(2.0)*slabs_(2,1))-slabs_(1,1);
     position(4,1)=slabs_(1,1);
     //point 5
-    position(5,0)=slabs_(1,1)-(sqrt(2)*slabs_(3,1));
+    position(5,0)=slabs_(1,1)-(sqrt(2.0)*slabs_(3,1));
     position(5,1)=slabs_(1,1);
     //point 6
     position(6,0)=slabs_(0,0);
-    position(6,1)=slabs_(0,0)+(sqrt(2)*slabs_(3,1));
+    position(6,1)=slabs_(0,0)+(sqrt(2.0)*slabs_(3,1));
     //point 7
     position(7,0)=slabs_(0,0);
-    position(7,1)=-slabs_(0,0)+(sqrt(2)*slabs_(2,0));
+    position(7,1)=-slabs_(0,0)+(sqrt(2.0)*slabs_(2,0));
 
 
     for (int i=0;i<(kdop_-1);i++)
