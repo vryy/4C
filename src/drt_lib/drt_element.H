@@ -651,7 +651,8 @@ public:
   \brief Get the degree of an element
 
   The element can have variable degree, in case of HDG discretizations.
-  HDG elements implement this functions, standard elements return zero.
+  HDG elements implement this functions, standard elements return the degree
+  depending on their discretization type and assuming isoparametric concept.
   */
   virtual int Degree() const;
 

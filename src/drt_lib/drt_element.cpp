@@ -531,8 +531,8 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(dofset) > 0)
-    {dserror("SVENJA wrong call for num dof per face");
+    if (this->NumDofPerFace(0) > 0)
+    {
       for (int i=0; i<NumFace(); ++i)
       {
         const int owner = face_[i]->Owner();
@@ -764,7 +764,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
 
   // fill the vector with face dofs
   if (this->NumDofPerFace(0) > 0)
-  {dserror("SVENJA wrong call for num dof per face");
+  {
     for (int i=0; i<NumFace(); ++i)
     {
       const int owner = face_[i]->Owner();
