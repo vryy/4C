@@ -39,18 +39,63 @@ public:
   /// called upon destruction
   virtual void Done();
 
+  /// set all the XFEM specific parameters
   void SetElementXFEMParameter(
-      Teuchos::ParameterList& params   //> parameter list
+      Teuchos::ParameterList& params   ///< parameter list
   );
 
+  /*----------------------------------------------------*/
+  //! @name access routines for integration on cut elements
+  /*----------------------------------------------------*/
 
-  INPAR::CUT::VCellGaussPts VolumeCellGaussPoints(){ return vcellgausspts_; };
-  INPAR::CUT::BCellGaussPts BoundaryCellGaussPoints(){ return bcellgausspts_; };
+  //! get the volumecell integration method used for integrating cut elements?
+  const INPAR::CUT::VCellGaussPts VolumeCellGaussPoints(){ return vcellgausspts_; };
+
+  //! get the boundarycell integration method used for integrating the surface in cut elements?
+  const INPAR::CUT::BCellGaussPts BoundaryCellGaussPoints(){ return bcellgausspts_; };
+
+
+  /*----------------------------------------------------*/
+  //! @name access routines for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
+  /*----------------------------------------------------*/
+
+  //! get the type of how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's method?
+  INPAR::XFEM::ViscStab_TraceEstimate ViscStabTracEstimate(){ return visc_stab_trace_estimate_; };
+
+  //! get the element length definition used for viscous part of the penalty term in Nitsche's method
+  INPAR::XFEM::ViscStab_hk ViscStabHK(){ return visc_stab_hk_; };
+
+  //! get the dimensionless user defined scaling for the viscous part of the penalty term in Nitsche's method and
+  //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
+  const double ViscStabGamma(){ return visc_stab_gamma_; };
 
 private:
 
+  /*----------------------------------------------------*/
+  //! @name parameters for integration on cut elements
+  /*----------------------------------------------------*/
+
+  //! which volumecell integration is used for integrating cut elements?
   INPAR::CUT::VCellGaussPts vcellgausspts_;
+
+  //! which boundarycell integration is used for integrating the surface in cut elements?
   INPAR::CUT::BCellGaussPts bcellgausspts_;
+
+
+  /*----------------------------------------------------*/
+  //! @name parameters for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
+  /*----------------------------------------------------*/
+
+  //! how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's method?
+  INPAR::XFEM::ViscStab_TraceEstimate visc_stab_trace_estimate_;
+
+  //! element length definition used for viscous part of the penalty term in Nitsche's method
+  INPAR::XFEM::ViscStab_hk visc_stab_hk_;
+
+  //! dimensionless user defined scaling for the viscous part of the penalty term in Nitsche's method and
+  //! scaling factor for the MHVS method (then gamma = 1/n, see publications),
+  //! this parameter shall be independent of element type, shape and polynomial degree
+  double visc_stab_gamma_;
 
 protected:
 

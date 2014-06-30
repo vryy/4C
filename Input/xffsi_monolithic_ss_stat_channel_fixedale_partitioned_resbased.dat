@@ -89,7 +89,7 @@ RELAXING_ALE                    Yes
 EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   100.0                         // (relevant for nitsche)
-VISC_STAB_SCALING               visc_div_by_hk                // inv_hk // const (relevant for nitsche)
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length (relevant for nitsche)
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              Yes

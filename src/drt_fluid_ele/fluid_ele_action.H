@@ -80,7 +80,7 @@ enum BoundaryAction {
     calc_node_curvature,
     calc_surface_tension,
     enforce_weak_dbc,
-    evaluate_nitsche_par,
+    estimate_Nitsche_trace_maxeigenvalue_,
     mixed_hybrid_dbc,
     flow_dep_pressure_bc,
     bc_free_bc,

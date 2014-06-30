@@ -690,12 +690,10 @@ namespace FLD
     enum INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
 
     //! @name nitsche stabilization factors
-    double visc_stab_fac_;     ///< viscous stabilization parameter for Nitsche's method/MSH
 
-    enum INPAR::XFEM::ViscStabScaling visc_stab_scaling_;     ///< viscous stabilization scaling for Nitsche's method/MSH
-    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;     ///< convective stabilization scaling for inflow terms (xfluid)
+    ///< convective stabilization scaling for inflow terms (xfluid)
+    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;
 
-    enum INPAR::XFEM::ViscStab_hk visc_stab_hk_; ///< definition of characteristic element length
     //@}
 
     //! @name

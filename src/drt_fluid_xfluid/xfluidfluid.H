@@ -583,8 +583,8 @@ namespace FLD
     /// extract the nodal vectors and store them in node-vector-map
     void ExtractNodeVectors(DRT::Discretization & dis, Teuchos::RCP<Epetra_Vector> dofrowvec, std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
 
-    /// evaluation of Nitsche's parameter
-    void EvaluateNitscheParameter();
+    /// estimate the scaling from the trace inequality via solving local eigenvalue problems for Nitsche's method
+    void EstimateNitscheTraceMaxEigenvalue();
 
     /// embedded fluid state vectors
     Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
@@ -736,12 +736,9 @@ namespace FLD
 
     //! @name Nitsche stabilization factors
     //@{
-    double visc_stab_fac_;                                        ///< viscous stabilization parameter for Nitsche's method/MSH
-    enum INPAR::XFEM::ViscStabScaling visc_stab_scaling_;         ///< viscous stabilization scaling for Nitsche's method/MSH
     enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;         ///< convective stabilization scaling for inflow terms
     enum INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_; ///< convective stabilization scaling for inflow terms (xfluidfluid)
 
-    enum INPAR::XFEM::ViscStab_hk visc_stab_hk_;                  ///< definition of characteristic element length
     //@}
 
     /// flag for edge-based stabilization
@@ -759,8 +756,6 @@ namespace FLD
 
     /// if true solving Eigenvalue problem to get the right Nitsche parameter
     bool nitsche_evp_;
-    /// factor of nitsche parameter calculated of the Eigenvalue-Problem
-    double nitsche_evp_fac_;
 
     /// penalty term for velocity gradients at the interface
     bool velgrad_interface_stab_;
@@ -883,8 +878,7 @@ namespace FLD
     /// type of monolithic approach
     std::string monotype_;
 
-    /// map of embedded element ID to the value of it's Nitsche parameter
-    Teuchos::RCP<std::map<int,double> >   nitschepar_;
+
   };
 }
 

@@ -6612,12 +6612,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // viscous and convective Nitsche/MSH stabilization parameter
   DoubleParameter("VISC_STAB_FAC", 35.0, "define stabilization parameter for viscous part of interface stabilization (Nitsche, hybrid stress-based LM)",&xfluid_stab);
 
-  setStringToIntegralParameter<int>("VISC_STAB_SCALING","visc_div_by_hk","scaling factor for viscous interface stabilization (Nitsche, hybrid stress-based LM)",
-                               tuple<std::string>("visc_div_by_hk", "inv_hk", "const"),
+  setStringToIntegralParameter<int>("VISC_STAB_TRACE_ESTIMATE","CT_div_by_hk","how to estimate the scaling from the trace inequality in Nitsche's method",
+                               tuple<std::string>("CT_div_by_hk", "eigenvalue"),
                                tuple<int>(
-                                   INPAR::XFEM::ViscStabScaling_visc_div_by_hk,   // scaling with mu/hk
-                                   INPAR::XFEM::ViscStabScaling_inv_hk,           // scaling with 1/hk
-                                   INPAR::XFEM::ViscStabScaling_const             // scaling with 1.0=const
+                                   INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk,   // estimate the trace inequality by a trace-constant CT and hk: CT/hk
+                                   INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue      // estimate the trace inequality by solving a local element-wise eigenvalue problem
                                    ),
                                &xfluid_stab);
 
@@ -6634,11 +6633,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("CONV_STAB_SCALING","none","scaling factor for viscous interface stabilization (Nitsche, MSH)",
                                     tuple<std::string>("inflow", "abs_normal_vel", "max_abs_normal_vel", "averaged" , "none"),
                                     tuple<int>(
-                                      INPAR::XFEM::ConvStabScaling_inflow,           // scaling with max(0,-u*n)
-                                      INPAR::XFEM::ConvStabScaling_abs_normal_vel,   // scaling with |u*n|
+                                      INPAR::XFEM::ConvStabScaling_inflow,            // scaling with max(0,-u*n)
+                                      INPAR::XFEM::ConvStabScaling_abs_normal_vel,    // scaling with |u*n|
                                       INPAR::XFEM::ConvStabScaling_max_abs_normal_vel,// scaling with max(1.0, |u*n|)
-                                      INPAR::XFEM::ConvStabScaling_averaged,         // scaling with u*n
-                                      INPAR::XFEM::ConvStabScaling_none              // no convective stabilization
+                                      INPAR::XFEM::ConvStabScaling_averaged,          // scaling with u*n
+                                      INPAR::XFEM::ConvStabScaling_none               // no convective stabilization
                                       ),
                                &xfluid_stab);
 
@@ -6646,10 +6645,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<std::string>("inflow", "averaged", "inflow_max_penalty", "averaged_max_penalty", "none"),
                                     tuple<int>(
                                       INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow,              // one-sided inflow stabilization
-                                      INPAR::XFEM::XFF_ConvStabScaling_averaged,            // averaged inflow stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_averaged,                    // averaged inflow stabilization
                                       INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty,  // one-sided inflow stabilization with max(|u|_inf,\alpha)
-                                      INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty,// averaged inflow stabilization with max(|u|_inf,\alpha)
-                                      INPAR::XFEM::XFF_ConvStabScaling_none              // no convective stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty,        // averaged inflow stabilization with max(|u|_inf,\alpha)
+                                      INPAR::XFEM::XFF_ConvStabScaling_none                         // no convective stabilization
                                       ),
                                &xfluid_stab);
 
@@ -6668,10 +6667,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("PRESSCOUPLING_INTERFACE_STAB","no","switch on/off pressure coupling interface stabilization",&xfluid_stab);
 
   DoubleParameter("PRESSCOUPLING_INTERFACE_FAC",  10, "define stabilization parameter for pressure coupling interface stabilization",&xfluid_stab);
-
-  BoolParameter("NITSCHE_EVP","no","switch on/off calculating nitsche parameter via solving a local eigenvalue problem",&xfluid_stab);
-
-  DoubleParameter("NITSCHE_EVP_FAC",  2, "define the factor the Eigenvalue is multiplied with",&xfluid_stab);
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& particledyn = list->sublist(

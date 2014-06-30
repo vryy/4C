@@ -374,10 +374,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   // let the elements fill it
   eleparams.set("iforcenp",iforcecolnp);
 
-  eleparams.set("visc_stab_fac", xfluid_.visc_stab_fac_);
-  eleparams.set("visc_stab_scaling", xfluid_.visc_stab_scaling_);
-  eleparams.set("visc_stab_hk", xfluid_.visc_stab_hk_);
-
   eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
 
   eleparams.set("hybrid_lm_l2_proj", xfluid_.hybrid_lm_l2_proj_);
@@ -2182,10 +2178,7 @@ void FLD::XFluid::Init()
 
   hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
-  visc_stab_fac_         = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
-  visc_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
   conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
-  visc_stab_hk_          = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
@@ -3048,12 +3041,13 @@ void FLD::XFluid::PrintStabilizationParams()
     IO::cout << "Coupling strategy:       " << interfstabparams->get<std::string>("COUPLING_STRATEGY") << "\n"<< IO::endl;
 
     if(boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
-      IO::cout << "HYBRID_LM_L2_PROJ:                       " << interfstabparams->get<std::string>("HYBRID_LM_L2_PROJ") << "\n";
+      IO::cout << "HYBRID_LM_L2_PROJ:       " << interfstabparams->get<std::string>("HYBRID_LM_L2_PROJ") << "\n";
 
     if(boundIntType_ == INPAR::XFEM::Nitsche)
     {
-      IO::cout << "VISC_STAB_FAC:                     " << visc_stab_fac_ << "\n";
-      IO::cout << "VISC_STAB_SCALING:                 " << interfstabparams->get<std::string>("VISC_STAB_SCALING") << "\n";
+      IO::cout << "VISC_STAB_FAC:                     " << interfstabparams->get<double>("VISC_STAB_FAC") << "\n";
+      IO::cout << "VISC_STAB_TRACE_ESTIMATE           " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
+      IO::cout << "VISC_STAB_HK                       " << interfstabparams->get<std::string>("VISC_STAB_HK")  << "\n";
     }
 
     IO::cout << "GHOST_PENALTY_STAB:                " << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";

@@ -205,26 +205,26 @@ namespace DRT
 
       //! build coupling matrices and assemble terms for Nitsche's (NIT) method
       virtual void NIT_buildCouplingMatrices(
-          Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
-          Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
-          const bool &                        coupling,         ///< assemble coupling terms (yes/no)
-          const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-          const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
-          const double &                      timefacfac,       ///< theta*dt
-          const double &                      visceff_1,        ///< viscosity in background fluid
-          const double &                      visceff_2,        ///< viscosity in embedded fluid
-          const double &                      kappa1,           ///< mortaring weighting
-          const double &                      kappa2,           ///< mortaring weighting
-          const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
-          const double &                      stabfac_avg,      ///< Nitsche convective non-dimensionless stabilization factor
-          const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
-          const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
-          const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
-          const double &                      press,            ///< bg p^n
-          const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
-          const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
-          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling///< Inflow term strategies xfluidfluid
+          Epetra_SerialDenseMatrix &          C_uu_,                  ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &          rhs_Cu_,                ///< standard bg-rhs
+          const bool &                        coupling,               ///< assemble coupling terms (yes/no)
+          const bool &                        bg_mortaring,           ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring, two-sided impl)
+          const LINALG::Matrix<nsd_,1> &      normal,                 ///< normal vector
+          const double &                      timefacfac,             ///< theta*dt
+          const double &                      visceff_1,              ///< viscosity in background fluid
+          const double &                      visceff_2,              ///< viscosity in embedded fluid
+          const double &                      kappa1,                 ///< mortaring weighting
+          const double &                      kappa2,                 ///< mortaring weighting
+          const double &                      NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+          const double &                      avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
+          const LINALG::Matrix<nen_,1> &      funct_,                 ///< bg shape functions
+          const LINALG::Matrix<nsd_,nen_> &   derxy_,                 ///< bg deriv
+          const LINALG::Matrix<nsd_,nsd_> &   vderxy_,                ///< bg deriv^n
+          const double &                      press,                  ///< bg p^n
+          const LINALG::Matrix<nsd_,1> &      velint,                 ///< bg u^n
+          const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,      ///< Dirichlet velocity vector or prescribed jump vector
+          INPAR::XFEM::ConvStabScaling        conv_stab_scaling,      ///< Inflow term strategies xfluid
+          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling   ///< Inflow term strategies xfluidfluid
       );
 
       //! evaluate pressure-consistency term for Nitsche's method
@@ -425,8 +425,8 @@ namespace DRT
           const double                  visceff_2,      // viscosity in embedded fluid
           double &                      kappa1,         // mortaring weighting
           double &                      kappa2,         // mortaring weighting
-          double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
-          double &                      stabfac_avg,   // Nitsche convective non-dimensionless stabilization factor
+          const double &                NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+          const double &                avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
           bool &                        velgrad_interface_stab,// penalty term for velocity gradients at the interface
           double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
           bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface

@@ -26,6 +26,7 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+class FluidEleParameterXFEM;
 
 /// Fluid element interface coupling implementation with XFEM
 /*!
@@ -63,12 +64,17 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcXFEM : public FluidEleCalc<distype>
 {
+
   /// private Constructor since we are a Singleton.
   FluidEleCalcXFEM();
 
   typedef FluidEleCalc<distype> my;
 
 private:
+
+  /// pointer to the cast object, fluid parameter list for XFEM
+  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem_;
+
 
   /// number of stress-dof
   static const int numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
@@ -261,32 +267,36 @@ private:
       std::map<int, std::vector<Epetra_SerialDenseMatrix> >&  Cuiui_coupling    ///< Cuiui matrices for all cutting sides
   );
 
-  //! compute stabilization factors for Nitsche's method (xfluid/xfsi)
-  void NIT_ComputeStabfac(
-      Teuchos::ParameterList&          params,                ///< parameter list
-      double &                         stabfac_visc,          ///< Nitsche's stabilization parameter
-      const double                     NIT_stab_fac,          ///< Nitsche's viscous parameter
+  //! compute viscous part of Nitsche's penalty term scaling for Nitsche's method
+  double NIT_ComputeNitscheStabfac(
+      const double h_k,   ///< the characteristic element length
+      const int sid = -1  ///< Id of the side element for embedded sided fluidfluid formulations
+      );
+
+  //! get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
+  double NIT_getTraceEstimateConstant();
+
+  //! compute full Nitsche's penalty term scaling for Nitsche's method (xfluid/xfsi)
+  void NIT_ComputeFullStabfac(
+      double &                         NIT_full_stab_fac,     ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+      const double                     NIT_visc_stab_fac,     ///< Nitsche's viscous scaling part of penalty term
       INPAR::XFEM::ConvStabScaling     conv_stab_scaling,     ///< type of convective stabilization for xfluid
-      const double                     veln_normal,           ///< interface-normal velocity contribution
-      const double                     h_k                    ///< characteristic element length
+      const double                     veln_normal            ///< interface-normal velocity contribution
   );
 
   //! compute stabilization factors for Nitsche's method (fluid-fluid coupling)
-  void NIT_ComputeStabfacFluidFluid(
-      Teuchos::ParameterList&          params,                        ///< element parameter list
-      double &                         stabfac_visc,                  ///< Nitsche's stabilization parameter
-      double &                         stabfac_avg,                   ///< stabilization factor 2
-      double &                         velgrad_interface_fac,         ///< stabilization parameter for velocity-gradients penalty term
-      double &                         press_coupling_fac,            ///< stabilization parameter for pressure-coupling penalty term
+  void NIT_ComputeFullStabfacFluidFluid(
+      double &                         NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+      double &                         avg_conv_stab_fac,             ///< to be filled: scaling of the convective average coupling term for fluidfluid problems
+      double &                         velgrad_interface_fac,         ///< to be filled: stabilization parameter for velocity-gradients penalty term
+      double &                         press_coupling_fac,            ///< to be filled: stabilization parameter for pressure-coupling penalty term
       INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling,         ///< type of convective stabilization for fluid-fluid problem
       const double                     veln_normal,                   ///< interface-normal velocity contribution
-      LINALG::Matrix<my::nsd_,1>       velint,                        ///< interface velocity
+      const LINALG::Matrix<my::nsd_,1> velint,                        ///< interface velocity
       const double                     h_k,                           ///< characteristic element length
-      const double                     NIT_stab_fac = 0.0,            ///< Nitsche's viscous parameter (alpha)
+      const double                     NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
       const double                     gamma_ghost_penalty = 0.0,     ///< ghost-penalty parameter
-      const double                     gamma_press_coupling = 0.0,    ///< factor of stabilization parameter for pressure-coupling penalty term
-      bool                             nitsche_evp = false,           ///< indicates solution of local eigenvalue problem applying Nitsche's method
-      int                              sid = 0                        ///< current side id
+      const double                     gamma_press_coupling = 0.0     ///< factor of stabilization parameter for pressure-coupling penalty term
   );
 
   //! pre-compute the measure of the element's intersecting surface
@@ -302,7 +312,7 @@ private:
       std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
       std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-      std::string                                             coupl_method             ///< coupling method
+      const std::string                                       coupl_method             ///< coupling method
   );
 
   //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices (for embedded coupling)
@@ -313,7 +323,7 @@ private:
       std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
       std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
-      std::string                                             coupl_method             ///< coupling method
+      const std::string                                       coupl_method             ///< coupling method
   );
 
   //! build traction vector w.r.t fluid domain
@@ -410,7 +420,6 @@ private:
   //! compute characteristic element length h_k
   //! \author kruse \date 06/14
   double Compute_h_k(
-      INPAR::XFEM::ViscStab_hk visc_stab_hk,
       const GEO::CUT::plain_volumecell_set & vcSet,
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints

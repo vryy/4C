@@ -98,9 +98,9 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FLD::evaluate_nitsche_par:
+  case FLD::estimate_Nitsche_trace_maxeigenvalue_:
   {
-    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EvaluateNitschePar(
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EstimateNitscheTraceMaxEigenvalue(
         this,
         params,
         discretization,

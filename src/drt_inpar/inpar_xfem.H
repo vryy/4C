@@ -80,12 +80,11 @@ namespace INPAR
       Hybrid_LM_L2_Proj_part
     };
 
-    /// scaling of viscous interface stabilization
-    enum ViscStabScaling
+    /// estimate of the scaling of the trace inequality for viscous interface stabilization (Nitsche's method)
+    enum ViscStab_TraceEstimate
     {
-      ViscStabScaling_visc_div_by_hk,
-      ViscStabScaling_inv_hk,
-      ViscStabScaling_const
+      ViscStab_TraceEstimate_CT_div_by_hk,  /// estimate of the trace-inequality by trace-constant divided by a characteristic element length
+      ViscStab_TraceEstimate_eigenvalue     /// estimate of the trace-inequality by solving an eigenvalue problem
     };
 
     /// definition of characteristic element length in cut elements

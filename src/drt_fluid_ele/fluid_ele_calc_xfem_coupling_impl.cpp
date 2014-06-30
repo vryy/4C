@@ -937,26 +937,26 @@ void SideImpl<distype, side_distype, side_numdof>::HybridLM_Stab_InflowCoercivit
  *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int side_numdof>
 void SideImpl<distype, side_distype, side_numdof>::NIT_buildCouplingMatrices(
-    Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
-    Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
-    const bool &                        coupling,         ///< assemble coupling terms (yes/no)
-    const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring, two-sided impl)
-    const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
-    const double &                      timefacfac,       ///< theta*dt
-    const double &                      visceff_1,        ///< viscosity in background fluid
-    const double &                      visceff_2,        ///< viscosity in embedded fluid
-    const double &                      kappa1,           ///< mortaring weighting
-    const double &                      kappa2,           ///< mortaring weighting
-    const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
-    const double &                      stabfac_avg,      ///< Nitsche convective non-dimensionless stabilization factor
-    const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
-    const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
-    const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
-    const double &                      press,            ///< bg p^n
-    const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
-    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
-    INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies xfluid
-    INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling///< Inflow term strategies xfluidfluid
+    Epetra_SerialDenseMatrix &          C_uu_,                  ///< standard bg-bg-matrix
+    Epetra_SerialDenseVector &          rhs_Cu_,                ///< standard bg-rhs
+    const bool &                        coupling,               ///< assemble coupling terms (yes/no)
+    const bool &                        bg_mortaring,           ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring, two-sided impl)
+    const LINALG::Matrix<nsd_,1> &      normal,                 ///< normal vector
+    const double &                      timefacfac,             ///< theta*dt
+    const double &                      visceff_1,              ///< viscosity in background fluid
+    const double &                      visceff_2,              ///< viscosity in embedded fluid
+    const double &                      kappa1,                 ///< mortaring weighting
+    const double &                      kappa2,                 ///< mortaring weighting
+    const double &                      NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+    const double &                      avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
+    const LINALG::Matrix<nen_,1> &      funct_,                 ///< bg shape functions
+    const LINALG::Matrix<nsd_,nen_> &   derxy_,                 ///< bg deriv
+    const LINALG::Matrix<nsd_,nsd_> &   vderxy_,                ///< bg deriv^n
+    const double &                      press,                  ///< bg p^n
+    const LINALG::Matrix<nsd_,1> &      velint,                 ///< bg u^n
+    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,      ///< Dirichlet velocity vector or prescribed jump vector
+    INPAR::XFEM::ConvStabScaling        conv_stab_scaling,      ///< Inflow term strategies xfluid
+    INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling   ///< Inflow term strategies xfluidfluid
   )
 {
 
@@ -1093,7 +1093,7 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_buildCouplingMatrices(
                             funct_dyad_timefacfac,
                             side_funct_timefacfac,
                             side_funct_dyad_timefacfac,
-                            stabfac,
+                            NIT_full_stab_fac,
                             coupling,       // assemble coupling terms (yes/no)
                             normal         // normal vector
       );
@@ -1102,26 +1102,26 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_buildCouplingMatrices(
 
     if(coupling)
     {
-        if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-            xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
-            xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
-            xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
-    	{
-    	    NIT_Stab_ConvAveraged(C_uu_,          // standard bg-bg-matrix
-    	                          rhs_Cu_,        // standard bg-rhs
-    	                            velint,
-    	                            ivelint,
-    	                            ivelint_WDBC_JUMP,
-    	                            funct_timefacfac,
-    	                            funct_dyad_timefacfac,
-    	                            side_funct_timefacfac,
-    	                            side_funct_dyad_timefacfac,
-    	                            stabfac_avg,
-    	                            coupling,       // assemble coupling terms (yes/no)
-    	                            normal         // normal vector
-    	      );
+      if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
+          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
+          xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
+      {
+        NIT_Stab_ConvAveraged(C_uu_,          // standard bg-bg-matrix
+                              rhs_Cu_,        // standard bg-rhs
+                              velint,
+                              ivelint,
+                              ivelint_WDBC_JUMP,
+                              funct_timefacfac,
+                              funct_dyad_timefacfac,
+                              side_funct_timefacfac,
+                              side_funct_dyad_timefacfac,
+                              avg_conv_stab_fac,
+                              coupling,       // assemble coupling terms (yes/no)
+                              normal          // normal vector
+        );
 
-    	}
+      }
     }
 
 
@@ -2236,8 +2236,8 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     const double                  visceff_2,      // viscosity in embedded fluid
     double &                      kappa1,         // mortaring weighting
     double &                      kappa2,         // mortaring weighting
-    double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
-    double &                      stabfac_avg,   // Nitsche convective non-dimensionless stabilization factor
+    const double &                NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+    const double &                avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
     bool &                        velgrad_interface_stab,// penalty term for velocity gradients at the interface
     double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
     bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface
@@ -3136,22 +3136,22 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	      int iVely = ic*(nsd_+1)+1;
 	      int iVelz = ic*(nsd_+1)+2;
 
-	      C_uu(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stabfac;
-	      C_uu(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stabfac;
-	      C_uu(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stabfac;
+	      C_uu(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
+	      C_uu(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
+	      C_uu(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
 	    }
 
 	    // -(stab * v, u)
-	    rhs_Cu(idVelx,0) -= funct_timefacfac(ir)*stabfac*velint(Velx);
-	    rhs_Cu(idVely,0) -= funct_timefacfac(ir)*stabfac*velint(Vely);
-	    rhs_Cu(idVelz,0) -= funct_timefacfac(ir)*stabfac*velint(Velz);
+	    rhs_Cu(idVelx,0) -= funct_timefacfac(ir)*NIT_full_stab_fac*velint(Velx);
+	    rhs_Cu(idVely,0) -= funct_timefacfac(ir)*NIT_full_stab_fac*velint(Vely);
+	    rhs_Cu(idVelz,0) -= funct_timefacfac(ir)*NIT_full_stab_fac*velint(Velz);
 
 	    if(!coupling) // weak Dirichlet case
 	    {
 	      // +(stab * v, u_DBC)
-	      rhs_Cu(idVelx,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Velx);
-	      rhs_Cu(idVely,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Vely);
-	      rhs_Cu(idVelz,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Velz);
+	      rhs_Cu(idVelx,0) += funct_timefacfac(ir)*NIT_full_stab_fac*ivelint_WDBC_JUMP(Velx);
+	      rhs_Cu(idVely,0) += funct_timefacfac(ir)*NIT_full_stab_fac*ivelint_WDBC_JUMP(Vely);
+	      rhs_Cu(idVelz,0) += funct_timefacfac(ir)*NIT_full_stab_fac*ivelint_WDBC_JUMP(Velz);
 	    }
 
 	  }
@@ -3171,15 +3171,15 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        int iVely = ic*(nsd_+1)+1;
 	        int iVelz = ic*(nsd_+1)+2;
 
-	        C_uui_(idVelx, iVelx) -= emb_funct_dyad_timefacfac(ic,ir)*stabfac;
-	        C_uui_(idVely, iVely) -= emb_funct_dyad_timefacfac(ic,ir)*stabfac;
-	        C_uui_(idVelz, iVelz) -= emb_funct_dyad_timefacfac(ic,ir)*stabfac;
+	        C_uui_(idVelx, iVelx) -= emb_funct_dyad_timefacfac(ic,ir)*NIT_full_stab_fac;
+	        C_uui_(idVely, iVely) -= emb_funct_dyad_timefacfac(ic,ir)*NIT_full_stab_fac;
+	        C_uui_(idVelz, iVelz) -= emb_funct_dyad_timefacfac(ic,ir)*NIT_full_stab_fac;
 	      }
 
 	      // -(stab * v, u)
-	      rhs_Cu(idVelx,0) += funct_timefacfac(ir)*stabfac*emb_velint(Velx);
-	      rhs_Cu(idVely,0) += funct_timefacfac(ir)*stabfac*emb_velint(Vely);
-	      rhs_Cu(idVelz,0) += funct_timefacfac(ir)*stabfac*emb_velint(Velz);
+	      rhs_Cu(idVelx,0) += funct_timefacfac(ir)*NIT_full_stab_fac*emb_velint(Velx);
+	      rhs_Cu(idVely,0) += funct_timefacfac(ir)*NIT_full_stab_fac*emb_velint(Vely);
+	      rhs_Cu(idVelz,0) += funct_timefacfac(ir)*NIT_full_stab_fac*emb_velint(Velz);
 
 
 	    }
@@ -3197,15 +3197,15 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        int iVely = ic*(nsd_+1)+1;
 	        int iVelz = ic*(nsd_+1)+2;
 
-	        C_uiu_(idVelx, iVelx) -= emb_funct_dyad_timefacfac(ir,ic)*stabfac;
-	        C_uiu_(idVely, iVely) -= emb_funct_dyad_timefacfac(ir,ic)*stabfac;
-	        C_uiu_(idVelz, iVelz) -= emb_funct_dyad_timefacfac(ir,ic)*stabfac;
+	        C_uiu_(idVelx, iVelx) -= emb_funct_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
+	        C_uiu_(idVely, iVely) -= emb_funct_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
+	        C_uiu_(idVelz, iVelz) -= emb_funct_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
 	      }
 
 	      // +(stab * v2, u1)
-	      rhC_ui_(idVelx,0) += emb_funct_timefacfac(ir)*stabfac*velint(Velx);
-	      rhC_ui_(idVely,0) += emb_funct_timefacfac(ir)*stabfac*velint(Vely);
-	      rhC_ui_(idVelz,0) += emb_funct_timefacfac(ir)*stabfac*velint(Velz);
+	      rhC_ui_(idVelx,0) += emb_funct_timefacfac(ir)*NIT_full_stab_fac*velint(Velx);
+	      rhC_ui_(idVely,0) += emb_funct_timefacfac(ir)*NIT_full_stab_fac*velint(Vely);
+	      rhC_ui_(idVelz,0) += emb_funct_timefacfac(ir)*NIT_full_stab_fac*velint(Velz);
 
 	    }
 
@@ -3224,15 +3224,15 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        int iVely = ic*(nsd_+1)+1;
 	        int iVelz = ic*(nsd_+1)+2;
 
-	        C_uiui_(idVelx, iVelx) += emb_emb_dyad_timefacfac(ir,ic)*stabfac;
-	        C_uiui_(idVely, iVely) += emb_emb_dyad_timefacfac(ir,ic)*stabfac;
-	        C_uiui_(idVelz, iVelz) += emb_emb_dyad_timefacfac(ir,ic)*stabfac;
+	        C_uiui_(idVelx, iVelx) += emb_emb_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
+	        C_uiui_(idVely, iVely) += emb_emb_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
+	        C_uiui_(idVelz, iVelz) += emb_emb_dyad_timefacfac(ir,ic)*NIT_full_stab_fac;
 	      }
 
 	      // -(stab * v2, u2)
-	      rhC_ui_(idVelx,0) -= emb_funct_timefacfac(ir)*stabfac*emb_velint(Velx);
-	      rhC_ui_(idVely,0) -= emb_funct_timefacfac(ir)*stabfac*emb_velint(Vely);
-	      rhC_ui_(idVelz,0) -= emb_funct_timefacfac(ir)*stabfac*emb_velint(Velz);
+	      rhC_ui_(idVelx,0) -= emb_funct_timefacfac(ir)*NIT_full_stab_fac*emb_velint(Velx);
+	      rhC_ui_(idVely,0) -= emb_funct_timefacfac(ir)*NIT_full_stab_fac*emb_velint(Vely);
+	      rhC_ui_(idVelz,0) -= emb_funct_timefacfac(ir)*NIT_full_stab_fac*emb_velint(Velz);
 
 	    }
 	  } // end coupling
@@ -3381,19 +3381,19 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
    {
 
-   	    NIT2_Stab_ConvAveraged(C_uu,          // standard bg-bg-matrix
-   	                          rhs_Cu,        // standard bg-rhs
-   	                          velint,
-   	                          emb_velint,
-   	                          ivelint_WDBC_JUMP,
-   	                          funct_timefacfac,
-   	                            funct_dyad_timefacfac,
-   	                            emb_funct_timefacfac,
-   	                            emb_funct_dyad_timefacfac,
-   	                            stabfac_avg,
-   	                            coupling,       // assemble coupling terms (yes/no)
-   	                            normal         // normal vector
-   	      );
+   NIT2_Stab_ConvAveraged(C_uu,          // standard bg-bg-matrix
+	       rhs_Cu,        // standard bg-rhs
+	       velint,
+	       emb_velint,
+	       ivelint_WDBC_JUMP,
+	       funct_timefacfac,
+	       funct_dyad_timefacfac,
+	       emb_funct_timefacfac,
+	       emb_funct_dyad_timefacfac,
+	       avg_conv_stab_fac,
+	       coupling,       // assemble coupling terms (yes/no)
+	       normal         // normal vector
+	   );
 
    }
 

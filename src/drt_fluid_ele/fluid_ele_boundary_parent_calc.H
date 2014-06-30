@@ -92,7 +92,7 @@ namespace DRT
         Epetra_SerialDenseMatrix&      elemat1,
         Epetra_SerialDenseVector&      elevec1) = 0;
 
-      virtual void EvaluateNitschePar(
+      virtual void EstimateNitscheTraceMaxEigenvalue(
         DRT::ELEMENTS::FluidBoundary*  ele1,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,
@@ -169,7 +169,7 @@ namespace DRT
         Epetra_SerialDenseMatrix&      elemat,
         Epetra_SerialDenseVector&      elevec);
 
-      void EvaluateNitschePar(
+      void EstimateNitscheTraceMaxEigenvalue(
         DRT::ELEMENTS::FluidBoundary*  surfele,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,
@@ -230,7 +230,7 @@ namespace DRT
 
       template <DRT::Element::DiscretizationType bdistype,
                 DRT::Element::DiscretizationType pdistype>
-      void EvaluateNitschePar(
+      void EstimateNitscheTraceMaxEigenvalue(
         DRT::ELEMENTS::FluidBoundary*  ele,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,

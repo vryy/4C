@@ -26,6 +26,9 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_ele_parameter_timint.H"
 
+#include "../drt_lib/drt_dserror.H"
+
+
 
 namespace DRT
 {
@@ -186,6 +189,37 @@ public:
   const double* TopoptParams() const {return (double*)topopt_params_;};
 
 
+  /*----------------------------------------------------*/
+  //! @name weak Dirichlet boundary condition routines
+  /*----------------------------------------------------*/
+
+
+  void Update_TraceEstimate_MaxEigenvalue(
+      Teuchos::RCP<std::map<int, double> > trace_estimate_max_eigenvalue_map
+  )
+  {
+    // copy the map into the member
+    trace_estimate_max_eigenvalue_ = *trace_estimate_max_eigenvalue_map;
+  }
+
+  //! set the estimated maximal eigenvalue for an side-element with sideId into the map
+  void Set_TraceEstimate_MaxEigenvalue(const int sideId, double max_eigenvalue)
+  {
+    trace_estimate_max_eigenvalue_[sideId] = max_eigenvalue;
+  }
+
+  //! get the estimated maximal eigenvalue for an side-element with sideId
+  double Get_TraceEstimate_MaxEigenvalue(const int sideId)
+  {
+    std::map<int,double>::iterator it = trace_estimate_max_eigenvalue_.find(sideId);
+
+    if(it != trace_estimate_max_eigenvalue_.end()) return it->second;
+    else dserror("no maximal eigenvalue stored for side FluidBoundary element with sideId %i", sideId);
+
+    return 0.0;
+  }
+
+
 protected:
 
   /*----------------------------------------------------*/
@@ -317,6 +351,17 @@ protected:
   bool reaction_topopt_;
   //! matrix with values for computation of porosity with respect to topopt density
   double topopt_params_[3];
+
+  /*-----------------------------------------------------*/
+  //! @name weak Dirichlet boundary condition parameters
+  /*-----------------------------------------------------*/
+
+  //! map of element Id and the maximal eigenvalue which estimates the trace inequality used for weak Dirichlet boundary conditions
+  //! with Nitsche's method
+  std::map<int, double> trace_estimate_max_eigenvalue_;
+
+
+  /*-----------------------------------------------------*/
 
   /// private Constructor since we are a Singleton.
   FluidEleParameter();

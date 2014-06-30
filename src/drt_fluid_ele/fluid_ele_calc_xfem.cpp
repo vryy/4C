@@ -80,6 +80,7 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
   my::fldpara_=DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
+  fldparaxfem_ = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
 }
 
 
@@ -108,8 +109,7 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
 {
   int err=0;
 
-  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
-  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem->VolumeCellGaussPoints();
+  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
 
   if( vcellgausspts == INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation"
   {
@@ -211,8 +211,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
 {
   int err=0;
 
-  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
-  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem->VolumeCellGaussPoints();
+  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
 
   if( vcellgausspts==INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation" or "MomentFitting" method
   {
@@ -1620,8 +1619,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   if (iforcecol != Teuchos::null) assemble_iforce = true;
 
   // compute characteristic element length
-  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
-  const double h_k = Compute_h_k(visc_stab_hk,vcSet,bcells,bintpoints);
+  const double h_k = Compute_h_k(vcSet,bcells,bintpoints);
 
   //--------------------------------------------------------
   // declaration of matrices & rhs
@@ -1671,7 +1669,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   if (is_MHVS)
   {
     // MHVS-stabilization parameter n (corresponds to Nitsche's penalty parameter)
-    double mhvs_param = params.get<double>("visc_stab_fac");
+    double mhvs_param = fldparaxfem_->ViscStabGamma();
     if ( fabs(mhvs_param) < 1.e-8 )
       dserror("MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
   }
@@ -1907,14 +1905,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         //--------------------------------------------
         // compute stabilization factors
 
-        double stabfac_visc = 0.0;
-        double stabfac_avg = 0.0;
+        double NIT_full_stab_fac = 0.0;
+        double avg_conv_stab_fac = 0.0;
         double velgrad_interface_fac = 0.0;
         double gamma_ghost_penalty = 0.0;
         double presscoupling_interface_fac = 0.0;
         double gamma_press_coupling = 0.0;
-        bool nitsche_evp = false;
-        double NIT_stab_fac = 0.0;
+        const double NIT_visc_stab_fac = 0.0;
 
         // convective stabilization type for xfluid
         INPAR::XFEM::ConvStabScaling conv_stab_scaling = INPAR::XFEM::ConvStabScaling_none;
@@ -1924,32 +1921,30 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         if (fluidfluidcoupling)
         {
           xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
-          NIT_ComputeStabfacFluidFluid(
-              params,
-              stabfac_visc,
-              stabfac_avg,
+          NIT_ComputeFullStabfacFluidFluid(
+              NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+              avg_conv_stab_fac,             ///< scaling of the convective average coupling term for fluidfluid problems
               velgrad_interface_fac,
               presscoupling_interface_fac,
               xff_conv_stab_scaling,
               my::velint_.Dot(normal),
               my::velint_,
               h_k,
-              NIT_stab_fac,
+              NIT_visc_stab_fac, ///< Nitsche's viscous scaling part of penalty term
               gamma_ghost_penalty,
-              gamma_press_coupling,
-              nitsche_evp,
-              sid);
+              gamma_press_coupling
+              );
         }
         else
         {
           conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
-          NIT_ComputeStabfac(
-              params,
-              stabfac_visc,
-              NIT_stab_fac,
-              conv_stab_scaling,
-              my::velint_.Dot(normal),
-              h_k);
+
+          NIT_ComputeFullStabfac(
+              NIT_full_stab_fac, ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+              NIT_visc_stab_fac, ///< Nitsche's viscous scaling part of penalty term
+              conv_stab_scaling, ///< type of convective stabilization for xfluid
+              my::velint_.Dot(normal)
+          );
         }
 
         //--------------------------------------------
@@ -1974,8 +1969,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               0.0,                     // viscosity in embedded fluid
               0.5,                     // mortaring weighting
               0.5,                     // mortaring weighting
-              stabfac_visc,           //Nitsche penalty fac
-              stabfac_avg,            // Nitsche convective non-dimensionless stabilization factor
+              NIT_full_stab_fac,       // full Nitsche's penalty term scaling (viscous+convective part)
+              avg_conv_stab_fac,       // scaling of the convective average coupling term for fluidfluid problems
               my::funct_,              // bg shape functions
               my::derxy_,              // bg deriv
               my::vderxy_,             // bg deriv^n
@@ -2006,8 +2001,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               0.0,                     // viscosity in embedded fluid
               1.0,                     // mortaring weighting
               0.0,                     // mortaring weighting
-              stabfac_visc,            //Nitsche penalty fac
-              stabfac_avg,             // Nitsche convective non-dimensionless stabilization factor
+              NIT_full_stab_fac,       // full Nitsche's penalty term scaling (viscous+convective part)
+              avg_conv_stab_fac,       // scaling of the convective average coupling term for fluidfluid problems
               my::funct_,              // bg shape functions
               my::derxy_,              // bg deriv
               my::vderxy_,             // bg deriv^n
@@ -2459,8 +2454,7 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
 )
 {
 
-  DRT::ELEMENTS::FluidEleParameterXFEM* fldparaxfem = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
-  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem->VolumeCellGaussPoints();
+  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
 
   // full L2-projection means integration over the full background element,
   // not only the physical part
@@ -3090,10 +3084,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   bool assemble_iforce = false;
   if(iforcecol != Teuchos::null) assemble_iforce = true;
 
-  double nitsche_stab        = params.get<double>("visc_stab_fac");
-  INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
-  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
-
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
@@ -3148,30 +3138,19 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //         evaluate element length, stabilization factors and average weights
   //-----------------------------------------------------------------------------------
 
+  //--------------------------------------------
   // element length
-  double h_k = Compute_h_k(visc_stab_hk, vcSet, bcells, bintpoints);
+  //--------------------------------------------
+  const double h_k = Compute_h_k(vcSet, bcells, bintpoints);
 
+  //--------------------------------------------
+  // compute viscous part of Nitsche's penalty term scaling for Nitsche's method (dimensionless)
+  //--------------------------------------------
+  const double NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( h_k, -1 );
 
-  //------------------------------
-  // scaling factors for Nitsche's standard stabilization term
-  double NIT_stab_fac         = 1.0;
-
-  if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_visc_div_by_hk)
-  {
-    NIT_stab_fac = nitsche_stab * my::visceff_ / h_k;
-  }
-  else if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_inv_hk)
-  {
-    NIT_stab_fac = nitsche_stab / h_k;
-  }
-  else if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_const)
-  {
-    NIT_stab_fac = nitsche_stab;
-  }
-  else dserror("unknown scaling for viscous stabilization term");
-
-  //------------------------------
+  //--------------------------------------------
   // define average weights
+  //--------------------------------------------
   double kappa1 = 1.0;      // Xfluid-sided mortaring
 
   if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
@@ -3356,8 +3335,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         //--------------------------------------------
         // compute stabilization factors
 
-        double stabfac_visc = 0.0;
-        double stabfac_avg = 0.0;
+        double NIT_full_stab_fac = 0.0;
+        double avg_conv_stab_fac = 0.0;
 
         // set convective stabilization types first to none
         // and read the correct one later from parameter list
@@ -3378,36 +3357,32 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           double gamma_ghost_penalty = 0.0;
           double presscoupling_interface_fac = 0.0;
           double gamma_press_coupling = 0.0;
-          bool nitsche_evp = false;
 
-          NIT_ComputeStabfacFluidFluid(
-              params,
-              stabfac_visc,
-              stabfac_avg,
-              velgrad_interface_fac,
-              presscoupling_interface_fac,
+          NIT_ComputeFullStabfacFluidFluid(
+              NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+              avg_conv_stab_fac,             ///< to be filled: scaling of the convective average coupling term for fluidfluid problems
+              velgrad_interface_fac,         ///< to be filled: stabilization parameter for velocity-gradients penalty term
+              presscoupling_interface_fac,   ///< to be filled: stabilization parameter for pressure-coupling penalty term
               xff_conv_stab_scaling,
               my::velint_.Dot(normal),
               my::velint_,
               h_k,
-              NIT_stab_fac,
+              NIT_visc_stab_fac,
               gamma_ghost_penalty,
-              gamma_press_coupling,
-              nitsche_evp,
-              sid);
+              gamma_press_coupling
+              );
         }
         else
         {
           // convective stabilization type for xfluid
           conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
 
-          NIT_ComputeStabfac(
-              params,
-              stabfac_visc,
-              NIT_stab_fac,
-              conv_stab_scaling,
-              my::velint_.Dot(normal),
-              h_k);
+          NIT_ComputeFullStabfac(
+              NIT_full_stab_fac, ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+              NIT_visc_stab_fac, ///< Nitsche's viscous scaling part of penalty term
+              conv_stab_scaling, ///< type of convective stabilization for xfluid
+              my::velint_.Dot(normal)
+          );
 
           // prescribed velocity vector at weak Dirichlet boundary
           si->get_vel_WeakDBC(ivelint_WDBC_JUMP);
@@ -3424,8 +3399,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             my::visceff_,            // dynamic viscosity in embedded fluid
             kappa1,                  // mortaring weighting
             kappa2,                  // mortaring weighting
-            stabfac_visc,            // Nitsche non-dimensionless stabilization factor
-            stabfac_avg,             // Nitsche convective non-dimensionless stabilization factor
+            NIT_full_stab_fac,       // full Nitsche's penalty term scaling (viscous+convective part)
+            avg_conv_stab_fac,       // scaling of the convective average coupling term for fluidfluid problems
             my::funct_,              // bg shape functions
             my::derxy_,              // bg deriv
             my::vderxy_,             // bg deriv^n
@@ -3552,11 +3527,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   //-----------------------------------------------------------------------------------
 
   // compute characteristic element length
-  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
-  double h_k = Compute_h_k(visc_stab_hk, vcSet, bcells, bintpoints);
-
-  // scaling factors for stabilization terms
-  double visceff_max = my::visceff_;
+  double h_k = Compute_h_k(vcSet, bcells, bintpoints);
 
   //------------------------------
   // define average weights
@@ -3674,34 +3645,17 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     {
       emb->element_length(h_k);
 
-      if(h_k < 1e-006) dserror("element length is smaller than 1e-006");
+      if(h_k < 1e-006) dserror("element length of embedded element is smaller than 1e-006");
 
     }
 
 
-    //------------------------------
-    // scaling factors for Nitsche's standard stabilization term
+    //--------------------------------------------
+    // compute viscous part of Nitsche's penalty term scaling for Nitsche's method (dimensionless)
+    //--------------------------------------------
 
-    // dimensionless part of Nitsche's parameter
-    double nitsche_stab      = params.get<double>("visc_stab_fac");
-    INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
+    const double NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( h_k, sid );
 
-    // final Nitsche-parameter
-    double NIT_stab_fac         = 1.0;
-
-    if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_visc_div_by_hk)
-    {
-      NIT_stab_fac = nitsche_stab * visceff_max / h_k;
-    }
-    else if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_inv_hk)
-    {
-      NIT_stab_fac = nitsche_stab / h_k;
-    }
-    else if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_const)
-    {
-      NIT_stab_fac = nitsche_stab;
-    }
-    else dserror("unknown scaling for viscous stabilization term");
 
 
     //--------------------------------------------
@@ -3769,7 +3723,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
 
         // evaluate embedded element shape functions
-        if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
+        if(fldparaxfem_->ViscStabHK() == INPAR::XFEM::ViscStab_hk_vol_equivalent)
         {
           emb->EvaluateEmb( x_side );
         }
@@ -3803,8 +3757,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         //--------------------------------------------
         // compute stabilization factors
 
-        double stabfac_avg = 0.0;
-        double stabfac_visc = 0.0;
+        double NIT_full_stab_fac = 0.0;
+        double avg_conv_stab_fac = 0.0;
         double velgrad_interface_fac = 0.0;
         double presscoupling_interface_fac = 0.0;
 
@@ -3825,23 +3779,19 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
           // convective stabilization type for xfluidfluid
           INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
 
-          bool nitsche_evp = params.get<bool>("NITSCHE_EVP");
-
-          NIT_ComputeStabfacFluidFluid(
-              params,
-              stabfac_visc,
-              stabfac_avg,
-              velgrad_interface_fac,
-              presscoupling_interface_fac,
+          NIT_ComputeFullStabfacFluidFluid(
+              NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+              avg_conv_stab_fac,             ///< to be filled: scaling of the convective average coupling term for fluidfluid problems
+              velgrad_interface_fac,         ///< to be filled: stabilization parameter for velocity-gradients penalty term
+              presscoupling_interface_fac,   ///< to be filled: stabilization parameter for pressure-coupling penalty term
               xff_conv_stab_scaling,
               my::velint_.Dot(normal),
               my::velint_,
               h_k,
-              NIT_stab_fac,
+              NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
               gamma_ghost_penalty,
-              gamma_press_coupling,
-              nitsche_evp,
-              sid);
+              gamma_press_coupling
+              );
 
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
@@ -3856,8 +3806,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
               my::visceff_,                // dynvisc viscosity in embedded fluid
               kappa1,                      // mortaring weighting
               kappa2,                      // mortaring weighting
-              stabfac_visc,                // Nitsche non-dimensionless stabilization factor
-              stabfac_avg,                 // Nitsche convective non-dimensionless stabilization factor
+              NIT_full_stab_fac,           // full Nitsche's penalty term scaling (viscous+convective part)
+              avg_conv_stab_fac,           // scaling of the convective average coupling term for fluidfluid problems
               velgrad_interface_stab,      // yes: stabilization term for velocity gradients at the interface
               velgrad_interface_fac,       // velgrad_interface_stab stabilization factor
               presscoupling_interface_stab,// yes: stabilization term for pressure coupling at the interface
@@ -3929,40 +3879,198 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
   return;
 }
 
+
 /*--------------------------------------------------------------------------------
- *    compute stabilization factor for Nitsche's method (xfluid/xfsi)
+ * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
-    Teuchos::ParameterList&          params,                ///< parameter list
-    double &                         stabfac_visc,          ///< Nitsche's stabilization parameter
-    const double                     NIT_stab_fac,          ///< Nitsche's viscous parameter (alpha)
-    INPAR::XFEM::ConvStabScaling     conv_stab_scaling,     ///< type of convective stabilization for xfluid
-    const double                     veln_normal,           ///< interface-normal velocity contribution
-    const double                     h_k                    ///< characteristic element length
+double FluidEleCalcXFEM<distype>::NIT_ComputeNitscheStabfac(
+    const double h_k,   ///< the characteristic element length
+    const int sid       ///< Id of the side element for embedded sided fluidfluid formulations
 )
 {
+
+
+  //------------------------------
+  // scaling factors for Nitsche's standard stabilization term
+  /*
+        viscous_Nitsche-part
+      /                                        \        /                           i        \
+     |  NIT_visc_stab_fac *  [ v ] , [ Du ]     | =  - |   NIT_visc_stab_fac * [ v ], [ u ]   |
+      \                                        /        \                                    /
+
+
+      with
+
+            NIT_visc_stab_fac =   gamma * mu * C^2
+
+      where
+           - gamma is a dimensionless user-defined parameter
+           - mu is the viscosity
+           - C is an estimate of the following trace inequality with  C^2 ~ 1/h
+             and C depends on element type, shape and polynomial degree
+
+
+                    trace inequality to be satisfied for Nitsche's method
+
+                    || grad v_h ||         <=   C  *  || grad v_h ||
+                                  Gamma_K                           K
+
+           - C^2 \approx lambda can be estimated as the maximal eigenvalue lambda of the generalized eigenvalue problem (A*x = lambda * B*x)
+
+                    < grad w_h,  grad v_h >          =  lambda *  ( grad w_h, grad v_h)
+                                           Gamma_K                                     K
+
+           - alternatively we can estimate C^2 as C^2 \approx \rho_safety * CT / h_K (see generalized hp-framework by Erik Burman 2006)
+
+                      with CT depending on the dimension d and the polynomial degree p
+
+                               CT = p(p+1)/2 * (2+1/p)^d
+
+                      and  1/h_K \approx meas(Gamma_K)/meas(K)
+                      and rho_safety a safety factor depending on the element-type which is useful when the surface cuts the element in an inclined situation or when the surface
+                          contains small acute angles or corners
+  */
+
+
+  // get the type how to estimate the scaling from the trace inequality
+  INPAR::XFEM::ViscStab_TraceEstimate visc_stab_trace_estimate = fldparaxfem_->ViscStabTracEstimate();
+
+  //------------------------------
+  // to be filled viscous part of Nitsche's penalty term scaling for Nitsche's method
+  double NIT_visc_stab_fac = 0.0;
+
+  // compute the final viscous scaling part of Nitsche's penalty term
+  if(visc_stab_trace_estimate == INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk)
+  {
+    if(fabs(h_k) < 1e-14) dserror("the characteristic element length is zero, it has not been set properly!");
+
+    // get an estimate of the hp-depending constant C_T satisfying the trace inequality
+    double C_T = NIT_getTraceEstimateConstant();
+
+    // get a safety factor dependent on the the element shape for cut elements, since the surface can cut the
+    // background element in a bad way when the surface includes sharp corners or small acute angles
+    //TODO: still to be set
+    double rho_safety = 1.0;
+
+    // build the final viscous scaling
+    NIT_visc_stab_fac = rho_safety * C_T / h_k;
+  }
+  else if(visc_stab_trace_estimate == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
+  {
+
+    // get an estimate of the hp-depending constant C_T satisfying the trace inequality from a previously solved eigenvalue problem
+    NIT_visc_stab_fac = my::fldpara_->Get_TraceEstimate_MaxEigenvalue(sid);
+  }
+  else dserror("unknown trace-inequality-estimate type for viscous part of Nitsche's penalty term");
+
+  // get final viscous scaling part of Nitsche's penalty term from a previously solved eigenvalue problem
+
+  //--------------------------------------
+  // scale the viscous part of the penalty scaling with the maximal viscosity of both sides
+  NIT_visc_stab_fac *= my::visceff_;
+
+  //--------------------------------------
+  // scale the viscous part of the penalty scaling with the dimensionless user defined Nitsche-parameter gamma
+  NIT_visc_stab_fac *= fldparaxfem_->ViscStabGamma();
+
+
+  return NIT_visc_stab_fac;
+}
+
+
+/*--------------------------------------------------------------------------------
+ * get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double FluidEleCalcXFEM<distype>::NIT_getTraceEstimateConstant()
+{
+  /*
+  => return CT = p(p+1)/2 * (2+1/p)^d constant depending on element-type/polynomal order, see below
+
+  - C is an estimate of the following trace inequality with  C^2 ~ 1/h
+     and C depends on element type, shape and polynomial degree
+
+
+            trace inequality to be satisfied for Nitsche's method
+
+            || grad v_h ||         <=   C  *  || grad v_h ||
+                          Gamma_K                           K
+
+   - we can estimate C^2 as C^2 \approx \rho_safety * CT / h_K (see generalized hp-framework by Erik Burman 2006)
+
+              with CT depending on the dimension d and the polynomial degree p
+
+                       CT = p(p+1)/2 * (2+1/p)^d
+
+              and  1/h_K \approx meas(Gamma_K)/meas(K)
+              and rho_safety a safety factor depending on the element-type which is useful when the surface cuts the element in an inclined situation or when the surface
+                  contains small acute angles or corners
+
+   - Remark regarding the dimension of the problem (pseudo-2D simualations):
+     -> important for CT is the degree of the element-wise polynomial which is clear for pure 2D and 3D problems
+     -> for pseudo-2D with one element-layer of 3D element in z-direction, but strong Dirichlet conditions which eliminate the z-contributions
+        in the polynomial, we have to adapt the constant from d=3 to d=2 although a 3D element is used
+        (use the "is_pseudo_2D"-flag)
+        => this ensures same results of a 2D simulation and a pseudo-2D simulation using the 3D implementation in combination with
+           strong Dirichlet conditions in z-direction
+     -> an important property is that the elongation of the element in z-direction does not play a role when surface-element-measure based
+        hk-definitions are used since then the relation meas(Gamma_K)/meas(K) remains constant
+     -> using non-strong Dirichlet conditions for the enforcement of u_z = 0, CT for 3D is required which then leads
+        to differences between a 2D implementation and pseudo-2D simulation using the 3D implementation
+     -> IMPORTANT: to forget to set the "is_pseudo_2D"-flag to "true" for pseudo-2D examples leads to an overestimate of CT,
+        and so does not result in stability problems, it might lead to a slightly worse convergence of the linear solver,
+        however, usually it has not a to worse effect.
+*/
+
+  // TODO: introduce 2D-flag
+  //bool is_pseudo_2D = false;
+
+  double CT = 1.0;
+
+  // TODO: std::cout << "still to be filled" << std::endl;
+
+  return CT;
+}
+
+
+/*--------------------------------------------------------------------------------
+ *      compute stabilization factor for the Nitsche's penalty term (xfluid/xfsi)
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::NIT_ComputeFullStabfac(
+    double &                         NIT_full_stab_fac,     ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+    const double                     NIT_visc_stab_fac,     ///< Nitsche's viscous scaling part of penalty term
+    INPAR::XFEM::ConvStabScaling     conv_stab_scaling,     ///< type of convective stabilization for xfluid
+    const double                     veln_normal            ///< interface-normal velocity contribution
+)
+{
+  if(my::fldpara_->IsConservative() and conv_stab_scaling != INPAR::XFEM::ConvStabScaling_none)
+  {
+    dserror("convective stabilization is not available for conservative form of Navier-Stokes, but possible to implement!");
+  }
+
   // additional stabilization for convective stabilization
-  double conv_stabfac = 0.0;
+  double conv_stab_fac = 0.0;
 
   if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_abs_normal_vel)
   {
     //      | u*n |
-    conv_stabfac =  fabs(veln_normal);
+    conv_stab_fac =  fabs(veln_normal);
   }
   else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel)
   {
     //    max(1.0,| u*n |)
-    conv_stabfac =  std::max(1.0, fabs(veln_normal));
+    conv_stab_fac =  std::max(1.0, fabs(veln_normal));
   }
   else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
   {
     //      ( -u*n ) if (u*n)<0 (inflow), conv_stabfac >= 0
-    conv_stabfac = std::max(0.0,-veln_normal);
+    conv_stab_fac = std::max(0.0,-veln_normal);
   }
   else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_none)
   {
-    conv_stabfac = 0.0;
+    conv_stab_fac = 0.0;
   }
   else
   dserror("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
@@ -3981,8 +4089,8 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
   //                    h_k                                              \              /
   */
 
-  // final stabilization factors
-  stabfac_visc = std::max(NIT_stab_fac, conv_stabfac*my::densaf_);
+  // final stabilization factors (viscous + convective + transient parts)
+  NIT_full_stab_fac = std::max(NIT_visc_stab_fac, conv_stab_fac*my::densaf_);
   //=================================================================================
 
   return;
@@ -3992,41 +4100,27 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
  *    compute stabilization factor for Nitsche's method
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::NIT_ComputeStabfacFluidFluid(
-    Teuchos::ParameterList&          params,                        ///< parameter list
-    double &                         stabfac_visc,                  ///< Nitsche's stabilization parameter
-    double &                         stabfac_avg,                   ///< stabilization factor 2
-    double &                         velgrad_interface_fac,         ///< stabilization parameter for velocity-gradients penalty term
-    double &                         press_coupling_fac,            ///< stabilization parameter for pressure-coupling penalty term
+void FluidEleCalcXFEM<distype>::NIT_ComputeFullStabfacFluidFluid(
+    double &                         NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+    double &                         avg_conv_stab_fac,             ///< to be filled: scaling of the convective average coupling term for fluidfluid problems
+    double &                         velgrad_interface_fac,         ///< to be filled: stabilization parameter for velocity-gradients penalty term
+    double &                         press_coupling_fac,            ///< to be filled: stabilization parameter for pressure-coupling penalty term
     INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling,         ///< type of convective stabilization for fluid-fluid problem
     const double                     veln_normal,                   ///< interface-normal velocity contribution
-    LINALG::Matrix<my::nsd_,1>       velint,                        ///< interface velocity
+    const LINALG::Matrix<my::nsd_,1> velint,                        ///< interface velocity
     const double                     h_k,                           ///< characteristic element length
-    const double                     NIT_stab_fac,                  ///< Nitsche's viscous parameter (alpha)
+    const double                     NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
     const double                     gamma_ghost_penalty,           ///< ghost-penalty parameter
-    const double                     gamma_press_coupling,          ///< factor of stabilization parameter for pressure-coupling penalty term
-    bool                             nitsche_evp,                   ///< indicates solution of local eigenvalue problem applying Nitsche's method
-    int                              sid                            ///< current side id
+    const double                     gamma_press_coupling           ///< factor of stabilization parameter for pressure-coupling penalty term
 )
 {
-  // additional stabilization for convective stabilization
-  double conv_stabfac = 0.0;
+  if(my::fldpara_->IsConservative() and xff_conv_stab_scaling != INPAR::XFEM::XFF_ConvStabScaling_none)
+  {
+    dserror("convective stabilization is not available for conservative form of Navier-Stokes, but possible to implement!");
+  }
 
-  if(xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
-     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
-     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
-  {
-    // (beta .normal_e)({v},||u||)
-    //--conv_stabfac---
-    conv_stabfac = veln_normal;
-  }
-  else if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_none)
-  {
-    conv_stabfac = 0.0;
-  }
-  else
-    dserror("No valid INPAR::XFEM::XFF_ConvStabScaling for xfluidfluid/xffsi problems");
+  //----------------------------------------------------------
+  // additional average term stabilization for convective regime
 
   /*
   //    /                                           \        /                        i                   \
@@ -4034,12 +4128,47 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfacFluidFluid(
   //    \                                           /        \                                            /
   //
   */
-  stabfac_avg = my::densaf_*conv_stabfac;
+
+  if(xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged or
+     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty or
+     xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
+  {
+    // (beta .normal_e)({v},||u||)
+    avg_conv_stab_fac = my::densaf_*veln_normal;
+  }
+  else if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_none)
+  {
+    avg_conv_stab_fac = 0.0;
+  }
+  else
+    dserror("No valid INPAR::XFEM::XFF_ConvStabScaling for xfluidfluid/xffsi problems");
 
 
-  // nitsche_stab_conv := conv_stab in input-file (usually one)
-  // conv_stabfac := v*n;
-  // NIT_stab_fac := alpha (Nitsche parameter)
+  //----------------------------------------------------------------
+
+  // set the viscous part for the Nitsche penalty term
+  NIT_full_stab_fac = NIT_visc_stab_fac;
+
+  // if additional penalty factor is on..
+  // stabfac_visc = max(my::densaf_*|u*n|_inf,stabfac_visc);
+  if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty or
+      xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
+  {
+    NIT_full_stab_fac = std::max(my::densaf_*fabs(velint.NormInf()), NIT_full_stab_fac);
+  }
+
+  // if ConvStabScaling_inflow the Nitsche penalty term obtains also a convective contribution
+  // (\rho 0.5 |beta.n^e| ||v||,||u||)
+  if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
+      xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
+  {
+    NIT_full_stab_fac += fabs(veln_normal)*my::densaf_*0.5;
+  }
+
+
+  //----------------------------------------------------------------
+
 
   // stabilization parameter for velocity-gradients penalty term
   velgrad_interface_fac = gamma_ghost_penalty*my::visceff_*h_k;
@@ -4069,44 +4198,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfacFluidFluid(
   // density, which is not correct.
   press_coupling_fac /= my::densaf_;
 
-  /*
-  //      viscous_Nitsche-part
-  //   /                                   \        /                           i   \
-  //  |  gamma*mu/h_K *  [ v ] , [ Du ]     | =  - |   gamma*mu/h_K * [ v ], [ u ]   |
-  //   \                                   /        \                               /
-  */
 
-  if (nitsche_evp)
-  {
-    // get the nitsche parameter from the eigenvalue problem
-    std::map<int,double > sideidtonitschepar = *params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar");
-    std::map<int, double >::const_iterator iter = sideidtonitschepar.find(sid);
-
-      if (iter != sideidtonitschepar.end())
-        stabfac_visc = iter->second;
-      else
-        dserror("No Nitsche-parameter found for side ID %d", sid);
-  }
-  else
-  {
-    stabfac_visc = NIT_stab_fac;
-  }
-
-  // if additional penalty factor is on..
-  // stabfac_visc = max(my::densaf_*|u*n|_inf,stabfac_visc);
-  if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty or
-      xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
-  {
-    stabfac_visc = std::max(my::densaf_*fabs(velint.NormInf()),stabfac_visc);
-  }
-
-  // if ConvStabScaling_inflow the Nitsche viscous parameter also changes..
-  // (\rho 0.5 |beta.n^e| ||v||,||u||)
-  if (xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow or
-      xff_conv_stab_scaling == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
-  {
-    stabfac_visc += fabs(veln_normal)*my::densaf_*0.5;
-  }
 
   return;
 }
@@ -4210,7 +4302,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-    std::string                                             coupl_method             ///< coupling method
+    const std::string                                       coupl_method             ///< coupling method
 )
 {
   for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
@@ -4261,7 +4353,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
     std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
-    std::string                                             coupl_method             ///< coupling method
+    const std::string                                       coupl_method             ///< coupling method
 )
 {
 
@@ -4511,7 +4603,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-    DRT::ELEMENTS::Fluid *     ele,                ///< fluid element
+    DRT::ELEMENTS::Fluid *      ele,                ///< fluid element
     DRT::Discretization &       dis,                ///< discretization
     const std::vector<int> &    lm,                 ///< local map
     Epetra_SerialDenseVector&   elevec1_epetra      ///< element vector
@@ -4530,12 +4622,14 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double FluidEleCalcXFEM<distype>::Compute_h_k(
-    INPAR::XFEM::ViscStab_hk visc_stab_hk,
     const GEO::CUT::plain_volumecell_set & vcSet,
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints
 )
 {
+
+  INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
+
   double h_k = 0.0;
   double meas_surf, meas_partial_volume = 0.0;
 
