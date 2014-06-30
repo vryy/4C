@@ -30,7 +30,6 @@ Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_> > DRT::UTILS::PolynomialSpaceCach
   {
     return i->second;
   }
-  std::cout<<"size "<<ps_cache_.size()<<std::endl;
 
   // this is expensive and should not be done too often
   Teuchos::RCP<PolynomialSpace<nsd_> > ps;
