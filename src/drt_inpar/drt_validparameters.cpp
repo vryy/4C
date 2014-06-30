@@ -6930,6 +6930,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 	// local postprocessing
 	BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
+	BoolParameter("P_ADAPTIVITY","No","p-adaptivity in time integration",&acousticdyn);
 
 	setStringToIntegralParameter<int>("TIMEINT","impl",
 									  "Type of time integration scheme",

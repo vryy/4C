@@ -32,6 +32,7 @@ class Discretization;
 
 namespace ELEMENTS
 {
+class AcouIntFace;
 
 class AcouType : public DRT::ElementType
 {
@@ -220,9 +221,10 @@ public:
   /*!
   \brief Get number of degrees of freedom per face
   */
-  virtual int NumDofPerFace(const unsigned /* face */) const
+  virtual int NumDofPerFace(const unsigned face) const
   {
-    return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), degree_, completepol_);
+    //return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), degree_, completepol_);
+    return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
   }
 
   virtual int NumDofPerElementAuxiliary() const
@@ -236,7 +238,7 @@ public:
   /*!
    \brief Returns the degree of the element
    */
-  int Degree() const
+  virtual int Degree() const
   {
     return degree_;
   }
@@ -350,6 +352,7 @@ private:
 
   // stores the polynomial type (tensor product or complete polynomial)
   bool completepol_;
+
 
 }; // class Acou
 
@@ -815,6 +818,20 @@ public:
   virtual int NumDofPerElement() const { return 0; }
 
   /*!
+   \brief Returns the degree of the element
+   */
+  virtual int Degree() const
+  {
+    return degree_;
+  }
+
+  void SetDegree(int degree)
+  {
+    degree_ = degree;
+    return;
+  }
+
+  /*!
   \brief create the location vector for patch of master and slave element
 
   \note All dofs shared by master and slave element are contained only once. Dofs from interface nodes are also included.
@@ -942,6 +959,9 @@ private:
           and the slave element's face's coordinate system
    */
   std::vector<int> localtrafomap_;
+
+  // degree of this face element
+  int degree_;
 
 }; // class AcouIntFace
 

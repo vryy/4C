@@ -524,6 +524,11 @@ public:
   virtual int BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, int numdofperface, bool indenpendentdofnumbers);
 
   /*!
+  \brief Builds an auxiliary dof set with the given number of dofs on the respective entities
+   */
+  virtual int BuildDofSetAuxProxy(int numdofpernode, std::vector<int> numdofperelement, int numdofperface, bool indenpendentdofnumbers);
+
+  /*!
   \brief Get proxy to main dof set for special case of partial dof sets.
   */
   virtual Teuchos::RCP<DofSet> GetDofSetProxy(const Epetra_Map* subcolnodes,
@@ -2070,10 +2075,9 @@ protected:
    *
    *  h.kue 09/07
    */
-  static void AssignGlobalIDs(const Epetra_Comm& comm,
-                              const std::map< std::vector<int>,
-                              Teuchos::RCP<DRT::Element> >& elementmap,
-                              std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
+  virtual void AssignGlobalIDs(const Epetra_Comm& comm,
+                               const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
+                               std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
 
   // internal data
   std::string                            name_;              // name of this discretization

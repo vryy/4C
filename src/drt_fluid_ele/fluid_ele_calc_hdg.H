@@ -292,7 +292,10 @@ namespace ELEMENTS
       static const unsigned int nsd_    = FluidEleCalcHDG<distype>::nsd_;
       static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
 
-      LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues);
+      LocalSolver (const DRT::ELEMENTS::Fluid* ele,
+                   const DRT::UTILS::ShapeValues<distype> &shapeValues,
+                   DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace,
+                   bool completepoly);
 
       void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
                                    const std::vector<double>        & valnp,
@@ -327,7 +330,6 @@ namespace ELEMENTS
                              Epetra_SerialDenseVector &elevec);
 
       const unsigned int ndofs_;
-      const unsigned int nfdofs_;
 
       const bool stokes;
 
@@ -338,6 +340,7 @@ namespace ELEMENTS
       // and similarly for 3D
 
       const DRT::UTILS::ShapeValues<distype> &shapes_; /// evaluated shape values
+      DRT::UTILS::ShapeValuesFace<distype> &shapesface_; /// evaluated shape values
 
       double                    stabilization[nfaces_]; /// stabilization parameters
 
@@ -404,6 +407,7 @@ namespace ELEMENTS
 
     /// local data object
     Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;
+    Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > shapesface_;
 
     /// local solver object
     Teuchos::RCP<LocalSolver> localSolver_;
@@ -416,6 +420,8 @@ namespace ELEMENTS
     std::vector<double> traceVal_;    /// extracted values from trace solution vector at n+alpha_f
     std::vector<double> interiorVal_; /// extracted local values (velocity gradients, velocities, pressure) at n+alpha_f
     std::vector<double> interiorAcc_; /// extracted local accelerations at n+alpha_f
+
+    bool usescompletepoly_;
   };
 }
 }

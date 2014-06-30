@@ -148,7 +148,10 @@ private:
     static const unsigned int nsd_    = AcouViscEleCalc<distype>::nsd_;
     static const unsigned int nfaces_ = AcouViscEleCalc<distype>::nfaces_;
 
-    LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues);
+    LocalSolver (const DRT::ELEMENTS::Acou* ele,
+                 const DRT::UTILS::ShapeValues<distype> &shapeValues,
+                 DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace,
+                 bool completepoly);
 
     /// add terms corresponding to the absorbing boundary condition
     void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
@@ -206,9 +209,9 @@ private:
                              double &val) const;
 
     const unsigned int ndofs_;
-    const unsigned int nfdofs_;
 
     const DRT::UTILS::ShapeValues<distype> &shapes_; /// evaluated shape values
+    DRT::UTILS::ShapeValuesFace<distype> &shapesface_; /// evaluated shape values
 
     Epetra_SerialDenseMatrix amat;
     Epetra_SerialDenseMatrix invamat;
@@ -277,6 +280,7 @@ private:
 
   /// local data object
   Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;
+  Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > shapesface_;
 
   /// local solver object
   Teuchos::RCP<LocalSolver> localSolver_;
@@ -328,6 +332,7 @@ private:
   /// time integration scheme
   INPAR::ACOU::DynamicType dyna_;
 
+  bool usescompletepoly_;
 };
 
 

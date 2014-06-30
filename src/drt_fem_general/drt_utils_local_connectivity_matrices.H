@@ -733,6 +733,34 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::nurbs8>   {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::nurbs27>  {static const int dim = 3;};
 
+  /*!
+  \brief    Returns the degree of an element based on its discretization-type
+            Template version
+  */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToDegree {};
+  template<> struct DisTypeToDegree<DRT::Element::point1>   {static const int degree =0;};
+  template<> struct DisTypeToDegree<DRT::Element::line2>    {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::line3>    {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::nurbs2>   {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::nurbs3>   {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::quad4>    {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::quad8>    {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::quad9>    {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::nurbs4>   {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::nurbs9>   {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::tri3>     {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::tri6>     {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::hex8>     {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::hex20>    {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::hex27>    {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::tet4>     {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::tet10>    {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::wedge6>   {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::wedge15>  {static const int degree =2;};
+  template<> struct DisTypeToDegree<DRT::Element::pyramid5> {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::nurbs8>   {static const int degree =1;};
+  template<> struct DisTypeToDegree<DRT::Element::nurbs27>  {static const int degree =2;};
 
   /*!
   \brief    Returns the number of independent components for 2nd derivatives per discretization-type
@@ -872,6 +900,14 @@ namespace UTILS
   int getOrder(
       const DRT::Element::DiscretizationType distype///< element-discretization type
   );
+
+  /*!
+    \brief    returns the order of the element
+   */
+  int getDegree(
+      const DRT::Element::DiscretizationType distype///< element-discretization type
+  );
+
   /*!
    * Returns the geometric center of the element in local coordinates
    *

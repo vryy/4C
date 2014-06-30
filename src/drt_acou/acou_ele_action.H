@@ -22,18 +22,18 @@ namespace ACOU
  | enum that provides all possible acou actions
  *--------------------------------------------------------------------------*/
 enum Action {
-  none,
-  calc_systemmat_and_residual,
-  calc_abc,
-  calc_pressuremon,
-  calc_pmon_nodevals,
-  calc_acou_error,
-  project_field,
-  project_optical_field,
-  update_secondary_solution,
-  interpolate_hdg_to_node,
-  update_secondary_solution_and_calc_residual,
-  interpolate_psi_to_node
+  none,                               // 0
+  calc_systemmat_and_residual,        // 1
+  calc_abc,                           // 2
+  calc_pressuremon,                   // 3
+  calc_pmon_nodevals,                 // 4
+  calc_acou_error,                    // 5
+  project_field,                      // 6
+  project_optical_field,              // 7
+  update_secondary_solution,          // 8
+  interpolate_hdg_to_node,            // 9
+  update_secondary_solution_and_calc_residual, // 10
+  interpolate_psi_to_node             // 11
 }; // enum Action
 
 } // namespace ACOU

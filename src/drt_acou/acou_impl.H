@@ -185,6 +185,7 @@ protected:
 
   bool invana_;                         /// flag indicating whether inverse analysis is performed
   bool errormaps_;                      /// flag indicating whether error maps are calculated
+  bool padaptivity_;                    /// p-adaptivity flag
   INPAR::ACOU::CalcError calcerr_;      /// flag for error calculation
 
   /// (standard) system matrix

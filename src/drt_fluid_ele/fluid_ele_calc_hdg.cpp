@@ -76,16 +76,24 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid*    e
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMENTS::Fluid* ele)
 {
-  if (shapes_ != Teuchos::null)
-    return;
-
   // Check if this is an HDG element, if yes, can initialize...
   if (const DRT::ELEMENTS::FluidHDG * hdgele = dynamic_cast<const DRT::ELEMENTS::FluidHDG*>(ele))
   {
-    shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(),
-                                                                hdgele->UsesCompletePolynomialSpace(),
-                                                                2*hdgele->Degree()));
-    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_));
+    usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
+    if (shapes_ == Teuchos::null )
+      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(),
+                                                                  usescompletepoly_,
+                                                                  2*ele->Degree()));
+    else if (shapes_->degree_ != unsigned(ele->Degree()) || shapes_->usescompletepoly_ != usescompletepoly_)
+      shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(hdgele->Degree(),
+                                                                  usescompletepoly_,
+                                                                  2*ele->Degree()));
+
+    if (shapesface_ == Teuchos::null)
+      shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>());
+    // TODO: check distype
+
+    localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
   }
   else
     dserror("Only works for HDG fluid elements");
@@ -106,6 +114,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
                                                       Epetra_SerialDenseVector&  ,
                                                       bool                       offdiag)
 {
+
   InitializeShapes(ele);
 
   const bool updateLocally = params.get<bool>("needslocalupdate");
@@ -129,7 +138,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
     // loop over faces
     for (unsigned int f=0; f<nfaces_; ++f) {
-      shapes_->EvaluateFace(*ele, f);
+      shapesface_->EvaluateFace(ele->Degree(),
+                                usescompletepoly_,
+                                2*ele->Degree(),
+                                *ele,
+                                f,
+                                *shapes_);
       localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
       localSolver_->ComputeFaceMatrices(f, mat, false, elemat1);
     }
@@ -144,7 +158,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_);
   localSolver_->ComputeInteriorMatrices(mat, updateLocally);
   for (unsigned int f=0; f<nfaces_; ++f) {
-    shapes_->EvaluateFace(*ele, f);
+    shapesface_->EvaluateFace(ele->Degree(),
+        usescompletepoly_,
+        2*ele->Degree(),
+        *ele,
+        f,
+        *shapes_);
     localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
     localSolver_->ComputeFaceMatrices(f, mat, updateLocally, elemat1);
   }
@@ -169,7 +188,7 @@ ReadGlobalVectors(const DRT::Element     & ele,
                   const bool               updateLocally)
 {
   // read the HDG solution vector (for traces)
-  traceVal_.resize(1+nfaces_*nsd_*shapes_->nfdofs_);
+  traceVal_.resize(1+nfaces_*nsd_*shapesface_->nfdofs_);
   interiorVal_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_);
   interiorAcc_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_);
   dsassert(lm.size() == traceVal_.size(), "Internal error");
@@ -427,10 +446,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
     inverseMass.Solve();
   }
 
-  Epetra_SerialDenseMatrix mass(shapes_->nfdofs_, shapes_->nfdofs_);
-  Epetra_SerialDenseMatrix trVec(shapes_->nfdofs_, nsd_);
-  dsassert(elevec1.M() == static_cast<int>(nsd_*shapes_->nfdofs_) ||
-           elevec1.M() == 1+static_cast<int>(nfaces_*nsd_*shapes_->nfdofs_), "Wrong size in project vector 1");
+  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  dsassert(elevec1.M() == static_cast<int>(nsd_*shapesface_->nfdofs_) ||
+           elevec1.M() == 1+static_cast<int>(nfaces_*nsd_*shapesface_->nfdofs_), "Wrong size in project vector 1");
 
   const unsigned int *faceConsider = params.getPtr<unsigned int>("faceconsider");
   Teuchos::Array<int> *functno = params.getPtr<Teuchos::Array<int> >("funct");
@@ -444,15 +463,20 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       if (*faceConsider != face)
         continue;
     }
-    shapes_->EvaluateFace(*ele, face);
+    shapesface_->EvaluateFace(ele->Degree(),
+        usescompletepoly_,
+        2*ele->Degree(),
+        *ele,
+        face,
+        *shapes_);
     zeroMatrix(mass);
     zeroMatrix(trVec);
 
-    for (unsigned int q=0; q<shapes_->nfqpoints_; ++q) {
-      const double fac = shapes_->jfacF(q);
+    for (unsigned int q=0; q<shapesface_->nfqpoints_; ++q) {
+      const double fac = shapesface_->jfacF(q);
       LINALG::Matrix<nsd_,1> xyz(false);
       for (unsigned int d=0; d<nsd_; ++d)
-        xyz(d) = shapes_->xyzFreal(d,q);
+        xyz(d) = shapesface_->xyzFreal(d,q);
       LINALG::Matrix<nsd_,1> u(false);
       if (initfield != NULL)
         EvaluateVelocity(*start_func, INPAR::FLUID::InitialField(*initfield), xyz, u);
@@ -470,13 +494,13 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       }
 
       // now fill the components in the mass matrix and the right hand side
-      for (unsigned int i=0; i<shapes_->nfdofs_; ++i) {
+      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i) {
         // mass matrix
-        for (unsigned int j=0; j<shapes_->nfdofs_; ++j)
-          mass(i,j) += shapes_->shfunctF(i,q) * shapes_->shfunctF(j,q) * fac;
+        for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
+          mass(i,j) += shapesface_->shfunctF(i,q) * shapesface_->shfunctF(j,q) * fac;
 
         for (unsigned int d=0; d<nsd_; ++d)
-          trVec(i,d) += shapes_->shfunctF(i,q) * u(d) * fac;
+          trVec(i,d) += shapesface_->shfunctF(i,q) * u(d) * fac;
       }
     }
 
@@ -487,12 +511,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
     if (initfield != NULL)
       for (unsigned int d=0; d<nsd_; ++d)
-        for (unsigned int i=0; i<shapes_->nfdofs_; ++i)
-          elevec1(1+face*shapes_->nfdofs_*nsd_+d*shapes_->nfdofs_+i) = trVec(i,d);
+        for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+          elevec1(1+face*shapesface_->nfdofs_*nsd_+d*shapesface_->nfdofs_+i) = trVec(i,d);
     else
       for (unsigned int d=0; d<nsd_; ++d)
-        for (unsigned int i=0; i<shapes_->nfdofs_; ++i)
-          elevec1(d*shapes_->nfdofs_+i) = trVec(i,d);
+        for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+          elevec1(d*shapesface_->nfdofs_+i) = trVec(i,d);
   }
   if (initfield != NULL)
     elevec1(0) = avgpre/vol;
@@ -526,7 +550,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
-    shapes_->polySpace_.Evaluate(shapes_->xsi,values);
+    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     for (unsigned int d=0; d<=nsd_; ++d) {
@@ -548,20 +572,20 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
     solvalues[i] = (*matrix_state)[lid];
   }
 
-  Epetra_SerialDenseVector fvalues(shapes_->nfdofs_);
+  Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f=0; f<nfaces_; ++f)
     for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i) {
       // evaluate shape polynomials in node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
-        shapes_->xsiF(idim) = locations(idim,i);
-      shapes_->polySpaceFace_.Evaluate(shapes_->xsiF,fvalues); // TODO: fix face orientation here
+        shapesface_->xsiF(idim) = locations(idim,i);
+      shapesface_->polySpaceFace_->Evaluate(shapesface_->xsiF,fvalues); // TODO: fix face orientation here
 
       // compute values for velocity and pressure by summing over all basis functions
       for (unsigned int d=0; d<nsd_; ++d) {
         double sum = 0;
-        for (unsigned int k=0; k<shapes_->nfdofs_; ++k)
-          sum += fvalues(k) * solvalues[1+f*nsd_*shapes_->nfdofs_+d*shapes_->nfdofs_+k];
-        elevec1((nsd_+1+d)*nen_+shapes_->faceNodeOrder[f][i]) = sum;
+        for (unsigned int k=0; k<shapesface_->nfdofs_; ++k)
+          sum += fvalues(k) * solvalues[1+f*nsd_*shapesface_->nfdofs_+d*shapesface_->nfdofs_+k];
+        elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) = sum;
       }
   }
   elevec1((2*nsd_+1)*nen_) = solvalues[0];
@@ -694,21 +718,37 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::Done()
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::
-LocalSolver(const DRT::UTILS::ShapeValues<distype> &shapeValues)
+LocalSolver(const DRT::ELEMENTS::Fluid* ele,
+            const DRT::UTILS::ShapeValues<distype> &shapeValues,
+            DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace,
+            bool completepoly)
 :
 ndofs_ (shapeValues.ndofs_),
-nfdofs_ (shapeValues.nfdofs_),
 stokes (false),
-shapes_(shapeValues)
+shapes_(shapeValues),
+shapesface_(shapeValuesFace)
 {
   uuMat.Shape((nsd_+1)*ndofs_,(nsd_+1)*ndofs_);
   uuMatFinal.Shape((nsd_+1)*ndofs_,(nsd_+1)*ndofs_);
   guMat.Shape(nsd_*ndofs_,ndofs_);
   ugMat.Shape(nsd_*ndofs_,ndofs_);
 
-  gfMat.Shape(nsd_*nsd_*ndofs_,1+nfaces_*nsd_*nfdofs_);
+  int onfdofs = 0;
+  for(unsigned int i=0; i<nfaces_; ++i)
+  {
+    shapesface_.EvaluateFace(ele->Degree(),
+                             completepoly,
+                             2*ele->Degree(),
+                             *ele,
+                             i,
+                             shapes_);
+    onfdofs += shapesface_.nfdofs_;
+  }
+  onfdofs *= nsd_;
+
+  gfMat.Shape(nsd_*nsd_*ndofs_,1+onfdofs);
   fgMat.Shape(gfMat.N(), gfMat.M());
-  ufMat.Shape((nsd_+1)*ndofs_,1+nfaces_*nsd_*nfdofs_);
+  ufMat.Shape((nsd_+1)*ndofs_,1+onfdofs);
   fuMat.Shape(ufMat.N(), ufMat.M());
 
   massPart.Shape(ndofs_,shapes_.nqpoints_);
@@ -721,11 +761,7 @@ shapes_(shapeValues)
   tmpMat.Shape(ndofs_*nsd_,ndofs_*nsd_);
   tmpMatGrad.Shape(nsd_*ndofs_,ndofs_);
 
-  trMat.Shape(ndofs_*nsd_,nfdofs_);
-  trMatAvg.Shape(ndofs_*nsd_,nfdofs_);
-
   velnp.Shape(nsd_,shapes_.nqpoints_);
-  fvelnp.Shape(nsd_,shapes_.nfqpoints_);
   gRes.Resize(nsd_*nsd_*ndofs_);
   upRes.Resize((nsd_+1)*ndofs_);
   gUpd.Resize(nsd_*nsd_*ndofs_);
@@ -961,30 +997,31 @@ ComputeFaceResidual(const int                           face,
     presavg += shapes_.shfunctAvg(i) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
 
   double velnorm = 0., vol = 0.;
-  for (unsigned int q=0; q<shapes_.nfqpoints_; ++q) {
+  for (unsigned int q=0; q<shapesface_.nfqpoints_; ++q) {
     // interpolate u_n
     for (unsigned int d=0; d<nsd_; ++d) {
       double u_d = 0.;
       for (unsigned int i=0; i<ndofs_; ++i)
-        u_d += shapes_.shfunctI[face](i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
-      velnorm += u_d * u_d * shapes_.jfacF(q);
+        u_d += shapesface_.shfunctI[face](i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
+      velnorm += u_d * u_d * shapesface_.jfacF(q);
     }
-    vol += shapes_.jfacF(q);
+    vol += shapesface_.jfacF(q);
   }
   velnorm = std::sqrt(velnorm/vol);
 
   const double lengthScale = 1.;
   stabilization[face] = viscosity/lengthScale + (stokes ? 0. : velnorm*density);
+  fvelnp.Shape(nsd_,shapesface_.nfqpoints_);
 
   // interpolate the boundary values onto face quadrature points
-  for (unsigned int q=0; q<shapes_.nfqpoints_; ++q) {
+  for (unsigned int q=0; q<shapesface_.nfqpoints_; ++q) {
     // interpolate interior L_np onto face quadrature points
     double velgradnp[nsd_][nsd_];
     for (unsigned int d=0; d<nsd_; ++d)
       for (unsigned int e=0; e<nsd_; ++e) {
         velgradnp[d][e] = 0.;
         for (unsigned int i=0; i<ndofs_; ++i)
-          velgradnp[d][e] += shapes_.shfunctI[face](i,q) *
+          velgradnp[d][e] += shapesface_.shfunctI[face](i,q) *
                              val[(d*nsd_+e)*ndofs_+i];
       }
     // interpolate u_np
@@ -992,18 +1029,19 @@ ComputeFaceResidual(const int                           face,
     for (unsigned int d=0; d<nsd_; ++d) {
       ifvelnp[d] = 0.;
       for (unsigned int i=0; i<ndofs_; ++i)
-        ifvelnp[d] += shapes_.shfunctI[face](i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
+        ifvelnp[d] += shapesface_.shfunctI[face](i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
     }
     // interpolate p_np
     double presnp = 0.;
     for (unsigned int i=0; i<ndofs_; ++i)
-      presnp += shapes_.shfunctI[face](i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+      presnp += shapesface_.shfunctI[face](i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+
 
     // interpolate trace value
     for (unsigned int d=0; d<nsd_; ++d) {
       double sum = 0.;
-        for (unsigned int i=0; i<nfdofs_; ++i)
-          sum += shapes_.shfunctF(i,q) * traceval[1+face*nsd_*nfdofs_+d*nfdofs_+i];
+        for (unsigned int i=0; i<shapesface_.nfdofs_; ++i)
+          sum += shapesface_.shfunctF(i,q) * traceval[1+face*nsd_*shapesface_.nfdofs_+d*shapesface_.nfdofs_+i];
       fvelnp(d,q) = sum;
     }
 
@@ -1011,9 +1049,9 @@ ComputeFaceResidual(const int                           face,
     // residual for L_np
     for (unsigned int d=0; d<nsd_; ++d)
       for (unsigned int e=0; e<nsd_; ++e) {
-        const double res = fvelnp(d,q) * shapes_.normals(e,q) * shapes_.jfacF(q);
+        const double res = fvelnp(d,q) * shapesface_.normals(e,q) * shapesface_.jfacF(q);
         for (unsigned int i=0; i<ndofs_; ++i)
-          gRes((d*nsd_+e)*ndofs_+i) += shapes_.shfunctI[face](i,q) * res;
+          gRes((d*nsd_+e)*ndofs_+i) += shapesface_.shfunctI[face](i,q) * res;
       }
 
     // residual for u_np
@@ -1029,25 +1067,25 @@ ComputeFaceResidual(const int                           face,
       momres[d] += presnp;
       double res = 0;
       for (unsigned int e=0; e<nsd_; ++e)
-        res += momres[e] * shapes_.normals(e,q);
+        res += momres[e] * shapesface_.normals(e,q);
       res += stabilization[face]*(ifvelnp[d]-fvelnp(d,q));
-      res *= shapes_.jfacF(q);
+      res *= shapesface_.jfacF(q);
       for (unsigned int i=0; i<ndofs_; ++i)
-        upRes(d*ndofs_+i) -= res * shapes_.shfunctI[face](i,q);
-      res -= (-traceval[0] + presavg) * shapes_.jfacF(q) * shapes_.normals(d,q);
-      for (unsigned int i=0; i<nfdofs_; ++i)
-        elevec(1+face*nsd_*nfdofs_+d*nfdofs_+i) -= res * shapes_.shfunctF(i,q);
-      elevec(0) -= fvelnp(d,q) * shapes_.normals(d,q) * shapes_.jfacF(q);
+        upRes(d*ndofs_+i) -= res * shapesface_.shfunctI[face](i,q);
+      res -= (-traceval[0] + presavg) * shapesface_.jfacF(q) * shapesface_.normals(d,q);
+      for (unsigned int i=0; i<shapesface_.nfdofs_; ++i)
+        elevec(1+face*nsd_*shapesface_.nfdofs_+d*shapesface_.nfdofs_+i) -= res * shapesface_.shfunctF(i,q);
+      elevec(0) -= fvelnp(d,q) * shapesface_.normals(d,q) * shapesface_.jfacF(q);
     }
 
     // residual for p_np
     double presres = 0.;
     for (unsigned int d=0; d<nsd_; ++d)
-      presres += fvelnp(d,q)*shapes_.normals(d,q);
-    presres *= shapes_.jfacF(q);
+      presres += fvelnp(d,q)*shapesface_.normals(d,q);
+    presres *= shapesface_.jfacF(q);
     for (unsigned int i=1; i<ndofs_; ++i) {
       upRes(nsd_*ndofs_+i) -=
-          presres*(shapes_.shfunctI[face](i,q)-shapes_.shfunctAvg(i));
+          presres*(shapesface_.shfunctI[face](i,q)-shapes_.shfunctAvg(i));
     }
   }
 }
@@ -1066,20 +1104,18 @@ ComputeFaceMatrices (const int                          face,
   const double viscosity = actmat->Viscosity();
   const double density = actmat->Density();
 
-  if (!evaluateOnlyNonlinear) {
-    zeroMatrix(trMat);
-    zeroMatrix(trMatAvg);
-  }
+  trMat.Shape(ndofs_*nsd_,shapesface_.nfdofs_);
+  trMatAvg.Shape(ndofs_*nsd_,shapesface_.nfdofs_);
 
   // TODO write a fast version of this function where we build on the assumption that
   // face basis functions and interior basis functions coincide for certain indices
 
   // perform face quadrature
-  for (unsigned int q=0; q<shapes_.nfqpoints_; ++q) {
+  for (unsigned int q=0; q<shapesface_.nfqpoints_; ++q) {
 
     double velNormal = 0.;
     for (unsigned int d=0; d<nsd_; ++d)
-      velNormal += shapes_.normals(d,q) * fvelnp(d,q);
+      velNormal += shapesface_.normals(d,q) * fvelnp(d,q);
     velNormal *= density;
 
     double stabvel[nsd_][nsd_];
@@ -1087,60 +1123,60 @@ ComputeFaceMatrices (const int                          face,
       for (unsigned int e=0; e<nsd_; ++e) {
         stabvel[d][e] = 0.;
         if (!stokes)
-          stabvel[d][e] += density * fvelnp(d,q) * shapes_.normals(e,q);
+          stabvel[d][e] += density * fvelnp(d,q) * shapesface_.normals(e,q);
       }
       if (!stokes)
         stabvel[d][d] += velNormal;
       stabvel[d][d] -= stabilization[face];
     }
 
-    const double jac = shapes_.jfacF(q);
+    const double jac = shapesface_.jfacF(q);
 
-    for (unsigned int i=0; i<nfdofs_; ++i) {
-      for (unsigned int j=0; j<nfdofs_; ++j) {
-        const double shape = shapes_.shfunctF(i,q) * shapes_.shfunctF(j,q) * jac;
+    for (unsigned int i=0; i<shapesface_.nfdofs_; ++i) {
+      for (unsigned int j=0; j<shapesface_.nfdofs_; ++j) {
+        const double shape = shapesface_.shfunctF(i,q) * shapesface_.shfunctF(j,q) * jac;
         for (unsigned int d=0; d<nsd_; ++d)
           for (unsigned int e=0; e<nsd_; ++e)
-            elemat(1+face*nsd_*nfdofs_+nfdofs_*d+j,1+face*nsd_*nfdofs_+nfdofs_*e+i) += shape * stabvel[d][e];
+            elemat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+j,1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*e+i) += shape * stabvel[d][e];
       }
 
       if (!evaluateOnlyNonlinear)
         for (unsigned int j=0; j<ndofs_; ++j) {
-          const double shape = shapes_.shfunctF(i,q) * jac * shapes_.shfunctI[face](j,q);
-          const double shapeAvg = shapes_.shfunctF(i,q) * jac * (shapes_.shfunctI[face](j,q)-shapes_.shfunctAvg(j));
+          const double shape = shapesface_.shfunctF(i,q) * jac * shapesface_.shfunctI[face](j,q);
+          const double shapeAvg = shapesface_.shfunctF(i,q) * jac * (shapesface_.shfunctI[face](j,q)-shapes_.shfunctAvg(j));
           for (unsigned int d=0; d<nsd_; ++d) {
-            trMat(d*ndofs_+j,i) += shape * shapes_.normals(d,q);
-            trMatAvg(d*ndofs_+j,i) += shapeAvg * shapes_.normals(d,q);
+            trMat(d*ndofs_+j,i) += shape * shapesface_.normals(d,q);
+            trMatAvg(d*ndofs_+j,i) += shapeAvg * shapesface_.normals(d,q);
           }
         }
 
       for (unsigned int j=0; j<ndofs_; ++j) {
-        const double shape = shapes_.shfunctF(i,q) * shapes_.shfunctI[face](j,q) * jac;
+        const double shape = shapesface_.shfunctF(i,q) * shapesface_.shfunctI[face](j,q) * jac;
         for (unsigned int d=0; d<nsd_; ++d) {
           for (unsigned int e=0; e<nsd_; ++e) {
-            ufMat(d*ndofs_+j,1+face*nsd_*nfdofs_+nfdofs_*e+i) += shape * stabvel[d][e];
+            ufMat(d*ndofs_+j,1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*e+i) += shape * stabvel[d][e];
           }
-          fuMat(1+face*nsd_*nfdofs_+nfdofs_*d+i,d*ndofs_+j) += shape * stabilization[face];
+          fuMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i,d*ndofs_+j) += shape * stabilization[face];
         }
       }
 
       // -<psi,\lambda * n>
       for (unsigned int d=0; d<nsd_; ++d)
-        elemat(1+(face*nsd_+d)*nfdofs_+i,0) += shapes_.shfunctF(i,q) * jac * shapes_.normals(d,q);
+        elemat(1+(face*nsd_+d)*shapesface_.nfdofs_+i,0) += shapesface_.shfunctF(i,q) * jac * shapesface_.normals(d,q);
     }
 
     for (unsigned int i=0; i<ndofs_; ++i)
       for (unsigned int j=0; j<ndofs_; ++j) {
-        const double shape = shapes_.shfunctI[face](i,q) * shapes_.shfunctI[face](j,q) * jac * stabilization[face];
+        const double shape = shapesface_.shfunctI[face](i,q) * shapesface_.shfunctI[face](j,q) * jac * stabilization[face];
         for (unsigned int d=0; d<nsd_; ++d)
           uuconv(d*ndofs_+i,d*ndofs_+j) += shape;
       }
     if (!evaluateOnlyNonlinear)
       for (unsigned int i=0; i<ndofs_; ++i) {
         for (unsigned int j=0; j<ndofs_; ++j) {
-          const double shape = shapes_.shfunctI[face](i,q) * shapes_.shfunctI[face](j,q) * jac;
+          const double shape = shapesface_.shfunctI[face](i,q) * shapesface_.shfunctI[face](j,q) * jac;
           for (unsigned int d=0; d<nsd_; ++d) {
-            const double val = shape * shapes_.normals(d,q);
+            const double val = shape * shapesface_.normals(d,q);
             ugMat(d*ndofs_+j,i) -= viscosity*val;
             uuMat(d*ndofs_+j,nsd_*ndofs_+i) += val;
           }
@@ -1150,17 +1186,17 @@ ComputeFaceMatrices (const int                          face,
 
   // merge matrices
   if (!evaluateOnlyNonlinear) {
-    for (unsigned int i=0; i<nfdofs_; ++i) {
+    for (unsigned int i=0; i<shapesface_.nfdofs_; ++i) {
       for (unsigned int j=0; j<ndofs_; ++j) {
         for (unsigned int d=0; d<nsd_; ++d) {
-          fuMat(1+face*nsd_*nfdofs_+nfdofs_*d+i,nsd_*ndofs_+j) += trMatAvg(d*ndofs_+j,i);
-          ufMat(nsd_*ndofs_+j,1+face*nsd_*nfdofs_+nfdofs_*d+i) += trMatAvg(d*ndofs_+j,i);
+          fuMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i,nsd_*ndofs_+j) += trMatAvg(d*ndofs_+j,i);
+          ufMat(nsd_*ndofs_+j,1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i) += trMatAvg(d*ndofs_+j,i);
         }
         for (unsigned int d=0; d<nsd_; ++d)
           for (unsigned int e=0; e<nsd_; ++e) {
-            gfMat((nsd_*d+e)*ndofs_+j,1+face*nsd_*nfdofs_+nfdofs_*d+i) = -trMat(e*ndofs_+j,i);
-            fgMat(1+face*nsd_*nfdofs_+nfdofs_*d+i,(nsd_*d+e)*ndofs_+j) -= viscosity*trMat(e*ndofs_+j,i);
-            fgMat(1+face*nsd_*nfdofs_+nfdofs_*e+i,(nsd_*d+e)*ndofs_+j) -= viscosity*trMat(d*ndofs_+j,i);
+            gfMat((nsd_*d+e)*ndofs_+j,1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i) = -trMat(e*ndofs_+j,i);
+            fgMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i,(nsd_*d+e)*ndofs_+j) -= viscosity*trMat(e*ndofs_+j,i);
+            fgMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*e+i,(nsd_*d+e)*ndofs_+j) -= viscosity*trMat(d*ndofs_+j,i);
           }
       }
     }
@@ -1314,7 +1350,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::
 CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
                   Epetra_SerialDenseVector &eleVec)
 {
-  for (unsigned int i=0; i<nfaces_*nsd_*nfdofs_; ++i)
+  for (unsigned int i=0; i<nfaces_*nsd_*shapesface_.nfdofs_; ++i)
     eleMat(0,1+i) = eleMat(1+i,0);
 
   // first get residual to obtain first part of condensed residual vector,
@@ -1322,11 +1358,11 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
   SolveResidual();
 
   // clear first column of pressure
-  for (unsigned int i=1; i<1+nfaces_*nsd_*nfdofs_; ++i)
+  for (unsigned int i=1; i<1+nfaces_*nsd_*shapesface_.nfdofs_; ++i)
     fuMat(i,ndofs_*nsd_) = 0;
 
   // compute residual vector: need to multiply residual by fuMat and fgMat
-  for (unsigned int i=1; i<1+nfaces_*nsd_*nfdofs_; ++i) {
+  for (unsigned int i=1; i<1+nfaces_*nsd_*shapesface_.nfdofs_; ++i) {
     double sum = 0.;
     for (unsigned int j=0; j<ndofs_*(nsd_+1); ++j)
       sum += fuMat(i,j) * upUpd(j);
@@ -1339,9 +1375,9 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
 
   Epetra_BLAS blas;
 
-  for (unsigned int f=1; f<1+nfaces_*nfdofs_*nsd_; ++f) {
+  for (unsigned int f=1; f<1+nfaces_*shapesface_.nfdofs_*nsd_; ++f) {
     // gfMat is block-structured similarly to GU, so only use non-zero entries
-    const unsigned cindex = ((f-1)/nfdofs_)%nsd_;
+    const unsigned cindex = ((f-1)/shapesface_.nfdofs_)%nsd_;
     // compute (UG * M^{-1}) * GF = tmpMatGrad * GF
     // shape of UG in 3D:
     // [ x y z             ]   [ x     y     z     ]
@@ -1376,7 +1412,7 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
             1., eleMat.A(), eleMat.M());
 
   // update gfMat and apply inverse mass matrix: GF <- M^{-1} (GF - GU * UF)
-  for (unsigned int f=1; f<1+nfaces_*nfdofs_*nsd_; ++f) {
+  for (unsigned int f=1; f<1+nfaces_*shapesface_.nfdofs_*nsd_; ++f) {
     for (unsigned int d=0; d<nsd_; ++d)
       for (unsigned int i=0; i<ndofs_; ++i) {
         double sum[nsd_];

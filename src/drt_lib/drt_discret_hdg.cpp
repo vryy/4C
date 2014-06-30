@@ -21,6 +21,10 @@ Maintainer: Martin Kronbichler
 #include "drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_acou/acou_ele.H"
+
+#include "../linalg/linalg_utils.H"
+
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name,
                                           Teuchos::RCP<Epetra_Comm> comm)
@@ -260,7 +264,138 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
   }
 }
 
+/*----------------------------------------------------------------------*
+ | AssignGlobalIDs                                        schoeder 06/14|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
+                                             const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
+                                             std::map< int, Teuchos::RCP<DRT::Element> >& finalelements )
+{
+  // The point here is to make sure the element gid are the same on any
+  // parallel distribution of the elements. Thus we allreduce thing to
+  // processor 0 and sort the element descriptions (vectors of nodal ids)
+  // there. We also communicate the element degree! This is the difference
+  // the base class function!
+  //
+  // This routine has not been optimized for efficiency. I don't think that is
+  // needed.
+  //
+  // pack elements on all processors
 
+  int size = 0;
+  std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator elemsiter;
+  for (elemsiter=elementmap.begin();
+       elemsiter!=elementmap.end();
+       ++elemsiter)
+  {
+    size += elemsiter->first.size()+2;
+  }
+
+  std::vector<int> sendblock;
+  sendblock.reserve(size);
+  for (elemsiter=elementmap.begin();
+       elemsiter!=elementmap.end();
+       ++elemsiter)
+  {
+    sendblock.push_back(elemsiter->first.size());
+    sendblock.push_back(elemsiter->second->Degree());
+    std::copy(elemsiter->first.begin(), elemsiter->first.end(), std::back_inserter(sendblock));
+  }
+
+  // communicate elements to processor 0
+
+  int mysize = sendblock.size();
+  comm.SumAll(&mysize,&size,1);
+  int mypos = LINALG::FindMyPos(sendblock.size(),comm);
+
+  std::vector<int> send(size);
+  std::fill(send.begin(),send.end(),0);
+  std::copy(sendblock.begin(),sendblock.end(),&send[mypos]);
+  sendblock.clear();
+  std::vector<int> recv(size);
+  comm.SumAll(&send[0],&recv[0],size);
+  send.clear();
+
+  // unpack, unify and sort elements on processor 0
+
+  if (comm.MyPID()==0)
+  {
+    std::map<std::vector<int>,int > elementsanddegree;
+    int index = 0;
+    while (index < static_cast<int>(recv.size()))
+    {
+
+      int esize = recv[index];
+      int degree = recv[index+1];
+      index += 2;
+      std::vector<int> element;
+      element.reserve(esize);
+      std::copy(&recv[index], &recv[index+esize], std::back_inserter(element));
+      index += esize;
+
+      // check if we already have this and if so, check for max degree
+      std::map<std::vector<int>, int>::const_iterator iter =elementsanddegree.find(element);
+      if(iter!=elementsanddegree.end())
+      {
+        degree = iter->second>degree ? iter->second : degree;
+        elementsanddegree.erase(element); // is only inserted in the next line, if the entry does not exist
+      }
+      elementsanddegree.insert(std::pair<std::vector<int>,int >(element,degree));
+    }
+    recv.clear();
+
+    // pack again to distribute pack to all processors
+    std::map<std::vector<int>, int>::const_iterator iter;
+    send.reserve(index);
+
+    for(iter=elementsanddegree.begin();iter!=elementsanddegree.end();++iter)
+    {
+      send.push_back(iter->first.size());
+      send.push_back(iter->second);
+      std::copy(iter->first.begin(), iter->first.end(), std::back_inserter(send));
+    }
+    size = send.size();
+  }
+  else
+  {
+    recv.clear();
+  }
+
+  // broadcast sorted elements to all processors
+
+  comm.Broadcast(&size,1,0);
+  send.resize(size);
+  comm.Broadcast(&send[0],send.size(),0);
+
+  // Unpack sorted elements. Take element position for gid.
+
+  int index = 0;
+  int gid = 0;
+  while (index < static_cast<int>(send.size()))
+  {
+    int esize = send[index];
+    int degree = send[index+1];
+    index += 2;
+    std::vector<int> element;
+    element.reserve(esize);
+    std::copy(&send[index], &send[index+esize], std::back_inserter(element));
+    index += esize;
+
+    // set gid to my elements
+    std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator iter = elementmap.find(element);
+    if (iter!=elementmap.end())
+    {
+      iter->second->SetId(gid);
+      // TODO visc eles, fluid hdg eles
+      DRT::ELEMENTS::AcouIntFace* acouele = dynamic_cast<DRT::ELEMENTS::AcouIntFace*>(iter->second.get());
+      if(acouele!=NULL) acouele->SetDegree(degree);
+
+      finalelements[gid] = iter->second;
+    }
+
+    gid += 1;
+  }
+}
 
 /*----------------------------------------------------------------------*
  |  << operator                                        kronbichler 12/13|

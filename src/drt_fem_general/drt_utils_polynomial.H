@@ -18,11 +18,50 @@ Maintainer: Martin Kronbichler
 #include "drt_utils_integration.H"
 #include "drt_utils_local_connectivity_matrices.H"
 
-
 namespace DRT
 {
 namespace UTILS
 {
+  /*!
+   \brief helper holding the parameters, which we need to know, to construct a polynomial space
+   */
+  struct PolynomialSpaceParams
+  {
+    explicit PolynomialSpaceParams(DRT::Element::DiscretizationType distype,
+        unsigned int degree,
+        bool completeSpace)
+    :
+        distype_(distype),
+        degree_(degree),
+        completeSpace_(completeSpace)
+    {}
+
+    DRT::Element::DiscretizationType distype_;
+    unsigned int degree_;
+    bool completeSpace_;
+
+    bool operator<(const PolynomialSpaceParams& otherparams) const
+    {
+      if(degree_<otherparams.degree_)
+        return true;
+      else if(degree_==otherparams.degree_)
+      {
+        if((int)distype_<(int)(otherparams.distype_))
+          return true;
+        else if ((int)distype_==(int)(otherparams.distype_))
+        {
+          if(completeSpace_<otherparams.completeSpace_)
+            return true;
+          else return false;
+        }
+        else
+          return false;
+      }
+      else
+        return false;
+    }
+  };
+
   /*!
    \brief A class of 1D Lagrange polynomials on a given number of points
    */
@@ -378,6 +417,7 @@ namespace UTILS
       // renumbering is included in case we want to use these polynomials also
       // for standard finite elements
       renumbering_.resize(Size());
+
       for (unsigned int i=0; i<renumbering_.size(); ++i)
         renumbering_[i] = i;
     }
@@ -879,6 +919,9 @@ namespace UTILS
    :
      PolynomialSpaceTensor<nsd_,LagrangePolynomial> (generateLagrangeBasis1D(degree))
    {}
+
+   ~LagrangeBasis ()
+   {}
  };
 
 
@@ -930,6 +973,14 @@ public:
       dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
   }
 
+  PolynomialSpace (PolynomialSpaceParams params)
+  :
+    polyspace_ (params.completeSpace_ || (getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1) ?
+                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LegendreBasis<nsd_>(params.degree_)) :
+                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LagrangeBasis<nsd_>(params.degree_)))
+  {
+  }
+
   /*
    \brief Return the number of polynomials (over all dimensions)
    */
@@ -969,6 +1020,31 @@ private:
   Teuchos::RCP<PolynomialSpaceBase<nsd_> > polyspace_;
 };
 
+/*!
+ \brief Cache for polynomial space so we do not need to calculate again
+
+ In analogy to GaussPointCache
+ Author: schoeder 06/14
+ */
+template <int nsd_>
+class PolynomialSpaceCache : public DRT::SingletonDestruction
+{
+public:
+
+  static PolynomialSpaceCache<nsd_> & Instance();
+
+  /// cleanup
+  virtual void Done();
+
+  Teuchos::RCP<PolynomialSpace<nsd_> > Create(PolynomialSpaceParams params);
+
+private:
+
+  static PolynomialSpaceCache<nsd_> * instance_;
+
+  /// cache of already created polynomial spaces
+  std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd_> > > ps_cache_;
+};
 
 /*!
  \brief Returns the size of the polynomial space.

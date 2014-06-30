@@ -22,7 +22,6 @@ Maintainer: Svenja Schoeder
 #include "acou_ele_action.H"
 #include "pat_matpar_manager.H"
 
-#include "../drt_adapter/adapter_coupling_volmortar.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_discret_hdg.H"
@@ -86,8 +85,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     dtacou_(acouparams_->get<double>("TIMESTEP")),
     J_(0.0),
     normdiffp_(0.0),
-    tstart_(Teuchos::Time::wallTime()),
-    volmort_(true)
+    tstart_(Teuchos::Time::wallTime())
 {
   // some checks, if everything is alright
   if(INPAR::SCATRA::scatratype_condif!=DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(scatraparams_,"SCATRATYPE")) dserror("inverse analysis only implemented for SCATRATYPE ConvectionDiffusion (pat_matpar_manager)");
@@ -95,37 +93,6 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   if(ls_c_>1.0) dserror("LS_DECREASECOND is usually chosen in between 0.0 and 0.01, decrease it!");
   if(not acou_discret_->Filled() || not acou_discret_->HaveDofs()) dserror("acoustical discretization is not complete or has no dofs");
   if(not scatra_discret_->Filled() || not scatra_discret_->HaveDofs()) dserror("scatra discretization is not complete or has no dofs");
-
-
-//  // TODO: input flag for volume mortar!
-//  if(volmort_)
-//  {
-//    const int dim = DRT::Problem::Instance()->NDim();
-//    int degreep1 = 0;
-//    if(phys_ == INPAR::ACOU::acou_lossless)
-//      degreep1 = DRT::ELEMENTS::Acou::degree + 1;
-//    else
-//      degreep1 = DRT::ELEMENTS::AcouVisc::degree +1;
-//    int nscalardofs = 1;
-//    for(int i=0; i<dim; ++i)
-//      nscalardofs *= degreep1;
-//
-//    if ( acou_discret_->BuildDofSetAuxProxy(0,nscalardofs,0,true) != 2) dserror("expected to have three dofsets in acoustic discretization");
-//    if ( scatra_discret_->BuildDofSetAuxProxy(1,0,0,true) != 1 ) dserror("expected to have two dofsets in scatra discretization");
-//
-//    acou_discret_->FillComplete(true, false,false);
-//    scatra_discret_->FillComplete(true, false,false);
-//
-//    // Scheme: non matching meshes --> volumetric mortar coupling...
-//    volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
-//
-//    //setup projection matrices
-//    volcoupl_->Setup(scatra_discret_,acou_discret_,1,2);
-//
-//  }
-
-
-
 
   // set up of the output
   scatra_output_ = scatra_discret_->Writer();
@@ -135,12 +102,6 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   adjoint_phi_0_ = LINALG::CreateVector(*(acou_discret_->NodeRowMap()),true);
   phi_ = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
   adjoint_w_ = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
-
-  adjoint_w_->PutScalar(1.0);
-//  Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMappingBA(adjoint_w_);
-//std::cin.get();
-//  dummy1->Print(std::cout);
-//  std::cin.get();
 
   // tolerance for the gradient, if used
   if(calcacougrad_) tol_grad_ = acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("INV_TOL_GRAD");
@@ -642,7 +603,11 @@ void ACOU::InvAnalysis::SolveStandardProblem()
 
   // we have to call a slightly changed routine, which fills our history vector which we need for the adjoint problem
   acou_rhs_->Scale(0.0);
-  acoualgo_->Integrate(acou_rhs_,abcnodes_mapex_);
+
+  double norminf = 0.0;
+  matman_->GetMatParams()->NormInf(&norminf);
+  if(norminf>1.0e-5) // we do not have to solve when the maximum reaction coefficient is zero, just a waste of time!
+    acoualgo_->Integrate(acou_rhs_,abcnodes_mapex_);
 
 //    if(iter_==0 && output_count_<3) // do you want this output?
 //    {

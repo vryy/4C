@@ -1786,6 +1786,36 @@ int DRT::UTILS::getOrder(const DRT::Element::DiscretizationType distype)
 }
 
 /*----------------------------------------------------------------------*
+ |  returns the degree of the element                     schoeder 06/14|
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getDegree(const DRT::Element::DiscretizationType distype)
+{
+  int degree = 0;
+
+  switch(distype)
+  {
+    case DRT::Element::line2  : degree = DisTypeToDegree<DRT::Element::line2>::degree; break;
+    case DRT::Element::line3  : degree = DisTypeToDegree<DRT::Element::line3>::degree; break;
+    case DRT::Element::nurbs2 : degree = DisTypeToDegree<DRT::Element::nurbs2>::degree; break;
+    case DRT::Element::nurbs3 : degree = DisTypeToDegree<DRT::Element::nurbs3>::degree; break;
+    case DRT::Element::quad4  : degree = DisTypeToDegree<DRT::Element::quad4>::degree; break;
+    case DRT::Element::quad8  : degree = DisTypeToDegree<DRT::Element::quad8>::degree; break;
+    case DRT::Element::quad9  : degree = DisTypeToDegree<DRT::Element::quad9>::degree; break;
+    case DRT::Element::tri3   : degree = DisTypeToDegree<DRT::Element::tri3>::degree; break;
+    case DRT::Element::tri6   : degree = DisTypeToDegree<DRT::Element::tri6>::degree; break;
+    case DRT::Element::nurbs4 : degree = DisTypeToDegree<DRT::Element::nurbs4>::degree; break;
+    case DRT::Element::nurbs9 : degree = DisTypeToDegree<DRT::Element::nurbs9>::degree; break;
+    case DRT::Element::hex8 :   degree = DisTypeToDegree<DRT::Element::hex8>::degree; break;
+    case DRT::Element::hex20 :  degree = DisTypeToDegree<DRT::Element::hex20>::degree; break;
+    case DRT::Element::hex27 :  degree = DisTypeToDegree<DRT::Element::hex27>::degree; break;
+    case DRT::Element::tet4 :   degree = DisTypeToDegree<DRT::Element::tet4>::degree; break;
+    case DRT::Element::tet10 :  degree = DisTypeToDegree<DRT::Element::tet10>::degree; break;
+    default: dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str()); break;
+  }
+  return degree;
+}
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double DRT::UTILS::getSizeInLocalCoordinates(
     const DRT::Element::DiscretizationType     distype)

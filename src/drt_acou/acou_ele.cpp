@@ -617,6 +617,12 @@ localtrafomap_(localtrafomap)
 {
   SetParentMasterElement(parent_master,lsurface_master);
   SetParentSlaveElement(parent_slave,lsurface_slave);
+
+  if(parent_slave != NULL)
+    degree_ = std::max(parent_master->Degree(),parent_slave->Degree());
+  else
+    degree_ = parent_master->Degree();
+
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -627,7 +633,8 @@ localtrafomap_(localtrafomap)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouIntFace::AcouIntFace(const DRT::ELEMENTS::AcouIntFace& old) :
 DRT::Element(old),
-localtrafomap_(old.localtrafomap_)
+localtrafomap_(old.localtrafomap_),
+degree_(old.degree_)
 {
   return;
 }

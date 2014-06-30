@@ -427,6 +427,7 @@ void AcouFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
   writer_->WriteResult("density_avg", "density_avg", elementbased, 1);
   writer_->WriteResult("error", "error", elementbased, 1);
+  writer_->WriteResult("degree", "degree", elementbased, 1);
   WriteElementResults(field);
 }
 

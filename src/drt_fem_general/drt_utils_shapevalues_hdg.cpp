@@ -25,27 +25,20 @@ DRT::UTILS::ShapeValues<distype>::ShapeValues(const unsigned int degree,
                                               const unsigned int quadratureDegree)
 :
 degree_ (degree),
-polySpace_(distype, degree, completepoly),
-polySpaceFace_(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, degree, completepoly),
-ndofs_ (polySpace_.Size()),
-nfdofs_ (polySpaceFace_.Size()),
 quadrature_ (DRT::UTILS::GaussPointCache::Instance().Create(distype, quadratureDegree)),
-fquadrature_ (DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,
-                                                             quadratureDegree)),
-nqpoints_ (quadrature_->NumPoints()),
-nfqpoints_ (fquadrature_->NumPoints())
+usescompletepoly_(completepoly),
+nqpoints_ (quadrature_->NumPoints())
 {
-  // TODO: allow polynomials separate for each face, use generic polynomials
+  PolynomialSpaceParams params(distype,degree,completepoly);
+  polySpace_ = DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance().Create(params);
+  ndofs_ = polySpace_->Size();
 
   Epetra_SerialDenseVector values(ndofs_);
   Epetra_SerialDenseMatrix derivs(nsd_, ndofs_);
-  Epetra_SerialDenseVector faceValues(nfdofs_);
 
   xyzreal.Shape(nsd_, nqpoints_);
-  xyzFreal.Shape(nsd_, nfqpoints_);
 
   funct.Shape(nen_, nqpoints_);
-  functF.Shape(nfn_, nfqpoints_);
 
   shfunct.Shape(ndofs_,nqpoints_);
   shfunctAvg.Resize(ndofs_);
@@ -60,8 +53,8 @@ nfqpoints_ (fquadrature_->NumPoints())
     for (unsigned int idim=0;idim<nsd_;idim++)
       xsi(idim) = gpcoord[idim];
 
-    polySpace_.Evaluate(xsi,values);
-    polySpace_.Evaluate_deriv1(xsi,derivs);
+    polySpace_->Evaluate(xsi,values);
+    polySpace_->Evaluate_deriv1(xsi,derivs);
 
     for (unsigned int i=0; i<ndofs_; ++i)
     {
@@ -73,53 +66,6 @@ nfqpoints_ (fquadrature_->NumPoints())
     LINALG::Matrix<nen_,1> myfunct(funct.A()+q*nen_,true);
     DRT::UTILS::shape_function<distype>(xsi,myfunct);
   }
-
-  shfunctFNoPermute.Shape(nfdofs_, nfqpoints_);
-  shfunctF.Shape(nfdofs_, nfqpoints_);
-  shfunctI.resize(nfaces_);
-  for (unsigned int f=0;f<nfaces_; ++f)
-    shfunctI[f].Shape(ndofs_, nfqpoints_);
-  normals.Shape(nsd_, nfqpoints_);
-  jfacF.Resize(nfqpoints_);
-
-  for (unsigned int q=0; q<nfqpoints_; ++q )
-  {
-    const double* gpcoord = fquadrature_->Point(q);
-
-    const unsigned int codim = nsd_-1;
-    for (unsigned int idim=0;idim<codim;idim++)
-      xsiF(idim) = gpcoord[idim];
-
-    polySpaceFace_.Evaluate(xsiF,faceValues);
-    for (unsigned int i=0; i<nfdofs_; ++i)
-      shfunctFNoPermute(i,q) = faceValues(i);
-
-    LINALG::Matrix<nfn_,1> myfunct(functF.A()+q*nfn_,true);
-    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsiF,myfunct);
-  }
-
-  Epetra_SerialDenseMatrix quadrature(nfqpoints_,nsd_,false);
-  Epetra_SerialDenseMatrix trafo(nsd_,nsd_,false);
-  for (unsigned int f=0; f<nfaces_; ++f)
-  {
-    DRT::UTILS::BoundaryGPToParentGP<nsd_>(quadrature,trafo,*fquadrature_,distype,
-                                           DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, f);
-    for (unsigned int q=0; q<nfqpoints_; ++q)
-    {
-      for (unsigned int d=0; d<nsd_; ++d)
-        xsi(d) = quadrature(q,d);
-      polySpace_.Evaluate(xsi,values);
-      for (unsigned int i=0; i<ndofs_; ++i)
-        shfunctI[f](i,q) = values(i);
-    }
-  }
-
-  if (nsd_ == 2)
-    faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
-  else if (nsd_ == 3)
-    faceNodeOrder = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-  else
-    dserror("Not implemented for dim != 2, 3");
 }
 
 
@@ -178,14 +124,60 @@ DRT::UTILS::ShapeValues<distype>::Evaluate (const DRT::Element &ele)
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void
-DRT::UTILS::ShapeValues<distype>::EvaluateFace (const DRT::Element &ele,
-                                                const unsigned int  face)
+DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
+                                                    const bool         completepoly,
+                                                    const unsigned int quadratureDegree,
+                                                    const DRT::Element &ele,
+                                                    const unsigned int  face,
+                                                    const DRT::UTILS::ShapeValues<distype> shapes)
 {
+  // what has been in the constructor before
+  PolynomialSpaceParams params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,degree,completepoly);
+
+  {
+    degree_ = degree;
+    polySpaceFace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params);
+    nfdofs_ = polySpaceFace_->Size();
+    fquadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
+    nfqpoints_ = fquadrature_->NumPoints();
+
+    Epetra_SerialDenseVector faceValues(nfdofs_);
+    xyzFreal.Shape(nsd_, nfqpoints_);
+    functF.Shape(nfn_, nfqpoints_);
+
+    shfunctFNoPermute.Shape(nfdofs_, nfqpoints_);
+    shfunctF.Shape(nfdofs_, nfqpoints_);
+    shfunctI.resize(nfaces_);
+    for (unsigned int f=0;f<nfaces_; ++f)
+      shfunctI[f].Shape(shapes.ndofs_, nfqpoints_);
+    normals.Shape(nsd_, nfqpoints_);
+    jfacF.Resize(nfqpoints_);
+
+    for (unsigned int q=0; q<nfqpoints_; ++q )
+    {
+      const double* gpcoord = fquadrature_->Point(q);
+
+      const unsigned int codim = nsd_-1;
+      for (unsigned int idim=0;idim<codim;idim++)
+        xsiF(idim) = gpcoord[idim];
+
+      polySpaceFace_->Evaluate(xsiF,faceValues);
+      for (unsigned int i=0; i<nfdofs_; ++i)
+        shfunctFNoPermute(i,q) = faceValues(i);
+
+      LINALG::Matrix<nfn_,1> myfunct(functF.A()+q*nfn_,true);
+      DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsiF,myfunct);
+    }
+
+  }
   const DRT::Element::DiscretizationType facedis = DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
   dsassert(faceNodeOrder[face].size() == nfn_,
            "Internal error");
+
+  LINALG::Matrix<nsd_,nen_>     xyze;
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(&ele,xyze);
   for (unsigned int i=0; i<nfn_; ++i)
     for (unsigned int d=0; d<nsd_; ++d)
       xyzeF(d,i) = xyze(d,faceNodeOrder[face][i]);
@@ -209,7 +201,27 @@ DRT::UTILS::ShapeValues<distype>::EvaluateFace (const DRT::Element &ele,
   }
 
   AdjustFaceOrientation(ele, face);
+
+  Epetra_SerialDenseMatrix quadrature(nfqpoints_,nsd_,false);
+  Epetra_SerialDenseMatrix trafo(nsd_,nsd_,false);
+  Epetra_SerialDenseVector values(shapes.ndofs_);
+  LINALG::Matrix<nsd_,1> xsi;
+  for (unsigned int f=0; f<nfaces_; ++f)
+  {
+    DRT::UTILS::BoundaryGPToParentGP<nsd_>(quadrature,trafo,*fquadrature_,distype,
+                                           DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, f);
+    for (unsigned int q=0; q<nfqpoints_; ++q)
+    {
+      for (unsigned int d=0; d<nsd_; ++d)
+        xsi(d) = quadrature(q,d);
+      shapes.polySpace_->Evaluate(xsi,values);
+      for (unsigned int i=0; i<shapes.ndofs_; ++i)
+        shfunctI[f](i,q) = values(i);
+    }
+  }
 }
+
+
 
 
 
@@ -218,7 +230,7 @@ DRT::UTILS::ShapeValues<distype>::EvaluateFace (const DRT::Element &ele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void
-DRT::UTILS::ShapeValues<distype>::AdjustFaceOrientation (const DRT::Element &ele,
+DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element &ele,
                                                          const unsigned int  face)
 {
   // figure out how to permute face indices by checking permutation of nodes.
@@ -417,6 +429,22 @@ DRT::UTILS::ShapeValues<distype>::AdjustFaceOrientation (const DRT::Element &ele
 }
 
 
+
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                 schoeder 06/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace()
+{
+  if (nsd_ == 2)
+    faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
+  else if (nsd_ == 3)
+    faceNodeOrder = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  else
+    dserror("Not implemented for dim != 2, 3");
+}
+
+
 // explicit instantiation of template classes
 template struct DRT::UTILS::ShapeValues<DRT::Element::hex8>;
 template struct DRT::UTILS::ShapeValues<DRT::Element::hex20>;
@@ -432,3 +460,18 @@ template struct DRT::UTILS::ShapeValues<DRT::Element::tri3>;
 template struct DRT::UTILS::ShapeValues<DRT::Element::tri6>;
 template struct DRT::UTILS::ShapeValues<DRT::Element::nurbs9>;
 template struct DRT::UTILS::ShapeValues<DRT::Element::nurbs27>;
+
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::hex8>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::hex20>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::hex27>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::tet4>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::tet10>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::wedge6>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::pyramid5>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::quad4>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::quad8>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::quad9>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::tri3>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::tri6>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::nurbs9>;
+template struct DRT::UTILS::ShapeValuesFace<DRT::Element::nurbs27>;

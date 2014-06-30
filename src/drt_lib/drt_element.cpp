@@ -160,7 +160,6 @@ std::ostream& operator << (std::ostream& os, const DRT::Element& element)
   return os;
 }
 
-
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -533,7 +532,7 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
 
     // fill the vector with face dofs
     if (this->NumDofPerFace(dofset) > 0)
-    {
+    {dserror("SVENJA wrong call for num dof per face");
       for (int i=0; i<NumFace(); ++i)
       {
         const int owner = face_[i]->Owner();
@@ -644,7 +643,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(dofset) > 0)
+    if (this->NumDofPerFace(0) > 0)
     {
       for (int i=0; i<NumFace(); ++i)
       {
@@ -765,7 +764,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
 
   // fill the vector with face dofs
   if (this->NumDofPerFace(0) > 0)
-  {
+  {dserror("SVENJA wrong call for num dof per face");
     for (int i=0; i<NumFace(); ++i)
     {
       const int owner = face_[i]->Owner();
@@ -957,4 +956,8 @@ std::vector<double> DRT::Element::ElementCenterRefeCoords()
   return return_stuff;
 }
 
+int DRT::Element::Degree() const
+{
+  return DRT::UTILS::getDegree(Shape());
+}
 

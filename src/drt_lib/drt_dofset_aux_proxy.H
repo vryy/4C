@@ -55,6 +55,18 @@ public:
     return;
   }
 
+  ///Constructor
+  explicit DofSetAuxProxy(DofSet* dofset, int numdofpernode, std::vector<int> numdofperelement, int numdofperface, bool uniqueGIDs)
+  : DofSetProxy(dofset),
+    numauxdofpernode_(numdofpernode),
+    numauxdofperelement_(0),
+    numauxdofperelementelewise_(numdofperelement),
+    numauxdofperface_(numdofperface),
+    uniqueGIDs_(uniqueGIDs)
+  {
+    return;
+  }
+
   ///Destructor
   ~DofSetAuxProxy(){};
 
@@ -90,7 +102,8 @@ protected:
   /// get number of element dofs for this element
   virtual int NumDofPerElement( const Element & element ) const
   {
-    return numauxdofperelement_;
+    if (numauxdofperelementelewise_.size()==0) return numauxdofperelement_;
+    else return numauxdofperelementelewise_[element.LID()];
   }
 
   /// get number of element dofs for this element
@@ -105,6 +118,8 @@ private:
 
   ///number of dofs per element of auxiliary dofset
   const int numauxdofperelement_;
+
+  std::vector<int> numauxdofperelementelewise_;
 
   ///number of dofs per element of auxiliary dofset
   const int numauxdofperface_;

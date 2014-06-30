@@ -648,6 +648,15 @@ public:
   }
 
   /*!
+  \brief Get the degree of an element
+
+  The element can have variable degree, in case of HDG discretizations.
+  HDG elements implement this functions, standard elements return zero.
+  */
+  virtual int Degree() const;
+
+
+  /*!
   \brief Get number of degrees of freedom per element
 
   The element decides how many element degrees of freedom it has.

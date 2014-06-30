@@ -144,7 +144,10 @@ namespace ELEMENTS
       static const unsigned int nsd_    = AcouEleCalc<distype>::nsd_;
       static const unsigned int nfaces_ = AcouEleCalc<distype>::nfaces_;
 
-      LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues);
+      LocalSolver (const DRT::ELEMENTS::Acou* ele,
+                   const DRT::UTILS::ShapeValues<distype> &shapeValues,
+                   DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace,
+                   bool completepoly);
 
       /// compute the residual
       void ComputeResidual(Epetra_SerialDenseVector          & eleVec,
@@ -159,7 +162,8 @@ namespace ELEMENTS
                               Teuchos::RCP<MAT::Material> & mat,
                               int                         face,
                               Epetra_SerialDenseMatrix    &elemat,
-                              Epetra_SerialDenseVector    &elevec);
+                              Epetra_SerialDenseVector    &elevec,
+                              int                          indexstart);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
@@ -167,7 +171,8 @@ namespace ELEMENTS
                               Teuchos::RCP<MAT::Material> & mat,
                               int                         face,
                               Epetra_SerialDenseMatrix    &elemat,
-                              Epetra_SerialDenseVector    &elevec);
+                              Epetra_SerialDenseVector    &elevec,
+                              int                          indexstart);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
@@ -175,7 +180,8 @@ namespace ELEMENTS
                                 Teuchos::RCP<MAT::Material> & mat,
                                 int                         face,
                                 Epetra_SerialDenseMatrix    &elemat,
-                                Epetra_SerialDenseVector    &elevec);
+                                Epetra_SerialDenseVector    &elevec,
+                                int                          indexstart);
 
       /// set up interior matrices
       void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
@@ -185,7 +191,8 @@ namespace ELEMENTS
       /// set up face matrices
       void ComputeFaceMatrices(const int                          face,
                                const Teuchos::RCP<MAT::Material>& mat,
-                               double                             dt);
+                               double                             dt,
+                               int                                indexstart);
 
       // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
       // the element matrix for the trace and similarly for the residuals
@@ -205,9 +212,9 @@ namespace ELEMENTS
       // and similarly for 3D
 
       const unsigned int ndofs_;
-      const unsigned int nfdofs_;
 
       const DRT::UTILS::ShapeValues<distype> &shapes_; /// evaluated shape values
+      DRT::UTILS::ShapeValuesFace<distype> &shapesface_; /// evaluated shape values
 
       Epetra_SerialDenseMatrix  Amat;     /// velocity velocity
       Epetra_SerialDenseMatrix  invAmat;  /// inverse of Amat
@@ -249,7 +256,8 @@ namespace ELEMENTS
                             Teuchos::RCP<MAT::Material> & mat,
                             int                         face,
                             Epetra_SerialDenseMatrix    &elemat,
-                            Epetra_SerialDenseVector    &elevec);
+                            Epetra_SerialDenseVector    &elevec,
+                            int                          indexstart);
 
     /// reads from global vectors
     void ReadGlobalVectors(const DRT::Element     & ele,
@@ -274,6 +282,7 @@ namespace ELEMENTS
 
     /// local data object
     Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;
+    Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > shapesface_;
 
     /// local solver object
     Teuchos::RCP<LocalSolver> localSolver_;
@@ -314,6 +323,8 @@ namespace ELEMENTS
 
     /// time integration scheme
     INPAR::ACOU::DynamicType dyna_;
+
+    bool usescompletepoly_;
   };
 } // namespace ELEMENTS
 } // namespace DRT

@@ -82,22 +82,27 @@ void acoustics_drt()
   for(int i=0; i<dim; ++i)
     nscalardofs *= degreep1;
 
-  int elementndof = 0;
-  if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
-    elementndof =  acoudishdg->NumMyRowElements() > 0 ?
-        dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
-  else
-    elementndof = acoudishdg->NumMyRowElements() > 0 ?
-        dynamic_cast<DRT::ELEMENTS::AcouVisc*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//nscalardofs * ( dim * dim + dim + 2); // velocity gradient, velocity, pressure, density
+//  int elementndof = 0;
+//  if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
+//    elementndof =  acoudishdg->NumMyRowElements() > 0 ?
+//        dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
+//  else
+//    elementndof = acoudishdg->NumMyRowElements() > 0 ?
+//        dynamic_cast<DRT::ELEMENTS::AcouVisc*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//nscalardofs * ( dim * dim + dim + 2); // velocity gradient, velocity, pressure, density
 
   // set degrees of freedom in the discretization
-  //  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
-  //  acoudishdg->AddDofSet(secondary);
-  acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
+  //acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
+  // build map
+  std::vector<int> eledofs;
+  for(int i=0; i<acoudishdg->NumMyColElements(); ++i)
+  {
+    eledofs.push_back(dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lColElement(i))->NumDofPerElementAuxiliary());
+  }
+  acoudishdg->BuildDofSetAuxProxy(0,eledofs,0,false);
 
   // call fill complete on acoustical discretization
   //if (not acoudishdg->Filled() || not acoudishdg->HaveDofs())
-    acoudishdg->FillComplete();
+  acoudishdg->FillComplete();
 
   // print problem specific logo
   if(!acoudishdg->Comm().MyPID()) { if (!invanalysis) printacoulogo(); else printacouinvlogo(); }

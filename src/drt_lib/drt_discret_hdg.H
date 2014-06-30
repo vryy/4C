@@ -132,6 +132,20 @@ public:
     Teuchos::RCP<Epetra_Vector> toggle,
     Teuchos::RCP<std::set<int> > dbcgids);
 
+
+  /*!
+   * this function has the same functionality as the function in the base class,
+   * additionally, the degree of the elements is communicated, such that ghosted elements
+   * also have full knowledge about the face degrees. This is necessary for discretizations
+   * with nonuniform degree distributions and p-adaptivity
+   *
+   *  schoeder 06/14
+   */
+  virtual void AssignGlobalIDs(const Epetra_Comm& comm,
+                               const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
+                               std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
+
+
 }; // class DiscretizationHDG
 } // namespace DRT
 

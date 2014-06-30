@@ -56,7 +56,8 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   dtsolve_        (0.0),
   invana_         (params_->get<bool>("invana")),
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
-  calcerr_      (DRT::INPUT::IntegralValue<INPAR::ACOU::CalcError>(*params,"CALCERROR")),
+  padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
+  calcerr_        (DRT::INPUT::IntegralValue<INPAR::ACOU::CalcError>(*params,"CALCERROR")),
   adjoint_rhs_    (Teuchos::null)
 {
 
@@ -80,7 +81,34 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
 
 
   if(adjoint_)
-    adjoint_rhs_ = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
+  {
+    //adjoint_rhs_= params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
+    Teuchos::RCP<Epetra_MultiVector> rowadjointrhs = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
+
+    // export this thing!!
+    const int * globeles = rowadjointrhs->Map().MyGlobalElements();
+    std::vector<int> glomapval;
+    std::vector<int> locmapval;
+
+    for(int j=0; j<discret_->Comm().NumProc(); ++j)
+    {
+      discret_->Comm().Barrier();
+      int numglobeles = rowadjointrhs->Map().NumMyElements();
+      discret_->Comm().Broadcast(&numglobeles,1,j);
+      locmapval.resize(numglobeles);
+      if(j == discret_->Comm().MyPID())
+        for(int i=0; i<numglobeles; ++i)
+          locmapval[i] = globeles[i];
+
+      discret_->Comm().Broadcast(&locmapval[0],numglobeles,j);
+      for(int i=0; i<numglobeles; ++i)
+        glomapval.push_back(locmapval[i]);
+    }
+    Teuchos::RCP<Epetra_Map> fullmap = Teuchos::rcp(new Epetra_Map(-1,glomapval.size(),&glomapval[0],0,discret_->Comm()));
+    adjoint_rhs_ =  Teuchos::rcp(new Epetra_MultiVector(*fullmap,rowadjointrhs->NumVectors(),true));
+    LINALG::Export(*rowadjointrhs,*adjoint_rhs_);
+    discret_->Comm().Barrier();
+  }
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
@@ -748,6 +776,7 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   // evaluate elements
   //----------------------------------------------------------------------
 
+
   // set general vector values needed by elements
   discret_->ClearState();
 
@@ -800,6 +829,7 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   }
   sysmat_->Complete();
 
+  //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
   return;
 } // AssembleMatAndRHS
 
@@ -1220,6 +1250,16 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     //getNodeVectorsABC();
   } // if( history != Teuchos::null )
 
+  Teuchos::RCP<Epetra_Vector> dmap;
+  if(padaptivity_)
+  {
+    dmap.reset(new Epetra_Vector(*discret_->ElementRowMap()));
+    for(int i=0; i<discret_->NumMyRowElements(); ++i)
+    {
+      dmap->operator [](i) = double(discret_->lRowElement(i)->Degree());
+    }
+  }
+
   if (step_%upres_ == 0)
   {
     if (myrank_ == 0 && !invana_)
@@ -1244,6 +1284,7 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
       output_->WriteVector("velocity_gradient",interpolatedVelocityGradient,output_->nodevector);
     }
     if(errormaps_) output_->WriteVector("error",error_);
+    if(padaptivity_) output_->WriteVector("degree",dmap);
 
     // add restart data
     if (uprestart_ != 0 && step_%uprestart_ == 0)
