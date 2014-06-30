@@ -59,7 +59,6 @@ resfac_sub			0.9
 tol_reducefac			0.1
 tol_sub_fac			1.001
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
-ADJOINT_TYPE			discrete_adjoint
 INITFUNCNO                      1
 INITIALFIELD                    zero_field//field_by_function
 TESTCASE                        test_no

@@ -54,7 +54,6 @@ TOL_SUB                         1e-9
 TOL_KKT                         1e-7
 FACMIN                          1e-10
 ------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
-ADJOINT_TYPE                    cont_adjoint
 INITIALFIELD                    field_by_function
 INITFUNCNO                      3
 ---------------------------------------------------------------FLUID DYNAMIC

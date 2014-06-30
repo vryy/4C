@@ -42,7 +42,6 @@ TOL_KKT                         1.0e-14
 TOL_SUB                         1.0e-15
 RHO_INIT                        1.0e-02
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
-ADJOINT_TYPE                    discrete_adjoint
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 TESTCASE                        test_no

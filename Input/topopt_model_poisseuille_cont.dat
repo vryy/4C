@@ -54,7 +54,6 @@ RHOMIN 				1e-06
 TOL_SUB 			1e-09
 X_DIFF_MIN			1e-08
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
-ADJOINT_TYPE			discrete_adjoint
 INITFUNCNO                      8
 INITIALFIELD                    zero_field//field_by_function
 TESTCASE                        test_primal
