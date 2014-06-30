@@ -23,6 +23,7 @@ Maintainer: Philipp Farah
 #include "../drt_particle/binning_strategy.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_io/io_gmsh.H"
+#include"../drt_inpar/inpar_volmortar.H"
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/13|
  *----------------------------------------------------------------------*/
@@ -39,6 +40,8 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
 {
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
+
+  const Teuchos::ParameterList& params = DRT::Problem::Instance()->VolmortarParams();
 
   // redistribute discr. with help of binning strategy
   if(slavedis->Comm().NumProc()>1)
@@ -57,13 +60,19 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
   Teuchos::RCP<VOLMORTAR::VolMortarCoupl> coupdis =
       Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(dim,slavedis,masterdis));
 
-  // Evaluate coupling:
-  // 1. perform cut/ integration cell identification
-  //    OR call ele-based integration
-  // 2. integrate cells
-  // 3. assemble mortar matrices
-  // 4. create projector P
-  coupdis->Evaluate();
+  //-----------------------
+  // Evaluate volmortar coupling:
+  if(DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params,"COUPLINGTYPE") ==
+      INPAR::VOLMORTAR::couplingtype_volmortar)
+    coupdis->EvaluateVolmortar();
+  //-----------------------
+  // consistent interpolation (NO VOLMORTAR)
+  else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(params,"COUPLINGTYPE")==
+      INPAR::VOLMORTAR::couplingtype_coninter)
+    coupdis->EvaluateConsistentInterpolation();
+  //-----------------------
+  else
+    dserror("Chosen coupling not implemented!!!");
 
   // get the P operators
   pmatrixA_ = coupdis->GetPMatrixAB();

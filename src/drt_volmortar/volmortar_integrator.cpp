@@ -692,7 +692,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
 
       bool converged = true;
       MORTAR::UTILS::GlobalToLocal<distypeM>(*Bele,globgp,Bxi, converged);
-      if(!converged)
+      if(!converged and found!=((int)foundeles.size()-1))
         continue;
 
       // save distance of gp
@@ -751,27 +751,20 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
 
           // integrate D
           double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
-          if (abs(prod2)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod2, row, row);
+          if (abs(prod2)>VOLMORTARINTTOL)
+            dmatrix_A.Assemble(prod2, row, row);
 
           // integrate M
           for (int k=0; k<nm_; ++k)
           {
             DRT::Node* mnode = Bele->Nodes()[k];
-            int nmdof=Bdis->NumDof(0,mnode);
+            int col = Bdis->Dof(0,mnode,jdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
-            {
-              int col = Bdis->Dof(0,mnode,kdof);
+            // multiply the two shape functions
+            double prod = lmval_A(j)*mval_A(k)*jac*wgt;
 
-              // multiply the two shape functions
-              double prod = lmval_A(j)*mval_A(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-              }
-            }
+            if (abs(prod)>VOLMORTARINTTOL)
+              mmatrix_A.Assemble(prod, row, col);
           }
         }
       }
@@ -834,7 +827,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
 
       bool converged = true;
       MORTAR::UTILS::GlobalToLocal<distypeS>(*Aele,globgp,Axi,converged);
-      if(!converged)
+      if(!converged and found!=((int)foundeles.size()-1))
         continue;
 
       // save distance of gp
@@ -893,27 +886,20 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
 
           // integrate D
           double prod2 = lmval_B(j)*sval_B(j)*jac*wgt;
-          if (abs(prod2)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod2, row, row);
+          if (abs(prod2)>VOLMORTARINTTOL)
+            dmatrix_B.Assemble(prod2, row, row);
 
           // integrate M
           for (int k=0; k<ns_; ++k)
           {
             DRT::Node* mnode = Aele->Nodes()[k];
-            int nmdof=Adis->NumDof(0,mnode);
+            int col = Adis->Dof(0,mnode,jdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
-            {
-              int col = Adis->Dof(0,mnode,kdof);
+            // multiply the two shape functions
+            double prod = lmval_B(j)*mval_A(k)*jac*wgt;
 
-              // multiply the two shape functions
-              double prod = lmval_B(j)*mval_A(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-              }
-            }
+            if (abs(prod)>VOLMORTARINTTOL)
+              mmatrix_B.Assemble(prod, row, col);
           }
         }
       }
@@ -1273,4 +1259,140 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex27>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex20>;
+
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            farah 06/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+VOLMORTAR::ConsInterpolator<distype>::ConsInterpolator()
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------*
+ |  interpolate (public)                                     farah 06/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
+                 LINALG::SparseMatrix& pmatrix,
+                 Teuchos::RCP<const DRT::Discretization> nodediscret,
+                 Teuchos::RCP<const DRT::Discretization> elediscret)
+{
+  // check ownership
+  if (node->Owner() != nodediscret->Comm().MyPID())
+    return;
+
+  // map gp into A and B para space
+  double nodepos[3] = {node->X()[0], node->X()[1], node->X()[2]};
+  double dist       = 1.0e12;
+  int    eleid      = 0;
+  double AuxXi[3]   = {0.0, 0.0, 0.0};
+
+  // element loop (brute force)
+  for (int j=0;j<elediscret->NumMyColElements();++j)
+  {
+    double xi[3]   = {0.0, 0.0, 0.0};
+    bool converged = true;
+
+    //get master element
+    DRT::Element* ele = elediscret->lColElement(j);
+
+    MORTAR::UTILS::GlobalToLocal<distype>(*ele,nodepos,xi,converged);
+
+    // no convergence of local newton?
+    if(!converged and j!=((int)elediscret->NumMyColElements()-1))
+      continue;
+
+    // save distance of gp
+    double l = sqrt(xi[0]*xi[0] + xi[1]*xi[1] + xi[2]*xi[2]);
+    if(l<dist)
+    {
+      dist = l;
+      eleid= j;
+      AuxXi[0]  = xi[0];
+      AuxXi[1]  = xi[1];
+      AuxXi[2]  = xi[2];
+    }
+
+    // Check parameter space mapping
+    bool proj = CheckMapping3D(*ele,xi);
+
+    // if node outside --> continue or eval nearest gp
+    if(!proj and j!=((int)elediscret->NumMyColElements()-1))
+      continue;
+    else if(!proj and j==((int)elediscret->NumMyColElements()-1))
+    {
+      xi[0] = AuxXi[0];
+      xi[1] = AuxXi[1];
+      xi[2] = AuxXi[2];
+      ele = elediscret->lColElement(eleid);
+    }
+
+    // get values
+    LINALG::Matrix<n_,1>  val;
+    UTILS::volmortar_shape_function_3D(val, xi[0],xi[1], xi[2],distype);
+
+    int nsdof=nodediscret->NumDof(1,node);
+
+    //loop over slave dofs
+    for (int jdof=0;jdof<nsdof;++jdof)
+    {
+      int row = nodediscret->Dof(1,node,jdof);
+
+      for (int k=0; k<ele->NumNode(); ++k)
+      {
+        DRT::Node* bnode = ele->Nodes()[k];
+        int col = elediscret->Dof(0,bnode,jdof);
+
+        double val2=val(k);
+        //if (abs(val2)>VOLMORTARINTTOL)
+          pmatrix.Assemble(val2, row, col);
+      }
+    }
+    break;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check mapping                                            farah 06/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool VOLMORTAR::ConsInterpolator<distype>::CheckMapping3D(DRT::Element& ele,
+                                                          double* xi)
+{
+  // check node projection
+  double tol = 1e-5;
+  if (distype==DRT::Element::hex8 || distype==DRT::Element::hex20 || distype==DRT::Element::hex27)
+  {
+    if (xi[0]<-1.0-tol || xi[1]<-1.0-tol || xi[2]<-1.0-tol || xi[0]>1.0+tol || xi[1]>1.0+tol || xi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if(distype==DRT::Element::tet4 || distype==DRT::Element::tet10)
+  {
+    if(xi[0]<0.0-tol || xi[1]<0.0-tol || xi[2]<0.0-tol || (xi[0]+xi[1]+xi[2])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else
+    dserror("Wrong element type!");
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  possible elements for interpolation                      farah 06/14|
+ *----------------------------------------------------------------------*/
+template class VOLMORTAR::ConsInterpolator<DRT::Element::quad4>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::tri3>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::hex8>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::hex20>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::hex27>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::tet4>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::tet10>;
 

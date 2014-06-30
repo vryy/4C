@@ -63,26 +63,6 @@ public:
   static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeS>::dim;
 
   /*!
-  \brief Check integration point mapping (2D)
-
-  */
-  bool CheckMapping2D(
-      DRT::Element& sele,
-      DRT::Element& mele,
-      double* sxi,
-      double* mxi);
-
-  /*!
-  \brief Check integration point mapping (3D)
-
-  */
-  bool CheckMapping3D(
-      DRT::Element& sele,
-      DRT::Element& mele,
-      double* sxi,
-      double* mxi);
-
-  /*!
   \brief Initialize Gauss rule (points, weights)
 
   */
@@ -169,15 +149,72 @@ public:
                            LINALG::SparseMatrix& mmatrixB_,
                            Teuchos::RCP<const DRT::Discretization> Adiscret_,
                            Teuchos::RCP<const DRT::Discretization> Bdiscret_);
+protected:
+  /*!
+  \brief Check integration point mapping (2D)
+
+  */
+  bool CheckMapping2D(
+      DRT::Element& sele,
+      DRT::Element& mele,
+      double* sxi,
+      double* mxi);
+
+  /*!
+  \brief Check integration point mapping (3D)
+
+  */
+  bool CheckMapping3D(
+      DRT::Element& sele,
+      DRT::Element& mele,
+      double* sxi,
+      double* mxi);
 
   //@}
-private:
   int                           ngp_;         // number of Gauss points
   Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
   std::vector<double>           weights_;     // Gauss point weights
 
   // input parameter
-  INPAR::VOLMORTAR::DualQuad    dualquad_;     // type of quadratic weighting interpolation
+  INPAR::VOLMORTAR::DualQuad    dualquad_;    // type of quadratic weighting interpolation
+
+};
+
+//===================================
+// Alternative to VolMortar coupling:
+template<DRT::Element::DiscretizationType distype>
+class ConsInterpolator
+{
+public:
+
+  // constructor
+  ConsInterpolator();
+
+  // destructor
+  virtual ~ConsInterpolator() {};
+
+  //! ns_: number of element nodes
+  static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  //! number of space dimensions (due to considering only interface elements)
+  static const int ndim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  /*!
+  \brief interpolation functionality
+
+  */
+  void Interpolate(DRT::Node* node,
+                   LINALG::SparseMatrix& pmatrix_,
+                   Teuchos::RCP<const DRT::Discretization> nodediscret,
+                   Teuchos::RCP<const DRT::Discretization> elediscret);
+
+protected:
+  /*!
+  \brief check node projection
+
+  */
+  bool CheckMapping3D(DRT::Element& ele,
+                 double* xi);
 
 };
 

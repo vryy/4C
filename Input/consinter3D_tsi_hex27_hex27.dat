@@ -7,12 +7,12 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-3D volume mortar in monolithic TSI
-// - testing the setup and functionality of volume mortar in TSI framework
+3D consistent interpolation in monolithic TSI
 // - hex27 - hex27 mesh
 // - curved geometry -> non-matching boundary
 // - element-based integration procedure
-// - tri-quadratic dual shape functions
+// - coupling without integration
+// - see paper: C. Farhat 1996
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    212
 //NODES       2262
@@ -103,7 +103,7 @@ LINEAR_SOLVER                   1
 NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,{{Coupl_}And,Or}_Singl
 NORM_RESF                       Abs  // Abs,Mix
 ----------------------------------------------------------VOLMORTAR COUPLING
-COUPLINGTYPE                    volmortar
+COUPLINGTYPE                    consistentinterpolation
 INTTYPE                         elements
 MESH_INIT                       no
 --------------------------------------------------------------------SOLVER 1
@@ -3314,7 +3314,7 @@ STRUCTURE DIS structure NODE 300 QUANTITY dispx VALUE 4.63844754734527533e-05 TO
 STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE 6.79924246698649970e-05 TOLERANCE 1.0e-8
 STRUCTURE DIS structure NODE 150 QUANTITY dispx VALUE -2.25788041172492540e-04 TOLERANCE 1.0e-8
 STRUCTURE DIS structure NODE 240 QUANTITY dispx VALUE 5.00596172307436375e-05 TOLERANCE 1.0e-8
-THERMAL DIS thermo NODE 800 QUANTITY temp VALUE 2.91015115178450515e+02 TOLERANCE 1.0e-8
+THERMAL DIS thermo NODE 800 QUANTITY temp VALUE 2.91015071854636403e+02 TOLERANCE 1.0e-8
 THERMAL DIS thermo NODE 820 QUANTITY temp VALUE 3.00000000000000000e+02 TOLERANCE 1.0e-8
 ---------------------------------------------------------------END
 // END

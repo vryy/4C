@@ -90,7 +90,7 @@ Bdiscret_(Bdis)
 /*----------------------------------------------------------------------*
  |  Evaluate (public)                                        farah 10/13|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Evaluate()
+void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
 {
   /***********************************************************
    * Welcome                                                 *
@@ -516,6 +516,63 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
       }
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Consistent interpolation routine                         farah 06/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
+{
+  /***********************************************************
+   * Welcome                                                 *
+   ***********************************************************/
+  if(myrank_==0)
+  {
+    std::cout << "*********************************************************" << std::endl;
+    std::cout << "***** Welcome to Consistent-Interpolation-Coupling! *****" << std::endl;
+    std::cout << "*********************************************************" << std::endl;
+  }
+
+  /***********************************************************
+   * Init P-matrices                                         *
+   ***********************************************************/
+  pmatrixA_ = Teuchos::rcp(new LINALG::SparseMatrix(*ADiscret()->DofRowMap(1),10));
+  pmatrixB_ = Teuchos::rcp(new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1),100));
+
+  /***********************************************************
+   * Assign materials                                        *
+   ***********************************************************/
+  AssignMaterials();
+
+  /***********************************************************
+   * Create P operators                                      *
+   ***********************************************************/
+  for(int i=0;i<Adiscret_->NumMyColNodes();++i)
+  {
+    // 1 map node into bele
+    int gid = Adiscret_->NodeColMap()->GID(i);
+    DRT::Node* anode = Adiscret_->gNode(gid);
+
+    AssembleConsistentInterpolation_ADis(anode);
+  } // end node loop
+
+  //================================================
+  for(int i=0;i<Bdiscret_->NumMyColNodes();++i)
+  {
+    // 1 map node into bele
+    int gid = Bdiscret_->NodeColMap()->GID(i);
+    DRT::Node* bnode = Bdiscret_->gNode(gid);
+
+    AssembleConsistentInterpolation_BDis(bnode);
+  } // end node loop
+
+  /***********************************************************
+   * Complete                                                *
+   ***********************************************************/
+  pmatrixA_->Complete(*BDiscret()->DofRowMap(0),*ADiscret()->DofRowMap(1));
+  pmatrixB_->Complete(*ADiscret()->DofRowMap(0),*BDiscret()->DofRowMap(1));
 
   return;
 }
@@ -2160,6 +2217,107 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Assemble p matrix for cons. interpolation approach       farah 06/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(DRT::Node* node)
+{
+  // assume that all BDis element types are equal
+  DRT::Element::DiscretizationType btype = Bdiscret_->lColElement(0)->Shape();
+
+  switch (btype)
+  {
+  case DRT::Element::hex8:
+  {
+    static ConsInterpolator<DRT::Element::hex8> interpolator;
+    interpolator.Interpolate(node,*pmatrixA_,Adiscret_,Bdiscret_);
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    static ConsInterpolator<DRT::Element::hex27> interpolator;
+    interpolator.Interpolate(node,*pmatrixA_,Adiscret_,Bdiscret_);
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    static ConsInterpolator<DRT::Element::hex20> interpolator;
+    interpolator.Interpolate(node,*pmatrixA_,Adiscret_,Bdiscret_);
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    static ConsInterpolator<DRT::Element::tet4> interpolator;
+    interpolator.Interpolate(node,*pmatrixA_,Adiscret_,Bdiscret_);
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    static ConsInterpolator<DRT::Element::tet10> interpolator;
+    interpolator.Interpolate(node,*pmatrixA_,Adiscret_,Bdiscret_);
+    break;
+  }
+  default:
+  {
+    dserror("unknown shape!");
+    break;
+  }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble p matrix for cons. interpolation approach       farah 06/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(DRT::Node* node)
+{
+  // assume that all BDis element types are equal
+  DRT::Element::DiscretizationType atype = Adiscret_->lColElement(0)->Shape();
+
+  switch (atype)
+  {
+  case DRT::Element::hex8:
+  {
+    static ConsInterpolator<DRT::Element::hex8> interpolator;
+    interpolator.Interpolate(node,*pmatrixB_,Bdiscret_,Adiscret_);
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    static ConsInterpolator<DRT::Element::hex27> interpolator;
+    interpolator.Interpolate(node,*pmatrixB_,Bdiscret_,Adiscret_);
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    static ConsInterpolator<DRT::Element::hex20> interpolator;
+    interpolator.Interpolate(node,*pmatrixB_,Bdiscret_,Adiscret_);
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    static ConsInterpolator<DRT::Element::tet4> interpolator;
+    interpolator.Interpolate(node,*pmatrixB_,Bdiscret_,Adiscret_);
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    static ConsInterpolator<DRT::Element::tet10> interpolator;
+    interpolator.Interpolate(node,*pmatrixB_,Bdiscret_,Adiscret_);
+    break;
+  }
+  default:
+  {
+    dserror("unknown shape!");
+    break;
+  }
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells for direct divergence approach         farah 04/14|
  *----------------------------------------------------------------------*/

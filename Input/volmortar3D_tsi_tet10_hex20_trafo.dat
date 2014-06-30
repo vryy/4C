@@ -100,6 +100,7 @@ LINEAR_SOLVER                   1
 NORMCOMBI_RESFINC               Coupl_And_Singl                 // And,Or,{{Coupl_}And,Or}_Singl
 NORM_RESF                       Abs                             // Abs,Mix
 ----------------------------------------------------------VOLMORTAR COUPLING
+COUPLINGTYPE                    volmortar
 INTTYPE                         elements
 MESH_INIT                       no
 DUALQUAD                        quad_mod

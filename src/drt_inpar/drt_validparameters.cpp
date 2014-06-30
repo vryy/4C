@@ -1836,6 +1836,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         INPAR::VOLMORTAR::inttype_segments, INPAR::VOLMORTAR::inttype_segments),
     &volmortar);
 
+  setStringToIntegralParameter<int>("COUPLINGTYPE","Volmortar","Type of coupling",
+    tuple<std::string>("Volmortar","volmortar",
+                       "consistentinterpolation","consint"),
+    tuple<int>(
+        INPAR::VOLMORTAR::couplingtype_volmortar, INPAR::VOLMORTAR::couplingtype_volmortar,
+        INPAR::VOLMORTAR::couplingtype_coninter, INPAR::VOLMORTAR::couplingtype_coninter),
+    &volmortar);
+
   setStringToIntegralParameter<int>("CUTTYPE","dd","Type of cut procedure/ integration point calculation",
     tuple<std::string>("dd","directdivergence","DirectDivergence",
                        "tessellation","t","Tessellation"),

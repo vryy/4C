@@ -45,6 +45,13 @@ namespace INPAR
     dualquad_quad_mod  ///< quadr. modification
   };
 
+  // Type of coupling
+  enum CouplingType
+  {
+    couplingtype_volmortar,  ///< volmortar
+    couplingtype_coninter    ///< consist. interpolation
+  };
+
   } //namespace volmortae
 } //namespace inpar
 

@@ -89,10 +89,48 @@ public:
   virtual ~VolMortarCoupl() {}
 
   /*!
+  \brief Evaluate volmortar coupling (basic routine)
+
+  */
+  virtual void EvaluateVolmortar();
+
+  /*!
+  \brief Evaluate consistent interpolation (NO VOLMORTAR)
+
+  */
+  virtual void EvaluateConsistentInterpolation();
+
+
+  /*!
+  \brief get projection matrix A
+
+  */
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB() {return pmatrixA_;};
+
+  /*!
+  \brief get projection matrix B
+
+  */
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA() {return pmatrixB_;};
+
+protected:
+  /*!
   \brief Get discretization of A-field
 
   */
   virtual Teuchos::RCP<const DRT::Discretization> ADiscret() const { return Adiscret_; }
+
+  /*!
+  \brief Assemble p matrix for cons. interpolation approach
+
+  */
+  virtual void AssembleConsistentInterpolation_ADis(DRT::Node* node);
+
+  /*!
+  \brief Assemble p matrix for cons. interpolation approach
+
+  */
+  virtual void AssembleConsistentInterpolation_BDis(DRT::Node* node);
 
   /*!
   \brief check initial coupling constraint
@@ -188,12 +226,6 @@ public:
                                      double tol);
 
   /*!
-  \brief Evaluate volmortar coupling (basic routine)
-
-  */
-  virtual void Evaluate();
-
-  /*!
   \brief Evaluate element-based
 
   */
@@ -225,17 +257,6 @@ public:
   */
   std::vector<int> GetAdjacentNodes(DRT::Element::DiscretizationType shape,
                                     int& lid);
-  /*!
-  \brief get projection matrix A
-
-  */
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB() {return pmatrixA_;};
-
-  /*!
-  \brief get projection matrix B
-
-  */
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA() {return pmatrixB_;};
 
   /*!
   \brief Initialize / reset volmortar coupling
@@ -352,7 +373,7 @@ public:
                                   std::map<int,LINALG::Matrix<9,2> >& currentKDOPs);
 
   //@}
-protected:
+
   // don't want = operator and cctor
   VolMortarCoupl operator = (const VolMortarCoupl& old);
   VolMortarCoupl(const VolMortarCoupl& old);
