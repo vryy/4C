@@ -251,6 +251,9 @@ void FLD::FluidImplicitTimeInt::Init()
     zeros_->PutScalar(0.0);
   }
 
+  // a vector containing the integrated traction in boundary normal direction for slip boundary conditions (Unit: Newton [N])
+  slip_bc_normal_tractions_ = LINALG::CreateVector(*dofrowmap,true);
+
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
@@ -1222,7 +1225,7 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
  | 2) flow-dependent pressure boundary conditions                       |
  | 3) weak Dirichlet boundary conditions                                |
  | 4) mixed/hybrid Dirichlet boundary conditions                        |
- | 5) BC-free boundary conditions                                       |
+ | 5) Slip Supplemental Curved Boundary conditions                      |
  | 6) Navier-slip boundary conditions                                   |
  |                                                             vg 06/13 |
  *----------------------------------------------------------------------*/
@@ -1602,134 +1605,88 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //------------------------------------------------------------------------
-  // 5) BC-free boundary conditions                             [hahn 12/13]
-  //    ("BoundaryCondition-free Boundary Condition", used for counteracting
-  //     spurious velocities at curved boundaries with slip-conditions. For
-  //     details see Behr M., 2003, "On the Application of Slip Boundary
-  //     Condition on Curved Boundaries".)
+  // 5) Slip Supplemental Curved Boundary conditions            [hahn 07/14]
+  //    (Boundary condition used for counteracting spurious velocities at
+  //     curved boundaries with slip-conditions. For details see Behr M.,
+  //     2003, "On the Application of Slip Boundary Condition on Curved
+  //     Boundaries" and Coppola-Owen H. & Codina R., 2011, "A free surface
+  //     finite element model for low Froude number mould filling problems
+  //     on fixed meshes".)
   //------------------------------------------------------------------------
 
-  // check whether there are bc-free boundary conditions
-  std::vector<DRT::Condition*> bcfreeline;
-  discret_->GetCondition("LineBCFree",bcfreeline);
-  std::vector<DRT::Condition*> bcfreesurf;
-  discret_->GetCondition("SurfaceBCFree",bcfreesurf);
+  // check whether there are Slip Supplemental Curved Boundary conditions
+  std::vector<DRT::Condition*> slipsuppline;
+  discret_->GetCondition("LineSlipSupp",slipsuppline);
+  std::vector<DRT::Condition*> slipsuppsurf;
+  discret_->GetCondition("SurfaceSlipSupp",slipsuppsurf);
 
-  if (bcfreeline.size() != 0 or bcfreesurf.size() != 0)
+  if (slipsuppline.size() != 0 or slipsuppsurf.size() != 0)
   {
     // get a vector layout from the discretization to construct matching
     // vectors and matrices local <-> global dof numbering
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
+    // initialize global slip bc normal traction variable
+    slip_bc_normal_tractions_ = LINALG::CreateVector(*dofrowmap,true);
+
     // decide on whether it is a line or a surface condition and set condition
     // name accordingly. Both types simultaneously is not supported
-    if ((bcfreeline.size() != 0) && (bcfreesurf.size() != 0))
-      dserror("Line and surface bc-free boundary conditions simultaneously prescribed!");
+    if ((slipsuppline.size() != 0) && (slipsuppsurf.size() != 0))
+      dserror("Line and surface slip supplemental curved boundary conditions simultaneously prescribed!");
 
-    std::string bcfcondname;
-    if (bcfreeline.size() != 0)      bcfcondname = "LineBCFree";
-    else if (bcfreesurf.size() != 0) bcfcondname = "SurfaceBCFree";
+    std::string sscbcondname;
+    if (slipsuppline.size() != 0)      sscbcondname = "LineSlipSupp";
+    else if (slipsuppsurf.size() != 0) sscbcondname = "SurfaceSlipSupp";
 
     // get condition vector
-    std::vector<DRT::Condition*> bcfcond;
-    discret_->GetCondition(bcfcondname,bcfcond);
+    std::vector<DRT::Condition*> sscbcond;
+    discret_->GetCondition(sscbcondname,sscbcond);
 
     // assign ID to all conditions
-    for (int bcfcondid = 0; bcfcondid < (int) bcfcond.size(); bcfcondid++)
+    for (int sscbcondid = 0; sscbcondid < (int) sscbcond.size(); sscbcondid++)
     {
       // check for already existing ID and add ID
-      const std::vector<int>* bcfcondidvec = bcfcond[bcfcondid]->Get<std::vector<int> >("ConditionID");
-      if (bcfcondidvec)
+      const std::vector<int>* sscbcondidvec = sscbcond[sscbcondid]->Get<std::vector<int> >("ConditionID");
+      if (sscbcondidvec)
       {
-        if ((*bcfcondidvec)[0] != bcfcondid) dserror("BC-free boundary condition %s has non-matching ID",bcfcondname.c_str());
+        if ((*sscbcondidvec)[0] != sscbcondid) dserror("Slip Supplemental Curved Boundary condition %s has non-matching ID",sscbcondname.c_str());
       }
-      else bcfcond[bcfcondid]->Add("ConditionID",bcfcondid);
+      else sscbcond[sscbcondid]->Add("ConditionID",sscbcondid);
     }
 
     //----------------------------------------------------------------------
-    // evaluate bc-free boundary conditions
+    // evaluate slip supplemental curved boundary conditions
     //----------------------------------------------------------------------
 
-    for (int bcfcondid = 0; bcfcondid < (int) bcfcond.size(); bcfcondid++)
+    for (int sscbcondid = 0; sscbcondid < (int) sscbcond.size(); sscbcondid++)
     {
-      // Obtain node normals
-      // ******************************************************************
-      DRT::Condition* currbcfree = bcfcond[bcfcondid];
-
-      const std::vector<int>*    funct  = currbcfree->Get<std::vector<int> >("functfornodenormal");
-      const std::vector<int>*    useUpdatedNodePos  = currbcfree->Get<std::vector<int> >("useupdatednodepos");
-      const std::vector<int>*    nodes = currbcfree->Nodes();
-
-      // Create node normal vector and initialize with zeros
-      Teuchos::RCP<Epetra_Vector> nodeNormal = LINALG::CreateVector(*dofrowmap,true);
-
-      for (int inode=0;inode<(int)nodes->size();++inode)
-      {
-        bool haveNode = discret_->HaveGlobalNode((*nodes)[inode]);
-        if (!haveNode) continue;
-
-        DRT::Node* node = discret_->gNode((*nodes)[inode]);
-
-        bool isOwner = (node->Owner() == myrank_);
-        if (!isOwner) continue;
-
-        std::vector<int> nodeGIDs;
-        discret_->Dof(node,nodeGIDs);
-
-        for (int jdim=0;jdim<numdim_;jdim++)
-        {
-          // Evaluate function
-          if ((*funct)[jdim]>0)
-          {
-            double functval = 0.0;
-
-            // Determine node position, which shall be used for evaluating the function, and evaluate it
-            if ((*useUpdatedNodePos)[0] == 1) {
-              // Obtain current displacement for node
-              std::vector<double> currDisp;
-              currDisp.resize(nodeGIDs.size());
-
-              DRT::UTILS::ExtractMyValues(*dispnp_,currDisp,nodeGIDs);
-
-              // Calculate current position for node
-              double currPos[numdim_];
-              const double* xp = node->X();
-
-              for (int i=0; i<numdim_; ++i) {
-                currPos[i] = xp[i] + currDisp[i];
-              }
-
-              // Evaluate function with current node position
-              functval=(DRT::Problem::Instance()->Funct((*funct)[jdim]-1)).Evaluate(jdim, &currPos[0], 0.0, &(*discret_));
-            } else {
-              // Evaluate function with reference node position
-              functval=(DRT::Problem::Instance()->Funct((*funct)[jdim]-1)).Evaluate(jdim, node->X(), 0.0, &(*discret_));
-            }
-
-            // Write to global vector
-            int localID = nodeNormal->Map().LID(nodeGIDs[jdim]);
-            (*nodeNormal)[localID] = functval;
-          }
-        }
-      }
-
       // Evaluate condition
       // ******************************************************************
       // create parameter list
-      Teuchos::ParameterList bcfreeparams;
+      Teuchos::ParameterList slipsuppparams;
 
       // set action for elements
-      bcfreeparams.set<int>("action",FLD::bc_free_bc);
+      slipsuppparams.set<int>("action",FLD::slip_supp_bc);
 
       // set required state vectors
       SetStateTimInt();
       if (alefluid_) discret_->SetState("dispnp",dispnp_);
-      discret_->SetState("nodenormal",nodeNormal);
+      //discret_->SetState("nodenormal",nodeNormal);
 
-      // evaluate all bc-free boundary conditions
-      discret_->EvaluateCondition(bcfreeparams,sysmat_,Teuchos::null,
-                                  residual_,Teuchos::null,Teuchos::null,
-                                  bcfcondname,bcfcondid);
+      // temporary variable holding the scaled residual contribution
+      Teuchos::RCP<Epetra_Vector>    slip_bc_normal_tractions_scaled;
+      slip_bc_normal_tractions_scaled = LINALG::CreateVector(*dofrowmap,true);
+
+      // evaluate all slip supplemental curved boundary conditions
+      discret_->EvaluateCondition(slipsuppparams,sysmat_,Teuchos::null,
+                                  slip_bc_normal_tractions_scaled,Teuchos::null,Teuchos::null,
+                                  sscbcondname,sscbcondid);
+
+      // Update residual vector
+      residual_->Update(1.0, *slip_bc_normal_tractions_scaled, 1.0);
+
+      // Add to tractions vector
+      slip_bc_normal_tractions_->Update((-1)*ResidualScaling(), *slip_bc_normal_tractions_scaled, 1.0);
 
       // clear state
       discret_->ClearState();
@@ -4496,7 +4453,26 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
     // in this map, the results of the lift drag calculation are stored
     Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
-    FLD::UTILS::LiftDrag(discret_,trueresidual_,dispnp_,numdim_,liftdragvals,alefluid_);
+    // check whether there are slip supplemental curved boundary conditions
+    std::vector<DRT::Condition*> slipsuppline;
+    discret_->GetCondition("LineSlipSupp",slipsuppline);
+    std::vector<DRT::Condition*> slipsuppsurf;
+    discret_->GetCondition("SurfaceSlipSupp",slipsuppsurf);
+
+    if (slipsuppline.size() != 0 or slipsuppsurf.size() != 0)
+    {
+      // Create temporary variable that holds a vector containing the real forces
+      // acting on the node, i.e. taking into account the previously neglected
+      // forces perpendicular to the boundary due to slip boundary condition(s)
+      Teuchos::RCP<Epetra_Vector>    forces;
+      forces = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
+      forces->Update(1.0, *trueresidual_, 1.0, *slip_bc_normal_tractions_, 0.0);
+
+      FLD::UTILS::LiftDrag(discret_,forces,dispnp_,numdim_,liftdragvals,alefluid_);
+    } else {
+      FLD::UTILS::LiftDrag(discret_,trueresidual_,dispnp_,numdim_,liftdragvals,alefluid_);
+    }
 
     if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
       FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);

@@ -1129,39 +1129,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfflowdeppressure);
 
   /*--------------------------------------------------------------------*/
-  // BC-free boundary conditions
+  // Slip Supplemental Curved Boundary conditions
 
-  std::vector<Teuchos::RCP<ConditionComponent> > bcfreecomponents;
+  std::vector<Teuchos::RCP<ConditionComponent> > slipsuppcomponents;
 
-  bcfreecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCTFORNODENORMAL")));
-  bcfreecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("functfornodenormal",3,false,false)));
-  bcfreecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
-  bcfreecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useupdatednodepos", 1)));
+  slipsuppcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCTFORNODENORMAL")));
+  slipsuppcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("functfornodenormal",3,false,false)));
+  slipsuppcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
+  slipsuppcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useupdatednodepos", 1)));
 
-  Teuchos::RCP<ConditionDefinition> linebcfree =
-   Teuchos::rcp(new ConditionDefinition("DESIGN LINE BC-FREE BOUNDARY CONDITIONS",
-                                        "LineBCFree",
-                                        "LineBCFree",
-                                        DRT::Condition::LineBCFree,
+  Teuchos::RCP<ConditionDefinition> lineslipsupp =
+   Teuchos::rcp(new ConditionDefinition("DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS",
+                                        "LineSlipSupp",
+                                        "LineSlipSupp",
+                                        DRT::Condition::LineSlipSupp,
                                         true,
                                         DRT::Condition::Line));
 
-  Teuchos::RCP<ConditionDefinition> surfbcfree =
-   Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE BC-FREE BOUNDARY CONDITIONS",
-                                        "SurfaceBCFree",
-                                        "SurfaceBCFree",
-                                        DRT::Condition::SurfaceBCFree,
+  Teuchos::RCP<ConditionDefinition> surfslipsupp =
+   Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS",
+                                        "SurfaceSlipSupp",
+                                        "SurfaceSlipSupp",
+                                        DRT::Condition::SurfaceSlipSupp,
                                         true,
                                         DRT::Condition::Surface));
 
-  for (unsigned i=0; i<bcfreecomponents.size(); ++i)
+  for (unsigned i=0; i<slipsuppcomponents.size(); ++i)
    {
-     linebcfree->AddComponent(bcfreecomponents[i]);
-     surfbcfree->AddComponent(bcfreecomponents[i]);
+     lineslipsupp->AddComponent(slipsuppcomponents[i]);
+     surfslipsupp->AddComponent(slipsuppcomponents[i]);
    }
 
-  condlist.push_back(linebcfree);
-  condlist.push_back(surfbcfree);
+  condlist.push_back(lineslipsupp);
+  condlist.push_back(surfslipsupp);
 
   /*--------------------------------------------------------------------*/
   // Navier-slip boundary conditions

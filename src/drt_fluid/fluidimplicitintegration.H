@@ -1034,6 +1034,9 @@ protected:
   /// the vector containing potential Neumann-type outflow terms
 //  Teuchos::RCP<Epetra_Vector>    outflow_;
 
+  /// a vector containing the integrated traction in boundary normal direction for slip boundary conditions (Unit: Newton [N])
+  Teuchos::RCP<Epetra_Vector>    slip_bc_normal_tractions_;
+
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
 

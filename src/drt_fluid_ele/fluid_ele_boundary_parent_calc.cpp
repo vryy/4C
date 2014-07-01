@@ -210,7 +210,7 @@ template <DRT::Element::DiscretizationType distype>
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-   void  DRT::ELEMENTS::FluidBoundaryParent<distype>::BCFreeBC(
+   void  DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
      DRT::ELEMENTS::FluidBoundary*  surfele,
      Teuchos::ParameterList&        params,
      DRT::Discretization&           discretization,
@@ -225,7 +225,7 @@ template <DRT::Element::DiscretizationType distype>
   {
     if (surfele->ParentElement()->Shape()==DRT::Element::quad4)
     {
-      BCFreeBC<DRT::Element::line2,DRT::Element::quad4>(
+      SlipSuppBC<DRT::Element::line2,DRT::Element::quad4>(
           surfele,
           params,
           discretization,
@@ -241,7 +241,7 @@ template <DRT::Element::DiscretizationType distype>
   {
     if (surfele->ParentElement()->Shape()==DRT::Element::hex8)
     {
-      BCFreeBC<DRT::Element::quad4,DRT::Element::hex8>(
+      SlipSuppBC<DRT::Element::quad4,DRT::Element::hex8>(
           surfele,
           params,
           discretization,
@@ -1184,7 +1184,7 @@ template <DRT::Element::DiscretizationType bdistype,
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
-   void  DRT::ELEMENTS::FluidBoundaryParent<distype>::BCFreeBC(
+   void  DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
      DRT::ELEMENTS::FluidBoundary*  surfele,
      Teuchos::ParameterList&        params,
      DRT::Discretization&           discretization,
@@ -1305,20 +1305,6 @@ template <DRT::Element::DiscretizationType bdistype,
     epressnp(inode) = mybvelaf[nsd+((nsd+1)*inode)];
   }
 
-  // node normals
-  Teuchos::RCP<const Epetra_Vector> nodenormalvec = discretization.GetState("nodenormal");
-  std::vector<double> mypnodenormal(plm.size());
-  DRT::UTILS::ExtractMyValues(*nodenormalvec,mypnodenormal,plm);
-
-  LINALG::Matrix<nsd,piel> nodeNormal(true);
-
-  for (int inode=0;inode<piel;++inode)
-  {
-    for (int jdim=0;jdim<nsd;++jdim) {
-      nodeNormal(jdim, inode) = mypnodenormal[(nsd+1)*inode+jdim];
-    }
-  }
-
   // parent and boundary displacement at n+1
   std::vector<double> mypedispnp((plm).size());
   std::vector<double> mybedispnp((blm).size());
@@ -1436,12 +1422,12 @@ template <DRT::Element::DiscretizationType bdistype,
         // *************
         double normalProd = 0;
         for (int sdim=0; sdim<nsd; ++sdim) {
-          normalProd += boundaryNormal(sdim)*nodeNormal(sdim,vi);
+          normalProd += boundaryNormal(sdim)*boundaryNormal(sdim);
         }
 
         const double temp = timefacFac*pfunct(ui)*pfunct(vi);
         for (int idim=0; idim<nsd; ++idim) { // Write into 'pressure' column (nsd) of each 'spatial' row (idim)
-          elemat(vi*(nsd+1)+idim, ui*(nsd+1)+nsd) -= temp * (-boundaryNormal(idim)+normalProd*nodeNormal(idim,vi));
+          elemat(vi*(nsd+1)+idim, ui*(nsd+1)+nsd) += temp * (normalProd*boundaryNormal(idim));
         }
 
         // Velocity terms
@@ -1455,20 +1441,13 @@ template <DRT::Element::DiscretizationType bdistype,
         {
           for (int jdim=0;jdim<nsd;++jdim)
           {
-            double velTermA = 0;
-            if (idim==jdim) {
-              velTermA = pderxy(idim,ui) * boundaryNormal(jdim) + sumNablaBoundaryNormal;
-            } else {
-              velTermA = pderxy(idim,ui) * boundaryNormal(jdim);
-            }
-
-            double velTermB = 0;
+            double velTerm = 0;
             for (int sdim=0;sdim<nsd;++sdim) {
-              velTermB += nodeNormal(sdim,vi)*nodeNormal(idim,vi)*pderxy(sdim,ui)*boundaryNormal(jdim);
+              velTerm += boundaryNormal(sdim)*boundaryNormal(idim)*pderxy(sdim,ui)*boundaryNormal(jdim);
             }
-            velTermB += nodeNormal(jdim,vi)*nodeNormal(idim,vi)*sumNablaBoundaryNormal;
+            velTerm += boundaryNormal(jdim)*boundaryNormal(idim)*sumNablaBoundaryNormal;
 
-            elemat(vi*(nsd+1)+idim, ui*(nsd+1)+jdim) -= timefacFacNu * pfunct(vi) * (velTermA - velTermB);
+            elemat(vi*(nsd+1)+idim, ui*(nsd+1)+jdim) += timefacFacNu * pfunct(vi) * (-1.0) * velTerm;
           }
         }
       }
@@ -1483,44 +1462,38 @@ template <DRT::Element::DiscretizationType bdistype,
     {
       double normalProd = 0;
       for (int sdim=0; sdim<nsd; ++sdim) {
-        normalProd += boundaryNormal(sdim)*nodeNormal(sdim,vi);
+        normalProd += boundaryNormal(sdim)*boundaryNormal(sdim);
       }
 
       // Pressure term
       // *************
       for (int idim=0; idim<nsd; ++idim) {
-        elevec(vi*(nsd+1)+idim) += pfunct(vi)*timefacrhsFacPress*(-boundaryNormal(idim)+normalProd*nodeNormal(idim,vi));
+        elevec(vi*(nsd+1)+idim) -= pfunct(vi)*timefacrhsFacPress*(normalProd*boundaryNormal(idim));
       }
 
       // Velocity terms
       // **************
       for (int idim=0;idim<nsd;++idim)
       {
-        // velTermA_i = n_k_j * [f_i_j + f_j_i]
-        double velTermA = 0;
-        for (int jdim=0;jdim<nsd;++jdim) {
-          velTermA += boundaryNormal(jdim) * (pvderxyaf(idim,jdim) + pvderxyaf(jdim,idim));
-        }
-
-        // velTermB_i = n_k_j * [n_a_s * n_a_i * (f_s_j + f_j_s)]
-        double velTermB = 0;
+        // velTerm_i = n_k_j * [n_a_s * n_a_i * (f_s_j + f_j_s)]
+        double velTerm = 0;
         for (int jdim=0;jdim<nsd;++jdim) {
           double tmp = 0;
           for (int sdim=0;sdim<nsd;++sdim)
           {
-            tmp += nodeNormal(sdim,vi)*(pvderxyaf(sdim,jdim) + pvderxyaf(jdim,sdim));
+            tmp += boundaryNormal(sdim)*(pvderxyaf(sdim,jdim) + pvderxyaf(jdim,sdim));
           }
-          velTermB += boundaryNormal(jdim) * nodeNormal(idim,vi) * tmp;
+          velTerm += boundaryNormal(jdim) * boundaryNormal(idim) * tmp;
         }
 
-        // Sum up final term at i: N_A * nu * (velTermA - velTermB)
-        elevec(vi*(nsd+1)+idim) += pfunct(vi)*timefacrhsFacNu * (velTermA - velTermB);
+        // Sum up final term at i: N_A * nu * (-velTerm)
+        elevec(vi*(nsd+1)+idim) -= pfunct(vi)*timefacrhsFacNu * (-1.0) * velTerm;
       }
     }
   } // end of integration loop
 
   return;
-} //DRT::ELEMENTS::FluidBoundaryParent<distype>::BCFreeBC
+} //DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC
 
 
 /*----------------------------------------------------------------------*

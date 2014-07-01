@@ -83,7 +83,7 @@ enum BoundaryAction {
     estimate_Nitsche_trace_maxeigenvalue_,
     mixed_hybrid_dbc,
     flow_dep_pressure_bc,
-    bc_free_bc,
+    slip_supp_bc,
     navier_slip_bc,
     conservative_outflow_bc,
     calc_Neumann_inflow,

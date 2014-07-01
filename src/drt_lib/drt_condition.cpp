@@ -186,8 +186,8 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ElectroRepulsion_Potential_Line)    os << "Electro repulsion potential on a line: ";
   else if (Type()==LineFlowDepPressure)           os << "line flow-dependent pressure condition: ";
   else if (Type()==SurfaceFlowDepPressure)        os << "surface flow-dependent pressure condition: ";
-  else if (Type()==LineBCFree)                    os << "line bc-free boundary condition: ";
-  else if (Type()==SurfaceBCFree)                 os << "surface bc-free boundary condition: ";
+  else if (Type()==LineSlipSupp)                  os << "line slip supplemental curved boundary condition: ";
+  else if (Type()==SurfaceSlipSupp)               os << "surface slip supplemental curved boundary condition: ";
   else if (Type()==LineNavierSlip)                os << "line navier-slip boundary condition: ";
   else if (Type()==SurfNavierSlip)                os << "surface navier-slip boundary condition: ";
   else if (Type()==LineWeakDirichlet)             os << "line weak Dirichlet condition: ";
