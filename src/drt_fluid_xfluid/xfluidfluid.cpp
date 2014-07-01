@@ -543,8 +543,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
 
   // if we have a moving embedded fluid or embedded-sided coupling,
   // set the embedded fluid displacement
-  if (xfluid_.alefluid_ or xfluid_.action_ == "coupling nitsche embedded sided" or
-                           xfluid_.action_ == "coupling nitsche two sided")
+  if (xfluid_.alefluid_ or xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or
+                           xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
     embdis->SetState("dispnp", xfluid_.aledispnp_);
 
   if (xfluid_.alefluid_)
@@ -604,12 +604,13 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
 
   PrepareCouplingMatrices();
 
-  if (xfluid_.action_ == "coupling mhcs xfluid sided" or xfluid_.action_ == "coupling nitsche xfluid sided" or
-      xfluid_.action_ == "coupling mhvs xfluid sided")
+  if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or
+      xfluid_.coupling_approach_ == CouplingNitsche_XFluid or
+      xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
   {
     rhC_ui_col= LINALG::CreateVector(*cutdiscret->DofColMap(),true);
   }
-  else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+  else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
   {
     rhC_ui_col= LINALG::CreateVector(*embdis->DofColMap(),true);
   }
@@ -752,10 +753,11 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
             std::vector<int> patchlmowner;
             std::vector<int> patchlmstride;
             // for nitsche embedded and two-sided we couple with the whole embedded element not only with its side
-            if (xfluid_.action_ == "coupling mhcs xfluid sided" or xfluid_.action_ == "coupling nitsche xfluid sided" or
-                xfluid_.action_ == "coupling mhvs xfluid sided")
+            if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or
+                xfluid_.coupling_approach_ == CouplingNitsche_XFluid or
+                xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
               side->LocationVector(*cutdiscret, patchlm, patchlmowner, patchlmstride);
-            else if(xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+            else if(xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
             {
               // get the corresponding embedded element for nitsche
               // embedded and two-sided
@@ -788,7 +790,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
 
           const size_t nui = patchelementslm.size();
           Epetra_SerialDenseMatrix  Cuiui(nui,nui);
-          if (xfluid_.action_ == "coupling mhcs xfluid sided" or xfluid_.action_ == "coupling mhvs xfluid sided")
+
+          if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
             impl->ElementXfemInterfaceHybridLM(
                                               ele,
                                               *bgdis,
@@ -804,7 +807,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
                                               Cuiui,
                                               cells,
                                               true);
-          else if (xfluid_.action_ == "coupling nitsche xfluid sided")
+          else if (xfluid_.coupling_approach_ == CouplingNitsche_XFluid)
             impl->ElementXfemInterfaceNIT(    ele,
                                               *bgdis,
                                               la[0].lm_,
@@ -818,7 +821,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
                                               Cuiui,
                                               cells,
                                               true);
-          else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+          else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
             impl->ElementXfemInterfaceNIT2(   ele,
                                               *bgdis,
                                               la[0].lm_,
@@ -850,13 +853,14 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
               std::vector<int> patchlm;
               std::vector<int> patchlmowner;
               std::vector<int> patchlmstride;
-              if (xfluid_.action_ == "coupling mhcs xfluid sided" or xfluid_.action_ == "coupling nitsche xfluid sided"
-                  or xfluid_.action_ == "coupling mhvs xfluid sided")
+              if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or
+                  xfluid_.coupling_approach_ == CouplingNitsche_XFluid or
+                  xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
               {
                 DRT::Element * side = cutdiscret->gElement( sid );
                 side->LocationVector(*cutdiscret, patchlm, patchlmowner, patchlmstride);
               }
-              else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+              else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
               {
                 int emb_eid = xfluid_.boundary_emb_gid_map_.find(sid)->second;
                 DRT::Element * emb_ele = embdis->gElement( emb_eid );
@@ -1174,15 +1178,16 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
   bgdis->ClearState();
 
   // finalize the complete matrices
-  if (xfluid_.action_ == "coupling mhcs xfluid sided" or xfluid_.action_ == "coupling nitsche xfluid sided" or
-      xfluid_.action_ == "coupling mhvs xfluid sided")
+  if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or
+      xfluid_.coupling_approach_ == CouplingNitsche_XFluid or
+      xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
   {
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
     Cuui_->Complete(*xfluid_.boundarydofrowmap_,*fluiddofrowmap_);
     Cuiu_->Complete(*fluiddofrowmap_,*xfluid_.boundarydofrowmap_);
     Cuiui_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.boundarydofrowmap_);
   }
-  else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+  else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
   {
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
     Cuui_->Complete(*xfluid_.aledofrowmap_,*fluiddofrowmap_);
@@ -2150,44 +2155,40 @@ void FLD::XFluidFluid::Init()
   switch (boundIntType_)
   {
   case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
-    // method needs 3 dofs - use 4 to be consistent with Nitsche & MHVS
+    // method needs just 3 dofs, but we use 4 to be consistent with Nitsche & MHVS
     element_name = "BELE3_4";
     IO::cout << "Coupling Mixed/Hybrid Cauchy Stress-Based LM Xfluid-Sided" << IO::endl;
-    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
+    if (coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("Choose Xfluid_Sided_Coupling for MHCS");
-    action_ = "coupling mhcs xfluid sided";
+    coupling_approach_ = CouplingMHCS_XFluid;
     break;
   case INPAR::XFEM::Hybrid_LM_viscous_stress:
-    element_name = "BELE3_4";
+    element_name = "BELE3_4"; // use 4 dofs
     IO::cout << "XFEM interface coupling method: TypeMHVS" << IO::endl;
     if (coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("Embedded-sided or two-sided MHVS coupling not supported yet.");
-    action_ = "coupling mhvs xfluid sided";
+    coupling_approach_ = CouplingMHVS_XFluid;
     IO::cout << "Coupling Mixed/Hybrid Viscous Stress-Based LM Xfluid-Sided" << IO::endl;
     break;
   case INPAR::XFEM::Nitsche:
     element_name = "BELE3_4"; // use 4 dofs
-    IO::cout << "XFEM interface coupling method: Nitsche, ";
-    if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Coupling)
-      IO::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << IO::endl;
-    if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Coupling)
+    IO::cout << "XFEM interface coupling method: ";
+    if (coupling_strategy_ == INPAR::XFEM::Two_Sided_Coupling)
     {
-      action_ = "coupling nitsche two sided";
+      coupling_approach_ = CouplingNitsche_TwoSided;
       IO::cout << "Coupling Nitsche Two-Sided" << IO::endl;
+      IO::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << IO::endl;
     }
-    if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
+    if (coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
     {
-      action_ = "coupling nitsche xfluid sided";
+      coupling_approach_ = CouplingNitsche_XFluid;
       IO::cout << "Coupling Nitsche Xfluid-Sided" << IO::endl;
     }
-    if(coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling)
+    if (coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling)
     {
-      action_ = "coupling nitsche embedded sided";
+      coupling_approach_ = CouplingNitsche_EmbFluid;
       IO::cout << "Coupling Nitsche Embedded-Sided" << IO::endl;
     }
-    break;
-  case INPAR::XFEM::Neumann:
-    dserror ("XFEM interface method: Neumann coupling not available for Xfluidfluid");
     break;
   default:
     dserror("Unknown fluid-fluid coupling type."); break;
@@ -2198,20 +2199,20 @@ void FLD::XFluidFluid::Init()
     switch (monolithic_approach_)
     {
     case INPAR::XFEM::XFFSI_FixedALE_Partitioned:
-      monotype_ = "fixedale_partitioned";
+      monotype_ = FixedALEPartitioned;
       break;
     case INPAR::XFEM::XFFSI_Full_Newton:
-      monotype_ = "fully_newton";
+      monotype_ = FullyNewton;
       break;
     case INPAR::XFEM::XFFSI_FixedALE_Interpolation:
-      monotype_ = "fixedale_interpolation";
+      monotype_ = FixedALEInterpolation;
       break;
     default:
-      dserror("monolithic type unknown"); break;
+      dserror("Unknown monolithic XFFSI approach."); break;
     }
   }
   else
-    monotype_ = "no monolithicfsi";
+    monotype_ = NoMonolithicXFFSI;
 
   // check if fluidfluidcoupling is set for the right type. fluidfluidcoupling
   // is just related to fixedale monolithic approach
@@ -2228,9 +2229,9 @@ void FLD::XFluidFluid::Init()
   //gathers information of condnodes of all processors
   LINALG::Gather<int>(condnodes,condnodesglobal,(int)embdis_->Comm().NumProc(),&allproc[0],embdis_->Comm());
 
-  if (((monotype_ == "fixedale_partitioned") or (monotype_ == "fixedale_interpolation")) and (condnodesglobal.size()==0))
+  if (((monotype_ == FixedALEPartitioned) or (monotype_ == FixedALEInterpolation)) and (condnodesglobal.size()==0))
     dserror("FluidFluidCoupling condition is missing!");
-  else if (((monotype_ == "fully_newton") or (monotype_ == "no monolithicfsi")) and (condnodesglobal.size()!=0))
+  else if (((monotype_ == FullyNewton) or (monotype_ == NoMonolithicXFFSI)) and (condnodesglobal.size()!=0))
     dserror("FluidFluidCoupling condition is not related here!");
 
   // check xfluid input params
@@ -2730,7 +2731,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
 
     SetDirichletNeumannBC();
 
-    if (action_ == "coupling nitsche embedded sided" and nitsche_evp_)
+    if (coupling_approach_ == CouplingNitsche_EmbFluid and nitsche_evp_)
       EstimateNitscheTraceMaxEigenvalue();
 
     // -------------------------------------------------------------------
@@ -2789,13 +2790,13 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( Teuchos::ParameterList& params_xf
     if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none)
       dserror("INPAR::XFEM::ConvStabScaling should be set to ConvStabScaling_none for XFluidFluid!");
 
-    if (velgrad_interface_stab_ and action_ != "coupling nitsche embedded sided" )
+    if (velgrad_interface_stab_ and coupling_approach_ != CouplingNitsche_EmbFluid )
       dserror("VELGRAD_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
 
-    if (presscoupling_interface_stab_ and action_ != "coupling nitsche embedded sided")
+    if (presscoupling_interface_stab_ and coupling_approach_ != CouplingNitsche_EmbFluid)
       dserror("PRESSCOUPLING_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
 
-    if (nitsche_evp_ and action_ != "coupling nitsche embedded sided")
+    if (nitsche_evp_ and coupling_approach_ != CouplingNitsche_EmbFluid)
       dserror("NITSCHE_EVP just for embedded sided Nitsche-Coupling!");
 
   return;
@@ -3009,7 +3010,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
     SetDirichletNeumannBC();
   }
 
-  if (action_ == "coupling nitsche embedded sided" and nitsche_evp_)
+  if (coupling_approach_ == CouplingNitsche_EmbFluid and nitsche_evp_)
     EstimateNitscheTraceMaxEigenvalue();
 
 }//FLD::XFluidFluid::PrepareTimeStep()
@@ -3025,12 +3026,12 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
 
   if (not monolithicfluidfluidfsi_)
     SetBgStateVectors(aledispn_);
-  else if(monotype_ == "fixedale_partitioned" or monotype_ == "fixedale_interpolation")
+  else if(monotype_ == FixedALEPartitioned or monotype_ == FixedALEInterpolation)
     SetBgStateVectors(aledispnpoldstate_);
-  else if(monotype_ == "fully_newton")
+  else if(monotype_ == FullyNewton)
     SetBgStateVectors(aledispnp_);
   else
-    dserror("Unknowm type in PrepareNonlinearSolve! ");
+    dserror("Unknown monolithic approach.");
 
   SetHistoryValues();
   SetDirichletNeumannBC();
@@ -3046,7 +3047,7 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
 void FLD::XFluidFluid::PrepareMonolithicFixedAle()
 {
   if (bgdis_->Comm().MyPID() == 0)
-    IO::cout << "Update monolithic fluid solution.. " << IO::endl;
+    IO::cout << "Update monolithic fluid solution " << IO::endl;
 
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dtp_
   if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
@@ -3059,7 +3060,7 @@ void FLD::XFluidFluid::PrepareMonolithicFixedAle()
   // cut and do xfluidfluid time integration.
   PrepareNonlinearSolve();
 
-  if(monotype_ == "fixedale_partitioned")
+  if(monotype_ == FixedALEPartitioned)
     UpdateMonolithicFluidSolution();
 }
 
@@ -3178,7 +3179,7 @@ void FLD::XFluidFluid::Solve()
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
     aledbcmaps_->InsertCondVector(aledbcmaps_->ExtractCondVector(alezeros_), aleresidual_);
 
-    if(monotype_ == "fixedale_partitioned")
+    if(monotype_ == FixedALEPartitioned)
     {
       // set the aleresidual values to zeros at the fsi-interface
       Teuchos::RCP<Epetra_Vector> fixedfsizeros = LINALG::CreateVector(*fixedfsidofmap_,true);
@@ -3348,7 +3349,7 @@ void FLD::XFluidFluid::Solve()
     LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
 
     // set the fsi dirichlet values for monolithic_fixedale_partitioned
-    if(monotype_ == "fixedale_partitioned")
+    if (monotype_ == FixedALEPartitioned)
     {
       LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,toggle_);
     }
@@ -3467,7 +3468,7 @@ void FLD::XFluidFluid::Evaluate(
     *alevelnp_ = *stepinc_emb_tmp;
 
     // prepare new iteration for fully_newton approach
-    if(monotype_ == "fully_newton")
+    if(monotype_ == FullyNewton)
     {
       // cut and set state vectors
       PrepareNonlinearSolve();
@@ -3558,7 +3559,7 @@ void FLD::XFluidFluid::Evaluate(
 
   if(gmsh_debug_out_)
   {
-    if(monotype_ == "fully_newton")
+    if(monotype_ == FullyNewton)
       state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_evaluate", gmsh_count_, step_, state_->velnp_, alevelnp_,
                          aledispnp_);
     else
@@ -3709,7 +3710,7 @@ void FLD::XFluidFluid::TimeUpdate()
   if (step_%relaxing_ale_every_!=0)
     RelaxingAleInthisTimestep = false;
 
-  if ((monotype_ == "fixedale_partitioned" or monotype_ == "fixedale_interpolation")
+  if ((monotype_ == FixedALEPartitioned or monotype_ == FixedALEInterpolation)
       and RelaxingAleInthisTimestep)
   {
     PrepareMonolithicFixedAle();
@@ -3949,7 +3950,7 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
     SetInitialFlowField(initfield,startfuncno);
   }
 
-  if (monotype_ == "fixedale_interpolation")
+  if (monotype_ == FixedALEInterpolation)
   {
     // set the embedded state vectors to the new ale displacement
     // before updating the vectors of the old time step
@@ -3979,9 +3980,9 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
       LINALG::Export(*disp,*aledispcol);
       LINALG::Export(*aledispnp_,*aledispnpcol);
 
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnpcol, alevelnpcol, aledispnpcol, disp);
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , alevelncol , alevelncol , aledispnpcol, disp);
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnpcol, aleaccnpcol, aledispnpcol, disp);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnpcol, alevelnpcol, aledispnpcol, aledispcol);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , alevelncol , alevelncol , aledispnpcol, aledispcol);
+      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnpcol, aleaccnpcol, aledispnpcol, aledispcol);
     }
   }
 }//SetBgStateVectors()
@@ -5246,10 +5247,11 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
                   std::vector<int> patchlmowner;
                   std::vector<int> patchlmstride;
                   // for nitsche embedded and two-sided we couple with the whole embedded element not only with its side
-                  if (action_ == "coupling mhcs xfluid sided" or action_ == "coupling nitsche xfluid sided"
-                      or action_ == "coupling mhvs xfluid sided")
+                  if (coupling_approach_ == CouplingMHCS_XFluid or
+                      coupling_approach_ == CouplingNitsche_XFluid or
+                      coupling_approach_ == CouplingMHVS_XFluid)
                     side->LocationVector(*boundarydis_, patchlm, patchlmowner, patchlmstride);
-                  else if(action_ == "coupling nitsche embedded sided" or action_ == "coupling nitsche two sided")
+                  else if(coupling_approach_ == CouplingNitsche_EmbFluid or coupling_approach_ == CouplingNitsche_TwoSided)
                   {
                     // get the corresponding embedded element for nitsche
                     // embedded and two-sided
@@ -6011,15 +6013,16 @@ void FLD::XFluidFluid::XFluidFluidState::PrepareCouplingMatrices(bool initial_ca
   // and the background fluid map also won't change during the lifetime of this state object
   if (initial_call)
   {
-    if (xfluid_.action_ == "coupling mhcs xfluid sided" or xfluid_.action_ == "coupling nitsche xfluid sided"
-        or xfluid_.action_ == "coupling mhvs xfluid sided")
+    if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or
+        xfluid_.coupling_approach_ == CouplingNitsche_XFluid or
+        xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
     {
       Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
       Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
       Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
       rhC_ui_= LINALG::CreateVector(*xfluid_.boundarydofrowmap_,true);
     }
-    else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+    else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
     {
       Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
       Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.aledofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));

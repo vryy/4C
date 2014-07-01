@@ -289,6 +289,25 @@ namespace FLD
 
   public:
 
+    /// embedded boundary/coupling method & coupling strategy (a master side or two-sided weighting)
+    enum InterfaceCouplingApproach
+    {
+      CouplingMHCS_XFluid,
+      CouplingMHVS_XFluid,
+      CouplingNitsche_XFluid,
+      CouplingNitsche_EmbFluid,
+      CouplingNitsche_TwoSided
+    };
+
+    /// type of monolithic fluid-fluid approach (XFFSI)
+    enum MonolithicApproach
+    {
+      FixedALEPartitioned,
+      FullyNewton,
+      FixedALEInterpolation,
+      NoMonolithicXFFSI
+    };
+
     /// constructor
     XFluidFluid(
         const Teuchos::RCP<DRT::Discretization>&      actdis,                         ///< background fluid discretization
@@ -738,7 +757,6 @@ namespace FLD
     //@{
     enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;         ///< convective stabilization scaling for inflow terms
     enum INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_; ///< convective stabilization scaling for inflow terms (xfluidfluid)
-
     //@}
 
     /// flag for edge-based stabilization
@@ -872,11 +890,11 @@ namespace FLD
 
     int gmsh_count_;
 
-    /// action used for boundary coupling approach (stress-based or nitsche, embedded or background-sided)
-    std::string action_;
+    /// embedded boundary coupling approach (Nitsche or mixed/hybrid stress-based LM & background-/embedded-sided or two-sided weighting)
+    InterfaceCouplingApproach coupling_approach_;
 
-    /// type of monolithic approach
-    std::string monotype_;
+    /// type of monolithic XFFSI approach
+    MonolithicApproach monotype_;
 
 
   };
