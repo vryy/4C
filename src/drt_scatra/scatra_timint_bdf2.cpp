@@ -138,6 +138,17 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver)
 }
 
 
+/*--------------------------------------------------------------------------*
+ | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::SetTimeForNeumannEvaluation(
+  Teuchos::ParameterList& params)
+{
+  params.set("total time",time_);
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | set part of the residual vector belonging to the old timestep        |
  |                                                            gjb 08/08 |

@@ -167,6 +167,17 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
 }
 
 
+/*--------------------------------------------------------------------------*
+ | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
+  Teuchos::ParameterList& params)
+{
+  params.set("total time",time_-(1-alphaF_)*dta_);
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/

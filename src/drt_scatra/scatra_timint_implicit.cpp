@@ -841,6 +841,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
+  // TODO: dirichlet auch im Fall von genalpha phinp
+  // neuman n + alfaf
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
@@ -2119,6 +2121,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:      + apply dirich cond.");
 
+  // Todo: what happens in  the case of generalized alpha
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time",time);  // actual time t_{n+1}
@@ -2192,10 +2195,13 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // parameters for Elch/DiffCond formulation
   AddProblemSpecificParametersAndVectors(condparams);
 
+  // Set time for the evaluation of a Point-Neumann condition
+  // Line/Surface/Volume Neumann conditions use the time of the time-parameter class
+  SetTimeForNeumannEvaluation(condparams);
+
   // provide displacement field in case of ALE
   if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
-  discret_->ClearState();
   // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateNeumann(condparams,*neumann_loads);
   discret_->ClearState();

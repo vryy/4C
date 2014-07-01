@@ -111,6 +111,9 @@ protected:
   /// set time parameter for element evaluation
   virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
 
+  //! set time for evaluation of Neumann boundary conditions
+  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+
   /// set time parameter for element evaluation applying an iterative backward Euler scheme
   virtual void SetElementTimeParameterBackwardEuler();
 

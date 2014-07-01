@@ -492,7 +492,11 @@ protected:
 
   virtual void SetElementTimeParameter(bool forcedincrementalsolver=false)=0;
 
+  //! Set backward Euler time parameter
   virtual void SetElementTimeParameterBackwardEuler(){return;};
+
+  //! set time for evaluation of Neumann boundary conditions
+  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
   //! Set general element parameter including stabilization
   virtual void SetElementGeneralScaTraParameter();

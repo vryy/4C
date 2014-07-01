@@ -93,6 +93,9 @@ protected:
   /// set time parameter for element evaluation
   virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
 
+  //! set time for evaluation of Neumann boundary conditions
+  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep(){
     // compute initial field for electric potential (ELCH)
