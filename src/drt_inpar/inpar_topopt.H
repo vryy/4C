@@ -55,13 +55,6 @@ namespace INPAR
       gradientByFD2
     };
 
-    /// type of adjoint equations
-    enum AdjointType
-    {
-      discrete_adjoint,
-      cont_adjoint
-    };
-
     /// initial field for optimization variable
     enum InitialDensityField
     {

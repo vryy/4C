@@ -255,8 +255,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     // set additional parameters in list for
     // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
-    // type of adjoint equations
-    fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointType> ("adjoint type",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointType>(adjointfdyn,"ADJOINT_TYPE"));
     // type of time-integration (or stationary) scheme
     fluidadjointtimeparams->set<int>                        ("time int algo",timeint);
     // parameter theta for time-integration schemes
@@ -303,10 +301,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     startfuncno=-1;
 
   adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
-
-  if ((timeint!=INPAR::FLUID::timeint_stationary) and
-      (fluidadjointtimeparams->get<INPAR::TOPOPT::AdjointType>("adjoint type")!=INPAR::TOPOPT::discrete_adjoint))
-    adjointTimeInt_->Output();
 
   return;
 }

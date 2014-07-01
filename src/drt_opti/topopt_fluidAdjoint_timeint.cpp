@@ -38,7 +38,6 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   maxtime_(params_->get<double>("total time"))
 {
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
-  adjointtype_ = params_->get<INPAR::TOPOPT::AdjointType>("adjoint type");
 
   // check setting of time parameter
   if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
@@ -62,18 +61,8 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   }
   else
   {
-
-    // for discrete adjoints start with step 0 and end with step stepmax-1
-    if (adjointtype_==INPAR::TOPOPT::discrete_adjoint)
-    {
-      time_ = maxtime_+dt_;
-      step_ = -1;
-    }
-    else
-    {
-      time_ = maxtime_;
-      step_ = 0;
-    }
+    time_ = maxtime_+dt_;
+    step_ = -1;
   }
 }
 
@@ -84,6 +73,7 @@ bool TOPOPT::ADJOINT::FluidAdjointTimeInt::TimeLoopFinished() const
   if (step_==stepmax_)
     return true;
 
+  // TODO look here again
   // for discrete adjoints we start with step 0 and end with step stepmax-1
   // since the adjoint solution of step stepmax at time 0 does not influence
   // the optimization since the primal solution u_0 is independent of the

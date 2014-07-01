@@ -121,9 +121,6 @@ namespace ADJOINT
     const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
     //@}
 
-    /// access to adjoint type
-    const INPAR::TOPOPT::AdjointType AdjointType() const {return adjointtype_;}
-
     /// check if time loop has finished
     bool TimeLoopFinished() const;
 
@@ -152,9 +149,6 @@ namespace ADJOINT
 
     /// time algorithm flag
     INPAR::FLUID::TimeIntegrationScheme timealgo_;
-
-    // type of adjoint equations
-    INPAR::TOPOPT::AdjointType adjointtype_;
 
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>           discret_;

@@ -325,7 +325,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
     {
       fluidvelnp_ = fluid_vels_->find(stepmax_-step_)->second;
 
-      if ((step_>0) or (adjointtype_==INPAR::TOPOPT::cont_adjoint))
+      if (step_>0)
         fluidveln_ = fluid_vels_->find(stepmax_-step_+1)->second;
       else
         fluidveln_ = fluidvelnp_;
@@ -710,17 +710,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     if (timealgo_==INPAR::FLUID::timeint_stationary)
       optimizer_->ImportAdjointFluidData(velnp_,stepmax_+1-step_);
     else
-    {
+      optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
       // we have to switch the step here since we start with step 0 at end-time,
       // but the step of adjoint fluid and fluid equations shall fit
-      optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
-
-      // initial solution (=v_t_max) is old solution at step 1 for continuous
-      // adjoints where we start computing at time t_max-dt
-      // for discrete adjoints we firstly solve at time t_max and step 0
-      if ((step_==1) and (adjointtype_==INPAR::TOPOPT::cont_adjoint))
-        optimizer_->ImportAdjointFluidData(velnm_,stepmax_); // currently velnm contains veln because timeupdate was called before
-    }
   }
 
   return;
@@ -1110,8 +1102,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
-  // set type of adjoint equations
-  eleparams.set<INPAR::TOPOPT::AdjointType>("adjoint type",adjointtype_);
   // set flag for test cases
   eleparams.set<INPAR::TOPOPT::AdjointCase>("special test case",params_->get<INPAR::TOPOPT::AdjointCase>("special test case"));
 
@@ -1180,16 +1170,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
   }
   else
   {
-    if (adjointtype_==INPAR::TOPOPT::discrete_adjoint)
-    {
-      time_ = maxtime_+dt_;
-      step_ = -1;
-    }
-    else
-    {
-      time_ = maxtime_;
-      step_ = 0;
-    }
+    time_ = maxtime_+dt_;
+    step_ = -1;
   }
 
   if (newFiles)

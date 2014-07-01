@@ -121,7 +121,6 @@ DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidAdjoint3Impl()
     vderxy_(true),
     pres_(0.0),
     gradp_(true),
-    visc_(true),
     fluidvelint_(true),
     fluidvelxy_(true),
     fluidpres_(0.0),
@@ -137,21 +136,17 @@ DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidAdjoint3Impl()
     vderxy_old_(true),
     pres_old_(0.0),
     gradp_old_(true),
-    visc_old_(true),
     fluidvelint_old_(true),
-    fluidvelxy_old_(true),
-    fluidpres_old_(0.0),
     bodyforce_old_(true),
     contforce_old_(0.0),
     vdiv_old_(0.0),
-    conv1_old_(true),
-    conv2_old_(true),
     fluidvelint_new_(true),
     fluidvelxy_new_(true),
     fluidgradp_new_(true),
     fluidvisc_new_(true),
     fluidbodyforce_new_(true),
     tau_(true),
+    tau_old_(true),
     intpoints_( distype ),
     xsi_(true),
     det_(0.0),
@@ -242,8 +237,7 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
 
   LINALG::Matrix<nsd_,nen_> efluidbofonp(true);
   LINALG::Matrix<nsd_,nen_> efluidbofonpp(true);
-  if (fldAdPara_->AdjointType() == INPAR::TOPOPT::discrete_adjoint)
-    FluidBodyForce(ele,efluidbofonp,efluidbofonpp);
+  FluidBodyForce(ele,efluidbofonp,efluidbofonpp);
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
@@ -334,10 +328,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   if (not fldAdPara_->EvalTauAtGP())
   {
     // get velocity at element center
-    velint_.Multiply(evelnp,funct_);
+    fluidvelint_.Multiply(efluidvelnp,funct_);
+    fluidvelint_old_.Multiply(efluidveln,funct_);
 
     // calculate stabilization parameters at element center
-    CalcStabParameter(fac_);
+    CalcStabParameter(fac_,fluidvelint_,tau_);
+    CalcStabParameter(fac_,fluidvelint_old_,tau_old_);
   }
 
   //------------------------------------------------------------------------
@@ -375,7 +371,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     // get fluid velocity derivatives at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
     fluidvelxy_.MultiplyNT(efluidvelnp,derxy_);
-    fluidvelxy_old_.MultiplyNT(efluidveln,derxy_);
     fluidvelxy_new_.MultiplyNT(efluidvelnpp,derxy_);
 
     // get pressure at integration point
@@ -391,7 +386,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     // get pressure at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
     fluidpres_ = funct_.Dot(efluidprenp);
-    fluidpres_old_ = funct_.Dot(efluidpren);
 
     // get pressure gradient at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
@@ -476,7 +470,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
 
     // calculate stabilization parameter at integration point
     if (fldAdPara_->EvalTauAtGP())
-      CalcStabParameter(fac_);
+    {
+      CalcStabParameter(fac_,fluidvelint_,tau_);
+      CalcStabParameter(fac_,fluidvelint_old_,tau_old_);
+    }
 
     BodyForce(efluidveln,efluidvelnp);
     ContForce();
@@ -484,12 +481,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     // get first convective value at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
     conv1_.Multiply(vderxy_,fluidvelint_);
-    conv1_old_.Multiply(vderxy_old_,fluidvelint_old_);
 
     // get second convective value at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
     conv2_.MultiplyTN(fluidvelxy_,velint_);
-    conv2_old_.MultiplyTN(fluidvelxy_old_,velint_old_);
 
     // get divergence at integration point
     // 1) t^n=last iteration 2) t^n+1 = last time step
@@ -502,11 +497,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
 
     CalcDivEps(eveln,evelnp,efluidvelnp,efluidvelnpp);
 
-    if (fldAdPara_->AdjointType() == INPAR::TOPOPT::discrete_adjoint)
-    {
-      fluidbodyforce_.Multiply(efluidbofonp,funct_);
-      fluidbodyforce_new_.Multiply(efluidbofonpp,funct_);
-    }
+    fluidbodyforce_.Multiply(efluidbofonp,funct_);
+    fluidbodyforce_new_.Multiply(efluidbofonpp,funct_);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -558,121 +550,57 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     if ((fldAdPara_->PSPG()) or
         (fldAdPara_->SUPG()))
     {
-      if (fldAdPara_->AdjointType() == INPAR::TOPOPT::discrete_adjoint)
+      // prework for supg/psgp - stabilization: evaluate strong residual
+
+      /* order of the derivatives in GalMomResnU is:
+       * from 1 to nsd:       col-dim = x, row-dim = 1-nsd
+       * from nsd+1 to 2*nsd: col-dim = y, row-dim = 1-nsd
+       * and so on. so the outer loop is the column dimension
+       * and the inner loop the row dimension */
+      LINALG::Matrix<nsd_*nsd_,nen_> GalMomTestStat(true);
+
+      GalMom(GalMomTestStat,
+          timefacfac,
+          timefacfacrhs,
+          timefacfacpre,
+          timefacfacprerhs);
+
+      // 8) PSPG term
+      if (fldAdPara_->PSPG())
       {
-        // prework for supg/psgp - stabilization: evaluate strong residual
-
-        /* order of the derivatives in GalMomResnU is:
-         * from 1 to nsd:       col-dim = x, row-dim = 1-nsd
-         * from nsd+1 to 2*nsd: col-dim = y, row-dim = 1-nsd
-         * and so on. so the outer loop is the column dimension
-         * and the inner loop the row dimension */
-        LINALG::Matrix<nsd_*nsd_,nen_> GalMomTestStat(true);
-
-        DiscreteGalMom(GalMomTestStat,
+        PSPG(estif_w_q,
+            estif_r_q,
+            velforce,
+            preforce,
+            GalMomTestStat,
             timefacfac,
             timefacfacrhs,
             timefacfacpre,
             timefacfacprerhs);
-
-        // 8) PSPG term
-        if (fldAdPara_->PSPG())
-        {
-          DiscretePSPG(estif_w_q,
-              estif_r_q,
-              velforce,
-              preforce,
-              GalMomTestStat,
-              timefacfac,
-              timefacfacrhs,
-              timefacfacpre,
-              timefacfacprerhs);
-        }
-
-        // 9) SUPG term
-        if (fldAdPara_->SUPG())
-        {
-           DiscreteSUPG(estif_w_v,
-              estif_r_v,
-              velforce,
-              preforce,
-              GalMomTestStat,
-              timefacfac,
-              timefacfacrhs,
-              timefacfacpre,
-              timefacfacprerhs);
-        }
       }
-      else if (fldAdPara_->AdjointType() == INPAR::TOPOPT::cont_adjoint)
+
+      // 9) SUPG term
+      if (fldAdPara_->SUPG())
       {
-        // prework for supg/psgp - stabilization: evaluate strong residual
-
-        /* order of the derivatives in GalMomResnU is:
-         * from 1 to nsd:       col-dim = x, row-dim = 1-nsd
-         * from nsd+1 to 2*nsd: col-dim = y, row-dim = 1-nsd
-         * and so on. so the outer loop is the column dimension
-         * and the inner loop the row dimension */
-        LINALG::Matrix<nsd_*nsd_,nen_> GalMomResnU(true);
-
-        // strong residual of momentum equation of last iteration, scaled with fac*dt/rho
-        LINALG::Matrix<nsd_,1> StrongResMomScaled(true);
-
-        MomRes(GalMomResnU,
-            StrongResMomScaled,
+        SUPG(estif_w_v,
+            estif_r_v,
+            velforce,
+            preforce,
+            GalMomTestStat,
             timefacfac,
             timefacfacrhs,
             timefacfacpre,
             timefacfacprerhs);
-
-        // 8) PSPG term
-        if (fldAdPara_->PSPG())
-        {
-          PSPG(estif_r_v,
-              estif_r_q,
-              preforce,
-              GalMomResnU,
-              StrongResMomScaled,
-              timefacfac,
-              timefacfacrhs,
-              timefacfacpre,
-              timefacfacprerhs);
-        }
-
-        // 9) SUPG term
-        if (fldAdPara_->SUPG())
-        {
-          SUPG(estif_w_v,
-              estif_w_q,
-              velforce,
-              GalMomResnU,
-              StrongResMomScaled,
-              timefacfac,
-              timefacfacrhs,
-              timefacfacpre,
-              timefacfacprerhs);
-        }
       }
-      else
-        dserror("not implemented type of adjoint approach");
     }
 
     // 10) continuity stabilization
     if (fldAdPara_->CStab())
     {
-      if (fldAdPara_->AdjointType() == INPAR::TOPOPT::discrete_adjoint)
-      {
-        DiscreteContStab(estif_w_v,
-            velforce,
-            timefacfacdiv,
-            timefacfacdivrhs);
-      }
-      else if (fldAdPara_->AdjointType() == INPAR::TOPOPT::cont_adjoint)
-      {
-        ContStab(estif_w_v,
-            velforce,
-            timefacfacdiv,
-            timefacfacdivrhs);
-      }
+      ContStab(estif_w_v,
+          velforce,
+          timefacfacdiv,
+          timefacfacdivrhs);
     }
   }
   //------------------------------------------------------------------------
@@ -920,7 +848,11 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint
  |  calculation of stabilization parameter             winklmaier 03/12 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double vol)
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(
+    const double vol,
+    const LINALG::Matrix<nsd_,1>& fluidvel,
+    LINALG::Matrix<3,1>& tau
+)
 {
   //---------------------------------------------------------------------
   // preliminary definition of values which will already be computed for
@@ -1044,7 +976,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double dens_sqr = dens*dens;
     for (int nn=0;nn<nsd_;++nn)
     {
-      const double dens_sqr_velint_nn = dens_sqr*fluidvelint_(nn);
+      const double dens_sqr_velint_nn = dens_sqr*fluidvel(nn);
       for (int mm=0; mm<nsd_; ++mm)
       {
         traceG += xji_(nn,mm)*xji_(nn,mm);
@@ -1057,7 +989,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
           G += xji_(nn,mm)*xji_(rr,mm);
         }
         normG  += G*G;
-        Gnormu += dens_sqr_velint_nn*G*fluidvelint_(rr);
+        Gnormu += dens_sqr_velint_nn*G*fluidvel(rr);
       }
     }
 
@@ -1066,8 +998,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     // computation of stabilization parameters tau_Mu and tau_Mp
     // -> identical for the present definitions
-    tau_(0) = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gvisc));
-    tau_(1) = tau_(0);
+    tau(0) = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gvisc));
+    tau(1) = tau(0);
     break;
   }
 
@@ -1097,7 +1029,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
     // get velocity norm
-    fluidvel_norm = fluidvelint_.Norm2();
+    fluidvel_norm = fluidvel.Norm2();
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -1105,7 +1037,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double sigma_tot = 1.0/fldAdPara_->Timefac() + reacoeff_;
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+    CalcCharEleLength(vol,fluidvel,fluidvel_norm,strle,hk);
 
     // various parameter computations for case with dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
@@ -1122,8 +1054,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double xi02 = std::max(re02,1.0);
     const double xi12 = std::max(re12,1.0);
 
-    tau_(0) = DSQR(strle)/(DSQR(strle)*dens*sigma_tot*xi01+(4.0*visc/mk)*xi02);
-    tau_(1) = DSQR(hk)/(DSQR(hk)*dens*sigma_tot*xi11+(4.0*visc/mk)*xi12);
+    tau(0) = DSQR(strle)/(DSQR(strle)*dens*sigma_tot*xi01+(4.0*visc/mk)*xi02);
+    tau(1) = DSQR(hk)/(DSQR(hk)*dens*sigma_tot*xi11+(4.0*visc/mk)*xi12);
     break;
   }
 
@@ -1135,10 +1067,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
     // get velocity norm
-    fluidvel_norm = fluidvelint_.Norm2();
+    fluidvel_norm = fluidvel.Norm2();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+    CalcCharEleLength(vol,fluidvel,fluidvel_norm,strle,hk);
 
     // various parameter computations for case without dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
@@ -1155,8 +1087,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double xi02 = std::max(re02,1.0);
     const double xi12 = std::max(re12,1.0);
 
-    tau_(0) = DSQR(strle)/(DSQR(strle)*dens*reacoeff_*xi01+(4.0*visc/mk)*xi02);
-    tau_(1) = DSQR(hk)/(DSQR(hk)*dens*reacoeff_*xi11+(4.0*visc/mk)*xi12);
+    tau(0) = DSQR(strle)/(DSQR(strle)*dens*reacoeff_*xi01+(4.0*visc/mk)*xi02);
+    tau(1) = DSQR(hk)/(DSQR(hk)*dens*reacoeff_*xi11+(4.0*visc/mk)*xi12);
     break;
   }
 
@@ -1190,10 +1122,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
     // get velocity norm
-    fluidvel_norm = fluidvelint_.Norm2();
+    fluidvel_norm = fluidvel.Norm2();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+    CalcCharEleLength(vol,fluidvel,fluidvel_norm,strle,hk);
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -1208,10 +1140,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    tau_(0) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
+    tau(0) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
                       + c2*DSQR(dens)*DSQR(fluidvel_norm)/DSQR(strle)
                       + c3*DSQR(visc)/(DSQR(strle)*DSQR(strle))));
-    tau_(1) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
+    tau(1) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
                       + c2*DSQR(dens)*DSQR(fluidvel_norm)/DSQR(hk)
                       + c3*DSQR(visc)/(DSQR(hk)*DSQR(hk))));
     break;
@@ -1235,10 +1167,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
     // get velocity norm
-    fluidvel_norm = fluidvelint_.Norm2();
+    fluidvel_norm = fluidvel.Norm2();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+    CalcCharEleLength(vol,fluidvel,fluidvel_norm,strle,hk);
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -1252,10 +1184,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double c2 = 2.0;
     c3 = 4.0/mk;
 
-    tau_(0) = 1.0/(sqrt(c1*dens*sigma_tot
+    tau(0) = 1.0/(sqrt(c1*dens*sigma_tot
                       + c2*dens*fluidvel_norm/strle
                       + c3*visc/DSQR(strle)));
-    tau_(1) = 1.0/(sqrt(c1*dens*sigma_tot
+    tau(1) = 1.0/(sqrt(c1*dens*sigma_tot
                       + c2*dens*fluidvel_norm/hk
                       + c3*visc/DSQR(hk)));
     break;
@@ -1301,7 +1233,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
 
-    tau_(2) = sqrt(Gnormu)/traceG;
+    tau(2) = sqrt(Gnormu)/traceG;
   }
   break;
 
@@ -1327,7 +1259,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
 
-    tau_(2) = 1.0/(tau_(0)*traceG);
+    tau(2) = 1.0/(tau_(0)*traceG);
   }
   break;
 
@@ -1367,7 +1299,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     // "switching" parameter
     const double xi_tau_c = std::min(reG,1.0);
 
-    tau_(2) = xi_tau_c*sqrt(Gnormu)/traceG;
+    tau(2) = xi_tau_c*sqrt(Gnormu)/traceG;
   }
   break;
 
@@ -1399,7 +1331,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     // "switching" parameter
     const double xi_tau_c = std::min(re12,1.0);
 
-    tau_(2) = 0.5 * dens * fluidvel_norm * hk * xi_tau_c;
+    tau(2) = 0.5 * dens * fluidvel_norm * hk * xi_tau_c;
   }
   break;
 
@@ -1419,7 +1351,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     */
 
-    tau_(2) = DSQR(hk)/(sqrt(c3)*tau_(1));
+    tau(2) = DSQR(hk)/(sqrt(c3)*tau(1));
   }
   break;
   default:
@@ -1439,6 +1371,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcCharEleLength(
     const double  vol,
+    const LINALG::Matrix<nsd_,1> fluidvel,
     const double  fluidvel_norm,
     double&       strle,
     double&       hk
@@ -1455,7 +1388,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcCharEleLength(
   //---------------------------------------------------------------------
   // a) streamlength due to Tezduyar et al. (1992) -> default
   // normed velocity vector
-  if (fluidvel_norm>=1e-6) fluidvelino.Update(1.0/fluidvel_norm,fluidvelint_);
+  if (fluidvel_norm>=1e-6) fluidvelino.Update(1.0/fluidvel_norm,fluidvel);
   else
   {
     fluidvelino.Clear();
@@ -2364,7 +2297,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContForceGalPart(
  | compute momentum residuum                                      winklmaier 03/12 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteGalMom(
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::GalMom(
     LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomTestStat,
     const double &                      timefacfac,
     const double &                      timefacfacrhs,
@@ -2475,122 +2408,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteGalMom(
 
 
 /*---------------------------------------------------------------------------------*
- | compute momentum residuum                                      winklmaier 03/12 |
- *---------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
-    LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,
-    LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
-    const double &                      timefacfac,
-    const double &                      timefacfacrhs,
-    const double &                      timefacfacpre,
-    const double &                      timefacfacprerhs
-) const
-{
-  /*
-      Left hand side terms of Galerkin part for PSPG/SUPG with Dv
-
-    instationary + reactive         /
-                                   |
-      (rho + alpha) Du +  dt*Theta |
-                                   |
-                                    \
-
-                convective term 1             convective term 2
-               /  n              \           /               n \
-      - rho * |  u o nabla Dv     | + rho * |  Dv o nabla   u   |
-               \             (i) /           \           (i)   /
-
-                     viscous term            \
-              /                         \     |
-      - 2 mu |  nabla o epsilon   ( Dv ) |    |
-              \                (i)      /     |
-                                             /
-  */
-
-  GalMomResnU.Clear();
-
-  // mass matrix + reaction
-  double massreacfac = 0.0; // factor summing up coefficients of reactive term and mass-matrix
-  if (fldAdPara_->IsStationary())
-    massreacfac = reacoeff_*timefacfac;
-  else
-    massreacfac = fldAdPara_->Density()*fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
-
-  for (int ui=0; ui<nen_; ++ui)
-  {
-    const double uifunct = massreacfac*funct_(ui);
-
-    for (int idim=0; idim<nsd_; ++idim)
-      GalMomResnU(idim*nsd_+idim,ui) += uifunct;
-  } // ui
-
-//   convection
-  for (int ui=0; ui<nen_; ++ui)
-  {
-    double value = 0.0;
-
-    for (int dim=0;dim<nsd_;++dim)
-      value += fluidvelint_(dim)*derxy_(dim,ui);
-
-    value *= fldAdPara_->Density()*timefacfac;
-
-    for (int idim = 0; idim <nsd_; ++idim)
-      GalMomResnU(idim*nsd_+idim,ui) -= value;
-  } //ui
-
-  for (int ui=0;ui<nen_;++ui)
-  {
-    const double uifunct = fldAdPara_->Density()*timefacfac*funct_(ui);
-
-    for (int idim=0;idim<nsd_;++idim)
-    {
-      for (int jdim=0;jdim<nsd_;++jdim)
-      {
-        GalMomResnU(jdim+idim*nsd_,ui) += fluidvelxy_(jdim,idim)*uifunct;
-      }
-    }
-  }
-
-  // viscous
-  if (is_higher_order_ele_)
-  {
-    // add viscous part
-    GalMomResnU.Update(-2.0*timefacfac*fldAdPara_->Viscosity(),visc_shp_,1.0);
-  }
-
-
-  // residuum of momentum equation in strong form
-  if (not fldAdPara_->IsStationary())
-  {
-    for (int idim=0;idim<nsd_;++idim)
-    {
-      StrongResMomScaled(idim) = fldAdPara_->Density()*fac_*(velint_(idim)-velint_old_(idim)) // mass term last iteration
-          +timefacfac* // velocity part of last iteration (at t^n) coming
-            (fldAdPara_->Density()*(-conv1_(idim)+conv2_(idim))-2*fldAdPara_->Viscosity()*visc_(idim)
-            +reacoeff_*velint_(idim)-bodyforce_(idim))
-          -timefacfacpre*gradp_(idim) // pressure part of last iteration (at t^n)
-          +timefacfacrhs* // last time step (= t^n+1) coming
-            (fldAdPara_->Density()*(-conv1_old_(idim)+conv2_old_(idim))-2*fldAdPara_->Viscosity()*visc_old_(idim)
-            +reacoeff_*velint_old_(idim)-bodyforce_old_(idim))
-          -timefacfacprerhs*gradp_old_(idim);
-    }
-  }
-  else
-  {
-    for (int idim=0;idim<nsd_;++idim)
-    {
-      StrongResMomScaled(idim) = timefacfac*(fldAdPara_->Density()*(-conv1_(idim)+conv2_(idim))-2*fldAdPara_->Viscosity()*visc_(idim)
-                      +reacoeff_*velint_(idim)-gradp_(idim)-bodyforce_(idim));
-    }
-  }
-
-  return;
-}
-
-
-
-/*---------------------------------------------------------------------------------*
  | compute divergence of epsilon of v                             winklmaier 03/12 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -2613,8 +2430,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
        with N_x .. x-line of N
        N_y .. y-line of N                                             */
 
-  visc_.Clear();
-  visc_old_.Clear();
   fluidvisc_.Clear();
   fluidvisc_new_.Clear();
 
@@ -2655,7 +2470,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
 
       for (int jdim=0; jdim<nsd_; ++jdim)
       {
-        visc_(idim) += visc_shp_(nsd_idim+jdim,inode)*evelnp(jdim,inode);
         fluidvisc_(idim) += visc_shp_(nsd_idim+jdim,inode)*efluidvelnp(jdim,inode);
       }
     }
@@ -2671,7 +2485,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
 
         for (int jdim=0; jdim<nsd_; ++jdim)
         {
-          visc_old_(idim) += visc_shp_(nsd_idim+jdim,inode)*eveln(jdim,inode);
           fluidvisc_new_(idim) += visc_shp_(nsd_idim+jdim,inode)*efluidvelnpp(jdim,inode);
         }
       }
@@ -2687,7 +2500,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
  | compute PSPG stabilization terms                               winklmaier 03/12 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
     LINALG::Matrix<nen_*nsd_, nen_> &         estif_w_q,
     LINALG::Matrix<nen_,nen_> &               estif_r_q,
     LINALG::Matrix<nsd_,nen_> &               velforce,
@@ -2700,6 +2513,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
 ) const
 {
   const double tau=tau_(1);
+  const double tau_old=tau_old_(1);
 
   /* pressure stabilisation: inertia if not stationary*/
   /*
@@ -2755,7 +2569,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
 
         velforce(jdim,ui) -= tau*GalMomTestStat(nsd_idim+jdim,ui)*gradp_(idim);
         if ((fldAdPara_->IsStationary()==false) and (fldAdPara_->IsInitInstatStep()==false))
-          velforce(jdim,ui) -= tau*timefacfacrhs/timefacfac*GalMomTestStat(nsd_idim+jdim,ui)*gradp_old_(idim);
+          velforce(jdim,ui) -= tau_old*timefacfacrhs/timefacfac*GalMomTestStat(nsd_idim+jdim,ui)*gradp_old_(idim);
 
         for (int vi=0; vi<nen_; ++vi)
         {
@@ -2770,28 +2584,29 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
 
 
   // instationary part
-  if (not fldAdPara_->IsStationary())
-  {
-    double fac = fldAdPara_->Density()*fac_*tau; // fac -> mass matrix
-
-    for (int ui=0; ui<nen_; ++ui)
+    if (not fldAdPara_->IsStationary())
     {
-      const double uifunct = fac*funct_(ui);
+      double fac = fldAdPara_->Density()*fac_*tau; // fac -> mass matrix
+      double fac_old = fldAdPara_->Density()*fac_*tau_old; // fac -> mass matrix
 
-      for (int idim=0; idim<nsd_; ++idim)
+      for (int ui=0; ui<nen_; ++ui)
       {
-        velforce(idim,ui) -= uifunct*gradp_(idim);
-        if (fldAdPara_->IsInitInstatStep()==false)
-          velforce(idim,ui) += uifunct*gradp_old_(idim);
+        const double uifunct = fac*funct_(ui);
+        const double uifunctold = fac_old*funct_(ui);
 
-        for (int vi=0; vi<nen_;vi++)
+        for (int idim=0; idim<nsd_; ++idim)
         {
-          estif_w_q(ui*nsd_+idim,vi) += uifunct*derxy_(idim,vi);
-        }
-      }
-    } // ui
-  }
+          velforce(idim,ui) -= uifunct*gradp_(idim);
+          if (fldAdPara_->IsInitInstatStep()==false)
+            velforce(idim,ui) += uifunctold*gradp_old_(idim);
 
+          for (int vi=0; vi<nen_;vi++)
+          {
+            estif_w_q(ui*nsd_+idim,vi) += uifunct*derxy_(idim,vi);
+          }
+        }
+      } // ui
+    }
 
 
   /* pressure stabilisation: pressure( L_pres_p) */
@@ -2810,7 +2625,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
 
       preforce(ui) -= v*gradp_(idim);
       if ((fldAdPara_->IsStationary()==false) and (fldAdPara_->IsInitInstatStep()==false))
-        preforce(ui) -= v*timefacfacprerhs/timefacfacpre*gradp_old_(idim);
+        preforce(ui) -= tau_old*timefacfacprerhs*derxy_(idim,ui)*gradp_old_(idim);
 
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -2829,7 +2644,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscretePSPG(
  | compute PSPG stabilization terms                               winklmaier 03/12 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
     LINALG::Matrix<nen_*nsd_, nen_*nsd_> &    estif_w_v,
     LINALG::Matrix<nen_,nen_*nsd_> &          estif_r_v,
     LINALG::Matrix<nsd_,nen_> &               velforce,
@@ -2842,6 +2657,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
 ) const
 {
   const double tau=tau_(0);
+  const double tau_old=tau_old_(0);
 
 
   LINALG::Matrix<nen_,1> supg_test(true);
@@ -2854,7 +2670,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
 
   supg_test.Scale(fldAdPara_->Density()*tau);
   supg_vel.Scale(fldAdPara_->Density()*tau);
-  supg_vel_old.Scale(fldAdPara_->Density()*tau);
+  supg_vel_old.Scale(fldAdPara_->Density()*tau_old);
 
   LINALG::Matrix<nsd_,1> conv_fluidvel(true);
   LINALG::Matrix<nsd_,1> conv_fluidvel_new(true);
@@ -2952,7 +2768,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
  | compute Grad-Div stabilization terms                           winklmaier 02/14 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteContStab(
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContStab(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,
     LINALG::Matrix<nsd_,nen_> &               velforce,
     const double &                            timefacfacdiv,
@@ -2992,301 +2808,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteContStab(
         }
       }
     } // end for(idim)
-  }
-
-  return;
-}
-
-
-
-/*---------------------------------------------------------------------------------*
- | compute PSPG stabilization terms                               winklmaier 03/12 |
- *---------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
-    LINALG::Matrix<nen_, nen_*nsd_> &         estif_r_v,
-    LINALG::Matrix<nen_,nen_> &               estif_r_q,
-    LINALG::Matrix<nen_,1> &                  preforce,
-    const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,
-    const LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
-    const double &                            timefacfac,
-    const double &                            timefacfacrhs,
-    const double &                            timefacfacpre,
-    const double &                            timefacfacprerhs
-) const
-{
-  const double tau=tau_(1);
-
-  /*
-      pressure stabilization
-
-        instationary + reactive
-     /                            \
-    |                              |
-  - |  (rho + alpha) Dv , nabla r  |
-    |                              |
-     \                            /
-
-                   convective term 1                      convective term 2
-             /                          \           /                            \
-            |   n                        |         |                 n            |
-      + rho |  u o nabla Dv   , nabla r  | - rho * |  Dv o nabla    u  , nabla r  |
-            |              (i)           |         |            (i)               |
-             \                          /           \                            /
-
-              /      viscous term                  \
-             |                                      |
-      + 2 mu |  nabla o epsilon   ( Dv ) , nabla r  |
-             |                 (i)                  |
-              \                                    /
-  */
-
-  for(int jdim=0;jdim<nsd_;++jdim)
-  {
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui_p_jdim   = nsd_*ui + jdim;
-
-      for(int idim=0;idim<nsd_;++idim)
-      {
-        const int nsd_idim=nsd_*idim;
-
-        for (int vi=0; vi<nen_; ++vi)
-        {
-          estif_r_v(vi,fui_p_jdim) -= tau*derxy_(idim,vi)*GalMomResnU(nsd_idim+jdim,ui);
-        } // jdim
-      } // vi
-    } // ui
-  } //idim
-
-  for (int ui=0; ui<nen_; ++ui)
-  {
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      const double v=tau*timefacfacpre*derxy_(idim,ui);
-
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        /* pressure stabilisation: pressure( L_pres_p) */
-        /*
-               /                    \
-              |                      |
-            + |  nabla Dq , nabla r  |
-              |                      |
-               \                    /
-         */
-        estif_r_q(vi,ui)+=v*derxy_(idim,vi);
-      } // vi
-    } // end for(idim)
-  }  // ui
-
-  // rhs for new and old time step
-  for (int idim = 0; idim <nsd_; ++idim)
-  {
-    const double resmom_scaled = -tau*StrongResMomScaled(idim);
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      // pressure stabilization
-      preforce(vi) -= derxy_(idim, vi)*resmom_scaled;
-    }
-  } // end for(idim)
-  return;
-}
-
-
-
-/*---------------------------------------------------------------------------------*
- | compute SUPG stabilization terms                               winklmaier 03/12 |
- *---------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
-    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,
-    LINALG::Matrix<nen_*nsd_,nen_> &          estif_w_q,
-    LINALG::Matrix<nsd_,nen_> &               velforce,
-    const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,
-    const LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
-    const double &                            timefacfac,
-    const double &                            timefacfacrhs,
-    const double &                            timefacfacpre,
-    const double &                            timefacfacprerhs
-) const
-{
-  /*
-     test function
-                     /  n             \
-  supg_test =   rho |  u o nabla w     |
-                     \            (i) /
-   */
-
-  double supgfac=-fldAdPara_->Density()*tau_(0);
-
-  LINALG::Matrix<nen_,1> supg_test(true);
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    for (int dim=0;dim<nsd_;++dim)
-    {
-      supg_test(vi)+=supgfac*derxy_(dim,vi)*fluidvelint_(dim);
-    }
-  }
-
-  /*
-      supg stabilization
-
-        instationary + reactive
-     /                              \
-    |                                |
-    |  (rho + alpha) Dv , supg_test  |
-    |                                |
-     \                              /
-
-                   convective term 1                      convective term 2
-             /                            \           /                              \
-            |   n                          |         |                 n              |
-      - rho |  u o nabla Dv   , supg_test  | + rho * |  Dv o nabla    u  , supg_test  |
-            |              (i)             |         |            (i)                 |
-             \                            /           \                              /
-
-              /      viscous term                    \
-             |                                        |
-      - 2 mu |  nabla o epsilon   ( Dv ) , supg_test  |
-             |                 (i)                    |
-              \                                      /
-  */
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    for(int idim=0;idim<nsd_;++idim)
-    {
-      const int nsd_idim=nsd_*idim;
-
-      const int fvi_p_idim = nsd_*vi+idim;
-
-      for(int jdim=0;jdim<nsd_;++jdim)
-      {
-        const int nsd_idim_p_jdim=nsd_idim+jdim;
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui_p_jdim   = nsd_*ui + jdim;
-
-          estif_w_v(fvi_p_idim,fui_p_jdim) += supg_test(vi)*GalMomResnU(nsd_idim_p_jdim,ui);
-        } // jdim
-      } // vi
-    } // ui
-  } //idim
-
-  /* supg stabilisation: pressure part  ( L_pres_p) */
-  /*
-              /                      \
-             |                        |
-           - |  nabla Dq , supg_test  |
-             |                        |
-              \                      /
-   */
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const double v = timefacfacpre*supg_test(vi);
-
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      const int fvi   = nsd_*vi + idim;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        estif_w_q(fvi,ui) -= v*derxy_(idim, ui);
-      }
-    }
-  }  // end for(idim)
-
-
-  // rhs for new and old time step
-  for (int idim = 0; idim <nsd_; ++idim)
-  {
-    for (int vi=0; vi<nen_; ++vi)
-      velforce(idim,vi) -= supg_test(vi)*StrongResMomScaled(idim);
-  }  // end for(idim)
-  return;
-}
-
-
-
-/*---------------------------------------------------------------------------------*
- | compute residual of continuity equation                        winklmaier 03/12 |
- *---------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContRes(
-    double &                                  StrongResContScaled,
-    const double &                            timefacfacdiv,
-    const double &                            timefacfacdivrhs
-) const
-{
-  StrongResContScaled = timefacfacdiv*(vdiv_-contforce_);
-
-  if (not fldAdPara_->IsStationary())
-    StrongResContScaled += timefacfacdivrhs*(vdiv_old_-contforce_old_);
-}
-
-
-
-/*---------------------------------------------------------------------------------*
- | compute div-grad (=continuity) stabilization term              winklmaier 03/12 |
- *---------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContStab(
-    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,
-    LINALG::Matrix<nsd_,nen_> &               velforce,
-    const double &                            timefacfacdiv,
-    const double &                            timefacfacdivrhs
-) const
-{
-  double graddivfac = timefacfacdiv*tau_(2);
-  double value = 0.0;
-
-  /* continuity stabilisation on left hand side */
-  /*
-              /                        \
-             |                          |
-        tauC | nabla o Dv  , nabla o w  |
-             |                          |
-              \                        /
-  */
-
-  for (int ui=0; ui<nen_; ++ui)
-  {
-    const int fui = nsd_*ui;
-
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      const int fui_p_idim = fui+idim;
-
-      value = graddivfac*derxy_(idim,ui);
-
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = nsd_*vi;
-
-        for(int jdim=0;jdim<nsd_;++jdim)
-        {
-          estif_w_v(fvi+jdim,fui_p_idim) += value*derxy_(jdim, vi);
-        }
-      }
-    } // end for(idim)
-  }
-
-  double StrongResContScaled = 0.0;
-
-  ContRes(StrongResContScaled,
-      timefacfacdiv,
-      timefacfacdivrhs);
-
-  // computation of rhs viscosity term at new time step
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    for (int idim = 0; idim < nsd_; ++idim)
-    {
-      /* viscosity term on right-hand side */
-      velforce(idim,vi) -= tau_(2)*derxy_(idim,vi)*StrongResContScaled;
-    }
   }
 
   return;
