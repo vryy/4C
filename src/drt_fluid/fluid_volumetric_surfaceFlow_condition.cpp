@@ -173,15 +173,17 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(Teuchos::
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++ )
   {
+    {
+      double flowrate =  mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateFlowrate("VolumetricSurfaceFlowCond",time);
+      mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"VolumetricSurfaceFlowCond",time);
+    }
 
-    double flowrate =  mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateFlowrate("VolumetricSurfaceFlowCond",time);
+    {
+      Teuchos::ParameterList eleparams;
+      mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate(eleparams,"VolumetricSurfaceFlowCond",FLD::calc_flowrate,time);
 
-    mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"VolumetricSurfaceFlowCond",time);
-
-    discret_->SetState("velaf",velocities);
-    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("VolumetricSurfaceFlowCond",FLD::calc_flowrate,time);
-
-    mapiter->second->FluidVolumetricSurfaceFlowBc::SetVelocities(velocities);
+      mapiter->second->FluidVolumetricSurfaceFlowBc::SetVelocities(velocities);
+    }
   }
 
   return;
@@ -415,6 +417,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(Teuchos::
   // -------------------------------------------------------------------
   // evaluate the surface dof row map
   this->BuildConditionDofRowMap(discret_, womersley_cond_name, condid_, condnum_s_,cond_dofrowmap_);
+  const Epetra_Map*  drt_dofrowMap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
   // calculate the normalized  of mass of the surface condition
@@ -424,8 +427,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(Teuchos::
   // -------------------------------------------------------------------
   // create cond_velocities and codition traction velocity terms
   // -------------------------------------------------------------------
-  cond_velocities_  = LINALG::CreateVector(*cond_dofrowmap_,true);
-  cond_traction_vel_= LINALG::CreateVector(*dofrowmap,true);
+  cond_velocities_         = LINALG::CreateVector(*cond_dofrowmap_,true);
+  cond_traction_vel_       = LINALG::CreateVector(*dofrowmap,true);
+  drt_velocities_          = LINALG::CreateVector(*drt_dofrowMap,true);
 
   // -------------------------------------------------------------------
   // Evaluate the area of the design surface.
@@ -850,7 +854,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Calculate local normalized radii (public)               ismail 10/10|
+ |  Build condition DofRowMap (public)                      ismail 10/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1054,9 +1058,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   double             flowrate,
-  std::string             ds_condname,
+  std::string        ds_condname,
   double             time)
 {
+
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
@@ -1074,6 +1079,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
     (*flowrates_)[0] = flowrate;
     (*flowrates_)[flowrates_->size()-1] = flowrate;
   }
+
 
 #if 0
   std::cout<<"condition("<<condid_<<"): has position: "<<position<<std::endl;
@@ -1119,6 +1125,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
                     params);
 
 
+
 }//FLD::UTILS::FluidWomersleyBc::EvaluateVelocities
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1146,6 +1153,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
+  Teuchos::ParameterList eleparams,
   std::string             condname,
   double             flowrate,
   int                condid_,
@@ -1153,14 +1161,15 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
   double             theta,
   double             dta)
 {
-  Teuchos::ParameterList eleparams;
   //  double norm2= 0.0;
 
   eleparams.set("thsl",theta*dta);
   eleparams.set("condition velocities",cond_velocities_);
   eleparams.set("condition dofrowmap",cond_dofrowmap_);
 
-  discret_->SetState("velaf",cond_velocities_);
+
+  // Export and set state
+  ExportAndSetBoundaryValues(cond_velocities_,drt_velocities_,"velaf");
 
   eleparams.set("flowrate",flowrate);
   eleparams.set("area",area_);
@@ -1321,8 +1330,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
     }
   }
 
-
-
   // -------------------------------------------------------------------
   // evaluate the avarage velocity and apply it to the design surface
   // -------------------------------------------------------------------
@@ -1429,7 +1436,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
-(std::string             ds_condname,
+( Teuchos::ParameterList  eleparams,
+  std::string             ds_condname,
  FLD::BoundaryAction action,
  double             time,
  bool               force_correction)
@@ -1451,11 +1459,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   // -------------------------------------------------------------------
   // calculate flow rate
   // -------------------------------------------------------------------
-  discret_->SetState("velaf",cond_velocities_);
+  // Export and set state
+  ExportAndSetBoundaryValues(cond_velocities_,drt_velocities_,"velaf");
 
-  double actflowrate = this->FlowRateCalculation(time,ds_condname,action,condid_);
+  double actflowrate = this->FlowRateCalculation(eleparams, time,ds_condname,action,condid_);
 
   //  std::cout<<*cond_velocities_<<std::endl;
+  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList);
 
   // -------------------------------------------------------------------
   // evaluate the wanted flow rate
@@ -1480,8 +1490,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
 
   // loop over all of the nodes
   Teuchos::RCP<Epetra_Vector> correction_velnp = LINALG::CreateVector(*cond_dofrowmap_,true);
-
-  Teuchos::RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new Teuchos::ParameterList);
 
   params->set<int>("Number of Harmonics",0);
   // condition id
@@ -1515,9 +1523,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
 
 
 
+  // Export and set state
+  ExportAndSetBoundaryValues(correction_velnp,drt_velocities_,"velaf");
 
-  discret_->SetState("velaf",correction_velnp);
-  double corrective_flowrate = this->FlowRateCalculation(time,ds_condname,action,condid_);
+  double corrective_flowrate = this->FlowRateCalculation(eleparams,time,ds_condname,action,condid_);
+  cout<<"+------- corrective_flowrate -------+"<<endl;
+  cout<<"|      Q_corr: "<<corrective_flowrate <<endl;
+  cout<<"+-----------------------------------+"<<endl;
+//  cout<<*correction_velnp<<endl;
   //  discret_->ClearState();
 
   if (action == FLD::calc_flowrate)
@@ -1596,14 +1609,22 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::SetVelocities(Teuchos::RCP<Epetra
 
 */
 double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
+  Teuchos::ParameterList eleparams,
   double time,
   std::string ds_condname,
   FLD::BoundaryAction action,
   int    condid)
 {
+#if 0
+  if (!(eleparams.isParameter("velaf")))
+  {
+    Teuchos::RCP<const Epetra_Vector> velaf =discret_->GetState("velaf");
+    Teuchos::RCP<Epetra_Vector> vv = Teuchos::rcp(const_cast<Epetra_Vector*>(velaf.get()),false);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> > ("velaf",vv);
+  }
+#endif
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",action);
   eleparams.set("total time",time);
 
@@ -1615,6 +1636,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
   Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
 
   const std::string condstring(ds_condname);
+
   discret_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
   double local_flowrate = 0.0;
@@ -2215,21 +2237,28 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(Teuchos::RCP<Epetra_
     }
     else
     {
+      Teuchos::ParameterList eleparams;
+
       discret_->SetState("velaf",velocities);
-      flowrate =    mapiter->second->FluidVolumetricSurfaceFlowBc::FlowRateCalculation(time,"TotalTractionCorrectionCond",FLD::calc_flowrate,mapiter->first);
+#if 0
+      Teuchos::RCP<const Epetra_Vector> velaf =discret_->GetState("velaf");
+      Teuchos::RCP<Epetra_Vector> vv = Teuchos::rcp(const_cast<Epetra_Vector*>(velaf.get()),false);
+      eleparams.set<Teuchos::RCP<Epetra_Vector> > ("velaf",vv);
+#endif
+
+      flowrate =    mapiter->second->FluidVolumetricSurfaceFlowBc::FlowRateCalculation(eleparams, time,"TotalTractionCorrectionCond",FLD::calc_flowrate,mapiter->first);
+      cout<<"Traction Corrector_1: Q="<<flowrate<<endl;
     }
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"TotalTractionCorrectionCond",time);
 
-    discret_->SetState("velaf",velocities);
+    Teuchos::ParameterList eleparams;
+    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate(eleparams,"TotalTractionCorrectionCond",FLD::calc_flowrate,time,true);
 
-    //    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond","calculate Uv integral component",time,true);
-    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond",FLD::calc_flowrate,time,true);
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp();
 
-    discret_->SetState("velaf",velocities);
-    mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp("TotalTractionCorrectionCond",flowrate,mapiter->first,time,theta,dta);
+    mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(eleparams,"TotalTractionCorrectionCond",flowrate,mapiter->first,time,theta,dta);
   }
 
   return;
@@ -2351,3 +2380,53 @@ FLD::UTILS::TotalTractionCorrector::~TotalTractionCorrector()
   return;
 }
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Export boundary values and setstate                     ismail 07/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ExportAndSetBoundaryValues(
+  Teuchos::RCP<Epetra_Vector> source,
+  Teuchos::RCP<Epetra_Vector> target,
+  std::string              name)
+{
+  // define the exporter
+  Epetra_Export exporter(source->Map(),target->Map());
+  // Export source vector to target vector
+  int err = target->Export(*source,exporter,Zero);
+  // check if the exporting was successful
+  if (err) dserror("Export using exporter returned err=%d",err);
+  // Set state
+  discret_->SetState(name, target);
+}
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Export boundary values and setstate                     ismail 07/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::TotalTractionCorrector::ExportAndSetBoundaryValues(
+  Teuchos::RCP<Epetra_Vector> source,
+  Teuchos::RCP<Epetra_Vector> target,
+  std::string              name)
+{
+  // define the exporter
+  Epetra_Export exporter(source->Map(),target->Map());
+  // Export source vector to target vector
+  int err = target->Export(*source,exporter,Zero);
+  // check if the exporting was successful
+  if (err) dserror("Export using exporter returned err=%d",err);
+  // Set state
+  discret_->SetState(name, target);
+}

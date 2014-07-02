@@ -113,7 +113,7 @@ private:
   //! output
   IO::DiscretizationWriter&     output_;
 
-  //! 
+  //!
   Teuchos::RCP<Epetra_Vector>            womersleyvbc_;
 
   //!
@@ -154,6 +154,13 @@ public:
   */
   void EvaluateCondMap(Teuchos::RCP<Epetra_Map> &   bcmap );
 
+  /*!
+  \brief export and set boundary values
+  */
+  void ExportAndSetBoundaryValues(Teuchos::RCP<Epetra_Vector> source,
+                                  Teuchos::RCP<Epetra_Vector> target,
+                                  std::string              name);
+
 
   /*!
   \brief Returns the map extractor of the conditions
@@ -189,7 +196,7 @@ private:
   //! output
   IO::DiscretizationWriter&     output_;
 
-  //! 
+  //!
   Teuchos::RCP<Epetra_Vector>            tractionvbc_;
 
   //!
@@ -270,6 +277,8 @@ public:
                                int                           condnum  ,
                                Teuchos::RCP<Epetra_Map> &             cond_dofrowmap);
 
+
+
 #if 0
   /*!
   \brief Broadcast node information over all processors
@@ -332,7 +341,8 @@ public:
   /*!
   \brief Corrects the flow rate
   */
-  void CorrectFlowRate(std::string             ds_condname,
+  void CorrectFlowRate(Teuchos::ParameterList eleparams,
+                       std::string             ds_condname,
                        FLD::BoundaryAction action,
                        double             time,
                        bool               force_correction=false);
@@ -340,7 +350,7 @@ public:
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  double FlowRateCalculation(double time, std::string ds_condname, FLD::BoundaryAction action, int condid);
+  double FlowRateCalculation(Teuchos::ParameterList eleparams, double time, std::string ds_condname, FLD::BoundaryAction action, int condid);
 
   double PressureCalculation(double time, std::string ds_condname, std::string action, int condid);
   /*!
@@ -356,13 +366,24 @@ public:
   /*!
   \brief evaluate the traction velocity component
   */
-  void EvaluateTractionVelocityComp(std::string             ds_condname,
+  void EvaluateTractionVelocityComp(Teuchos::ParameterList eleparams,
+                                    std::string             ds_condname,
                                     double             flowrate,
                                     int                condid,
                                     double             time,
                                     double             theta,
                                     double             dta);
 
+  /*!
+  \brief export and set boundary values
+  */
+  void ExportAndSetBoundaryValues(Teuchos::RCP<Epetra_Vector> source,
+                                  Teuchos::RCP<Epetra_Vector> target,
+                                  std::string              name);
+
+  /*!
+  \brief reset traction velocity components
+  */
   void ResetTractionVelocityComp();
 
   /*!
@@ -486,9 +507,12 @@ private:
   //! A map of only condition velocites
   Teuchos::RCP<Epetra_Vector> cond_velocities_;
 
+  //! A dof col map of only condition velocites
+  Teuchos::RCP<Epetra_Vector> drt_velocities_;
+
   //! A map of only condition velocites
   Teuchos::RCP<Epetra_Vector> cond_traction_vel_;
-  
+
   //! A correction factor that will scale the velocities to the correct volumetric-flow-rate
   double correction_factor_;
 
