@@ -235,7 +235,7 @@ void ACOU::TimIntImplDIRK::Solve()
     s_[i]->Scale(1.0/dirk_a_[i][i]);
 
     // apply Dirichlet boundary conditions to system of equations
-    ApplyDirichletToSystem();
+    ApplyDirichletToSystem(i);
 
     // solve the linear equation
     const double tcpusolve = Teuchos::Time::wallTime();
@@ -278,6 +278,19 @@ void ACOU::TimIntImplDIRK::Solve()
 
   return;
 } // DIRKSolve
+
+/*----------------------------------------------------------------------*
+ |  Dirichlet function (public)                    schoeder 01/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::TimIntImplDIRK::ApplyDirichletToSystem(int stage)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+  Teuchos::ParameterList params;
+  params.set<double>("total time",time_);
+  discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  LINALG::ApplyDirichlettoSystem(sysmat_,t_[stage],residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
+  return;
+} // ApplyDirichletToSystem
 
 /*----------------------------------------------------------------------*
  | Return the name of the time integrator       (public) schoeder 01/14 |

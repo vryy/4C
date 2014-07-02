@@ -648,6 +648,22 @@ public:
   }
 
   /*!
+  \brief Get number of degrees of freedom per component
+
+  This is especially important for face elements in HDG discretizations: Since
+  the trace field can be in terms of a scalar quantity, e.g. the pressure, or in terms
+  of a vector quantity, e.g. the velocity, it is important to know, which case actually
+  occurs. With this function, the number of scalar dofs may be asked. Standard elements
+  return the number of nodes, where the number of dofs per node specifies the number of
+  components. HDG face elements overwrite this function and return the number of scalar
+  dofs.
+  */
+  virtual int NumDofPerComponent(const unsigned /* face */) const
+  {
+    return NumNode();
+  }
+
+  /*!
   \brief Get the degree of an element
 
   The element can have variable degree, in case of HDG discretizations.

@@ -332,7 +332,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::ProjectField(
   double c = actmat->SpeedofSound();
 
   // get function
-  const int *start_func = params.getPtr<int>("startfuncno");
+  const int *start_func = params.getPtr<int>("funct");
 
   // internal variables
   if (elevec2.M() > 0)
@@ -377,6 +377,8 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::ProjectField(
   // trace variable (zero, because no memory, no time derivative)
   // dsassert(elevec1.M() == nfaces_*nfdofs_*nsd_, "Wrong size in project vector 1");
   // elevec1.Scale(0.0);
+  if(params.isParameter("faceconsider"))
+    dserror("Evaluation of heterogeneous Dirichlet boundary conditions not yet implemented for viscous acoustics");
 
   return 0;
 }

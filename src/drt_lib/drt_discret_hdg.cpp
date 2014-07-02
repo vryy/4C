@@ -22,6 +22,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_acou/acou_ele.H"
+#include "../drt_acou/acou_ele_action.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -153,7 +154,10 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
     Epetra_SerialDenseMatrix elemat1, elemat2;
     std::vector<int> dummy;
     Teuchos::ParameterList initParams;
-    initParams.set<int>("action", FLD::project_fluid_field); // TODO: Introduce a general action type that is valid for all problems
+    if(DRT::Problem::Instance(0)->ProblemType()==prb_acou)
+      initParams.set<int>("action", ACOU::project_field);
+    else
+      initParams.set<int>("action", FLD::project_fluid_field); // TODO: Introduce a general action type that is valid for all problems
     if (funct != NULL) {
       Teuchos::Array<int> functarray(*funct);
       initParams.set("funct",functarray);
@@ -166,8 +170,12 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
 
     for (int i=0; i<NumMyRowFaces(); ++i)
     {
-      const unsigned int dimension = DRT::UTILS::getDimension(lRowFace(i)->ParentMasterElement()->Shape());
-      if (onoff->size() <= dimension || (*onoff)[dimension] == 0)
+      const unsigned int dofperface = lRowFace(i)->ParentMasterElement()->NumDofPerFace(lRowFace(i)->FaceMasterNumber());
+      // const unsigned int dimension = DRT::UTILS::getDimension(lRowFace(i)->ParentMasterElement()->Shape());
+      const unsigned int dofpercomponent = lRowFace(i)->ParentMasterElement()->NumDofPerComponent(lRowFace(i)->FaceMasterNumber());
+      const unsigned int component = dofperface / dofpercomponent;
+
+      if (onoff->size() <= component || (*onoff)[component] == 0)
         pressureDone = true;
       if (!pressureDone) {
         if (this->NumMyRowElements() > 0 && this->Comm().MyPID()==0) {
@@ -204,7 +212,6 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
         }
       if (!faceRelevant) continue;
 
-      const unsigned int dofperface = lRowFace(i)->ParentMasterElement()->NumDofPerFace(lRowFace(i)->FaceMasterNumber());
       initParams.set<unsigned int>("faceconsider",
           static_cast<unsigned int>(lRowFace(i)->FaceMasterNumber()));
       if (static_cast<unsigned int>(elevec1.M()) != dofperface)
@@ -213,7 +220,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
 
       bool do_evaluate = false;
       if (funct != NULL)
-        for (unsigned int i=0; i<dimension; ++i)
+        for (unsigned int i=0; i<component; ++i)
           if ((*funct)[i] > 0)
             do_evaluate = true;
 
@@ -223,12 +230,9 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
         for (unsigned int i=0; i<dofperface; ++i)
           elevec1(i) = 1.;
 
-      const unsigned int dofpercomponent = dofperface/dimension;
+
       for (unsigned int i=0; i<dofperface; ++i) {
-
-        // TODO make general, not only for fluid with dimension components
         int onesetj = i / dofpercomponent;
-
         if ((*onoff)[onesetj]==0)
         {
           const int lid = (*systemvectoraux).Map().LID(dofs[i]);

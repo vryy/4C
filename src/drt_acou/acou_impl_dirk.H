@@ -43,6 +43,9 @@ public:
   /// Routine to loop over all stages in one time step
   virtual void Solve();
 
+  /// apply Dirichlet boudnary conditions to system
+  void ApplyDirichletToSystem(int stage);
+
   /// return the name of the time integration scheme
   virtual std::string Name();
 

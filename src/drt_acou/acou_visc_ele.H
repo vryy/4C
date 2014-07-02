@@ -192,10 +192,17 @@ public:
   /*!
   \brief Get number of degrees of freedom per face
   */
-  virtual int NumDofPerFace(const unsigned /* face */) const
+  virtual int NumDofPerFace(const unsigned face) const
   {
-    return DRT::UTILS::getDimension(distype_) *
-           DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), degree_, completepol_);
+    return DRT::UTILS::getDimension(distype_) * NumDofPerComponent(face);
+  }
+
+  /*!
+  \brief Get number of dofs per component per face
+  */
+  virtual int NumDofPerComponent(const unsigned face) const
+  {
+    return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
   }
 
   virtual int NumDofPerElementAuxiliary() const

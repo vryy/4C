@@ -400,7 +400,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeError(
   double c = actmat->SpeedofSound();
 
   // get function
-  const int *start_func = params.getPtr<int>("startfuncno");
+  const int *start_func = params.getPtr<int>("funct");
 
   double err_p = 0.0, norm_p = 0.0;
   for (unsigned int q=0; q<shapes_->nqpoints_; ++q)
@@ -458,12 +458,12 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
   dsassert(elevec2.M() == 0 ||
            unsigned(elevec2.M()) == (nsd_+1)*shapes_->ndofs_, "Wrong size in project vector 2");
 
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
+  // const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
+  // double rho = actmat->Density();
+  // double pulse = params.get<double>("pulse");
 
   // get function
-  const int *start_func = params.getPtr<int>("startfuncno");
-  double pulse = params.get<double>("pulse");
+  const int *start_func = params.getPtr<int>("funct");
 
   // internal variables
   if (elevec2.M() > 0)
@@ -479,8 +479,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       for (unsigned int d=0; d<nsd_; ++d)
         xyz[d] = shapes_->xyzreal(d,q); // coordinates of quadrature point in real coordinates
       double p;
-      dsassert(start_func != NULL,"startfuncno not set for initial value");
-      EvaluateAll(*start_func, xyz,  p, rho/pulse); // u and p at quadrature point
+      dsassert(start_func != NULL,"funct not set for initial value");
+      EvaluateAll(*start_func, xyz,  p, 1.0); // u and p at quadrature point
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i=0; i<shapes_->ndofs_; ++i)
@@ -510,43 +510,51 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       }
     }
   }
-//  // trace variable
-//  LINALG::Matrix<nfdofs_,nfdofs_> mass;
-//  LINALG::Matrix<nfdofs_,1> trVec;
-//  dsassert(elevec1.M() == nfaces_*nfdofs_, "Wrong size in project vector 1");
-//
-//  for (unsigned int face=0; face<nfaces_; ++face)
-//  {
-//    shapes_->EvaluateFace(*ele, face);
-//    mass.PutScalar(0.);
-//    trVec.PutScalar(0.);
-//
-//    for (unsigned int q=0; q<nfdofs_; ++q)
-//    {
-//      const double fac = shapes_->jfacF(q);
-//      double xyz[nsd_];
-//      for (unsigned int d=0; d<nsd_; ++d)
-//        xyz[d] = shapes_->xyzFreal(d,q);
-//      double p;
-//      EvaluateAll(*start_func, xyz, p, rho/pulse);
-//
-//      // now fill the components in the mass matrix and the right hand side
-//      for (unsigned int i=0; i<nfdofs_; ++i)
-//      {
-//        // mass matrix
-//        for (unsigned int j=0; j<nfdofs_; ++j)
-//          mass(i,j) += shapes_->shfunctF(i,q) * shapes_->shfunctF(j,q) * fac;
-//        trVec(i,0) += shapes_->shfunctF(i,q) * p * fac;
-//      }
-//    }
-//
-//    LINALG::FixedSizeSerialDenseSolver<nfdofs_,nfdofs_,1> inverseMass;
-//    inverseMass.SetMatrix(mass);
-//    inverseMass.SetVectors(trVec,trVec);
-//    inverseMass.Solve();
-//    for (unsigned int i=0; i<nfdofs_; ++i)
-//      elevec1(face*nfdofs_+i) = trVec(i,0);
-//  }
+
+  // in case this paramter "faceconsider" is set, we are applying Dirichlet values
+  // and have to evaluate the trace field for the given face!
+  if(params.isParameter("faceconsider"))
+  {
+    Teuchos::Array<int> *functno = params.getPtr<Teuchos::Array<int> >("funct");
+    const unsigned int *faceConsider = params.getPtr<unsigned int>("faceconsider");
+    //Teuchos::Array<int> *onoff = params.getPtr<Teuchos::Array<int> >("onoff");
+    //double *time = params.getPtr<double>("time");
+
+    shapesface_->EvaluateFace(ele->Faces()[*faceConsider]->Degree(),usescompletepoly_,2*ele->Faces()[*faceConsider]->Degree(),*ele, *faceConsider,*shapes_);
+
+    Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+    Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
+    zeroMatrix(mass);
+    zeroMatrix(trVec);
+
+    for (unsigned int q=0; q<shapesface_->nfqpoints_; ++q)
+    {
+      const double fac = shapesface_->jfacF(q);
+      double xyz[nsd_];
+      for (unsigned int d=0; d<nsd_; ++d)
+        xyz[d] = shapesface_->xyzFreal(d,q);
+      double p;
+
+      EvaluateAll((*functno)[0], xyz, p, 1.0);
+
+      // now fill the components in the mass matrix and the right hand side
+      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+      {
+        // mass matrix
+        for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
+          mass(i,j) += shapesface_->shfunctF(i,q) * shapesface_->shfunctF(j,q) * fac;
+        trVec(i) += shapesface_->shfunctF(i,q) * p * fac;
+      }
+    }
+
+    Epetra_SerialDenseSolver inverseMass;
+    inverseMass.SetMatrix(mass);
+    inverseMass.SetVectors(trVec,trVec);
+    inverseMass.Solve();
+
+    for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+      elevec1(i) = trVec(i);
+  }
 
   return 0;
 }
@@ -1329,8 +1337,7 @@ CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_Se
     Epetra_SerialDenseSolver inverseH;
     inverseH.SetMatrix(h);
     inverseH.SetVectors(rhs,rhs);
-    int err = inverseH.Solve();
-    if(err != 0) dserror("Inversion of matrix in error calculation failed with errorcode %d",err);
+    inverseH.Solve();
   }
 
   double err_p = 0.0;

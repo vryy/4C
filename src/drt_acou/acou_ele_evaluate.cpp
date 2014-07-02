@@ -14,6 +14,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_inpar/inpar_acou.H"
 #include "acou_ele_interface.H"
 #include "acou_ele.H"
+#include "acou_visc_ele.H"
 
 /*---------------------------------------------------------------------*
 *----------------------------------------------------------------------*/
@@ -41,20 +42,7 @@ int DRT::ELEMENTS::Acou::Evaluate(Teuchos::ParameterList&            params,
 {
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  INPAR::ACOU::PhysicalType phys = params.get<INPAR::ACOU::PhysicalType>("physical type");
-  if(phys == INPAR::ACOU::acou_lossless)
-    return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"std")->Evaluate(
-                this,
-                discretization,
-                lm,
-                params,
-                mat,
-                elemat1,
-                elemat2,
-                elevec1,
-                elevec2,
-                elevec3);
-  else if(phys == INPAR::ACOU::acou_viscous)
+  if(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(this))
     return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"visc")->Evaluate(
                 this,
                 discretization,
@@ -67,7 +55,17 @@ int DRT::ELEMENTS::Acou::Evaluate(Teuchos::ParameterList&            params,
                 elevec2,
                 elevec3);
   else
-    dserror("unknown physical type");
+    return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"std")->Evaluate(
+                this,
+                discretization,
+                lm,
+                params,
+                mat,
+                elemat1,
+                elemat2,
+                elevec1,
+                elevec2,
+                elevec3);
 
   return -1;
 }

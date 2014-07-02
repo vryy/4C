@@ -6922,10 +6922,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 	BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
 	BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
 
-	// local postprocessing
+	// local postprocessing and p-adaptivity
 	BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
 	BoolParameter("P_ADAPTIVITY","No","p-adaptivity in time integration",&acousticdyn);
+	DoubleParameter("P_ADAPT_TOL",1.0e-15,"Error tolerance for p-adaptivity",&acousticdyn);
 
+	// time integration
 	setStringToIntegralParameter<int>("TIMEINT","impl",
 									  "Type of time integration scheme",
 									  tuple<std::string>(

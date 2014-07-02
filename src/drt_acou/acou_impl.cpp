@@ -57,6 +57,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   invana_         (params_->get<bool>("invana")),
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
   padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
+  padapttol_      (params_->get<double>("P_ADAPT_TOL")),
   calcerr_        (DRT::INPUT::IntegralValue<INPAR::ACOU::CalcError>(*params,"CALCERROR")),
   adjoint_rhs_    (Teuchos::null)
 {
@@ -190,7 +191,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
 
   Teuchos::ParameterList initParams;
   initParams.set<int>("action",ACOU::project_field);
-  initParams.set<int>("startfuncno",startfuncno);
+  initParams.set<int>("funct",startfuncno);
   initParams.set<double>("pulse",pulse);
   initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
@@ -723,6 +724,7 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
 
     // evaluate error
     EvaluateErrorComparedToAnalyticalSol();
+
   } // while (step_<stepmax_ and time_<maxtime_)
 
   if (!myrank_) printf("\n");
@@ -754,6 +756,9 @@ void ACOU::AcouImplicitTimeInt::Solve()
 void ACOU::AcouImplicitTimeInt::ApplyDirichletToSystem()
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+  Teuchos::ParameterList params;
+  params.set<double>("total time",time_);
+  discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
   return;
 } // ApplyDirichletToSystem
@@ -868,6 +873,8 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   eleparams.set<double>("dt",dtp_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  eleparams.set<double>("padaptivitytol",padapttol_);
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   Teuchos::RCP<std::vector<double> > elevals;
@@ -922,7 +929,6 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
 
   return;
 } // UpdateInteriorVariablesAndAssemebleRHS
-
 
 namespace
 {
@@ -1427,7 +1433,7 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     params.set<double>("time",time_);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
     params.set<INPAR::ACOU::CalcError>("error calculation",calcerr_);
-    params.set<int>("startfuncno",params_->get<int>("STARTFUNCNO"));
+    params.set<int>("funct",params_->get<int>("STARTFUNCNO"));
 
     discret_->SetState(1,"intvel",intvelnp_);
     discret_->SetState(0,"trace",velnp_);

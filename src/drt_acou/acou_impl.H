@@ -109,7 +109,7 @@ public:
   /// call elements to calculate system matrix
   virtual void AssembleMatAndRHS();
 
-  /// apply Dirichlet boudnary conditions to system - up to now only a dummy function, usually we do not have Dirichlet conditions
+  /// apply Dirichlet boudnary conditions to system
   void ApplyDirichletToSystem();
 
   /// update: current solution becomes old solution of next timestep
@@ -186,6 +186,7 @@ protected:
   bool invana_;                         /// flag indicating whether inverse analysis is performed
   bool errormaps_;                      /// flag indicating whether error maps are calculated
   bool padaptivity_;                    /// p-adaptivity flag
+  double padapttol_;                    /// p-adaptivity error tolerance
   INPAR::ACOU::CalcError calcerr_;      /// flag for error calculation
 
   /// (standard) system matrix

@@ -223,7 +223,14 @@ public:
   */
   virtual int NumDofPerFace(const unsigned face) const
   {
-    //return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), degree_, completepol_);
+    return NumDofPerComponent(face); // seems redundant, but this is different for fluid_ele_hdg und acou_visc_ele!
+  }
+
+  /*!
+  \brief Get number of dofs per component per face
+  */
+  virtual int NumDofPerComponent(const unsigned face) const
+  {
     return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
   }
 
@@ -241,6 +248,15 @@ public:
   virtual int Degree() const
   {
     return degree_;
+  }
+
+  /*!
+   \brief Allows to set the element degree
+   */
+  void SetDegree(int degree)
+  {
+    degree_ = degree;
+    return;
   }
 
   /*!
