@@ -56,7 +56,9 @@ Maintainer: Michael Gee
 #include "../drt_structure/strtimint.H"
 #include "../drt_stru_multi/microstatic.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_CrsMatrix.h"
 #include "inv_analysis.H"
 #include <cstdlib>
 #include <ctime>
@@ -260,6 +262,48 @@ steps 25 nnodes 5
     }
     matset_.push_back(myset);
   }
+
+  // do patch stuff
+  patches_ = DRT::INPUT::IntegralValue<bool>(iap,"PATCHES");
+  // list of materials for each problem instance that should be fitted with patches
+  if (patches_)
+  {
+    // some parameters
+    numpatches_ = iap.get<int>("NUMPATCHES");
+    smoothingsteps_ = iap.get<int>("SMOOTHINGSTEPSPATCHES");
+  
+    // read material list
+    if (DRT::Problem::NumInstances() > 1)
+      dserror("More than one problem instance %d not feasible with patches",DRT::Problem::NumInstances());
+    const Teuchos::ParameterList& myiap = DRT::Problem::Instance(0)->InverseAnalysisParams();
+
+    int word1;
+    std::istringstream matliststream(Teuchos::getNumericStringParameter(myiap,"INV_LIST_PATCHES"));
+    while (matliststream >> word1)
+    {
+      if (word1!=-1) // this means there was no matlist specified in the input file
+        matset_patches_.insert(word1);
+    }
+
+    // define how the patches are set
+    std::string patchtype = iap.get<std::string>("DEFINEPATCHES");
+    if (patchtype == "MaterialNumber")
+    {
+      which_patches_ = material;
+      int size = matset_patches_.size();
+      if (size != numpatches_)
+        dserror("Fatal failure in the case of patches defined by the material number:\n"
+            "number of patches %d has to be identical to the number of materials %d !",numpatches_,size);
+    }
+    else if (patchtype == "Uniform")
+      which_patches_ = uniform;
+    else
+      dserror("Type of patches not known");
+
+    // init smoothing operator
+    InitPatches();
+  }
+
 
   // read material parameters from input file
   ReadInParameters();
@@ -1753,8 +1797,96 @@ void STR::GenInvAnalysis::ReadInParameters()
         break;
       }
       default:
-        dserror("Unknown type of material");
-        break;
+      {
+        if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
+          dserror("Unknown type of material");
+      }
+      break;
+      }
+    }
+
+    // Read patches
+    if (patches_)
+    {
+      if (matset_patches_.size() ==0)
+        dserror("You have to specify a material in INV_LIST_PATCHES");
+
+      // prepare check if only one material law is considered
+      int mattype = -1;
+      int numparams = 1;
+
+      // read in starting values for patches
+      std::vector<double> startvalues;
+      if (which_patches_ == material)
+        startvalues.resize(numpatches_);
+
+      for (curr=mats.begin(); curr != mats.end(); ++curr)
+      {
+        const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
+
+        if (matset_patches_.find(actmat->Id())!=matset_patches_.end())
+        {
+          if (mattype == -1)
+            mattype = actmat->Type();
+          else if (actmat->Type() != mattype)
+            dserror("patchwise inverse analysis can only be performed with one material law");
+
+          switch(actmat->Type())
+          {
+          case INPAR::MAT::m_constraintmixture:
+          {
+            numparams = 2;
+            // in the case of patches defined by materials we want to use the values specified in the material
+            if (which_patches_ == material)
+            {
+              int patchid = 0;
+              int count = 0;
+              for (std::set<int>::const_iterator mat = matset_patches_.begin(); mat!=matset_patches_.end(); mat++)
+              {
+                if (mat == matset_patches_.find(actmat->Id()))
+                  patchid = count;
+                count += 1;
+              }
+              MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              startvalues[patchid] = sqrt(params->GetParameter(params->growthfactor,-1));
+              startvalues.resize(numparams*numpatches_);
+              //startvalues[patchid+numpatches_] = acos(sqrt(params->GetParameter(params->elastin_survival,-1)));
+              startvalues[patchid+numpatches_] = tan(params->GetParameter(params->elastin_survival,-1)*PI-PI/2.0);
+            }
+          }
+          break;
+          default:
+            dserror("Material type not implemented for patches");
+          break;
+          }
+        }
+      }
+      int numpatchparams = numparams * numpatches_;
+
+      if (which_patches_ != material)
+      {
+        // input parameters inverse analysis
+        const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+        double word1;
+        std::istringstream matliststream(Teuchos::getNumericStringParameter(iap,"STARTVALUESFORPATCHES"));
+        while (matliststream >> word1)
+        {
+          startvalues.push_back(sqrt(word1));
+        }
+
+        // check if size of startvalues fits to number of patches
+        int size = startvalues.size();
+        if (size != numpatchparams)
+          dserror("Number of start values %d does fit to number of patches %d and number of parameters %d!",startvalues.size(),numpatches_,numparams);
+      }
+
+      // copy parameters into the full parameter vector
+      startindexpatches_ = p_.Length();
+      p_.Resize(startindexpatches_+numpatchparams);
+      for (int idpatches=0; idpatches < numpatchparams; idpatches++)
+      {
+        p_[startindexpatches_+idpatches] = startvalues[idpatches];
       }
     }
   }
@@ -1788,6 +1920,17 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
     // material parameters are set for the current problem instance
     STR::SetMaterialParameters(prob, p_cur, mymatset);
   }
+
+  if (patches_)
+  {
+    // in case of micro scale
+    if(subcomm != Teuchos::null)
+    {
+      dserror("microscale not supported with patches");
+    }
+    SetMaterialParametersPatches(p_cur);
+  }
+
   return;
 }
 
@@ -2562,14 +2705,350 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     }
     break;
     default:
+    {
       // ignore unknown materials ?
-      dserror("Unknown type of material");
-      break;
+      if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
+        dserror("Unknown type of material");
+    }
+    break;
     }
   }
   return;
 }
 
+void STR::GenInvAnalysis::SetMaterialParametersPatches(Epetra_SerialDenseVector& p_cur)
+{
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  const int lmyrank  = lcomm->MyPID();
+  const int groupid  = group->GroupId();
+
+  int numparams = (p_cur.Length()-startindexpatches_) / numpatches_;
+
+  for (int id_param=0; id_param < numparams; id_param++)
+  {
+    Epetra_Vector p_patches(smoother_->DomainMap(),true);
+    for (int idpatches=0; idpatches < numpatches_; idpatches++)
+    {
+      if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
+      if (lmyrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e\n",p_cur[startindexpatches_+idpatches+numpatches_*id_param]);
+      if (id_param == 0)
+        p_patches[idpatches] = p_cur[startindexpatches_+idpatches+numpatches_*id_param]*p_cur[startindexpatches_+idpatches+numpatches_*id_param];
+      else if (id_param == 1)
+      {
+        //p_patches[idpatches] = cos(p_cur[startindexpatches_+idpatches+numpatches_*id_param])*cos(p_cur[startindexpatches_+idpatches+numpatches_*id_param]);
+        p_patches[idpatches] = (atan(p_cur[startindexpatches_+idpatches+numpatches_*id_param]) + PI / 2.0) / PI;
+      }
+    }
+
+    Teuchos::RCP <Epetra_Vector> parameter = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
+    ComputeParametersFromPatches(p_patches, parameter);
+
+    // loop all materials in problem
+    const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(0)->Materials()->Map();
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+    for (curr=mats.begin(); curr != mats.end(); ++curr)
+    {
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
+
+      switch(actmat->Type())
+      {
+      case INPAR::MAT::m_constraintmixture:
+      {
+        if (matset_patches_.find(actmat->Id())!=matset_patches_.end())
+        {
+          MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          //parameter->Multiply(1.0,*parameter,*parameter,0.0);
+          if (id_param == 0)
+            params->SetParameter(params->growthfactor, parameter);
+          else if (id_param == 1)
+            params->SetParameter(params->elastin_survival, parameter);
+          else
+            dserror("MAT::ConstraintMixture has only 2 parameters not %d", id_param);
+        }
+      }
+      break;
+      default:
+      {
+        // ignore unknown materials ?
+        if (matset_patches_.find(actmat->Id())!=matset_patches_.end())
+          dserror("Unknown type of material");
+      }
+      break;
+      }
+    }
+  }
+  return;
+}
+
+void STR::GenInvAnalysis::InitPatches()
+{
+  // some information
+  int myrank = discret_->Comm().MyPID();
+  int length = (*discret_->ElementRowMap()).NumMyElements();
+
+  // -----------------------------------------------------------------------------------
+  // build graph of neighbouring elements
+  // for DEFINEPATCHES MaterialNumber this graph contains only elements that are part of the patches
+  // in Uniform all elements belong to a patch
+  int maxband = 18; // just an approximation
+  // graph of neighbouring elements
+  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*discret_->ElementRowMap(),maxband,false));
+  // contains a list of gid and ghostelegid or ghostelegid1 and ghostelegid2
+  std::vector<int> ghostelements;
+  for (int i=0; i<length; ++i)
+  {
+    std::vector<int> neighbouringelements;
+    int gid = (*discret_->ElementRowMap()).GID(i);
+    DRT::Element* myele = discret_->gElement(gid);
+    // only include elements in the graph that are part of patches
+    int matid = myele->Material()->Parameter()->Id();
+    if (which_patches_ != material || matset_patches_.find(matid) != matset_patches_.end())
+    {
+      DRT::Node** mynodes = myele->Nodes();
+      for (int idnodes = 0; idnodes< myele->NumNode();idnodes++)
+      {
+        DRT::Node* locnode = mynodes[idnodes];
+        DRT::Element** node_ele = locnode->Elements();
+        int otherowner = -1;
+        for (int id_ele = 0; id_ele < locnode->NumElement(); id_ele++)
+        {
+          int locmatid = node_ele[id_ele]->Material()->Parameter()->Id();
+          if (which_patches_ != material || matset_patches_.find(locmatid) != matset_patches_.end())
+          {
+            neighbouringelements.push_back(node_ele[id_ele]->Id());
+            if (node_ele[id_ele]->Owner() != myrank)
+            {
+              // store the two coordinates and send them later to the different procs
+              ghostelements.push_back(gid);
+              ghostelements.push_back(node_ele[id_ele]->Id());
+              // catch case when one node has ghostelements from two different procs
+              if (otherowner == -1)
+              {
+                otherowner = node_ele[id_ele]->Owner();
+              }
+              else if (otherowner != node_ele[id_ele]->Owner())
+              {
+                for (int id_ele2 = 0; id_ele2 < locnode->NumElement(); id_ele2++)
+                {
+                  int locmatid2 = node_ele[id_ele2]->Material()->Parameter()->Id();
+                  if (which_patches_ != material || matset_patches_.find(locmatid2) != matset_patches_.end())
+                  {
+                    if (node_ele[id_ele2]->Owner() != node_ele[id_ele]->Owner())
+                    {
+                      ghostelements.push_back(node_ele[id_ele2]->Id());
+                      ghostelements.push_back(node_ele[id_ele]->Id());
+                      ghostelements.push_back(node_ele[id_ele]->Id());
+                      ghostelements.push_back(node_ele[id_ele2]->Id());
+                    }
+                  }
+                }
+              }
+            }  // ghostele
+          }
+        }  // loop over elements of one node
+      } // loop over nodes
+    }
+
+    int num = neighbouringelements.size();
+    int err = graph->InsertGlobalIndices(gid,num,&neighbouringelements[0]);
+    if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d",err);
+  }
+
+  // some elements are not ghosted, get them from the other procs and add them to the colmap
+  std::vector<int> addcolumns;
+
+  //RoundRobin
+  int numproc = discret_->Comm().NumProc();
+  const int torank = (myrank + 1) % numproc;             // to
+  const int fromrank = (myrank + numproc - 1) % numproc; // from
+  DRT::Exporter exporter(discret_->Comm());
+
+  for (int irobin = 0; irobin < numproc; ++irobin)
+  {
+    std::vector<char> sdata;
+    std::vector<char> rdata;
+    // ---- pack data for sending -----
+    {
+      DRT::PackBuffer data;
+      {
+        DRT::PackBuffer::SizeMarker sm( data );
+        sm.Insert();
+        DRT::ParObject::AddtoPack(data,ghostelements);
+      }
+      data.StartPacking();
+      {
+        //DRT::PackBuffer::SizeMarker sm2( data );
+        //sm2.Insert();
+        DRT::ParObject::AddtoPack(data,ghostelements);
+      }
+      std::swap(sdata, data());
+    }
+
+    // ---- send ----
+    MPI_Request request;
+    exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+
+
+    // ---- receive ----
+    int length = rdata.size();
+    int tag = -1;
+    int from = -1;
+    exporter.ReceiveAny(from,tag,rdata,length);
+    if (tag != 1234 or from != fromrank)
+      dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+
+    // ---- unpack ----
+    {
+      // Put received ghostelements either into graph or into list of ghostelements
+      ghostelements.clear();
+      std::vector<int> receivedelements;
+      std::vector<char>::size_type index = 0;
+      if (rdata.size() > 0)
+      {
+        DRT::ParObject::ExtractfromPack(index,rdata,receivedelements);
+        for (unsigned int id_eles=0; id_eles < receivedelements.size(); id_eles += 2)
+        {
+          int gid = receivedelements[id_eles];
+          int gid2 = receivedelements[id_eles+1];
+          // check if gid2 is one of my elements, otherwise send it to the next proc
+          if (graph->MyGlobalRow(gid2))
+          {
+            int err = graph->InsertGlobalIndices(gid2,1,&gid);
+            if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d",err);
+            addcolumns.push_back(gid);
+          }
+          else
+          {
+            ghostelements.push_back(gid);
+            ghostelements.push_back(gid2);
+          }
+        }
+      }
+    }
+
+    // wait for all communication to finish
+    exporter.Wait(request);
+    discret_->Comm().Barrier(); // I feel better this way ;-)
+  } // end for irobin
+  // check if list is empty
+  if (ghostelements.size() > 0)
+    dserror("Some ghost elements did not find their owner!");
+
+  // give the graph the modified map
+  int errgraph = graph->FillComplete();
+  if (errgraph!=0)
+    dserror("FillComplete of the graph did not work");
+
+  // -----------------------------------------------------------------------------------
+  // build matrix that does the smoothing
+  // (1 - omega* D^-1 A )
+  double omega = 2.0/3.0;
+  Teuchos::RCP<Epetra_CrsMatrix> laplace = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*discret_->ElementRowMap(),maxband));
+  for (int i=0; i<length; ++i)
+  {
+    int gid = (*discret_->ElementRowMap()).GID(i);
+    int lengthrow = graph->NumGlobalIndices(gid);
+    std::vector<int> myrow(lengthrow,0);
+    int graphlength;
+    graph->ExtractGlobalRowCopy(gid,lengthrow,graphlength,&myrow[0]);
+    if (graphlength != lengthrow)
+      dserror("something went wrong with row length");
+    double offdiagonal = omega;
+    if (lengthrow > 1)
+      offdiagonal = offdiagonal/(lengthrow-1.0);
+    for (int idrow=0; idrow < lengthrow; idrow++)
+    {
+      if (myrow[idrow] != gid)
+      {
+        int err = laplace->InsertGlobalValues(gid,1,&offdiagonal,&myrow[idrow]);
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalIndices returned %d",err);
+      }
+    }
+    double diagonal = 1.0 - omega;
+    if (lengthrow <= 1)
+      diagonal = 1.0;
+    int err = laplace->InsertGlobalValues(gid,1,&diagonal,&gid);
+    if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalIndices returned %d",err);
+  }
+  int errlaplace = laplace->FillComplete();
+  if (errlaplace!=0)
+    dserror("FillComplete of the laplace matrix did not work");
+
+  // -----------------------------------------------------------------------------------
+  // build matrix with patch information
+  Teuchos::RCP<Epetra_CrsMatrix> patches = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*discret_->ElementRowMap(),1));
+  if (which_patches_ == uniform)
+  {
+    int maxele = discret_->NumGlobalElements();
+    int numeleperpatch = maxele / numpatches_; // if this is not an integer the last patch will be the biggest
+    double one = 1.0;
+    for (int i=0; i<length; ++i)
+    {
+      int gid = (*discret_->ElementRowMap()).GID(i);
+      int patchnumber = 0;
+      for (int idpatches = 1; idpatches < numpatches_; idpatches++)
+      {
+        if (gid > (idpatches*numeleperpatch-1))
+        {
+          patchnumber += 1;
+        }
+      }
+      int err = patches->InsertGlobalValues(gid, 1, &one, &patchnumber);
+      if (err!=0)
+        dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",gid,patchnumber,err);
+    }
+  }
+  else if (which_patches_ == material)
+  {
+    double one = 1.0;
+    for (int i=0; i<length; ++i)
+    {
+      int gid = (*discret_->ElementRowMap()).GID(i);
+      int matid = discret_->gElement(gid)->Material()->Parameter()->Id();
+      int patchid = -1;
+      int count = 0;
+      for (std::set<int>::const_iterator mat = matset_patches_.begin(); mat!=matset_patches_.end(); mat++)
+      {
+        if (mat == matset_patches_.find(matid))
+          patchid = count;
+        count += 1;
+      }
+      if (patchid != -1)
+      {
+        int err = patches->InsertGlobalValues(gid, 1, &one, &patchid);
+        if (err!=0)
+          dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",gid,matid,err);
+      }
+    }
+  }
+  Epetra_Map dummy_map(numpatches_,numpatches_,0,discret_->Comm());
+  patches->FillComplete(dummy_map,*discret_->ElementRowMap());
+
+  // -----------------------------------------------------------------------------------
+  // multiply matrices to get final smoothing matrix
+  if (smoothingsteps_ == 0)
+  {
+    smoother_ = Teuchos::rcp(new LINALG::SparseMatrix(*patches));
+  }
+  else
+  {
+    smoother_ = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->ElementRowMap(),numpatches_));
+    smoother_ = LINALG::MLMultiply(*laplace,*patches,false,false,true);
+    LINALG::SparseMatrix linalg_laplace(*laplace);
+    for (int idsmooth = 1; idsmooth<smoothingsteps_; idsmooth++)
+      smoother_ = LINALG::MLMultiply(linalg_laplace,*smoother_,false,false,true);
+  }
+
+}
+
+void STR::GenInvAnalysis::ComputeParametersFromPatches(Epetra_Vector p_patches, Teuchos::RCP <Epetra_Vector>& eleparameters)
+{
+  Epetra_Vector rowparameters(*discret_->ElementRowMap(),true);
+  smoother_->Multiply(false, p_patches, rowparameters);
+  LINALG::Export(rowparameters,*eleparameters);
+}
 
 void STR::GenInvAnalysis::CheckOptStep()
 {

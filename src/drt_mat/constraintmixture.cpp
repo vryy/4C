@@ -3034,7 +3034,26 @@ bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double
     if ((int)data.size()!=1)
       dserror("size mismatch");
     int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
-    data[0] = params_->GetParameter(params_->elastin_survival,eleLID);
+    if (*params_->elastindegrad_ == "InvEla")
+      data[0] = params_->GetParameter(params_->elastin_survival,eleLID);
+    else if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate"
+        || *params_->elastindegrad_ == "Wedge" || *params_->elastindegrad_ == "Circles")
+    {
+      DRT::Element* myele = DRT::Problem::Instance()->GetDis("structure")->gElement(eleID);
+      DRT::Node** mynodes = myele->Nodes();
+      for (int idnodes = 0; idnodes< myele->NumNode();idnodes++)
+      {
+        DRT::Node* locnode = mynodes[idnodes];
+        double elastin_survival = 0.0;
+        LINALG::Matrix<1,3> point_refe;
+        point_refe(0) = locnode->X()[0]; point_refe(1) = locnode->X()[1]; point_refe(2) = locnode->X()[2];
+        ElastinDegradation(point_refe, elastin_survival);
+        data[0] += elastin_survival;
+      }
+      data[0] = data[0] / myele->NumNode();
+    }
+    else
+      data[0] = 1.0;
   }
   else
   {

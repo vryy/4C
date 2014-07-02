@@ -38,6 +38,7 @@ namespace IO
 namespace LINALG
 {
   class Solver;
+  class SparseMatrix;
 }
 
 namespace DRT
@@ -208,6 +209,20 @@ private:
   std::vector<int>          nodes_;         // list of node gids observed
   std::vector<std::vector<int> > dofs_;          // list of dofs on each node that are monitored
 
+  // patch stuff
+  bool patches_;
+  int numpatches_;
+  int startindexpatches_;
+  std::set<int> matset_patches_;
+  Teuchos::RCP<LINALG::SparseMatrix> smoother_;
+  int smoothingsteps_;
+  enum DEFINE_PATCHES
+  {
+    material,
+    uniform
+  };
+  DEFINE_PATCHES which_patches_;
+
 public:
 
   /// standard constructor
@@ -248,6 +263,13 @@ public:
   /// Output of Inverse Analysis
   void PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p);
   void PrintFile();
+
+  // SetMaterialParameters for patch materials
+  void SetMaterialParametersPatches(Epetra_SerialDenseVector& p_cur);
+  // initialize patches and prolongation operator
+  void InitPatches();
+  // compute elementparameters from patch parameters
+  void ComputeParametersFromPatches(Epetra_Vector p_patches, Teuchos::RCP <Epetra_Vector>& eleparameters);
 
   // Check if mat params are out of bounds
   void CheckOptStep();

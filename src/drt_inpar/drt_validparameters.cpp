@@ -1471,6 +1471,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("PARAM_BOUNDS","no",
                                       "Reset parameters if optstep predicts negative values",
                                       yesnotuple,yesnovalue,&iap);
+
+  BoolParameter("PATCHES","No","Do you want to use smoothed patches?",&iap);
+  StringParameter("DEFINEPATCHES","MaterialNumber",
+      "define how the patches are defined: MaterialNumber or Uniform",
+      &iap);
+  IntParameter("NUMPATCHES",0,"number of patches",&iap);
+  setNumericStringParameter("INV_LIST_PATCHES","-1",
+                      "IDs of materials that are included in the patches",
+                      &iap);
+  IntParameter("SMOOTHINGSTEPSPATCHES",1,"number of smoothing steps that are performed",&iap);
+  setNumericStringParameter("STARTVALUESFORPATCHES","1.0",
+                  "startvalues for the patches, only needed for Uniform Patches",
+                  &iap);
+
   /*----------------------------------------------------------------------*/
 
   /* parameters for multi-level monte carlo */
