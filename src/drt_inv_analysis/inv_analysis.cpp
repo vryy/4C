@@ -27,6 +27,7 @@ Maintainer: Sophie Rausch
 #include "../drt_io/io_control.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
+#include "../drt_matelast/elast_coupexppol.H"
 #include "../drt_matelast/elast_coupneohooke.H"
 #include "../drt_matelast/elast_isoexpopow.H"
 #include "../drt_matelast/elast_coupmooneyrivlin.H"
@@ -653,6 +654,17 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j+1] = params2->lambda_;
                 break;
               }
+              case INPAR::MAT::mes_coupexppol:
+              {
+                filename_=filename_+"_coupexppol";
+                const MAT::ELASTIC::PAR::CoupExpPol* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+3);
+                p_[j]   = params2->a_;
+                p_[j+1] = params2->b_;
+                p_[j+2] = params2->c_;
+                break;
+              }
               case INPAR::MAT::mes_coupneohooke:
               {
                 filename_=filename_+"_coupneohooke";
@@ -855,6 +867,17 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j+1] = params2->lambda_;
                 break;
               }
+              case INPAR::MAT::mes_coupexppol:
+              {
+                filename_=filename_+"_coupexppol";
+                const MAT::ELASTIC::PAR::CoupExpPol* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+3);
+                p_[j]   = params2->a_;
+                p_[j+1] = params2->b_;
+                p_[j+2] = params2->c_;
+                break;
+              }
               case INPAR::MAT::mes_coupneohooke:
               {
                 filename_=filename_+"_coupneohooke";
@@ -1030,6 +1053,7 @@ void STR::InvAnalysis::ReadInParameters()
 
         // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block or an interface to a micro material
         case INPAR::MAT::mes_couplogneohooke:
+        case INPAR::MAT::mes_coupexppol:
         case INPAR::MAT::mes_coupneohooke:
         case INPAR::MAT::mes_coupblatzko:
         case INPAR::MAT::mes_isoneohooke:
@@ -1046,7 +1070,7 @@ void STR::InvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_volsussmanbathe:
         case INPAR::MAT::mes_volpenalty:
         case INPAR::MAT::mes_vologden:
-	case INPAR::MAT::mes_isoratedep:
+        case INPAR::MAT::mes_isoratedep:
         case INPAR::MAT::m_struct_multiscale:
           break;
         default:
@@ -1138,6 +1162,16 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               params2->SetMue(abs(p_cur(j)));
               params2->SetLambda(abs(p_cur(j+1)));
               j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_coupexppol:
+            {
+              MAT::ELASTIC::PAR::CoupExpPol* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+              params2->SetA(abs(p_cur(j)));
+              params2->SetB(abs(p_cur(j+1)));
+              params2->SetC(abs(p_cur(j+2)));
+              j = j+3;
               break;
             }
             case INPAR::MAT::mes_coupneohooke:
@@ -1278,7 +1312,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               //params2->SetBeta(abs(p_cur(j+1)));
               j = j+1;
               break;
-	    }
+            }
             default:
               dserror("cannot deal with this material");
               break;
@@ -1319,6 +1353,16 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               params2->SetMue(abs(p_cur(j)));
               params2->SetLambda(abs(p_cur(j+1)));
               j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_coupexppol:
+            {
+              MAT::ELASTIC::PAR::CoupExpPol* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+              params2->SetA(abs(p_cur(j)));
+              params2->SetB(abs(p_cur(j+1)));
+              params2->SetC(abs(p_cur(j+2)));
+              j = j+3;
               break;
             }
             case INPAR::MAT::mes_coupneohooke:

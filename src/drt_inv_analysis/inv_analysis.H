@@ -87,8 +87,8 @@ private:
   double tstep_;                          // timestep
 
   int problem_type_;		        // Neumann or Dirichlet Problem
-  int np_;                                // number of fitted parameters (default 3, 4 with kappa)
-  int nmp_;                                // number of fitted parameters (default 3, 4 with kappa)
+  int np_;                                // number of fitted parameters
+  int nmp_;                                // number of timesteps
 
   Epetra_SerialDenseVector mcurve_;	// measured displacment of the experiments (target value)
 

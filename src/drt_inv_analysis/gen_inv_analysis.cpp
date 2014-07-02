@@ -38,6 +38,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/viscoelasthyper.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
+#include "../drt_matelast/elast_coupexppol.H"
 #include "../drt_matelast/elast_coupmooneyrivlin.H"
 #include "../drt_matelast/elast_coupneohooke.H"
 #include "../drt_matelast/elast_iso1pow.H"
@@ -215,7 +216,7 @@ steps 25 nnodes 5
     }
   }
 
-  // error: diference of the measured to the calculated curve
+  // error: difference of the measured to the calculated curve
   error_  = 1.0E6;
   error_o_= 1.0E6;
   //
@@ -933,7 +934,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
   // this memory is going to explode, do we really need this? mwgee
   //ccurve_s_.Reshape(nmp_,  numb_run_+1);
   //for (int i=0; i<nmp_; i++)
-  //  ccurve_s_(i, numb_run_)= cmatrix(i, cmatrix.ColDim()-1);
+  //ccurve_s_(i, numb_run_)= cmatrix(i, cmatrix.ColDim()-1);
 
   mu_s_.Resize(numb_run_+1);
   mu_s_(numb_run_)=mu_;
@@ -1194,6 +1195,17 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_.Resize(j+2);
               p_[j]   = params2->mue_;
               p_[j+1] = params2->lambda_;
+              break;
+            }
+            case INPAR::MAT::mes_coupexppol:
+            {
+              filename_=filename_+"_coupexppol";
+              const MAT::ELASTIC::PAR::CoupExpPol* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+3);
+              p_[j]   = params2->a_;
+              p_[j+1] = params2->b_;
+              p_[j+2] = params2->c_;
               break;
             }
             case INPAR::MAT::mes_coupneohooke:
@@ -1559,6 +1571,7 @@ void STR::GenInvAnalysis::ReadInParameters()
 
       // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block or an interface to a micro material
       case INPAR::MAT::mes_couplogneohooke:
+      case INPAR::MAT::mes_coupexppol:
       case INPAR::MAT::mes_coupneohooke:
       case INPAR::MAT::mes_coupblatzko:
       case INPAR::MAT::mes_isoneohooke:
@@ -1631,6 +1644,17 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_.Resize(j+2);
               p_[j]   = params2->mue_;
               p_[j+1] = params2->lambda_;
+              break;
+            }
+            case INPAR::MAT::mes_coupexppol:
+            {
+              filename_=filename_+"_coupexppol";
+              const MAT::ELASTIC::PAR::CoupExpPol* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+3);
+              p_[j]   = params2->a_;
+              p_[j+1] = params2->b_;
+              p_[j+2] = params2->c_;
               break;
             }
             case INPAR::MAT::mes_coupneohooke:
@@ -2013,6 +2037,16 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             j = j+2;
             break;
           }
+          case INPAR::MAT::mes_coupexppol:
+          {
+            MAT::ELASTIC::PAR::CoupExpPol* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+            params2->SetA(abs(p_cur(j)));
+            params2->SetB(abs(p_cur(j+1)));
+            params2->SetC(abs(p_cur(j+2)));
+            j = j+3;
+            break;
+          }
           case INPAR::MAT::mes_coupneohooke:
           {
             MAT::ELASTIC::PAR::CoupNeoHooke* params2 =
@@ -2160,6 +2194,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     }
     break;
     case INPAR::MAT::mes_couplogneohooke:
+    case INPAR::MAT::mes_coupexppol:
     case INPAR::MAT::mes_coupneohooke:
     case INPAR::MAT::mes_coupblatzko:
     case INPAR::MAT::mes_isoneohooke:
@@ -2269,6 +2304,22 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               printf("MAT::PAR::CoupLogNeoHooke - Lambda = %20.15e \n",p_cur[j+1]);
             }
             j = j+2;
+            break;
+          }
+          case INPAR::MAT::mes_coupexppol:
+          {
+            MAT::ELASTIC::PAR::CoupExpPol* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+            params2->SetA(abs(p_cur(j)));
+            params2->SetB(abs(p_cur(j+1)));
+            params2->SetC(abs(p_cur(j+2)));
+            if (lmyrank == 0)
+            {
+              printf("MAT::PAR::CoupExpPol - A = %20.15e \n",p_cur[j]);
+              printf("MAT::PAR::CoupExpPol - B = %20.15e \n",p_cur[j+1]);
+              printf("MAT::PAR::CoupExpPol - C = %20.15e \n",p_cur[j+2]);
+            }
+            j = j+3;
             break;
           }
           case INPAR::MAT::mes_coupneohooke:
@@ -2548,6 +2599,16 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             params2->SetMue(abs(p_cur(j)));
             params2->SetLambda(abs(p_cur(j+1)));
             j = j+2;
+            break;
+          }
+          case INPAR::MAT::mes_coupexppol:
+          {
+            MAT::ELASTIC::PAR::CoupExpPol* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+            params2->SetA(abs(p_cur(j)));
+            params2->SetB(abs(p_cur(j+1)));
+            params2->SetC(abs(p_cur(j+2)));
+            j = j+3;
             break;
           }
           case INPAR::MAT::mes_coupneohooke:

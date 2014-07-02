@@ -902,6 +902,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*--------------------------------------------------------------------*/
+  // coupled exponential material for compressible material (according to Weikenmeier_2014)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupExpPol",
+                                            "compressible, isochoric exponential material law for soft tissue",
+                                            INPAR::MAT::mes_coupexppol));
+    AddNamedReal(m,"A","material constant");
+    AddNamedReal(m,"B","material constant linear I_1");
+    AddNamedReal(m,"C","material constant linear J");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
+
   /*--------------------------------------------------------------------*/
 
     //compressible neo-Hooke material acc. to Holzapfel
@@ -1163,7 +1180,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-
 
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with one exponential fiber family

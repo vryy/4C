@@ -30,7 +30,7 @@ namespace ELASTIC
     /// material parameters for isochoric contribution of a CoupNeoHookean material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupNeoHooke C 1 BETA 1
+    /// MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
     class CoupNeoHooke : public MAT::PAR::Parameter
     {
     public:

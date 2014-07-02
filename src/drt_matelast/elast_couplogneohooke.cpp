@@ -39,7 +39,7 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
 
   if (parmode == "YN")
   {
-    if (c2 <= 0.5 and c2 > -1.0)
+    if (c2 < 0.5 and c2 > -1.0)
     {
       lambda_ = (c2 == 0.5) ? 0.0 : c1*c2/((1.0+c2)*(1.0-2.0*c2));
       mue_ = c1/(2.0*(1.0+c2));  // shear modulus
@@ -87,7 +87,7 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
   )
 {
 
-   // determinant of deformation gradient
+   // ln of determinant of deformation gradient
   const double logdetf = std::log(std::sqrt(prinv(2)));
 
   // gammas
