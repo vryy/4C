@@ -1939,15 +1939,15 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_Stab_ConvAveraged(
 
     for(int ic=0; ic<side_nen_; ic++)
     {
-      int Velx = ic*(side_numdof)+0;
-      int Vely = ic*(side_numdof)+1;
-      int Velz = ic*(side_numdof)+2;
+      int iVelx = ic*(side_numdof)+0;
+      int iVely = ic*(side_numdof)+1;
+      int iVelz = ic*(side_numdof)+2;
 
       double tmp = -0.5*side_funct_dyad_timefacfac(ic,ir)*stabfac_avg;
 
-      C_uui_(idVelx, Velx) += tmp;
-      C_uui_(idVely, Vely) += tmp;
-      C_uui_(idVelz, Velz) += tmp;
+      C_uui_(idVelx, iVelx) += tmp;
+      C_uui_(idVely, iVely) += tmp;
+      C_uui_(idVelz, iVelz) += tmp;
     }
 
     double tmp = -0.5*funct_timefacfac(ir)*stabfac_avg;
@@ -3037,7 +3037,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        //(y,z)
 	        C_uiu_(idVely, iVelz) -= alpha*e_funct_visc2_timefacfac(ic)*    0.5 * normal(Vely)*emb_derxy_(Velz,ir);
 	        //(z,z)
-	        C_uiu_(idVelz, Velz) -= alpha*e_funct_visc2_timefacfac(ic)*(   0.5 * normal(Velx)*emb_derxy_(Velx,ir)
+	        C_uiu_(idVelz, iVelz) -= alpha*e_funct_visc2_timefacfac(ic)*(   0.5 * normal(Velx)*emb_derxy_(Velx,ir)
 	            + 0.5 * normal(Vely)*emb_derxy_(Vely,ir)
 	            +       normal(Velz)*emb_derxy_(Velz,ir)  );
 	      }
