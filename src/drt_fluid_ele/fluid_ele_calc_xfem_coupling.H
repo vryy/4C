@@ -64,7 +64,8 @@ namespace DRT
             Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
             Epetra_SerialDenseMatrix &  Gsui,            ///< interface sigma-u_interface coupling
             Epetra_SerialDenseMatrix &  Guis,            ///< interface u_interface-sigma coupling
-            Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+            Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
+            bool isViscAdjointSymmetric = false          ///< symmetric or skew-symmetric formulation of MHVS adjoint viscous term
         );
 
         //! Nitsche (NIT) coupling between background element and side element
@@ -74,7 +75,8 @@ namespace DRT
             Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
             Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
             Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-            Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+            Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
+            bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         );
 
         //! simple side coupling together with embedded Nitsche coupling
@@ -235,7 +237,8 @@ namespace DRT
             Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
             Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
             Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-            Epetra_SerialDenseMatrix &  emb_xyze         ///< global node coordinates
+            Epetra_SerialDenseMatrix &  emb_xyze,        ///< global node coordinates
+            bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         );
 
 

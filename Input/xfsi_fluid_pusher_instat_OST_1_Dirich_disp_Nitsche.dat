@@ -122,7 +122,7 @@ VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_disp
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Nitsche
+COUPLING_METHOD                 Nitsche
 VISC_STAB_FAC                   10.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes

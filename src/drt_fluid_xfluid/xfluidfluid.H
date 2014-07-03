@@ -94,7 +94,6 @@ namespace FLD
 
       /// setup of fluid-fluid coupling terms
       void EvaluateFluidFluid(
-          Teuchos::ParameterList                     & eleparams, ///< parameter list for evaluation
           const Teuchos::RCP<DRT::Discretization>    & bgdis,     ///< background fluid discretization
           const Teuchos::RCP<DRT::Discretization>    & cutdiscret,///< fluid-fluid boundary discretization
           const Teuchos::RCP<DRT::Discretization>    & embdis     ///< embedded fluid discretization
@@ -493,8 +492,6 @@ namespace FLD
     /// return embedded fluid discretization
     const Teuchos::RCP<DRT::Discretization>& Discretization() { return embdis_; }
 
-    const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
-
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
         {dserror("not implemented"); return Teuchos::null;}
 
@@ -780,7 +777,7 @@ namespace FLD
 
     //! @name XFEM coupling specific parameters
     //@{
-    enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     ///< embedded boundary/coupling method
+    enum INPAR::XFEM::CouplingMethod coupling_method_;     ///< embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    ///< coupling strategy (onesided, twosided mortaring)
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; ///< type of monolithic xffsi-approach
     enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach_;       ///< xfluidfluid time integration approach

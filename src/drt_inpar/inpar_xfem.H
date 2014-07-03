@@ -24,12 +24,11 @@ namespace INPAR
   {
 
     /// which method is used to enforce the boundary condition
-    enum BoundaryIntegralType
+    enum CouplingMethod
     {
       Hybrid_LM_Cauchy_stress,
       Hybrid_LM_viscous_stress,
-      Nitsche,
-      Neumann
+      Nitsche
     };
 
     /// which type of boundary movement

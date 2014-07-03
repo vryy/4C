@@ -109,7 +109,7 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
 {
   int err=0;
 
-  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
+  const INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
 
   if( vcellgausspts == INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation"
   {
@@ -211,7 +211,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
 {
   int err=0;
 
-  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
+  const INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
 
   if( vcellgausspts==INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation" or "MomentFitting" method
   {
@@ -893,7 +893,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, "Nitsche");
+  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, Nitsche);
 
 
   //-----------------------------------------------------------------------------------
@@ -983,7 +983,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
       std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
       Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
 
-      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
     }
     else
     {
@@ -1259,7 +1259,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, "Nitsche");
+  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, Nitsche);
 
   //-----------------------------------------------------------------------------------
   //         evaluate element length, stabilization factors and average weights
@@ -1360,7 +1360,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
       std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
       Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
 
-      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
       emb = DRT::ELEMENTS::XFLUID::EmbCoupling<distype>::TwoSidedImpl(emb_ele,C_uiu,C_uui,rhC_ui,eleCuiui,emb_xyze);
     }
     else
@@ -1570,10 +1570,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   // determine, whether this is a Cauchy stress-based (MHCS)
   // or viscous stress-based LM approach (MHVS)
   //--------------------------------------------------------
-  INPAR::XFEM::BoundaryIntegralType boundary_type = params.get<INPAR::XFEM::BoundaryIntegralType>("boundIntType");
+  INPAR::XFEM::CouplingMethod coupling_method = fldparaxfem_->GetCouplingMethod();
 
   // check for valid boundary integration type
-  switch (boundary_type)
+  switch (coupling_method)
   {
   case INPAR::XFEM::Hybrid_LM_viscous_stress:
   case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
@@ -1586,7 +1586,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     break;
   }
 
-  const bool is_MHVS = (boundary_type == INPAR::XFEM::Hybrid_LM_viscous_stress);
+  const bool is_MHVS = (coupling_method == INPAR::XFEM::Hybrid_LM_viscous_stress);
 
   // flag, that indicates whether we have side coupling terms Cuiu, Cuui,...
   // generally, this is the case for fluid-fluid coupling and monolithic XFSI
@@ -1662,7 +1662,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   //--------------------------------------------------------
 
   // L2-projection between stress fields on whole or on physical element volume?
-  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj = params.get<INPAR::XFEM::Hybrid_LM_L2_Proj>("hybrid_lm_l2_proj");
+  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj = fldparaxfem_->HybridLM_L2Proj();
 
   // in case of MHVS we have a stabilizing parameter!
   double mhvs_param = 1.0;
@@ -1712,7 +1712,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslm,patchelementslmowner, Cuiui_coupling, "MixedStressHybrid");
+  PatchLocationVector(begids,cutdis,patchelementslm,patchelementslmowner, Cuiui_coupling, HybridLM);
 
   // evaluate shape function derivatives
   bool eval_deriv = false;
@@ -1773,7 +1773,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
       Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
       Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
 
-      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
+      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
     }
     else
     {
@@ -1920,7 +1920,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
         if (fluidfluidcoupling)
         {
-          xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
+          xff_conv_stab_scaling = fldparaxfem_->XffConvStabScaling();
           NIT_ComputeFullStabfacFluidFluid(
               NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
               avg_conv_stab_fac,             ///< scaling of the convective average coupling term for fluidfluid problems
@@ -1937,7 +1937,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         }
         else
         {
-          conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
+          conv_stab_scaling = fldparaxfem_->ConvStabScaling();
 
           NIT_ComputeFullStabfac(
               NIT_full_stab_fac, ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -2766,13 +2766,6 @@ void FluidEleCalcXFEM<distype>::MHVS_Evaluate_VolBased(
   // fill the (nen_ x nen_) matrix block of K_ss
   bK_ss.MultiplyNT(my::funct_, my::funct_); //N * N^T
 
-  // leads to terms, that are analogous to a symmetric/non-symmetric Nitsche-formulation
-  // REMARK: behaves unstable for betau=-1.0 in fluid-fluid problems, so keep that in mind!
-  // betau (-)1 <--> symmetric Nitsche
-  // betau (+)1 <--> non-symmetric Nitsche
-  // the stabilizing parameter n has been applied to timefacfac
-  const double betau = 1.0;
-
   // scaling with inverse dynamic effective viscosity
   const double viscfac = -1.0 / (2.0 * my::visceff_);
 
@@ -2844,7 +2837,7 @@ void FluidEleCalcXFEM<distype>::MHVS_Evaluate_VolBased(
    * test strains computed from the test velocities
    *
    *     1     /                         \
-   * (-) -  * |  \epsilon(v), \sigma      | * \beta_u
+   *     -  * |  \epsilon(v), \sigma      | * \alpha
    *     n     \                         /
    *
    */
@@ -2859,31 +2852,39 @@ void FluidEleCalcXFEM<distype>::MHVS_Evaluate_VolBased(
   dNdyNT.UpdateT(NdNdyT);
   dNdzNT.UpdateT(NdNdzT);
 
+  // leads to terms, that are analogous to a symmetric/non-symmetric Nitsche-formulation
+  // REMARK: behaves unstable for betau=-1.0 in fluid-fluid problems, so keep that in mind!
+  // betau (-)1 <--> symmetric Nitsche
+  // betau (+)1 <--> non-symmetric Nitsche
+  // the stabilizing parameter n has been applied to timefacfac
+
+  const double alpha = fldparaxfem_->IsViscousAdjointSymmetric() ? 1.0 : -1.0;
+
   // add main diagonal submatrices
-  K_us(Velx, Sigmaxx)->Update(-betau * timefacfac, dNdxNT, 1.0);
-  K_us(Vely, Sigmayy)->Update(-betau * timefacfac, dNdyNT, 1.0);
-  K_us(Velz, Sigmazz)->Update(-betau * timefacfac, dNdzNT, 1.0);
+  K_us(Velx, Sigmaxx)->Update(alpha * timefacfac, dNdxNT, 1.0);
+  K_us(Vely, Sigmayy)->Update(alpha * timefacfac, dNdyNT, 1.0);
+  K_us(Velz, Sigmazz)->Update(alpha * timefacfac, dNdzNT, 1.0);
 
   // add off-diagonal blocks
-  K_us(Velx, Sigmaxy)->Update(-betau * timefacfac, dNdyNT, 1.0);
-  K_us(Velx, Sigmaxz)->Update(-betau * timefacfac, dNdzNT, 1.0);
-  K_us(Vely, Sigmayx)->Update(-betau * timefacfac, dNdxNT, 1.0);
-  K_us(Vely, Sigmayz)->Update(-betau * timefacfac, dNdzNT, 1.0);
-  K_us(Velz, Sigmazx)->Update(-betau * timefacfac, dNdxNT, 1.0);
-  K_us(Velz, Sigmazy)->Update(-betau * timefacfac, dNdyNT, 1.0);
+  K_us(Velx, Sigmaxy)->Update(alpha * timefacfac, dNdyNT, 1.0);
+  K_us(Velx, Sigmaxz)->Update(alpha * timefacfac, dNdzNT, 1.0);
+  K_us(Vely, Sigmayx)->Update(alpha * timefacfac, dNdxNT, 1.0);
+  K_us(Vely, Sigmayz)->Update(alpha * timefacfac, dNdzNT, 1.0);
+  K_us(Velz, Sigmazx)->Update(alpha * timefacfac, dNdxNT, 1.0);
+  K_us(Velz, Sigmazy)->Update(alpha * timefacfac, dNdyNT, 1.0);
 
   // computation of additional stress term, scaled with inverse MHVS-parameter
 
   // build K_uu coupling matrix
   /*
    *   /                           \     1
-   *  |  \epsilon(v), \epsilon(u)   | *  - * 2 \mu * \beta
+   * -|  \epsilon(v), \epsilon(u)   | *  - * 2 \mu * \alpha
    *   \                           /     n
    *
    */
 
   // factor 2 from above is cancelled out
-  const double visc_timefac_mhvs = betau * my::visceff_ * timefacfac;
+  const double visc_timefac_mhvs = -alpha * my::visceff_ * timefacfac;
 
   std::vector<const LINALG::Matrix<my::nen_,1> *> dN;
   dN.push_back(&dx);
@@ -3131,7 +3132,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, "Nitsche");
+  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, Nitsche);
 
 
   //-----------------------------------------------------------------------------------
@@ -3151,6 +3152,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //--------------------------------------------
   // define average weights
   //--------------------------------------------
+
   double kappa1 = 1.0;      // Xfluid-sided mortaring
 
   if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
@@ -3160,7 +3162,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
 
   // evaluate shape function derivatives
-  bool eval_deriv = true;
+  const bool eval_deriv = true;
 
 
   //--------------------------------------------
@@ -3217,7 +3219,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
         Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
 
-        si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+        si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
       }
       else
       {
@@ -3351,7 +3353,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         if(fluidfluidcoupling)
         {
           // convective stabilization type for xfluidfluid
-          xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
+          xff_conv_stab_scaling = fldparaxfem_->XffConvStabScaling();
 
           double velgrad_interface_fac = 0.0;
           double gamma_ghost_penalty = 0.0;
@@ -3375,7 +3377,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         else
         {
           // convective stabilization type for xfluid
-          conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
+          conv_stab_scaling = fldparaxfem_->ConvStabScaling();
 
           NIT_ComputeFullStabfac(
               NIT_full_stab_fac, ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -3520,7 +3522,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting embedded elements and reshape coupling matrices
-  PatchLocationVector(begids,alediscret,patchelementslmv,patchelementslmowner,Cuiui_coupling,boundary_emb_gid_map,"Nitsche");
+  PatchLocationVector(begids,alediscret,patchelementslmv,patchelementslmowner,Cuiui_coupling,boundary_emb_gid_map,Nitsche);
 
   //-----------------------------------------------------------------------------------
   //         evaluate element length, stabilization factors and average weights
@@ -3532,7 +3534,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   //------------------------------
   // define average weights
 
-  INPAR::XFEM::CouplingStrategy coupling_strategy = params.get<INPAR::XFEM::CouplingStrategy>("coupling_strategy");
+  INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
   double kappa1;
 
   if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
@@ -3618,7 +3620,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
       std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
       Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
 
-      emb = DRT::ELEMENTS::XFLUID::EmbCoupling<distype>::TwoSidedImpl(emb_ele,C_uiu,C_uui,rhC_ui,eleCuiui,emb_xyze);
+      emb = DRT::ELEMENTS::XFLUID::EmbCoupling<distype>::TwoSidedImpl(emb_ele,C_uiu,C_uui,rhC_ui,eleCuiui,emb_xyze, fldparaxfem_->IsViscousAdjointSymmetric());
       si  = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,side_xyze);
     }
     else
@@ -3762,22 +3764,22 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         double velgrad_interface_fac = 0.0;
         double presscoupling_interface_fac = 0.0;
 
-        double gamma_ghost_penalty = 0.0;
-        bool velgrad_interface_stab = params.get<bool>("velgrad_interface_stab");
+        double gamma_velgrad = 0.0;
+        bool velgrad_interface_stab = fldparaxfem_->IsVelGradInterfaceStab();
         if (velgrad_interface_stab)
-          gamma_ghost_penalty = params.get<double>("GHOST_PENALTY_FAC");
+          gamma_velgrad = fldparaxfem_->GetVelGradInterfaceStabFac();
 
         double gamma_press_coupling = 0.0;
-        bool presscoupling_interface_stab = params.get<bool>("PRESSCOUPLING_INTERFACE_STAB");
+        bool presscoupling_interface_stab = fldparaxfem_->IsPressureGradientInterfaceStab();
         if (presscoupling_interface_stab)
-          gamma_press_coupling = params.get<double>("PRESSCOUPLING_INTERFACE_FAC");
+          gamma_press_coupling = fldparaxfem_->GetPressureGradientInterfaceStabFac();
 
         if (fluidfluidcoupling)
         {
           bool bg_mortaring = false;
 
           // convective stabilization type for xfluidfluid
-          INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = params.get<INPAR::XFEM::XFF_ConvStabScaling>("xff_conv_stab_scaling");
+          INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling = fldparaxfem_->XffConvStabScaling();
 
           NIT_ComputeFullStabfacFluidFluid(
               NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -3789,7 +3791,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
               my::velint_,
               h_k,
               NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
-              gamma_ghost_penalty,
+              gamma_velgrad,
               gamma_press_coupling
               );
 
@@ -4302,7 +4304,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-    const std::string                                       coupl_method             ///< coupling method
+    CouplingMethod                                          coupl_method             ///< coupling method
 )
 {
   for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
@@ -4322,18 +4324,18 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     // get coupling matrices for the current side (boundary element)
     std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
 
-    if(coupl_method == "MixedStressHybrid")
+    if(coupl_method == HybridLM)
     {
       Cuiui_matrices.resize(2);
       Cuiui_matrices[0].Shape(my::nen_*numstressdof_,patchlm.size()); //Gsui (coupling between background elements sigma and current side!)
       Cuiui_matrices[1].Shape(patchlm.size(),my::nen_*numstressdof_); //Guis
     }
-    else if(coupl_method == "Nitsche")
+    else if(coupl_method == Nitsche)
     {
       Cuiui_matrices.resize(1);
       Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
     }
-    else dserror("not supported coupling method %s", coupl_method.c_str());
+    else dserror("Type of coupling method unknown.");
 
   }
 
@@ -4353,7 +4355,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
     std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
-    const std::string                                       coupl_method             ///< coupling method
+    CouplingMethod                                          coupl_method             ///< coupling method
 )
 {
 
@@ -4375,16 +4377,16 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     // get coupling matrices for the current side (boundary element)
     std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
 
-    if(coupl_method == "MixedStressHybrid")
+    if(coupl_method == HybridLM)
     {
-      dserror("embedded coupling for MixedStressHybrid not available!");
+      dserror("Embedded-sided coupling for stress-based hybrid LM approach is not available!");
     }
-    else if(coupl_method == "Nitsche")
+    else if(coupl_method == Nitsche)
     {
       Cuiui_matrices.resize(1);
       Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
     }
-    else dserror("not supported coupling method %s", coupl_method.c_str());
+    else dserror("Not supported coupling method.");
   }
 
   return;
@@ -4510,44 +4512,6 @@ void FluidEleCalcXFEM<distype>::AssembleInterfaceForce(
 
   return;
 }
-
-///*--------------------------------------------------------------------------------
-// * create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
-// *--------------------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > FluidEleCalcXFEM<distype>::CreateSideImpl(
-//    bool                                                    fluidfluidcoupling,
-//    DRT::Element *                                          side,
-//    Epetra_SerialDenseMatrix &                              side_xyze,
-//    std::vector<Epetra_SerialDenseMatrix> &                 side_matrices,
-//    std::map<int, std::vector<Epetra_SerialDenseMatrix> >   Cuiui_coupling
-//    )
-//{
-//  Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si = Teuchos::null;
-//
-//  if(fluidfluidcoupling)
-//  {
-//    // coupling matrices between background element and one! side
-//    Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
-//    Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
-//    Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
-//
-//    // coupling matrices between one side and itself via the element Kss
-//    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( side->Id() );
-//    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
-//    Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
-//    Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
-//    Epetra_SerialDenseMatrix  eleGuisKssInv;
-//
-//    si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
-//  }
-//  else
-//  {
-//    si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,side_xyze);
-//  }
-//
-//  return si;
-//}
 
 /*--------------------------------------------------------------------------------
  *--------------------------------------------------------------------------------*/

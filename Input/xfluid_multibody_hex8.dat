@@ -81,7 +81,7 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 XFLUID_BOUNDARY                 xfluid_stationary_boundary    // moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_SCALING               none
 GHOST_PENALTY_STAB              No
 //GHOST_PENALTY_FAC             0.001

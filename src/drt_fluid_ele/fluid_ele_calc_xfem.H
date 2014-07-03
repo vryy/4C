@@ -97,6 +97,13 @@ private:
   static const unsigned Sigmazz = 5;
   //@}
 
+  //! Interface coupling method
+  enum CouplingMethod
+  {
+    HybridLM,
+    Nitsche
+  };
+
 public:
   virtual ~FluidEleCalcXFEM() {}
 
@@ -312,7 +319,7 @@ private:
       std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
       std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-      const std::string                                       coupl_method             ///< coupling method
+      CouplingMethod                                          coupl_method             ///< coupling method
   );
 
   //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices (for embedded coupling)
@@ -323,7 +330,7 @@ private:
       std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
       std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
-      const std::string                                       coupl_method             ///< coupling method
+      CouplingMethod                                          coupl_method             ///< coupling method
   );
 
   //! build traction vector w.r.t fluid domain

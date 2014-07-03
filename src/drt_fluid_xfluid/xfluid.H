@@ -120,8 +120,7 @@ namespace FLD
                             );
 
       /// call the loop over elements to assemble volume and interface integrals
-      void Evaluate( Teuchos::ParameterList & eleparams, ///< element parameters
-                     DRT::Discretization & discret,      ///< background fluid discretization
+      void Evaluate( DRT::Discretization & discret,      ///< background fluid discretization
                      DRT::Discretization & cutdiscret,   ///< cutter surface discretization
                      int itnum                           ///< iteration number
                      );
@@ -625,7 +624,7 @@ namespace FLD
     void GenAlphaUpdateAcceleration();
 
     /// return type of enforcing interface conditions
-    const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
+    const INPAR::XFEM::CouplingMethod CouplingMethod() const {return coupling_method_;}
 
     /// print discretization to gmsh stream
     void disToStream(Teuchos::RCP<DRT::Discretization> dis,
@@ -656,7 +655,7 @@ namespace FLD
     //---------------------------------input parameters------------------
 
     /// type of enforcing interface conditions in XFEM
-    enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
+    enum INPAR::XFEM::CouplingMethod coupling_method_;
 
     /// coupling strategy (xfluid-sided, embedded-sided)
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;

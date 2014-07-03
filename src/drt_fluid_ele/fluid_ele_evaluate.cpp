@@ -100,7 +100,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
 
     fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
     fldpara->SetElementTurbulenceParameter(p);
-    fldpara->SetElementXFEMParameter(p);
+    fldpara->SetElementXFEMParameter(p,dis.Comm().MyPID());
   }
 
   return;

@@ -83,7 +83,7 @@ VOLUME_GAUSS_POINTS_BY          Tessellation //MomentFitting //Tessellation //Mo
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation 
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Hybrid_LM_viscous_stress       // BoundaryTypeNitsche // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   35                            // in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
@@ -94,6 +94,7 @@ GHOST_PENALTY_FAC               0.003                         // in [0.1;0.5]
 PRESSCOUPLING_INTERFACE_STAB no //
 PRESSCOUPLING_INTERFACE_FAC     0.1
 VELGRAD_INTERFACE_STAB          no//
+VISC_ADJOINT_SYMMETRY		no			      // no is strongly recommended for fluid-fluid coupling with viscous-stress based LM!
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR //Aztec_MSR         // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -9575,20 +9576,20 @@ NODE 3509 COORD 1.9256652534522772e-01 1.6104242373388949e-01 -3.333333333333333
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 118 QUANTITY velx VALUE 6.04135894575227872e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 118 QUANTITY vely VALUE 3.95231659083792930e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 118 QUANTITY pressure VALUE -2.55700093054381572e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 118 QUANTITY velx VALUE 6.04155137700082778e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 118 QUANTITY vely VALUE 3.95254130478007559e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 118 QUANTITY pressure VALUE -3.36724292725770535e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 159 QUANTITY velx VALUE 8.19448655288902956e-17 TOLERANCE 1e-6
 FLUID DIS fluid NODE 159 QUANTITY vely VALUE 7.43144825477394466e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 159 QUANTITY pressure VALUE -1.49357200521782385e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 250 QUANTITY velx VALUE 4.40243184745656643e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 250 QUANTITY vely VALUE 9.12301330131354504e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 250 QUANTITY pressure VALUE 4.01060721279120902e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1817 QUANTITY velx VALUE -6.62490112620917393e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1817 QUANTITY vely VALUE -8.06018037677850296e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1817 QUANTITY pressure VALUE 1.38070771592142028e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1851 QUANTITY velx VALUE -6.97320423085092012e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1851 QUANTITY vely VALUE -2.96196196400809353e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1851 QUANTITY pressure VALUE 2.77064992869356208e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 159 QUANTITY pressure VALUE -1.57438109457311715e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 250 QUANTITY velx VALUE 4.40571328199423629e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 250 QUANTITY vely VALUE 9.12304720744856246e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 250 QUANTITY pressure VALUE 3.20335665549725812e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1817 QUANTITY velx VALUE -6.61832832303746899e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1817 QUANTITY vely VALUE -8.03398005684989591e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1817 QUANTITY pressure VALUE 1.29434633438107083e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1851 QUANTITY velx VALUE -6.97135191235101925e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1851 QUANTITY vely VALUE -2.95945327101149958e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1851 QUANTITY pressure VALUE 1.91804194088211977e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

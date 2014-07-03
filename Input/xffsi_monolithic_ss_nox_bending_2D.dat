@@ -142,7 +142,7 @@ GMSH_CUT_OUT                    no//yes
 GMSH_EOS_OUT                    no//yes
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY embedded_sided_coupling //xfluid_sided_mortaring
 VISC_STAB_FAC                   35                            // in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue

@@ -547,7 +547,7 @@ void SideImpl<distype, side_distype, side_numdof>::MHVS_buildCouplingMatrices(
 
   //Build cross-interface pressure-velocity coupling matrices G_uip, G_pui!
 
-  //G_pui
+  //G_pui - from adjoint pressure consistency term
   /*
    *  /          \
    *  | q, u^i n  |
@@ -560,7 +560,7 @@ void SideImpl<distype, side_distype, side_numdof>::MHVS_buildCouplingMatrices(
   BG_pui_(0,Velz)->Update(fac * normal(Velz), bG_bi, 1.0);
 
 
-  //G_uip
+  //G_uip - from pressure consistency term
   /*
    *  /           \
    *  | -v^i, p n  |
@@ -1303,12 +1303,15 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_p_AdjointConsistency(
    - |  { q }*n ,[ Du ]     | = |  { q }*n  ,[ u ]   |
       \                    /     \                 */
 
-  //TODO: flag for formulation
-  // -1.0 antisymmetric
-  // +1.0 symmetric
-  //          double alpha_p = -1.0;
-  double alpha_p = -1.0;
-
+  // REMARK:
+  // the sign of the pressure adjoint consistency term is opposite to the sign of the pressure consistency term (interface),
+  // as a non-symmetric pressure formulation is chosen in the standard fluid
+  // the sign of the standard volumetric pressure consistency term is opposite to the (chosen) sign of the pressure-weighted continuity residual;
+  // think about the Schur-complement for the Stokes problem: S_pp = A_pp - A_pu A_uu^-1 A_up
+  // (--> A_pu == -A_up^T; sgn(A_pp) == sgn(- A_pu A_uu^-1 Aup), where A_pp comes from pressure-stabilizing terms)
+  // a symmetric adjoint pressure consistency term would also affect the sign of the pressure stabilizing terms
+  // for Stokes' problem, this sign choice leads to a symmetric, positive definite Schur-complement matrix S
+  // (v, p*n)--> A_up; -(q,u*n)--> -A_up^T; S_pp = A_pp + A_up^T A_uu A_up
 
   //-----------------------------------------------
   //    - (q1*n, k1 *(Du1))
@@ -1324,20 +1327,18 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_p_AdjointConsistency(
       int iVely = ic*bg_numdof_ + 1;
       int iVelz = ic*bg_numdof_ + 2;
 
-      double tmp = alpha_p*funct_dyad_k1_timefacfac(ir,ic);
-
-      C_uu_(idPres, iVelx) += tmp*normal(Velx);
-      C_uu_(idPres, iVely) += tmp*normal(Vely);
-      C_uu_(idPres, iVelz) += tmp*normal(Velz);
+      C_uu_(idPres, iVelx) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
+      C_uu_(idPres, iVely) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
+      C_uu_(idPres, iVelz) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
     }
 
     // (q*n,u)
-    rhs_Cu_(idPres,0) -= alpha_p*funct_timefacfac_k1(ir)*velint_normal;
+    rhs_Cu_(idPres,0) += funct_timefacfac_k1(ir)*velint_normal;
 
     if(!coupling) // weak Dirichlet case
     {
       // -(q*n,u_DBC)
-      rhs_Cu_(idPres,0) += alpha_p*funct_timefacfac_k1(ir)*ivelint_WDBC_JUMP_normal;
+      rhs_Cu_(idPres,0) -= funct_timefacfac_k1(ir)*ivelint_WDBC_JUMP_normal;
     }
   }
 
@@ -1358,15 +1359,13 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_p_AdjointConsistency(
         int iVely = ic*side_numdof+1;
         int iVelz = ic*side_numdof+2;
 
-        double tmp = alpha_p*side_funct_dyad_k1_timefacfac(ic,ir);
-
-        C_uui_(idPres, iVelx) -= tmp*normal(Velx);
-        C_uui_(idPres, iVely) -= tmp*normal(Vely);
-        C_uui_(idPres, iVelz) -= tmp*normal(Velz);
+        C_uui_(idPres, iVelx) += side_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
+        C_uui_(idPres, iVely) += side_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
+        C_uui_(idPres, iVelz) += side_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
       }
 
       // -(q*n,u)
-      rhs_Cu_(idPres,0) += alpha_p*funct_timefacfac_k1(ir)*ivelint_normal;
+      rhs_Cu_(idPres,0) -= funct_timefacfac_k1(ir)*ivelint_normal;
 
     }
   }// end coupling
@@ -1550,16 +1549,13 @@ void SideImpl<distype, side_distype, side_numdof>::NIT_visc_AdjointConsistency(
   const unsigned Velz = 2;
 
 
-   /*                                \       /                             i   \
-- |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
-   \                                 /       \                                */
-  // antisymmetric formulation (see Burman, Fernandez 2009)
-//TODO:
+     /*                                \       /                             i   \
+  - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
+     \                                 /       \                                */
+  // (see Burman, Fernandez 2009)
   // +1.0 symmetric
   // -1.0 antisymmetric
-  //          double alpha = +1.0;
-  double alpha = +1.0;
-
+  const double alpha = adj_visc_scale_;
 
   //-----------------------------------------------
   //    - ((2*k1*mu1) *eps(v1)*n , u1)
@@ -2256,6 +2252,8 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
   const unsigned Velz = 2;
   //const unsigned Pres = 3;
 
+  //TODO: cleanup
+
   //--------------------------------------------
   // define the coupling between two not matching grids
   // for fluidfluidcoupling
@@ -2443,7 +2441,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	    /*                   \     /              i   \
 	 - |  { q }*n ,[ Du ]     | = |  { q }*n  ,[ u ]   |
 	    \                    /     \                 */
-	  double alpha_p = +1.0; // (+1) antisymmetric, (-1) symmetric
+    // the sign of the pressure adjoint consistency term is opposite to the sign of the pressure consistency term (interface)
 
 	  //-----------------------------------------------
 	  //    - (q1*n, k1 *(Du1))
@@ -2459,14 +2457,14 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	      int iVely = ic*(nsd_+1)+1;
 	      int iVelz = ic*(nsd_+1)+2;
 
-	      C_uu(idPres, iVelx) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
-	      C_uu(idPres, iVely) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
-	      C_uu(idPres, iVelz) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
+	      C_uu(idPres, iVelx) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
+	      C_uu(idPres, iVely) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
+	      C_uu(idPres, iVelz) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
 	    }
 
 	    // (q*n,u)
 	    double velint_normal = velint.Dot(normal);
-	    rhs_Cu(idPres,0) += alpha_p*funct_timefacfac(ir)*kappa1*velint_normal;
+	    rhs_Cu(idPres,0) += funct_timefacfac(ir)*kappa1*velint_normal;
 
 	    //        if(!coupling) // weak Dirichlet case
 	    //        {
@@ -2492,14 +2490,14 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        int iVely = ic*(nsd_+1)+1;
 	        int iVelz = ic*(nsd_+1)+2;
 
-	        C_uui_(idPres, iVelx) += alpha_p*emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
-	        C_uui_(idPres, iVely) += alpha_p*emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
-	        C_uui_(idPres, iVelz) += alpha_p*emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
+	        C_uui_(idPres, iVelx) += emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
+	        C_uui_(idPres, iVely) += emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
+	        C_uui_(idPres, iVelz) += emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
 	      }
 
 	      // -(q*n,u)
 	      double emb_velint_normal = emb_velint.Dot(normal);
-	      rhs_Cu(idPres,0) -= alpha_p*funct_timefacfac(ir)*kappa1*emb_velint_normal;
+	      rhs_Cu(idPres,0) -= funct_timefacfac(ir)*kappa1*emb_velint_normal;
 
 	    }
 	  }// end coupling
@@ -2520,14 +2518,14 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        int iVely = ic*(nsd_+1)+1;
 	        int iVelz = ic*(nsd_+1)+2;
 
-	        C_uiu_(idPres, iVelx) -= alpha_p*emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velx);
-	        C_uiu_(idPres, iVely) -= alpha_p*emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Vely);
-	        C_uiu_(idPres, iVelz) -= alpha_p*emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velz);
+	        C_uiu_(idPres, iVelx) -= emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velx);
+	        C_uiu_(idPres, iVely) -= emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Vely);
+	        C_uiu_(idPres, iVelz) -= emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velz);
 	      }
 
 	      // (q*n,u)
 	      double velint_normal = velint.Dot(normal);
-	      rhC_ui_(idPres,0) += alpha_p*emb_funct_timefacfac(ir)*kappa2*velint_normal;
+	      rhC_ui_(idPres,0) += emb_funct_timefacfac(ir)*kappa2*velint_normal;
 
 
 	    }
@@ -2547,14 +2545,14 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	        int iVely = ic*(nsd_+1)+1;
 	        int iVelz = ic*(nsd_+1)+2;
 
-	        C_uiui_(idPres, iVelx) += alpha_p*emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velx);
-	        C_uiui_(idPres, iVely) += alpha_p*emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Vely);
-	        C_uiui_(idPres, iVelz) += alpha_p*emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velz);
+	        C_uiui_(idPres, iVelx) += emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velx);
+	        C_uiui_(idPres, iVely) += emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Vely);
+	        C_uiui_(idPres, iVelz) += emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velz);
 	      }
 
 	      // -(q*n,u)
 	      double emb_velint_normal = emb_velint.Dot(normal);
-	      rhC_ui_(idPres,0) -= alpha_p*emb_funct_timefacfac(ir)*kappa2*emb_velint_normal;
+	      rhC_ui_(idPres,0) -= emb_funct_timefacfac(ir)*kappa2*emb_velint_normal;
 
 	    }
 
@@ -2841,11 +2839,13 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 	  }
 
 
-	  /*                                \       /                             i   \
-	- |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
-	  \                                 /       \                                */
-	  // antisymmetric formulation (see Burman, Fernandez 2009)
-	  double alpha = +1.0; // (+1)symmetric, (-1) unsymmetric
+      /*                                \       /                             i   \
+    - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
+      \                                 /       \                                */
+    // (see Burman, Fernandez 2009)
+    // +1.0 symmetric
+    // -1.0 antisymmetric
+	  const double alpha = adj_visc_scale_;
 
 
 	  //-----------------------------------------------

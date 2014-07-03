@@ -68,14 +68,16 @@ namespace DRT
           Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
           Epetra_SerialDenseMatrix &  Gsui,            ///< interface \f$G_{\sigma u^i}\f$ coupling matrix
           Epetra_SerialDenseMatrix &  Guis,            ///< interface \f$G_{u^i \sigma}\f$ coupling matrix
-          Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+          Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
+          bool isViscAdjointSymmetric                  ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term (and equivalent for MHVS)
       )
       : C_uiu_(C_uiu.A(),true),
         C_uui_(C_uui.A(),true),
         rhC_ui_(rhC_ui.A(),true),
         G_sui_(Gsui.A(),true),
         G_uis_(Guis.A(),true),
-        xyze_(side_xyze.A(),true)
+        xyze_(side_xyze.A(),true),
+        adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
       {
       }
 
@@ -86,22 +88,25 @@ namespace DRT
           Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
           Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
           Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-          Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+          Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
+          bool isViscAdjointSymmetric                  ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
       )
       : C_uiu_(C_uiu.A(),true),
         C_uui_(C_uui.A(),true),
         rhC_ui_(rhC_ui.A(),true),
         C_uiui_(C_uiui.A(),true),
-        xyze_(side_xyze.A(),true)
+        xyze_(side_xyze.A(),true),
+        adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
       {
       }
 
       //! simple side coupling together with embedded Nitsche coupling
       SideImpl(
           DRT::Element *              side,            ///< side element
-          Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+          Epetra_SerialDenseMatrix &  side_xyze       ///< global node coordinates
       )
-      : xyze_(side_xyze.A(),true)
+      : xyze_(side_xyze.A(),true),
+        adj_visc_scale_(1.0)
       {
       }
 
@@ -334,6 +339,9 @@ namespace DRT
       LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,1,nsd_>              BG_pui_;      ///< block G_pui matrix
       LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,nsd_,1>              BG_uip_;      ///< block G_uip matrix
 
+      /// scaling of Nitsche's adjoint viscous term
+      const double adj_visc_scale_;
+
     };
 
 
@@ -375,13 +383,15 @@ namespace DRT
           Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
           Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
           Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-          Epetra_SerialDenseMatrix &  emb_xyze         ///< global node coordinates
+          Epetra_SerialDenseMatrix &  emb_xyze,        ///< global node coordinates
+          bool isViscAdjointSymmetric                  ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
       )
       : C_uiu_(C_uiu.A(),true),
         C_uui_(C_uui.A(),true),
         rhC_ui_(rhC_ui.A(),true),
         C_uiui_(C_uiui.A(),true),
-        emb_xyze_(emb_xyze.A(),true)
+        emb_xyze_(emb_xyze.A(),true),
+        adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
       {
       }
 
@@ -471,6 +481,9 @@ namespace DRT
       LINALG::Matrix<nsd_,emb_nen_>                             emb_xyze_;    ///< element node coordinates
 
       LINALG::Matrix<nsd_,1>                                    emb_prederxy_; ///< pressure derivatives at GP
+
+      /// scaling of Nitsche's adjoint viscous term
+      const double adj_visc_scale_;
 
     };
 

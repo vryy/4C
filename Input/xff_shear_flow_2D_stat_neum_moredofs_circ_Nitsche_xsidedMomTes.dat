@@ -101,7 +101,7 @@ VOLUME_GAUSS_POINTS_BY          MomentFitting
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
+COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   1.0
 XFF_CONV_STAB_SCALING           none

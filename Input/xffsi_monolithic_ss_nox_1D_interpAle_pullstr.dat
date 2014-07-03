@@ -70,7 +70,7 @@ SHAPEDERIVATIVES                yes
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Nitsche
+COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               embedded_sided_coupling
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL

@@ -6585,13 +6585,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
 
   // Boundary-Coupling options
-  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","Nitsche","method how to enforce embedded boundary/coupling conditions at the interface",
-                               tuple<std::string>("Hybrid_LM_Cauchy_stress", "Hybrid_LM_viscous_stress", "Nitsche", "Neumann"),
+  setStringToIntegralParameter<int>("COUPLING_METHOD","Nitsche","method how to enforce embedded boundary/coupling conditions at the interface",
+                               tuple<std::string>("Hybrid_LM_Cauchy_stress", "Hybrid_LM_viscous_stress", "Nitsche"),
                                tuple<int>(
                                    INPAR::XFEM::Hybrid_LM_Cauchy_stress,  // Cauchy stress-based mixed/hybrid formulation
                                    INPAR::XFEM::Hybrid_LM_viscous_stress, // viscous stress-based mixed/hybrid formulation
-                                   INPAR::XFEM::Nitsche,                  // Nitsche's formulation
-                                   INPAR::XFEM::Neumann                   // interior Neumann condition
+                                   INPAR::XFEM::Nitsche                   // Nitsche's formulation
                                    ),
                                &xfluid_stab);
 
@@ -6613,6 +6612,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::XFEM::Hybrid_LM_L2_Proj_part    // L2 stress projection on partial fluid element volume
                                    ),
                                &xfluid_stab);
+
+  BoolParameter("VISC_ADJOINT_SYMMETRY","yes","viscous and adjoint viscous interface terms with matching sign?",&xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
   DoubleParameter("VISC_STAB_FAC", 35.0, "define stabilization parameter for viscous part of interface stabilization (Nitsche, hybrid stress-based LM)",&xfluid_stab);

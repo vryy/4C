@@ -96,7 +96,7 @@ ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing s
 GMSH_DEBUG_OUT                  No
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
+COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   1.0
 XFF_CONV_STAB_SCALING           inflow//averaged//none

@@ -116,6 +116,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
 
   // ---------------------------------------------------------------------------
+  // TODO:
   // recompute nullspace based on new number of dofs per node
   // REMARK: this has to be done after replacing the discret_' dofset (via xfluid.discret_->ReplaceDofSet)
   // we a build a nullspace for both discrretizations and set it into ML-parameter list.
@@ -318,7 +319,6 @@ void FLD::XFluidFluid::EstimateNitscheTraceMaxEigenvalue()
 
   // update the estimate of the maximal eigenvalues in the parameter list to access on element level
   DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Update_TraceEstimate_MaxEigenvalue(trace_estimate_max_eigenvalue_map);
-
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -334,7 +334,7 @@ void FLD::XFluidFluid::CreateEmbeddedBoundarydis()
   std::vector<DRT::Condition*> xfemcnd;
   embdis_->GetCondition("XFEMCoupling",xfemcnd);
 
-  std::vector <int> allcnd_xfemnodeids;
+  std::vector<int> allcnd_xfemnodeids;
 
   // make the condition known to the boundary discretization
   for (unsigned numcond=0;numcond<xfemcnd.size();++numcond)
@@ -499,8 +499,7 @@ void FLD::XFluidFluid::CreateEmbeddedBoundarydis()
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterList                     & eleparams,
-                                                            const Teuchos::RCP<DRT::Discretization>    & bgdis,
+void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<DRT::Discretization>    & bgdis,
                                                             const Teuchos::RCP<DRT::Discretization>    & cutdiscret,
                                                             const Teuchos::RCP<DRT::Discretization>    & embdis)
 {
@@ -574,31 +573,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
     embdis->SetState("velaf",xfluid_.alevelnp_);
   }
 
-  // ---------------------------------------------------------------------------
-
-  // set coupling-related parameters
-  eleparams.set("coupling_strategy",xfluid_.coupling_strategy_);
-
-  eleparams.set("xff_conv_stab_scaling", xfluid_.xff_conv_stab_scaling_);
-
-  eleparams.set("velgrad_interface_stab",xfluid_.velgrad_interface_stab_);
-
-  eleparams.set("PRESSCOUPLING_INTERFACE_STAB",xfluid_.presscoupling_interface_stab_);
-
-  eleparams.set("PRESSCOUPLING_INTERFACE_FAC",xfluid_.presscoupling_interface_fac_);
-
-  eleparams.set("hybrid_lm_l2_proj", xfluid_.hybrid_lm_l2_proj_);
-
-  eleparams.set("GHOST_PENALTY_FAC",xfluid_.ghost_penalty_fac_);
-
-  // both stress-based LM methods share an evaluation routine
-  // in order to distinguish:
-  if (xfluid_.boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress || xfluid_.boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
-    eleparams.set("boundIntType",xfluid_.boundIntType_);
-
-  // ---------------------------------------------------------------------------
-
-
   DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
   DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,xfluid_.shapederivatives_, xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
 
@@ -618,6 +592,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(Teuchos::ParameterLi
   DRT::Element::LocationArray la( 1 );
   DRT::Element::LocationArray alela( 1 );
   DRT::Element::LocationArray ila ( 1 );
+
+  // dummy
+  Teuchos::ParameterList eleparams;
 
   // ---------------------------------------------------------------------------
 
@@ -1486,7 +1463,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     }
   }
 
-/*
+
   // comment out to have sepperate views of embedded and background fluid
   gmshfilecontent_vel << "};\n";
   gmshfilecontent_press << "};\n";
@@ -1501,7 +1478,6 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     gmshfilecontent_vel   << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
     gmshfilecontent_press << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
   }
-*/
 
 
   const int numalerowele = alefluiddis.NumMyRowElements();
@@ -2095,7 +2071,7 @@ void FLD::XFluidFluid::Init()
   BoundCellGaussPointBy_   = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
 
   // get interface stabilization specific parameters
-  boundIntType_       = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(params_xf_stab,"EMBEDDED_BOUNDARY");
+  coupling_method_       = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
   coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
 
   hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
@@ -2152,7 +2128,7 @@ void FLD::XFluidFluid::Init()
   if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_weak_DBC)
     dserror("do not choose Xfluid_Sided_weak_DBC for fluid-fluid-couplings!");
 
-  switch (boundIntType_)
+  switch (coupling_method_)
   {
   case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
     // method needs just 3 dofs, but we use 4 to be consistent with Nitsche & MHVS
@@ -2932,10 +2908,10 @@ void FLD::XFluidFluid::PrintStabilizationParams()
 
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
     IO::cout << "                              INTERFACE-STABILIZATION                       \n" << IO::endl;
-    IO::cout << "Stabilization type          : " << interfstabparams->get<std::string>("EMBEDDED_BOUNDARY") << "\n";
+    IO::cout << "Stabilization type          : " << interfstabparams->get<std::string>("COUPLING_METHOD") << "\n";
     IO::cout << "Coupling strategy           : " << interfstabparams->get<std::string>("COUPLING_STRATEGY") << "\n";
 
-    if(boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
+    if(coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
       IO::cout << "HYBRID_LM_L2_PROJ                 : " << interfstabparams->get<std::string>("HYBRID_LM_L2_PROJ") << "\n";
 
     IO::cout << "GHOST_PENALTY_STAB:           " << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";
@@ -2950,6 +2926,8 @@ void FLD::XFluidFluid::PrintStabilizationParams()
     IO::cout << "VISC_STAB_FAC:              : " << interfstabparams->get<double>("VISC_STAB_FAC") << "\n";
     IO::cout << "VISC_STAB_TRACE_ESTIMATE:   : " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
     IO::cout << "VISC_STAB_HK                : " << interfstabparams->get<std::string>("VISC_STAB_HK")  << IO::endl;
+    if (coupling_method_ != INPAR::XFEM::Hybrid_LM_viscous_stress)
+      IO::cout << "VISC_ADJOINT_SYMMETRY       : " << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << IO::endl;
     IO::cout << IO::endl;
 
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
@@ -3128,19 +3106,6 @@ void FLD::XFluidFluid::Solve()
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
 
-      // Set action type
-      eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-      eleparams.set<int>("physical type",physicaltype_);
-
-      // parameters for turbulent approach
-      eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-
-      // set thermodynamic pressures
-      eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-      eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
-      eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
-      eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
-
       // set vector values needed by elements
       bgdis_->ClearState();
       bgdis_->SetState("velaf",state_->velnp_);
@@ -3153,8 +3118,7 @@ void FLD::XFluidFluid::Solve()
 
       if (itnum != itemax)
       {
-        state_->EvaluateFluidFluid( eleparams,
-                                    bgdis_,
+        state_->EvaluateFluidFluid( bgdis_,
                                     boundarydis_,
                                     embdis_);
       }
@@ -3501,24 +3465,7 @@ void FLD::XFluidFluid::Evaluate(
     LINALG::Export(*(alevelnp_),*(ivelnp_));
   }
 
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-
-  // Set action type
-  eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-  eleparams.set<int>("physical type",physicaltype_);
-
-  // parameters for turbulent approach
-  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-
-  // set thermodynamic pressures
-  eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-  eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
-  eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
-  eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
-
-  state_->EvaluateFluidFluid( eleparams,
-                              bgdis_,
+  state_->EvaluateFluidFluid( bgdis_,
                               boundarydis_,
                               embdis_);
 
@@ -3751,7 +3698,7 @@ void FLD::XFluidFluid::TimeUpdate()
     }
     else
     {
-
+      dserror("Unknown time integration approach.");
     }
 
     eleparams.set("dt"     ,dta_    );
@@ -5284,9 +5231,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
                 Epetra_SerialDenseMatrix  Cuiui(nui,nui);
 
 
-                if(BoundIntType() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-                   BoundIntType() == INPAR::XFEM::Hybrid_LM_viscous_stress or
-                   BoundIntType() == INPAR::XFEM::Nitsche)
+                if(coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                   coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress or
+                   coupling_method_ == INPAR::XFEM::Nitsche)
                 {
                   impl->ComputeErrorInterfacefluidfluidcoupling(
                       ele,

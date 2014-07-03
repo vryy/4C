@@ -65,7 +65,7 @@ SHAPEDERIVATIVES                yes
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL

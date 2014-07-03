@@ -108,7 +108,7 @@ VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_disp
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

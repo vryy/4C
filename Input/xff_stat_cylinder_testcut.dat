@@ -109,7 +109,7 @@ ML_DAMPMED                      0.2                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   1.0
 XFF_CONV_STAB_SCALING           none

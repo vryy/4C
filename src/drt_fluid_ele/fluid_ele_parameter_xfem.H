@@ -41,46 +41,116 @@ public:
 
   /// set all the XFEM specific parameters
   void SetElementXFEMParameter(
-      Teuchos::ParameterList& params   ///< parameter list
+      Teuchos::ParameterList& params,  ///< parameter list
+      int myrank                       ///< pid (for output purpose)
   );
 
   /*----------------------------------------------------*/
   //! @name access routines for integration on cut elements
   /*----------------------------------------------------*/
-
+  //@{
   //! get the volumecell integration method used for integrating cut elements?
-  const INPAR::CUT::VCellGaussPts VolumeCellGaussPoints(){ return vcellgausspts_; };
+  INPAR::CUT::VCellGaussPts VolumeCellGaussPoints() const{ return vcellgausspts_; };
 
   //! get the boundarycell integration method used for integrating the surface in cut elements?
-  const INPAR::CUT::BCellGaussPts BoundaryCellGaussPoints(){ return bcellgausspts_; };
+  INPAR::CUT::BCellGaussPts BoundaryCellGaussPoints() const{ return bcellgausspts_; };
+  //@}
 
+  /*----------------------------------------------------*/
+  //! @name interface coupling approach
+  /*----------------------------------------------------*/
+  //@{
+  //! coupling approach (Nitsche or hybrid stress-based LM)
+  INPAR::XFEM::CouplingMethod GetCouplingMethod() const{ return coupling_method; }
+
+  //! coupling strategy
+  INPAR::XFEM::CouplingStrategy GetCouplingStrategy() const{ return coupling_strategy_; }
+  //@}
 
   /*----------------------------------------------------*/
   //! @name access routines for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
   /*----------------------------------------------------*/
-
+  //@{
   //! get the type of how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's method?
-  INPAR::XFEM::ViscStab_TraceEstimate ViscStabTracEstimate(){ return visc_stab_trace_estimate_; };
+  INPAR::XFEM::ViscStab_TraceEstimate ViscStabTracEstimate() const{ return visc_stab_trace_estimate_; };
 
   //! get the element length definition used for viscous part of the penalty term in Nitsche's method
-  INPAR::XFEM::ViscStab_hk ViscStabHK(){ return visc_stab_hk_; };
+  INPAR::XFEM::ViscStab_hk ViscStabHK() const{ return visc_stab_hk_; };
 
   //! get the dimensionless user defined scaling for the viscous part of the penalty term in Nitsche's method and
   //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
-  const double ViscStabGamma(){ return visc_stab_gamma_; };
+  double ViscStabGamma() const{ return visc_stab_gamma_; };
+
+  //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint viscous terms
+  //! @return true, in case of a symmetric adjoint term
+  bool IsViscousAdjointSymmetric() const{ return is_visc_adjoint_symmetric_; }
+  //@}
+
+  /*----------------------------------------------------*/
+  //! @name access routines for convective stabilization
+  //! parameters in Nitsche's method and MixedHybrid_LM methods
+  /*----------------------------------------------------*/
+  //@{
+  //! get the type of scaling for convective/inflow stabilization term for xfluid-fluid problems
+  INPAR::XFEM::XFF_ConvStabScaling XffConvStabScaling() const{ return xff_conv_stab_scaling_; }
+
+  //! get the type of scaling for convective/inflow stabilization term for classical xfluid problem
+  INPAR::XFEM::ConvStabScaling ConvStabScaling() const{ return conv_stab_scaling_; }
+  //@}
+
+  //! get information, whether L2-projection between stress fields is accomplished on whole cut element
+  //! or on physical volume
+  INPAR::XFEM::Hybrid_LM_L2_Proj HybridLM_L2Proj() const{ return hybrid_lm_l2_proj_; }
+
+
+  /*----------------------------------------------------*/
+  //! @name access routines for parameters regarding
+  //! additional interface penalty terms in
+  //! fluid-fluid coupling
+  /*----------------------------------------------------*/
+  //@{
+  //! get information, if velocity gradient penalty term
+  //! acts on fluid-fluid interface
+  bool IsVelGradInterfaceStab() const{ return is_velgrad_interface_stab_; }
+
+  //! get stabilization parameter for velocity gradient interface penalty term
+  double GetVelGradInterfaceStabFac() const{ return velgrad_interface_stab_fac_; }
+
+  //! get information, if velocity gradient penalty term
+  //! acts on fluid-fluid interface
+  bool IsPressureGradientInterfaceStab() const{ return is_pressure_gradient_interface_stab_; }
+
+  //! get stabilization parameter for pressure gradient interface penalty term
+  double GetPressureGradientInterfaceStabFac() const{ return pressure_interface_stab_fac_; }
+  //@}
 
 private:
+
+  //! assure a valid combination of input parameters
+  void CheckParameterConsistency(int myrank) const;
 
   /*----------------------------------------------------*/
   //! @name parameters for integration on cut elements
   /*----------------------------------------------------*/
-
+  //@{
   //! which volumecell integration is used for integrating cut elements?
   INPAR::CUT::VCellGaussPts vcellgausspts_;
 
   //! which boundarycell integration is used for integrating the surface in cut elements?
   INPAR::CUT::BCellGaussPts bcellgausspts_;
+  //@}
 
+
+  /*----------------------------------------------------*/
+  //! @name parameters describing the coupling approach
+  /*----------------------------------------------------*/
+  //@{
+  //! coupling approach (Nitsche or hybrid stress-based LM)
+  INPAR::XFEM::CouplingMethod coupling_method;
+
+  //! coupling strategy
+  INPAR::XFEM::CouplingStrategy coupling_strategy_;
+  //A}
 
   /*----------------------------------------------------*/
   //! @name parameters for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
@@ -96,6 +166,32 @@ private:
   //! scaling factor for the MHVS method (then gamma = 1/n, see publications),
   //! this parameter shall be independent of element type, shape and polynomial degree
   double visc_stab_gamma_;
+
+  //! flag, that indicates matching signs between the viscous and adjoint viscous Nitsche terms
+  //! or between the equivalent MHVS-terms
+  bool is_visc_adjoint_symmetric_;
+
+  //! type of convective scaling for xfluid-fluid problem
+  INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_;
+
+  //! type of convective scaling for xfluid problem
+  INPAR::XFEM::ConvStabScaling conv_stab_scaling_;
+
+  //! for coupling using stress-based LM: L2-projection between stress fields on whole cut element
+  //! or on physical volume
+  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
+
+  //! flag, that indicates whether velocity gradient interface penalty terms are active
+  bool is_velgrad_interface_stab_;
+
+  //! parameter for velocity gradient interface penalty term
+  double velgrad_interface_stab_fac_;
+
+  //! flag, that indicates whether pressure gradient interface penalty terms are active
+  bool is_pressure_gradient_interface_stab_;
+
+  //! parameter for pressure gradient interface penalty term
+  double pressure_interface_stab_fac_;
 
 protected:
 

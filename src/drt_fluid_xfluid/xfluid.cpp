@@ -294,8 +294,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 /*----------------------------------------------------------------------*
  |  evaluate elements, volumecells and boundary cells      schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
-                                         DRT::Discretization & discret,
+void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
                                          DRT::Discretization & cutdiscret,
                                          int itnum )
 {
@@ -371,18 +370,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
 
   //----------------------------------------------------------------------
-  // let the elements fill it
+  // Todo: force vector is currently the only reason to pass this parameter list
+  Teuchos::ParameterList eleparams;
   eleparams.set("iforcenp",iforcecolnp);
-
-  eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
-
-  eleparams.set("hybrid_lm_l2_proj", xfluid_.hybrid_lm_l2_proj_);
-
-  // both stress-based LM methods share an evaluation routine;
-  // in order to distinguish:
-  if (xfluid_.boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress || xfluid_.boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
-    eleparams.set("boundIntType", xfluid_.boundIntType_);
-
 
   //----------------------------------------------------------------------
   int itemax = xfluid_.params_->get<int>("max nonlin iter steps");
@@ -557,8 +547,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               const size_t nui = patchelementslm.size();
               Epetra_SerialDenseMatrix C_ss(nui,nui); // coupling matrix for monolithic fluid-structure interaction
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-                 xfluid_.BoundIntType() == INPAR::XFEM::Hybrid_LM_viscous_stress)
+              if(xfluid_.CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                 xfluid_.CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress)
                 impl->ElementXfemInterfaceHybridLM(
                                                  ele,
                                                  discret,
@@ -575,7 +565,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  cells
                                                  );
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::Nitsche)
+              if(xfluid_.CouplingMethod() == INPAR::XFEM::Nitsche)
                 impl->ElementXfemInterfaceNIT(   ele,
                                                  discret,
                                                  la[0].lm_,
@@ -740,8 +730,10 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
               Epetra_SerialDenseMatrix  Cuiui(1,1);
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeMHCS)
-                 impl->ElementXfemInterfaceMHCS( ele,
+              if(xfluid_.CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                 xfluid_.CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress)
+                 impl->ElementXfemInterfaceHybridLM(
+                                                ele,
                                                 discret,
                                                 la[0].lm_,
                                                 intpoints[count],
@@ -757,7 +749,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                 false);
 
 
-              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
+              if(xfluid_.CouplingMethod() == INPAR::XFEM::Nitsche)
                   impl->ElementXfemInterfaceNIT( ele,
                                                  discret,
                                                  la[0].lm_,
@@ -771,9 +763,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  Cuiui,
                                                  cells,
                                                  false);
-
-
-
             }
 
             int eid = actele->Id();
@@ -2173,7 +2162,7 @@ void FLD::XFluid::Init()
   }
 
   // get interface stabilization specific parameters
-  boundIntType_       = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(params_xf_stab,"EMBEDDED_BOUNDARY");
+  coupling_method_       = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
   coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
 
   hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
@@ -2590,9 +2579,9 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                 std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
                 Epetra_SerialDenseMatrix  Cuiui(1,1);
 
-                if(BoundIntType() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-                   BoundIntType() == INPAR::XFEM::Hybrid_LM_viscous_stress or
-                   BoundIntType() == INPAR::XFEM::Nitsche)
+                if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+                   CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
+                   CouplingMethod() == INPAR::XFEM::Nitsche)
                 {
                   impl->ComputeErrorInterface(
                       ele,
@@ -3037,18 +3026,21 @@ void FLD::XFluid::PrintStabilizationParams()
 
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
     IO::cout << "                              INTERFACE-STABILIZATION                       \n" << IO::endl;
-    IO::cout << "Stabilization type:      " << interfstabparams->get<std::string>("EMBEDDED_BOUNDARY") << "\n";
+    IO::cout << "Stabilization type:      " << interfstabparams->get<std::string>("COUPLING_METHOD") << "\n";
     IO::cout << "Coupling strategy:       " << interfstabparams->get<std::string>("COUPLING_STRATEGY") << "\n"<< IO::endl;
 
-    if(boundIntType_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or boundIntType_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
+    if(coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
       IO::cout << "HYBRID_LM_L2_PROJ:       " << interfstabparams->get<std::string>("HYBRID_LM_L2_PROJ") << "\n";
 
-    if(boundIntType_ == INPAR::XFEM::Nitsche)
+    if(coupling_method_ == INPAR::XFEM::Nitsche)
     {
       IO::cout << "VISC_STAB_FAC:                     " << interfstabparams->get<double>("VISC_STAB_FAC") << "\n";
       IO::cout << "VISC_STAB_TRACE_ESTIMATE           " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
       IO::cout << "VISC_STAB_HK                       " << interfstabparams->get<std::string>("VISC_STAB_HK")  << "\n";
     }
+
+    if (coupling_method_ != INPAR::XFEM::Hybrid_LM_Cauchy_stress)
+      IO::cout << "VISC_ADJOINT_SYMMETRY              " << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
 
     IO::cout << "GHOST_PENALTY_STAB:                " << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";
     IO::cout << "GHOST_PENALTY_TRANSIENT_STAB:      " << interfstabparams->get<std::string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
@@ -3402,23 +3394,7 @@ void FLD::XFluid::Solve()
       // get cpu time
       const double tcpu=Teuchos::Time::wallTime();
 
-      // create the parameters for the discretization
-      Teuchos::ParameterList eleparams;
-
-      // Set action type
-      eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-      eleparams.set<int>("physical type",physicaltype_);
-
-      // parameters for turbulent approach
-      eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-
-      // set thermodynamic pressures
-      eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-      eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
-      eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
-      eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
-
-      state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
+      state_->Evaluate( *discret_, *boundarydis_, itnum );
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -4010,23 +3986,7 @@ void FLD::XFluid::Evaluate(
     // get cpu time
     const double tcpu=Teuchos::Time::wallTime();
 
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-
-    // Set action type
-    eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-    eleparams.set<int>("physical type",physicaltype_);
-
-    // parameters for turbulent approach
-    eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-
-    // set thermodynamic pressures
-    eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-    eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
-    eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
-    eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
-
-    state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
+    state_->Evaluate( *discret_, *boundarydis_, itnum );
 
     // end time measurement for element
     dtele_=Teuchos::Time::wallTime()-tcpu;

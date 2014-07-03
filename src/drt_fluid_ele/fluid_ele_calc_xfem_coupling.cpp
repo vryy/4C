@@ -39,7 +39,8 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
     Epetra_SerialDenseMatrix &  Gsui,            ///< interface sigma-u_interface coupling
     Epetra_SerialDenseMatrix &  Guis,            ///< interface u_interface-sigma coupling
-    Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+    Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
+    bool isViscAdjointSymmetric                  ///< symmetric or skew-symmetric formulation of MHVS adjoint viscous term
 )
 {
   SideInterface * si = NULL;
@@ -66,13 +67,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     case DRT::Element::quad4:
     {
       typedef SideImpl<distype,DRT::Element::quad4, 3> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef SideImpl<distype,DRT::Element::quad8, 3> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
     //            case DRT::Element::quad9:
@@ -104,13 +105,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     case DRT::Element::quad4:
     {
       typedef SideImpl<distype,DRT::Element::quad4, 4> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef SideImpl<distype,DRT::Element::quad8, 4> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
 //    case DRT::Element::quad9:
@@ -138,7 +139,8 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
     Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
     Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-    Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
+    Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
+    bool isViscAdjointSymmetric                  ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
 )
 {
   SideInterface * si = NULL;
@@ -165,13 +167,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     case DRT::Element::quad4:
     {
       typedef SideImpl<distype,DRT::Element::quad4, 3> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef SideImpl<distype,DRT::Element::quad8, 3> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
       break;
     }
 //    case DRT::Element::quad9:
@@ -203,13 +205,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     case DRT::Element::quad4:
     {
       typedef SideImpl<distype,DRT::Element::quad4, 4> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef SideImpl<distype,DRT::Element::quad8, 4> SideImplType;
-      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
       break;
     }
 //    case DRT::Element::quad9:
@@ -332,7 +334,8 @@ Teuchos::RCP<EmbCoupling<distype> > EmbCoupling<distype>::TwoSidedImpl(
     Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
     Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
     Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-    Epetra_SerialDenseMatrix &  emb_xyze         ///< global node coordinates
+    Epetra_SerialDenseMatrix &  emb_xyze,        ///< global node coordinates
+    bool isViscAdjointSymmetric                  ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
 )
 {
 
@@ -355,13 +358,13 @@ Teuchos::RCP<EmbCoupling<distype> > EmbCoupling<distype>::TwoSidedImpl(
   case DRT::Element::hex8:
   {
     typedef EmbImpl<distype,DRT::Element::hex8> EmbImplType;
-    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze);
+    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze,isViscAdjointSymmetric);
     break;
   }
   case DRT::Element::hex20:
   {
     typedef EmbImpl<distype,DRT::Element::hex20> EmbImplType;
-    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze);
+    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze,isViscAdjointSymmetric);
     break;
   }
 //  case DRT::Element::hex27:
