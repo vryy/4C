@@ -54,7 +54,7 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
   : DRT::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd(),
     vcellgausspts_(INPAR::CUT::VCellGaussPts_DirectDivergence),
     bcellgausspts_(INPAR::CUT::BCellGaussPts_Tessellation),
-    coupling_method(INPAR::XFEM::Nitsche),
+    coupling_method_(INPAR::XFEM::Nitsche),
     coupling_strategy_(INPAR::XFEM::Xfluid_Sided_Coupling),
     visc_stab_trace_estimate_(INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
     visc_stab_hk_(INPAR::XFEM::ViscStab_hk_vol_equivalent),
@@ -76,11 +76,11 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
 void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank) const
 {
   // short consistency check
-  bool isEmbNitsche = (coupling_method == INPAR::XFEM::Nitsche && coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling);
+  const bool isEmbNitsche = (coupling_method_ == INPAR::XFEM::Nitsche && coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling);
   if (visc_stab_trace_estimate_ == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue && !isEmbNitsche)
     dserror("Solution of eigenvalue problem to estimate parameter from trace inequality is only reasonable for embedded-sided Nitsche coupling.");
 
-  if (is_visc_adjoint_symmetric_ && coupling_method == INPAR::XFEM::Hybrid_LM_viscous_stress && coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
+  if (is_visc_adjoint_symmetric_ && coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress && coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
   {
     if (myrank == 0)
       IO::cout << "Be warned: the symmetric hybrid/viscous stress-based LM approach is known for unstable behaviour in xfluid-fluid problems." << IO::endl;
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   //----------------------------------------------------------------
   Teuchos::ParameterList&   params_xf_stab = params.sublist("XFLUID DYNAMIC/STABILIZATION");
 
-  coupling_method = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
+  coupling_method_ = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
 
   coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
 

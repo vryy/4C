@@ -61,7 +61,7 @@ public:
   /*----------------------------------------------------*/
   //@{
   //! coupling approach (Nitsche or hybrid stress-based LM)
-  INPAR::XFEM::CouplingMethod GetCouplingMethod() const{ return coupling_method; }
+  INPAR::XFEM::CouplingMethod GetCouplingMethod() const{ return coupling_method_; }
 
   //! coupling strategy
   INPAR::XFEM::CouplingStrategy GetCouplingStrategy() const{ return coupling_strategy_; }
@@ -146,7 +146,7 @@ private:
   /*----------------------------------------------------*/
   //@{
   //! coupling approach (Nitsche or hybrid stress-based LM)
-  INPAR::XFEM::CouplingMethod coupling_method;
+  INPAR::XFEM::CouplingMethod coupling_method_;
 
   //! coupling strategy
   INPAR::XFEM::CouplingStrategy coupling_strategy_;

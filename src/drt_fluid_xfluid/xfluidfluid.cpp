@@ -2133,37 +2133,45 @@ void FLD::XFluidFluid::Init()
   case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
     // method needs just 3 dofs, but we use 4 to be consistent with Nitsche & MHVS
     element_name = "BELE3_4";
-    IO::cout << "Coupling Mixed/Hybrid Cauchy Stress-Based LM Xfluid-Sided" << IO::endl;
+    if (myrank_ == 0)
+      IO::cout << "Coupling Mixed/Hybrid Cauchy Stress-Based LM Xfluid-Sided" << IO::endl;
     if (coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("Choose Xfluid_Sided_Coupling for MHCS");
     coupling_approach_ = CouplingMHCS_XFluid;
     break;
   case INPAR::XFEM::Hybrid_LM_viscous_stress:
     element_name = "BELE3_4"; // use 4 dofs
-    IO::cout << "XFEM interface coupling method: TypeMHVS" << IO::endl;
+    if (myrank_ == 0)
     if (coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("Embedded-sided or two-sided MHVS coupling not supported yet.");
     coupling_approach_ = CouplingMHVS_XFluid;
-    IO::cout << "Coupling Mixed/Hybrid Viscous Stress-Based LM Xfluid-Sided" << IO::endl;
+    if (myrank_ == 0)
+      IO::cout << "Coupling Mixed/Hybrid Viscous Stress-Based LM Xfluid-Sided" << IO::endl;
     break;
   case INPAR::XFEM::Nitsche:
     element_name = "BELE3_4"; // use 4 dofs
-    IO::cout << "XFEM interface coupling method: ";
+    if (myrank_ == 0)
+      IO::cout << "XFEM interface coupling method: ";
     if (coupling_strategy_ == INPAR::XFEM::Two_Sided_Coupling)
     {
       coupling_approach_ = CouplingNitsche_TwoSided;
-      IO::cout << "Coupling Nitsche Two-Sided" << IO::endl;
-      IO::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << IO::endl;
+      if (myrank_ == 0)
+      {
+        IO::cout << "Coupling Nitsche Two-Sided" << IO::endl;
+        IO::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << IO::endl;
+      }
     }
     if (coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
     {
       coupling_approach_ = CouplingNitsche_XFluid;
-      IO::cout << "Coupling Nitsche Xfluid-Sided" << IO::endl;
+      if (myrank_ == 0)
+        IO::cout << "Coupling Nitsche Xfluid-Sided" << IO::endl;
     }
     if (coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling)
     {
       coupling_approach_ = CouplingNitsche_EmbFluid;
-      IO::cout << "Coupling Nitsche Embedded-Sided" << IO::endl;
+      if (myrank_ == 0)
+        IO::cout << "Coupling Nitsche Embedded-Sided" << IO::endl;
     }
     break;
   default:

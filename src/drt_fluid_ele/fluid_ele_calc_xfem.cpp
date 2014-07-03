@@ -1668,8 +1668,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   double mhvs_param = 1.0;
   if (is_MHVS)
   {
-    // MHVS-stabilization parameter n (corresponds to Nitsche's penalty parameter)
-    double mhvs_param = fldparaxfem_->ViscStabGamma();
+    // MHVS-stabilization parameter n
+    // REMARK:
+    // NIT_visc_stab_fac =   gamma * mu * C^2
+    // (C^2 includes characteristic length scale);
+    // the analogous MHVS-factor = 2 * n * mu * meas(\Gamma)/meas(\Omega_K)
+    // gamma <--> 2 * n
+    double mhvs_param = fldparaxfem_->ViscStabGamma() / 2.0;
     if ( fabs(mhvs_param) < 1.e-8 )
       dserror("MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
   }
@@ -2497,7 +2502,7 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
       }
     }
   }
-  else if (vcellgausspts==INPAR::CUT::VCellGaussPts_DirectDivergence )  // DirectDivergence method
+  else if (vcellgausspts == INPAR::CUT::VCellGaussPts_DirectDivergence )  // DirectDivergence method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
