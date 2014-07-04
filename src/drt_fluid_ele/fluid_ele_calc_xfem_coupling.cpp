@@ -52,18 +52,18 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
   {
     switch ( side->Shape() )
     {
-    //            case DRT::Element::tri3:
-    //            {
-    //              typedef SideImpl<distype,DRT::Element::tri3, 3> SideImplType;
-    //              si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
-    //              break;
-    //            }
-    //            case DRT::Element::tri6:
-    //            {
-    //              typedef SideImpl<distype,DRT::Element::tri6, 3> SideImplType;
-    //              si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
-    //              break;
-    //            }
+//    case DRT::Element::tri3:
+//    {
+//      typedef SideImpl<distype,DRT::Element::tri3, 3> SideImplType;
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
+//      break;
+//    }
+//    case DRT::Element::tri6:
+//    {
+//      typedef SideImpl<distype,DRT::Element::tri6, 3> SideImplType;
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
+//      break;
+//    }
     case DRT::Element::quad4:
     {
       typedef SideImpl<distype,DRT::Element::quad4, 3> SideImplType;
@@ -76,12 +76,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
-    //            case DRT::Element::quad9:
-      //            {
-    //              typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
-    //              si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
-    //              break;
-    //            }
+//    case DRT::Element::quad9:
+//    {
+//      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
+//      break;
+//    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -93,13 +93,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //    case DRT::Element::tri3:
 //    {
 //      typedef SideImpl<distype,DRT::Element::tri3, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
 //      typedef SideImpl<distype,DRT::Element::tri6, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
     case DRT::Element::quad4:
@@ -155,13 +155,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //    case DRT::Element::tri3:
 //    {
 //      typedef SideImpl<distype,DRT::Element::tri3, 3> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
 //      typedef SideImpl<distype,DRT::Element::tri6, 3> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
     case DRT::Element::quad4:
@@ -193,13 +193,13 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //    case DRT::Element::tri3:
 //    {
 //      typedef SideImpl<distype,DRT::Element::tri3, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
 //      typedef SideImpl<distype,DRT::Element::tri6, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
     case DRT::Element::quad4:
@@ -217,7 +217,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //    case DRT::Element::quad9:
 //    {
 //      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
+//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
 //      break;
 //    }
     default:
@@ -346,13 +346,13 @@ Teuchos::RCP<EmbCoupling<distype> > EmbCoupling<distype>::TwoSidedImpl(
 //  case DRT::Element::tet4:
 //  {
 //    typedef EmbImpl<distype,DRT::Element::tet4> EmbImplType;
-//    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze);
+//    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze,isViscAdjointSymmetric);
 //    break;
 //  }
 //  case DRT::Element::tet10:
 //  {
 //    typedef EmbImpl<distype,DRT::Element::tet10> EmbImplType;
-//    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze);
+//    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze,isViscAdjointSymmetric);
 //    break;
 //  }
   case DRT::Element::hex8:
