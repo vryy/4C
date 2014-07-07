@@ -850,14 +850,27 @@ void STR::TimIntStatMech::NewtonFull()
     std::cout<<"Newton-Raphson-iteration converged with..."<<std::endl;
     PrintNewtonIter();
   }
-  else if (fresmnormdivergent || (iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_stop))
+
+  switch(divcontype_)
   {
-    dserror("Newton unconverged in %d iterations", iter_);
-    return;
+    case INPAR::STR::divcont_stop:
+    {
+      if(fresmnormdivergent || iter_ >= itermax_)
+      {
+        dserror("Newton unconverged in %d iterations", iter_);
+        return;
+      }
+    }
+    break;
+    case INPAR::STR::divcont_continue:
+    {
+      if(soltype != INPAR::CONTACT::solution_auglag && !discret_->Comm().MyPID() && (fresmnormdivergent || iter_ >= itermax_))
+        printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
+      return;
+    }
+    break;
+    default: dserror("Unknown DIVERCONT type! Check input file!");
   }
-  else if (fresmnormdivergent || (iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_continue && !discret_->Comm().MyPID() && soltype != INPAR::CONTACT::solution_auglag))
-    printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
-  return;
 } // STR::TimIntStatMech::FullNewton()
 
 /*----------------------------------------------------------------------*
