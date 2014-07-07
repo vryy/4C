@@ -74,6 +74,42 @@ void DRT::CRACK::UTILS::convertAngleTo_02PI_range( double & ang )
 }
 
 /*-----------------------------------------------------------------------------------------*
+ * convert the angle in range [0,2pi] to [-pi,pi]                                  sudhakar 07/14
+ *-----------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::convertAngleTo_PI_mPI_range( double & ang )
+{
+  double PI = 22.0/7.0;
+
+  // angle is zero
+  if( (fabs(ang) < ANGLE_TOL_ZERO) or (fabs(ang - 2.0*PI) < ANGLE_TOL_ZERO) )
+  {
+    ang = 0.0;
+    return;
+  }
+
+  // already angle is in the correct form
+  if( fabs(ang) < PI )
+    return;
+
+  if( ang > 0.0 and ang > PI )
+  {
+    ang = -1.0* ( 2.0 * PI - ang );
+    return;
+  }
+
+  if( ang < 0.0 and fabs(ang) > PI )
+  {
+    ang = 2.0 * PI + ang;
+    return;
+  }
+
+  else
+    dserror( "Angle should satisfy one of the above cases\n" );
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------------*
  * Returns true if the given element has given nodeid                                 sudhakar 04/14
  *-----------------------------------------------------------------------------------------*/
 bool DRT::CRACK::UTILS::ElementHasThisNodeId( const DRT::Element* ele, int nodeid )
@@ -96,3 +132,104 @@ bool DRT::CRACK::UTILS::ElementHasThisNodeId( const DRT::Element* ele, int nodei
   return found;
 }
 
+/*-----------------------------------------------------------------------------------------*
+ * Delete all Dirichlet conditions that has only one associated node                sudhakar 06/14
+ * These are the conditions that we added to fix crack tip to desire location
+ *-----------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::deleteConditions( Teuchos::RCP<DRT::Discretization> discret )
+{
+  std::vector<std::multimap<std::string,Teuchos::RCP<Condition> >::iterator> del;
+
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator conit;
+  std::multimap<std::string,Teuchos::RCP<Condition> >& allcondn = discret->GetAllConditions();
+  for( conit = allcondn.begin(); conit != allcondn.end(); conit++ )
+  {
+    Teuchos::RCP<Condition> cond = conit->second;
+    if( cond->Nodes()->size() == 1 )
+      del.push_back( conit );
+  }
+
+  for( unsigned i=0; i< del.size(); i++ )
+  {
+    conit = del[i];
+    allcondn.erase( conit );
+  }
+}
+
+/*------------------------------------------------------------------------------------*
+ * Add the given node ids and Displacement conditions to discretization        sudhakar 06/14
+ * Type of the condition added is PointDirichlet
+ * For each node, a separate condition is added. This is helpful to identify
+ * these conditions later and delete them at appropriate time
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::AddConditions( Teuchos::RCP<DRT::Discretization> discret,
+                                       const std::map<int, std::vector<double> >& ale_bc_nodes )
+{
+  std::map<int, std::vector<double> >::const_iterator iter;
+  int id = 101;
+  for( iter = ale_bc_nodes.begin(); iter != ale_bc_nodes.end(); iter++ )
+  {
+    Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp( new DRT::Condition( id++, DRT::Condition::PointDirichlet, false, DRT::Condition::Point ) );
+    std::vector<int> onoff(3,1);
+
+    //cond->SetConditionType(  DRT::Condition::PointDirichlet );
+    cond->Add( "Node Ids", iter->first );
+    cond->Add("onoff",onoff);
+    cond->Add("val",iter->second);
+
+    discret->SetCondition( "Dirichlet", cond );
+  }
+}
+
+/*------------------------------------------------------------------------------------*
+ * Add some new nodes to the given condition                                  sudhakar 03/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
+                                              std::map<int,int> oldnew )
+{
+  std::vector<int> add;
+
+  for( std::map<int,int>::iterator itm = oldnew.begin(); itm != oldnew.end(); itm++ )
+  {
+    add.push_back(itm->first);
+    add.push_back(itm->second);
+  }
+  addNodesToConditions( cond, add );
+}
+
+/*------------------------------------------------------------------------------------*
+ * Add some new nodes to the given condition                                  sudhakar 03/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
+                                              std::vector<int> add )
+{
+  if( add.size() == 0 )
+    dserror("No nodes passed for adding to condition\n");
+
+  const std::vector<int>* conNodes = cond->Nodes();
+  for( unsigned ii = 0; ii < conNodes->size(); ii++ )
+      add.push_back( (*conNodes)[ii] );
+
+  Teuchos::RCP<std::vector<int> > storage = Teuchos::rcp( new std::vector<int>(add) );
+
+  std::sort( storage->begin(), storage->end() );
+  cond->Add( "Node Ids", storage );
+}
+
+/*------------------------------------------------------------------------------------*
+ * Add some new nodes to the given condition                                  sudhakar 05/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
+                                              std::set<int> add )
+{
+  std::vector<int> vec (add.size());
+
+  int count = 0;
+  for( std::set<int>::iterator it = add.begin(); it != add.end(); it++ )
+  {
+    vec[count] = *it;
+    count++;
+  }
+
+  addNodesToConditions( cond, vec );
+}

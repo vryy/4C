@@ -1256,7 +1256,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
 
-  case prb_crack:
   case prb_structure:
   {
     if(distype == "Meshfree")
@@ -1383,6 +1382,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+  case prb_crack:
   case prb_struct_ale: // structure with ale
   {
     // create empty discretizations

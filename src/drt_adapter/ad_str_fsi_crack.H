@@ -95,15 +95,6 @@ namespace ADAPTER {
     //! minimum opening displacement that should be satisfied so that new crack surfaces can be added to cut discretization
     double minOpeningDist_;
 
-    //! Add the nodal numbers given in the map to the given condition
-    void addNodesToConditions( DRT::Condition * cond, std::map<int,int> oldnew );
-
-    //! Add the nodal numbers given in the vector to the given condition
-    void addNodesToConditions( DRT::Condition * cond, std::vector<int> add );
-
-    //! Add the nodal numbers given in the set to the given condition
-    void addNodesToConditions( DRT::Condition * cond, std::set<int> add );
-
     //! Rebuild cut interface only when crack mouth opening distance satisfies predefined value
     void RebuildInterfaceWithConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
                                              std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
@@ -126,6 +117,9 @@ namespace ADAPTER {
 
     //! check an element with given nodeids exist in the discretization
     bool checkElementExist( Teuchos::RCP<DRT::Discretization>& dis, const int* elenod, int& eleid );
+
+    //! Delete the unwanted elements that are added in the crack tip region
+    void deleteWrongElements( Teuchos::RCP<DRT::Discretization>& dis, std::vector<int> crtip, std::map<int,int> doubNodes );
 
   };  // class FSICrackingStructure
 

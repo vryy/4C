@@ -40,9 +40,39 @@ namespace UTILS{
   void convertAngleTo_02PI_range( double &ang );
 
   /*!
+  \brief convert the angle calculated in the range [0,2pi] to [-pi,pi]
+   */
+  void convertAngleTo_PI_mPI_range( double & ang );
+
+  /*!
   \brief Returns true when the given element has given nodeid
    */
   bool ElementHasThisNodeId( const DRT::Element* ele, int nodeid );
+
+  /*!
+  \brief Delete all Dirichlet conditions that has only one associated node
+   */
+  void deleteConditions( Teuchos::RCP<DRT::Discretization> discret );
+
+  /*!
+  \brief Add the given nodes and corresponding displacement as PointDirichlet conditions in discretization
+   */
+  void AddConditions( Teuchos::RCP<DRT::Discretization> discret, const std::map<int, std::vector<double> >& ale_bc_nodes );
+
+  /*!
+  \brief Add the nodal numbers given in the map to the given condition
+   */
+  void addNodesToConditions( DRT::Condition * cond, std::map<int,int> oldnew );
+
+  /*!
+  \brief Add the nodal numbers given in the vector to the given condition
+   */
+  void addNodesToConditions( DRT::Condition * cond, std::vector<int> add );
+
+  /*!
+  \brief Add the nodal numbers given in the set to the given condition
+   */
+  void addNodesToConditions( DRT::Condition * cond, std::set<int> add );
 
 } /* namespace CRACK */
 } /* namespace CRACK */

@@ -494,7 +494,15 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0,0.0);
+
+  // Output for these problems are not necessary because we write
+  // restart data at each time step for visualization
+  bool write_output = true;
+  if( probtype == prb_crack or probtype == prb_fsi_crack )
+    write_output = false;
+
+  if( write_output )
+    output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -599,6 +607,12 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
     {
       dirichletcond = false;
     }
+  }
+
+  if( probtype == prb_crack or
+      probtype == prb_fsi_crack )
+  {
+    dirichletcond = false;
   }
 
   int aletype = DRT::INPUT::IntegralValue<int>(*adyn,"ALE_TYPE");

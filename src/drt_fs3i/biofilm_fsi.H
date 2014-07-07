@@ -75,13 +75,6 @@ namespace FS3I
 
     const Epetra_Comm& Comm() { return comm_; }
 
-    void ChangeConfig(Teuchos::RCP<DRT::Discretization> dis,
-                      Teuchos::RCP<Epetra_Vector> disp);
-
-    void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
-                            Teuchos::RCP<DRT::Discretization> dis,
-                            Teuchos::RCP<Epetra_Vector> disp);
-
     void VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradis,
                         Teuchos::RCP<Epetra_Vector> vec,
                         Teuchos::RCP<Epetra_MultiVector> scatravec);

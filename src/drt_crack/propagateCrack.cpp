@@ -17,10 +17,18 @@ Maintainer: Sudhakar
 #include "propagateCrack.H"
 #include "crack_tolerance.H"
 #include "crackUtils.H"
+#include "aleCrack.H"
+
+#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale.H"
+
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -28,6 +36,7 @@ Maintainer: Sudhakar
 #include "../drt_matelast/elast_coupneohooke.H"
 
 #include "../linalg/linalg_utils.H"
+
 
 /*------------------------------------------------------------------------------------*
  * Constructor                                                                     sudhakar 12/13
@@ -157,6 +166,12 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
   fac_ = young_ / ( 1.0 + poisson_ ) / ( 1.0 + kappa_ );
 
   startNewId_ = crackparam.get<int>("START_NEW_ID");
+
+
+  tip_string_ = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                    + ".crackTip.txt";
+  std::ofstream f;
+  f.open(tip_string_.c_str(),std::fstream::trunc);
 }
 
 /*------------------------------------------------------------------------------------*
@@ -171,16 +186,18 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   tip_phi_.clear();
   tip_mphi_.clear();
   tip_bc_disp_.clear();
-
-  // Crack has already propagated that the structure is completely split into two
-  if( strIsSplit_ )
-    return;
+  justClearedCondns_ = false;
 
   if( clearCondns_ )
   {
     DeleteConditions();
+    justClearedCondns_ = true;
     return;
   }
+
+  // Crack has already propagated that the structure is completely split into two
+  if( strIsSplit_ )
+    return;
 
   // export "displacement" to column map
   disp_col_ = LINALG::CreateVector( *discret_->DofColMap(), true );
@@ -223,19 +240,33 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   //-------------
   // STEP 5 : Update crack information
   //-------------
-
   //std::vector<int> newTip = findNewCrackTip();
   std::vector<int> newTip = findNewCrackTip1();
 
   //-------------
-  // STEP 6 : Introduced new nodes into structural discretization
+  // STEP 6 : Write the location of crack tip to a file
+  //-------------
+  WriteCrackTipLocation( newTip );
+
+  //-------------
+  // STEP 7 : ALE step : move new crack tip nodes to correct location
+  //-------------
+  Perform_ALE_Step();
+
+  //-------------
+  // STEP 8 : Introduced new nodes into structural discretization
   //-------------
   updateCrack( newTip );
 
   //-------------
-  // STEP 7 : Check whether the crack has split the body completely into two
+  // STEP 9 : Check whether the crack has split the body completely into two
   //-------------
   CheckCompleteSplit();
+
+  //-------------
+  // STEP 10 : Analyze the discretization, and delete unnecessary nodes in each processor
+  //-------------
+  analyzeAndCleanDiscretization();
 }
 
 /*------------------------------------------------------------------------------------*
@@ -446,8 +477,11 @@ void DRT::CRACK::PropagateCrack::findNormal( const DRT::Node * tipnode,
   tangent_(1,0) = cos(theta);
   tangent_(2,0) = 0.0;
 
-  std::cout<<"normal vector = "<<normal_(0,0)<<"\t"<<normal_(1,0)<<"\t"<<normal_(2,0)<<"\n";
-  std::cout<<"tangent vector = "<<tangent_(0,0)<<"\t"<<tangent_(1,0)<<"\t"<<tangent_(2,0)<<"\n";
+  if( myrank_ == 0 )
+  {
+    std::cout<<"normal vector = "<<normal_(0,0)<<"\t"<<normal_(1,0)<<"\t"<<normal_(2,0)<<"\n";
+    std::cout<<"tangent vector = "<<tangent_(0,0)<<"\t"<<tangent_(1,0)<<"\t"<<tangent_(2,0)<<"\n";
+  }
 }
 
 /*------------------------------------------------------------------------------------*
@@ -594,7 +628,8 @@ void DRT::CRACK::PropagateCrack::findStressIntensityFactor()
   //TODO: can we simulate mixed mode and couple it to FSI-crack interaction
   //K_II_ = 0.0; //at the moment we simulate only K_1 mode crack
 
-  std::cout<<"stress intensity factors = "<<K_I_<<"\t"<<K_II_<<"\n";
+  if( myrank_ == 0 )
+    std::cout<<"stress intensity factors = "<<K_I_<<"\t"<<K_II_<<"\n";
 }
 
 /*------------------------------------------------------------------------------------*
@@ -876,7 +911,8 @@ void DRT::CRACK::PropagateCrack::decidePropagationAngle()
   else if( propAngle_ > 2*PI_ )
     propAngle_ = propAngle_ - 2*PI_;
 
-  std::cout<<"propagation angle = "<<propAngle_ * 180.0 / PI_ <<"deg\n";
+  if( myrank_ == 0 )
+    std::cout<<"propagation angle = "<<propAngle_ * 180.0 / PI_ <<"deg\n";
 }
 
 /*------------------------------------------------------------------------------------*
@@ -923,6 +959,8 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
 
   std::vector<double> lmtAngle = getLimitAngles( newTip );
 
+  //std::cout<<"limit angle = "<<lmtAngle[0]*180.0/PI_<<"\t"<<lmtAngle[1]*180.0/PI_<<"\n";
+
   // map of element ids to be modified with the new node
   // "key" contains the element id, and "value" is dummy here
   // map is used to make sure that one element is stored only once
@@ -938,6 +976,8 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
       //Teuchos::RCP<DRT::Node> dupnode = Teuchos::rcp( new DRT::Node( totalNodes + num, tipnode->X(), tipnode->Owner() ) );
 
       oldnew_[tipnode->Id()] = dupnode->Id();
+
+      //std::cout<<"dupnode id = "<<dupnode->Id()<<"\n";
 
       DRT::Element** ElementsPtr = tipnode->Elements();
       int NumElement = tipnode->NumElement();
@@ -1041,7 +1081,12 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
   {
     oldTipnodes_.insert( it->first );
     oldTipnodes_.insert( it->second );
+    cracknodes_.insert( it->second );
+    new_ale_bc_nodes_.insert( it->second );
   }
+
+  for( unsigned i=0; i< newTip.size(); i++ )
+    new_ale_bc_nodes_.insert( newTip[i] );
 }
 
 /*------------------------------------------------------------------------------------*
@@ -1087,11 +1132,12 @@ std::vector<double> DRT::CRACK::PropagateCrack::getLimitAngles( const std::vecto
   double secAng = 0.0;
   comm_.SumAll( &tempAng, &secAng, 1 );
 
-  ang.push_back( secAng );
-
-#if 0 // this shud be the case if we move crack nodes (I believe) -- sudhakar 02/14
+#if 1 // this shud be the case if we move crack nodes (I believe) -- sudhakar 02/14
   ang.push_back( propAngle_ );
+#else
+  ang.push_back( secAng );
 #endif
+
 
   std::sort( ang.begin(), ang.end() );
 
@@ -1171,7 +1217,9 @@ void DRT::CRACK::PropagateCrack::DeleteConditions()
   if( not clearCondns_ )
     return;
 
-  std::vector<std::multimap<std::string,Teuchos::RCP<Condition> >::iterator> del;
+  DRT::CRACK::UTILS::deleteConditions( discret_ );
+
+  /*std::vector<std::multimap<std::string,Teuchos::RCP<Condition> >::iterator> del;
 
   std::multimap<std::string,Teuchos::RCP<Condition> >::iterator conit;
   std::multimap<std::string,Teuchos::RCP<Condition> >& allcondn = discret_->GetAllConditions();
@@ -1186,7 +1234,7 @@ void DRT::CRACK::PropagateCrack::DeleteConditions()
   {
     conit = del[i];
     allcondn.erase( conit );
-  }
+  }*/
 
   // already we have cleared it now. unless new condns are set, no need to delete anyting
   clearCondns_ = false;
@@ -1394,7 +1442,8 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
         prop_vec[2] = disp_tip[2];
 
         // This is same as the propagation angle but in the range [-pi,pi]
-        double projangle = atan2( sin( propAngle_ ), cos( propAngle_ ) );
+        double projangle = propAngle_;
+        DRT::CRACK::UTILS::convertAngleTo_PI_mPI_range( projangle );
 
         DRT::Element** ElementsPtr = tipnode->Elements();
         int NumElement = tipnode->NumElement();
@@ -1489,6 +1538,13 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
             double angle1 = atan2( disp1[1] - disp_tip[1], disp1[0] - disp_tip[0] ) - projangle;
             double angle2 = atan2( disp2[1] - disp_tip[1], disp2[0] - disp_tip[0] ) - projangle;
 
+            DRT::CRACK::UTILS::convertAngleTo_PI_mPI_range( angle1 );
+            DRT::CRACK::UTILS::convertAngleTo_PI_mPI_range( angle2 );
+
+            //TODO: should this condition exist?
+            if( fabs(angle1) > 0.5*PI_ and fabs(angle2) > 0.5*PI_ )
+              continue;
+
             // it may be possible that the crack can pass through the edge itself
             if( ( fabs( angle1 ) < min_angle_tol_ ) and ( node1->Id() == possible1->Id() or node1->Id() == possible2->Id() ) )
             {
@@ -1536,14 +1592,14 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
 
               if( whichnode == "node1" )
               {
-                if( angle1 * 180 / PI_ > 50.0 )
+                if( angle1 * 180 / PI_ > 90.0 )
                   continue;
                 num = 1;
                 lnewtip = node1->Id();
               }
               else if( whichnode == "node2" )
               {
-                if( angle2 * 180 / PI_ > 50.0 )
+                if( angle2 * 180 / PI_ > 90.0 )
                   continue;
                 num = 2;
                 lnewtip = node2->Id();
@@ -1592,7 +1648,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
     oldnew_tip[tipid] = gnewtip;
   }
 
-  //TODO: This is not used until now. Check and remove it (sudhakar 05/14)
+
   LINALG::GatherAll( tip_bc_disp_, comm_ );
 
 
@@ -1601,7 +1657,9 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
 
   std::vector<int> newTip;
   for( std::map<int,int>::iterator it = oldnew_tip.begin(); it != oldnew_tip.end(); it++ )
+  {
     newTip.push_back( it->second );
+  }
 
   return newTip;
 }
@@ -1666,6 +1724,8 @@ void DRT::CRACK::PropagateCrack::CheckCompleteSplit()
   // "key" contains the element id, and "value" is dummy here
   // map is used to make sure that one element is stored only once
   std::map<int, int> delEle;
+
+
 
   for( unsigned num = 0; num < tipnodes_.size(); num++ )
   {
@@ -1758,9 +1818,46 @@ void DRT::CRACK::PropagateCrack::CheckCompleteSplit()
     }
   }
 
-
   AddConditions();
+
   discret_->FillComplete();
+
+
+  /************************************************************/ //-------------
+  // This is to add a prescribed displacement when the body separates completely into two
+  //TODO: check to remove the lines marked as //-----------------
+  std::map<int,std::vector<double> > disppl;//-----------------
+  std::vector<double> disp(3,0.0);//-----------------
+  disp[1] = 0.00;//------------------
+
+  for( unsigned num = 0; num < tipnodes_.size(); num++ )
+  {
+    int tip_id = tipnodes_[num];
+    if( discret_->HaveGlobalNode( tip_id ) )
+    {
+      DRT::Node * tipnode = discret_->gNode( tip_id );
+      std::vector<double> disp_temp = this->getDisplacementNode( tipnode, disp_col_ );//-------------
+      for( unsigned dispp = 0; dispp < 3; dispp++ )//-------------
+        disp_temp[dispp] += disp[dispp];//-------------
+
+      int dupid = 0;
+      //std::map<int,int>::iterator itmap = std::find( oldnew_.begin(), oldnew_.end(), tip_id );
+      std::map<int,int>::iterator itmap = oldnew_.find( tip_id );
+      if( itmap == oldnew_.end() )
+        dserror( "tip node must be present in oldnew_ data \n" );
+      dupid = itmap->second;
+      disppl[dupid] = disp_temp;
+    }
+  }
+
+  LINALG::GatherAll( disppl, comm_ ); //-------------
+
+  clearCondns_ = true;
+
+  DRT::CRACK::UTILS::AddConditions( discret_, disppl );
+
+  discret_->FillComplete();
+  /************************************************************/ //-------------
 
   //TODO: how to handle tip nodes?
   //tipnodes_.clear();
@@ -1775,3 +1872,144 @@ void DRT::CRACK::PropagateCrack::CheckCompleteSplit()
 
   strIsSplit_ = true;
 }
+
+/*------------------------------------------------------------------------------------*
+ * Perform all operations related to ALE step                                 sudhakar 05/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateCrack::Perform_ALE_Step()
+{
+  if( tip_bc_disp_.size() == 0 )
+    return;
+
+  aleCrack ale( discret_ );
+  ale.ALE_step( tip_bc_disp_, new_ale_bc_nodes_ );
+}
+
+/*------------------------------------------------------------------------------------*
+ * Write crack tip location to an output file to trace crack path              sudhakar 07/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateCrack::WriteCrackTipLocation( const std::vector<int>& newTip )
+{
+  std::ofstream f;
+  if( myrank_ == 0 )
+    f.open( tip_string_.c_str(), std::fstream::ate | std::fstream::app );
+
+  int lmaster = 0, gmaster = 0;
+  std::vector<double> disp(3,0.0);
+  int nodeid = newTip[0];
+
+  if( not tip_bc_disp_.size() == 0 )
+  {
+    std::map<int, std::vector<double> >::iterator it = tip_bc_disp_.begin();
+    nodeid = it->first;
+    disp=it->second;
+  }
+
+  if( discret_->HaveGlobalNode( nodeid ) )
+  {
+    DRT::Node * node = discret_->gNode( nodeid );
+    if( node->Owner() == myrank_ )
+    {
+      const double* x = discret_->gNode( nodeid )->X();
+      for( unsigned dim = 0; dim < 3; dim++ )
+        disp[dim] += x[dim];
+
+      lmaster = myrank_;
+    }
+  }
+
+  // making sure that master processor id is available at all processors
+  comm_.SumAll( &lmaster, &gmaster, 1 );
+
+  // normal and tangent vectors are computed only on master processor
+  // broadcast them to all processors
+  comm_.Broadcast( &disp[0], 3, gmaster );
+
+  if( myrank_ == 0 )
+  {
+    std::ostringstream s;
+    s<<disp[0]<<"\t"<<disp[1];
+    f<<s.str()<<"\n";
+  }
+
+  if( myrank_ == 0 )
+    f.close();
+}
+
+/*------------------------------------------------------------------------------------*
+ * Analyze --> Make sure all nodes are available on each proc for considered
+ *             element distribution                                             sudhakar 06/14
+ * Clean   --> Delete all extra nodes on each proc that are not needed for
+ *             given element distribution
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateCrack::analyzeAndCleanDiscretization()
+{
+  std::set<int> colnodesReqd;  // all nodes that are required in this processor for available element distribution
+  std::set<int> colnodesAvail; // all nodes that are availble in this processor for available element distribution
+
+  // get all required nodes on this proc
+  int numelements = discret_->NumMyColElements();
+  for (int i=0; i<numelements; i++ )
+  {
+    DRT::Element* actele = discret_->lColElement(i);
+    const int* nodes = actele->NodeIds();
+    for( int nno = 0; nno < actele->NumNode(); nno++ )
+      colnodesReqd.insert( nodes[nno] );
+  }
+
+  // get all available nodes on this proc
+  int numnodes = discret_->NumMyColNodes();
+  const Epetra_Map * colnodemap = discret_->NodeColMap();
+  for( int i=0; i<numnodes; i++ )
+  {
+    int nid = colnodemap->GID( i );
+    colnodesAvail.insert( nid );
+  }
+
+  std::vector<int> delNodeIds;
+  if( colnodesReqd == colnodesAvail )
+  {
+  }
+  else
+  {
+    std::set<int>::iterator itavail, itreqd;
+
+    // check whether all node ids are available on this proc
+    std::vector<int> notavail;
+    for( itreqd = colnodesReqd.begin(); itreqd != colnodesReqd.end(); itreqd++ )
+    {
+      int nid = *itreqd;
+      itavail = colnodesAvail.find( nid );
+      if( itavail == colnodesAvail.end() )
+        notavail.push_back( nid );
+    }
+
+    if( not notavail.size() == 0 )
+    {
+      std::cout<<"The following nodeids are not available in proc "<<myrank_<<" : ";
+      for( unsigned i=0; i< notavail.size(); i++ )
+        std::cout<<notavail[i]<<" ";
+      std::cout<<"\n";
+      dserror("failed!\n");
+    }
+
+    // node ids that is not required but available in this proc
+    // Hence these will  be erased
+
+    for( itavail = colnodesAvail.begin(); itavail != colnodesAvail.end(); itavail++ )
+    {
+      int nid = *itavail;
+      itreqd = colnodesReqd.find( nid );
+      if( itreqd == colnodesReqd.end() )
+        delNodeIds.push_back( nid );
+    }
+  }
+
+  for( std::vector<int>::iterator it = delNodeIds.begin(); it != delNodeIds.end(); it++ )
+  {
+    discret_->DeleteNode( *it );
+  }
+
+  discret_->FillComplete();
+}
+

@@ -984,6 +984,7 @@ set(OBJS_DRT_FS3I
   src/drt_fs3i/fps3i_partitioned_1wc.cpp
   src/drt_fs3i/fs3i_partitioned_2wc.cpp
   src/drt_fs3i/biofilm_fsi.cpp
+  src/drt_fs3i/biofilm_fsi_utils.cpp
   src/drt_fs3i/aero_tfsi.cpp
   src/drt_fs3i/aero_tfsi_serv.cpp
 )
@@ -1679,6 +1680,7 @@ set(OBJS_DRT_CRACK
   src/drt_crack/dcohesive_evaluate.cpp
   src/drt_crack/propagateCrack.cpp
   src/drt_crack/crackUtils.cpp
+  src/drt_crack/aleCrack.cpp
 )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
@@ -1769,7 +1771,6 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_hex8_twintri.cpp
   tests/cut_test/cut_test_shadan_6.cpp
   tests/cut_test/cut_test_volume.cpp
-  tests/cut_test/drt_dserror.cpp
   tests/cut_test/drt_singletondestruction.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp

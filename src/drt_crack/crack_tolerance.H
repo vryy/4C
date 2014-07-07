@@ -21,4 +21,7 @@
 // are considered to be equal
 #define ANGLE_TOL_ZERO 1e-5
 
+// If ALE displacement of nodes are less than this value, then the nodes are not moved
+#define ALE_LEN_TOL 1e-10
+
 #endif

@@ -19,6 +19,11 @@ Maintainer: Sudhakar
 
 #include "../drt_lib/drt_discret.H"
 
+namespace ALE
+{
+class Ale;
+}
+
 namespace DRT
 {
 namespace CRACK
@@ -50,6 +55,11 @@ public:
 	\brief Return the crack tip nodes after crack has been propagated
 	 */
   std::vector<int> GetCrackTipNodes(){ return tipnodes_; }
+
+  /*!
+  \brief Returns true if the Dirichlet conditions are cleared in this time step
+   */
+  bool DidIClearConditionsNow(){ return justClearedCondns_; }
 
 private:
 
@@ -133,6 +143,22 @@ private:
   void CheckCompleteSplit();
 
   /*!
+  \brief Perform ALE step of moving the crack tip to the desired location
+   */
+  void Perform_ALE_Step();
+
+  /*!
+  \brief Write the location of crack tip to output file
+   */
+  void WriteCrackTipLocation( const std::vector<int>& newTip );
+
+  /*!
+  \brief Analyze and clean discretization after adding new nodes
+   */
+  void analyzeAndCleanDiscretization();
+
+
+  /*!
   \brief When a new node is introduced into the discretization, it is mandatory to copy the conditions
   existing in old nodes into its duplicated new nodes
    */
@@ -172,6 +198,9 @@ private:
 
   //! map of old crack tip node ids and new node ids
   std::map<int, int> oldnew_;
+
+  //! new Point Dirichlet ALE boundary nodes and the corresponding displacement values
+  std::set<int> new_ale_bc_nodes_;
 
   //! stress intensity factors
   double K_I_, K_II_;
@@ -226,6 +255,13 @@ private:
 
   //! Is crack already initiated
   bool crackInitiated_;
+
+  //! cleared conditions in this time step
+  bool justClearedCondns_;
+
+  //! filename to which new tip coordinates are written at each time step
+  std::string tip_string_;
+
 };
 
 } /* namespace CRACK */

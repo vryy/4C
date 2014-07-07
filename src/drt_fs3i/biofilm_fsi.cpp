@@ -18,6 +18,7 @@ Maintainer: Mirella Coroneo
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "biofilm_fsi.H"
+#include "biofilm_fsi_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -670,16 +671,16 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   //change nodes reference position of the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
-  ChangeConfig(fluiddis, fluiddisp);
+  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(fluiddis, fluiddisp);
 
   //change nodes reference position also for the fluid ale field
   Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().WriteAccessDispnp();
-  ChangeConfig(fluidaledis, fluidaledisp);
+  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(fluidaledis, fluidaledisp);
 
   //change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
   Teuchos::RCP<DRT::Discretization> scatradis = scatra->ScaTraField()->Discretization();
-  ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
+  FS3I::Biofilm::UTILS::ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
   //set the total displacement due to growth for output reasons
   //fluid
@@ -716,16 +717,16 @@ void FS3I::BiofilmFSI::StructAleSolve()
   //change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
-  ChangeConfig(structdis, structdisp);
+  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(structdis, structdisp);
   structdis->FillComplete(false, true, true);
 
   //change nodes reference position also for the struct ale field
-  ChangeConfig(structaledis, ale_->WriteAccessDispnp());
+  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(structaledis, ale_->WriteAccessDispnp());
 
   //change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   Teuchos::RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField()->Discretization();
-  ScatraChangeConfig(struscatradis, structdis, structdisp);
+  FS3I::Biofilm::UTILS::ScatraChangeConfig(struscatradis, structdis, structdisp);
 
   //set the total displacement due to growth for output reasons
   //structure
@@ -786,97 +787,6 @@ Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::StructToAle(Teuchos::RCP<const Epe
   return icoupsa_->MasterToSlave(iv);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
-{
-  const int numnode = (dis->NodeColMap())->NumMyElements();
-
-  //Create Vector which holds all col-displacments of processor
-  Teuchos::RCP<Epetra_Vector> coldisp = Teuchos::rcp(new Epetra_Vector(*(dis->DofColMap())));
-
-  //Export row-displacments to col-displacements
-  LINALG::Export(*disp, *coldisp);
-
-  const Epetra_Vector& gvector =*coldisp;
-
-  // loop over all nodes
-  for (int index = 0; index < numnode; ++index)
-  {
-    // get current node
-    DRT::Node* mynode = dis->lColNode(index);
-
-    std::vector<int> globaldofs = dis->Dof(0,mynode);
-    std::vector<double> nvector(globaldofs.size());
-
-    // determine number of space dimensions
-    const int numdim = DRT::Problem::Instance()->NDim();
-
-    for (int i=0; i<numdim; ++i)
-    {
-      const int lid = gvector.Map().LID(globaldofs[i]);
-
-      if (lid<0)
-        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),globaldofs[i]);
-      nvector[i] += gvector[lid];
-    }
-
-    mynode->ChangePos(nvector);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
-                                          Teuchos::RCP<DRT::Discretization> dis,
-                                          Teuchos::RCP<Epetra_Vector> disp)
-{
-  const int numnode = (scatradis->NodeColMap())->NumMyElements();
-
-  //Create Vector which holds all col-displacments of processor
-  Teuchos::RCP<Epetra_Vector> coldisp = Teuchos::rcp(new Epetra_Vector(*(dis->DofColMap())));
-
-  //Export row-displacments to col-displacements
-  LINALG::Export(*disp, *coldisp);
-
-
-  const Epetra_Vector& gvector =*coldisp;
-
-  // loop over all nodes
-  for (int index = 0; index < numnode; ++index)
-  {
-    // get current node
-    int gid = (scatradis->NodeColMap())->GID(index);
-    DRT::Node* mynode = scatradis->gNode(gid);
-
-    // get local fluid/structure node with the same local node id
-    DRT::Node* lnode = dis->lColNode(index);
-
-    // get degrees of freedom associated with this fluid/structure node
-    std::vector<int> nodedofs = dis->Dof(0,lnode);
-
-    std::vector<double> nvector(nodedofs.size());
-
-    // determine number of space dimensions
-    const int numdim = DRT::Problem::Instance()->NDim();
-
-    for (int i=0; i<numdim; ++i)
-    {
-      const int lid = gvector.Map().LID(nodedofs[i]);
-
-      if (lid<0)
-        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),nodedofs[i]);
-      nvector[i] += gvector[lid];
-    }
-
-    mynode->ChangePos(nvector);
-  }
-
-  return;
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

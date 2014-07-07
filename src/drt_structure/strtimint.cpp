@@ -2974,14 +2974,14 @@ int STR::TimInt::Integrate()
       // write output
       OutputStep();
 
-      // write Gmsh output
-      writeGmshStrucOutputStep();
-
       // print info about finished time step
       PrintStep();
 
       // propagate crack within the structure
       UpdateCrackInformation( Dispnp() );
+
+      // write Gmsh output
+      writeGmshStrucOutputStep();
     }
     else // something went wrong update error code according to chosen divcont action
     {
@@ -3275,52 +3275,56 @@ bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
   }
 
   std::map<int,int> oldnewIds = propcrack_->GetOldNewNodeIds();
+
   if( oldnewIds.size() == 0 )
   {
     return false;
   }
 
-  std::cout<<"===============updating crack information==================\n";
-
-  // new boundary condition map is built when calling discret_->EvaluateDirichlet(...)
-  // within the createFields() funciton
-  dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
-  createFields( solver_ );
-
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, disn_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, veln_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, accn_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fifc_, oldnewIds );
-
-  if( dismatn_ != Teuchos::null )
-    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dismatn_, oldnewIds );
-
-  if ((*dis_)(0) != Teuchos::null)
+  if( oldnewIds.size() > 0 or propcrack_->DidIClearConditionsNow() )
   {
-    dis_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*disn_, *(*dis_)(0));
-  }
+    std::cout<<"===============updating crack information==================\n";
 
-  if ((*vel_)(0) != Teuchos::null)
-  {
-    vel_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*veln_, *(*vel_)(0));
-  }
+    // new boundary condition map is built when calling discret_->EvaluateDirichlet(...)
+    // within the createFields() funciton
+    dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
+    createFields( solver_ );
 
-  if ((*acc_)(0) != Teuchos::null)
-  {
-    acc_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*accn_, *(*acc_)(0));
-  }
+    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, disn_, oldnewIds );
+    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, veln_, oldnewIds );
+    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, accn_, oldnewIds );
+    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fifc_, oldnewIds );
 
-  if( dism_ != Teuchos::null )
-  {
-    dism_->ReplaceMaps(discret_->DofRowMap());
-    LINALG::Export(*dismatn_, *(*dism_)(0));
-  }
+    if( dismatn_ != Teuchos::null )
+      DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dismatn_, oldnewIds );
 
-  // update other field vectors related to specific integration method
-  updateEpetraVectorsCrack( oldnewIds );
+    if ((*dis_)(0) != Teuchos::null)
+    {
+      dis_->ReplaceMaps(discret_->DofRowMap());
+      LINALG::Export(*disn_, *(*dis_)(0));
+    }
+
+    if ((*vel_)(0) != Teuchos::null)
+    {
+      vel_->ReplaceMaps(discret_->DofRowMap());
+      LINALG::Export(*veln_, *(*vel_)(0));
+    }
+
+    if ((*acc_)(0) != Teuchos::null)
+    {
+      acc_->ReplaceMaps(discret_->DofRowMap());
+      LINALG::Export(*accn_, *(*acc_)(0));
+    }
+
+    if( dism_ != Teuchos::null )
+    {
+      dism_->ReplaceMaps(discret_->DofRowMap());
+      LINALG::Export(*dismatn_, *(*dism_)(0));
+    }
+
+    // update other field vectors related to specific integration method
+    updateEpetraVectorsCrack( oldnewIds );
+  }
 
   return true;
 }
