@@ -153,6 +153,9 @@ protected:
   /// set old part of RHS for galvanostatic equation
   virtual void ElectrodeKineticsSetOldPartOfRHS(){return;};
 
+  /// return phi at evaluation time
+  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){return phiaf_;};
+
   /// scalar at time n+alpha_F and n+alpha_M
   Teuchos::RCP<Epetra_Vector>  phiaf_;
   Teuchos::RCP<Epetra_Vector>  phiam_;

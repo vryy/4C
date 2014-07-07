@@ -244,6 +244,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENT INFLOW", *list);
+  reader.ReadGidSection("--TWO PHASE FLOW", *list); 
   reader.ReadGidSection("--COMBUSTION CONTROL", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
@@ -1300,6 +1301,29 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+
+  case prb_two_phase_flow:
+    {
+
+      // create empty discretizations
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+      particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
+
+      AddDis("fluid", fluiddis);
+      AddDis("scatra", scatradis);
+      AddDis("particle", particledis);
+
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+      break;
+    }
 
   case prb_elch:
   {

@@ -61,6 +61,9 @@ enum Action {
   calc_mat_and_rhs_lsreinit_correction_step, // level-set action: setup of system for correction step
   calc_node_based_reinit_velocity, // level-set action: compute node-based velocity field for reinitialization equation
   calc_integr_grad_reac,           // calculate regularization part in gradient for adjoint photoacoustics
+  recon_gradients_at_nodes,        // reconstruct gradients at node points through L2-projection
+  recon_curvature_at_nodes,        // reconstruct curvature at node points through L2-projection
+  calc_mass_center_smoothingfunct, // calculate mass center of minus domain, using the smoothing function. (Interface thickness required)
   calc_integr_pat_rhsvec           // integrate rhs vec for adjoint pat
 }; // enum Action
 

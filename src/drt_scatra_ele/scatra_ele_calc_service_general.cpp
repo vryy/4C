@@ -539,6 +539,114 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     else         elevec1_epetra.Multiply('N','N',1.0,massmat,temp,1.0);
     break;
   }
+  case SCATRA::recon_gradients_at_nodes:
+  {
+    // need current scalar vector
+    // -> extract local values from the global vectors
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    std::vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill all element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+    CalcGradientAtNodes(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
+
+    break;
+  }
+  case SCATRA::recon_curvature_at_nodes:
+    {
+      // need current scalar vector
+      // -> extract local values from the global vectors
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+      Teuchos::RCP<const Epetra_Vector> gradphinp_x = discretization.GetState("gradphinp_x");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'gradphinp_x'");
+
+      Teuchos::RCP<const Epetra_Vector> gradphinp_y = discretization.GetState("gradphinp_y");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'gradphinp_y'");
+
+      Teuchos::RCP<const Epetra_Vector> gradphinp_z = discretization.GetState("gradphinp_z");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'gradphinp_z'");
+
+      std::vector<double> myphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+      std::vector<double> mygradphinp_x(lm.size());
+      DRT::UTILS::ExtractMyValues(*gradphinp_x,mygradphinp_x,lm);
+
+      std::vector<double> mygradphinp_y(lm.size());
+      DRT::UTILS::ExtractMyValues(*gradphinp_y,mygradphinp_y,lm);
+
+      std::vector<double> mygradphinp_z(lm.size());
+      DRT::UTILS::ExtractMyValues(*gradphinp_z,mygradphinp_z,lm);
+
+      std::vector<LINALG::Matrix<nen_,nsd_> > egradphinp(numscal_);
+
+      // fill all element arrays
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+          egradphinp[k](i,0) = mygradphinp_x[k+(i*numdofpernode_)];
+          egradphinp[k](i,1) = mygradphinp_y[k+(i*numdofpernode_)];
+          egradphinp[k](i,2) = mygradphinp_z[k+(i*numdofpernode_)];
+        }
+      } // for i
+
+      CalcCurvatureAtNodes(ele, elemat1_epetra, elevec1_epetra, egradphinp);
+
+      break;
+    }
+  case SCATRA::calc_mass_center_smoothingfunct:
+    {
+      double interface_thickness = params.get<double>("INTERFACE_THICKNESS_TPF");
+
+      if(numscal_>1)
+      {
+        std::cout << "###########################################################################################################" << std::endl;
+        std::cout << "#                                                 WARNING:                                                #" << std::endl;
+        std::cout << "# More scalars than the levelset are transported. Mass center calculations have NOT been tested for this. #" << std::endl;
+        std::cout << "#                                                                                                         # " << std::endl;
+        std::cout << "###########################################################################################################" << std::endl;
+
+      }
+      // NOTE: add integral values only for elements which are NOT ghosted!
+      if (ele->Owner() == discretization.Comm().MyPID())
+      {
+        // need current scalar vector
+        // -> extract local values from the global vectors
+        Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+        if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+        std::vector<double> myphinp(lm.size());
+        DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+        // fill all element arrays
+        for (int i=0;i<nen_;++i)
+        {
+          for (int k = 0; k< numscal_; ++k)
+          {
+            // split for each transported scalar, insert into element arrays
+            ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+          }
+        } // for i
+
+        // calculate momentum vector and volume for element.
+        CalculateMomentumAndVolume(ele,elevec1_epetra,interface_thickness);
+      }
+      break;
+    }
   case SCATRA::calc_integr_pat_rhsvec:
   {
     // extract local values from the global vectors w and phi
@@ -581,6 +689,172 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
 
   return 0;
 }
+
+/*-------------------------------------------------------------------------*
+ | Element reconstruct grad phi, one deg of freedom (for now) winter 04/14 |
+ *-------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
+  const DRT::Element*             ele,
+  Epetra_SerialDenseMatrix&       elemat1,
+  Epetra_SerialDenseVector&       elevec1,
+  Epetra_SerialDenseVector&       elevec2,
+  Epetra_SerialDenseVector&       elevec3
+  )
+{
+  // Integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // Loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Get integration factor and evaluate shape func and its derivatives at the integration points.
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+    // Loop over degrees of freedom
+    for (int k=0; k<numdofpernode_; k++)
+    {
+    LINALG::Matrix<3,1> grad_phi(true);
+
+    // Get gradient of phi at Gauss point
+    for (int node = 0; node< nen_; node++)
+      for (int idim = 0; idim< nsd_; idim++)
+        grad_phi(idim,0) += ephinp_[k](node,0)*derxy_(idim,node);
+
+
+    //const double eta_smooth=0.0; //Option for smoothing factor, currently not used.
+    //diffmanager_->SetIsotropicDiff(eta_smooth,k);
+
+    // Compute element matrix. For L2-projection
+    CalcMatDiff(elemat1,k,fac,diffmanager_);
+    CalcMatMass(elemat1,k,fac,1.0);
+
+    // Compute element vectors. For L2-Projection
+    for (int node_i=0;node_i<nen_;node_i++)
+    {
+      elevec1[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(0,0);
+      elevec2[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(1,0);
+      elevec3[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(2,0);
+    }
+
+    } //loop over degrees of freedom
+
+  } //loop over integration points
+
+  return;
+
+} //ScaTraEleCalc::CalcGradientAtNodes
+
+/*-------------------------------------------------------------------------*
+ | Element reconstructed curvature                            winter 04/14 |
+ *-------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
+  const DRT::Element*                       ele,
+  Epetra_SerialDenseMatrix&                 elemat1,
+  Epetra_SerialDenseVector&                 elevec1,
+  const std::vector<LINALG::Matrix<nen_,nsd_> >&   egradphinp
+  )
+{
+  // Integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // Loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Get integration factor and evaluate shape func and its derivatives at the integration points.
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+
+    // Loop over degrees of freedom
+    for (int k=0; k<numdofpernode_; k++)
+    {
+      // Get gradient of phi at Gauss point
+      LINALG::Matrix<3,1> grad_phi(true);
+      grad_phi.Clear();
+      for (int rr=0; rr<nsd_; rr ++)
+      {
+        for(int inode = 0; inode < nen_; inode++)
+          grad_phi(rr) += egradphinp[k](inode,rr) *funct_(inode);
+      }
+
+
+      // get second derivatives of phi at Gauss point
+      static LINALG::Matrix<9,1> grad2_phi;
+      grad2_phi.Clear();
+
+      for(int inode = 0; inode < nen_; inode++)
+      {
+        grad2_phi(0) += derxy_(0,inode)*egradphinp[k](inode,0); // ,xx
+        grad2_phi(1) += derxy_(1,inode)*egradphinp[k](inode,1); // ,yy
+        grad2_phi(2) += derxy_(2,inode)*egradphinp[k](inode,2); // ,zz
+        grad2_phi(3) += derxy_(1,inode)*egradphinp[k](inode,0); // ,xy
+        grad2_phi(4) += derxy_(2,inode)*egradphinp[k](inode,0); // ,xz
+        grad2_phi(5) += derxy_(2,inode)*egradphinp[k](inode,1); // ,yz
+        grad2_phi(6) += derxy_(0,inode)*egradphinp[k](inode,1); // ,yx
+        grad2_phi(7) += derxy_(0,inode)*egradphinp[k](inode,2); // ,zx
+        grad2_phi(8) += derxy_(1,inode)*egradphinp[k](inode,2); // ,zy
+      }
+
+      // get curvature at Gauss point
+      double curvature_gp = 0.0;
+
+      double grad_phi_norm = grad_phi.Norm2();
+      {
+        // check norm of normal gradient
+        if (fabs(grad_phi_norm < 1.0E-9))
+        {
+          std::cout << "grad phi is small -> set to 1.0E9" << grad_phi_norm << std::endl;
+          // phi gradient too small -> there must be a local max or min in the level-set field
+          // set curvature to a large value
+          // note: we have 1.0E12 in CalcCurvature Function
+          curvature_gp = 1.0E2;
+        }
+        else
+        {
+          double val = grad_phi_norm*grad_phi_norm*grad_phi_norm;
+          double invval = 1.0 / val;
+          curvature_gp = -invval * ( grad_phi(0)*grad_phi(0)*grad2_phi(0)
+                                    + grad_phi(1)*grad_phi(1)*grad2_phi(1)
+                                    + grad_phi(2)*grad_phi(2)*grad2_phi(2) )
+                         -invval * ( grad_phi(0)*grad_phi(1)*( grad2_phi(3) + grad2_phi(6) )
+                                    + grad_phi(0)*grad_phi(2)*( grad2_phi(4) + grad2_phi(7) )
+                                    + grad_phi(1)*grad_phi(2)*( grad2_phi(5) + grad2_phi(8)) )
+                         +1.0/grad_phi_norm * ( grad2_phi(0) + grad2_phi(1) + grad2_phi(2) );
+
+          // *-1.0 because of direction of gradient phi vector, which is minus the normal on the interface pointing from + to -
+          curvature_gp *= -1.0;
+        }
+      }
+
+      // check for norm of grad phi almost zero
+      if (fabs(grad_phi_norm < 1.0E-9))
+      {
+        std::cout << "grad phi is small -> set to 1.0E9" << grad_phi_norm << std::endl;
+        grad_phi_norm = 1.0;
+      }
+
+//      const double eta_smooth=0.0; //Option for smoothing factor, currently not used.
+//      diffmanager_->SetIsotropicDiff(eta_smooth,k);
+
+      // Compute element matrix.
+      CalcMatDiff(elemat1,k,fac,diffmanager_);
+      CalcMatMass(elemat1,k,fac,1.0);
+
+      // Compute rhs vector.
+      // element matrix and rhs
+      for (int vi=0; vi<nen_; ++vi) // loop rows  (test functions)
+      {
+        elevec1(vi) += fac*funct_(vi)*curvature_gp;
+      }
+
+    } //loop over degrees of freedom
+
+  } //loop over integration points
+
+
+  return;
+
+} //ScaTraEleCalc::CalcCurvatureAtNodes
+
 
 
 /*----------------------------------------------------------------------------*
@@ -976,6 +1250,75 @@ const bool                      inverting
 
 return;
 } // ScaTraEleCalc::CalculateScalars
+
+
+/*----------------------------------------------------------------------*
+|  calculate momentum vector and minus domain integral          mw 06/14|
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalculateMomentumAndVolume(
+const DRT::Element*             ele,
+Epetra_SerialDenseVector&       momandvol,
+const double                    interface_thickness
+  )
+{
+
+  // integrations points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    // coordinates of the current integration point.
+    std::vector<double> gpcoord(nsd_);
+    // levelset function at gaussian point.
+    double ephi_gp = 0.0;
+    //fac*funct at GP
+    double fac_funct = 0.0;
+
+    for (int i=0; i<nen_; i++)
+    {
+      // Levelset function (first scalar stored [0]) at gauss point
+      ephi_gp += funct_(i)*ephinp_[0](i,0);
+
+      //Coordinate * shapefunction to get the coordinate value of the gausspoint.
+      for(int idim=0; idim<nsd_; idim++)
+      {
+        gpcoord[idim] += funct_(i)*(ele->Nodes()[i]->X()[idim]);
+      }
+
+      //Summation of fac*funct_ for volume calculation.
+      fac_funct+=fac*funct_(i);
+    }
+
+    double heavyside_epsilon = 1.0; //plus side
+
+    //Smoothing function
+    if(abs(ephi_gp) <= interface_thickness)
+    {
+      heavyside_epsilon = 0.5 * (1.0 + ephi_gp/interface_thickness + 1.0 / PI * sin(PI*ephi_gp/interface_thickness));
+    }
+    else if(ephi_gp < interface_thickness)
+    {
+      heavyside_epsilon=0.0; //minus side
+    }
+
+
+    // add momentum vector and volume
+    for(int idim=0; idim<nsd_; idim++)
+    {
+      momandvol(idim)+=gpcoord[idim]*(1.0-heavyside_epsilon)*fac_funct;
+    }
+
+    momandvol(nsd_)+=fac_funct*(1.0-heavyside_epsilon);
+
+  } // loop over integration points
+
+return;
+} // ScaTraEleCalc::CalculateMomentumAndVolume
+
 
 
 /*----------------------------------------------------------------------*

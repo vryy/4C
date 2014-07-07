@@ -1640,3 +1640,126 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
 
   return;
 }
+
+/*==========================================================================*/
+// Reconstruct gradients
+/*==========================================================================*/
+//! Calculate the reconstructed nodal gradient of phi
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes(){
+  Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
+
+  ReconstructGradientAtNodes(gradPhi);
+  return gradPhi;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Calculate the reconstructed nodal gradient of phi        winter 04/14|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
+    Teuchos::RCP<Epetra_MultiVector> gradPhi)
+{
+  // zero out matrix entries
+  sysmat_->Zero();
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",SCATRA::recon_gradients_at_nodes);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",EvaluationPhi());
+
+  Teuchos::RCP<Epetra_MultiVector> rhs_vectors = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
+
+  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,Teuchos::rcp((*rhs_vectors)(0),false),Teuchos::rcp((*rhs_vectors)(1),false),Teuchos::rcp((*rhs_vectors)(2),false));
+
+  discret_->ClearState();
+
+  // finalize the complete matrix
+  sysmat_->Complete();
+
+  //TODO Remove for-loop and add Belos solver instead
+  for (int idim=0; idim<3 ; idim++)
+    solver_->Solve(sysmat_->EpetraOperator(),Teuchos::rcp((*gradPhi)(idim),false),Teuchos::rcp((*rhs_vectors)(idim),false),true,true);
+
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*
+ | convergence check (only for two-way coupled problems e.g. low-Mach-number flow, two phase flow)           vg 09/11 |
+ *--------------------------------------------------------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
+                                                int          itmax,
+                                                const double ittol)
+{
+  bool stopnonliniter = false;
+
+  // define L2-norm of residual, incremental scalar and scalar
+  double resnorm_L2(0.0);
+  double phiincnorm_L2(0.0);
+  double phinorm_L2(0.0);
+
+  if (numscal_>1)
+    dserror("Convergence check for two way coupled ScaTra problems, does not support multiple scalar fields. Yet!");
+
+  // for the time being, only one scalar considered for low-Mach-number flow
+  /*if (numscal_>1)
+  {
+    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(increment_);
+    onlyphi->Norm2(&phiincnorm_L2);
+
+    splitter_->ExtractCondVector(phinp_,onlyphi);
+    onlyphi->Norm2(&phinorm_L2);
+  }
+  else*/
+
+  residual_ ->Norm2(&resnorm_L2);
+  increment_->Norm2(&phiincnorm_L2);
+  phinp_    ->Norm2(&phinorm_L2);
+
+  // check for any INF's and NaN's
+  if (std::isnan(resnorm_L2) or
+      std::isnan(phiincnorm_L2) or
+      std::isnan(phinorm_L2))
+    dserror("At least one of the calculated vector norms is NaN.");
+
+  if (abs(std::isinf(resnorm_L2)) or
+      abs(std::isinf(phiincnorm_L2)) or
+      abs(std::isinf(phinorm_L2)))
+    dserror("At least one of the calculated vector norms is INF.");
+
+  // for scalar norm being (close to) zero, set to one
+  if (phinorm_L2 < 1e-5) phinorm_L2 = 1.0;
+
+  if (myrank_==0)
+  {
+    printf("+------------+-------------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+         itnum,itmax,ittol,resnorm_L2,phiincnorm_L2/phinorm_L2);
+    printf("\n");
+    printf("+------------+-------------------+--------------+--------------+\n");
+  }
+
+  if ((resnorm_L2 <= ittol) and
+      (phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
+
+  // warn if itemax is reached without convergence, but proceed to next timestep
+  if ((itnum == itmax) and
+      ((resnorm_L2 > ittol) or (phiincnorm_L2/phinorm_L2 > ittol)))
+  {
+    stopnonliniter=true;
+    if (myrank_==0)
+    {
+      printf("|            >>>>>> not converged in itemax steps!             |\n");
+      printf("+--------------------------------------------------------------+\n");
+    }
+  }
+
+  return stopnonliniter;
+} // SCATRA::ScaTraTimIntImplicit::ConvergenceCheck

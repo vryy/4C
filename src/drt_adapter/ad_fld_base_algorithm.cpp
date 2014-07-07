@@ -44,6 +44,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fluid/fluid_timint_red_bdf2.H"
 #include "../drt_fluid/fluid_timint_red_ost.H"
 #include "../drt_fluid/fluid_timint_red_stat.H"
+#include "../drt_fluid/fluid_timint_two_phase_genalpha.H"
+#include "../drt_fluid/fluid_timint_two_phase_ost.H"
+#include "../drt_fluid/fluid_timint_two_phase_stat.H"
 #include "../drt_fluid/fluid_timint_hdg.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
@@ -420,6 +423,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xfdyn.sublist("GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"));
   }
 
+  // sublist for two phase flow specific parameters
+   /* Transfers two phase specific problems                 05/14 winter */
+  if (probtype == prb_two_phase_flow) //TODO: How to write this?
+  {
+    //const Teuchos::ParameterList& tpfdyn     = DRT::Problem::Instance()->TwoPhaseFlowParams();
+    fluidtimeparams->set<double>("INTERFACE_THICKNESS",prbdyn.get<double>("INTERFACE_THICKNESS"));
+  }
 
   // sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION FLUID contains parameters for the fluid field
@@ -693,6 +703,19 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         fluid_ = Teuchos::rcp(new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_bdf2)
         fluid_ = Teuchos::rcp(new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+      else
+        dserror("Unknown time integration for this fluid problem type\n");
+    }
+      break;
+    case prb_two_phase_flow:
+    {
+      if(timeint == INPAR::FLUID::timeint_stationary)
+        fluid_ = Teuchos::rcp(new FLD::TimIntTwoPhaseStat(actdis, solver, fluidtimeparams, output, isale));
+      else if(timeint == INPAR::FLUID::timeint_one_step_theta)
+        fluid_ = Teuchos::rcp(new FLD::TimIntTwoPhaseOst(actdis, solver, fluidtimeparams, output, isale));
+      else if(timeint == INPAR::FLUID::timeint_afgenalpha
+              or timeint == INPAR::FLUID::timeint_npgenalpha)
+        fluid_ = Teuchos::rcp(new FLD::TimIntTwoPhaseGenAlpha(actdis, solver, fluidtimeparams, output, isale));
       else
         dserror("Unknown time integration for this fluid problem type\n");
     }

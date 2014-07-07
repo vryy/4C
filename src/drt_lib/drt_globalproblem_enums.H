@@ -66,6 +66,7 @@ typedef enum _PROBLEM_TYP
      prb_fsi_crack,          // FSI with XFEM in presence of cracking structures
      prb_acou,               // acoustic problem
      prb_crack,              // crack propagation modeling
+     prb_two_phase_flow,     // two phase flow problem using the fluid and levelset modules
      prb_fpssi               // fluid porous structure scatra scatra interaction
 } PROBLEM_TYP;
 

@@ -140,6 +140,9 @@ protected:
   /// set old part of RHS for galvanostatic equation
   virtual void ElectrodeKineticsSetOldPartOfRHS(){return;};
 
+  /// return phi at evaluation time
+  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){return phinp_;};
+
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;
 

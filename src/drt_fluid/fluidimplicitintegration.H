@@ -933,6 +933,11 @@ protected:
   */
   virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() = 0;
 
+  /*!
+    \brief add problem dependent vectors
+
+   */
+  virtual void AddProblemDependentVectors() {return;};
 
   //! @name general algorithm parameters
 

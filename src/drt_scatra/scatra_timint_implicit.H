@@ -30,6 +30,7 @@ Maintainer: Andreas Ehrl
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
+#include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
 
 #include "../drt_inpar/inpar_scatra.H"
@@ -215,6 +216,9 @@ public:
   //! calculate error compared to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol(){return;};
 
+  //! Calculate the reconstructed nodal gradient of phi
+  Teuchos::RCP<Epetra_MultiVector> GetGradientAtNodes();
+
   /*--- query and output ---------------------------------------------------*/
 
   //! Provide enum of time integration scheme
@@ -278,6 +282,11 @@ public:
 
   //! print scatra typ
   void PrintScatraType();
+
+  //! Convergence check for two way coupled ScaTra problems.
+  bool ConvergenceCheck(int          itnum,
+                        int          itmax,
+                        const double ittol);
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -471,6 +480,8 @@ public:
 
   /*========================================================================*/
 
+
+
 protected:
 
   /*========================================================================*/
@@ -616,6 +627,14 @@ protected:
       double& potnorm_L2,
       double& potresnorm,
       double& conresnorminf);
+
+  //! Calculate the reconstructed nodal gradient of phi
+  void ReconstructGradientAtNodes(
+      Teuchos::RCP<Epetra_MultiVector> gradPhi);
+
+  /// return phi at evaluation time
+  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi() = 0;
+
 
   /*--- query and output ---------------------------------------------------*/
 

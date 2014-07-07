@@ -4482,6 +4482,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("INFLOW_DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbinf);
 
    /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& twophasedyn = list->sublist("TWO PHASE FLOW",false,"");
+   DoubleParameter("INTERFACE_THICKNESS",0.0,"Thickness of interface for multiphase flow",&twophasedyn);
+   IntParameter("NUMSTEP",10,"Number of Time Steps",&twophasedyn);
+   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&twophasedyn);
+   DoubleParameter("MAXTIME",0.0,"Total simulation time",&twophasedyn);
+   DoubleParameter("CONVTOL",1E-6,"Tolerance for convergence check",&twophasedyn);
+   IntParameter("UPRES",1,"Increment for writing solution",&twophasedyn);
+   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&twophasedyn);
+   IntParameter("ITEMAX",1,"Maximum number of iterations in levelset-fluid loop",&twophasedyn);
+   BoolParameter("WRITE_CENTER_OF_MASS","No","write center of mass to file",&twophasedyn);
+   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&twophasedyn);
+
+   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
 
     setStringToIntegralParameter<int>("DYNAMICTYP","ExpTaylorGalerkin",

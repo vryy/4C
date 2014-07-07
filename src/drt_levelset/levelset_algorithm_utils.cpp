@@ -852,6 +852,123 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ | Reconstruct nodal curvature                                   winter 04/14 |
+ |                                                                            |
+ *----------------------------------------------------------------------------*/
+ void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(Teuchos::RCP<Epetra_Vector> curvature)
+ {
+
+   Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
+   ReconstructGradientAtNodes(gradPhi);
+
+   // zero out matrix entries
+   sysmat_->Zero();
+
+   //zeroed residual
+   residual_->PutScalar(0.0);
+
+   // create the parameters for the discretization
+   Teuchos::ParameterList eleparams;
+
+   // action for elements
+   eleparams.set<int>("action",SCATRA::recon_curvature_at_nodes);
+
+   // set type of scalar transport problem
+   eleparams.set<int>("scatratype",scatratype_);
+
+   // set vector values needed by elements
+   discret_->ClearState();
+   discret_->SetState("phinp",EvaluationPhi());
+   discret_->SetState("gradphinp_x",Teuchos::rcp((*gradPhi)(0),false));
+   discret_->SetState("gradphinp_y",Teuchos::rcp((*gradPhi)(1),false));
+   discret_->SetState("gradphinp_z",Teuchos::rcp((*gradPhi)(2),false));
+
+   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+
+   discret_->ClearState();
+
+   // finalize the complete matrix
+   sysmat_->Complete();
+
+   //Teuchos::RCP<Epetra_Vector> curvature = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+
+   solver_->Solve(sysmat_->EpetraOperator(), curvature ,residual_,true,true);
+
+   return;
+
+ } //SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature
+
+ /*----------------------------------------------------------------------------*
+  | Get Mass Center, using the smoothing function                 winter 06/14 |
+  |                                                                            |
+  *----------------------------------------------------------------------------*/
+  void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
+  {
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
+    // create the parameters for the error calculation
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("scatratype",scatratype_);
+
+    // action for elements
+    eleparams.set<int>("action",SCATRA::calc_mass_center_smoothingfunct);
+
+    // give access to interface thickness from smoothing function (TPF module) in element calculations
+    eleparams.set<double>("INTERFACE_THICKNESS_TPF", levelsetparams_->get<double>("INTERFACE_THICKNESS_TPF"));
+
+    // get masscenter and volume, last entry of vector is total volume of minus domain.
+    Teuchos::RCP<Epetra_SerialDenseVector> masscenter_and_volume
+    = Teuchos::rcp(new Epetra_SerialDenseVector(nsd_ + 1));
+    discret_->EvaluateScalars(eleparams, masscenter_and_volume);
+    discret_->ClearState();
+
+    std::vector<double> center(nsd_);
+
+    for(int idim=0; idim < nsd_; idim++)
+    {
+      center[idim]=masscenter_and_volume->Values()[idim]/(masscenter_and_volume->Values()[nsd_]);
+    }
+
+    if(nsd_ != 3)
+      dserror("Writing the mass center only available for 3 dimensional problems currently.");
+
+    if (discret_->Comm().MyPID()==0)
+    {
+      // write to file
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = simulation+"_center_of_mass.txt";
+
+      if (Step()==0)
+      {
+        std::ofstream f;
+        f.open(fname.c_str());
+        f << "#| Step | Time |       x       |       y       |       z       |\n";
+        f << "  "<< std::setw(2) << std::setprecision(10) << Step() << "    " << std::setw(3)<< std::setprecision(5)
+        << Time() << std::setw(4) << std::setprecision(8) << "  "
+        << center[0] << "    " << std::setprecision(8) << center[1] << "    " << std::setprecision(8) << center[2] << " " <<"\n";
+
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << "  "<< std::setw(2) << std::setprecision(10) << Step() << "    " << std::setw(3)<< std::setprecision(5)
+        << Time() << std::setw(4) << std::setprecision(8) << "  "
+        << center[0] << "    " << std::setprecision(8) << center[1] << "    " << std::setprecision(8) << center[2] << " " <<"\n";
+
+        f.flush();
+        f.close();
+      }
+    }
+
+
+  } //SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing
+
 
 /*----------------------------------------------------------------------------*
  | Redistribute the scatra discretization and vectors         rasthofer 07/11 |

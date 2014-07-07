@@ -1110,6 +1110,11 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     discret_->SetState("fsscaaf",fsscaaf_);
   }
 
+  //----------------------------------------------------------------------
+  // Add further problem dependent vectors
+  //----------------------------------------------------------------------
+  AddProblemDependentVectors();
+
   // call standard loop over elements
   discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
   ClearStateAssembleMatAndRHS();
@@ -4023,6 +4028,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
  | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  | overloaded in TimIntLoma                                    bk 12/13 |
+ | overloaded in TimIntTwoPhase                                mw 07/14 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetIterScalarFields(
    Teuchos::RCP<const Epetra_Vector> scalaraf,

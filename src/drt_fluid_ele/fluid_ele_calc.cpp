@@ -46,6 +46,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/yoghurt.H"
+#include "../drt_mat/matlist.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
@@ -71,7 +72,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     derxy_(true),
     derxy2_(true),
     bodyforce_(true),
-    prescribedpgrad_(true),
+    generalbodyforce_(true),
     histmom_(true),
     velint_(true),
     sgvelint_(true),
@@ -281,6 +282,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
     }
   }
 
+  LINALG::Matrix<nsd_,nen_> gradphiele(true);
+  LINALG::Matrix<nen_,1>    curvatureele(true);
+  if (fldpara_->GetIncludeSurfaceTension())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &gradphiele, &curvatureele,"tpf_gradphi_curvaf");
+  }
+
   LINALG::Matrix<nen_,1> eporo(true);
   if ((params.getEntryPtr("topopt_density") != NULL) and // parameter exists and ...
       (params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density") !=Teuchos::null)) // ... according vector is filled
@@ -428,6 +436,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
     evel_hat,
     ereynoldsstress_hat,
     eporo,
+    gradphiele,
+    curvatureele,
     mat,
     ele->IsAle(),
     ele->Owner()==discretization.Comm().MyPID(),
@@ -475,6 +485,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   const LINALG::Matrix<nsd_,nen_> &             evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1> &                eporo,
+  const LINALG::Matrix<nsd_,nen_> &             egradphi,
+  const LINALG::Matrix<nen_,1> &                ecurvature,
   Teuchos::RCP<MAT::Material>                   mat,
   bool                                          isale,
   bool                                          isowned,
@@ -558,6 +570,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
          elemat2,  // -> emesh
          elevec1,
          eporo,
+         egradphi,
+         ecurvature,
          thermpressaf,
          thermpressam,
          thermpressdtaf,
@@ -610,6 +624,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
   LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
   const LINALG::Matrix<nen_,1> &                eporo,
+  const LINALG::Matrix<nsd_,nen_> &             egradphi,
+  const LINALG::Matrix<nen_,1> &                ecurvature,
   const double                                  thermpressaf,
   const double                                  thermpressam,
   const double                                  thermpressdtaf,
@@ -875,8 +891,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     bodyforce_.Multiply(ebofoaf,funct_);
     // get prescribed pressure gradient acting as body force
     // (required for turbulent channel flow)
-    prescribedpgrad_.Multiply(eprescpgaf,funct_);
+    generalbodyforce_.Multiply(eprescpgaf,funct_);
 
+    if(fldpara_->GetIncludeSurfaceTension())
+      AddSurfaceTensionForce(escaaf,egradphi,ecurvature);
 
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
@@ -1210,7 +1228,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                 timefacfac,
                 timefacfacpre,
                 rhsfac);
-
 
     // 4) standard Galerkin pressure term
     PressureGalPart(estif_p_v,
@@ -1696,6 +1713,45 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(DRT::ELEMENTS::Fluid*      
     }
   }
 
+}
+
+/*----------------------------------------------------------------------*
+ |  compute surface tension force                              mw 05/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::AddSurfaceTensionForce(
+    const LINALG::Matrix<nen_,1>&                 escaaf,
+    const LINALG::Matrix<nsd_,nen_> &             egradphi,
+    const LINALG::Matrix<nen_,1> &                ecurvature
+)
+{
+
+  double                 gaussescaaf;
+  gaussescaaf=funct_.Dot(escaaf);
+  // For surface tension only the values at alpha_f are needed/used.
+  //  double                 gaussescaam;
+  //  gaussescaam=funct_.Dot(escaam);
+
+  double epsilon = fldpara_->GetInterfaceThickness();
+
+  //Add surface force if inside interface thickness, otherwise do not.
+  if(abs(gaussescaaf) <= epsilon)
+  {
+    LINALG::Matrix<nsd_,1> gaussgradphi;
+    double                 gausscurvature;
+
+    gaussgradphi.Multiply(egradphi,funct_);
+    gausscurvature=funct_.Dot(ecurvature);
+
+
+    double Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescaaf/epsilon));
+
+    double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvature/gaussgradphi.Norm2();
+
+    generalbodyforce_.Update(scalar_fac,gaussgradphi,1.0);
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2256,6 +2312,111 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
            fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
     dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
 }
+else if (material->MaterialType() == INPAR::MAT::m_matlist)
+{
+  // get material list for this element
+  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+
+  int numofmaterials = matlist->NumMat();
+
+  //Error messages
+  if(numofmaterials>2)
+  {
+    dserror("More than two materials is currently not supported.");
+  }
+  if(not fldpara_->MatGp())
+  {
+    dserror("For Two Phase Flow, the material should be evaluated at the Gauss-points. Switch EVALUATION_MAT to integration_point.");
+  }
+
+  std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
+  std::vector<double> viscosity(numofmaterials);
+  std::vector<double> gamma(numofmaterials);
+
+  for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
+  {
+    // set default id in list of materials
+      int matid = -1;
+      matid = matlist->MatID(nmaterial);
+
+      Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+      INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+
+      // choose from different materials
+      switch(mattype)
+      {
+      //--------------------------------------------------------
+      // Newtonian fluid for incompressible flow (standard case)
+      //--------------------------------------------------------
+      case INPAR::MAT::m_fluid:
+      {
+        const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+        density[nmaterial]=mat->Density();
+        viscosity[nmaterial]=mat->Viscosity();
+        gamma[nmaterial]=mat->Gamma();
+        break;
+      }
+      //------------------------------------------------
+      // different types of materials (to be added here)
+      //------------------------------------------------
+      default:
+        dserror("Only Newtonian fluids supported as input.");
+      }
+  }
+
+  double epsilon = fldpara_->GetInterfaceThickness();
+
+  const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
+  const double gpscaam = funct_.Dot(escaam); //Scalar function at gausspoint evaluated
+
+  //Assign material parameter values to positive side by default.
+  double heavyside_epsilon=1.0;
+  densaf_=density[0];
+  visc_=viscosity[0];
+  densam_=densaf_;
+  densn_=densam_;
+
+
+  //Calculate material parameters with phiaf
+  if(abs(gpscaaf) <= epsilon)
+  {
+    heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
+
+    densaf_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
+    visc_ = heavyside_epsilon*viscosity[0]+(1.0-heavyside_epsilon)*viscosity[1];
+  }
+  else if (gpscaaf < epsilon)
+  {
+    heavyside_epsilon = 0.0;
+
+    densaf_=density[1];
+    visc_=viscosity[1];
+  }
+
+//  //Calculate material parameters with phiam
+  if(abs(gpscaam) <= epsilon)
+  {
+    heavyside_epsilon = 0.5 * (1.0 + gpscaam/epsilon + 1.0 / PI * sin(PI*gpscaam/epsilon));
+
+    densam_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
+    densn_ = densam_;
+  }
+  else if (gpscaam < epsilon)
+  {
+    heavyside_epsilon = 0.0;
+
+    densam_=density[1];
+    densn_=densam_;
+  }
+
+
+  if(gamma[0]!=gamma[1])
+    dserror("Surface tensions have to be equal");
+
+  //Surface tension coefficient assigned.
+  gamma_=gamma[0];
+
+}// end else if m_matlist
 else dserror("Material type is not supported");
 
 // check whether there is zero or negative (physical) viscosity
@@ -3498,7 +3659,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
     rhsmom_.Update(densaf_,bodyforce_,0.0);
     // and pressure gradient prescribed as body force
     // caution: not density weighted
-    rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+    rhsmom_.Update(1.0,generalbodyforce_,1.0);
 
     // get acceleration at time n+alpha_M at integration point
     accint_.Multiply(eaccam,funct_);
@@ -3507,7 +3668,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
     for (int rr=0;rr<nsd_;++rr)
     {
       momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
-                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr)-prescribedpgrad_(rr);
+                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr)-generalbodyforce_(rr);
     }
   }
   else
@@ -3523,14 +3684,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
         rhsmom_.Update((densn_/fldparatimint_->Dt()/fldparatimint_->Theta()),histmom_,deltadens_,bodyforce_);
         // and pressure gradient prescribed as body force
         // caution: not density weighted
-        rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+        rhsmom_.Update(1.0,generalbodyforce_,1.0);
       }
       else
       {
         rhsmom_.Update((densn_/fldparatimint_->Dt()/fldparatimint_->Theta()),histmom_,densaf_,bodyforce_);
         // and pressure gradient prescribed as body force
         // caution: not density weighted
-        rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+        rhsmom_.Update(1.0,generalbodyforce_,1.0);
       }
 
       // compute instationary momentum residual:
@@ -3549,8 +3710,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
       // else:                                      f = rho * g
       // and pressure gradient prescribed as body force (not density weighted)
       if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-           rhsmom_.Update(deltadens_,bodyforce_, 1.0,prescribedpgrad_);
-      else rhsmom_.Update(densaf_,bodyforce_,1.0,prescribedpgrad_);
+           rhsmom_.Update(deltadens_,bodyforce_, 1.0,generalbodyforce_);
+      else rhsmom_.Update(densaf_,bodyforce_,1.0,generalbodyforce_);
 
       // compute stationary momentum residual:
       for (int rr=0;rr<nsd_;++rr)

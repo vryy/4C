@@ -1119,6 +1119,10 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_timint_topopt_ost.cpp
   src/drt_fluid/fluid_timint_topopt_stat.cpp
   src/drt_fluid/fluid_timint_topopt.cpp
+  src/drt_fluid/fluid_timint_two_phase_genalpha.cpp
+  src/drt_fluid/fluid_timint_two_phase_ost.cpp
+  src/drt_fluid/fluid_timint_two_phase_stat.cpp
+  src/drt_fluid/fluid_timint_two_phase.cpp
   src/drt_fluid/fluidimpedancecondition.cpp
   src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
   src/drt_fluid/fluidimplicitintegration.cpp
@@ -1229,6 +1233,11 @@ set(OBJS_OPTI
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
   src/drt_loma/loma_dyn.cpp
+)
+
+set(OBJS_DRT_TWO_PHASE
+  src/drt_two_phase_flow/two_phase_algorithm.cpp
+  src/drt_two_phase_flow/two_phase_dyn.cpp
 )
 set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
@@ -1954,6 +1963,7 @@ add_library(alg_elch ${OBJS_DRT_ELCH})
 add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
+add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
@@ -1968,6 +1978,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi
   alg_fsi_xfem
   alg_loma
+  alg_two_phase
   alg_tsi
   alg_wear
   alg_poroelast

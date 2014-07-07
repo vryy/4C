@@ -94,6 +94,11 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
     Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
     fldpara->SetElementAdjointTimeParameter(p);
   }
+  else if (action == FLD::set_two_phase_parameter)
+  {
+    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+    fldpara->SetElementTwoPhaseParameter(p);
+  }
   else if (action == FLD::set_general_fluid_xfem_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterXFEM* fldpara = DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
@@ -798,6 +803,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::set_topopt_parameter:
     case FLD::set_general_adjoint_parameter:
     case FLD::set_adjoint_time_parameter:
+    case FLD::set_two_phase_parameter:
 //    case FLD::calc_adjoint_neumann: // this is done by the surface elements
       break;
     //-----------------------------------------------------------------------

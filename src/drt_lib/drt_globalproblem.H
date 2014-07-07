@@ -299,6 +299,7 @@ public:
   const Teuchos::ParameterList& ThermalDynamicParams() const { return getParameterList()->sublist("THERMAL DYNAMIC"); }
   const Teuchos::ParameterList& TSIDynamicParams() const { return getParameterList()->sublist("TSI DYNAMIC"); }
   const Teuchos::ParameterList& FluidDynamicParams() const { return getParameterList()->sublist("FLUID DYNAMIC"); }
+  const Teuchos::ParameterList& TwoPhaseFlowParams() const { return getParameterList()->sublist("TWO PHASE FLOW"); }
   const Teuchos::ParameterList& ScalarTransportDynamicParams() const { return getParameterList()->sublist("SCALAR TRANSPORT DYNAMIC"); }
   const Teuchos::ParameterList& FS3IControlParams() const { return getParameterList()->sublist("FS3I CONTROL"); }
   const Teuchos::ParameterList& CombustionDynamicParams() const { return getParameterList()->sublist("COMBUSTION CONTROL"); }

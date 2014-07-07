@@ -59,6 +59,9 @@ public:
   /// set loma parameters
   void SetElementLomaParameter(Teuchos::ParameterList& params);   //> parameter list
 
+  //! set two-phase parameters
+  void SetElementTwoPhaseParameter(Teuchos::ParameterList& params);   //> parameter list
+
   //! topopt parameters are set
   void SetElementTopoptParameter(Teuchos::ParameterList& params);   //> parameter list
 
@@ -124,6 +127,12 @@ public:
   bool MatGp() const {return mat_gp_;};
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool TauGp() const {return tau_gp_;};
+
+  /*----------------------------------------------------*/
+  //! @name two phase parameters
+  /*----------------------------------------------------*/
+  double GetInterfaceThickness() const {return interface_thickness_;};
+  bool   GetIncludeSurfaceTension() const {return include_surface_tension_;};
 
   /*----------------------------------------------------*/
   //! @name turbulence model
@@ -285,6 +294,13 @@ protected:
   bool mat_gp_;
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool tau_gp_;
+
+  /*----------------------------------------------------*/
+  //! @name two phase parameters
+  /*----------------------------------------------------*/
+
+  double interface_thickness_;
+  bool   include_surface_tension_;
 
   /*----------------------------------------------------*/
   //! @name turbulence model

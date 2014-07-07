@@ -75,14 +75,7 @@ namespace SCATRA
     //! update thermodynamic pressure and time derivative
     virtual void UpdateThermPressure() = 0;
 
-    //! check convergence
-    bool ConvergenceCheck(
-      int          itnum,   //!< ?
-      int          itmax,   //!< ?
-      const double ittol    //!< ?
-    );
-
-    //! return thermo. press. at time step n
+     //! return thermo. press. at time step n
     double ThermPressN() const { return thermpressn_; }
 
     //! return thermo. press. at time step n+1

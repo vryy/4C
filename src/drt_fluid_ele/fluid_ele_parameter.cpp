@@ -50,6 +50,8 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     ppp_(false),
     mat_gp_(false),     // standard evaluation of the material at the element center
     tau_gp_(false),      // standard evaluation of tau at the element center
+    interface_thickness_(0.0), //two phase parameters
+    include_surface_tension_(false),  // include the surface tension in the calculations.
     turb_mod_action_(INPAR::FLUID::no_model), // turbulence parameters
     Cs_(0.0),
     Cs_averaged_(false),
@@ -407,6 +409,18 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
 
   return;
 }
+
+//----------------------------------------------------------------------*
+//  set two phase parameters                                winter 05/14|
+//----------------------------------------------------------------------*/
+void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter( Teuchos::ParameterList& params )
+{
+  //Two Phase Flow specific parameters.
+  interface_thickness_ = params.get<double>("INTERFACE_THICKNESS");
+  include_surface_tension_ = true;
+  return;
+}
+
 
 //----------------------------------------------------------------------*
 //  set topopt parameters                               winklmaier 07/13|

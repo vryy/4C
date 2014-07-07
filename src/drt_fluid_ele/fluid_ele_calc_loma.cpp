@@ -527,7 +527,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       my::bodyforce_.Multiply(ebofoaf,my::funct_);
       // get prescribed pressure gradient acting as body force
       // (required for turbulent channel flow)
-      my::prescribedpgrad_.Multiply(eprescpgaf,my::funct_);
+      my::generalbodyforce_.Multiply(eprescpgaf,my::funct_);
 
       // get momentum history data at integration point
       // (only required for one-step-theta and BDF2 time-integration schemes)

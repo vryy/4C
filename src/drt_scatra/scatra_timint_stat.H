@@ -133,6 +133,9 @@ protected:
   /// update time-dependent electrode state variables at the end of an time step
   virtual void ElectrodeKineticsTimeUpdate(){return;};
 
+  /// return phi at evaluation time
+  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){return phinp_;};
+
 private:
 
   /// fine-scale solution vector at time n+1

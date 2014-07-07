@@ -64,6 +64,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Fluid_Structure_Crack_Interaction"] =         prb_fsi_crack;
     string2prbtype["Acoustics"] =                                 prb_acou;
     string2prbtype["Crack"] =                                     prb_crack;
+    string2prbtype["Two_Phase_Flow"] =                            prb_two_phase_flow;
   }
 
   return string2prbtype;

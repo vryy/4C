@@ -89,6 +89,16 @@ namespace SCATRA
       Teuchos::RCP<DRT::Discretization> dis,
       bool init=false);
 
+    const Teuchos::RCP<const Epetra_Vector> GetNodalCurvature()
+    {
+      Teuchos::RCP<Epetra_Vector> nodalCurvature = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+      ReconstructedNodalCurvature(nodalCurvature);
+
+      return nodalCurvature;
+    };
+
+    void MassCenterUsingSmoothing();
+
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
@@ -135,6 +145,12 @@ namespace SCATRA
 
     /// set element parameters for reinitialization equation
     void SetReinitializationElementParameters();
+
+    // -----------------------------------------------------------------
+    // Reconstructing nodal curvature
+    // -----------------------------------------------------------------
+    void ReconstructedNodalCurvature(
+      Teuchos::RCP<Epetra_Vector> curvature);
 
     // -----------------------------------------------------------------
     // members

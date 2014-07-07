@@ -1073,6 +1073,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const 
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
+
   if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
@@ -1482,7 +1483,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     bodyforce_.Multiply(ebofoaf,funct_);
     // get prescribed pressure gradient acting as body force
     // (required for turbulent channel flow)
-    prescribedpgrad_.Multiply(eprescpgaf,funct_);
+    generalbodyforce_.Multiply(eprescpgaf,funct_);
 
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
@@ -1625,7 +1626,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       for (int rr=0;rr<nsd_;++rr)
       {
         momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
-                       -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr)-prescribedpgrad_(rr);
+                       -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr)-generalbodyforce_(rr);
       }
     }
     else
@@ -1633,7 +1634,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       rhsmom_.Update((densn_/fldparatimint_->Dt()),histmom_,densaf_*fldparatimint_->Theta(),bodyforce_);
       // and pressure gradient prescribed as body force
       // caution: not density weighted
-      rhsmom_.Update(fldparatimint_->Theta(),prescribedpgrad_,1.0);
+      rhsmom_.Update(fldparatimint_->Theta(),generalbodyforce_,1.0);
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr=0;rr<nsd_;++rr)

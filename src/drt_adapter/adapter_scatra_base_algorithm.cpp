@@ -184,7 +184,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain)
+  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain and probtype != prb_two_phase_flow)
   {
     switch(timintscheme)
     {
@@ -303,7 +303,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
         break;
     }
   }
-  else if (probtype == prb_level_set or probtype == prb_combust)
+  else if (probtype == prb_level_set or probtype == prb_combust or probtype == prb_two_phase_flow)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
     if (probtype == prb_level_set)
@@ -324,6 +324,12 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       lsparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
       // solution output
       lsparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+
+      if (probtype == prb_two_phase_flow)
+      {
+        //Give access to smoothing parameter for levelset calculations.
+        lsparams->set<double> ("INTERFACE_THICKNESS_TPF",prbdyn.get<double>("INTERFACE_THICKNESS"));
+      }
     }
 
     switch(timintscheme)
@@ -351,7 +357,15 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
           // create instance of time integration class (call the constructor)
           scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
         }
-        else dserror("Unknown time-integration scheme for level-set problem");
+        else if (probtype == prb_two_phase_flow)
+        {
+          std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
+          // create instance of time integration class (call the constructor)
+          scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+        }
+        else
+          dserror("Unknown time-integration scheme for level-set problem");
+
         break;
       }
       default:

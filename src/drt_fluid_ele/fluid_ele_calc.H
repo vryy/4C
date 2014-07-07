@@ -481,6 +481,8 @@ protected:
                        const LINALG::Matrix<nsd_,nen_> &             evel_hat,
                        const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
                        const LINALG::Matrix<nen_,1> &                eporo,
+                       const LINALG::Matrix<nsd_,nen_> &             egradphi,
+                       const LINALG::Matrix<nen_,1> &                ecurvature,
                        Teuchos::RCP<MAT::Material>                   mat,
                        bool                                          isale,
                        bool                                          isowned,
@@ -514,6 +516,8 @@ protected:
     \param estif            (o) element matrix to calculate
     \param emesh            (o) linearization wrt mesh motion
     \param eforce           (o) element rhs to calculate
+    \param egradphi         (i) gradient of nodal scalar at nodes
+    \param ecurvature       (i) curvature of scalar at nodes
     \param thermpressaf     (i) thermodynamic pressure at n+alpha_F/n+1
     \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n
     \param thermpressdtaf   (i) thermodynamic pressure derivative at n+alpha_F/n+1
@@ -548,6 +552,8 @@ protected:
                       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
                       LINALG::Matrix<(nsd_+1)*nen_,    1>&          eforce,
                       const LINALG::Matrix<nen_,1> &                eporo,
+                      const LINALG::Matrix<nsd_,nen_> &             egradphi,
+                      const LINALG::Matrix<nen_,1> &                ecurvature,
                       const double                                  thermpressaf,
                       const double                                  thermpressam,
                       const double                                  thermpressdtaf,
@@ -578,6 +584,13 @@ protected:
                  LINALG::Matrix<nsd_,nen_> &        eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
                  LINALG::Matrix<nen_,1> &           escabofoaf   //< scatra body force at nodes
                  );
+
+  //! calculate body force contribution from surface tension
+  void AddSurfaceTensionForce(const LINALG::Matrix<nen_,1>&                 escaaf,     ///< scalar at time n+alpha_f / n+1
+                              const LINALG::Matrix<nsd_,nen_> &             egradphi,   //<gradient of scalar function at nodes
+                              const LINALG::Matrix<nen_,1> &                ecurvature  //<curvature of scalar function at nodes
+                              );
+
 
   //! evaluate shape functions and their derivatives at element center
   void EvalShapeFuncAndDerivsAtEleCenter();
@@ -1131,7 +1144,7 @@ protected:
   //! bodyforce in gausspoint
   LINALG::Matrix<nsd_,1> bodyforce_;
   //! prescribed pressure gradient (required for turbulent channel flow!)
-  LINALG::Matrix<nsd_,1> prescribedpgrad_;
+  LINALG::Matrix<nsd_,1> generalbodyforce_;
   //! vector containing all values from previous timelevel n for momentum equation
   LINALG::Matrix<nsd_,1> histmom_;
   //! velocity vector in gausspoint
@@ -1185,6 +1198,10 @@ protected:
   double visceff_;
   //! reaction coefficient
   double reacoeff_;
+
+  //! Two-phase specific variables:
+  //! surface tension
+  double gamma_;
 
   //! LOMA-specific variables:
   //! physical diffusivity of scalar equation

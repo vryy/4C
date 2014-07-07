@@ -226,6 +226,29 @@ namespace ELEMENTS
       const bool                      inverting  //!< bool indicating inversion
     );
 
+    void CalculateMomentumAndVolume(
+    const DRT::Element*             ele,                //!< the element we are dealing with
+    Epetra_SerialDenseVector&       momandvol,          //!< element (volume) momentum vector and minus domain volume
+    const double                    interface_thickness //!< interface thickness of smoothing function.
+    );
+
+    //! calculate/reconstruct gradient(s) at nodes using L2-projection.
+    virtual void CalcGradientAtNodes(
+      const DRT::Element*             ele,       //!< the element we are dealing with
+      Epetra_SerialDenseMatrix&       elemat1,   //!< element matrix, to be filled
+      Epetra_SerialDenseVector&       elevec1,   //!< element RHS vector (x-direction)
+      Epetra_SerialDenseVector&       elevec2,   //!< element RHS vector (y-direction)
+      Epetra_SerialDenseVector&       elevec3    //!< element RHS vector (z-direction)
+      );
+
+    //! calculate/reconstruct gradient(s) at nodes using L2-projection.
+    virtual void CalcCurvatureAtNodes(
+      const DRT::Element*                             ele,          //!< the element we are dealing with
+      Epetra_SerialDenseMatrix&                       elemat1,      //!< element matrix, to be filled
+      Epetra_SerialDenseVector&                       elevec1,      //!< element RHS vector (x-direction)
+      const std::vector<LINALG::Matrix<nen_,nsd_> >&   egradphinp    //!< the gradient of phi in the x-direction
+      );
+
     /*========================================================================*/
     //! @name material and related and related functions
     /*========================================================================*/
