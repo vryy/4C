@@ -2538,12 +2538,16 @@ void FLD::XFluidFluid::PrepareEmbeddedDistribution()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 {
+
+  // map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
+  std::map<int,int> boundary_emb_face_lid_map;
+
   // fill boundary_embedded_mapdmap between boundary element id and its corresponding embedded element id
   for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
   {
     // boundary element and its nodes
     DRT::Element* bele = boundarydis_->lColElement(iele);
-    const int* inodes = bele->NodeIds();
+    const int * belenodeIds = bele->NodeIds();
 
     bool bele_found = false;
 
@@ -2551,45 +2555,63 @@ void FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
     for(int it=0; it< embdis_->NumMyColElements(); ++it)
     {
       DRT::Element* ele = embdis_->lColElement(it);
-      const int* elenodes = (ele)->NodeIds();
+      const int * elenodeIds = ele->NodeIds();
 
-      // assume the element has been founduntied
-      bele_found = true;
+      // get the surface-element map for the embedded element
+      std::vector<std::vector<int> > face_node_map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
 
-      // check all nodes of the boundary element
-      for(int inode=0; inode<bele->NumNode();  ++inode)
+      // loop the faces of the element
+      for(int f=0; f< ele->NumFace(); f++)
       {
-        // boundary node
-        const int inode_ID = inodes[inode];
+        // assume the element has been found
+        bele_found = true;
 
-        bool node_found = false;
-        for (int enode=0; enode<ele->NumNode(); ++enode)
+        const int face_numnode = face_node_map[f].size();
+
+        if(bele->NumNode() != face_numnode) continue; // this face cannot be the right one
+
+        // check all nodes of the boundary element
+        for(int inode=0; inode<bele->NumNode();  ++inode)
         {
-          const int enode_ID = elenodes[enode];
+          // boundary node
+          const int belenodeId = belenodeIds[inode];
 
-          if(enode_ID == inode_ID)
+          bool node_found = false;
+          for (int fnode=0; fnode<face_numnode; ++fnode)
           {
-            node_found = true;
-            break; // breaks the element nodes loop
-          }
-        }
-        if(node_found==false) // this node is not contained in this element
-        {
-          bele_found = false; // element not the right one, if at least one boundary node is not found
-          break; // node not found
-        }
-      }
+            const int facenodeId = elenodeIds[face_node_map[f][fnode]];
 
-      if(bele_found==true)
-      {
-        boundary_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
-        break;
-      }
+            if(facenodeId == belenodeId)
+            {
+              // nodes are the same
+              node_found = true;
+              break;
+            }
+          } // loop nodes of element's face
+          if(node_found==false) // this node is not contained in this face
+          {
+            bele_found = false; // element not the right one, if at least one boundary node is not found
+            break; // node not found
+          }
+        } // loop nodes of boundary element
+
+        if(bele_found==true)
+        {
+          boundary_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
+          boundary_emb_face_lid_map.insert(std::pair<int,int>(bele->Id(),f));
+          break;
+        }
+      } // loop element faces
+      if(bele_found) break; // do not continue the search
 
     }
 
     if(bele_found == false) dserror("corresponding embele for boundary element with boundary id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!", bele->Id(), myrank_);
   }
+
+  // update the estimate of the maximal eigenvalues in the parameter list to access on element level
+  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Set_boundary_emb_face_lid_map(boundary_emb_face_lid_map);
+
 
 }//FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 

@@ -89,9 +89,11 @@ namespace INPAR
     /// definition of characteristic element length in cut elements
     enum ViscStab_hk
     {
-      ViscStab_hk_vol_equivalent,
-      ViscStab_hk_vol_div_by_surf,
-      ViscStab_hk_longest_ele_length
+      ViscStab_hk_vol_equivalent,             /// volume equivalent element diameter
+      ViscStab_hk_cut_vol_div_by_cut_surf,    /// physical partial/cut volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, not useful for sliver and/or dotted cut situations)
+      ViscStab_hk_ele_vol_div_by_cut_surf,    /// full element volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, however, avoids problems with sliver cuts, not useful for dotted cuts)
+      ViscStab_hk_ele_vol_div_by_ele_surf,    /// full element volume divided by surface measure ( used for uncut situations, standard weak Dirichlet boundary/coupling conditions)
+      ViscStab_hk_ele_vol_div_by_max_ele_surf /// full element volume divided by maximal element surface measure ( used to estimate the trace inequality for stretched elements in combination with ghost-penalties)
     };
 
     /// scaling for convective/inflow stabilization term

@@ -23,6 +23,7 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 #include "../linalg/linalg_utils.H"
 
+#include "fluid_ele_utils.H"
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "fluid_ele_calc_xfem_coupling_impl.H"
 
@@ -2190,21 +2191,16 @@ void EmbImpl<distype, emb_distype>::EvaluateEmb( LINALG::Matrix<nsd_,1> & xside 
   GEO::CUT::Position<emb_distype> pos( emb_xyze_, xside );
   pos.Compute();
 
-  const LINALG::Matrix<3,1> & rst_emb = pos.LocalCoordinates();
+  emb_xsi_ = pos.LocalCoordinates();
 
-  DRT::UTILS::shape_function_3D( emb_funct_, rst_emb( 0 ), rst_emb( 1 ), rst_emb( 2 ), emb_distype );
-  DRT::UTILS::shape_function_3D_deriv1( emb_deriv_, rst_emb( 0 ), rst_emb( 1 ), rst_emb( 2 ), emb_distype );
+  DRT::UTILS::shape_function_3D( emb_funct_, emb_xsi_( 0 ), emb_xsi_( 1 ), emb_xsi_( 2 ), emb_distype );
+  DRT::UTILS::shape_function_3D_deriv1( emb_deriv_, emb_xsi_( 0 ), emb_xsi_( 1 ), emb_xsi_( 2 ), emb_distype );
 
-
-  LINALG::Matrix<nsd_,nsd_> emb_xjm(true);
-  LINALG::Matrix<nsd_,nsd_> emb_xji(true);
-
-
-  emb_xjm.MultiplyNT(emb_deriv_,emb_xyze_);
-  emb_xji.Invert(emb_xjm);
+  emb_xjm_.MultiplyNT(emb_deriv_,emb_xyze_);
+  emb_xji_.Invert(emb_xjm_);
 
   // compute global first derivates
-  emb_derxy_.Multiply(emb_xji,emb_deriv_);
+  emb_derxy_.Multiply(emb_xji_,emb_deriv_);
 
   // get pressure derivatives at integration point
   emb_prederxy_.MultiplyNN(emb_derxy_, emb_pres_);
@@ -2215,6 +2211,73 @@ void EmbImpl<distype, emb_distype>::EvaluateEmb( LINALG::Matrix<nsd_,1> & xside 
 
   return;
 }// EvaluateEmb
+
+
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives at element center  bs 07/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
+double EmbImpl<distype, emb_distype>::EvalShapeFuncAndDerivsAtEleCenter()
+{
+  // use one-point Gauss rule
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_stab(DRT::ELEMENTS::DisTypeToStabGaussRule<emb_distype>::rule);
+
+  return EvalShapeFuncAndDerivsAtIntPoint((intpoints_stab.IP().qxg)[0],intpoints_stab.IP().qwgt[0]);
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives at integr. point
+ | return the integration factor                               bs 07/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
+double EmbImpl<distype, emb_distype>::EvalShapeFuncAndDerivsAtIntPoint(
+    const double* gpcoord,  // actual integration point (coords)
+    double gpweight// actual integration point (weight)
+)
+{
+
+  for (int idim=0;idim<nsd_;idim++)
+  {
+    emb_xsi_(idim) = gpcoord[idim];
+  }
+
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<emb_distype>(emb_xsi_,emb_funct_);
+  DRT::UTILS::shape_function_deriv1<emb_distype>(emb_xsi_,emb_deriv_);
+
+  // get Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+  emb_xjm_.MultiplyNT(emb_deriv_,emb_xyze_);
+  double det = emb_xji_.Invert(emb_xjm_);
+
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
+
+  // compute integration factor
+  double fac = gpweight*det;
+
+  // compute global first derivates
+  emb_derxy_.Multiply(emb_xji_,emb_deriv_);
+
+  return fac;
+}
 
 
 /*--------------------------------------------------------------------------------
@@ -3544,58 +3607,88 @@ void EmbImpl<distype, emb_distype>::NIT2_Stab_ConvAveraged(
 } // namespace DRT
 
 // pairs with numdof=3
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20,  DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27,  DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10,  DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad9,3>;
 
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::tri3,3>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::tri3,3>;
+
 
 // pairs with numdof=4
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad8,4>;
-
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8,  DRT::Element::tri3,4>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::tri3,4>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::tri3,4>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4,  DRT::Element::tri3,4>;
-//template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::tri3,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad9,4>;
 
 
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex20>;
+
+
 
 //template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::tet4>;
+//template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8,  DRT::Element::hex27>;
 //template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::tet4>;
+//template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex27>;
 //template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::tet4>;
+//template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex27>;
 //template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::tet4>;
+//template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4,  DRT::Element::hex27>;
 //template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::tet4>;
-
-
+//template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex27>;
 

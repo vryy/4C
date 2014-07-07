@@ -76,12 +76,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
-//    case DRT::Element::quad9:
-//    {
-//      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
-//      break;
-//    }
+    case DRT::Element::quad9:
+    {
+      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
+      break;
+    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -114,12 +114,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
       break;
     }
-//    case DRT::Element::quad9:
-//    {
-//      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
-//      break;
-//    }
+    case DRT::Element::quad9:
+    {
+      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze,isViscAdjointSymmetric);
+      break;
+    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -176,12 +176,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
       break;
     }
-//    case DRT::Element::quad9:
-//    {
-//      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze);
-//      break;
-//    }
+    case DRT::Element::quad9:
+    {
+      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
+      break;
+    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -214,12 +214,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
       break;
     }
-//    case DRT::Element::quad9:
-//    {
-//      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
-//      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
-//      break;
-//    }
+    case DRT::Element::quad9:
+    {
+      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
+      si = new SideImplType(side,C_uiu,C_uui,rhC_ui,C_uiui,side_xyze,isViscAdjointSymmetric);
+      break;
+    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -271,12 +271,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,side_xyze);
       break;
     }
-//    case DRT::Element::quad9:
-//    {
-//      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
-//      si = new SideImplType(side,side_xyze);
-//      break;
-//    }
+    case DRT::Element::quad9:
+    {
+      typedef SideImpl<distype,DRT::Element::quad9, 3> SideImplType;
+      si = new SideImplType(side,side_xyze);
+      break;
+    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -309,12 +309,12 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
       si = new SideImplType(side,side_xyze);
       break;
     }
-//    case DRT::Element::quad9:
-//    {
-//      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
-//      si = new SideImplType(side,side_xyze);
-//      break;
-//    }
+    case DRT::Element::quad9:
+    {
+      typedef SideImpl<distype,DRT::Element::quad9, 4> SideImplType;
+      si = new SideImplType(side,side_xyze);
+      break;
+    }
     default:
       dserror( "unsupported side shape %d", side->Shape() ); break;
     }
@@ -367,12 +367,12 @@ Teuchos::RCP<EmbCoupling<distype> > EmbCoupling<distype>::TwoSidedImpl(
     emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze,isViscAdjointSymmetric);
     break;
   }
-//  case DRT::Element::hex27:
-//  {
-//    typedef EmbImpl<distype,DRT::Element::hex27> EmbImplType;
-//    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze);
-//    break;
-//  }
+  case DRT::Element::hex27:
+  {
+    typedef EmbImpl<distype,DRT::Element::hex27> EmbImplType;
+    emb = new EmbImplType(emb_ele,C_uiu,C_uui,rhC_ui,C_uiui,emb_xyze,isViscAdjointSymmetric);
+    break;
+  }
   default:
     dserror( "unsupported side shape %d", emb_ele->Shape() ); break;
   }

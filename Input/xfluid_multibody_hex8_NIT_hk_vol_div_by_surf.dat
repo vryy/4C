@@ -1,8 +1,10 @@
 //
 // Maintainer: Benedikt Schott
 //
-// flow around two obstacles, edge-oriented stabilization on the whole element for cut elements
+// flow around two obstacles, SUPG/PSPG/DIVGRAD stabilization on the whole element for cut elements
 // should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|
+// only quadratic convergence for Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
+//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -58,23 +60,16 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based
+STABTYPE                        residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no
-SUPG                            no//yes
+PSPG                            yes
+SUPG                            yes//yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV yes //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
---------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
@@ -85,43 +80,18 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary    // moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_zero
-//VEL_INIT_FUNCT_NO             2
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 VISC_STAB_FAC                   31.38594035                   // = 50.0/CT(3D) with former 50 in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
-VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel  // inflow // const // none
-GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.1                           // in [0.1;0.5]
+VISC_STAB_HK                    cut_vol_div_by_cut_surf                // vol_div_by_surf // longest_ele_length
+CONV_STAB_SCALING               none //abs_normal_vel  // inflow // const // none
+GHOST_PENALTY_STAB              no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50                            // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-013                      // tolerance in unscaled residual
-AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-//AZSUB                         150                           // size of krylov space for gmres
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2                           // damping fine grid
-ML_DAMPMED                      0.2                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+//SOLVER                        Aztec_MSR                     // // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+//AZOUTPUT                      1
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
@@ -143,14 +113,14 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.91969667977055169e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.60941742661038570e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.85406974859047780e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.88225217602927437e-02 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.60666694260807041e+01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.31609642467520938e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.14737514331598300e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.65474616864815651e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.30197372740699002e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.07494080554804428e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.93070930317372920e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.97765613954254782e+01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         34
 NDLINE                          57

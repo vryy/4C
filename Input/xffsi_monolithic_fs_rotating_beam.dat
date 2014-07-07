@@ -107,7 +107,9 @@ GMSH_EOS_OUT                    no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling
-VISC_STAB_FAC                   35// in [10;100]             
+IS_PSEUDO_2D                    yes
+VISC_STAB_FAC                   24.40282794  // 35/CT(2D)
+VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 VELGRAD_INTERFACE_STAB          yes

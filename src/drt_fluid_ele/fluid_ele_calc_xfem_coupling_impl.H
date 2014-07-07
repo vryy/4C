@@ -398,6 +398,15 @@ namespace DRT
       //!  evaluate shape function, derivatives and transformation w.r.t embedded element at gaussian point
       virtual void EvaluateEmb( LINALG::Matrix<nsd_,1> & xside );
 
+      //! evaluate shape functions and derivatives at element center
+      virtual double EvalShapeFuncAndDerivsAtEleCenter();
+
+      //! evaluate shape functions and derivatives at integration point
+      virtual double EvalShapeFuncAndDerivsAtIntPoint(
+          const double* gpcoord,  // actual integration point (coords)
+          double gpweight// actual integration point (weight)
+          );
+
       //! extract/set embedded element velocity
       virtual void emb_vel(
           const DRT::Discretization &  embdis,       ///< embedded discretization
@@ -479,6 +488,9 @@ namespace DRT
       LINALG::Matrix<emb_nen_,1>                                emb_pres_;    ///< element node pressure
       LINALG::Matrix<nsd_,emb_nen_>                             emb_disp_;    ///< element node displacements
       LINALG::Matrix<nsd_,emb_nen_>                             emb_xyze_;    ///< element node coordinates
+      LINALG::Matrix<nsd_,1>                                    emb_xsi_;     ///< local coordinates of Gaussian point
+      LINALG::Matrix<nsd_,nsd_>                                 emb_xjm_;     ///< jacobi matrix
+      LINALG::Matrix<nsd_,nsd_>                                 emb_xji_;     ///< inverse of jacobi matrix
 
       LINALG::Matrix<nsd_,1>                                    emb_prederxy_; ///< pressure derivatives at GP
 

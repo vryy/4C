@@ -123,7 +123,7 @@ INTERFACE_VEL                   interface_vel_by_disp
 INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
-VISC_STAB_FAC                   10.0
+VISC_STAB_FAC                   20.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.001

@@ -97,7 +97,9 @@ GMSH_DEBUG_OUT                  No
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               embedded_sided_coupling
-VISC_STAB_FAC                   1.0
+IS_PSEUDO_2D                    yes
+VISC_STAB_FAC                   20.0
+VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

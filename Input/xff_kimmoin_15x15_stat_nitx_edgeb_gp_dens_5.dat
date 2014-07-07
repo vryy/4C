@@ -85,7 +85,8 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeSigma // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
-VISC_STAB_FAC                   35                            // in [10;100]
+IS_PSEUDO_2D                    yes
+VISC_STAB_FAC                   24.40282794                   // 35/CT(2d) 
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
 XFF_CONV_STAB_SCALING           none

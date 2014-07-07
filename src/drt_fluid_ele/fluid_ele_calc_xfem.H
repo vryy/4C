@@ -276,12 +276,13 @@ private:
 
   //! compute viscous part of Nitsche's penalty term scaling for Nitsche's method
   double NIT_ComputeNitscheStabfac(
-      const double h_k,   ///< the characteristic element length
-      const int sid = -1  ///< Id of the side element for embedded sided fluidfluid formulations
+      const DRT::Element::DiscretizationType ele_distype, ///< the discretization type of the element w.r.t which the stabilization factor is computed
+      const double h_k,                                   ///< the characteristic element length
+      const int sid = -1                                  ///< Id of the side element for embedded sided fluidfluid formulations
       );
 
   //! get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
-  double NIT_getTraceEstimateConstant();
+  double NIT_getTraceEstimateConstant(const DRT::Element::DiscretizationType ele_distype);
 
   //! compute full Nitsche's penalty term scaling for Nitsche's method (xfluid/xfsi)
   void NIT_ComputeFullStabfac(
@@ -304,12 +305,6 @@ private:
       const double                     NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
       const double                     gamma_ghost_penalty = 0.0,     ///< ghost-penalty parameter
       const double                     gamma_press_coupling = 0.0     ///< factor of stabilization parameter for pressure-coupling penalty term
-  );
-
-  //! pre-compute the measure of the element's intersecting surface
-  double ComputeMeasSurf(
-      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
-      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
   );
 
   //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
@@ -427,9 +422,26 @@ private:
   //! compute characteristic element length h_k
   //! \author kruse \date 06/14
   double Compute_h_k(
-      const GEO::CUT::plain_volumecell_set & vcSet,
-      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints
+      DRT::Element *                                                      ele,                   ///< fluid element
+      Epetra_SerialDenseMatrix &                                          ele_xyze,              ///< element coordinates
+      const GEO::CUT::plain_volumecell_set &                              vcSet,                 ///< volumecell sets for volume integration
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,                ///< bcells for boundary cell integration
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,            ///< integration points for boundary cell integration
+      Teuchos::RCP<DRT::ELEMENTS::XFLUID::EmbCoupling<distype> >          emb = Teuchos::null,   ///< pointer to the embedded coupling implementation
+      DRT::Element *                                                      face = NULL            ///< side element in 3D, line element in 2D
+  );
+
+  //! compute the measure of the elements surface with given local id
+  double ComputeMeasFace(
+      DRT::Element *            ele,              ///< fluid element
+      Epetra_SerialDenseMatrix& ele_xyze,         ///< element coordinates
+      const int                 local_face_id     ///< the local id of the face w.r.t the fluid element
+  );
+
+  //! pre-compute the measure of the element's intersecting surface
+  double ComputeMeasCutSurf(
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
   );
 
   //! compute volume-equivalent diameter

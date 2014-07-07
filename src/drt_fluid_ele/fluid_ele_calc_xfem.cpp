@@ -1608,6 +1608,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   // get nodal coordinates
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> > (ele,my::xyze_);
 
+  ///< element coordinates in EpetraMatrix
+  Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
+  for ( int i=0; i<my::nen_; ++i )
+  {
+    for(int j=0; j<my::nsd_; j++)
+      ele_xyze(j,i) = my::xyze_( j, i );
+  }
+
   // extract the current velocity & pressure values for current element
   LINALG::Matrix<my::nsd_,my::nen_>  evelaf(true);
   LINALG::Matrix<my::nen_,1>         epreaf(true);
@@ -1618,8 +1626,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   bool assemble_iforce = false;
   if (iforcecol != Teuchos::null) assemble_iforce = true;
 
-  // compute characteristic element length
-  const double h_k = Compute_h_k(vcSet,bcells,bintpoints);
+  // compute characteristic element length based on the background element
+  const double h_k = Compute_h_k(ele,ele_xyze,vcSet,bcells,bintpoints);
 
   //--------------------------------------------------------
   // declaration of matrices & rhs
@@ -3096,6 +3104,16 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  ///< element coordinates in EpetraMatrix
+  Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
+  for ( int i=0; i<my::nen_; ++i )
+  {
+    for(int j=0; j<my::nsd_; j++)
+      ele_xyze(j,i) = my::xyze_( j, i );
+  }
+
+
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
@@ -3145,14 +3163,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //-----------------------------------------------------------------------------------
 
   //--------------------------------------------
-  // element length
+  // element length based on the background element
   //--------------------------------------------
-  const double h_k = Compute_h_k(vcSet, bcells, bintpoints);
+  const double h_k = Compute_h_k(ele, ele_xyze, vcSet, bcells, bintpoints);
 
   //--------------------------------------------
   // compute viscous part of Nitsche's penalty term scaling for Nitsche's method (dimensionless)
   //--------------------------------------------
-  const double NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( h_k, -1 );
+  const double NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( ele->Shape(), h_k, -1 );
 
   //--------------------------------------------
   // define average weights
@@ -3163,12 +3181,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
 
   double kappa2 = 1.0-kappa1;
-
-
-
-  // evaluate shape function derivatives
-  const bool eval_deriv = true;
-
 
   //--------------------------------------------
   // loop intersecting sides
@@ -3316,16 +3328,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         //--------------------------------------------
 
         // evaluate shape functions (and derivatives)
-
-        if(eval_deriv)
-        {
-          EvalFuncAndDeriv( rst );
-        }
-        else
-        {
-          DRT::UTILS::shape_function<distype>( rst, my::funct_ );
-        }
-
+        EvalFuncAndDeriv( rst );
 
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -3486,6 +3489,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
 
+  ///< element coordinates in EpetraMatrix
+  Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
+  for ( int i=0; i<my::nen_; ++i )
+  {
+    for(int j=0; j<my::nsd_; j++)
+      ele_xyze(j,i) = my::xyze_( j, i );
+  }
+
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
@@ -3533,13 +3544,18 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   //         evaluate element length, stabilization factors and average weights
   //-----------------------------------------------------------------------------------
 
-  // compute characteristic element length
-  double h_k = Compute_h_k(vcSet, bcells, bintpoints);
+  INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
+
+  // initialize the characteristic element length
+  double h_k = 0.0;
+
+  // compute characteristic element length based on the background element
+  if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Coupling)
+    h_k = Compute_h_k(ele, ele_xyze, vcSet, bcells, bintpoints);
 
   //------------------------------
   // define average weights
 
-  INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
   double kappa1;
 
   if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
@@ -3552,19 +3568,23 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
     kappa1 = 0.5;
   }
+//  else if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Coupling)
+//  {
+//    if( h_k <= 0.0 ) dserror("element length is <= 0.0");
+//
+//    kappa1 = 1.0;
+//  }
   else dserror("coupling strategy not known");
 
   if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
 
   double kappa2 = 1.0-kappa1;
 
-  // evaluate shape function derivatives
-  bool eval_deriv = true;
 
   //----------------------------------------------------------------------------
   //      surface integral --- loop sides
   //----------------------------------------------------------------------------
-  // map of side-element id and Guass points
+  // map of side-element id and Gauss points
   for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
       i!=bintpoints.end();
       ++i )
@@ -3647,22 +3667,26 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     si->addeidisp(cutdis,"idispnp",cutla[0].lm_);
 
 
-    // set the embedded element length dependent on side in case of Emb Embedded_Sided_Coupling
-    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
-    {
-      emb->element_length(h_k);
-
-      if(h_k < 1e-006) dserror("element length of embedded element is smaller than 1e-006");
-
-    }
-
-
     //--------------------------------------------
     // compute viscous part of Nitsche's penalty term scaling for Nitsche's method (dimensionless)
     //--------------------------------------------
 
-    const double NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( h_k, sid );
+    double NIT_visc_stab_fac = 0.0;
 
+    // set the embedded element length dependent on side in case of Emb Embedded_Sided_Coupling
+    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    {
+      // compute characteristic element length based on the embedded element
+      h_k = Compute_h_k(emb_ele, emb_xyze, vcSet, bcells, bintpoints, emb, side);
+
+      // compute Nitsche stabilization factor based on the embedded element
+      NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( emb_ele->Shape(), h_k, sid );
+    }
+    else
+    {
+      // compute Nitsche stabilization factor based on the background element
+      NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( ele->Shape(), h_k, -1 );
+    }
 
 
     //--------------------------------------------
@@ -3729,25 +3753,18 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
 
 
-        // evaluate embedded element shape functions
-        if(fldparaxfem_->ViscStabHK() == INPAR::XFEM::ViscStab_hk_vol_equivalent)
-        {
-          emb->EvaluateEmb( x_side );
-        }
-        else dserror("choose vol_equivalent characteristic element length for embedded sided mortaring");
+
+
 
         //--------------------------------------------
-
         // evaluate shape functions (and derivatives)
 
-        if(eval_deriv)
-        {
-          EvalFuncAndDeriv( rst );
-        }
-        else
-        {
-          DRT::UTILS::shape_function<distype>( rst, my::funct_ );
-        }
+        // evaluate embedded element shape functions
+        emb->EvaluateEmb( x_side );
+
+        // evaluate background element shape functions
+        EvalFuncAndDeriv( rst );
+
 
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -3892,8 +3909,9 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double FluidEleCalcXFEM<distype>::NIT_ComputeNitscheStabfac(
-    const double h_k,   ///< the characteristic element length
-    const int sid       ///< Id of the side element for embedded sided fluidfluid formulations
+    const DRT::Element::DiscretizationType ele_distype, ///< the discretization type of the element w.r.t which the stabilization factor is computed
+    const double h_k,                                   ///< the characteristic element length
+    const int sid                                       ///< Id of the side element for embedded sided fluidfluid formulations
 )
 {
 
@@ -3932,7 +3950,8 @@ double FluidEleCalcXFEM<distype>::NIT_ComputeNitscheStabfac(
 
                       with CT depending on the dimension d and the polynomial degree p
 
-                               CT = p(p+1)/2 * (2+1/p)^d
+                               CT = p(p+1)/2 * (2+1/p)^d ( for tensor-product elements (hexahedral,quadrilateral...)
+                               CT = (p+1)*(p+d)/d        ( for simplices (lines, triangles, tetrahedral...)
 
                       and  1/h_K \approx meas(Gamma_K)/meas(K)
                       and rho_safety a safety factor depending on the element-type which is useful when the surface cuts the element in an inclined situation or when the surface
@@ -3952,8 +3971,8 @@ double FluidEleCalcXFEM<distype>::NIT_ComputeNitscheStabfac(
   {
     if(fabs(h_k) < 1e-14) dserror("the characteristic element length is zero, it has not been set properly!");
 
-    // get an estimate of the hp-depending constant C_T satisfying the trace inequality
-    double C_T = NIT_getTraceEstimateConstant();
+    // get an estimate of the hp-depending constant C_T satisfying the trace inequality w.r.t the corresponding element (compare different weightings)
+    double C_T = NIT_getTraceEstimateConstant(ele_distype);
 
     // get a safety factor dependent on the the element shape for cut elements, since the surface can cut the
     // background element in a bad way when the surface includes sharp corners or small acute angles
@@ -3968,6 +3987,16 @@ double FluidEleCalcXFEM<distype>::NIT_ComputeNitscheStabfac(
 
     // get an estimate of the hp-depending constant C_T satisfying the trace inequality from a previously solved eigenvalue problem
     NIT_visc_stab_fac = my::fldpara_->Get_TraceEstimate_MaxEigenvalue(sid);
+
+#if(0)
+    std::cout.precision(15);
+    std::cout << "C_T/hk (formula): "
+              << NIT_getTraceEstimateConstant(ele_distype)/h_k
+              << " max_eigenvalue ~ C_T/hk: "
+              <<  my::fldpara_->Get_TraceEstimate_MaxEigenvalue(sid)
+              << " max_eigenvalue*h_k = C_T: "<< my::fldpara_->Get_TraceEstimate_MaxEigenvalue(sid)*h_k << " vs: C_T (formula) " << NIT_getTraceEstimateConstant(ele_distype) << std::endl;
+#endif
+
   }
   else dserror("unknown trace-inequality-estimate type for viscous part of Nitsche's penalty term");
 
@@ -3990,10 +4019,15 @@ double FluidEleCalcXFEM<distype>::NIT_ComputeNitscheStabfac(
  * get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::NIT_getTraceEstimateConstant()
+double FluidEleCalcXFEM<distype>::NIT_getTraceEstimateConstant(
+    const DRT::Element::DiscretizationType ele_distype
+)
 {
   /*
-  => return CT = p(p+1)/2 * (2+1/p)^d constant depending on element-type/polynomal order, see below
+  => return
+       CT = p(p+1)/2 * (2+1/p)^d  OR an estimate obtained form solving an EVP ( for tensor-product elements (hexahedral,quadrilateral...)
+       CT = (p+1)*(p+d)/d                                                     ( for simplices (lines, triangles, tetrahedral...)
+     constant depending on element-type/polynomial order, see below
 
   - C is an estimate of the following trace inequality with  C^2 ~ 1/h
      and C depends on element type, shape and polynomial degree
@@ -4006,15 +4040,20 @@ double FluidEleCalcXFEM<distype>::NIT_getTraceEstimateConstant()
 
    - we can estimate C^2 as C^2 \approx \rho_safety * CT / h_K (see generalized hp-framework by Erik Burman 2006)
 
-              with CT depending on the dimension d and the polynomial degree p
+              with CT depending on the dimension d and the polynomial degree p of grad(v_h)
 
-                       CT = p(p+1)/2 * (2+1/p)^d
+              - For tensor-product elements (hexahedral,quadrilateral,...)
+                   CT = p(p+1)/2 * (2+1/p)^d
+                      -> REMARK: the theoretical estimate of the constant CT for hexahedral and quadrilateral elements seems to overestimate the actual constant
+                      -> therefore we take the approximate values from solving a local eigenvalue problem...)
+              - for simplices (lines, triangles, tetrahedral...)
+                   CT = (p+1)*(p+d)/d        ( this estimate is sharp and leads to the same constants as solving an EVP)
 
               and  1/h_K \approx meas(Gamma_K)/meas(K)
               and rho_safety a safety factor depending on the element-type which is useful when the surface cuts the element in an inclined situation or when the surface
                   contains small acute angles or corners
 
-   - Remark regarding the dimension of the problem (pseudo-2D simualations):
+   - Remark regarding the dimension of the problem (pseudo-2D simulations):
      -> important for CT is the degree of the element-wise polynomial which is clear for pure 2D and 3D problems
      -> for pseudo-2D with one element-layer of 3D element in z-direction, but strong Dirichlet conditions which eliminate the z-contributions
         in the polynomial, we have to adapt the constant from d=3 to d=2 although a 3D element is used
@@ -4031,13 +4070,91 @@ double FluidEleCalcXFEM<distype>::NIT_getTraceEstimateConstant()
 */
 
   // TODO: introduce 2D-flag
-  //bool is_pseudo_2D = false;
+  bool is_pseudo_2D = fldparaxfem_->IsPseudo2D();
 
-  double CT = 1.0;
+  DRT::Element::DiscretizationType trace_inequality_distype;
 
-  // TODO: std::cout << "still to be filled" << std::endl;
+  if(!is_pseudo_2D)
+  {
+    // the standard case for real 2D or 3D simulations
+    trace_inequality_distype = ele_distype;
+  }
+  else
+  {
+    // modification for pseudo 2D simulations
+    switch (ele_distype)
+    {
+    case DRT::Element::hex8:
+      trace_inequality_distype = DRT::Element::quad4; break;    // hex8 -> quad4 reduction
+    case DRT::Element::hex20:
+      trace_inequality_distype = DRT::Element::quad8; break;    // hex20-> quad8 reduction
+    case DRT::Element::hex27:
+      trace_inequality_distype = DRT::Element::quad9; break;    // hex27-> quad9 reduction
+    case DRT::Element::wedge15:
+      trace_inequality_distype = DRT::Element::tri6; break;     // wedge15 -> tri6 reduction (tri6 elements in 2D plane)
+    case DRT::Element::wedge6:
+      trace_inequality_distype = DRT::Element::tri3; break;     // wedge6 -> tri3 reduction (tri3 elements in 2D plane)
+    default:
+    {
+      dserror("not a valid pseudo 2D element-type - what to do?");
+      trace_inequality_distype = DRT::Element::dis_none;
+      break;
+    }
+    };
+  }
 
-  return CT;
+//  return 2.0;
+
+  // switch over the distype which determines the right polynomial degree and dimension
+  switch (trace_inequality_distype)
+  {
+  // for triangluar/tetradhedral elements:
+  //    -> the grad-operator reduces the polynomial degree p(grad(v_h)) = p(v_h)-1
+  // for quadrilateral/hexahedral and wedge/pyramid elements:
+  //    -> the grad-operator does not reduce the polynomial degree due to the mixed polynomials p(grad(v_h)) = p(v_h)
+
+  /*
+  // CT = p(p+1)/2 * (2+1/p)^d
+  // 3D hexahedral elements
+  case DRT::Element::hex8:      return 27.0;                 break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=27.0
+  case DRT::Element::hex20:     return 46.875;               break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8)
+  case DRT::Element::hex27:     return 46.875;               break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8)
+  // 2D quadrilateral elements
+  case DRT::Element::quad4:     return 9.0;                  break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0
+  case DRT::Element::quad8:     return 9.0;                  break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0
+  case DRT::Element::quad9:     return 18.75;                break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=18.75  (75/4)
+  */
+  // REMARK: the theroretical estimate of the constant CT for hexahedral and quadrilateral elements seems to overestimate the actual constant
+  // -> therefore we take the approximate values from solving a local eigenvalue problem
+  // estimates from solving the eigenvalue problem on regular elements
+  case DRT::Element::hex8:      return 1.59307;              break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
+  case DRT::Element::hex20:     return 4.10462;              break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
+  case DRT::Element::hex27:     return 4.27784;              break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
+  // 2D quadrilateral elements
+  case DRT::Element::quad4:     return 1.43426;              break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
+  case DRT::Element::quad8:     return 4.06462;              break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
+  case DRT::Element::quad9:     return 4.19708;              break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
+  //----------------------------------------------------------------
+  // CT = (p+1)*(p+d)/d (this estimate leads to the same results as solving a local eigenvalue problem)
+  // 3D tetrahedral elements
+  case DRT::Element::tet4:      return 1.0;                  break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
+  case DRT::Element::tet10:     return 2.6666666666666666;   break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 1   =>  CT=2.6666666666666666 (8/3)
+  // 2D triangular elements
+  case DRT::Element::tri3:      return 1.0;                  break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
+  case DRT::Element::tri6:      return 3.0;                  break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 1   =>  CT=3.0
+  // 1D line elements
+  case DRT::Element::line2:     return 1.0;                  break;  /// d=1, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
+  case DRT::Element::line3:     return 4.0;                  break;  /// d=1, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=4.0
+  //----------------------------------------------------------------
+  // 3D wedge/pyramid elements, the current estimates are taken from the maximum of hex and tet elements, the correct value has to switch between the faces!
+  case DRT::Element::pyramid5:  std::cout << "WARNING: calibrate this value!" << std::endl; return 1.59307;              break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT taken from hex8
+  case DRT::Element::wedge6:    std::cout << "WARNING: calibrate this value!" << std::endl; return 1.59307;              break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT taken from hex8
+  case DRT::Element::wedge15:   std::cout << "WARNING: calibrate this value!" << std::endl; return 4.10462;              break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT taken from hex20
+  default:
+    dserror("constant for trace inequality not specified for this element type yet: % i", trace_inequality_distype); break;
+  };
+
+  return 0.0;
 }
 
 
@@ -4210,93 +4327,6 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeFullStabfacFluidFluid(
   return;
 }
 
-/*--------------------------------------------------------------------------------
- * pre-compute the measure of all side's surface cutting the element
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::ComputeMeasSurf(
-    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
-    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
-    )
-{
-  double surf = 0.0;
-
-  //--------------------------------------------
-  // loop intersecting sides
-  // map of side-element id and Gauss points
-  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
-        i!=bintpoints.end();
-        ++i )
-  {
-    int sid = i->first;
-    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
-
-    // get side's boundary cells
-    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
-    if ( j==bcells.end() )
-      dserror( "missing boundary cell" );
-
-    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
-    if ( bcs.size()!=cutintpoints.size() )
-      dserror( "boundary cell integration rules mismatch" );
-
-    //--------------------------------------------
-    // loop boundary cells w.r.t current cut side
-    //--------------------------------------------
-    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
-          i!=cutintpoints.end();
-          ++i )
-    {
-      const DRT::UTILS::GaussIntegration & gi = *i;
-      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
-
-      //--------------------------------------------
-      // loop gausspoints w.r.t current boundary cell
-      //--------------------------------------------
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
-      {
-        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
-
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-        LINALG::Matrix<3,1> normal(true);
-
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-        dserror("at the moment not available -> fix it");
-//        si->Evaluate(eta,x_side,normal,drs);
-
-#else
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-
-        // compute transformation factor, normal vector and global Gauss point coordiantes
-        if(bc->Shape() != DRT::Element::dis_none) // Tessellation approach
-        {
-          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
-        }
-        else // MomentFitting approach
-        {
-          drs = 1.0;
-          normal = bc->GetNormalVector();
-          const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;idim++)
-          {
-            x_gp_lin(idim,0) = gpcord[idim];
-          }
-        }
-
- #endif
-
-        const double surf_fac = drs*iquad.Weight();
-
-
-        surf += surf_fac;
-
-      } //loop gausspoints w.r.t current boundary cell
-    } // loop boundary cells
-  } // loop intersecting sides
-
-  return surf;
-}
 
 
 /*--------------------------------------------------------------------------------
@@ -4518,11 +4548,13 @@ void FluidEleCalcXFEM<distype>::AssembleInterfaceForce(
   return;
 }
 
+
+
 /*--------------------------------------------------------------------------------
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-    DRT::ELEMENTS::Fluid *              ele,            ///< fluid element
+    DRT::ELEMENTS::Fluid *               ele,            ///< fluid element
     DRT::Discretization &                dis,            ///< discretization
     const std::vector<int> &             lm,             ///< local map
     Epetra_SerialDenseVector&            elevec1_epetra, ///< element vector
@@ -4591,57 +4623,330 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double FluidEleCalcXFEM<distype>::Compute_h_k(
-    const GEO::CUT::plain_volumecell_set & vcSet,
-    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints
+    DRT::Element *                                                      ele,                   ///< fluid element
+    Epetra_SerialDenseMatrix &                                          ele_xyze,              ///< element coordinates
+    const GEO::CUT::plain_volumecell_set &                              vcSet,                 ///< volumecell sets for volume integration
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,                ///< bcells for boundary cell integration
+    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,            ///< integration points for boundary cell integration
+    Teuchos::RCP<DRT::ELEMENTS::XFLUID::EmbCoupling<distype> >          emb,                   ///< pointer to the embedded coupling implementation
+    DRT::Element *                                                      face                   ///< side element in 3D, line element in 2D
 )
 {
 
-  INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
+  const INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
 
+  const INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
+
+  if(emb == Teuchos::null and coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    dserror("no EmbCoupling available, however Embedded_Sided_Coupling is activated!");
+
+  // characteristic element length to be computed
   double h_k = 0.0;
-  double meas_surf, meas_partial_volume = 0.0;
+
+  // measure of the face (surface in 3D, line in 2D) or measure of the cut-face
+  double meas_surf = 0.0;
+
+  // measure of the element volume or measure of the physical cut part of the element volume
+  double meas_vol = 0.0;
 
   switch (visc_stab_hk)
   {
-    // volume-equivalent diameter
-    case INPAR::XFEM::ViscStab_hk_vol_equivalent:
-      // evaluate shape functions and derivatives at element center
+  //---------------------------------------------------
+  // volume-equivalent diameter
+  //---------------------------------------------------
+  case INPAR::XFEM::ViscStab_hk_vol_equivalent:
+  {
+    // evaluate shape functions and derivatives at element center
+    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    {
+      // evaluate shape functions and derivatives at element center w.r.t embedded element
+      meas_vol = emb->EvalShapeFuncAndDerivsAtEleCenter();
+    }
+    else
+    {
+      // evaluate shape functions and derivatives at element center w.r.t background element
       my::EvalShapeFuncAndDerivsAtEleCenter();
-      // compute h_k as volume-equivalent diameter
-      h_k = HK(my::fac_);
-      break;
+      meas_vol = my::fac_;
+    }
 
-    // compute h_k as physical volume/interface fraction
-    case INPAR::XFEM::ViscStab_hk_vol_div_by_surf:
-      for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
-      {
-        GEO::CUT::VolumeCell* vc = *i;
-        meas_partial_volume += vc->Volume();
-      }
+    // compute h_k as volume-equivalent diameter and directly return the value
+    return h_k = HK(meas_vol);
 
-      if(meas_partial_volume < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
-
-      meas_surf = ComputeMeasSurf(bintpoints, bcells);
-
-      if (fabs(meas_surf) < 1.e-8)  dserror("Element contribution to interface has zero size.");
-      h_k = meas_partial_volume / meas_surf;
-      break;
-
-    case INPAR::XFEM::ViscStab_hk_longest_ele_length:
-      dserror("longest element length for hk not supported yet");
-      break;
-
-    default:
-      dserror("unknown type of characteristic element length");
-      break;
+    break;
   }
+  //---------------------------------------------------
+  // compute h_k as physical/cut volume divided by physical partial/cut surface measure
+  // ( used to estimate the cut-dependent inverse estimate on cut elements, not useful for sliver and/or dotted cut situations)
+  //---------------------------------------------------
+  case INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf:
+  {
+    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+      dserror("ViscStab_hk_cut_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
+
+    // compute the cut surface measure
+    meas_surf = ComputeMeasCutSurf(bintpoints, bcells);
+
+    if (fabs(meas_surf) < 1.e-8)  dserror("Element contribution to interface has zero size.");
+
+    // compute the cut volume measure
+    for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
+    {
+      GEO::CUT::VolumeCell* vc = *i;
+      meas_vol += vc->Volume();
+    }
+
+    if(meas_vol < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_vol);
+
+    break;
+  }
+  //---------------------------------------------------
+  // full element volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, however, avoids problems with sliver cuts, not useful for dotted cuts)
+  //---------------------------------------------------
+  case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf:
+  {
+    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+      dserror("ViscStab_hk_ele_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
+
+    // compute the cut surface measure
+    meas_surf = ComputeMeasCutSurf(bintpoints, bcells);
+
+    // evaluate shape functions and derivatives at element center
+    // compute the full element volume measure
+    my::EvalShapeFuncAndDerivsAtEleCenter();
+    meas_vol = my::fac_;
+
+    break;
+  }
+  //---------------------------------------------------
+  // full element volume divided by surface measure ( used for uncut situations, standard weak Dirichlet boundary/coupling conditions)
+  //---------------------------------------------------
+  case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf:
+  {
+    if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Coupling)
+      dserror("ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
+
+    //---------------------------------------------------
+    // find the corresponding local id of the face of the element
+    // REMARK: this is quite slow, however at the moment the easiest way to get the local id
+    //         here is space for improvement
+
+    const int lid = fldparaxfem_->Get_face_lid_of_embedded_ele(face->Id());
+    //---------------------------------------------------
+
+    // compute the uncut element's surface measure
+    meas_surf = ComputeMeasFace(ele, ele_xyze, lid);
+
+    // evaluate shape functions and derivatives at element center w.r.t embedded element
+    // compute the full element volume measure
+    meas_vol = emb->EvalShapeFuncAndDerivsAtEleCenter();
+
+    break;
+  }
+  //---------------------------------------------------
+  case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf:
+  //---------------------------------------------------
+  {
+    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+      dserror("ViscStab_hk_ele_vol_div_by_max_ele_surf not reasonable for Embedded_Sided_Coupling!");
+
+    // compute the uncut element's surface measure
+    const int numfaces = DRT::UTILS::getNumberOfElementFaces(ele->Shape());
+
+    // loop all surfaces
+    for(int lid=0; lid< numfaces; lid++)
+    {
+      meas_surf = std::max(meas_surf, ComputeMeasFace(ele, ele_xyze, lid));
+    }
+
+    // evaluate shape functions and derivatives at element center
+    // compute the full element volume measure
+    my::EvalShapeFuncAndDerivsAtEleCenter();
+    meas_vol = my::fac_;
+
+    break;
+  }
+  default:
+    dserror("unknown type of characteristic element length");
+    break;
+  }
+
+  //--------------------------------------
+  // compute the final element length if fraction-based computation and not returned yet
+  h_k = meas_vol / meas_surf;
+  //--------------------------------------
 
   // check plausibility
   if( h_k <= 0.0 ) dserror("element length is <= 0.0");
 
   return h_k;
 }
+
+
+/*--------------------------------------------------------------------------------
+ * compute the measure of the elements surface with given local id
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double FluidEleCalcXFEM<distype>::ComputeMeasFace(
+    DRT::Element *            ele,              ///< fluid element
+    Epetra_SerialDenseMatrix& ele_xyze,         ///< element coordinates
+    const int                 local_face_id     ///< the local id of the face w.r.t the fluid element
+)
+{
+  // get the shape of the face
+  DRT::Element::DiscretizationType face_shape = DRT::UTILS::getEleFaceShapeType(ele->Shape(), local_face_id);
+
+  // get the current node coordinates, extract them from the element's node coordinates
+  const int numnode_face = DRT::UTILS::getNumberOfElementNodes(face_shape);
+  Epetra_SerialDenseMatrix xyze_face( my::nsd_, numnode_face);
+
+  // map for numbering of nodes of the surfaces
+  std::vector< std::vector<int> > map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
+
+  // extract the surface's node coordinates from the element's nodes coordinates
+  for(int n=0; n<numnode_face; n++)
+  {
+    const int node_lid = map[local_face_id][n];
+    for(int idim = 0; idim < my::nsd_; idim++)
+      xyze_face(idim,n) = ele_xyze(idim,node_lid);
+  }
+
+  // the metric tensor and the area of an infintesimal surface element
+  Epetra_SerialDenseMatrix  metrictensor(my::nsd_-1,my::nsd_-1);
+  double                    drs = 0.0;
+
+  if(my::nsd_ != 3) dserror("don't call this function for non-3D examples, adapt the following for 2D!");
+
+  DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
+  switch(face_shape)
+  {
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+    gaussrule = DRT::UTILS::intrule_quad_1point;
+    break;
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+    gaussrule = DRT::UTILS::intrule_tri_1point;
+    break;
+  default:
+    dserror("shape type unknown!\n"); break;
+  }
+
+  double meas_face = 0.0;
+
+  /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    Epetra_SerialDenseMatrix deriv( my::nsd_-1, numnode_face);
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, face_shape);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze_face,deriv,metrictensor,&drs);
+
+    meas_face += intpoints.qwgt[gpid] * drs;
+
+  }
+
+  return meas_face;
+}
+
+/*--------------------------------------------------------------------------------
+ * pre-compute the measure of all side's surface cutting the element
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double FluidEleCalcXFEM<distype>::ComputeMeasCutSurf(
+    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
+    )
+{
+  double surf = 0.0;
+
+  //--------------------------------------------
+  // loop intersecting sides
+  // map of side-element id and Gauss points
+  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
+        i!=bintpoints.end();
+        ++i )
+  {
+    int sid = i->first;
+    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
+
+    // get side's boundary cells
+    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+    if ( j==bcells.end() )
+      dserror( "missing boundary cell" );
+
+    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
+    if ( bcs.size()!=cutintpoints.size() )
+      dserror( "boundary cell integration rules mismatch" );
+
+    //--------------------------------------------
+    // loop boundary cells w.r.t current cut side
+    //--------------------------------------------
+    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+          i!=cutintpoints.end();
+          ++i )
+    {
+      const DRT::UTILS::GaussIntegration & gi = *i;
+      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
+
+      //--------------------------------------------
+      // loop gausspoints w.r.t current boundary cell
+      //--------------------------------------------
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+      {
+        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
+
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
+
+        LINALG::Matrix<3,1> normal(true);
+
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+        dserror("at the moment not available -> fix it");
+//        si->Evaluate(eta,x_side,normal,drs);
+
+#else
+        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+
+        // compute transformation factor, normal vector and global Gauss point coordiantes
+        if(bc->Shape() != DRT::Element::dis_none) // Tessellation approach
+        {
+          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
+        }
+        else // MomentFitting approach
+        {
+          drs = 1.0;
+          normal = bc->GetNormalVector();
+          const double* gpcord = iquad.Point();
+          for (int idim=0;idim<3;idim++)
+          {
+            x_gp_lin(idim,0) = gpcord[idim];
+          }
+        }
+
+ #endif
+
+        const double surf_fac = drs*iquad.Weight();
+
+
+        surf += surf_fac;
+
+      } //loop gausspoints w.r.t current boundary cell
+    } // loop boundary cells
+  } // loop intersecting sides
+
+  return surf;
+}
+
 
   } // end namespace ELEMENTS
 } // end namespace DRT

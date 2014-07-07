@@ -185,7 +185,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
   {
     MeshHandle & cut_mesh_handle = **i;
     Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
-    SelfCut selfcut( cut_mesh );
+//    SelfCut selfcut( cut_mesh );
     cut_mesh.Cut( m, elements_done, 0 );
   }
 

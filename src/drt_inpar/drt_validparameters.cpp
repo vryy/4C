@@ -6629,7 +6629,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("VISC_ADJOINT_SYMMETRY","yes","viscous and adjoint viscous interface terms with matching sign?",&xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
-  DoubleParameter("VISC_STAB_FAC", 35.0, "define stabilization parameter for viscous part of interface stabilization (Nitsche, hybrid stress-based LM)",&xfluid_stab);
+  DoubleParameter("VISC_STAB_FAC", 35.0, " ( stabilization parameter for viscous part of interface stabilization (Nitsche, hybrid stress-based LM)",&xfluid_stab);
 
   setStringToIntegralParameter<int>("VISC_STAB_TRACE_ESTIMATE","CT_div_by_hk","how to estimate the scaling from the trace inequality in Nitsche's method",
                                tuple<std::string>("CT_div_by_hk", "eigenvalue"),
@@ -6639,13 +6639,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &xfluid_stab);
 
-  setStringToIntegralParameter<int>("VISC_STAB_HK","vol_equivalent","how to define the characteristic element length in cut elements",
-                                 tuple<std::string>("vol_equivalent", "vol_div_by_surf", "longest_ele_length"),
-                                 tuple<int>(
-                                     INPAR::XFEM::ViscStab_hk_vol_equivalent,     // volume equivalent element diameter
-                                     INPAR::XFEM::ViscStab_hk_vol_div_by_surf,    // scaling with hk ~ vol/surf
-                                     INPAR::XFEM::ViscStab_hk_longest_ele_length  // longest element length
+  setStringToIntegralParameter<int>("VISC_STAB_HK","ele_vol_div_by_max_ele_surf","how to define the characteristic element length in cut elements",
+                                 tuple<std::string>(
+                                     "vol_equivalent",
+                                     "cut_vol_div_by_cut_surf",
+                                     "ele_vol_div_by_cut_surf",
+                                     "ele_vol_div_by_ele_surf",
+                                     "ele_vol_div_by_max_ele_surf"
                                      ),
+                                 tuple<int>(
+                                     INPAR::XFEM::ViscStab_hk_vol_equivalent,             /// volume equivalent element diameter
+                                     INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf,    /// physical partial/cut volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, not useful for sliver and/or dotted cut situations)
+                                     INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf,    /// full element volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, however, avoids problems with sliver cuts, not useful for dotted cuts)
+                                     INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf,    /// full element volume divided by surface measure ( used for uncut situations, standard weak Dirichlet boundary/coupling conditions)
+                                     INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf /// default: full element volume divided by maximal element surface measure ( used to estimate the trace inequality for stretched elements in combination with ghost-penalties)
+                                 ),
                                  &xfluid_stab);
 
 
@@ -6686,6 +6694,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("PRESSCOUPLING_INTERFACE_STAB","no","switch on/off pressure coupling interface stabilization",&xfluid_stab);
 
   DoubleParameter("PRESSCOUPLING_INTERFACE_FAC",  10, "define stabilization parameter for pressure coupling interface stabilization",&xfluid_stab);
+
+  BoolParameter("IS_PSEUDO_2D","no","modify viscous interface stabilization due to the vanishing polynomial in third dimension when using strong Dirichlet conditions to block polynomials in one spatial dimension",&xfluid_stab);
+
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& particledyn = list->sublist(

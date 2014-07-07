@@ -49,28 +49,37 @@ public:
   //! @name access routines for integration on cut elements
   /*----------------------------------------------------*/
   //@{
+
   //! get the volumecell integration method used for integrating cut elements?
   INPAR::CUT::VCellGaussPts VolumeCellGaussPoints() const{ return vcellgausspts_; };
 
   //! get the boundarycell integration method used for integrating the surface in cut elements?
   INPAR::CUT::BCellGaussPts BoundaryCellGaussPoints() const{ return bcellgausspts_; };
+
   //@}
 
   /*----------------------------------------------------*/
   //! @name interface coupling approach
   /*----------------------------------------------------*/
   //@{
+
   //! coupling approach (Nitsche or hybrid stress-based LM)
   INPAR::XFEM::CouplingMethod GetCouplingMethod() const{ return coupling_method_; }
 
   //! coupling strategy
   INPAR::XFEM::CouplingStrategy GetCouplingStrategy() const{ return coupling_strategy_; }
+
+  //! get information, whether L2-projection between stress fields is accomplished on whole cut element
+  //! or on physical volume
+  INPAR::XFEM::Hybrid_LM_L2_Proj HybridLM_L2Proj() const{ return hybrid_lm_l2_proj_; }
+
   //@}
 
   /*----------------------------------------------------*/
   //! @name access routines for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
   /*----------------------------------------------------*/
   //@{
+
   //! get the type of how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's method?
   INPAR::XFEM::ViscStab_TraceEstimate ViscStabTracEstimate() const{ return visc_stab_trace_estimate_; };
 
@@ -84,7 +93,35 @@ public:
   //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint viscous terms
   //! @return true, in case of a symmetric adjoint term
   bool IsViscousAdjointSymmetric() const{ return is_visc_adjoint_symmetric_; }
+
+  //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the third dimension and
+  //! strong Dirichlet condition to fix u_z = 0
+  const bool IsPseudo2D(){return is_pseudo_2D_;};
+
+  /*----------------------------------------------------*/
+  //! @name special routines for embedded sided fluidfluid formulation
+  /*----------------------------------------------------*/
+
+  //! set the map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
+  void Set_boundary_emb_face_lid_map(std::map<int,int > boundary_emb_face_lid_map)
+  {
+    boundary_emb_face_lid_map_ = boundary_emb_face_lid_map;
+  }
+
+  //! get the local id of the face element(key) of the cut discretization w.r.t to the embedded element
+  int Get_face_lid_of_embedded_ele(
+      const int face_id   ///< id of face-element in the cut-discretization
+  )
+  {
+    std::map<int,int>::iterator it = boundary_emb_face_lid_map_.find(face_id);
+
+    if(it == boundary_emb_face_lid_map_.end()) dserror("no local id of the face-element w.r.t embedded element stored!");
+
+    return it->second;
+  }
+
   //@}
+
 
   /*----------------------------------------------------*/
   //! @name access routines for convective stabilization
@@ -96,11 +133,8 @@ public:
 
   //! get the type of scaling for convective/inflow stabilization term for classical xfluid problem
   INPAR::XFEM::ConvStabScaling ConvStabScaling() const{ return conv_stab_scaling_; }
-  //@}
 
-  //! get information, whether L2-projection between stress fields is accomplished on whole cut element
-  //! or on physical volume
-  INPAR::XFEM::Hybrid_LM_L2_Proj HybridLM_L2Proj() const{ return hybrid_lm_l2_proj_; }
+  //@}
 
 
   /*----------------------------------------------------*/
@@ -109,6 +143,7 @@ public:
   //! fluid-fluid coupling
   /*----------------------------------------------------*/
   //@{
+
   //! get information, if velocity gradient penalty term
   //! acts on fluid-fluid interface
   bool IsVelGradInterfaceStab() const{ return is_velgrad_interface_stab_; }
@@ -122,7 +157,9 @@ public:
 
   //! get stabilization parameter for pressure gradient interface penalty term
   double GetPressureGradientInterfaceStabFac() const{ return pressure_interface_stab_fac_; }
+
   //@}
+
 
 private:
 
@@ -133,11 +170,13 @@ private:
   //! @name parameters for integration on cut elements
   /*----------------------------------------------------*/
   //@{
+
   //! which volumecell integration is used for integrating cut elements?
   INPAR::CUT::VCellGaussPts vcellgausspts_;
 
   //! which boundarycell integration is used for integrating the surface in cut elements?
   INPAR::CUT::BCellGaussPts bcellgausspts_;
+
   //@}
 
 
@@ -145,16 +184,24 @@ private:
   //! @name parameters describing the coupling approach
   /*----------------------------------------------------*/
   //@{
+
   //! coupling approach (Nitsche or hybrid stress-based LM)
   INPAR::XFEM::CouplingMethod coupling_method_;
 
   //! coupling strategy
   INPAR::XFEM::CouplingStrategy coupling_strategy_;
-  //A}
+
+  //! for coupling using stress-based LM: L2-projection between stress fields on whole cut element
+  //! or on physical volume
+  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
+
+  //@}
+
 
   /*----------------------------------------------------*/
   //! @name parameters for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
   /*----------------------------------------------------*/
+  //@{
 
   //! how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's method?
   INPAR::XFEM::ViscStab_TraceEstimate visc_stab_trace_estimate_;
@@ -171,15 +218,47 @@ private:
   //! or between the equivalent MHVS-terms
   bool is_visc_adjoint_symmetric_;
 
+  //@}
+
+
+  /*----------------------------------------------------*/
+  //! @name pseudo 2D flag
+  /*----------------------------------------------------*/
+  //@{
+
+  //! pseudo 2D flag for 2D simulation with one element in z-direction
+  double is_pseudo_2D_;
+
+  //@}
+
+  /*----------------------------------------------------*/
+  //! @name special parameters for embedded sided fluidfluid formulation
+  /*----------------------------------------------------*/
+  //@{
+
+  //! map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
+  //! used to evaluate certain characteristic element length definitions for embedded sided formulations in xfluidfluid
+  std::map<int, int> boundary_emb_face_lid_map_;
+
+  //@}
+
+  /*----------------------------------------------------*/
+  //! @name parameters for the convective interface stabilizations
+  /*----------------------------------------------------*/
+  //@{
+
   //! type of convective scaling for xfluid-fluid problem
   INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_;
 
   //! type of convective scaling for xfluid problem
   INPAR::XFEM::ConvStabScaling conv_stab_scaling_;
 
-  //! for coupling using stress-based LM: L2-projection between stress fields on whole cut element
-  //! or on physical volume
-  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
+  //@}
+
+  /*----------------------------------------------------*/
+  //! @name special interface stabilizations for fluidfluid problems
+  /*----------------------------------------------------*/
+  //@{
 
   //! flag, that indicates whether velocity gradient interface penalty terms are active
   bool is_velgrad_interface_stab_;
@@ -192,6 +271,8 @@ private:
 
   //! parameter for pressure gradient interface penalty term
   double pressure_interface_stab_fac_;
+
+  //@}
 
 protected:
 

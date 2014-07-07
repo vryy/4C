@@ -273,6 +273,15 @@ namespace DRT
         //!  evaluate shape function, derivatives and transformation w.r.t embedded element at gaussian point
         virtual void EvaluateEmb( LINALG::Matrix<nsd_,1> & xside ) = 0;
 
+        //! evaluate shape functions and derivatives at element center
+        virtual double EvalShapeFuncAndDerivsAtEleCenter() = 0;
+
+        //! evaluate shape functions and derivatives at integration point
+        virtual double EvalShapeFuncAndDerivsAtIntPoint(
+            const double* gpcoord,  // actual integration point (coords)
+            double gpweight// actual integration point (weight)
+            ) = 0;
+
         //! build coupling matrices and assemble terms for two-sided mortaring Nitsche's (NIT2) method
         virtual void NIT2_buildCouplingMatrices(
             Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
