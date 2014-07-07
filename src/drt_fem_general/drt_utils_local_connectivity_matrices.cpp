@@ -372,6 +372,34 @@ DRT::UTILS::getEleFaceShapeType(
 }
 
 /*----------------------------------------------------------------------*
+ |  Fills a std::vector< std::vector<int> > with all nodes for  b.schott 07/14|
+ |  every face (surface in 3D, line in 2D) for each discretization type  |
+ *----------------------------------------------------------------------*/
+std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingFaces(
+    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+)
+{
+  const int nsd = getDimension(distype);
+
+  switch(nsd)
+  {
+  case 3:
+    return getEleNodeNumberingSurfaces(distype); break;
+  case 2:
+    return getEleNodeNumberingLines(distype); break;
+  default:
+    dserror("spatial dimension not supported"); break;
+  }
+
+  std::vector< std::vector<int> > empty_map;
+
+  return empty_map;
+}
+
+
+
+
+/*----------------------------------------------------------------------*
  |  Fills a std::vector< std::vector<int> > with all nodes for    u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/

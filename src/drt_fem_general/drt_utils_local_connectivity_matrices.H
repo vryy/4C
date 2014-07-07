@@ -564,6 +564,16 @@ namespace UTILS
       );
 
   /*!
+  \brief Fills a vector< std::vector<int> > with all nodes for every face
+         (surface in 3D, line in 2D) for each discretization type
+
+  \return map with all nodes for each face
+   */
+  std::vector< std::vector<int> > getEleNodeNumberingFaces(
+      const DRT::Element::DiscretizationType&     distype     ///< discretization type
+  );
+
+  /*!
   \brief Fills a vector< std::vector<int> > with all nodes for every surface
          for each discretization type
 
