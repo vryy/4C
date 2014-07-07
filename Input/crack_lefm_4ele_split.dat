@@ -1,3 +1,10 @@
+//
+// Maintainer: Sudhakar
+// sudhakar@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15257
+//
+
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -44,11 +51,11 @@ BETA                            0.291
 GAMMA                           0.581
 -------------------------------------------------------------CONTACT DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
-TIMESTEP                        0.1
-NUMSTEP                         200
-MAXTIME                         5.0
-ALE_TYPE                        classic_lin
-RESULTSEVRY                     1
+LINEAR_SOLVER                   2
+ALE_TYPE                        laplace//classic_lin
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
+SOLVER                          UMFPACK
 ----------------------------------------------------------------CRACK
 CRACK_MODEL			lefm
 CRITICAL_K1			10//5000
@@ -93,6 +100,9 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 5000.0 NUE 0.20
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0.3 DENS 1 THEXPANS 0.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 3
 -----------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/0.025 t1 0.0 t2 0.025
 CURVE1 on EXPR FUNC 1.0 t1 0.025 t2 28.0
@@ -105,7 +115,7 @@ NDVOL   1
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // pos_force
-E 1 - 1 0 1 0 0 0 0  0.0 10.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+E 1 - 1 0 1 0 0 0 0  0.0 5.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // zero_disp
@@ -208,8 +218,8 @@ NODE 20  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -3.61184704786860877e-01 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE 5.94037586725042699e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE 2.06770934017678244e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE 2.06911644905752312e-01 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
 ---------------------------------------------------------------END
 // END
