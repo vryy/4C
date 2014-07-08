@@ -1498,12 +1498,12 @@ set(OBJS_SOLVER_NONLIN
   src/solver_nonlin/linesearch_factory.cpp
   src/solver_nonlin/linesearch_fullstep.cpp
   src/solver_nonlin/linesearch_polynomial.cpp
+  src/solver_nonlin/nln_operator_base.cpp
   src/solver_nonlin/nln_operator_factory.cpp
   src/solver_nonlin/nln_operator_fas.cpp
   src/solver_nonlin/nln_operator_ngmres.cpp
   src/solver_nonlin/nln_operator_nonlincg.cpp
   src/solver_nonlin/nln_operator_quasinewton.cpp
-  src/solver_nonlin/nln_operator.cpp
   src/solver_nonlin/nln_problem.cpp
   src/solver_nonlin/nln_problem_coarselevel.cpp
   src/solver_nonlin/nln_utils.cpp
