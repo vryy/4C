@@ -29,9 +29,9 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
+#include "nln_operator_base.H"
 #include "nln_operator_factory.H"
 #include "nln_operator_ngmres.H"
-#include "nln_operator.H"
 #include "nln_problem.H"
 
 #include "linesearch_base.H"

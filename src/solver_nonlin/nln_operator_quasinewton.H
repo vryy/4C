@@ -23,7 +23,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
-#include "nln_operator.H"
+#include "nln_operator_base.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -37,17 +37,17 @@ namespace LINALG
 {
   class Solver;
   class SparseOperator;
-}
+} // namespace LINALG
 
 namespace NLNSOL
 {
   class LineSearchBase;
-}
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -55,11 +55,11 @@ namespace NLNSOL
 {
   /*! \brief Quasi-Newton as nonlinear preconditioner
    *
-   *  \sa NLNSOL::NlnOperator()
+   *  \sa NLNSOL::NlnOperatorBase()
    *
    *  \author mayr.mt \date 06/2014
    */
-  class NlnOperatorQuasiNewton : public NlnOperator
+  class NlnOperatorQuasiNewton : public NlnOperatorBase
   {
   public:
 
@@ -135,7 +135,7 @@ namespace NLNSOL
     //! max number of iterations
     int maxiter_;
 
-  };
-}
+  }; // class NlnOperatorQuasiNewton
+} // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_QUASI_NEWTON_H */

@@ -57,8 +57,8 @@ Maintainer: Alexander Popp
 
 #include "../drt_crack/crackUtils.H"
 
+#include "../solver_nonlin/nln_operator_base.H"
 #include "../solver_nonlin/nln_operator_factory.H"
-#include "../solver_nonlin/nln_operator.H"
 #include "../solver_nonlin/nln_problem.H"
 #include "../solver_nonlin/nln_utils.H"
 #include "strtimint_noxgroup.H"
@@ -2148,22 +2148,22 @@ int STR::TimIntImpl::NlnSolver()
   Teuchos::RCP<Teuchos::ParameterList> params = NLNSOL::UTILS::CreateParamListFromXML();
 
   // ---------------------------------------------------------------------------
-  // Create NOX linear system and group
+  // Create NOX group
   // ---------------------------------------------------------------------------
   // create initial guess vector of predictor result
-  NOX::Epetra::Vector noxSoln(disn_, NOX::Epetra::Vector::CreateView);
+  NOX::Epetra::Vector noxSoln(disn_, NOX::Epetra::Vector::CreateCopy);
 
-  // use NOX::STR::Group to enable access to structure time integration
+  // use NOX::STR::Group to enable access to time integration
   Teuchos::RCP<NOX::STR::Group> noxgrp
     = Teuchos::rcp(new NOX::STR::Group(*this,
                                        params->sublist("Nonlinear Problem"),
                                        Teuchos::rcp(this, false),
                                        noxSoln,
-                                       Teuchos::null  // use dummy here to avoid specifying a linear system
-                                       ));            // that is not needed anyway
+                                       Teuchos::null // We do not need a linear system, here.
+                                       ));
 
   // ---------------------------------------------------------------------------
-  // Create the nonlinear problem evaluator
+  // Create interface to nonlinear problem
   // ---------------------------------------------------------------------------
   Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem = Teuchos::rcp(new NLNSOL::NlnProblem());
   nlnproblem->Init(Discretization()->Comm(), params->sublist("Nonlinear Problem"), *noxgrp, stiff_->EpetraOperator());
@@ -2174,19 +2174,19 @@ int STR::TimIntImpl::NlnSolver()
   // ---------------------------------------------------------------------------
   // use factory to create the nonlinear operator
   NLNSOL::NlnOperatorFactory opfactory;
-  Teuchos::RCP<NLNSOL::NlnOperator> nlnoperator = opfactory.Create(params->sublist("Nonlinear Operator"));
+  Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnoperator = opfactory.Create(params->sublist("Nonlinear Operator"));
 
   // setup
   nlnoperator->Init(Discretization()->Comm(), params->sublist("Nonlinear Operator"), nlnproblem);
   nlnoperator->Setup();
 
   // solve
-  nlnoperator->ApplyInverse(*fres_, noxSoln.getEpetraVector());
+  int nlnsolve_error = nlnoperator->ApplyInverse(*fres_, noxSoln.getEpetraVector());
 
   // ---------------------------------------------------------------------------
 
   // return error code
-  return 0; // ToDo (mayr) provide meaningful error code
+  return nlnsolve_error; // ToDo (mayr) provide meaningful error code
 }
 
 /*----------------------------------------------------------------------*/

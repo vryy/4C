@@ -19,12 +19,12 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
+#include "nln_operator_base.H"
 #include "nln_operator_factory.H"
 #include "nln_operator_fas.H"
 #include "nln_operator_ngmres.H"
 #include "nln_operator_nonlincg.H"
 #include "nln_operator_quasinewton.H"
-#include "nln_operator.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -39,7 +39,7 @@ NLNSOL::NlnOperatorFactory::NlnOperatorFactory()
 
 /*----------------------------------------------------------------------------*/
 /* Create the nonlinear operator */
-Teuchos::RCP<NLNSOL::NlnOperator>
+Teuchos::RCP<NLNSOL::NlnOperatorBase>
 NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
 {
   const std::string optype = params.get<std::string>("Nonlinear Operator Type");

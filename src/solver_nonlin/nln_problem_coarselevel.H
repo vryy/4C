@@ -34,7 +34,7 @@ class Epetra_MultiVector;
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -132,7 +132,7 @@ namespace NLNSOL
     //! coarse level ID
     int levelid_;
 
-  };
-}
+  }; // class NlnProblemCoarseLevel
+} // namespace NLNSOL
 
 #endif /* NLN_PROBLEM_COARSELEVELH_ */

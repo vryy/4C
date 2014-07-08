@@ -142,7 +142,8 @@ int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
     inc->PutScalar(0.0);
 
     // do the linear solve (no re-factorization since matrix has not changed)
-    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, iter==1, iter==1, Teuchos::null);
+//    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, iter==1, iter==1, Teuchos::null);
+    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, true, false, Teuchos::null);
     if (linsolve_error != 0) { dserror("Linear solver failed."); }
 
     // line search
@@ -165,7 +166,7 @@ int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   // check successful convergence
   // ---------------------------------------------------------------------------
-  if (iter < GetMaxIter() && converged)
+  if (iter <= GetMaxIter() && converged)
     return 0;
   else
   {

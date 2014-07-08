@@ -23,7 +23,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
-#include "nln_operator.H"
+#include "nln_operator_base.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -37,17 +37,17 @@ namespace LINALG
 {
   class Solver;
   class SparseOperator;
-}
+} // namespace LINALG
 
 namespace NLNSOL
 {
   class LineSearchBase;
-}
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -55,11 +55,11 @@ namespace NLNSOL
 {
   /*! \brief Nonlinear Conjugate Gradient as nonlinear preconditioner
    *
-   *  \sa NLNSOL::NlnOperator()
+   *  \sa NLNSOL::NlnOperatorBase()
    *
    *  \author mayr.mt \date 06/2014
    */
-  class NlnOperatorNonlinCG : public NlnOperator
+  class NlnOperatorNonlinCG : public NlnOperatorBase
   {
   public:
 
@@ -181,7 +181,7 @@ namespace NLNSOL
     //! max number of iterations
     int maxiter_;
 
-  };
-}
+  }; // class NlnOperatorNonlinCG
+} // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_NONLIN_CG_H */

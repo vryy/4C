@@ -88,7 +88,7 @@ namespace NLNSOL
     //! maximum number of recursive polynomial evaluations
     int itermax_;
 
-  };
-}
+  }; // class LineSearchPolynomial
+} // namespace NLNSOL
 
 #endif /* LINESEARCH_POLYNOMIAL_H_ */

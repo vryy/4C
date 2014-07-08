@@ -78,8 +78,8 @@ namespace NLNSOL
 
   private:
 
-  };
-}
+  }; // class LineSearchFullStep
+} // namespace NLNSOL
 
 
 

@@ -86,8 +86,8 @@ namespace NLNSOL
     //! increment for trial line search parameters
     double trialstepsize_;
 
-  };
-}
+  }; // class LineSearchBacktracking
+} // namespace NLNSOL
 
 
 

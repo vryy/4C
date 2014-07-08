@@ -63,6 +63,9 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
     Teuchos::RCP<Epetra_Operator> jac
     )
 {
+  // We need to call Setup() after Init()
+  issetup_ = false;
+
   // fill member variables without taking memory ownership
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
@@ -108,7 +111,7 @@ void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
 
   // set most recent solution to NOX group
   Teuchos::RCP<Epetra_Vector> xtemp = Teuchos::rcp(new Epetra_Vector(*(x(0))));
-  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateCopy);
+  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateView);
   NOXGroup().setX(noxvec);
 
   // ask time integrator to evaluate residual and apply DBCs etc.
@@ -229,7 +232,7 @@ NOX::Abstract::Group& NLNSOL::NlnProblem::NOXGroup() const
 
 /*----------------------------------------------------------------------*/
 /* Access to the Jacobian operator */
-Teuchos::RCP<Epetra_Operator>& NLNSOL::NlnProblem::GetJacobianOperator()
+Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
 {
   // check if Jacobian operator has already been set
   if (jac_.is_null())

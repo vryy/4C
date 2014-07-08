@@ -29,7 +29,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
-#include "nln_operator.H"
+#include "nln_operator_base.H"
 #include "nln_problem.H"
 
 #include "../drt_io/io_control.H"
@@ -41,7 +41,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 /* Constructor (empty) */
-NLNSOL::NlnOperator::NlnOperator()
+NLNSOL::NlnOperatorBase::NlnOperatorBase()
 : isinit_(false),
   issetup_(false),
   comm_(Teuchos::null),
@@ -54,11 +54,14 @@ NLNSOL::NlnOperator::NlnOperator()
 
 /*----------------------------------------------------------------------*/
 /* Initialization */
-void NLNSOL::NlnOperator::Init(const Epetra_Comm& comm,
+void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
     )
 {
+  // We need to call Setup() after Init()
+  issetup_ = false;
+
   // fill member variables
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
@@ -75,7 +78,7 @@ void NLNSOL::NlnOperator::Init(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /* Access to communicator */
-const Epetra_Comm& NLNSOL::NlnOperator::Comm() const
+const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
 {
   if (comm_.is_null())
     dserror("Communicator 'comm_' has not been set, yet.");
@@ -85,7 +88,7 @@ const Epetra_Comm& NLNSOL::NlnOperator::Comm() const
 
 /*----------------------------------------------------------------------*/
 /* Access to parameter list */
-const Teuchos::ParameterList& NLNSOL::NlnOperator::Params() const
+const Teuchos::ParameterList& NLNSOL::NlnOperatorBase::Params() const
 {
   // check if parameter list has already been set
   if (params_.is_null())
@@ -96,7 +99,7 @@ const Teuchos::ParameterList& NLNSOL::NlnOperator::Params() const
 
 /*----------------------------------------------------------------------*/
 /* Access to nonlinear problem */
-Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperator::NlnProblem() const
+Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
 {
   // check if nonlinear problem has already been set
   if (nlnproblem_.is_null())

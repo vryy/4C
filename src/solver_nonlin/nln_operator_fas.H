@@ -27,7 +27,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
-#include "nln_operator.H"
+#include "nln_operator_base.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -43,13 +43,13 @@ namespace NLNSOL
   {
     class AMGHierarchy;
     class NlnLevel;
-  }
-}
+  } // namespace FAS
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -68,11 +68,11 @@ namespace NLNSOL
    *  All level smoothers and level specific stuff is stored in the
    *  NLNSOL::FAS::AMGHierarchy in a collection of NLNSOL::FAS::NlnLevel objects.
    *
-   *  \sa NLNSOL::NlnOperator()
+   *  \sa NLNSOL::NlnOperatorBase()
    *
    *  \author mayr.mt \date 06/2014
    */
-  class NlnOperatorFas : public NlnOperator
+  class NlnOperatorFas : public NlnOperatorBase
   {
   public:
 
@@ -142,7 +142,7 @@ namespace NLNSOL
     //! Hierarchy of multigrid levels
     Teuchos::RCP<NLNSOL::FAS::AMGHierarchy> hierarchy_;
 
-  };
-}
+  }; // class NlnOperatorFas
+} // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_FAS_H */

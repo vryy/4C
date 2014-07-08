@@ -37,13 +37,13 @@ namespace NOX
   namespace Abstract
   {
     class Group;
-  }
-}
+  } // namespace Abstract
+} // namespace NOX
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -152,7 +152,7 @@ namespace NLNSOL
     //@{
 
     //! get Jacobian as Epetra_Operator
-    virtual Teuchos::RCP<Epetra_Operator>& GetJacobianOperator();
+    virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator();
 
     //@}
 
@@ -190,14 +190,6 @@ namespace NLNSOL
 
   private:
 
-    //! @name Get attributes
-    //@{
-
-//    //! NOX group
-//    virtual NOX::Abstract::Group& NOXGroup() const;
-
-    //@}
-
     //! Init() has been called
     bool isinit_;
 
@@ -218,7 +210,7 @@ namespace NLNSOL
      *  \warning Access to time integration WIHTOUT using the NOX group #noxgrp_.
      *  Seems to be inconsistent since all other accesses to time integration
      *  are done via the NOX group #noxgrp_. However, usage of NOX group might
-     *  go away a some point.
+     *  go away at some point.
      */
     Teuchos::RCP<Epetra_Operator> jac_;
 
@@ -237,7 +229,7 @@ namespace NLNSOL
 
     //@}
 
-  };
-}
+  }; // class NlnProblem
+} // namespace NLNSOL
 
 #endif /* NLN_PROBLEM_H_ */

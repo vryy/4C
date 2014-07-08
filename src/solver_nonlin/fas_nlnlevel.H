@@ -32,9 +32,9 @@ class Epetra_Vector;
 
 namespace NLNSOL
 {
-  class NlnOperator;
+  class NlnOperatorBase;
   class NlnProblem;
-}
+} // namespace NLNSOL
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -181,10 +181,10 @@ namespace NLNSOL
       virtual Teuchos::RCP<const Epetra_CrsMatrix> GetPOp() const { return pop_; }
 
       //! Get presmoother
-      virtual Teuchos::RCP<NLNSOL::NlnOperator> GetPreSmoother() const { return presmoother_; }
+      virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPreSmoother() const { return presmoother_; }
 
       //! Get postsmoother
-      virtual Teuchos::RCP<NLNSOL::NlnOperator> GetPostSmoother() const { return postsmoother_; }
+      virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPostSmoother() const { return postsmoother_; }
 
       //! row map of this level
       const Epetra_BlockMap& DofRowMap() const;
@@ -337,10 +337,10 @@ namespace NLNSOL
       //@{
 
       //! Presmoother
-      Teuchos::RCP<NLNSOL::NlnOperator> presmoother_;
+      Teuchos::RCP<NLNSOL::NlnOperatorBase> presmoother_;
 
       //! Poststmoother
-      Teuchos::RCP<NLNSOL::NlnOperator> postsmoother_;
+      Teuchos::RCP<NLNSOL::NlnOperatorBase> postsmoother_;
 
       //@}
 
@@ -348,12 +348,12 @@ namespace NLNSOL
       //@{
 
       //! Coarse level solver
-      Teuchos::RCP<NLNSOL::NlnOperator> coarsesolver_;
+      Teuchos::RCP<NLNSOL::NlnOperatorBase> coarsesolver_;
 
       //@}
-    };
-  }
-}
+    }; // class NlnLevel
+  } // namespace FAS
+} // namespace NLNSOL
 
 
 #endif /* FAS_NLNLEVEL_H */

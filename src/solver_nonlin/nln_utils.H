@@ -28,7 +28,7 @@ Maintainer: Matthias Mayr
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of methods */
@@ -37,7 +37,7 @@ namespace NLNSOL
   namespace UTILS
   {
     Teuchos::RCP<Teuchos::ParameterList> CreateParamListFromXML();
-  }
-}
+  } // namespace UTILS
+} // namespace NLNSOL
 
 #endif /* NLN_UTILS_H_ */

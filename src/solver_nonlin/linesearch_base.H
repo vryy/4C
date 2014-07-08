@@ -31,7 +31,7 @@ namespace NLNSOL
 {
   class NlnOperator;
   class NlnProblem;
-}
+} // namespace NLNSOL
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -203,7 +203,8 @@ namespace NLNSOL
     bool issetup_;
 
     //@}
-  };
-}
+
+  }; // class LineSearchBase
+} // namespace NLNSOL
 
 #endif /* LINESEARCH_BASE_H_ */

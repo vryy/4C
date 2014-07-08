@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file nln_operator.H
+\file nln_operator_base.H
 
 \brief General nonlinear operator base class
 
@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_OPERATOR_H_
-#define NLN_OPERATOR_H_
+#ifndef NLN_OPERATOR_BASE_H_
+#define NLN_OPERATOR_BASE_H_
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,12 +31,12 @@ class Epetra_MultiVector;
 namespace NLNSOL
 {
   class NlnProblem;
-}
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ namespace NLNSOL
    *
    *  \author mayr.mt \date 05/2014
    */
-  class NlnOperator
+  class NlnOperatorBase
   {
     public:
 
@@ -69,10 +69,10 @@ namespace NLNSOL
       //@{
 
       //! Constructor (empty)
-      NlnOperator();
+      NlnOperatorBase();
 
       //! Destructor
-      virtual ~NlnOperator(){};
+      virtual ~NlnOperatorBase(){};
 
       //@}
 
@@ -168,7 +168,8 @@ namespace NLNSOL
 
       //! Is this nonlinear operator a solver or a smoother?
       bool issolver_;
-  };
-}
 
-#endif /* NLN_OPERATOR_H_ */
+  }; // class NlnOperatorBase
+} // namespace NLNSOL
+
+#endif /* NLN_OPERATOR_BASE_H_ */

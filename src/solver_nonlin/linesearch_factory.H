@@ -31,7 +31,7 @@ Maintainer: Matthias Mayr
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -74,7 +74,7 @@ namespace NLNSOL
 
   private:
 
-  };
-}
+  }; // class LineSearchFactory
+} // namespace NLNSOL
 
 #endif /* LINESEARCH_FACTORY_H_ */

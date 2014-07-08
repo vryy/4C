@@ -31,8 +31,8 @@ Maintainer: Matthias Mayr
 
 // baci
 #include "fas_nlnlevel.H"
+#include "nln_operator_base.H"
 #include "nln_operator_factory.H"
-#include "nln_operator.H"
 #include "nln_problem.H"
 
 #include "../drt_io/io_control.H"

@@ -28,12 +28,12 @@ Maintainer: Matthias Mayr
 namespace NLNSOL
 {
   class NlnOperator;
-}
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 
@@ -70,7 +70,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 06/2014
        */
-      virtual Teuchos::RCP<NLNSOL::NlnOperator> Create(
+      virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> Create(
           const Teuchos::ParameterList& params ///< parameter list to configure the nonlinear operator
           );
 
@@ -80,7 +80,7 @@ namespace NLNSOL
 
     private:
 
-  };
-}
+  }; // class NlnOperatorFactory
+} // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_FACTORYH_ */

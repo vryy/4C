@@ -56,6 +56,9 @@ void NLNSOL::LineSearchBase::Init(
     const Epetra_MultiVector& inc,
     const double resnormold)
 {
+  // We need to enforce calling Setup() after Init()
+  issetup_ = false;
+
   // Initialize the member variables
   nlnproblem_ = nlnproblem;
   params_ = Teuchos::rcp(&params, false);

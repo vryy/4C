@@ -23,7 +23,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
-#include "nln_operator.H"
+#include "nln_operator_base.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -35,18 +35,18 @@ class Epetra_Comm;
 namespace LINALG
 {
   class Solver;
-}
+} // namespace LINALG
 
 namespace NLNSOL
 {
   class LineSearchBase;
   class NlnProblem;
-}
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -82,9 +82,11 @@ namespace NLNSOL
    *  Canonical Tensor Decomposition, SIAM J. Sci. Comput., Vol. 34, pp. A1351-
    *  1379, 2012
    *
+   * \sa NLNSOL::NlnOperatorBase()
+   *
    *  \author mayr.mt \date 03/2014
    */
-  class NlnOperatorNGmres : public NlnOperator
+  class NlnOperatorNGmres : public NlnOperatorBase
   {
   public:
 
@@ -223,7 +225,7 @@ namespace NLNSOL
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
     //! Nonlinear preconditioner
-    Teuchos::RCP<NLNSOL::NlnOperator> nlnprec_;
+    Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
 
     //@}
 
@@ -233,7 +235,7 @@ namespace NLNSOL
     //! max window size;
     int windowsize_;
 
-  };
-}
+  }; // class NlnOperatorNGmres
+} // namespace NLNSOL
 
 #endif /* NLN_NGMRES_H */

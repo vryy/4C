@@ -23,6 +23,7 @@ Maintainer: Matthias Mayr
 #include <vector>
 
 // Teuchos
+#include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------------*/
@@ -38,13 +39,13 @@ namespace NLNSOL
   namespace FAS
   {
     class NlnLevel;
-  }
-}
+  } // namespace FAS
+} // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-}
+} // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -219,11 +220,11 @@ namespace NLNSOL
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
 
       //! vector containing all nonlinear levels
-      std::vector<Teuchos::RCP<NLNSOL::FAS::NlnLevel> > nlnlevels_;
+      Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> > nlnlevels_;
 
-    };
-  }
-}
+    }; // class AMGHierarchy
+  } // namespace FAS
+} // namespace NLNSOL
 
 
 #endif /* FAS_HIERARCHY_H */
