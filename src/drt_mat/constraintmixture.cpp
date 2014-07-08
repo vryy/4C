@@ -610,10 +610,13 @@ void MAT::ConstraintMixture::Update()
           ones.PutScalar(1.0);
           LINALG::Matrix<1,1> summass(true);
           summass.MultiplyTN(ones,actmass);
-          actmass.Scale(1.0/summass(0));
           LINALG::Matrix<4,1> newmass(true);
           newmass.PutScalar(4.0*massprodbasal_);
-          newmass.EMultiply(actmass);
+          if (summass(0) > 0.0 + 1.0e-12)
+          {
+            actmass.Scale(1.0/summass(0));
+            newmass.EMultiply(actmass);
+          }
           for (int istep = 0; istep < sizehistory; istep++)
           {
             history_->at(istep).SetMass(igp, newmass);
@@ -660,10 +663,13 @@ void MAT::ConstraintMixture::Update()
           ones.PutScalar(1.0);
           LINALG::Matrix<1,1> summass(true);
           summass.MultiplyTN(ones,actmass);
-          actmass.Scale(1.0/summass(0));
           LINALG::Matrix<4,1> newmass(true);
           newmass.PutScalar(4.0*massprodbasal_);
-          newmass.EMultiply(actmass);
+          if (summass(0) > 0.0 + 1.0e-12)
+          {
+            actmass.Scale(1.0/summass(0));
+            newmass.EMultiply(actmass);
+          }
           for (int istep = 0; istep < sizehistory; istep++)
           {
             history_->at(istep).SetMass(igp, newmass);
