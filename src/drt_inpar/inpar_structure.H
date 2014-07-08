@@ -148,13 +148,13 @@ namespace INPAR
       control_load,  ///< load control
       control_disp,  ///< disp control
       control_arc1,  ///< arclength RIKS control
-      control_arc2  ///< arclength Crisfield control
+      control_arc2   ///< arclength Crisfield control
     };
 
     /// have inertia forces to be linearized?
     enum MassLin
     {
-      ml_none,  ///< constant mass matrix
+      ml_none,      ///< constant mass matrix
       ml_standard,  ///< nonlinear inertia terms, translational DoFs
       ml_rotations  ///< nonlinear inertia terms, rotational DoFs
     };
@@ -326,9 +326,9 @@ namespace INPAR
     /// type of norm to check for convergence
     enum ConvNorm
     {
-      convnorm_abs,         ///< absolute norm
-      convnorm_rel,         ///< relative norm
-      convnorm_mix         ///< mixed absolute-relative norm
+      convnorm_abs,   ///< absolute norm
+      convnorm_rel,   ///< relative norm
+      convnorm_mix    ///< mixed absolute-relative norm
     };
 
     /// type of norm to check for convergence
@@ -412,7 +412,7 @@ namespace INPAR
     {
       strain_none,    ///< no strain output
       strain_ea,      ///< output of Euler-Almansi strains
-      strain_gl,       ///< output of Green-Lagrange strains
+      strain_gl,      ///< output of Green-Lagrange strains
       strain_log      ///< output of Logarithmic (or Hencky) strains
     };
 
@@ -438,10 +438,10 @@ namespace INPAR
     enum VectorNorm
     {
       norm_vague = 0,  ///< undetermined norm
-      norm_l1,         ///< L1/linear norm
-      norm_l2,         ///< L2/Euclidean norm
-      norm_rms,        ///< root mean square (RMS) norm
-      norm_inf         ///< Maximum/infinity norm
+      norm_l1,         ///< L1/linear norm: \f$\vert x\vert_1 = \sum_{i=1}^N |x_i|\f$
+      norm_l2,         ///< L2/Euclidean norm: \f$\vert x\vert_2 = \sum_{i=1}^N x_i^2\f$
+      norm_rms,        ///< root mean square (RMS) norm: \f$\vert x\vert_{rms} = \left(\sum_{i=1}^N x_i^2\right) / \sqrt{N}\f$
+      norm_inf         ///< Maximum/infinity norm: \f$\vert x\vert_\infty = \max{x_i}\f$
     };
 
     /// map enum term to std::string
