@@ -318,6 +318,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     bool cstr = params_.get<bool>("CONSTRAINT",false);
     bool fl = params_.isSublist("SIMPLER") || params_.get<bool>("FLUID",false); //params_.get<bool>("FLUIDSIMPLE",false); // SIMPLE for fluids
     bool elch = params_.get<bool>("ELCH",false);
+    bool gen = params_.get<bool>("GENERAL",false);
 
     if (mt || co || cstr)
     {
@@ -433,6 +434,59 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"),outfile_));
     }
     //else if(!params_.isSublist("Inverse1") || !params_.isSublist("Inverse2"))
+    else if (gen) // For a general 2x2 block matrix.  This uses MueLu for AMG, not ML.
+    {
+    
+      // Remark: we are going to ignore everything which is in the params_ > "CheapSIMPLE Parameters" sublist
+      // We need only two sublists, params_ > "Inverse1" and params_ > "Inverse2" containing a "MueLu Parameters" sublist.
+      // The "MueLu Parameters" sublist should contain the usual stuff:
+      // "xml file","PDE equations","null space: dimension" and "nullspace"
+    
+
+      Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+
+      
+      // Check if we provide everything
+      if (not params_.isSublist("Inverse1"))
+        dserror("Inverse1 sublist of params_ not found");
+      if (not params_.isSublist("Inverse2"))
+        dserror("Inverse2 sublist of params_ not found");
+      Teuchos::ParameterList& sublist1 = params_.sublist("Inverse1"); 
+      Teuchos::ParameterList& sublist2 = params_.sublist("Inverse2"); 
+      if (not sublist1.isSublist("MueLu Parameters"))
+        dserror("MueLu Parameters sublist of sublist1 not found");
+      else
+      {
+        Teuchos::ParameterList& MueLuList = sublist1.sublist("MueLu Parameters");
+        if (not MueLuList.isParameter("PDE equations"))
+          dserror("PDE equations not provided for block 1 of 2");
+        if (not MueLuList.isParameter("null space: dimension"))
+          dserror("null space: dimension not provided for block 1 of 2");
+        if (not MueLuList.isParameter("nullspace"))
+          dserror("nullspace not provided for block 1 of 2");
+        if(MueLuList.get<std::string>("xml file","none") == "none")
+          dserror("xml file not provided for block 1 of 2");
+      }
+      if (not sublist2.isSublist("MueLu Parameters"))
+        dserror("MueLu Parameters sublist of sublist2 not found");
+      else
+      {
+        Teuchos::ParameterList& MueLuList = sublist1.sublist("MueLu Parameters");
+        if (not MueLuList.isParameter("PDE equations"))
+          dserror("PDE equations not provided for block 2 of 2");
+        if (not MueLuList.isParameter("null space: dimension"))
+          dserror("null space: dimension not provided for block 2 of 2");
+        if (not MueLuList.isParameter("nullspace"))
+          dserror("nullspace not provided for block 2 of 2");
+        if(MueLuList.get<std::string>("xml file","none") == "none")
+          dserror("xml file not provided for block 2 of 2");
+      }
+
+      P_ = Teuchos::rcp(new 
+          LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,sublist1,sublist2,outfile_));
+    
+    }
     else
     {
       //cout << "************************************************" << endl;

@@ -325,6 +325,7 @@ void TSI::Monolithic::CreateLinearSolver()
   }
   case INPAR::SOLVER::azprec_MueLuAMG_sym :
   case INPAR::SOLVER::azprec_AMGnxn :
+  case INPAR::SOLVER::azprec_CheapSIMPLE :
   {
     // no plausibility checks here
     // if you forget to declare an xml file you will get an error message anyway
@@ -343,6 +344,7 @@ void TSI::Monolithic::CreateLinearSolver()
   case INPAR::SOLVER::azprec_BGSnxn :
   case INPAR::SOLVER::azprec_TekoSIMPLE :
   case INPAR::SOLVER::azprec_AMGnxn :
+  case INPAR::SOLVER::azprec_CheapSIMPLE :
   {
     // This should be the default case (well-tested and used)
     solver_ = Teuchos::rcp(new LINALG::Solver(
@@ -367,6 +369,14 @@ void TSI::Monolithic::CreateLinearSolver()
     ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
       solver_->Params().sublist("Inverse2")
       );
+
+
+    if(azprectype==INPAR::SOLVER::azprec_CheapSIMPLE)
+    {
+    // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation 
+      solver_->Params().set<bool>("GENERAL",true);
+    }
+
     break;
   }
   case INPAR::SOLVER::azprec_MueLuAMG_sym:
