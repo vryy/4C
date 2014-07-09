@@ -565,7 +565,8 @@ namespace LINALG
            Teuchos::RCP<Epetra_Operator> A_eop,
            int block,
            int NumBlocks,
-           std::vector<int>& offsets
+           std::vector<int>& offsets,
+           int offsetFineLevel
           );
 
         // Helper function to convert int to std::string 
