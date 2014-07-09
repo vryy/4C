@@ -1664,6 +1664,7 @@ baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 
 # testing the AMGnxn with a TSI problem
 baci_test(tsi_simplrocketnozzle_monolithic_amgnxn 2 "")
+baci_test(tsi_simplrocketnozzle_monolithic_amgnxn_simple 2 "")
 
 endif (HAVE_Trilinos_Q1_2014)
 

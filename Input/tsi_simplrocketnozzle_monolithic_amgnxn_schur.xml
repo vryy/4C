@@ -1,0 +1,17 @@
+
+<ParameterList name="DummyList">
+
+  <Parameter name="SchurSmoother" type="string"  value="ForwardGaussSeidel"/>
+
+  <ParameterList name="ForwardGaussSeidel">
+    <Parameter name="type"                                type="string"  value="point relaxation"/>
+    <ParameterList name="ParameterList">
+      <Parameter name="relaxation: type"                  type="string"  value="Gauss-Seidel"/>
+      <Parameter name="relaxation: backward mode"         type="bool"    value="false"/>
+      <Parameter name="relaxation: sweeps"                type="int"     value="2"/>
+      <Parameter name="relaxation: damping factor"        type="double"  value="1"/>
+    </ParameterList>
+  </ParameterList>
+
+
+</ParameterList>
