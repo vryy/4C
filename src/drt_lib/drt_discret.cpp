@@ -196,6 +196,7 @@ bool DRT::Discretization::ClearDiscret()
 {
   element_.clear();
   node_.clear();
+  condition_.clear();
   Reset();
   CheckFilledGlobally();
   return true;
