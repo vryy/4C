@@ -356,10 +356,12 @@ namespace LINALG
            Teuchos::RCP<NonBlockSmootherWrapperBase> Smoother_A00,
            const Teuchos::ParameterList & ParamsSmoother_S,
            int iter,
-           double omega
+           double omega,
+           bool flip
           ) :
-          A_(A),Smoother_A00_(Smoother_A00),ParamsSmoother_S_(ParamsSmoother_S),
-          iter_(iter),omega_(omega){ Setup();}
+          A_(A),Smoother_A00_(Smoother_A00),
+          ParamsSmoother_S_(ParamsSmoother_S),
+          iter_(iter),omega_(omega),flip_(flip),flip_vector_(2,0){ Setup();}
 
 
         virtual void Apply(const Epetra_MultiVector& X, 
@@ -372,10 +374,10 @@ namespace LINALG
         /// Bock matrix
         Teuchos::RCP<BlockSparseMatrixBase> A_;  
 
-        /// Smoother for the block 1,1 
+        /// Smoother for the block 0,0 (fliped order)
         Teuchos::RCP<NonBlockSmootherWrapperBase>  Smoother_A00_;  
 
-        /// Cheap approximation of the inverse of block 1,1
+        /// Cheap approximation of the inverse of block 0,0 (fliped order)
         Teuchos::RCP<Epetra_Vector> invA00_;
 
         /// Smoother for the Schur complement 
@@ -392,6 +394,11 @@ namespace LINALG
 
         /// Damping 
         double omega_;                  
+
+        /// flip order ( if false, the Schur complement is located at the last diagonal block. The other way arround if flip_==true    )
+        bool flip_; 
+
+        std::vector<int> flip_vector_;
 
 
     }; //class BlockSmootherWrapperBGS

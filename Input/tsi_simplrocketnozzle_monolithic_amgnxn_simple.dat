@@ -151,7 +151,7 @@ AZTOL                           1e-06
 AMGNXN_MAXLEVEL                 2 
 AMGNXN_SMOTIMES                 1 3 
 AMGNXN_SMODAMP                  1.0 1.0 
-AMGNXN_SMOFLIP                  1 1 
+AMGNXN_SMOFLIP                  0 0 
 AMGNXN_BLOCKSMO                 SIMPLE
 AMGNXN_SCHURXML                 Input/tsi_simplrocketnozzle_monolithic_amgnxn_schur.xml 
 SOLVER                          Aztec_MSR //UMFPACK,undefined
