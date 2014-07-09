@@ -7485,6 +7485,18 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   setNumericStringParameter("AMGNXN_SMOFLIP","0 0 0 0 0 0 0 0 0 0",
                             "Flip the order (1=yes, 0=no) of the BGS smoothers of the AMGnxn preconditioner (one value per level)",
                             &list);
+
+  StringParameter("AMGNXN_BLOCKSMO","BGS",
+                  "Type of block smoother to be used: BGS or SIMPLE",
+                  &list);
+
+  StringParameter("AMGNXN_SCHURXML","none",
+                  "xml file defining the smoother for the Schur complement",
+                  &list);
+
+
+
+
 }
 
 

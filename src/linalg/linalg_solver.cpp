@@ -1758,14 +1758,22 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
         dserror("The number of given values in AMGNXN_SMODAMP should be at least AMGNXN_MAXLEVEL");
       amgnxnlist.set< Teuchos::RCP< std::vector<double> > >("smodamp",amgnxn_smodamp);
 
-      // Uncomment to see the input values
-      // std::cout << amgnxn_maxlevel << std::endl;
-      // for(int i=0;i<(int)amgnxn_smotimes->size();i++)
-      //   std::cout << (*amgnxn_smotimes)[i] << std::endl;
-      // for(int i=0;i<(int)amgnxn_smoflip->size();i++)
-      //   std::cout << (*amgnxn_smoflip)[i] << std::endl;
-      // for(int i=0;i<(int)amgnxn_smodamp->size();i++)
-      //   std::cout << (*amgnxn_smodamp)[i] << std::endl;
+      std::string BlockSmo = inparams.get<std::string>("AMGNXN_BLOCKSMO") ;
+      amgnxnlist.set<std::string>("BlockSmo",BlockSmo);
+
+      std::string SchurXml = inparams.get<std::string>("AMGNXN_SCHURXML") ;
+      amgnxnlist.set<std::string>("SchurXml",SchurXml);
+
+      //// Uncomment to see the input values
+      //std::cout << amgnxn_maxlevel << std::endl;
+      //for(int i=0;i<(int)amgnxn_smotimes->size();i++)
+      //  std::cout << (*amgnxn_smotimes)[i] << std::endl;
+      //for(int i=0;i<(int)amgnxn_smoflip->size();i++)
+      //  std::cout << (*amgnxn_smoflip)[i] << std::endl;
+      //for(int i=0;i<(int)amgnxn_smodamp->size();i++)
+      //  std::cout << (*amgnxn_smodamp)[i] << std::endl;
+      //std::cout << BlockSmo << std::endl;  
+      //std::cout << SchurXml << std::endl;  
 
     }
   }

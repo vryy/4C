@@ -143,6 +143,52 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
+LINALG::SOLVER::NonBlockSmootherWrapperIfpack::NonBlockSmootherWrapperIfpack(
+    Teuchos::RCP<SparseMatrixBase> A, 
+    Teuchos::ParameterList& list)
+  : A_(A)
+{
+
+  // Determine the preconditioner type
+  type_ = list.get<std::string>("type","none");
+  if(type_=="none")
+    dserror("The type of preconditioner has to be provided.");
+
+  // Extract list of parameters
+  if(not(list.isSublist("ParameterList")))
+    dserror("The parameter list has to be provided");
+  list_ = list.sublist("ParameterList");
+
+  // Create smoother
+  Ifpack Factory; 
+  Arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(A_->EpetraMatrix());
+  if (Arow_==Teuchos::null)
+    dserror("Something wrong. Be sure that the given matrix is not a block matrix");
+  prec_ = Factory.Create(type_,Arow_.get());
+
+  // Set parameter list and setup
+  prec_->SetParameters(list_);
+  prec_->Initialize();
+  prec_->Compute();
+
+
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::NonBlockSmootherWrapperIfpack::Apply(
+    const Epetra_MultiVector& X,
+    Epetra_MultiVector& Y,
+    bool InitialGuessIsZero) const
+{
+  prec_->ApplyInverse(X,Y);
+  return;
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
 void LINALG::SOLVER::NonBlockSmootherWrapperMueLu::Apply
 (const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
@@ -547,6 +593,107 @@ void LINALG::SOLVER::BlockSmootherWrapperKLU::Apply
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::BlockSmootherWrapperSIMPLE::Setup()
+{
+
+  // Check that is 2x2
+  if ( A_->Rows()!=2 or A_->Cols() !=2 )
+    dserror("The SIMPLE smoother works only for block matrices 2x2");
+
+  // References to the sub blocks
+  const LINALG::SparseMatrix& A00 = A_->Matrix(0,0);
+  const LINALG::SparseMatrix& A11 = A_->Matrix(1,1);
+  const LINALG::SparseMatrix& A01 = A_->Matrix(0,1);
+  const LINALG::SparseMatrix& A10 = A_->Matrix(1,0);
+
+  // Compute cheap approximation of inverse of block 0,0
+  invA00_ = Teuchos::rcp(new Epetra_Vector(A00.RowMap()));
+  ////    THIS IS SIMPLEC
+  int err = A00.EpetraMatrix()->InvRowSums(*invA00_); 
+  if(err!=0)
+    dserror("Error in computing the inverse of the row sums. Are we dividing by 0?");
+  ////    THIS IS SIMPLE
+  //A00.ExtractDiagonalCopy(*invA00_);
+  //err = invA00_->Reciprocal(*invA00_);
+  //if(err!=0)
+  //  dserror("Error in computing the inverse of the main diagonal entries. Are we dividing by 0?");
+
+  // Compute Schur complement
+  SparseMatrix A01_aux(A01,Copy);
+  //A01_aux.Complete(); ????
+  A01_aux.LeftScale(*invA00_);
+  S_ = LINALG::Multiply(A10,false,A01_aux,false,true);
+  S_->Add(A11,false,1.0,-1.0);
+
+  // Create Smoother for the Schur complement
+  Smoother_S_ = Teuchos::rcp(new NonBlockSmootherWrapperIfpack(S_,ParamsSmoother_S_));
+
+  return;
+}
+
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::BlockSmootherWrapperSIMPLE::Apply(
+    const Epetra_MultiVector& X, 
+    Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+{
+
+
+  // Auxiliary: References to domain and map extractors
+  const MultiMapExtractor& range_ex  = A_->RangeExtractor();
+  const MultiMapExtractor& domain_ex = A_->DomainExtractor();
+
+  // Allocate
+  Epetra_MultiVector DX(A_->OperatorRangeMap(),X.NumVectors());
+  Epetra_MultiVector DY(A_->OperatorDomainMap(),X.NumVectors());
+  Teuchos::RCP<Epetra_MultiVector> DX0 ;
+  Teuchos::RCP<Epetra_MultiVector> DX1 ;
+  Teuchos::RCP<Epetra_MultiVector> DY0 = domain_ex.ExtractVector(DY,0);
+  Teuchos::RCP<Epetra_MultiVector> DY1 = domain_ex.ExtractVector(DY,1);
+  Epetra_MultiVector DX1_aux(A_->RangeMap(1),X.NumVectors()); 
+  Epetra_MultiVector DY0_aux(A_->DomainMap(0),X.NumVectors()); 
+
+  // References to the off-diagonal blocks
+  const LINALG::SparseMatrix& A10 = A_->Matrix(1,0);
+  const LINALG::SparseMatrix& A01 = A_->Matrix(0,1);
+
+  // Run several sweeps
+  for(int k=0;k<iter_;k++)
+  {
+
+    // Compute residual
+    A_->Apply(Y,DX);
+    DX.Update(1.0,X,-1.0);
+
+    // Compute tentative increment
+    Teuchos::RCP<Epetra_MultiVector> DX0 = range_ex.ExtractVector(DX,0);
+    Smoother_A00_->Apply(*DX0,*DY0);
+
+    // Compute Schur complement equation
+    Teuchos::RCP<Epetra_MultiVector> DX1 = range_ex.ExtractVector(DX,1);
+    A10.Apply(*DY0,DX1_aux);
+    DX1->Update(-1.0,DX1_aux,1.0);
+    Smoother_S_->Apply(*DX1,*DY1);
+    DY1->Scale(omega_);
+
+    // Correction
+    A01.Apply(*DY1,DY0_aux);
+    DY0->Multiply(-1.0,*invA00_,DY0_aux,1.0);
+
+    // Update Y
+    domain_ex.InsertVector(*DY0,0,DY);
+    domain_ex.InsertVector(*DY1,1,DY);
+    Y.Update(1.0,DY,1.0);
+
+  }
+
+  return;
+}
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
 
 LINALG::SOLVER::BlockSmootherWrapperBGS::BlockSmootherWrapperBGS
 (
@@ -700,9 +847,11 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   std::vector<int>                        NumSweepsPosSmoo,  
   std::vector<double>                     omegaPosSmoo,     
   std::vector<bool>                       flipPosSmoo,
+  std::string                             BlockSmoother,
   bool                                    klu_on_coarsest_level,
   bool                                    analysis_AMG,
-  std::string                             file_analysis_AMG
+  std::string                             file_analysis_AMG,
+  Teuchos::RCP<Teuchos::ParameterList>     ParamsSmoother_Schur
 )
 : 
   H_(H),
@@ -727,6 +876,7 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   RLocal_   (1,1,Teuchos::null),
   SPreLocal_(1,1,Teuchos::null),
   SPosLocal_(1,1,Teuchos::null),
+  BlockSmoother_(BlockSmoother),
   analysis_AMG_(analysis_AMG),
   file_analysis_AMG_(file_analysis_AMG)
 {
@@ -768,6 +918,23 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
       dserror("A direct solver cannot be applied for the current input");
 
   }
+
+  // Check if the Block smoother type is ok
+  if(BlockSmoother_!="SIMPLE" and BlockSmoother_!="BGS")
+    dserror("Unknown type of block smoother");
+
+  // Check if SIMPLE is selected and can be used
+  if(BlockSmoother_ == "SIMPLE")
+  {
+    if(ParamsSmoother_Schur == Teuchos::null)
+      dserror("If you are using SIMPLE you should specify the parameters for the smoother associated witht he Schur complements");
+    else
+      ParamsSmoother_Schur_ = *ParamsSmoother_Schur;
+
+    if(A_->Rows()!=2 or A_->Cols()!=2 )
+      dserror("The SIMPLE block smoother only works for 2x2 block matrices");
+  }
+
 
   // Print some parameters. 
 #ifdef DEBUG
@@ -1043,29 +1210,66 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
   {
     if(level<NumLevelAMG_-1) // fine levels
     {
-      for(int block=0;block<NumBlocks_;block++)
-        Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-          (SPreLocal_[block][level]);
-      S_bgs = Teuchos::rcp(new BlockSmootherWrapperBGS(
-            AGlobal[level],
-            Svec,
-            NumSweepsPreSmoo_[level],
-            omegaPreSmoo_[level],
-            flipPreSmoo_[level]));   
-      SPreGlobal[level] =
-        Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
 
-      for(int block=0;block<NumBlocks_;block++)
-        Svec[block] = 
-          Teuchos::rcp_dynamic_cast<NonBlockSmootherWrapperBase>(SPosLocal_[block][level]); 
-      S_bgs = Teuchos::rcp(new BlockSmootherWrapperBGS(
-            AGlobal[level],
-            Svec,
-            NumSweepsPosSmoo_[level],
-            omegaPosSmoo_[level],
-            flipPosSmoo_[level]));   
-      SPosGlobal[level] = 
-        Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
+      if (BlockSmoother_=="BGS")
+      {
+        // Presmoothers
+        for(int block=0;block<NumBlocks_;block++)
+          Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
+            (SPreLocal_[block][level]);
+        S_bgs = Teuchos::rcp(new BlockSmootherWrapperBGS(
+              AGlobal[level],
+              Svec,
+              NumSweepsPreSmoo_[level],
+              omegaPreSmoo_[level],
+              flipPreSmoo_[level]));   
+        SPreGlobal[level] =
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
+
+        //Postsmoothers
+        for(int block=0;block<NumBlocks_;block++)
+          Svec[block] = 
+            Teuchos::rcp_dynamic_cast<NonBlockSmootherWrapperBase>(SPosLocal_[block][level]); 
+        S_bgs = Teuchos::rcp(new BlockSmootherWrapperBGS(
+              AGlobal[level],
+              Svec,
+              NumSweepsPosSmoo_[level],
+              omegaPosSmoo_[level],
+              flipPosSmoo_[level]));   
+        SPosGlobal[level] = 
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
+      }
+      else if (BlockSmoother_=="SIMPLE")
+      {
+
+        // Presmoothers 
+        Teuchos::RCP<BlockSmootherWrapperSIMPLE> S_simple = Teuchos::null;
+        S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
+            (SPreLocal_[0][level]);
+        S_simple = Teuchos::rcp(new BlockSmootherWrapperSIMPLE(
+              AGlobal[level],
+              S_base,
+              ParamsSmoother_Schur_,
+              NumSweepsPreSmoo_[level],
+              omegaPreSmoo_[level] ));
+        SPreGlobal[level] = 
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_simple);
+
+        // Possmoothers 
+        S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
+            (SPosLocal_[0][level]);
+        S_simple = Teuchos::rcp(new BlockSmootherWrapperSIMPLE(
+              AGlobal[level],
+              S_base,
+              ParamsSmoother_Schur_,
+              NumSweepsPosSmoo_[level],
+              omegaPosSmoo_[level] ));
+        SPosGlobal[level] = 
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_simple);
+      }
+      else
+        dserror("Unknown block smoother");
+
 
     }// fine levels
     else // Coarsest level
@@ -1080,7 +1284,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
           Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_klu_wrapper);
 
       }
-      else // Apply BGS with the remaining hierarchies
+      else if(BlockSmoother_ == "BGS")// Apply BGS with the remaining hierarchies
       {
         // Loop in blocks
         for(int block=0;block<NumBlocks_;block++)
@@ -1114,6 +1318,43 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
         SPreGlobal[level] = 
           Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
       }
+      else if (BlockSmoother_=="SIMPLE")
+      {
+
+        // Decide whether use the remainder of the AMG hierarchies or not
+        if(H_[0]->GetNumberOfLevels() > H_[1]->GetNumberOfLevels()) 
+        {
+
+          // We create a AMG V cycle using the remainder levels
+          int block = 0;
+          Teuchos::RCP<Richardson_Vcycle_Operator> myV = 
+            CreateRemainingHierarchy(level,H_[block]->GetNumberOfLevels(),block);
+
+          // We use the created AMG V cycle as coarse level smoother for this block
+          Teuchos::RCP<SmootherWrapperVcycle> S_vcycle =
+            Teuchos::rcp(new LINALG::SOLVER::SmootherWrapperVcycle(myV));
+          S_base = 
+            Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_vcycle);
+        }
+        else
+          // We use the given smoother
+          S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
+            (SPreLocal_[0][level]);
+
+        // Presmoother
+        Teuchos::RCP<BlockSmootherWrapperSIMPLE> S_simple = Teuchos::null;
+        S_simple = Teuchos::rcp(new BlockSmootherWrapperSIMPLE(
+              AGlobal[level],
+              S_base,
+              ParamsSmoother_Schur_,
+              NumSweepsPreSmoo_[level],
+              omegaPreSmoo_[level] ));
+        SPreGlobal[level] = 
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_simple);
+
+      }
+      else
+        dserror("I don't know what to do with the coarsest level");
 
     }// Coarsest level
 
@@ -1353,6 +1594,9 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
       omegaPreSmoo = *ptr_aux;
   }
 
+  std::string  BlockSmoother = amglist.get<std::string>("BlockSmo","BGS") ;
+  std::string  XmlFileSchur = amglist.get<std::string>("SchurXml","none") ;
+
   //TODO now this is hard-coded. Supply it by dat file if required
   int                   NumSweepsAMG = 1; 
   double                omegaAMG = 1.0;      
@@ -1362,6 +1606,13 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
   bool                  klu_on_coarsest_level = false;
   bool                  analysis_AMG          = false;
   std::string           file_analysis_AMG     = "amgnxn_analysis.txt";
+
+
+ // Pick up the parameters for the Schur complement smoother 
+ // this will be used only if SIMPLE block smoother is selected)
+  Teuchos::RCP<Teuchos::ParameterList> ParamsSmoother_Schur = 
+    Read_Schur_Smoother_params(XmlFileSchur,BlockSmoother); 
+
 
   //std::cout <<  DRT::Problem::Instance()->OutputControlFile()->FileName() << std::endl;
   //std::cout <<  DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() << std::endl;
@@ -1392,7 +1643,7 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
 
     // Get the right sublist  and build
     if(!params_.isSublist(Inverse_str + ConvertInt(block+1)))
-      dserror("Not found inverse list for block %d", block);
+      dserror("Not found inverse list for block %d", block+1);
     Teuchos::ParameterList& inverse_list = params_.sublist(Inverse_str + ConvertInt(block+1));
     if(inverse_list.isSublist("MueLu Parameters"))
     {
@@ -1426,9 +1677,11 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
         NumSweepsPosSmoo,  
         omegaPosSmoo,     
         flipPosSmoo,      
+        BlockSmoother,
         klu_on_coarsest_level,
         analysis_AMG,
-        file_analysis_AMG
+        file_analysis_AMG,
+        ParamsSmoother_Schur
         ));
 
   // Finished
@@ -1442,6 +1695,76 @@ Epetra_Operator * LINALG::SOLVER::AMGnxn_Preconditioner::PrecOperator() const
 {
   return &*P_;
 }
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+
+Teuchos::RCP<Teuchos::ParameterList> 
+LINALG::SOLVER::AMGnxn_Preconditioner::Read_Schur_Smoother_params
+  (std::string xmlFileName,std::string  BlockSmoother)
+{
+
+  // Create empty list
+  Teuchos::RCP<Teuchos::ParameterList> ParamsSchur =  Teuchos::rcp(new Teuchos::ParameterList());
+
+  // If we not use SIMPLE, return
+  if (BlockSmoother != "SIMPLE") 
+    return ParamsSchur;
+
+  if(xmlFileName=="none") 
+    dserror("No xml file given for building the Schur complement smoother");
+
+  // Convert XML file contests to Teuchos::ParameterList
+  Teuchos::ParameterList ListFromXml;
+  Teuchos::updateParametersFromXmlFile
+    (xmlFileName, Teuchos::Ptr<Teuchos::ParameterList>(&ListFromXml));
+
+  // Find the suitable sublist
+  std::string SchurSmoother = ListFromXml.get<std::string>("SchurSmoother","none");
+  if (SchurSmoother=="none")
+  {
+
+    std::cout << 
+      "Using default values for building the smoother for the Schur Complement" 
+      << std::endl;
+
+    ParamsSchur->set<std::string>("type","point relaxation");
+    Teuchos::ParameterList& ParamsSmoother_Schur_sub = ParamsSchur->sublist("ParameterList");
+    ParamsSmoother_Schur_sub.set<std::string>("relaxation: type","Gauss-Seidel");
+    ParamsSmoother_Schur_sub.set<bool>("relaxation: backward mode",false);
+    ParamsSmoother_Schur_sub.set<int>("relaxation: sweeps",4);
+    ParamsSmoother_Schur_sub.set<double>("relaxation: damping factor",0.8);
+
+  }
+  else
+  {
+    if(ListFromXml.isSublist(SchurSmoother))
+      *ParamsSchur = ListFromXml.sublist(SchurSmoother);
+    else
+      dserror("Something wrong: Missing sublist");
+  }
+
+
+  //std::cout << *ParamsSchur << std::endl;
+  //dserror("bye bye");
+
+
+
+
+
+
+  return ParamsSchur;
+
+}
+
+
+
+
+
+
+
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -1483,10 +1806,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
 #else
   mueluOp->SetFixedBlockSize(numdf);
   if (block > 0 and numdf > 1)
+  {
     std::cout << "======================================================" << std::endl;
     std::cout << " WARNING: The number of dof per node in the second    " << std::endl;
     std::cout << " block is > 1: Expect bugs!!!!                        " << std::endl;
     std::cout << "======================================================" << std::endl;
+  }
 #endif
 
   // Prepare null space vector for MueLu

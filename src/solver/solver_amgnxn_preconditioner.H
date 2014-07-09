@@ -243,7 +243,7 @@ namespace LINALG
         virtual ~NonBlockSmootherWrapperBase(){};
         virtual void Apply(const Epetra_MultiVector& X,
             Epetra_MultiVector& Y,
-            bool InitialGuessIsZero) const=0;
+            bool InitialGuessIsZero=false) const=0;
     };
 
 
@@ -259,7 +259,7 @@ namespace LINALG
 
         virtual void Apply(const Epetra_MultiVector& X,
             Epetra_MultiVector& Y,
-            bool InitialGuessIsZero) const;
+            bool InitialGuessIsZero=false) const;
 
       private:
         Teuchos::RCP<SmootherBase> S_;
@@ -267,7 +267,38 @@ namespace LINALG
     }; // class NonBlockSmootherWrapperMueLu 
 
 
+    //==================================================================
+    /// Auxiliary class to hide an Ifpack smoother 
+    //==================================================================
+
+    class NonBlockSmootherWrapperIfpack : public NonBlockSmootherWrapperBase
+    {
+      public:
+        NonBlockSmootherWrapperIfpack(
+            Teuchos::RCP<SparseMatrixBase> A, 
+            Teuchos::ParameterList& list);
+
+        virtual void Apply(const Epetra_MultiVector& X,
+            Epetra_MultiVector& Y,
+            bool InitialGuessIsZero=false) const;
+
+      private:
+
+        Ifpack_Preconditioner* prec_;
+        Teuchos::RCP<SparseMatrixBase> A_; 
+        Teuchos::RCP<Epetra_RowMatrix> Arow_;
+        Teuchos::ParameterList list_;
+        std::string type_;
+
+
+
+    }; // class NonBlockSmootherWrapperMueLu 
+
+
+    //==================================================================
     /// Class implementing a block Gauss-Seidel smoother
+    //==================================================================
+
     class BlockSmootherWrapperBGS : public BlockSmootherWrapperBase
     {
 
@@ -311,9 +342,66 @@ namespace LINALG
     }; //class BlockSmootherWrapperBGS
 
 
+    //==================================================================
+    /// Class implementing a SIMPLE(C) smoother (only for 2x2) block matrices
+    //==================================================================
 
+    class BlockSmootherWrapperSIMPLE : public BlockSmootherWrapperBase
+    {
+      public:
+
+        BlockSmootherWrapperSIMPLE
+          (
+           Teuchos::RCP<BlockSparseMatrixBase> A,
+           Teuchos::RCP<NonBlockSmootherWrapperBase> Smoother_A00,
+           const Teuchos::ParameterList & ParamsSmoother_S,
+           int iter,
+           double omega
+          ) :
+          A_(A),Smoother_A00_(Smoother_A00),ParamsSmoother_S_(ParamsSmoother_S),
+          iter_(iter),omega_(omega){ Setup();}
+
+
+        virtual void Apply(const Epetra_MultiVector& X, 
+            Epetra_MultiVector& Y, bool InitialGuessIsZero) const;
+
+        void Setup();
+
+      private:
+
+        /// Bock matrix
+        Teuchos::RCP<BlockSparseMatrixBase> A_;  
+
+        /// Smoother for the block 1,1 
+        Teuchos::RCP<NonBlockSmootherWrapperBase>  Smoother_A00_;  
+
+        /// Cheap approximation of the inverse of block 1,1
+        Teuchos::RCP<Epetra_Vector> invA00_;
+
+        /// Smoother for the Schur complement 
+        Teuchos::RCP<NonBlockSmootherWrapperBase>  Smoother_S_;  
+
+        /// Schur complement
+        Teuchos::RCP<SparseMatrix> S_;
+
+        /// Parameters for creating the smother for the Schur complement
+        Teuchos::ParameterList  ParamsSmoother_S_;
+
+        /// Number of sweeps
+        int iter_;                   
+
+        /// Damping 
+        double omega_;                  
+
+
+    }; //class BlockSmootherWrapperBGS
+
+
+    //==================================================================
     /// Class wrapping a linear solver for a BlockSparseMatrix 
     // It is used to solve in the coarsest level of the AMGnxn preconditioner
+    //==================================================================
+    
     class BlockSmootherWrapperKLU : public BlockSmootherWrapperBase
     {
 
@@ -430,9 +518,11 @@ namespace LINALG
            std::vector<int>                        NumSweepsPosSmoo,  
            std::vector<double>                     omegaPosSmoo,     
            std::vector<bool>                       flipPosSmoo,
+           std::string                             BlockSmoother="BGS",
            bool                                    klu_on_coarsest_level=false,
            bool                                    analysis_AMG=false,
-           std::string                             file_analysis_AMG="amgnxn_analysis.txt"
+           std::string                             file_analysis_AMG="amgnxn_analysis.txt",
+           Teuchos::RCP<Teuchos::ParameterList>    ParamsSmoother_Schur=Teuchos::null
           );
 
 
@@ -521,6 +611,9 @@ namespace LINALG
         matrix<Teuchos::RCP<SparseMatrix> >    RLocal_;    
         matrix<Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherWrapperMueLu> > SPreLocal_;
         matrix<Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherWrapperMueLu> > SPosLocal_;
+        Teuchos::ParameterList   ParamsSmoother_Schur_;
+        std::string BlockSmoother_;
+
         /// For analysis
         bool analysis_AMG_;
         static int instance_id_;
@@ -568,6 +661,10 @@ namespace LINALG
            std::vector<int>& offsets,
            int offsetFineLevel
           );
+
+        // Helper to extract the Schur complement parameters
+        Teuchos::RCP<Teuchos::ParameterList> Read_Schur_Smoother_params
+          (std::string xmlFileName,std::string  BlockSmoother);
 
         // Helper function to convert int to std::string 
         std::string ConvertInt(int number)
