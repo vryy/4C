@@ -1,0 +1,154 @@
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    25
+//NODES       36
+DIM           2
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Fluid_Top_Opt
+RESTART      0
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
+CONV_CHECK_TYPE                 Residuum
+DISSIPATION_FAC                 1.0
+INCTOL                          1e-6
+MAXTIME                         1.0
+NUMSTEP                         2
+OBJECTIVE_DISSIPATION           Yes
+OBJECTIVE_PRESSURE_DROP         No
+OUTPUT_EVERY_ITER               Yes
+PRESSURE_DROP_FAC               1.0
+RESTARTEVRY                     100000
+RESTART_ACTION                  Fluid_Time_Step
+RESTOL                          1e-6
+TIMESTEP                        0.5
+UPRES                           1
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
+GMSH_OUTPUT                     Yes
+INITFUNCNO                      2
+INITIALFIELD                    field_by_function
+MATID                           2
+MAX_GRAD_ITER                   100
+MAX_INNER_ITER                  5
+MAX_ITER                        200
+TESTCASE                        test_lin_poro // test_workflow_without_fluiddata
+THETA                           0.8
+TOL_KKT                         1e-05
+TOL_SUB                         1e-10
+UPRES                           1
+VOLUME_BOUNDARY                 0.4
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+INITFUNCNO                      3
+INITIALFIELD                    zero_field // field_by_function
+TESTCASE                        test_no
+------------------------------------------------------FLUID DYNAMIC
+CONVTOL                         1e-10
+GMSH_OUTPUT                     Yes
+INFNORMSCALING                  no
+INITIALFIELD                    field_by_function
+INITSTATITEMAX                  5
+ITEMAX                          10
+LINEAR_SOLVER                   1
+NONLINITER                      Newton //fixed_point_like
+NUMSTASTEPS                     0
+PHYSICAL_TYPE                   Topology_optimization
+PREDICTOR                       steady_state
+SIMPLER                         no
+SIMPLER_SOLVER                  -1
+STARTFUNCNO                     1
+STEADYSTEP                      -1
+STEADYTOL                       1e-6
+THETA                           1.0
+TIMEINTEGR                      One_Step_Theta//Stationary//
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+CROSS-STRESS                    no_cross
+GRAD_DIV                        yes
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+PSPG                            yes
+REYNOLDS-STRESS                 no_reynolds
+STABTYPE                        residual_based
+SUPG                            yes
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver_for_Top_Opt
+SOLVER                          UMFPACK
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid  DYNVISCOSITY 2.0 DENSITY 3.0
+MAT 2 MAT_opti MINPORO 10.5 MAXPORO 20 SMEARFAC 1
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------FUNCT1 // initial flow field unused
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5*(t+1)*(y+3)
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+------------------------------------------------------------FUNCT2 // initial density field
+FUNCT2 EXPR 0 0.0 0 FUNCTION 0.25*(2+x+y)//0.5//
+------------------------------------------------------------FUNCT3 // inflow profile
+FUNCT3 EXPR 0 0.0 0 FUNCTION 0.5*(t+1)*(y+3)
+------------------------------------------------------------FUNCT4 // bodyforce
+FUNCT4 EXPR 0 0.0 0 FUNCTION 4*t
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+NDLINE  1
+NDSURF  1
+NDVOL   0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE  0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+// surface
+E 1 - none 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 4 0 0 0 0 0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+// line inflow
+E 1 - NUMDOF 3  ONOFF 1 1 0  VAL 1.0 0.0 0.0  CURVE none none none FUNCT 3 0 0
+//E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 1.0 0.0 0.0  CURVE none none none FUNCT 3 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  0//1//
+// domain
+//E 1 - NUMDOF 3  ONOFF 0 1 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+----------------------------------------------------------RESULT DESCRIPTION
+OPTI DIS opti NODE 1 QUANTITY x VALUE 0.0 TOLERANCE 1.0e-09
+OPTI DIS opti NODE 2 QUANTITY x VALUE 0.0 TOLERANCE 1.0e-09
+OPTI DIS opti NODE 3 QUANTITY x VALUE 0.6 TOLERANCE 1.0e-09
+OPTI DIS opti NODE 4 QUANTITY x VALUE 1.0 TOLERANCE 1.0e-09
+OPTI DIS opti NODE 1 QUANTITY obj VALUE 3.26631276802507728e+02 TOLERANCE 1.0e-12
+OPTI DIS opti NODE 1 QUANTITY obj_deriv VALUE -3.88262359445814766e+01 TOLERANCE 1.0e-14
+OPTI DIS opti NODE 2 QUANTITY obj_deriv VALUE -2.58247288947276843e+01 TOLERANCE 1.0e-14
+OPTI DIS opti NODE 3 QUANTITY obj_deriv VALUE -3.96440923777087590e+01 TOLERANCE 1.0e-13
+OPTI DIS opti NODE 4 QUANTITY obj_deriv VALUE -5.97109280663871616e+01 TOLERANCE 1.0e-14
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1 DLINE 1
+NODE    4 DLINE 1
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	-1.0000000000000000e-00	-1.0000000000000000e-00	0.0000000000000000e+00	
+NODE 2  	COORD	+1.0000000000000000e-00	-1.0000000000000000e-00	0.0000000000000000e+00	
+NODE 3  	COORD	+1.0000000000000000e-00	+1.0000000000000000e-00	0.0000000000000000e+00	
+NODE 4  	COORD	-1.0000000000000000e-00	+1.0000000000000000e-00	0.0000000000000000e+00	
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
+   1 FLUID2 QUAD4  1 2 3 4    MAT 1 NA Euler GP 2 2
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------------------END
+// END

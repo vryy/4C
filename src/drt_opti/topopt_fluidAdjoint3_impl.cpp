@@ -152,7 +152,7 @@ DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidAdjoint3Impl()
     det_(0.0),
     fac_(0.0),
     reacoeff_(0.0),
-    eid_(-1.0),
+    ele_(NULL),
     is_higher_order_ele_(false)
 {
   // pointer to class FluidImplParameter (access to the general parameter)
@@ -234,11 +234,6 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
     }
   }
 
-
-  LINALG::Matrix<nsd_,nen_> efluidbofonp(true);
-  LINALG::Matrix<nsd_,nen_> efluidbofonpp(true);
-  FluidBodyForce(ele,efluidbofonp,efluidbofonpp);
-
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
@@ -251,13 +246,12 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
   if (fldAdPara_->IsInconsistent() == true) is_higher_order_ele_ = false;
   // TODO deactivate this maybe?!
 
-  eid_ = ele->Id();
+  ele_ = ele;
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(ele->Id(),
-         eveln,
+  Sysmat(eveln,
          evelnp,
          epren,
          eprenp,
@@ -267,8 +261,6 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
          efluidpren,
          efluidprenp,
          efluidprenpp,
-         efluidbofonp,
-         efluidbofonpp,
          elemat,
          elevec,
          edens,
@@ -284,7 +276,6 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
-  int                                           eid,
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              evelnp,
   const LINALG::Matrix<nen_,1>&                 epren,
@@ -295,8 +286,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   const LINALG::Matrix<nen_,1>&                 efluidpren,
   const LINALG::Matrix<nen_,1>&                 efluidprenp,
   const LINALG::Matrix<nen_,1>&                 efluidprenpp,
-  const LINALG::Matrix<nsd_,nen_>&              efluidbofonp,
-  const LINALG::Matrix<nsd_,nen_>&              efluidbofonpp,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
   LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
   const LINALG::Matrix<nen_,1> &                edens,
@@ -322,7 +311,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   LINALG::Matrix<nsd_,1>          resM_Du(true);
 
   // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtEleCenter(eid);
+  EvalShapeFuncAndDerivsAtEleCenter();
 
   // calculate subgrid viscosity and/or stabilization parameter at element center
   if (not fldAdPara_->EvalTauAtGP())
@@ -342,7 +331,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     //----------------------------------------------------------------------
     //  evaluation of various values at integration point:
@@ -468,6 +457,9 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
       }
     }
 
+    // calculate fluid bodyforce on gausspoint
+    FluidBodyForce();
+
     // calculate stabilization parameter at integration point
     if (fldAdPara_->EvalTauAtGP())
     {
@@ -496,9 +488,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     }
 
     CalcDivEps(eveln,evelnp,efluidvelnp,efluidvelnpp);
-
-    fluidbodyforce_.Multiply(efluidbofonp,funct_);
-    fluidbodyforce_new_.Multiply(efluidbofonpp,funct_);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -704,9 +693,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
  | evaluate shape functions and derivatives at element center     winklmaier 03/12 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
-  const int  eleid
-)
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_stab(DRT::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
@@ -753,7 +740,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtEleCente
 
   // check for degenerated elements
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele_->Id(), det_);
 
   // compute integration factor
   fac_ = wquad*det_;
@@ -780,8 +767,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtEleCente
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    DRT::UTILS::GaussIntegration::iterator & iquad,       // actual integration point
-    const int                              eleid        // element ID
+    DRT::UTILS::GaussIntegration::iterator & iquad       // actual integration point
 )
 {
   // coordinates of the current integration point
@@ -822,7 +808,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint
   det_ = xji_.Invert(xjm_);
 
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele_->Id(), det_);
 
   // compute integration factor
   fac_ = iquad.Weight()*det_;
@@ -1576,19 +1562,15 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
  | compute bodyforce of momentum equation                         winklmaier 03/12 |
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
-    DRT::ELEMENTS::Fluid*               ele,
-    LINALG::Matrix<nsd_,nen_>&          efluidbofonp,
-    LINALG::Matrix<nsd_,nen_>&          efluidbofonpp
-)
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce()
 {
   std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   if (nsd_==3)
-    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+    DRT::UTILS::FindElementConditions(ele_, "VolumeNeumann", myneumcond);
   else if (nsd_==2)
-    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+    DRT::UTILS::FindElementConditions(ele_, "SurfaceNeumann", myneumcond);
   else
     dserror("Body force for 1D problem not yet implemented!");
 
@@ -1638,6 +1620,9 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
 
     int functnum = -1;
 
+    LINALG::Matrix<nsd_,1> coords(true);
+    coords.Multiply(xyze_,funct_);
+
     for (int isd=0;isd<nsd_;isd++)
     {
       // get factor given by spatial function
@@ -1653,11 +1638,11 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
         {
           // evaluate function at the position of the current node
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
-                                                                             (ele->Nodes()[jnode])->X(),
+                                                                             coords.A(),
                                                                              time,
                                                                              NULL);
           functionfac_new = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
-                                                                             (ele->Nodes()[jnode])->X(),
+                                                                             coords.A(),
                                                                              time_new,
                                                                              NULL);
         }
@@ -1670,8 +1655,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
         // get usual body force
         if (*condtype == "neum_dead" or *condtype == "neum_live")
         {
-          efluidbofonp(isd,jnode) = num*functionfac;
-          efluidbofonpp(isd,jnode) = num_new*functionfac_new;
+          fluidbodyforce_(isd) = num*functionfac;
+          fluidbodyforce_new_(isd) = num_new*functionfac_new;
         }
         // get prescribed pressure gradient
         else if (*condtype == "neum_pgrad")

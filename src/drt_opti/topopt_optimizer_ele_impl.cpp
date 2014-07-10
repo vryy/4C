@@ -133,7 +133,6 @@ adjointvelxy_(true),
 adjointpresxy_(true),
 adjointconvvel_(true),
 fluidvelint_old_(true),
-adjointvelint_old_(true),
 tau_(true),
 poroint_(0.0),
 intpoints_( distype ),
@@ -488,12 +487,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
           timestep=1; // just one stationary time step 1
 
         if (eadjointvels.find(timestep)==eadjointvels.end())
-        {
-//          if (timestep==0) // for discrete_adjoints no solution of timestep 0 present
-//            continue;
-//          else
             dserror("Adjoint solution of time step %i not found!",timestep);
-        }
 
         if (efluidvels.find(timestep)==efluidvels.end())
           dserror("Fluid solution of time step %i not found!",timestep);
@@ -505,18 +499,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         adjointvelint_.Multiply(evel,funct_);
         adjointvelxy_.MultiplyNT(evel,derxy_);
 
-        if (optiparams_->IsStationary()==false)
+        if ((optiparams_->IsStationary()==false) and (timestep>0))
         {
           evel = efluidvels.find(timestep-1)->second;
           fluidvelint_old_.Multiply(evel,funct_);
-
-          if (timestep>1)
-          {
-            evel = eadjointvels.find(timestep-1)->second;
-            adjointvelint_old_.Multiply(evel,funct_); // TODO required???
-          }
-          else
-            adjointvelint_old_.Clear();
         }
 
         CalcStabParameter(fac_);
@@ -534,7 +520,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
 
           if (timestep>0)
           {
-            value +=timefac*adjointvelint_.Dot(fluidvelint_)+timefac_old*adjointvelint_.Dot(fluidvelint_old_);
+            value +=timefac*adjointvelint_.Dot(fluidvelint_);
+            if (optiparams_->IsStationary()==false)
+              value +=timefac_old*adjointvelint_.Dot(fluidvelint_old_);
+
             if (optiparams_->PSPG())
             {
               eadjointpres_ = eadjointpress.find(timestep)->second;

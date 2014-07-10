@@ -276,8 +276,6 @@ private:
 
   /// fluid velocity of last time step at gauss point
   LINALG::Matrix<nsd_,1> fluidvelint_old_;
-  /// adjoint velocity of last time step at gauss point
-  LINALG::Matrix<nsd_,1> adjointvelint_old_;
 
   //! the stabilisation parameters -> it is a (3,1) vector for 2D and 3D
   LINALG::Matrix<3,1> tau_;  //@}

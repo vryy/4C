@@ -124,7 +124,6 @@ public:
       Specific evaluate routine without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.
 
-      \param eid              (i) element id
       \param ebofoaf          (i) body force at n+alpha_F/n+1
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
@@ -139,7 +138,6 @@ public:
 
    */
   void Sysmat(
-      int                                            eid,
       const LINALG::Matrix<nsd_,nen_>&               eveln,
       const LINALG::Matrix<nsd_,nen_>&               evelnp,
       const LINALG::Matrix<nen_,1>&                  epren,
@@ -150,8 +148,6 @@ public:
       const LINALG::Matrix<nen_,1>&                  efluidpren,
       const LINALG::Matrix<nen_,1>&                  efluidprenp,
       const LINALG::Matrix<nen_,1>&                  efluidprenpp,
-      const LINALG::Matrix<nsd_,nen_>&               efluidbofonp,
-      const LINALG::Matrix<nsd_,nen_>&               efluidbofonpp,
       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
       LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
       const LINALG::Matrix<nen_,1> &                 edens,
@@ -171,14 +167,11 @@ private:
   static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
   //! evaluate shape functions and their derivatives at element center
-  void EvalShapeFuncAndDerivsAtEleCenter(
-      const int  eleid  ///< element ID
-  );
+  void EvalShapeFuncAndDerivsAtEleCenter();
 
   //! brief evaluate shape functions and their derivatives at integration point
   void EvalShapeFuncAndDerivsAtIntPoint(
-      DRT::UTILS::GaussIntegration::iterator & iquad,             ///< actual integration point
-      const int                                eleid              ///< element ID
+      DRT::UTILS::GaussIntegration::iterator & iquad             ///< actual integration point
   );
 
   //! calculate stabilization parameter
@@ -204,11 +197,7 @@ private:
   );
 
   /// calculate body force from nodal conditions
-  void FluidBodyForce(
-      DRT::ELEMENTS::Fluid*               ele,
-      LINALG::Matrix<nsd_,nen_>&          efluidbofonp,
-      LINALG::Matrix<nsd_,nen_>&          efluidbofonpp
-  );
+  void FluidBodyForce();
 
   /// compute force term of continuity equation
   void ContForce();
@@ -452,8 +441,8 @@ private:
   double reacoeff_;
   //@}
 
-  //! element id
-  int eid_;
+  //! element pointer
+  DRT::ELEMENTS::Fluid* ele_;
   //! Flag to (de)activate higher order elements
   //! elements with only mixed second order derivatives are not counted as higher order elements
   //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
