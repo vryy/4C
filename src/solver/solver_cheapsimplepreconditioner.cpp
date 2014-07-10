@@ -15,8 +15,9 @@ Maintainer: Tobias Wiesner
 #include <Ifpack.h>
 #include <ml_MultiLevelPreconditioner.h>
 #ifdef HAVE_MueLu
-#include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu.hpp>
+#ifdef HAVE_Trilinos_Q1_2014
+#include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_RAPFactory.hpp>
 #include <MueLu_TrilinosSmoother.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
@@ -25,11 +26,12 @@ Maintainer: Tobias Wiesner
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_ParameterListInterpreter.hpp> // TODO: move into MueLu.hpp
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
-#include <MueLu_EpetraOperator.hpp> // Aztec interface
+#endif
+#include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
+#include <MueLu_EpetraOperator.hpp> // Aztec interface
 #endif
 
 // BACI headers
@@ -220,6 +222,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       }
       else
       {
+#ifdef HAVE_Trilinos_Q1_2014
         // Exctract info from list
         int numdf = MueLuList.get<int>("PDE equations",-1);
         int dimns = MueLuList.get<int>("null space: dimension",-1);
@@ -248,11 +251,12 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         H->SetDefaultVerbLevel(MueLu::Extreme);
         H->GetLevel(0)->Set("A", mueluOp);
         H->GetLevel(0)->Set("Nullspace", nspVector);
-#ifdef HAVE_Trilinos_Q3_2013
         H->GetLevel(0)->setlib(Xpetra::UseEpetra);
         H->setlib(Xpetra::UseEpetra);
-#endif
         mueLuFactory.SetupHierarchy(*H);
+#else 
+        dserror("Compile baci with Trilinos Q1 2014");
+#endif
       }
 
       // set preconditioner
@@ -302,6 +306,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       }
       else
       {
+#ifdef HAVE_Trilinos_Q1_2014
         // Exctract info from list
         int numdf = MueLuList.get<int>("PDE equations",-1);
         int dimns = MueLuList.get<int>("null space: dimension",-1);
@@ -330,11 +335,12 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         H->SetDefaultVerbLevel(MueLu::Extreme);
         H->GetLevel(0)->Set("A", mueluOp);
         H->GetLevel(0)->Set("Nullspace", nspVector);
-#ifdef HAVE_Trilinos_Q3_2013
         H->GetLevel(0)->setlib(Xpetra::UseEpetra);
         H->setlib(Xpetra::UseEpetra);
-#endif
         mueLuFactory.SetupHierarchy(*H);
+#else 
+        dserror("Compile baci with Trilinos Q1 2014");
+#endif
       }
 
       // set preconditioner
