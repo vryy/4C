@@ -111,10 +111,8 @@ REDUCED_OUTPUT                  no
 START_RUN                       0
 WRITESTATS                      1000
 OUTPUT_ELEMENT_IDS 							1 2 
-USEDETVALUE                     no
 PARAMETERCONTINUATION           yes
 NUMCONTSTEPS                    2
-CONTBLENDVALUE									1.5
 PARAMLIST												1 BETA
 ------------------------------------------------------------RANDOM FIELD 1
 ACTIVE                          YES
@@ -131,6 +129,7 @@ KAPPA_U                         0.5
 NONGAUSSPARAM1                  1.08574
 NONGAUSSPARAM2                  0.920457
 SPECTRAL_MATCHING               no
+CONTBLENDVALUE									1.5
 ---------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          20

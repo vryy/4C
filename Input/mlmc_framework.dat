@@ -111,10 +111,8 @@ REDUCED_OUTPUT                  no
 START_RUN                       0
 WRITESTATS                      1000
 OUTPUT_ELEMENT_IDS 							1 2 
-USEDETVALUE                     no
 PARAMETERCONTINUATION           no
 NUMCONTSTEPS                    2
-CONTBLENDVALUE									1.5
 PARAMLIST												1 BETA
 ------------------------------------------------------------RANDOM FIELD 1
 ACTIVE                          YES

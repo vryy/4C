@@ -31,6 +31,7 @@ Maintainer: Jonas Biehler
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
 #include "mc_mat_par_manager.H"
+#include "mc_var_thickness_manager.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
@@ -80,17 +81,8 @@ STR::UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   // prolongate results yes/no
   prolongate_res_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"PROLONGATERES");
 
-  // use deterministic value yes/no
-  use_det_value_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"USEDETVALUE");
-
-  // value for stochmat blending in parameter continuation case
-  cont_blend_value_ = mlmcp.get<double>("CONTBLENDVALUE");
-
   // value for stochmat blending in parameter continuation case
   cont_num_maxtrials_ = mlmcp.get<int>("CONTNUMMAXTRIALS");
-
-   // get det value if needed
-  det_value_ =mlmcp.get<double>("DETVALUE");
 
   // get starting random seed
   start_random_seed_ = mlmcp.get<int>("INITRANDOMSEED");
@@ -104,7 +96,7 @@ STR::UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   //write statistics every write_stat_ steps
   write_stats_ = mlmcp.get<int>("WRITESTATS");
 
-  // get OutputElements
+  stoch_wall_thickness_=DRT::INPUT::IntegralValue<int>(mlmcp ,"RANDOMGEOMETRY");
 
   double word;
   std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(mlmcp,"OUTPUT_ELEMENT_IDS"));
@@ -114,9 +106,7 @@ STR::UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   if(AllMyOutputEleIds_.front()== -1)
 	  IO::cout << RED_LIGHT "No elements specified for output " END_COLOR << IO::endl;
 
-  // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
   InEleRange_ = 1.0 + 10e-3;
-  //ReadInParameters();
 
 
   // controlling parameter
@@ -171,11 +161,21 @@ STR::UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   cont_nodedata_ = Teuchos::rcp(new std::vector<char>);
 
 
-
+  //set up managers to create stochasticity
   my_matpar_manager_ = Teuchos::rcp(new STR::UQ::MCMatParManager(actdis_coarse_));
   // init field with some seed
   my_matpar_manager_->SetupRandomFields(2);
 
+  my_matpar_manager_->NumPhysStochParams();
+
+  if(stoch_wall_thickness_)
+  {
+    my_thickness_manager_ = Teuchos::rcp(new MCVarThicknessManager(actdis_coarse_,my_matpar_manager_->NumPhysStochParams()+1));
+  }
+  else
+    my_thickness_manager_=Teuchos::null;
+
+    //my_thickness_manager_->SetUpThickness(2,1.6,false);
 
   //init stuff that is only needed when we want to prolongate the results to a finer mesh,
   // and hence have a fine discretization
@@ -291,6 +291,11 @@ void STR::UQ::MLMC::Integrate()
     ResetPrestress();
     const double t1 = Teuchos::Time::wallTime();
     my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),1.0,false);
+
+    if(stoch_wall_thickness_)
+    {
+      my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),1.0,false);
+    }
     const double t2 = Teuchos::Time::wallTime();
     discret_->Comm().Barrier();
 
@@ -395,6 +400,12 @@ void STR::UQ::MLMC::Integrate()
       // write statoutput evey now and then
       if(numb_run_% write_stats_ == 0)
         WriteStatOutput();
+    }
+
+    // reset geometry to initial read in geometry
+    if(stoch_wall_thickness_)
+    {
+      my_thickness_manager_->ResetGeometry();
     }
 
     numb_run_++;

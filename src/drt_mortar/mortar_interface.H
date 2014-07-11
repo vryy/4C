@@ -593,6 +593,16 @@ public:
   virtual void EvaluateNodalNormals();
 
   /*!
+  \brief Evaluate nodal normals
+
+  This methods computes the nodal normal and can be used to extract the nodal normals
+  via the passed map. The nodal normals are stored in the map as vectors with the nodal gid
+  as key. This function was only added because we want to use the NodalNormal computation
+  of the mortar interface in UQ simulations.
+  */
+  virtual void EvaluateNodalNormals(std::map<int,std::vector<double> >& mynormals);
+
+  /*!
   \brief Export nodal normals
 
   This method exports / communicates the nodal normal vector from row to

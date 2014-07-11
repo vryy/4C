@@ -4219,6 +4219,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfcurrcond);
 
   /*--------------------------------------------------------------------*/
+  // Uncertain surface condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > uncertsurfcomponents;
+  uncertsurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("matching id")));
+
+  Teuchos::RCP<ConditionDefinition> uncertsurfcond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN UNCERTAIN SURFACE CONDITION",
+                                         "UncertainSurface",
+                                         "Uncertain surface",
+                                         DRT::Condition::UncertainSurface,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<uncertsurfcomponents.size(); ++i)
+  {
+    uncertsurfcond->AddComponent(uncertsurfcomponents[i]);
+  }
+
+  condlist.push_back(uncertsurfcond);
+
+
+  /*--------------------------------------------------------------------*/
   // level-set condition for contact points
 
   Teuchos::RCP<ConditionDefinition> linelscontact =

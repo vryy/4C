@@ -247,3 +247,14 @@ void DRT::Node::ChangePos(std::vector<double> nvector)
 	return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Set reference position                                     (public) |
+ |                                                            jb  07/14 |
+ *----------------------------------------------------------------------*/
+void DRT::Node::SetPos(std::vector<double> nvector)
+{
+  for (int i=0; i<3; ++i) x_[i] = nvector[i];
+  return;
+}
+
+

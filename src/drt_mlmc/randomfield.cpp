@@ -14,28 +14,29 @@ Maintainer: Jonas Biehler
 #ifdef HAVE_FFTW
 
 #include "randomfield.H"
-
-//#include "mlmc.H"
-//#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_pstream.H"
-//#include <ctime>
-//#include <cstdlib>
-//#include <iostream>
-//#include <complex>
-//#include <cmath>
-// For colored std::couts
-//#include "../drt_lib/drt_colors.H"
-//#include <boost/random.hpp>
 
 // include fftw++ stuff for multidimensional FFT
 #include"fftw3.h"
 
-//#include <fstream>
-
 
 #include "../drt_inpar/inpar_mlmc.H"
 
+STR::UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
+{
+ // initialize some common parameters
+
+ is_bounded_ = DRT::INPUT::IntegralValue<int>(rfp ,"BOUNDED");
+
+ rf_lower_bound_=rfp.get<double>("LOWERBOUND");
+
+ rf_upper_bound_=rfp.get<double>("UPPERBOUND");
+
+ // init largest_length
+ ComputeBoundingBox(discret);
+
+}
 
 void STR::UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
 {
@@ -100,11 +101,6 @@ void STR::UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> 
     IO::cout<< "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << IO::endl;
     IO::cout<< "largest length " << largestlength_ << IO::endl;
   }
-
-
-
-
-
 
 }
 

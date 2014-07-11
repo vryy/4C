@@ -1519,8 +1519,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Write reduced Coarse Level Output, i.e. no mesh stresses, just disp",
                                     yesnotuple,yesnovalue,&mlmcp);
 
-  DoubleParameter("CONTBLENDVALUE",1.5,"Use this values for parameter continuation",&mlmcp);
-  IntParameter("CONTNUMMAXTRIALS",4,"Half stepsize CONTNUMMAXTRIALS times before giving up",&mlmcp);
+  IntParameter("CONTNUMMAXTRIALS",8,"Half stepsize CONTNUMMAXTRIALS times before giving up",&mlmcp);
   setStringToIntegralParameter<int>("PARAMETERCONTINUATION","NO",
                                      "Numerical continuation to avoid full nonlinear solution",
                                      yesnotuple,yesnovalue,&mlmcp);
@@ -1539,11 +1538,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      "Write random variables used for random field generation to file",
                                      yesnotuple,yesnovalue,&mlmcp);
 
-  // For testing
-  setStringToIntegralParameter<int>("USEDETVALUE","No",
-                                     "Instead of doing proper MC simulation use DETVALUE for the stochastic parameter",
-                                     yesnotuple,yesnovalue,&mlmcp);
-  DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&mlmcp);
+
+  // For variable geometry/wall thickness
+  setStringToIntegralParameter<int>("RANDOMGEOMETRY","No",
+                                      "Do consider random geometry/wall thickness",
+                                      yesnotuple,yesnovalue,&mlmcp);
+
+  DoubleParameter("INITIALTHICKNESS",10.,"wall thickness in input file",&mlmcp);
 
   /*----------------------------------------------------------------------*/
   // set valid parameters for random fields
@@ -7820,14 +7821,22 @@ void DRT::INPUT::SetValidRandomFieldParameters(Teuchos::ParameterList& list)
                                  tuple<int>(
                                      INPAR::MLMC::calc_m_fft,INPAR::MLMC::calc_m_cos,INPAR::MLMC::calc_m_fourier),
                                  &list);
+
+   DoubleParameter("PERIODICITY_FOURIER",1.0,"Periodic Length of Random Field in case of Fourier Series Expansion",&list);
    // For testing
    setStringToIntegralParameter<int>("USEDETVALUE","No",
                                       "Instead of doing proper MC simulation use DETVALUE for the stochastic parameter",
                                       yesnotuple,yesnovalue,&list);
-   //DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&list);
    DoubleParameter("CONTBLENDVALUE",1.5,"Use this values for parameter continuation",&list);
 
    IntParameter("FOURIER_TRUNCATION_THRESHOLD",130,"Truncation threshold for fourier series expansion",&list);
+
+   // define cutoff values
+   setStringToIntegralParameter<int>("BOUNDED","No",
+                                    "Cutoff Randomfield to prevent unrealistically low or high values",
+                                    yesnotuple,yesnovalue,&list);
+   DoubleParameter("LOWERBOUND",1.5,"Lower cutoff value",&list);
+   DoubleParameter("UPPERBOUND",1.5,"Uower cutoff value",&list);
 }
 
 /*----------------------------------------------------------------------*/

@@ -61,6 +61,7 @@ namespace UQ
 {
 class RandomField;
 class MCMatParManager;
+class MCVarThicknessManager;
 
 /// Multi Level Monte Carlo Simulation of Structures with
 /// some sort of stochastic property
@@ -127,19 +128,22 @@ private:
   int start_random_seed_;
 
   //! brief use a global deterministic value as material parameter instead of random field
-  bool use_det_value_;
+ // bool use_det_value_;
 
   //! brief global deterministic value that is used instead of random field
-  double det_value_;
+ // double det_value_;
 
   //! brief global deterministic value that is used instead of random field for parameter continuation
-  double cont_blend_value_;
+  //double cont_blend_value_;
 
   //! brief how many times do half the stepsize in parameter continuation before we give up
   int cont_num_maxtrials_;
 
   //! brief flag to reduce output to files as well as stdout
   bool reduced_output_;
+
+  //! do we have stochastic wall thickness
+  bool stoch_wall_thickness_;
 
   //! brief vector which contains all element numbers we need the output from
   std::vector <int> AllMyOutputEleIds_;
@@ -352,6 +356,8 @@ private:
   // ###########################################################################
 
   Teuchos::RCP<MCMatParManager> my_matpar_manager_;
+
+  Teuchos::RCP<MCVarThicknessManager> my_thickness_manager_;
 
 public:
 

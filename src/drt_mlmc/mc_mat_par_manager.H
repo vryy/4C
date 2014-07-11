@@ -60,6 +60,8 @@ public:
   //brief write all random variables that are used for the simulation of stochastic processes to file
   void WriteRandomVariablesToFile(std::string filename, int numrun);
 
+  int NumPhysStochParams(){return numstochparams_;};
+
 
 private:
 

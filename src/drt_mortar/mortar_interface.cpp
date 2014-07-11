@@ -1670,6 +1670,37 @@ void MORTAR::MortarInterface::EvaluateNodalNormals()
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate nodal normals and store them in map (public)     jb 07/14|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateNodalNormals(std::map<int,std::vector<double> > & mynormals)
+{
+  // loop over proc's slave nodes of the interface
+  // use row map and export to column map later
+  // (use boundary map to include slave side boundary nodes)
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
+  {
+    int gid = snoderowmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+
+    // build averaged normal at each slave node
+    mrtrnode->BuildAveragedNormal();
+
+    int numdofs=mrtrnode->NumDof();
+    std::vector<double> temp (numdofs,0.0);
+    for (int i=0;i<numdofs;i++)
+    {
+      temp[i]=mrtrnode->MoData().n()[i];
+    }
+    mynormals.insert(std::pair<int,std::vector<double> >(gid, temp));
+
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  export nodal normals (public)                             popp 11/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::ExportNodalNormals()

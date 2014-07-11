@@ -129,6 +129,8 @@ private:
   double det_value_paracont_;
 
 
+
+
 public:
   //! \brief Standard constructor
   RandomFieldSpectral(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret,const Teuchos::ParameterList& rfp);
@@ -137,7 +139,7 @@ public:
   void CreateNewSample(unsigned int seed);
 
   //! \brief get value of random field at a specific location
-  double EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output);
+  //double EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output);
 
   //! \brief get value of random field at a specific location
   double EvalFieldAtLocation(std::vector<double> location, double paracont_parameter,  bool writetofile, bool output);

@@ -47,7 +47,7 @@ class RandomField {
 
 public:
 
-  RandomField() {};
+  RandomField(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp);
   //! \brief Standard constructor
 
   virtual ~RandomField() {};
@@ -84,6 +84,15 @@ protected:
  std::vector<double> bb_max_;
 
  double largestlength_;
+
+ //! \brief do we truncate the field above and below a threshold
+ bool is_bounded_;
+
+ //! \brief lower cutoff threshold
+ double rf_lower_bound_;
+
+ //! \brief upper cutoff threshold
+ double rf_upper_bound_;
 
 private:
 

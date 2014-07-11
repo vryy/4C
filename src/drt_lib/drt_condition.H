@@ -266,6 +266,7 @@ public:
     BioVolumeDirichlet,
     NeumannIntegration,
     SurfaceCurrent,
+    UncertainSurface,
     HomoScaTraCoupling,
     LsContact,
     Absorb,

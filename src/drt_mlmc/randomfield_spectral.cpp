@@ -55,6 +55,7 @@ using  boost::accumulators::stats;
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret,  const Teuchos::ParameterList& rfp)
+:RandomField(discret,rfp)
 {
    myrank_ = discret->Comm().MyPID();
 
@@ -76,7 +77,15 @@ STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RC
   dkappa_=kappa_u_/N_;
   periodicity_=2.*pi_/dkappa_;
   dx_=periodicity_/M_;
-  //det_value_paracont_= rfp.get<double>("DETVALUE");
+
+  if(periodicity_ < 1.1*largestlength_)
+      dserror("Periodic length of random field is to small for your problem ");
+
+  if(periodicity_ > 2.0*largestlength_)
+  {
+    IO::cout << "periodicity_ " << periodicity_ <<IO::endl;
+    IO::cout << " WARNING Periodic length of random field is very large compared to your discretization, you should consider a smaller value" << IO::endl;
+  }
   det_value_paracont_= rfp.get<double>("CONTBLENDVALUE");
 
   // distribution parameters of non gaussian pdf
@@ -93,6 +102,8 @@ STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RC
       dserror("Unknown Correlation structure");
       break;
   }
+  // do we want to truncate the field
+
 
   //
   double upper_bound;
@@ -720,7 +731,7 @@ double STR::UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y
 }
 
 
-double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
+/*double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
@@ -783,12 +794,15 @@ double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> loc
 
  }
 
-}
+}*/
 
 double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
+
+  double temp_rf_val=-1.0;
+
  if (UseFFT_)
   {
     int index_x;
@@ -819,13 +833,13 @@ double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> loc
     }
     if (dim_==2)
     {
-      return det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*values_[index_x+M_*index_y];
+      temp_rf_val= det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*values_[index_x+M_*index_y];
       //return values_[index_x+M_*index_y];
     }
     else
     {
       //return values_[index_x+M_*(index_y+M_*index_z)];
-      return det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*values_[index_x+M_*(index_y+M_*index_z)];
+      temp_rf_val= det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*values_[index_x+M_*(index_y+M_*index_z)];
     }
 
   }
@@ -844,15 +858,23 @@ double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> loc
            File.close();
          }
      //return value;
-     return det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*value;
+     temp_rf_val= det_value_paracont_*(1.0-paracont_parameter) + (paracont_parameter)*value;
    }
    else
    {
      dserror("Computation using Cos series only for dim = 3" );
-     return -1;
    }
 
  }
+ // quick check if the value if outside of specified bounds
+ if(is_bounded_)
+ {
+   if(temp_rf_val>rf_upper_bound_)
+     temp_rf_val=rf_upper_bound_;
+   if(temp_rf_val<rf_lower_bound_)
+     temp_rf_val=rf_lower_bound_;
+ }
+ return temp_rf_val;
 
 }
 

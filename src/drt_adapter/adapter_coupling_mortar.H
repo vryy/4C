@@ -82,6 +82,11 @@ namespace ADAPTER
                 bool                                slavewithale=false,  ///> flag defining if slave is ALE
                 bool                                slidingale=false);  //> flag defining sliding ale case
 
+    //! setup the machinery (hack version (used in UQ to obtain surface normals of slave interface ONLY))
+    void SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT::Discretization>   slavedis,       ///>  discretization
+                const Epetra_Comm&                  comm);           ///> communicate
+
+
     /// perform mesh relocation
     void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
                         Teuchos::RCP<DRT::Discretization> aledis,

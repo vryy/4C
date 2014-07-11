@@ -459,6 +459,136 @@ void ADAPTER::CouplingMortar::Setup(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * Minimal setup routine of mortar framework so that it can be used to
+ * calculate the surface normals of the slave surface
+ * USE with caution; only intended to be used for UQ    jb 07/14        *
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT::Discretization>   slavedis, const Epetra_Comm&  comm)
+{
+
+  std::vector<int> coupleddof (3,1);
+  // initialize maps for row nodes
+  std::map<int, DRT::Node*> slavenodes;
+
+  // initialize maps for column nodes
+  std::map<int, DRT::Node*> slavegnodes;
+
+  //initialize maps for elements
+  std::map<int, Teuchos::RCP<DRT::Element> > slaveelements;
+
+  // get the conditions for the current evaluation we use the UncertainSurface condition as a substitute for
+  // the mortar slave surface
+  std::vector<DRT::Condition* > uncert_surface;
+  slavedis->GetCondition("UncertainSurface",uncert_surface);
+
+  // check wether length of condition is one
+  if (uncert_surface.size()!=1)
+    dserror("Uncertain Surface currently only implemented for 1 condition only");
+
+  DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, uncert_surface);
+
+  // get mortar coupling parameters
+  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
+  Teuchos::ParameterList input;
+  input.setParameters(inputmortar);
+
+  // is this a nurbs problem?
+  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  if(distype=="Nurbs")
+  {
+    // ***
+    dserror("nurbs for fsi mortar not supported!");
+    input.set<bool>("NURBS",true);
+  }
+  else
+    input.set<bool>("NURBS",false);
+
+  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  const int dim = DRT::Problem::Instance()->NDim();
+
+  // create an empty mortar interface
+  // (To be on the safe side we still store all interface nodes and elements
+  // fully redundant here in the mortar ADAPTER. This makes applications such
+  // as SlidingALE much easier, whereas it would not be needed for others.)
+  INPAR::MORTAR::RedundantStorage redundant =DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
+  //if (redundant != INPAR::MORTAR::redundant_all)
+    //if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master storage");
+  Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
+
+  // number of dofs per node based on the coupling vector coupleddof
+  int dof = coupleddof.size();
+
+  // number of coupled dofs (defined in coupleddof by a 1)
+  int numcoupleddof = 0;
+  for(int ii=0; ii<dof; ++ii)
+    if(coupleddof[ii]==1) numcoupleddof+=1;
+
+  // feeding master nodes to the interface including ghosted nodes
+  std::map<int, DRT::Node*>::const_iterator nodeiter;
+  int nodeoffset=0;
+   int dofoffset=0;
+   int eleoffset = 0;
+  // feeding slave nodes to the interface including ghosted nodes
+  for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
+  {
+    DRT::Node* node = nodeiter->second;
+    // vector containing only the gids of the coupled dofs (size numcoupleddof)
+    std::vector<int> dofids(numcoupleddof);
+    int ii=0;
+    for (int k=0;k<dof;++k)
+    {
+      // Should this dof be coupled? (==1)
+      if (coupleddof[k]==1)
+      {
+        // get the gid of the coupled dof (size dof)
+        // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
+        dofids[ii] = slavedis->Dof(node)[k]+dofoffset;
+        ii += 1;
+      }
+    }
+    Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(
+                new MORTAR::MortarNode(node->Id()+nodeoffset, node->X(), node->Owner(),
+                    numcoupleddof, dofids, true));
+
+    interface->AddMortarNode(mrtrnode);
+  }
+
+  // feeding master elements to the interface
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
+
+  // feeding slave elements to the interface
+  for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
+  {
+    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+
+    // Here, we have to distinguish between standard and sliding ale since mortar elements are generated
+    {
+      Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
+                  new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+                      ele->NumNode(), ele->NodeIds(), true));
+
+      interface->AddMortarElement(mrtrele);
+    }
+  }
+
+  // finalize the contact interface construction
+  interface->FillComplete();
+
+  // store old row maps (before parallel redistribution)
+  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+
+  // store interface
+  interface_ = interface;
+
+
+  // do not check for overlap of slave and Dirichlet boundaries
+  // since if we use this setup function we only want to compute the normals
+  // anyway
+  return;
+}
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

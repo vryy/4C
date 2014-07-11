@@ -38,6 +38,7 @@ Maintainer: Jonas Biehler
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 STR::UQ::RandomFieldFourier::RandomFieldFourier(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
+:RandomField(discret,rfp)
 {
 
   pi_=M_PI;
@@ -62,8 +63,13 @@ STR::UQ::RandomFieldFourier::RandomFieldFourier(unsigned int seed,Teuchos::RCP<D
   mean_ =rfp.get<double>("MEAN");
   sigma_0_= rfp.get<double>("SIGMA");
 
-  ComputeBoundingBox(discret);
-  periodicity_=1.1*largestlength_;
+
+  periodicity_=rfp.get<double>("PERIODICITY_FOURIER");
+  if(periodicity_ < 1.1*largestlength_)
+    dserror("Periodic length of random field is to small for your problem ");
+
+  if(periodicity_ > 2.0*largestlength_)
+    dserror("Periodic length of random field is very large compared to your discretization, you should consider a smaller value");
 
   // quick check whether correlation length of the field is < 0.35 periodicity
   // otherwise the fourier expansion cannot be used
@@ -73,6 +79,10 @@ STR::UQ::RandomFieldFourier::RandomFieldFourier(unsigned int seed,Teuchos::RCP<D
   k_trunk_threshold_= rfp.get<int>("FOURIER_TRUNCATION_THRESHOLD");
 
   det_value_paracont_= rfp.get<double>("CONTBLENDVALUE");
+
+
+  // do we truncate the field
+
 
   // Get correlation structure here can only use gaussian
   INPAR::MLMC::CorrStruct cstruct = DRT::INPUT::IntegralValue<INPAR::MLMC::CorrStruct>(rfp,"CORRSTRUCT");
@@ -183,6 +193,8 @@ void STR::UQ::RandomFieldFourier::CreateNewPhaseAngles(unsigned int seed)
 double STR::UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,double paracont_parameter, bool writetofile, bool output)
 {
   double tempgp=0.0;
+  double temp_rf_val=-1.0;
+
   for (unsigned int i=0;i<kb_->size();i++)
   {
     double wk1=(*kb_)[i][0]*pi_/periodicity_;
@@ -203,14 +215,23 @@ double STR::UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> loca
 
   }
   if(marginal_pdf_==normal)
-    return det_value_paracont_*(1-paracont_parameter)+(paracont_parameter)*(mean_+sigma_0_*tempgp);
+    temp_rf_val = det_value_paracont_*(1-paracont_parameter)+(paracont_parameter)*(mean_+sigma_0_*tempgp);
   else if (marginal_pdf_ == lognormal)
-   return det_value_paracont_*(1.0-paracont_parameter)+(paracont_parameter)*exp((mean_+sigma_0_*tempgp));
+    temp_rf_val = det_value_paracont_*(1.0-paracont_parameter)+(paracont_parameter)*exp((mean_+sigma_0_*tempgp));
   else
   {
     dserror("unknown marginal density ");
-    return -1;
   }
+
+  // quick check if the value if outside of specified bounds
+  if(is_bounded_)
+  {
+    if(temp_rf_val>rf_upper_bound_)
+      temp_rf_val=rf_upper_bound_;
+    if(temp_rf_val<rf_lower_bound_)
+      temp_rf_val=rf_lower_bound_;
+  }
+  return temp_rf_val;
 
 }
 

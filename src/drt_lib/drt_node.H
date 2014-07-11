@@ -275,9 +275,14 @@ public:
   virtual void ClearConditions() { condition_.clear(); return; }
 
   /*!
-  \brief Change position reference
+  \brief Change reference position by adding input vector to position
   */
   virtual void ChangePos(std::vector<double> nvector);
+
+  /*!
+  \brief Change reference position by setting input vector to position
+  */
+  virtual void SetPos(std::vector<double> nvector);
 
   //@}
 
