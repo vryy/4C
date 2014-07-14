@@ -56,16 +56,30 @@ LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         6
-RESTARTEVRY                     7
+RESTARTEVRY                     2
 COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nox
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
-CONVTOL                         1.0E-7
-BASETOL                         1.0E-3
 PRECONDREUSE                    0
-SHAPEDERIVATIVES                no
+SHAPEDERIVATIVES                yes
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-10
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-10
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-10
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-10
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-10
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-10
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-10
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-10
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL

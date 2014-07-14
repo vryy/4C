@@ -70,7 +70,7 @@ void ADAPTER::FluidFluidFSI::Init()
   // map extractor for embedded fluid discretization
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   interface_->Setup(*embfluiddis_);
-  
+
   // map extractor for transfer of ALE-displacements to embedded discretization
   meshmap_ = Teuchos::rcp(new LINALG::MapExtractor());
 
@@ -140,9 +140,13 @@ void ADAPTER::FluidFluidFSI::Update()
 
   xfluidfluid_->TimeUpdate();
 
-  // refresh the merged fluid map extractor
   if (monolithicfluidfluidfsi_)
+  {
+    // refresh the merged fluid map extractor
     SetupInterfaceExtractor();
+    // create new extended shape derivatives matrix
+    PrepareShapeDerivatives();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -208,8 +212,6 @@ void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vec
   // new grid velocity
   xfluidfluid_->UpdateGridv();
 
-  // update the map extractor, as fluid dofs have possibly changed
-  SetupInterfaceExtractor();
   return;
 }
 
@@ -278,27 +280,13 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> 
 }
 
 /*----------------------------------------------------------------------*
- * splitmatrix is true only for monolithic fluid split
- *----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool splitmatrix)
-{
-	Teuchos::RCP<std::set<int> > condelements = interface_->ConditionedElementMap(*Discretization());
-
-	// setup shape derivatives matrix as block matrix
-	xfluidfluid_->UseBlockMatrix(condelements, *mergedfluidinterface_, *mergedfluidinterface_);
-
-	// we only use a block matrix in a fluidsplit context
-	isfluidsplit_ = splitmatrix;
-}
-
-/*----------------------------------------------------------------------*
  * Remove passed DOFs from Dirichlet map (required for the monolithic
  * fluid-fluid fluidsplit algorithm)
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
-	xfluidfluid_->RemoveDirichCond(maptoremove);
-	return;
+  xfluidfluid_->RemoveDirichCond(maptoremove);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -307,7 +295,7 @@ void ADAPTER::FluidFluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Ma
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidFluidFSI::GetDBCMapExtractor()
 {
-	return xfluidfluid_->EmbeddedDirichMaps();
+  return xfluidfluid_->EmbeddedDirichMaps();
 }
 
 /*----------------------------------------------------------------------*
@@ -322,7 +310,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemM
   // Reason: the matrix splitting method from LINALG expects non-const maps
   Teuchos::RCP<Epetra_Map> innermap = Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->OtherMap()));
   Teuchos::RCP<Epetra_Map> condmap = Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->FSICondMap()));
-	return xfluidfluid_->BlockSystemMatrix(mergedfluidinterface_, innermap, condmap);
+  return xfluidfluid_->BlockSystemMatrix(mergedfluidinterface_, innermap, condmap);
 }
 /*---------------------------------------------------------------
 * In case of fluid split:
@@ -338,10 +326,41 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemM
 *------------------------------------------------------------------------*/
 const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::DiscWriter()
 {
-	if (isfluidsplit_)
-		return xfluidfluid_->EmbDiscWriter();
-	else
-		return xfluidfluid_->DiscWriter();
+  if (isfluidsplit_)
+    return xfluidfluid_->EmbDiscWriter();
+  else
+    return xfluidfluid_->DiscWriter();
+}
+
+void ADAPTER::FluidFluidFSI::Evaluate(
+    Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
+    )
+{
+  // call the usual routine
+  xfluidfluid_->Evaluate(stepinc);
+
+  // for fixed ALE approach, we only refresh the global fluid map extractor in Update()
+  if (! monolithicfluidfluidfsi_ || monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton)
+    return;
+
+  // this is the case of a full Newton approach: update the map extractor, as fluid DOFs possibly have changed!
+  SetupInterfaceExtractor();
+}
+
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
+{
+  if (! monolithicfluidfluidfsi_ || ! isfluidsplit_)
+    return fluid_->VelocityRowMap();
+
+  // in case of fsi with fluidsplit, return the embedded velocity DOF
+  // (to understand the motivation behind this, have a look at the recovery of the
+  // Lagrange multiplier in standard ALE-FSI class (fluidsplit) in case of active
+  // shape derivatives)
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  maps.push_back(xfluidfluid_->XFluidFluidMapExtractor()->FluidMap());
+  maps.push_back(xfluidfluid_->VelocityRowMap());
+  Teuchos::RCP<const Epetra_Map> innervelocitymap = LINALG::MultiMapExtractor::IntersectMaps(maps);
+  return innervelocitymap;
 }
 
 void ADAPTER::FluidFluidFSI::SetupInterfaceExtractor()
@@ -372,33 +391,24 @@ void ADAPTER::FluidFluidFSI::SetupInterfaceExtractor()
   return;
 }
 
-void ADAPTER::FluidFluidFSI::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
-    )
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
 {
-  // call the usual routine
-  xfluidfluid_->Evaluate(stepinc);
-
-  // for fixed ALE approach, we only refresh the global fluid map extractor in Update()
-  if (monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton)
+  if (! monolithicfluidfluidfsi_)
     return;
 
-  // this is the case of a full Newton approach: update the map extractor, as fluid DOFs possibly have changed!
-  SetupInterfaceExtractor();
+  // the dof-maps may have changed: create a new shape derivatives matrix
+  Teuchos::RCP<std::set<int> > condelements = interface_->ConditionedElementMap(*Discretization());
+  xfluidfluid_->PrepareShapeDerivatives(mergedfluidinterface_,condelements);
 }
 
-Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
+/*----------------------------------------------------------------------*
+ * request fluid system matrix as block matrix (fluidsplit FSI)
+ * and allocate a new shape derivatives matrix
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat)
 {
-  if (! monolithicfluidfluidfsi_ || ! isfluidsplit_)
-    return fluid_->VelocityRowMap();
-
-  // in case of fsi with fluidsplit, return the embedded velocity DOF
-  // (to understand the motivation behind this, have a look at the recovery of the
-  // Lagrange multiplier in standard ALE-FSI class (fluidsplit) in case of active
-  // shape derivatives)
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  maps.push_back(xfluidfluid_->XFluidFluidMapExtractor()->FluidMap());
-  maps.push_back(xfluidfluid_->VelocityRowMap());
-  Teuchos::RCP<const Epetra_Map> innervelocitymap = LINALG::MultiMapExtractor::IntersectMaps(maps);
-  return innervelocitymap;
+  isfluidsplit_ = split_fluidsysmat;
+  PrepareShapeDerivatives();
 }

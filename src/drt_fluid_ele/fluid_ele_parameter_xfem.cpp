@@ -76,7 +76,7 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank) const
 {
-  // short consistency check
+  // Determine, whether this is an embedded-sided Nitsche-approach
   const bool isEmbNitsche = (coupling_method_ == INPAR::XFEM::Nitsche && coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling);
 
   if (visc_stab_trace_estimate_ == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue && !isEmbNitsche)
@@ -116,8 +116,10 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank)
   if(!isEmbNitsche and
       (ViscStabHK() == INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf or
        ViscStabHK() == INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf ))
-    IO::cout << "Be warned: the chosen characteristic element length definition ViscStabHK can become critical for xfluid-sided Nitsche method as the current definition either can not guarantee a sufficient estimate of the inverse inequality or can lead to cut position dependent error behaviour!" << IO::endl;
-
+  {
+    if (myrank == 0)
+      IO::cout << "Be warned: the chosen characteristic element length definition ViscStabHK can become critical for xfluid-sided Nitsche method as the current definition either can not guarantee a sufficient estimate of the inverse inequality or can lead to cut position dependent error behaviour!" << IO::endl;
+  }
 }
 
 

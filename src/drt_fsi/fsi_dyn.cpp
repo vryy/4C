@@ -591,7 +591,6 @@ void fluid_fluid_fsi_drt()
   embfluiddis->ExportColumnElements(*embnewcoleles);
   embfluiddis->FillComplete();
 
-  embfluiddis->FillComplete();
 
   //------------------------------------------------------------------------------
 

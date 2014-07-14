@@ -71,19 +71,19 @@ SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
-CONVTOL                         1.0E-7
-BASETOL                         1.0E-8
 PRECONDREUSE                    0
-SHAPEDERIVATIVES                yes
+SHAPEDERIVATIVES                Yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
+RELAXING_ALE                    yes
+RELAXING_ALE_EVERY              1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0

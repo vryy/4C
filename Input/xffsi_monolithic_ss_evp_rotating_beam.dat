@@ -27,7 +27,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD zero_field //field_by_function
+INITIALFIELD                    zero_field //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -41,19 +41,18 @@ START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1//0.66
-TIMEINTEGR One_Step_Theta //Stationary
-TIMESTEP 0.01//0.003125 //0.00625
+TIMEINTEGR                      One_Step_Theta //Stationary
+TIMESTEP                        0.01//0.003125 //0.00625
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
-DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG no //yes
-SUPG no //yes
+PSPG                            no //yes
+SUPG                            no //yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -98,10 +97,13 @@ RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+ITEMAX                          40
+CONVTOL                         1.0E-8
+PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER Superlu //
+SOLVER                          Superlu //
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    no
@@ -120,6 +122,11 @@ VELGRAD_INTERFACE_STAB          yes
 PRESSCOUPLING_INTERFACE_STAB    yes
 PRESSCOUPLING_INTERFACE_FAC     10
 GHOST_PENALTY_FAC               0.01
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj//Xff_TimeInt_IncompProj Xff_TimeInt_ProjIfMoved  // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
+RELAXING_ALE                    yes
+RELAXING_ALE_EVERY              1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1 DENSITY 1
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1

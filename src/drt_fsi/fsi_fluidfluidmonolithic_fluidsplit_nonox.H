@@ -24,18 +24,18 @@ Maintainer: Shadan Shahmiri
 
 namespace ADAPTER
 {
-	class Coupling;
-	class FluidFluidFSI;
+  class Coupling;
+  class FluidFluidFSI;
 }
 
 namespace FSI
 {
-	namespace UTILS
-	{
-		class MatrixRowTransform;
-		class MatrixColTransform;
-		class MatrixRowColTransform;
-	}
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
 }
 
 namespace FSI
@@ -45,20 +45,20 @@ namespace FSI
    * Split of the fluid matrix, while the structure matrix remains
    * unmodified / condensation of interface fluid velocities.
    */
-	class FluidFluidMonolithicFluidSplitNoNOX : public MonolithicNoNOX
-	{
-	  friend class FSI::FSIResultTest;
+  class FluidFluidMonolithicFluidSplitNoNOX : public MonolithicNoNOX
+  {
+    friend class FSI::FSIResultTest;
 
-	public:
+  public:
 
-	  /// constructor
-	  explicit FluidFluidMonolithicFluidSplitNoNOX(const Epetra_Comm& comm,
-	                                               const Teuchos::ParameterList& timeparams);
+    /// constructor
+    explicit FluidFluidMonolithicFluidSplitNoNOX(const Epetra_Comm& comm,
+                                                 const Teuchos::ParameterList& timeparams);
 
-	  /// initialize, read parameters and create merged DOF row map
-		virtual void SetupSystem();
+    /// initialize, read parameters and create merged DOF row map
+    virtual void SetupSystem();
 
-	protected:
+  protected:
 
     //! @name Apply current field state to system
 
@@ -78,16 +78,16 @@ namespace FSI
     //@}
 
     /// create merged map of DOF in the final system from all fields
-		virtual void CreateCombinedDofRowMap();
+    virtual void CreateCombinedDofRowMap();
 
-		/// initial guess for subsequent fields
-		virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig );
+    /// initial guess for subsequent fields
+    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig );
 
-		/// create merged Dirichlet map from single field maps
-	  virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+    /// create merged Dirichlet map from single field maps
+    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
-		/// Newton loop
-		virtual void Newton();
+    /// Newton loop
+    virtual void Newton();
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -138,7 +138,7 @@ namespace FSI
     virtual bool HasFluidDofMapChanged(
         const Epetra_BlockMap& fluidincrementmap);
 
-	private:
+  private:
 
     /// build block vector from field vectors
     void SetupVector(Epetra_Vector &f,
@@ -157,6 +157,8 @@ namespace FSI
     Teuchos::RCP<UTILS::MatrixColTransform>     aigtransform_;
     Teuchos::RCP<UTILS::MatrixColTransform>     fmiitransform_;
     Teuchos::RCP<UTILS::MatrixRowColTransform>  fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform>  fmggtransform_;
+
     //@}
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
@@ -166,17 +168,29 @@ namespace FSI
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
+    //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fggprev_;
+
+    //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fgiprev_;
+
+    //! block \f$F^G_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
+
+    //! block \f$F^G_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmgiprev_;
+
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fggcurr_;
+    Teuchos::RCP<const LINALG::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fgicurr_;
+    Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
 
     //! block \f$F^G_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmggcurr_;
+    Teuchos::RCP<const LINALG::SparseMatrix> fmggcur_;
 
     //! block \f$F^G_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmgicurr_;
+    Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector>  ddialeinc_;
@@ -185,7 +199,7 @@ namespace FSI
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector>  duiinc_;
     //@}
-	};
+  };
 }
 
 #endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_ */

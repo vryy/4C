@@ -333,14 +333,6 @@ namespace FLD
     /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
 
-    /// check xfluid input parameter list
-    void CheckXFluidFluidParams(Teuchos::ParameterList& params_xfem,
-                                Teuchos::ParameterList& params_xf_gen,
-                                Teuchos::ParameterList& params_xf_stab);
-
-    /// print stabilization parameters to screen
-    void PrintStabilizationParams();
-
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
@@ -406,14 +398,6 @@ namespace FLD
       const int startfuncno
       );
 
-    /*!
-     * \brief build shapederivatives as block matrix
-     * (called in the case of monolithic fluid-fluid fsi with fluidsplit)
-     */
-    void UseBlockMatrix(Teuchos::RCP<std::set<int> >    condelements,
-                       const LINALG::MultiMapExtractor& shapederivdomainmaps,
-                       const LINALG::MultiMapExtractor& shapederivrangemaps);
-
     /// write discretization
     void OutputDiscret();
 
@@ -474,7 +458,7 @@ namespace FLD
 
     /*!
      * \brief return fluid-fluid system matrix as block matrix
-     * (required in the context of monolithic fluidsplit-XFFSI
+     * (required in the context of monolithic fluidsplit-XFFSI)
      * \param (in) fsiextractor map extractor to distinguish between FSI/non-FSI dof
      * in the merged fluid dof-map
      * \param (in) innermap map of inner embedded and background fluid dof
@@ -485,6 +469,17 @@ namespace FLD
         const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
         Teuchos::RCP<Epetra_Map> innermap,
         Teuchos::RCP<Epetra_Map> condmap);
+
+    /*!
+     * \brief set underlying dof-maps for new shape derivatives matrix
+     * (required in the context of monolithic XFFSI)
+     * \param (in) fsiextractor map extractor to distinguish between FSI/non-FSI dof
+     * in the merged fluid-fluid-dof-map
+     * \param (in) condelements map of conditioned elements
+     */
+    void PrepareShapeDerivatives(
+        const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
+        const Teuchos::RCP<std::set<int> > condelements);
 
     /// return embedded fluid discretization writer
     const Teuchos::RCP<IO::DiscretizationWriter>& EmbDiscWriter() { return emboutput_; }
@@ -602,6 +597,16 @@ namespace FLD
     /// estimate the scaling from the trace inequality via solving local eigenvalue problems for Nitsche's method
     void EstimateNitscheTraceMaxEigenvalue();
 
+
+    /// set xfluid-fluid input parameters (read from list)
+    void SetXFluidFluidParams();
+
+    /// check xfluid-fluid input parameter list
+    void CheckXFluidFluidParams() const;
+
+    /// print stabilization parameters to screen
+    void PrintStabilizationParams() const;
+
     /// embedded fluid state vectors
     Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
 
@@ -611,7 +616,8 @@ namespace FLD
     /// block system matrix for fluid-fluid FSI with fluidsplit
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmat_;
 
-    Teuchos::RCP<LINALG::SparseOperator> shapederivativestest_;
+    /// shape derivatives matrix, including background fluid dof (set to zero)
+    Teuchos::RCP<LINALG::SparseMatrix> extended_shapederivatives_;
 
     /// maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<LINALG::MapExtractor> aledbcmaps_;
@@ -802,8 +808,6 @@ namespace FLD
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool alefluid_;
 
-    //! do we have a turbulence model?
-    enum INPAR::FLUID::TurbModelAction turbmodel_;
     //@}
 
     /// number of spatial dimensions
@@ -893,6 +897,9 @@ namespace FLD
     /// type of monolithic XFFSI approach
     MonolithicApproach monotype_;
 
+    /// indicates whether shape derivatives (linearization w.r.t. ALE-mesh displacements)
+    /// are active (only for xffsi)
+    bool active_shapederivatives_;
 
   };
 }

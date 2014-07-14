@@ -317,14 +317,6 @@ namespace FLD
     /// initialization
     virtual void Init();
 
-    /// check xfluid input parameter list
-    void CheckXFluidParams(Teuchos::ParameterList& params_xfem,
-        Teuchos::ParameterList& params_xf_gen,
-        Teuchos::ParameterList& params_xf_stab);
-
-    /// print stabilization params to screen
-    void PrintStabilizationParams();
-
     /// print time integration output
     void PrintTimeInt();
 
@@ -554,13 +546,13 @@ namespace FLD
 
     void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis_; }
 
-		/// set the given discretization as the boundary discretization
+    /// set the given discretization as the boundary discretization
     void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis_ = boun; }
 
     /// Get the nodes that defines crack tip
     void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
 
-		/// Set the crack tip nodes. The displacement at these nodes are pre-specified to control FSI-crack problem
+    /// Set the crack tip nodes. The displacement at these nodes are pre-specified to control FSI-crack problem
     void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
     {
       tip_nodes_.clear();
@@ -575,6 +567,15 @@ namespace FLD
 
 
   private:
+
+    /// set xfluid input parameters (read from list)
+    void SetXFluidParams();
+
+    /// check xfluid input parameters for consistency
+    void CheckXFluidParams() const;
+
+    /// print stabilization params to screen
+    void PrintStabilizationParams() const;
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
@@ -653,6 +654,9 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
 
     //---------------------------------input parameters------------------
+
+    /// which type of boundary movement
+    enum INPAR::XFEM::MovingBoundary xfluid_mov_bound_;
 
     /// type of enforcing interface conditions in XFEM
     enum INPAR::XFEM::CouplingMethod coupling_method_;
@@ -848,13 +852,13 @@ namespace FLD
 
     //-----------------------------FSI with cracking structure ------------------------
 
-		/// nodes of the crack tip when simulating FSI with crack
+    /// nodes of the crack tip when simulating FSI with crack
     std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
-    
+
     //! Whether tip nodes should be set in the cut discretization
     bool setTipNodesInCut_;
 
-    
+
 /*    /// crack tip elements in case of FSI with cracking structure
     std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;*/
 

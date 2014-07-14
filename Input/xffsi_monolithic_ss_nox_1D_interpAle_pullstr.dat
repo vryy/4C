@@ -62,13 +62,31 @@ SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
-CONVTOL                         1.0E-7
-BASETOL                         1.0E-3
 PRECONDREUSE                    0
-SHAPEDERIVATIVES                yes
+SHAPEDERIVATIVES                Yes
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-10
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-10
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-10
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-10
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-10
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-10
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-10
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-10
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
+RELAXING_ALE                    yes
+RELAXING_ALE_EVERY              1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               embedded_sided_coupling
@@ -77,8 +95,6 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 IS_PSEUDO_2D                    yes
 XFF_CONV_STAB_SCALING           none
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0

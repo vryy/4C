@@ -162,8 +162,8 @@ namespace ADAPTER {
       );
 
     /// request fluid system matrix & shapederivatives as blockmatrices when called with true
-    /// (required in fluidsplit xffsi)
-    virtual void UseBlockMatrix(bool splitmatrix = false);
+    /// (indicated monolithic XFFSI with fluidsplit)
+    virtual void UseBlockMatrix(bool split_fluidsysmat = false);
 
     /// remove Dirichlet conditions: legacy method for the case of coincident fluid/structure FSI nodes
     virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
@@ -173,6 +173,11 @@ namespace ADAPTER {
     /// setup of map extractor to distinguish between FSI DOF-map and
     /// merged inner embedded fluid and background fluid DOF-map
     void SetupInterfaceExtractor();
+
+    /// prepare underlying extended shape derivatives matrix, that is based
+    /// on the merged fluid dof-map (with background fluid dof set to zero),
+    /// as it may change
+    void PrepareShapeDerivatives();
 
     /// type cast pointer to XFluidFluid
     Teuchos::RCP<FLD::XFluidFluid>         xfluidfluid_;

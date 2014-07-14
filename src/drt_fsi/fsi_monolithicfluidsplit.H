@@ -44,7 +44,7 @@ namespace LINALG
 namespace FSI
 {
   class OverlappingBlockMatrix;
-  
+
   namespace UTILS
   {
     class MatrixRowTransform;
@@ -288,6 +288,7 @@ namespace FSI
     Teuchos::RCP<UTILS::MatrixColTransform>     aigtransform_;
     Teuchos::RCP<UTILS::MatrixColTransform>     fmiitransform_;
     Teuchos::RCP<UTILS::MatrixRowColTransform>  fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform>  fmggtransform_;
 
     ///@}
 

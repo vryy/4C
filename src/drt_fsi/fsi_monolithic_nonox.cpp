@@ -222,12 +222,12 @@ void FSI::MonolithicNoNOX::Newton()
   // test whether max iterations was hit
   if ( (Converged()) and (Comm().MyPID()==0) )
   {
-	IO::cout << IO::endl;
+IO::cout << IO::endl;
     IO::cout << "  Newton Converged! " <<  IO::endl;
   }
   else if (iter_ >= itermax_)
   {
-	IO::cout << IO::endl;
+IO::cout << IO::endl;
     IO::cout << "  Newton unconverged in "<< iter_ << " iterations " <<  IO::endl;
   }
 }
@@ -248,16 +248,16 @@ bool FSI::MonolithicNoNOX::Converged()
       break;
     case INPAR::FSI::convnorm_rel:
       convinc = (((normstrincL2_/ns_) < TOL_DIS_INC_L2_) and
-    		  	((normstrincInf_) < TOL_DIS_INC_INF_) and
-    		    ((norminterfaceincL2_/ni_) < TOL_FSI_INC_L2_) and
-    		    ((norminterfaceincInf_) < TOL_FSI_INC_INF_) and
-    		    ((normflvelincL2_/nfv_) < TOL_VEL_INC_L2_)    and
-    		    ((normflvelincInf_) < TOL_VEL_INC_INF_)    and
+      ((normstrincInf_) < TOL_DIS_INC_INF_) and
+        ((norminterfaceincL2_/ni_) < TOL_FSI_INC_L2_) and
+        ((norminterfaceincInf_) < TOL_FSI_INC_INF_) and
+        ((normflvelincL2_/nfv_) < TOL_VEL_INC_L2_)    and
+        ((normflvelincInf_) < TOL_VEL_INC_INF_)    and
                 ((normflpresincL2_/nfp_) < TOL_PRE_INC_L2_)   and
                 ((normflpresincInf_) < TOL_PRE_INC_INF_));
       break;
     case INPAR::FSI::convnorm_mix:
-    	dserror("not implemented!");
+    dserror("not implemented!");
       break;
   default:
       dserror("Cannot check for convergence of residual values!");
@@ -272,16 +272,16 @@ bool FSI::MonolithicNoNOX::Converged()
     break;
   case INPAR::FSI::convnorm_rel:
     convfres =  (((normstrrhsL2_/ns_) < TOL_DIS_RES_L2_) and
-    			((normstrrhsInf_) < TOL_DIS_RES_INF_) and
-    			((norminterfacerhsL2_/ni_) < TOL_FSI_RES_L2_) and
-    			((norminterfacerhsInf_) < TOL_FSI_RES_INF_) and
-    			((normflvelrhsL2_/nfv_) < TOL_VEL_RES_L2_)    and
-    			((normflvelrhsInf_) < TOL_VEL_RES_INF_)    and
-    			((normflpresrhsL2_/nfp_) < TOL_PRE_RES_L2_)   and
-    			((normflpresrhsInf_) < TOL_PRE_RES_INF_));
+    ((normstrrhsInf_) < TOL_DIS_RES_INF_) and
+    ((norminterfacerhsL2_/ni_) < TOL_FSI_RES_L2_) and
+    ((norminterfacerhsInf_) < TOL_FSI_RES_INF_) and
+    ((normflvelrhsL2_/nfv_) < TOL_VEL_RES_L2_)    and
+    ((normflvelrhsInf_) < TOL_VEL_RES_INF_)    and
+    ((normflpresrhsL2_/nfp_) < TOL_PRE_RES_L2_)   and
+    ((normflpresrhsInf_) < TOL_PRE_RES_INF_));
     break;
   case INPAR::FSI::convnorm_mix:
-	  dserror("not implemented!");
+  dserror("not implemented!");
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
@@ -480,7 +480,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIter()
   if ( Comm().MyPID()==0 )
   {
     if (iter_== 1)
-    	PrintNewtonIterHeader();
+    PrintNewtonIterHeader();
     PrintNewtonIterText();
   }
 }
@@ -495,7 +495,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
   //std::ostringstream oss;
 
   IO::cout << "==========================================================================================="
-		      "========================================================================="<< IO::endl;
+      "========================================================================="<< IO::endl;
 
   // enter converged state etc
   IO::cout << "|nit|";
@@ -514,7 +514,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
             << "flp-rs-li|" ;
     break;
   case INPAR::FSI::convnorm_mix :
-	  dserror("not implemented");
+  dserror("not implemented");
     break;
   default:
     dserror("You should not turn up here.");
@@ -527,23 +527,23 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
     IO::cout <<"                  "<< "abs-inc-norm";
     break;
   case INPAR::FSI::convnorm_rel :
-	   IO::cout << "str-in-l2|"  << "fsi-in-l2|" << "flv-in-l2|"
-	            << "flp-in-l2|" ;
-	   IO::cout << "str-in-li|"  << "fsi-in-li|" << "flv-in-li|"
-	            << "flp-in-li|" ;
+   IO::cout << "str-in-l2|"  << "fsi-in-l2|" << "flv-in-l2|"
+            << "flp-in-l2|" ;
+   IO::cout << "str-in-li|"  << "fsi-in-li|" << "flv-in-li|"
+            << "flp-in-li|" ;
     break;
   case INPAR::FSI::convnorm_mix :
-	  dserror("not implemented");
+  dserror("convnorm_mix not implemented");
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown convergence norm.");
     break;
   }
 
   // add solution time
   IO::cout << IO::endl;
   IO::cout << "==========================================================================================="
-		      "========================================================================="<< IO::endl;
+      "========================================================================="<< IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
@@ -559,47 +559,47 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
   switch ( normtypefres_ )
   {
   case INPAR::FSI::convnorm_abs :
-	  IO::cout << "             " << (normrhs_) << IO::endl;
+  IO::cout << "             " << (normrhs_) << IO::endl;
     break;
   case INPAR::FSI::convnorm_rel :
-	  IO::cout << "|" << (normstrrhsL2_/ns_)
-	           << "|" << (norminterfacerhsL2_/ni_)
-	           << "|" << (normflvelrhsL2_/nfv_)
-	           << "|" << (normflpresrhsL2_/nfp_)
-	           << "|" << (normstrrhsInf_)
-	           << "|" << (norminterfacerhsInf_)
-	           << "|" << (normflvelrhsInf_)
-	           << "|" << (normflpresrhsInf_);
+  IO::cout << "|" << (normstrrhsL2_/ns_)
+           << "|" << (norminterfacerhsL2_/ni_)
+           << "|" << (normflvelrhsL2_/nfv_)
+           << "|" << (normflpresrhsL2_/nfp_)
+           << "|" << (normstrrhsInf_)
+           << "|" << (norminterfacerhsInf_)
+           << "|" << (normflvelrhsInf_)
+           << "|" << (normflpresrhsInf_);
     break;
   case INPAR::FSI::convnorm_mix :
-	  dserror("not implemented!");
+  dserror("Mixed absolute-relative residual norm not implemented for XFFSI.");
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown type of residual norm.");
     break;
  }
 
   switch ( normtypeinc_ )
   {
   case INPAR::FSI::convnorm_abs :
-	  IO::cout << "             " << (norminc_) << IO::endl;
+  IO::cout << "             " << (norminc_) << IO::endl;
     break;
   case INPAR::FSI::convnorm_rel :
-	  IO::cout << "|" << (normstrincL2_/ns_)
-	           << "|" << (norminterfaceincL2_/ni_)
-	           << "|" << (normflvelincL2_/nfv_)
-	           << "|" << (normflpresincL2_/nfp_)
-	           << "|" << (normstrincInf_)
-	           << "|" << (norminterfaceincInf_)
-	           << "|" << (normflvelincInf_)
-	           << "|" << (normflpresincInf_)
-           	   << "|" << IO::endl;
+  IO::cout << "|" << (normstrincL2_/ns_)
+           << "|" << (norminterfaceincL2_/ni_)
+           << "|" << (normflvelincL2_/nfv_)
+           << "|" << (normflpresincL2_/nfp_)
+           << "|" << (normstrincInf_)
+           << "|" << (norminterfaceincInf_)
+           << "|" << (normflvelincInf_)
+           << "|" << (normflpresincInf_)
+              << "|" << IO::endl;
     break;
   case INPAR::FSI::convnorm_mix :
-	  dserror("not implemented!");
+    dserror("Mixed absolute-relative increment norm not implemented for XFFSI.");
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown type of increment norm.");
     break;
   }
 }
@@ -613,20 +613,18 @@ void FSI::MonolithicNoNOX::ValidateParameters()
                (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
 
   // Should ALE-relaxation be carried out?
-  relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
-  if (relaxing_ale_)
-  {
-    // Get no. of steps, after which ALE field should be relaxed
-    relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
-  }
+  relaxing_ale_ = DRT::INPUT::IntegralValue<bool>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
+  // Get no. of steps, after which ALE field should be relaxed
+  relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
+
   // Extract parameter list ALE_DYNAMIC
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
   // Get the ALE-type index, defining the underlying ALE-algorithm
   int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
 
   // Just ALE algorithm type 'incremental linear' and 'springs' supports ALE relaxation
-  if ( (aletype!=INPAR::ALE::incr_lin and aletype!=INPAR::ALE::springs)
-      and monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton)
+  if ( (aletype != INPAR::ALE::incr_lin and aletype != INPAR::ALE::springs) and
+      monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton )
     dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
 }
 
@@ -637,10 +635,10 @@ void FSI::MonolithicNoNOX::Update()
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::Update");
 
   // ALE relaxation flag
-  bool aleupdate=false;
+  bool aleupdate = relaxing_ale_;
 
   // In case of ale relaxation: Check, if the current step is an ale relaxation step!
-  if (relaxing_ale_)
+  if (relaxing_ale_ && relaxing_ale_every_ != 0)
     if (Step() % relaxing_ale_every_ == 0) aleupdate=true;
 
   // In case of ALE relaxation
@@ -674,8 +672,6 @@ void FSI::MonolithicNoNOX::Update()
   {
     // Build the ALE-matrix after the update
     AleField().BuildSystemMatrix(false);
-    // Create new ALE interface residual
-    aleresidual_=Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap(),true));
   }
 }
 

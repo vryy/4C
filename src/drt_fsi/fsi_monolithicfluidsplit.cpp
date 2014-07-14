@@ -125,6 +125,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fmggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
@@ -146,6 +147,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   if (aigtransform_ == Teuchos::null) { dserror("Allocation of 'aigtransform_' failed."); }
   if (fmiitransform_ == Teuchos::null) { dserror("Allocation of 'fmiitransform_' failed."); }
   if (fmgitransform_ == Teuchos::null) { dserror("Allocation of 'fmgitransform_' failed."); }
+  if (fmggtransform_ == Teuchos::null) { dserror("Allocation of 'fmggtransform_' failed."); }
   if (lambda_ == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
   if (lambdaold_ == Teuchos::null) { dserror("Allocation of 'lambdaold_' failed."); }
 #endif
@@ -776,7 +778,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
       mat.Matrix(1,0).Add(*lfmig,false,1.0,1.0);
     }
 
-    (*fggtransform_)(fmgg,
+    (*fmggtransform_)(fmgg,
                      (1.0-stiparam)/(1.0-ftiparam)*scale,
                      ADAPTER::CouplingSlaveConverter(coupsf),
                      ADAPTER::CouplingSlaveConverter(coupsf),
@@ -1654,9 +1656,9 @@ void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
 double FSI::MonolithicFluidSplit::SelectDtErrorBased() const
 {
   // get time step size suggestions based on some error norms
-  const double dtstr = GetAdaStrDt(); 									// based on all structure DOFs
-  const double dtstrfsi = GetAdaStrFSIDt(); 						// based on structure FSI DOFs
-  const double dtflinner = GetAdaFlInnerDt(); 					// based on inner fluid DOFs
+  const double dtstr = GetAdaStrDt(); // based on all structure DOFs
+  const double dtstrfsi = GetAdaStrFSIDt(); // based on structure FSI DOFs
+  const double dtflinner = GetAdaFlInnerDt(); // based on inner fluid DOFs
 
   double dt = Dt();
 
@@ -1680,23 +1682,23 @@ double FSI::MonolithicFluidSplit::SelectDtErrorBased() const
 bool FSI::MonolithicFluidSplit::SetAccepted() const
 {
   // get error norms
-	const double strnorm = GetAdaStrnorm();         // based on all structure DOFs
-	const double strfsinorm = GetAdaStrFSInorm();   // based on structure FSI DOFs
-	const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
+const double strnorm = GetAdaStrnorm();         // based on all structure DOFs
+const double strfsinorm = GetAdaStrFSInorm();   // based on structure FSI DOFs
+const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
 
-	bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ and flinnernorm < errtolfl_;
+bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ and flinnernorm < errtolfl_;
 
-	// in case error estimation in the fluid field is turned off:
+// in case error estimation in the fluid field is turned off:
   if (not IsAdaFluid())
     accepted = std::max(strnorm, strfsinorm) < errtolstr_;
 
-	// in case error estimation in the structure field is turned off:
-	if (not IsAdaStructure())
-	  accepted = flinnernorm < errtolfl_;
+// in case error estimation in the structure field is turned off:
+if (not IsAdaStructure())
+  accepted = flinnernorm < errtolfl_;
 
-	// no error based time adaptivity
-	if ((not IsAdaStructure()) and (not IsAdaFluid()))
-	  accepted = true;
+// no error based time adaptivity
+if ((not IsAdaStructure()) and (not IsAdaFluid()))
+  accepted = true;
 
-	return accepted;
+return accepted;
 }

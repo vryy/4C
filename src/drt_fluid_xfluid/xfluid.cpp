@@ -2115,95 +2115,12 @@ void FLD::XFluid::Init()
   // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
   // -------------------------------------------------------------------
-  dtp_          = params_->get<double>("time step size");
 
-  theta_        = params_->get<double>("theta");
-  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
-  convform_     = params_->get<string>("form of convective term","convective");
+  // read xfluid input parameters from list
+  SetXFluidParams();
 
-  numdim_       = DRT::Problem::Instance()->NDim();
-
-
-  Teuchos::ParameterList&   params_xfem    = params_->sublist("XFEM");
-  Teuchos::ParameterList&   params_xf_gen  = params_->sublist("XFLUID DYNAMIC/GENERAL");
-  Teuchos::ParameterList&   params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
-
-
-  // get the maximal number of dofsets that are possible to use
-  maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
-
-
-  // get input parameter how to prescribe interface velocity
-  interface_vel_init_          = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceInitVel>(params_xf_gen,"INTERFACE_VEL_INITIAL");
-  interface_vel_init_func_no_  = params_xf_gen.get<int>("VEL_INIT_FUNCT_NO", -1);
-  interface_vel_               = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceVel>(params_xf_gen,"INTERFACE_VEL");
-  interface_vel_func_no_       = params_xf_gen.get<int>("VEL_FUNCT_NO", -1);
-
-  // get input parameter how to prescribe solid displacement
-  interface_disp_           = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(params_xf_gen,"INTERFACE_DISP");
-  interface_disp_func_no_   = params_xf_gen.get<int>("DISP_FUNCT_NO", -1);
-
-  xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
-
-
-  // output for used FUNCT
-  if(myrank_ == 0)
-  {
-    std::cout << "Set interface fields: \n"
-              << "\t\t initial interface velocity:     " << params_xf_gen.get<string>("INTERFACE_VEL_INITIAL")
-              << "\t funct: " <<  interface_vel_init_func_no_ << "\n"
-              << "\t\t interface velocity:             " << params_xf_gen.get<string>("INTERFACE_VEL")
-              << "\t\t funct: " <<  interface_vel_func_no_ << "\n"
-              << "\t\t interface displacement:         " << params_xf_gen.get<string>("INTERFACE_DISP")
-              << "\t funct: " <<  interface_disp_func_no_ << "\n";
-
-    if(interface_vel_func_no_ != interface_vel_init_func_no_ and interface_vel_init_func_no_ == -1)
-      dserror("Are you sure that you want to choose two different functions for VEL_INIT_FUNCT_NO and VEL_FUNCT_NO");
-  }
-
-  // get interface stabilization specific parameters
-  coupling_method_       = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
-  coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
-
-  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
-
-  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
-
-  // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
-  edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
-
-  // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
-  ghost_penalty_                    = (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
-                                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
-                                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
-
-
-  // get general XFEM specific parameters
-  VolumeCellGaussPointBy_ = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
-  BoundCellGaussPointBy_  = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
-
-  if(myrank_ == 0)
-  {
-    std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<string>("VOLUME_GAUSS_POINTS_BY");
-    std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
-  }
-
-  // load GMSH output flags
-  gmsh_sol_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
-  gmsh_debug_out_        = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
-  gmsh_discret_out_      = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
-  gmsh_cut_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
-  gmsh_step_diff_        = 500;
-
-
-  // check xfluid input params
-  CheckXFluidParams(params_xfem,params_xf_gen,params_xf_stab);
+  // check xfluid input parameter combination for consistency & valid choices
+  CheckXFluidParams();
 
   // output of stabilization details
   PrintStabilizationParams();
@@ -2399,13 +2316,6 @@ void FLD::XFluid::Init()
   //----------------------------------------------------------------------
 
   // ---------------------------------------------------------------------
-  // set general fluid parameter defined before
-  // ---------------------------------------------------------------------
-  SetElementGeneralFluidXFEMParameter();
-  SetFaceGeneralFluidXFEMParameter();
-
-
-  // ---------------------------------------------------------------------
   // UpdateKrylovSpaceProjection can not be called during
   // SetupKrylovSpaceProjection since 'state_' is not yet member. So if Krylov
   // was set up, update here
@@ -2464,9 +2374,9 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
     //-------------------------------------------------------------------------------------------------------------------
 
     // number of norms that have to be calculated
-    int num_dom_norms    = 8;
-    int num_interf_norms = 8;
-    int num_stab_norms   = 3;
+    const int num_dom_norms    = 8;
+    const int num_interf_norms = 8;
+    const int num_stab_norms   = 3;
 
     Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
     Epetra_SerialDenseVector cpu_interf_norms(num_interf_norms);
@@ -2518,22 +2428,35 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
 
-        int set_counter = 0;
-
-
         // loop over volume cells
         for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
             s!=cell_sets.end();
             s++)
         {
           GEO::CUT::plain_volumecell_set & cells = *s;
+          const int set_counter = s - cell_sets.begin();
           const std::vector<int> & nds = nds_sets[set_counter];
 
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*discret_,nds,la,false);
 
-          for( unsigned cellcount=0;cellcount!=cell_sets[set_counter].size();cellcount++)
+          //------------------------------------------------------------
+          // Evaluate interface integral errors
+          // do cut interface condition
+
+          // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
+          std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
+          std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+          for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
           {
+            GEO::CUT::VolumeCell * vc = *i;
+            if ( vc->Position()==GEO::CUT::Point::outside )
+            {
+                vc->GetBoundaryCells( bcells );
+            }
+
+            const int cellcount = i - cells.begin();
             //------------------------------------------------------------
             // Evaluate domain integral errors
             impl->ComputeError(ele,
@@ -2544,63 +2467,44 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                 ele_dom_norms,
                 intpoints_sets[set_counter][cellcount]
             );
-
-            //------------------------------------------------------------
-            // Evaluate interface integral errors
-            // do cut interface condition
-
-            // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
-            std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
-            std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
-
-            for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-            {
-              GEO::CUT::VolumeCell * vc = *i;
-              if ( vc->Position()==GEO::CUT::Point::outside )
-              {
-                  vc->GetBoundaryCells( bcells );
-              }
-            }
-
-            if ( bcells.size() > 0 )
-            {
-                TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
-
-                // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-                // original Axel's transformation
-                e->BoundaryCellGaussPoints( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#else
-                // new Benedikt's transformation
-                e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#endif
-
-                // needed for fluid-fluid Coupling
-                std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
-                Epetra_SerialDenseMatrix  Cuiui(1,1);
-
-                if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-                   CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
-                   CouplingMethod() == INPAR::XFEM::Nitsche)
-                {
-                  impl->ComputeErrorInterface(
-                      ele,
-                      *discret_,
-                      la[0].lm_,
-                      mat,
-                      ele_interf_norms,
-                      *boundarydis_,
-                      bcells,
-                      bintpoints,
-                      side_coupling,
-                      *params_,
-                      cells);
-                }
-            } // bcells
           }
 
-          set_counter += 1;
-        }
+          if ( bcells.size() > 0 )
+          {
+            TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
+
+            // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+              // original Axel's transformation
+            e->BoundaryCellGaussPoints( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#else
+            // new Benedikt's transformation
+            e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#endif
+
+            // needed for fluid-fluid Coupling
+            std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
+            Epetra_SerialDenseMatrix  Cuiui(1,1);
+
+            if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+               CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
+               CouplingMethod() == INPAR::XFEM::Nitsche)
+            {
+              impl->ComputeErrorInterface(
+                  ele,
+                  *discret_,
+                  la[0].lm_,
+                  mat,
+                  ele_interf_norms,
+                  *boundarydis_,
+                  bcells,
+                  bintpoints,
+                  side_coupling,
+                  *params_,
+                  cells);
+            }
+          } // bcells
+        } // end of loop over volume-cell sets
 
 #else
         GEO::CUT::plain_volumecell_set cells;
@@ -2836,7 +2740,6 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         f.close();
       }
     } // myrank = 0
-
   }
 
   return;
@@ -2845,55 +2748,53 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 /*----------------------------------------------------------------------*
  |  check xfluid input parameters/ safety checks           schott 05/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
-                                     Teuchos::ParameterList& params_xf_gen,
-                                     Teuchos::ParameterList& params_xf_stab)
+void FLD::XFluid::CheckXFluidParams() const
 {
+  // ----------------------------------------------------------------------
+  // check XFLUID DYNAMIC/GENERAL parameter list
+  // ----------------------------------------------------------------------
 
-  //TODO this function has to be moved to FluidEleParameterXFEM
+  // output for used FUNCT
+  if(myrank_ == 0)
+  {
+    if (interface_vel_func_no_ != interface_vel_init_func_no_ and interface_vel_init_func_no_ == -1)
+      dserror("Are you sure that you want to choose two different functions for VEL_INIT_FUNCT_NO and VEL_FUNCT_NO");
+  }
 
-    // ----------------------------------------------------------------------
-    // check XFEM GENERAL parameter list
-    // ----------------------------------------------------------------------
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
 
-    // ----------------------------------------------------------------------
-    // check XFLUID DYNAMIC/GENERAL parameter list
-    // ----------------------------------------------------------------------
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  if( probtype == prb_fluid_xfem or
+      probtype == prb_fsi_xfem  or
+      probtype == prb_fsi_crack )
+  {
+    // check some input configurations
 
-    if( probtype == prb_fluid_xfem or
-        probtype == prb_fsi_xfem  or
-        probtype == prb_fsi_crack )
-    {
-      // check some input configurations
-      INPAR::XFEM::MovingBoundary xfluid_mov_bound    = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_xf_gen, "XFLUID_BOUNDARY");
+    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and xfluid_mov_bound_ != INPAR::XFEM::XFSIMovingBoundary)
+      dserror("INPUT CHECK: choose xfsi_moving_boundary!!! for prb_fsi_xfem");
+    if( probtype == prb_fluid_xfem  and xfluid_mov_bound_ == INPAR::XFEM::XFSIMovingBoundary)
+      dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem");
+    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
+      dserror("INPUT CHECK: choose interface_disp_by_fsi for prb_fsi_xfem");
+    if( probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
+      dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem");
+    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
+      dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
+  }
 
-      if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack)   and xfluid_mov_bound != INPAR::XFEM::XFSIMovingBoundary)
-        dserror("INPUT CHECK: choose xfsi_moving_boundary!!! for prb_fsi_xfem");
-      if( probtype == prb_fluid_xfem  and xfluid_mov_bound == INPAR::XFEM::XFSIMovingBoundary)
-        dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem");
-      if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack)    and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
-        dserror("INPUT CHECK: choose interface_disp_by_fsi for prb_fsi_xfem");
-      if( probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
-        dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem");
-      if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack)    and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
-        dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
-    }
+  // just xfluid-sided coulings or weak DBCs possible
+  if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC and coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
+    dserror("no non-xfluid sided COUPLING_STRATEGY possible");
 
-    // just xfluid-sided coulings or weak DBCs possible
-    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC and coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
-      dserror("no non-xfluid sided COUPLING_STRATEGY possible");
-
-    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
-    {
-      if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
-        dserror("INPUT CHECK: please choose XFLUID_SIDED_COUPLING for monolithic XFSI problems!");
-    }
-    else
-    {
-      if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC)
-        dserror("INPUT CHECK: please choose XFLUID_SIDED_weak_DBC as COUPLING_STRATEGY for any pure XFLUID or partitioned XFSI problem!");
-    }
+  if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
+  {
+    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
+      dserror("INPUT CHECK: please choose XFLUID_SIDED_COUPLING for monolithic XFSI problems!");
+  }
+  else
+  {
+    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC)
+      dserror("INPUT CHECK: please choose XFLUID_SIDED_weak_DBC as COUPLING_STRATEGY for any pure XFLUID or partitioned XFSI problem!");
+  }
 
   return;
 }
@@ -2902,7 +2803,7 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
 /*----------------------------------------------------------------------*
  |  Print fluid stabilization parameters                   schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrintStabilizationParams()
+void FLD::XFluid::PrintStabilizationParams() const
 {
   // output of stabilization details
   if (myrank_==0)
@@ -3035,12 +2936,12 @@ void FLD::XFluid::PrintStabilizationParams()
     if(coupling_method_ == INPAR::XFEM::Nitsche)
     {
       IO::cout << "VISC_STAB_FAC:                     " << interfstabparams->get<double>("VISC_STAB_FAC") << "\n";
-      IO::cout << "VISC_STAB_TRACE_ESTIMATE           " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
-      IO::cout << "VISC_STAB_HK                       " << interfstabparams->get<std::string>("VISC_STAB_HK")  << "\n";
+      IO::cout << "VISC_STAB_TRACE_ESTIMATE:          " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
+      IO::cout << "VISC_STAB_HK:                      " << interfstabparams->get<std::string>("VISC_STAB_HK")  << "\n";
     }
 
     if (coupling_method_ != INPAR::XFEM::Hybrid_LM_Cauchy_stress)
-      IO::cout << "VISC_ADJOINT_SYMMETRY              " << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
+      IO::cout << "VISC_ADJOINT_SYMMETRY:             " << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
 
     IO::cout << "GHOST_PENALTY_STAB:                " << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";
     IO::cout << "GHOST_PENALTY_TRANSIENT_STAB:      " << interfstabparams->get<std::string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
@@ -3048,9 +2949,9 @@ void FLD::XFluid::PrintStabilizationParams()
     IO::cout << "GHOST_PENALTY_TRANSIENT_FAC:       " << interfstabparams->get<double>("GHOST_PENALTY_TRANSIENT_FAC") << "\n";
     IO::cout << "GHOST_PENALTY_2nd_STAB:            " << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB") << "\n";
 
-
     IO::cout << "CONV_STAB_SCALING:                 " << interfstabparams->get<std::string>("CONV_STAB_SCALING") << "\n";
 
+    IO::cout << "IS_PSEUDO_2D:                      " << interfstabparams->get<std::string>("IS_PSEUDO_2D") << "\n";
     IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
   }
@@ -3640,7 +3541,7 @@ void FLD::XFluid::Solve()
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
-    
+
 
     if(gmsh_debug_out_)
     {
@@ -4318,7 +4219,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------------------------------------------------------------------------------
     //if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
     //  return;  // Do nothing in time integration----> active for crack-fsi problem ???
-      
+
     if(timint_semi_lagrangean)
     {
 
@@ -4805,7 +4706,7 @@ void FLD::XFluid::ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghos
 void FLD::XFluid::LiftDrag() const
 {
   // initially check whether computation of lift and drag values is required
-  if (params_->get<bool>("LIFTDRAG")) 
+  if (params_->get<bool>("LIFTDRAG"))
   {
     // get forces on all procs
     // create interface DOF vectors using the fluid parallel distribution
@@ -4911,12 +4812,12 @@ void FLD::XFluid::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          calculate flow through surfaces
   // -------------------------------------------------------------------
-  //	  ComputeSurfaceFlowRates();
+  //    ComputeSurfaceFlowRates();
 
   // -------------------------------------------------------------------
   //          calculate impuls rate through surfaces
   // -------------------------------------------------------------------
-  //	  ComputeSurfaceImpulsRates();
+  //    ComputeSurfaceImpulsRates();
 
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
@@ -6583,4 +6484,92 @@ void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr
       test_count++;
     }
   }
+}
+
+void FLD::XFluid::SetXFluidParams()
+{
+  dtp_          = params_->get<double>("time step size");
+
+  theta_        = params_->get<double>("theta");
+  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
+  convform_     = params_->get<string>("form of convective term","convective");
+
+  numdim_       = DRT::Problem::Instance()->NDim();
+
+  Teuchos::ParameterList&   params_xfem    = params_->sublist("XFEM");
+  Teuchos::ParameterList&   params_xf_gen  = params_->sublist("XFLUID DYNAMIC/GENERAL");
+  Teuchos::ParameterList&   params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
+
+  // get the maximal number of dofsets that are possible to use
+  maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
+
+  // get input parameter about type of boundary movement
+  xfluid_mov_bound_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_xf_gen, "XFLUID_BOUNDARY");
+
+  // get input parameter how to prescribe interface velocity
+  interface_vel_init_          = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceInitVel>(params_xf_gen,"INTERFACE_VEL_INITIAL");
+  interface_vel_init_func_no_  = params_xf_gen.get<int>("VEL_INIT_FUNCT_NO", -1);
+  interface_vel_               = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceVel>(params_xf_gen,"INTERFACE_VEL");
+  interface_vel_func_no_       = params_xf_gen.get<int>("VEL_FUNCT_NO", -1);
+
+  // get input parameter how to prescribe solid displacement
+  interface_disp_           = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(params_xf_gen,"INTERFACE_DISP");
+  interface_disp_func_no_   = params_xf_gen.get<int>("DISP_FUNCT_NO", -1);
+
+  xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
+
+  if (myrank_ == 0)
+  {
+    IO::cout << "Set interface fields: \n"
+              << "\t\t initial interface velocity:     " << params_xf_gen.get<string>("INTERFACE_VEL_INITIAL")
+              << "\t funct: " <<  interface_vel_init_func_no_ << "\n"
+              << "\t\t interface velocity:             " << params_xf_gen.get<string>("INTERFACE_VEL")
+              << "\t\t funct: " <<  interface_vel_func_no_ << "\n"
+              << "\t\t interface displacement:         " << params_xf_gen.get<string>("INTERFACE_DISP")
+              << "\t funct: " <<  interface_disp_func_no_ << IO::endl;
+  }
+
+  // get interface stabilization specific parameters
+  coupling_method_    = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
+  coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
+
+  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
+
+  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
+
+  // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
+  edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
+
+  // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
+  ghost_penalty_     = (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
+                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
+                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
+
+
+  // get general XFEM specific parameters
+  VolumeCellGaussPointBy_ = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_  = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
+
+  if(myrank_ == 0)
+  {
+    std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<string>("VOLUME_GAUSS_POINTS_BY");
+    std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
+  }
+
+  // load GMSH output flags
+  gmsh_sol_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
+  gmsh_debug_out_        = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
+  gmsh_EOS_out_          = ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_discret_out_      = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
+  gmsh_cut_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
+  gmsh_step_diff_        = 500;
+
+  // set XFEM-related parameters on element level
+  SetElementGeneralFluidXFEMParameter();
+  SetFaceGeneralFluidXFEMParameter();
 }

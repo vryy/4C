@@ -20,16 +20,16 @@ RESTART                         0//215//
 --------------------------------------------------------------------------IO
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8
-TIMESTEP 0.003 //0.00625
+TIMESTEP                        0.003 //0.00625
 NUMSTEP                         2//400
 RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          40
 CONVTOL                         1.0E-8
-BASETOL                         1.0E-3
-PRECONDREUSE                    10000000
+PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
@@ -38,7 +38,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD zero_field //field_by_function
+INITIALFIELD                    zero_field //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -52,20 +52,27 @@ START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1//0.66
-TIMEINTEGR One_Step_Theta //Stationary
-TIMESTEP 0.003//0.003125 //0.00625
+TIMEINTEGR                      One_Step_Theta //Stationary
+TIMESTEP                        0.003//0.003125 //0.00625
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE residual_based //
-DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+STABTYPE                        residual_based //
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes //no /                   
-SUPG yes //no//yes
+PSPG                            yes //no
+SUPG                            yes //no
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+--------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
+EOS_PRES                        xfem_gp                       //none, std_eos, xfem_gp
+EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_xfem_gp              // none, vel_jump_std_eos, vel_jump_xfem_gp
+EOS_DEFINITION_TAU              Burman_Fernandez
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        1.0
 NUMSTEP                         40
@@ -95,10 +102,10 @@ MAXITER                         100
 LINEAR_SOLVER                   2
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR //// vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym 
+SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //MLFLUID2                // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1                             // how often to recompute some preconditioners
 IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
 AZTOL                           1.0E-08                       // tolerance in unscaled residual
@@ -135,14 +142,14 @@ AZPOLY                          5                             // polynomial orde
 AZSCAL                          infnorm                       // none sym infnorm scaling of the system
 AZCONV                          AZ_noscaled                   // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT no //yes
-GMSH_SOL_OUT no// yes
-GMSH_DISCRET_OUT no// yes//yes
-GMSH_CUT_OUT                    no//yes
-GMSH_EOS_OUT                    no//yes
+GMSH_DEBUG_OUT                  no
+GMSH_SOL_OUT                    no
+GMSH_DISCRET_OUT                no
+GMSH_CUT_OUT                    no
+GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling //xfluid_sided_mortaring
 IS_PSEUDO_2D                    yes
 VISC_STAB_FAC                   24.40282794     // 35/CT(2d)
@@ -156,13 +163,9 @@ PRESSCOUPLING_INTERFACE_FAC     10
 GHOST_PENALTY_FAC               0.01
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj//Xff_TimeInt_IncompProj Xff_TimeInt_ProjIfMoved  // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues
---------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp//none, std_eos, xfem_gp 
-EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_xfem_gp              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
+RELAXING_ALE                    yes
+RELAXING_ALE_EVERY              1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 1 THEXPANS 0
