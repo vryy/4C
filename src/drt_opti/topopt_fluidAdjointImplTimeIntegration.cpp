@@ -638,6 +638,17 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
     // -------------------------------------------------------------------
     velnp_->Update(1.0,*incvel_,1.0);
   } // end iteration loop
+
+
+  if (topopt_density_!=Teuchos::null)
+  {
+    if (timealgo_==INPAR::FLUID::timeint_stationary)
+      optimizer_->ImportAdjointFluidData(velnp_,stepmax_+1-step_);
+    else
+      optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
+      // we have to switch the step here since we start with step 0 at end-time,
+      // but the step of adjoint fluid and fluid equations shall fit
+  }
 } // ImplicitTimeInt::NonLinearSolve
 
 
@@ -704,18 +715,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     output_->WriteVector("adjoint_veln", veln_);
     output_->WriteVector("adjoint_velnm",velnm_);
   }
-
-  if (topopt_density_!=Teuchos::null)
-  {
-    if (timealgo_==INPAR::FLUID::timeint_stationary)
-      optimizer_->ImportAdjointFluidData(velnp_,stepmax_+1-step_);
-    else
-      optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
-      // we have to switch the step here since we start with step 0 at end-time,
-      // but the step of adjoint fluid and fluid equations shall fit
-  }
-
-  return;
 } // ImplicitTimeInt::Output
 
 
