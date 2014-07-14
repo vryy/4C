@@ -1423,7 +1423,6 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_inv_analysis.cpp
   src/drt_acou/acou_inv_resulttest.cpp
   src/drt_acou/acou_resulttest.cpp
-  src/drt_acou/acou_utils.cpp
   src/drt_acou/pat_matpar_manager.cpp
 )
 set(OBJS_DRT_ACOU_LIB
@@ -1433,6 +1432,7 @@ set(OBJS_DRT_ACOU_LIB
   src/drt_acou/acou_ele_evaluate.cpp
   src/drt_acou/acou_ele_factory.cpp
   src/drt_acou/acou_ele_intfaces_calc.cpp
+  src/drt_acou/acou_utils.cpp
   src/drt_acou/acou_visc_ele_calc.cpp
   src/drt_acou/acou_visc_ele.cpp
 )

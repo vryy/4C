@@ -344,6 +344,43 @@ public:
 
   //@}
 
+  // stores the nodal trace values in case of p-adaptivity
+  Epetra_SerialDenseVector elenodeTrace_;
+
+  // state vectors which do not have to be stored as global distributed vector, since
+  // we are in a discontinuous setting here
+  //! @name interior stored states
+
+  /// local values from interior solution vector (gradient, velocity) at n+1
+  Epetra_SerialDenseVector eleinteriorVelnp_;
+  Epetra_SerialDenseVector eleinteriorPressnp_;
+
+  /// local values from interior solution vector (gradient, velocity) at n
+  Epetra_SerialDenseVector eleinteriorVeln_;
+  Epetra_SerialDenseVector eleinteriorPressn_;
+
+  /// local values from interior solution vector (gradient, velocity) at n-1 (BDF)
+  Epetra_SerialDenseVector eleinteriorVelnm_;
+  Epetra_SerialDenseVector eleinteriorPressnm_;
+
+  /// local values from interior solution vector (gradient, velocity) at n-2 (BDF)
+  Epetra_SerialDenseVector eleinteriorVelnmm_;
+  Epetra_SerialDenseVector eleinteriorPressnmm_;
+
+  /// local values from interior solution vector (gradient, velocity) at n-3 (BDF)
+  Epetra_SerialDenseVector eleinteriorVelnmmm_;
+  Epetra_SerialDenseVector eleinteriorPressnmmm_;
+
+  /// local values from interior solution vector (gradient, velocity) at DIRK stages
+  std::vector<Epetra_SerialDenseVector> elesp_;
+  std::vector<Epetra_SerialDenseVector> eleyp_;
+  std::vector<Epetra_SerialDenseVector> elefp_;
+  std::vector<Epetra_SerialDenseVector> elesv_;
+  std::vector<Epetra_SerialDenseVector> eleyv_;
+  std::vector<Epetra_SerialDenseVector> elefv_;
+
+  //@}
+
 protected:
 
   //! discretization type
@@ -368,7 +405,6 @@ private:
 
   // stores the polynomial type (tensor product or complete polynomial)
   bool completepol_;
-
 
 }; // class Acou
 

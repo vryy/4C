@@ -25,8 +25,9 @@ Maintainer: Svenja Schoeder
 void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
                           double (&a)[6][6],
                           double (&b)[6],
-                          unsigned int &q)
+                          int &q)
 {
+  // TODO: no fill, but object with values
   switch(scheme)
   {
   case INPAR::ACOU::acou_dirk23:

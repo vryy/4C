@@ -43,17 +43,11 @@ public:
   /// set initial field by given light distribution
   virtual void SetInitialPhotoAcousticField(double pulse, Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
 
-  /// call elements to calculate system matrix
-  virtual void AssembleMatAndRHS();
-
   /// update: current solution becomes old solution of next timestep
   virtual void TimeUpdate();
 
   /// write restart
   virtual void WriteRestart();
-
-  /// Call elements to update interior variabels and to calculate the RHS vector (in this way, we can save some computing time)
-  virtual void UpdateInteriorVariablesAndAssemebleRHS();
 
   /// return the name of the time integration scheme
   virtual std::string Name();
@@ -65,8 +59,6 @@ private:
   // in contrast to the base class, BDF schemes require additional history variables
   Teuchos::RCP<Epetra_Vector>    velnmm_;
   Teuchos::RCP<Epetra_Vector>    velnmmm_;
-  Teuchos::RCP<Epetra_Vector>    intvelnmm_;
-  Teuchos::RCP<Epetra_Vector>    intvelnmmm_;
 };
 
 } // namespace ACOU

@@ -12,6 +12,7 @@ Maintainers: Svenja Schoeder
 *----------------------------------------------------------------------*/
 
 #include "acou_impl_dirk.H"
+#include "acou_ele.H"
 #include "acou_utils.H"
 #include "acou_ele_action.H"
 #include "../drt_lib/drt_discret_hdg.H"
@@ -34,23 +35,7 @@ ACOU::TimIntImplDIRK::TimIntImplDIRK(
 {
   // fill the scheme specific coefficients
   FillDIRKValues(dyna_,dirk_a_,dirk_b_,dirk_q_);
-
-  // locate vectors for stage vectors
-
-  s_.resize(dirk_q_);
-  y_.resize(dirk_q_);
-  f_.resize(dirk_q_);
-  t_.resize(dirk_q_);
-  ft_.resize(dirk_q_);
-
-  for(unsigned int i=0; i<dirk_q_; ++i)
-  {
-    s_[i] = LINALG::CreateVector(*(discret_->DofRowMap(1)),true);
-    y_[i] = LINALG::CreateVector(*(discret_->DofRowMap(1)),true);
-    f_[i] = LINALG::CreateVector(*(discret_->DofRowMap(1)),true);
-    t_[i] = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
-    ft_[i] = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
-  }
+  t_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
 
   // that's it. the standard constructor did everything else
 } // TimIntImplDIRK
@@ -81,6 +66,9 @@ void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, T
     // update solution, current solution becomes old solution of next timestep
     TimeUpdate();
 
+    // p-adaptivity
+    UpdatePolyAndState();
+
     // output of solution
     Output(history,splitter);
 
@@ -96,7 +84,7 @@ void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, T
 /*----------------------------------------------------------------------*
  |  Calculate system matrix (public)                     schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::TimIntImplDIRK::AssembleMatAndRHS()
+void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
 {
   // create the parameters for the discretization
   Teuchos::ParameterList eleparams;
@@ -109,10 +97,13 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS()
   //----------------------------------------------------------------------
 
   bool resonly = !(!bool(step_-1) || !bool(step_-restart_-1));
+  if(padaptivity_) resonly = false; // TODO: nur fuer erste stage, bzw. update step
   if(!resonly)
     sysmat_->Zero();
 
   eleparams.set<bool>("resonly",resonly);
+  eleparams.set<int>("stage",stage);
+  eleparams.set<bool>("padaptivity",padaptivity_);
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
   eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
@@ -122,7 +113,6 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS()
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
 
   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-
   discret_->ClearState();
 
   if(!resonly)
@@ -165,12 +155,14 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
 {
   Teuchos::ParameterList eleparams;
 
-  discret_->SetState(1,"intvel",y_[stage]);
 
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
 
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
+  eleparams.set<int>("stage",stage);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  if(unsigned(stage)==dirk_q_-1)eleparams.set<double>("padaptivitytol",padapttol_);
   Teuchos::RCP<std::vector<double> > elevals;
   if(errormaps_)
     elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
@@ -180,7 +172,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
-  discret_->SetState(0,"trace",t_[stage]);
+  discret_->SetState(0,"trace",t_);
 
   residual_->Scale(0.0);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
@@ -198,10 +190,6 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
       error_->ReplaceMyValue(el,0,localvals[error_->Map().GID(el)]);
   }
 
-  const Epetra_Vector& intvelnpGhosted = *discret_->GetState(1,"intvel");
-  for (int i=0; i<intvelnp_->MyLength(); ++i)
-    (*(y_[stage]))[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
-
   discret_->ClearState();
 
   return;
@@ -216,63 +204,31 @@ void ACOU::TimIntImplDIRK::Solve()
   dtele_   = 0.0;
 
   // initialize some vectors
-  intvelnp_->Update(1.0,*intveln_,0.0);
   velnp_->Update(1.0,*veln_,0.0);
-  s_[0]->Update(1.0/dirk_a_[0][0],*intvelnp_,0.0);
-  y_[0]->Update(1.0,*intvelnp_,0.0);
 
   // loop over all stages of the DIRK scheme
-  for(unsigned int i=0; i<dirk_q_; ++i)
+  for(int i=0; i<dirk_q_; ++i)
   {
-    discret_->SetState("trace",veln_);
-    s_[i]->Scale(dirk_a_[i][i]);
-    discret_->SetState(1,"intvel",s_[i]);
+    if(!padaptivity_) discret_->SetState("trace",veln_);
 
     // call elements to calculate system matrix/rhs and assemble
     double tcpuele = Teuchos::Time::wallTime();
-    AssembleMatAndRHS();
+    AssembleMatAndRHS(i);
     dtele_ += Teuchos::Time::wallTime()-tcpuele;
-    s_[i]->Scale(1.0/dirk_a_[i][i]);
 
     // apply Dirichlet boundary conditions to system of equations
     ApplyDirichletToSystem(i);
 
     // solve the linear equation
     const double tcpusolve = Teuchos::Time::wallTime();
-    solver_->Solve(sysmat_->EpetraOperator(),t_[i],residual_,true,false,Teuchos::null);
+    solver_->Solve(sysmat_->EpetraOperator(),t_,residual_,true,false,Teuchos::null);
+
     dtsolve_ += Teuchos::Time::wallTime()-tcpusolve;
 
     // update interior variables
-    y_[i]->Update(dirk_a_[i][i],*s_[i],0.0);
     tcpuele = Teuchos::Time::wallTime();
     UpdateInteriorVariables(i);
     dtele_ += Teuchos::Time::wallTime()-tcpuele;
-
-    // calculate f[i]
-    f_[i]->Update(1.0/dirk_a_[i][i]/dtp_,*y_[i],0.0);
-    ft_[i]->Update(1.0/dirk_a_[i][i]/dtp_,*t_[i],0.0);
-    f_[i]->Update(-1.0/dirk_a_[i][i]/dtp_,*intveln_,1.0);
-    ft_[i]->Update(-1.0/dirk_a_[i][i]/dtp_,*veln_,1.0);
-    for(unsigned int j=0; j<i; ++j)
-    {
-      f_[i]->Update(-dirk_a_[dirk_q_-1][j]/dirk_a_[dirk_q_-1][dirk_q_-1],*f_[j],1.0);
-      ft_[i]->Update(-dirk_a_[dirk_q_-1][j]/dirk_a_[dirk_q_-1][dirk_q_-1],*ft_[j],1.0);
-    }
-
-    //  now y holds the internal variable values for the i-th stage
-    intvelnp_->Update(dtp_*dirk_b_[i],*f_[i],1.0);
-    velnp_->Update(dtp_*dirk_b_[i],*ft_[i],1.0);
-
-    // calculate s[i]
-    if ((i+1) < dirk_q_)
-    {
-      s_[i+1]->Update(1.0/dirk_a_[i+1][i+1],*intveln_,0.0);
-      for(unsigned int j=0; j<=i; ++j)
-      {
-        s_[i+1]->Update(dirk_a_[i+1][j]/dirk_a_[i+1][i+1]/dirk_a_[j][j],*y_[j],1.0);
-        s_[i+1]->Update(-dirk_a_[i+1][j]/dirk_a_[i+1][i+1],*s_[j],1.0);
-      }
-    }
 
   } // for(unsigned int i=0; i<dirk_q_; ++i)
 
@@ -288,9 +244,56 @@ void ACOU::TimIntImplDIRK::ApplyDirichletToSystem(int stage)
   Teuchos::ParameterList params;
   params.set<double>("total time",time_);
   discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  LINALG::ApplyDirichlettoSystem(sysmat_,t_[stage],residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
+  LINALG::ApplyDirichlettoSystem(sysmat_,t_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
   return;
 } // ApplyDirichletToSystem
+
+
+/*----------------------------------------------------------------------*
+ | P-Adaptivity                                          schoeder 07/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::TimIntImplDIRK::UpdatePolyAndState()
+{
+  /* This function serves to supply all required steps for p-adaptivity. What we need
+   * is the following:
+   * 1.) Do the local postprocessing, calculate delta_k (this is the amount the polynomial shape function needs to change)
+   * 2.) Several things
+   *     - Update the degree
+   *     - Map / project the values
+   *     - Rebuild the distributed vectors
+   *     - Fill the distributed vectors
+   * 3.) Do the next time step
+   * UpdateInteriorVariables and ComputeResidual have to be separated (or not, if the element are samrt)
+   */
+
+  // 1.) can be fully done by the elements: if p-adaptivity is desired, then the elements
+  //     do not store the error in the error vector, but the delta_k!
+  if(!padaptivity_) return;
+
+  for(int i=0; i<discret_->NumMyRowElements(); ++i)
+    dynamic_cast<DRT::ELEMENTS::Acou*>(discret_->lRowElement(i))->SetDegree(int(error_->operator [](i)));
+
+  // actually we don't want an entire FillComplete call, since nodes and elements remain the same
+  // we only want the face and internal dofs and the faces are rebuild
+  discret_->BuildFaces();
+  discret_->BuildFaceRowMap();
+  discret_->BuildFaceColMap();
+  discret_->AssignDegreesOfFreedom(0);
+
+  // update maps for global vectors
+  velnp_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  residual_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  t_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+
+  sysmat_ = Teuchos::null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),108,false,true));
+
+  // now we have to call the calculation of the residual, because we skipped it in
+  // UpdateInteriorVariablesAndComputeResidual
+  AssembleMatAndRHS(0);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | Return the name of the time integrator       (public) schoeder 01/14 |

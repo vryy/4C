@@ -169,8 +169,7 @@ void DRT::ELEMENTS::Acou::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,distype_);
   int degree = degree_;
   AddtoPack(data, degree);
-  degree = completepol_;
-  AddtoPack(data, degree);
+  AddtoPack(data, completepol_);
 
   return;
 }

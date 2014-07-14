@@ -127,6 +127,9 @@ public:
   /// evaluate error compared to analytical solution
   void EvaluateErrorComparedToAnalyticalSol();
 
+  /// p-adaptivity
+  virtual void UpdatePolyAndState();
+
   /// Call elements to update interior variabels and to calculate the RHS vector (in this way, we can save some computing time)
   virtual void UpdateInteriorVariablesAndAssemebleRHS();
 
@@ -208,12 +211,6 @@ protected:
   Teuchos::RCP<Epetra_Vector>    velnp_;
   Teuchos::RCP<Epetra_Vector>    veln_;
   Teuchos::RCP<Epetra_Vector>    velnm_;
-
-  //! @name velocity and pressure at time n+1, n, n-1
-  //!  and n+alpha_F for element interior in HDG
-  Teuchos::RCP<Epetra_Vector>    intvelnp_;
-  Teuchos::RCP<Epetra_Vector>    intveln_;
-  Teuchos::RCP<Epetra_Vector>    intvelnm_;
 
   /// element based error vector, only if desired by user
   Teuchos::RCP<Epetra_Vector>    error_;

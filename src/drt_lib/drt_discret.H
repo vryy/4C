@@ -1692,7 +1692,7 @@ public:
                                The vector is NOT initialized to zero by this method.
     \param systemvector3 (out):Vector to assemble BCs to.
                                The vector is NOT initialized to zero by this method.
-    \param condstring (in):	   Name of condition to be evaluated
+    \param condstring (in):    Name of condition to be evaluated
     \param condid (in):        Condition ID
     */
   void EvaluateCondition
@@ -1877,6 +1877,20 @@ public:
 
   //@}
 
+  /*!
+  \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
+
+  Assign nodes and elements their no. of degrees of freedom as aquired
+  by Element::NumDofPerNode and Element::NumDofPerElement.
+  Number degrees of freedom (dofs) ascending according to global node numbers
+  followed by global element numbers
+
+  \param start (int): first dof number to assign
+
+  \return last dof assigned + 1
+  */
+  virtual int AssignDegreesOfFreedom(int start);
+
 private:
 
   // don't want = operator and copy constructor
@@ -1989,23 +2003,6 @@ protected:
   */
   // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis) Jan12
   virtual void Reset(bool killdofs = true, bool killcond = true);
-
-  /*!
-  \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
-
-  Assign nodes and elements their no. of degrees of freedom as aquired
-  by Element::NumDofPerNode and Element::NumDofPerElement.
-  Number degrees of freedom (dofs) ascending according to global node numbers
-  followed by global element numbers
-
-  \note This should become public to allow users to assign there own dofs
-        in a more-than-one-discretization case
-
-  \param start (int): first dof number to assign
-
-  \return last dof assigned + 1
-  */
-  virtual int AssignDegreesOfFreedom(int start);
 
   /*!
   \brief Initialize element routines

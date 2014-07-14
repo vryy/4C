@@ -63,18 +63,17 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
 {
 
   if ( dtp_ == 0.0)  dserror("Can't work with time step size == 0.0");
+  if(padaptivity_==true && errormaps_==false) dserror("If you want to do p-adaptivity, you also have to set the flag ERRORMAPS to Yes");
+  if(padaptivity_==true && dyna_==INPAR::ACOU::acou_trapezoidal) dserror("p-adaptivity not implemented for trapezoidal time integration, use impl or dirk!");
+  if(padaptivity_==true && (dyna_==INPAR::ACOU::acou_dirk23 || dyna_==INPAR::ACOU::acou_dirk33 || dyna_==INPAR::ACOU::acou_dirk34 || dyna_==INPAR::ACOU::acou_dirk54 ))
+      dserror("p-adaptivity not yet implemented for dirk time integration!"); // TODO asap
+  if(padaptivity_==true && discret_->Comm().NumProc()>1) dserror("p-adaptivity does not yet work in parallel!"); // TODO asap
 
   // create all vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
   veln_  = LINALG::CreateVector(*dofrowmap,true);
   velnm_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // create hdg related vectors for internal fields
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  intvelnp_  = LINALG::CreateVector(*intdofrowmap,true);
-  intvelnm_  = LINALG::CreateVector(*intdofrowmap,true);
-  intveln_   = LINALG::CreateVector(*intdofrowmap,true);
 
   // create vector containing element based error values
   if(errormaps_)
@@ -159,9 +158,10 @@ void ACOU::AcouImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(velnp_,"velnps");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
-  reader.ReadVector(intvelnp_,"intvelnp");
-  reader.ReadVector(intveln_ ,"intveln");
-  reader.ReadVector(intvelnm_ ,"intvelnm");
+  // reader.ReadVector(intvelnp_,"intvelnp");
+  //  reader.ReadVector(intveln_ ,"intveln");
+  // reader.ReadVector(intvelnm_ ,"intvelnm");
+  dserror("write read restart method which brings the values to the elements");
 
   return;
 } // ReadRestart
@@ -174,9 +174,6 @@ void ACOU::AcouImplicitTimeInt::SetInitialZeroField()
   velnp_->PutScalar(0.0);
   veln_->PutScalar(0.0);
   velnm_->PutScalar(0.0);
-  intvelnp_->PutScalar(0.0);
-  intveln_->PutScalar(0.0);
-  intvelnm_->PutScalar(0.0);
 } // SetInitialZeroField()
 
 /*----------------------------------------------------------------------*
@@ -184,8 +181,6 @@ void ACOU::AcouImplicitTimeInt::SetInitialZeroField()
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
 {
-  //const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
   Epetra_SerialDenseVector elevec1, elevec2, elevec3;
   Epetra_SerialDenseMatrix elemat1, elemat2;
 
@@ -194,13 +189,15 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
   initParams.set<int>("funct",startfuncno);
   initParams.set<double>("pulse",pulse);
   initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  initParams.set<bool>("padaptivity",padaptivity_);
+  initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
 
   DRT::Element::LocationArray la(2);
   int err = 0;
-  for (int el=0; el<discret_->NumMyRowElements();++el)
+  for (int el=0; el<discret_->NumMyColElements();++el)
   {
     elevec1.Scale(0.0);elevec2.Scale(0.0);
-    DRT::Element *ele = discret_->lRowElement(el);
+    DRT::Element *ele = discret_->lColElement(el);
     ele->LocationVector(*discret_,la,false);
     //if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
     //  elevec1.Shape(la[0].lm_.size(), 1);
@@ -216,22 +213,11 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
     //std::cout<<"el"<<el<<" err "<<err<<std::endl;
     // err += veln_ ->ReplaceMyValues(la[0].lm_.size(),elevec1.A(),&la[0].lm_[0]);
     // err += velnm_->ReplaceMyValues(la[0].lm_.size(),elevec1.A(),&la[0].lm_[0]);
-
-    std::vector<int> localDofs = discret_->Dof(1, ele);
-    dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
-    for (unsigned int i=0; i<localDofs.size(); ++i)
-      localDofs[i] = intdofrowmap->LID(localDofs[i]);
-    err += intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-
-    // intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-    // intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
   }
   if(err!=0) dserror("Could not replace all values");
 
   veln_->Update(1.0,*velnp_,0.0);
   velnm_->Update(1.0,*velnp_,0.0);
-  intveln_->Update(1.0,*intvelnp_,0.0);
-  intvelnm_->Update(1.0,*intvelnp_,0.0);
 
   return;
 } // SetInitialField
@@ -244,32 +230,35 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
                                                        Teuchos::RCP<DRT::Discretization> scatradis,
                                                        bool meshconform)
 {
+  // we have to call an init for the elements first!
+  Teuchos::ParameterList initParams;
+  initParams.set<int>("action",ACOU::ele_init);
+  initParams.set<bool>("padaptivity",padaptivity_);
+  initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  discret_->Evaluate(initParams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   // export light vector to column map, this is necessary
   Teuchos::RCP<Epetra_Vector> lightcol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap())));
   LINALG::Export(*light,*lightcol);
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
 
   Epetra_SerialDenseVector elevec1, elevec2, elevec3;
   Epetra_SerialDenseMatrix elemat1, elemat2;
 
   DRT::Element::LocationArray la(2);
 
-  Teuchos::ParameterList initParams;
   initParams.set<int>("action",ACOU::project_optical_field);
   initParams.set<double>("pulse",pulse);
   initParams.set<bool>("mesh conform",meshconform);
-  initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   int numoptele = scatradis->NumGlobalElements();
 
   if(meshconform)
   {
-
     int minoptelegid = scatradis->ElementRowMap()->MinAllGID();
-
+    std::vector<int> localrelevantghostelements;
     // loop all optical elements (usually there are less optical elements than acoustical elements
     for(int optel=0; optel<numoptele; ++optel)
     {
@@ -295,7 +284,11 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
       {
         acouele = discret_->gElement(optel);
         myacoueleowner = acouele->Owner();
-        if ( myacoueleowner != myrank_ ) myacoueleowner = -1; // do not want to consider ghosted elements
+        if ( myacoueleowner != myrank_ )
+        {
+          myacoueleowner = -1;
+          localrelevantghostelements.push_back(optel);
+        } // do not want to consider ghosted elements
       }
       // now, every proc knows the owner of this acoustical element
       discret_->Comm().MaxAll(&myacoueleowner,&acoueleowner,1);
@@ -343,15 +336,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
           // evaluate the element
           acouele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
 
-          // fill evelvec1 and elevec2 into the global vectors
-          int err = 0;
-          std::vector<int> localDofs = discret_->Dof(1, acouele);
-          dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
-          for (unsigned int i=0; i<localDofs.size(); ++i)
-            localDofs[i] = intdofrowmap->LID(localDofs[i]);
-          err += intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-          if(err) dserror("could not replace my values");
-
+          // fill evelvec1 into the global vector
           for (unsigned int i=0; i<la[0].lm_.size(); ++i)
           {
             const int lid = dofrowmap->LID(la[0].lm_[i]);
@@ -421,15 +406,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
 
           acouele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
 
-          // fill evelvec1 and elevec2 into the global vectors
-          int err = 0;
-          std::vector<int> localDofs = discret_->Dof(1, acouele);
-          dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
-          for (unsigned int i=0; i<localDofs.size(); ++i)
-            localDofs[i] = intdofrowmap->LID(localDofs[i]);
-          err += intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-          if(err) dserror("could not replace my values");
-
+          // fill evelvec1 into the global vector
           // for (unsigned int i=0; i<la[0].lm_.size(); ++i)
           // {
           //   const int lid = dofrowmap->LID(la[0].lm_[i]);
@@ -440,9 +417,82 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
 
       } // else ** if ( acoueleowner == opteleowner )
     } // for(int optel=0; optel<numoptele; ++optel)
+
+    int sumghostele = -1;
+    int localnumghostele = localrelevantghostelements.size();
+    discret_->Comm().SumAll(&localnumghostele,&sumghostele,1);
+    std::vector<int> relevantghostelements(sumghostele);
+
+    for(int i=0; i<sumghostele; ++i)
+    {
+      for(int proc=0; proc<discret_->Comm().NumProc(); ++proc)
+      {
+        int vals = -1;
+        int locsize = localnumghostele;
+        discret_->Comm().Broadcast(&locsize,1,proc);
+        for(int j=0; j<locsize; ++j)
+        {
+          if(myrank_==proc) vals=localrelevantghostelements[j];
+          discret_->Comm().Broadcast(&vals,1,proc);
+          relevantghostelements[i] = vals;
+        }
+      }
+    }
+
+    // communicate to ghosted elements
+    for(unsigned int i=0; i<relevantghostelements.size(); ++i)
+    {
+      DRT::Element* ele = NULL;
+      int owner = 0;
+      std::vector<double> pressvals;
+      if( discret_->HaveGlobalElement(relevantghostelements[i]) ) // true for owner and the proc with ghost
+      {
+        ele = discret_->gElement(relevantghostelements[i]);
+        owner = ele->Owner();
+        Epetra_SerialDenseVector tempvec;
+        if(owner == myrank_)
+        {
+          DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
+          pressvals.resize(acouele->eleinteriorPressnp_.M());
+          for(int j=0; j<acouele->eleinteriorPressnp_.M(); ++j)
+            pressvals[j] = acouele->eleinteriorPressnp_(j);
+        }
+      }
+      int actualowner = 0;
+
+      discret_->Comm().MaxAll(&owner,&actualowner,1);
+      int size = pressvals.size();
+      discret_->Comm().Broadcast(&size,1,actualowner);
+      if(myrank_!=actualowner)
+        pressvals.resize(size);
+      discret_->Comm().Broadcast(&pressvals[0],size,actualowner);
+      // each proc has the values, now the proc with the ghost element has to update the values
+      if( discret_->HaveGlobalElement(relevantghostelements[i]) && actualowner!=myrank_ )
+      {
+        DRT::Element* ele = discret_->gElement(relevantghostelements[i]);
+        DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
+        Epetra_SerialDenseVector tempvec(size);
+        for(int j=0; j<size; ++j) tempvec(j) = pressvals[j];
+        acouele->eleinteriorPressnp_=tempvec;
+        acouele->eleinteriorPressn_=tempvec;
+        switch(dyna_)
+        {
+        case INPAR::ACOU::acou_bdf4:
+          acouele->eleinteriorPressnmmm_ = tempvec; // no break here
+        case INPAR::ACOU::acou_bdf3:
+          acouele->eleinteriorPressnmm_  = tempvec; // no break here
+        case INPAR::ACOU::acou_bdf2:
+          acouele->eleinteriorPressnm_   = tempvec;
+          break;// here you go
+        default: break;
+        }
+      }
+    }
+
   } // if(meshconform)
   else
   {
+    // TODO: have to set the initial field for column elements as well!
     if(!myrank_) std::cout<<"Welcome to nonconform mapping, this might take a while! Please have a little patience."<<std::endl;
     double tcpumap=Teuchos::Time::wallTime();
     // first of all, we want to get a nodebased vector of pressure values
@@ -625,15 +675,6 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
 
       acouele->LocationVector(*discret_,la,false);
       acouele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
-
-      // fill evelvec1 and elevec2 into the global vectors
-      int err = 0;
-      std::vector<int> localDofs = discret_->Dof(1, acouele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
-      for (unsigned int i=0; i<localDofs.size(); ++i)
-        localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      err += intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-      if(err) dserror("could not replace my values");
     }
     if(!myrank_)
     {
@@ -643,8 +684,6 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
     }
   } // else ** if(meshconform)
 
-  intveln_->Update(1.0,*intvelnp_,0.0);
-  intvelnm_->Update(1.0,*intvelnp_,0.0);
   veln_->Update(1.0,*velnp_,0.0);
   velnm_->Update(1.0,*velnp_,0.0);
 
@@ -719,6 +758,9 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
     // update solution, current solution becomes old solution of next timestep
     TimeUpdate();
 
+    // p-adaptivity
+    UpdatePolyAndState();
+
     // output of solution
     Output(history,splitter);
 
@@ -781,22 +823,22 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   // evaluate elements
   //----------------------------------------------------------------------
 
-
   // set general vector values needed by elements
   discret_->ClearState();
-
+  if(!padaptivity_){
   discret_->SetState("trace",velnp_);
   discret_->SetState("trace_m",veln_);
+  }
 
-  // set history variable
-  discret_->SetState(1,"intvel",intvelnp_);
-  discret_->SetState(1,"intvelm",intveln_);
+  // set time step size
   eleparams.set<double>("dt",dtp_);
 
   // call standard loop over elements
   bool resonly = false;// !(!bool(step_-1) || !bool(step_-restart_-1));
 
+  // set information needed by the elements
   eleparams.set<bool>("resonly",resonly);
+  eleparams.set<bool>("padaptivity",padaptivity_);
   eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<bool>("adjoint",adjoint_);
@@ -833,7 +875,9 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
     }
   }
   sysmat_->Complete();
-
+  //std::cout<<"RESIDUAL"<<std::endl;
+  //residual_->Print(std::cout);
+  //std::cout<<"SYSMAT"<<std::endl;
   //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
   return;
 } // AssembleMatAndRHS
@@ -846,9 +890,7 @@ void ACOU::AcouImplicitTimeInt::TimeUpdate()
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::TimeUpdate");
 
   velnm_->Update(1.0,*veln_ ,0.0);
-  intvelnm_->Update(1.0,*intveln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
-  intveln_ ->Update(1.0,*intvelnp_,0.0);
 
   return;
 } // TimeUpdate
@@ -868,8 +910,11 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   // create parameterlist
   Teuchos::ParameterList eleparams;
 
+  discret_->SetState("trace",velnp_);
   // fill in parameters and set states needed by elements
-  discret_->SetState(1,"intvel",intvelnp_);
+  if(!padaptivity_){
+    discret_->SetState("trace_m",veln_);
+  }
   eleparams.set<double>("dt",dtp_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
@@ -884,8 +929,6 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
 
-  discret_->SetState("trace",velnp_);
-  discret_->SetState("trace_m",veln_);
 
   residual_->Scale(0.0);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
@@ -902,11 +945,6 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
     for(int el=0; el<discret_->NumMyRowElements(); ++el)
       error_->ReplaceMyValue(el,0,localvals[error_->Map().GID(el)]);
   }
-
-  // update internal field for parallel usage
-  const Epetra_Vector& intvelnpGhosted = *discret_->GetState(1,"intvel");
-  for (int i=0; i<intvelnp_->MyLength(); ++i)
-    (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
 
   discret_->ClearState();
 
@@ -930,17 +968,63 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   return;
 } // UpdateInteriorVariablesAndAssemebleRHS
 
+
+/*----------------------------------------------------------------------*
+ | P-Adaptivity                                          schoeder 07/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouImplicitTimeInt::UpdatePolyAndState()
+{
+  /* This function serves to supply all required steps for p-adaptivity. What we need
+   * is the following:
+   * 1.) Do the local postprocessing, calculate delta_k (this is the amount the polynomial shape function needs to change)
+   * 2.) Several things
+   *     - Update the degree
+   *     - Map / project the values
+   *     - Rebuild the distributed vectors
+   *     - Fill the distributed vectors
+   * 3.) Do the next time step
+   * UpdateInteriorVariables and ComputeResidual have to be separated (or not, if the element are samrt)
+   */
+
+  // 1.) can be fully done by the elements: if p-adaptivity is desired, then the elements
+  //     do not store the error in the error vector, but the delta_k!
+  if(!padaptivity_) return;
+
+  for(int i=0; i<discret_->NumMyColElements(); ++i)
+    dynamic_cast<DRT::ELEMENTS::Acou*>(discret_->lColElement(i))->SetDegree(int(error_->operator [](i)));
+
+  // actually we don't want an entire FillComplete call, since nodes and elements remain the same
+  // we only want the face and internal dofs and the faces are rebuild
+  discret_->BuildFaces();
+  discret_->BuildFaceRowMap();
+  discret_->BuildFaceColMap();
+  discret_->AssignDegreesOfFreedom(0);
+
+  // update maps for global vectors
+  velnp_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  residual_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  sysmat_ = Teuchos::null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),108,false,true));
+
+  // now we have to call the calculation of the residual, because we skipped it in
+  // UpdateInteriorVariablesAndComputeResidual
+  AssembleMatAndRHS();
+
+  return;
+}
+
+
 namespace
 {
   void getNodeVectorsHDG (DRT::Discretization               &dis,
-                          const Teuchos::RCP<Epetra_Vector> &interiorValues,
                           const Teuchos::RCP<Epetra_Vector> &traceValues,
                           const int                          ndim,
                           Teuchos::RCP<Epetra_MultiVector>  &velocity,
                           Teuchos::RCP<Epetra_Vector>       &pressure,
                           Teuchos::RCP<Epetra_Vector>       &tracevel,
                           Teuchos::RCP<Epetra_Vector>       &cellPres,
-                          INPAR::ACOU::PhysicalType         phys)
+                          INPAR::ACOU::PhysicalType         phys,
+                          bool                              padapt)
   {
     //if (pressure.get() == NULL || pressure->MyLength() != dis.NumMyRowNodes())
     {
@@ -954,9 +1038,9 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<int>("action",ACOU::interpolate_hdg_to_node);
-    dis.SetState(1,"intvel",interiorValues);
     dis.SetState(0,"trace",traceValues);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
+    params.set<bool>("padaptivity",padapt);
 
     std::vector<int> dummy;
     DRT::Element::LocationArray la(2);
@@ -1012,7 +1096,6 @@ namespace
     return;
   } // getNodeVectorsHDG
   void getNodalPsiHDG (DRT::Discretization               &dis,
-                       const Teuchos::RCP<Epetra_Vector> &interiorValues,
                        const Teuchos::RCP<Epetra_Vector> &traceValues,
                        Teuchos::RCP<Epetra_Vector>       &psi,
                        INPAR::ACOU::PhysicalType         phys,
@@ -1025,10 +1108,10 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<int>("action",ACOU::interpolate_psi_to_node);
-    dis.SetState(1,"intvel",interiorValues);
     dis.SetState(0,"trace",traceValues);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
     params.set<double>("dt",dt);
+    params.set<bool>("padaptivity",false); // TODO
 
     std::vector<int> dummy;
     DRT::Element::LocationArray la(2);
@@ -1072,7 +1155,6 @@ namespace
     return;
   } // getNodalPsiHDG
   void getNodeVectorsHDGVisc(DRT::Discretization              &dis,
-                            const Teuchos::RCP<Epetra_Vector> &interiorValues,
                             const Teuchos::RCP<Epetra_Vector> &traceValues,
                             const int                          ndim,
                             Teuchos::RCP<Epetra_MultiVector>  &velocitygradient,
@@ -1099,7 +1181,6 @@ namespace
     Teuchos::ParameterList params;
     params.set<int>("action",ACOU::interpolate_hdg_to_node);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
-    dis.SetState(1,"intvel",interiorValues);
     dis.SetState(0,"trace",traceValues);
 
     std::vector<int> dummy;
@@ -1189,13 +1270,13 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
   Teuchos::RCP<Epetra_MultiVector> traceVelocity;
   Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
   if(phys_ == INPAR::ACOU::acou_lossless)
-  {
-    getNodeVectorsHDG(*discret_, intvelnp_, velnp_, numdim_,
-                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_);
-  }
+  { discret_->Comm().Barrier();
+    getNodeVectorsHDG(*discret_, velnp_, numdim_,
+                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_,padaptivity_);
+    discret_->Comm().Barrier();}
   else
   {
-    getNodeVectorsHDGVisc(*discret_, intvelnp_, velnp_, numdim_,
+    getNodeVectorsHDGVisc(*discret_, velnp_, numdim_,
         interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
         traceVelocity,cellPres,cellDensity,phys_);
   }
@@ -1214,6 +1295,7 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     eleparams.set<int>("action",ACOU::calc_pmon_nodevals);
     eleparams.set<double>("dt",dtp_);
     eleparams.set<bool>("adjoint",adjoint_);
+    eleparams.set<bool>("padaptivity",padaptivity_);
     eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
     DRT::Element::LocationArray la(2);
@@ -1222,7 +1304,6 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     Epetra_SerialDenseVector interpolVec;
     std::vector<unsigned char> touchCount(interpolatedPressureint->MyLength());
 
-    discret_->SetState(1,"intvel",intvelnp_);
     discret_->SetState(0,"trace",velnp_);
     for(unsigned int i=0; i<pressuremon.size(); ++i)
     {
@@ -1256,18 +1337,19 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     //getNodeVectorsABC();
   } // if( history != Teuchos::null )
 
-  Teuchos::RCP<Epetra_Vector> dmap;
-  if(padaptivity_)
-  {
-    dmap.reset(new Epetra_Vector(*discret_->ElementRowMap()));
-    for(int i=0; i<discret_->NumMyRowElements(); ++i)
-    {
-      dmap->operator [](i) = double(discret_->lRowElement(i)->Degree());
-    }
-  }
 
   if (step_%upres_ == 0)
   {
+    Teuchos::RCP<Epetra_Vector> dmap;
+    if(padaptivity_)
+    {
+      dmap.reset(new Epetra_Vector(*discret_->ElementRowMap()));
+      for(int i=0; i<discret_->NumMyRowElements(); ++i)
+      {
+        dmap->operator [](i) = double(discret_->lRowElement(i)->Degree());
+      }
+    }
+
     if (myrank_ == 0 && !invana_)
       std::cout<<"======= Output written in step "<<step_<<std::endl;
     // step number and time
@@ -1350,9 +1432,7 @@ void ACOU::AcouImplicitTimeInt::WriteRestart()
   output_->WriteVector("velnps", velnp_);
   output_->WriteVector("veln", veln_);
   output_->WriteVector("velnm",velnm_);
-  output_->WriteVector("intvelnp", intvelnp_);
-  output_->WriteVector("intveln", intveln_);
-  output_->WriteVector("intvelnm",intvelnm_);
+  dserror("TODO: write interiorfield for restart: create vector, fill it with elements and write it");
 
   return;
 } // WriteRestart
@@ -1380,7 +1460,7 @@ void ACOU::AcouImplicitTimeInt::OutputToScreen()
 void ACOU::AcouImplicitTimeInt::NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec)
 {
   Teuchos::RCP<Epetra_Vector> interpolatedPressure;
-  getNodalPsiHDG(*discret_, intvelnp_, velnp_,interpolatedPressure, phys_, dtp_);
+  getNodalPsiHDG(*discret_, velnp_,interpolatedPressure, phys_, dtp_);
 
   for(int i=0; i<interpolatedPressure->MyLength(); ++i)
     outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
@@ -1398,8 +1478,8 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
     Teuchos::RCP<Epetra_Vector> interpolatedPressure, traceVel, cellPres;
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
 
-    getNodeVectorsHDG(*discret_, intvelnp_, velnp_, numdim_,
-                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_);
+    getNodeVectorsHDG(*discret_, velnp_, numdim_,
+                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_,padaptivity_);
 
     for(int i=0; i<traceVel->MyLength(); ++i)
       outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
@@ -1410,7 +1490,7 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity, traceVelocity;
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
 
-    getNodeVectorsHDGVisc(*discret_, intvelnp_, velnp_, numdim_,
+    getNodeVectorsHDGVisc(*discret_, velnp_, numdim_,
         interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
         traceVelocity,cellPres,cellDensity,phys_);
 
@@ -1431,11 +1511,11 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     Teuchos::ParameterList params;
     params.set<int>("action",ACOU::calc_acou_error);
     params.set<double>("time",time_);
+    params.set<bool>("padaptivity",padaptivity_);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
     params.set<INPAR::ACOU::CalcError>("error calculation",calcerr_);
     params.set<int>("funct",params_->get<int>("STARTFUNCNO"));
 
-    discret_->SetState(1,"intvel",intvelnp_);
     discret_->SetState(0,"trace",velnp_);
 
     Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3+3));

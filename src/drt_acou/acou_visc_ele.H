@@ -250,6 +250,18 @@ public:
 
   //@}
 
+  /// local values from interior solution vector at all needed time steps
+  Epetra_SerialDenseVector eleinteriorValnp_;
+  Epetra_SerialDenseVector eleinteriorValn_;
+  Epetra_SerialDenseVector eleinteriorValnm_;
+  Epetra_SerialDenseVector eleinteriorValnmm_;
+  Epetra_SerialDenseVector eleinteriorValnmmm_;
+
+  /// local values from interior solution vector (gradient, velocity) at DIRK stages
+  std::vector<Epetra_SerialDenseVector> eles_;
+  std::vector<Epetra_SerialDenseVector> eley_;
+  std::vector<Epetra_SerialDenseVector> elef_;
+
 protected:
 
   //! discretization type

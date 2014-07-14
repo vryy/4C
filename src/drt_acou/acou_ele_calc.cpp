@@ -14,6 +14,7 @@ Maintainer: Svenja Schoeder
 
 #include "acou_ele_calc.H"
 #include "acou_ele_action.H"
+#include "acou_utils.H"
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
@@ -99,6 +100,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   case ACOU::project_field:
   {
     if(mat->MaterialType()!=INPAR::MAT::m_acousticmat) dserror("for physical type 'lossless' please supply MAT_Acoustic");
+    ElementInit(ele,params);
     ProjectField(ele,params,mat,discretization,lm,elevec1,elevec2);
     break;
   }
@@ -108,22 +110,30 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     ProjectOpticalField(ele,params,mat,discretization,lm,elevec1,elevec2);
     break;
   }
+  case ACOU::ele_init:
+  {
+    ElementInit(ele,params);
+    break;
+  }
   case ACOU::interpolate_hdg_to_node:
   {
-    ReadGlobalVectors(*ele,discretization,lm);
-    NodeBasedValues(ele,discretization,lm,elevec1);
+    const bool padapty = params.get<bool>("padaptivity");
+    ReadGlobalVectors(ele,discretization,lm,padapty);
+    NodeBasedValues(ele,discretization,lm,elevec1,padapty);
     break;
   }
   case ACOU::interpolate_psi_to_node:
   {
+    const bool padapty = params.get<bool>("padaptivity");
     double dt = params.get<double>("dt");
-    ReadGlobalVectors(*ele,discretization,lm);
+    ReadGlobalVectors(ele,discretization,lm,padapty);
     NodeBasedPsi(mat,ele,discretization,lm,elevec1,dt);
     break;
   }
   case ACOU::calc_acou_error:
   {
-    ReadGlobalVectors(*ele,discretization,lm);
+    const bool padapty = params.get<bool>("padaptivity");
+    ReadGlobalVectors(ele,discretization,lm,padapty);
     ComputeError(ele,params,mat,discretization,lm,elevec1);
     break;
   }
@@ -168,6 +178,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   case ACOU::calc_pmon_nodevals:
   {
     int face = params.get<int>("face");
+    const bool padapty = params.get<bool>("padaptivity");
     int sumindex = 0;
     for(int i=0; i<face; ++i)
     {
@@ -176,7 +187,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     }
 
     shapesface_->EvaluateFace(ele->Faces()[face]->Degree(),usescompletepoly_,2*ele->Faces()[face]->Degree(),*ele, face,*shapes_);
-    ReadGlobalVectors(*ele,discretization,lm);
+    ReadGlobalVectors(ele,discretization,lm,padapty);
     ComputePMonNodeVals(ele,params,mat,face,elemat1,elevec1,sumindex);
 
     break;
@@ -184,17 +195,19 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   case ACOU::calc_systemmat_and_residual:
   {
     const bool resonly = params.get<bool>("resonly");
-    bool adjoint = params.get<bool>("adjoint");
+    const bool adjoint = params.get<bool>("adjoint");
+    const bool padapty = params.get<bool>("padaptivity");
     double dt = params.get<double>("dt");
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
 
-    ReadGlobalVectors(*ele,discretization,lm);
+    ReadGlobalVectors(ele,discretization,lm,padapty);
     zeroMatrix(elevec1);
     ComputeMatrices(mat,*ele,dt,dyna_,adjoint);
 
     if(!resonly)
       localSolver_->CondenseLocalPart(elemat1,dyna_);
 
+    VectorHandling(ele,params,dt);
     localSolver_->ComputeResidual(elevec1,interiorVelnp_,interiorPressnp_,traceVal_,dyna_);
 
     break;
@@ -205,10 +218,11 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   {
     bool adjoint = params.get<bool>("adjoint");
     bool errormaps = params.get<bool>("errormaps");
+    const bool padapty = params.get<bool>("padaptivity");
     double dt = params.get<double>("dt");
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
 
-    ReadGlobalVectors(*ele,discretization,lm);
+    ReadGlobalVectors(ele,discretization,lm,padapty);
 
     zeroMatrix(elevec1);
     ComputeMatrices(mat,*ele,dt,dyna_,adjoint);
@@ -217,7 +231,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     if(unsigned(elevec1.M()) != lm.size()) elevec1.Size(lm.size());
 
     UpdateInteriorVariablesAndComputeResidual(discretization,params,*ele,mat,elevec1,dt,errormaps,updateonly);
-
     break;
   }
   default:
@@ -249,130 +262,138 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::InitializeShapes(const DRT::ELEMENTS::
 }
 
 /*----------------------------------------------------------------------*
+ * DIRKVectorHandling
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::
+VectorHandling(DRT::ELEMENTS::Acou   * ele,
+               Teuchos::ParameterList&       params,
+               double& dt)
+{
+  if( dyna_ == INPAR::ACOU::acou_dirk23 ||
+      dyna_ == INPAR::ACOU::acou_dirk33 ||
+      dyna_ == INPAR::ACOU::acou_dirk34 ||
+      dyna_ == INPAR::ACOU::acou_dirk54 )
+  {
+    // when we are here, the time integrator is dirk, and we have to do the update things
+    double dirk_a[6][6];
+    double dirk_b[6];
+    int dirk_q;
+    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_q);
+    int stage = params.get<int>("stage");
+
+    if(stage == 0)
+    {
+      ele->eleinteriorPressnp_ = ele->eleinteriorPressn_;
+      ele->eleinteriorVelnp_   = ele->eleinteriorVeln_;
+    }
+
+    Epetra_SerialDenseVector tempVecp1(shapes_->ndofs_);
+    Epetra_SerialDenseVector tempVecp2(shapes_->ndofs_);
+    Epetra_SerialDenseVector tempVecv1(shapes_->ndofs_*nsd_);
+    Epetra_SerialDenseVector tempVecv2(shapes_->ndofs_*nsd_);
+
+    ele->elesp_[stage] = ele->eleinteriorPressn_;
+    ele->elesp_[stage].Scale(1.0/dt); // dt includes a_ii
+    ele->elesv_[stage] = ele->eleinteriorVeln_;
+    ele->elesv_[stage].Scale(1.0/dt); // dt includes a_ii
+
+    for(int i=0; i<stage; ++i)
+    {
+      tempVecp1 = ele->elesp_[i];
+      tempVecp1.Scale(-1.0);
+      tempVecp2 = ele->eleyp_[i];
+      tempVecp2.Scale(1.0/dt);
+      tempVecp1 += tempVecp2;
+      tempVecp1.Scale(dirk_a[stage][i]/dirk_a[stage][stage]);
+      ele->elesp_[stage] += tempVecp1;
+      tempVecv1 = ele->elesv_[i];
+      tempVecv1.Scale(-1.0);
+      tempVecv2 = ele->eleyv_[i];
+      tempVecv2.Scale(1.0/dt);
+      tempVecv1 += tempVecv2;
+      tempVecv1.Scale(dirk_a[stage][i]/dirk_a[stage][stage]);
+      ele->elesv_[stage] += tempVecv1;
+    }
+
+    // these vectors s are used for the calculation of the residual -> write them to used local solver variable
+    interiorPressnp_ = ele->elesp_[stage];
+    interiorVelnp_   = ele->elesv_[stage];
+    interiorPressnp_.Scale(dt);
+    interiorVelnp_.Scale(dt);
+  }
+  else if(dyna_ == INPAR::ACOU::acou_bdf2)
+  {
+    for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
+      interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * interiorVeln_[i];
+    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
+      interiorPressnp_[i]  = 4.0 / 3.0 * interiorPressnp_[i]  - 1.0 / 3.0 * interiorPressn_[i];
+  }
+  else if(dyna_ == INPAR::ACOU::acou_bdf3)
+  {
+    for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
+      interiorVelnp_[i] = 18.0 / 11.0 * interiorVelnp_[i] - 9.0 / 11.0 * interiorVelnm_[i] + 2.0 / 11.0 * interiorVelnmm_[i];
+    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
+      interiorPressnp_[i]  = 18.0 / 11.0 * interiorPressnp_[i]  - 9.0 / 11.0 * interiorPressnm_[i]  + 2.0 / 11.0 * interiorPressnmm_[i];
+  }
+  else if(dyna_ == INPAR::ACOU::acou_bdf4)
+  {
+    for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
+      interiorVelnp_[i] = 48.0 / 25.0 * interiorVelnp_[i] - 36.0 / 25.0 * interiorVelnm_[i] + 16.0 / 25.0 * interiorVelnmm_[i] - 3.0 / 25.0 * interiorVelnmmm_[i];
+    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
+      interiorPressnp_[i]  = 48.0 / 25.0 * interiorPressnp_[i]  - 36.0 / 25.0 * interiorPressnm_[i]  + 16.0 / 25.0 * interiorPressnmm_[i]  - 3.0 / 25.0 * interiorPressnmmm_[i];
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  * ReadGlobalVectors
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::
-ReadGlobalVectors(const DRT::Element     & ele,
+ReadGlobalVectors(DRT::Element           * ele,
                   DRT::Discretization    & discretization,
-                  const std::vector<int> & lm)
+                  const std::vector<int> & lm,
+                  const bool               padaptivity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ReadGlobalVectors");
+  DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
 
-  if(discretization.HasState("trace")==false) dserror("Cannot read vector 'trace'");
-  if(discretization.HasState(1,"intvel")==false) dserror("Cannot read vector 'intvel'");
+  // read vectors from element storage
+  interiorVelnp_.Shape(acouele->eleinteriorVelnp_.M(),1);
+  interiorPressnp_.Shape(acouele->eleinteriorPressnp_.M(),1);
+  interiorVeln_.Shape(acouele->eleinteriorVeln_.M(),1);
+  interiorPressn_.Shape(acouele->eleinteriorPressn_.M(),1);
+  interiorVelnm_.Shape(acouele->eleinteriorVelnm_.M(),1);
+  interiorPressnm_.Shape(acouele->eleinteriorPressnm_.M(),1);
+  interiorVelnmm_.Shape(acouele->eleinteriorVelnmm_.M(),1);
+  interiorPressnmm_.Shape(acouele->eleinteriorPressnmm_.M(),1);
+  interiorVelnmmm_.Shape(acouele->eleinteriorVelnmmm_.M(),1);
+  interiorPressnmmm_.Shape(acouele->eleinteriorPressnmmm_.M(),1);
 
-  // shape all vectors
-  interiorVelnp_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnp_.Shape(shapes_->ndofs_,1);
-  interiorVeln_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressn_.Shape(shapes_->ndofs_,1);
-  interiorVelnm_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnm_.Shape(shapes_->ndofs_,1);
-  interiorVelnmm_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnmm_.Shape(shapes_->ndofs_,1);
-  interiorVelnmmm_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnmmm_.Shape(shapes_->ndofs_,1);
+  interiorVelnp_ = acouele->eleinteriorVelnp_;
+  interiorPressnp_ = acouele->eleinteriorPressnp_;
+  interiorVeln_ = acouele->eleinteriorVeln_;
+  interiorPressn_ = acouele->eleinteriorPressn_;
+  interiorVelnm_ = acouele->eleinteriorVelnm_;
+  interiorPressnm_ = acouele->eleinteriorPressnm_;
+  interiorVelnmm_ = acouele->eleinteriorVelnmm_;
+  interiorPressnmm_ = acouele->eleinteriorPressnmm_;
+  interiorVelnmmm_ = acouele->eleinteriorVelnmmm_;
+  interiorPressnmmm_ = acouele->eleinteriorPressnmmm_;
 
-  // read the HDG solution vector (for traces)
-  traceVal_.resize(lm.size());
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("trace");
-  DRT::UTILS::ExtractMyValues(*matrix_state,traceVal_,lm);
-
-  traceValm_.resize(lm.size());
-  if(discretization.HasState("trace_m"))
+  // read vectors from time integrator
+  if(discretization.HasState("trace")) // in case of "update interior variables"
   {
+    traceVal_.resize(lm.size());
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("trace");
+    DRT::UTILS::ExtractMyValues(*matrix_state,traceVal_,lm);
+  }
+  if(discretization.HasState("trace_m")) // in case of trapezoidal time integration
+  {
+    traceValm_.resize(lm.size());
     Teuchos::RCP<const Epetra_Vector> matrix_state_m = discretization.GetState("trace_m");
     DRT::UTILS::ExtractMyValues(*matrix_state_m,traceValm_,lm);
-  }
-
-  {
-    interiorValnp_.resize(shapes_->ndofs_*(nsd_+1));
-    Teuchos::RCP<const Epetra_Vector> intvel = discretization.GetState(1,"intvel");
-    std::vector<int> localDofs1 = discretization.Dof(1, &ele);
-    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp_,localDofs1);
-
-    // now write this in corresponding interiorVelnp_ and interiorPressnp_
-    for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-    {
-      if ((i+1)%(nsd_+1) == 0)
-      {
-        interiorPressnp_((i+1)/(nsd_+1)-1) = interiorValnp_[i];
-      }
-      else
-      {
-        // careful: interiorValnp is sorted as [ Q_1x Q_1y Q_1z V_1 Q_2x Q_2y Q_2z V_2 ... V_ndofs ]
-        // interiorPressnp is sorted as [ V_1 V_2 V_3 ... V_ndofs]
-        // interiorVelnp should be sorted as [ Q_1x Q_2x Q_3x Q_4x ... Q_ndofsx Q_1y Q_2y ... ]
-        int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-        interiorVelnp_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnp_[i];
-      }
-    }
-
-    if(discretization.HasState(1,"intvelm")) // bdf2 and bdf3 need this
-    {
-      interiorValnm_.resize(shapes_->ndofs_*(nsd_+1));
-      Teuchos::RCP<const Epetra_Vector> intvelm = discretization.GetState(1,"intvelm");
-      std::vector<int> localDofs1 = discretization.Dof(1, &ele);
-      DRT::UTILS::ExtractMyValues(*intvelm,interiorValnm_,localDofs1);
-
-      // now write this in corresponding interiorVelnp_ and interiorPressnp_
-      for(unsigned int i=0; i<interiorValnm_.size(); ++i)
-      {
-        if ((i+1)%(nsd_+1) == 0)
-        {
-          interiorPressnm_((i+1)/(nsd_+1)-1) = interiorValnm_[i];
-        }
-        else
-        {
-          int xyz = i % (nsd_+1);
-          interiorVelnm_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnm_[i];
-        }
-      }
-
-      if(discretization.HasState(1,"intvelmm")) // bdf3 needs this
-      {
-        interiorValnmm_.resize(shapes_->ndofs_*(nsd_+1));
-        Teuchos::RCP<const Epetra_Vector> intvelmm = discretization.GetState(1,"intvelmm");
-        std::vector<int> localDofs1 = discretization.Dof(1, &ele);
-        DRT::UTILS::ExtractMyValues(*intvelmm,interiorValnmm_,localDofs1);
-
-        // now write this in corresponding interiorVelnp_ and interiorPressnp_
-        for(unsigned int i=0; i<interiorValnmm_.size(); ++i)
-        {
-          if ((i+1)%(nsd_+1) == 0)
-          {
-            interiorPressnmm_((i+1)/(nsd_+1)-1) = interiorValnmm_[i];
-          }
-          else
-          {
-            int xyz = i % (nsd_+1);
-            interiorVelnmm_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnmm_[i];
-          }
-        }
-        if(discretization.HasState(1,"intvelmmm")) // bdf4 needs this
-        {
-          interiorValnmmm_.resize(shapes_->ndofs_*(nsd_+1));
-          Teuchos::RCP<const Epetra_Vector> intvelmmm = discretization.GetState(1,"intvelmmm");
-          std::vector<int> localDofs1 = discretization.Dof(1, &ele);
-          DRT::UTILS::ExtractMyValues(*intvelmmm,interiorValnmmm_,localDofs1);
-
-          // now write this in corresponding interiorVelnp_ and interiorPressnp_
-          for(unsigned int i=0; i<interiorValnmmm_.size(); ++i)
-          {
-            if ((i+1)%(nsd_+1) == 0)
-            {
-              interiorPressnmmm_((i+1)/(nsd_+1)-1) = interiorValnmmm_[i];
-            }
-            else
-            {
-              int xyz = i % (nsd_+1);
-              interiorVelnmmm_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnmmm_[i];
-            }
-          } // if(discretization.HasState(1,"intvelmmm"))
-        } // if(discretization.HasState("intvelmm"))
-      } // if(discretization.HasState("intvelmm"))
-    } // if(discretization.HasState("intvelm"))
   }
 
   return;
@@ -440,6 +461,79 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeError(
 }
 
 /*----------------------------------------------------------------------*
+ * Element init
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* ele,
+                                                      Teuchos::ParameterList& params)
+{
+  shapes_->Evaluate(*ele);
+
+  // each element has to store the interior vectors by itseld, p-adaptivity or not
+  // so, shape it, as you need it
+  dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
+  ele->eleinteriorVelnp_.Shape(shapes_->ndofs_*nsd_,1);
+  ele->eleinteriorPressnp_.Shape(shapes_->ndofs_,1);
+  ele->eleinteriorVeln_.Shape(shapes_->ndofs_*nsd_,1);
+  ele->eleinteriorPressn_.Shape(shapes_->ndofs_,1);
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_bdf4:
+    ele->eleinteriorVelnmmm_.Shape(shapes_->ndofs_*nsd_,1);
+    ele->eleinteriorPressnmmm_.Shape(shapes_->ndofs_,1);   // no break here!
+  case INPAR::ACOU::acou_bdf3:
+    ele->eleinteriorVelnmm_.Shape(shapes_->ndofs_*nsd_,1); // no break here!
+    ele->eleinteriorPressnmm_.Shape(shapes_->ndofs_,1);
+  case INPAR::ACOU::acou_bdf2:
+    ele->eleinteriorVelnm_.Shape(shapes_->ndofs_*nsd_,1);
+    ele->eleinteriorPressnm_.Shape(shapes_->ndofs_,1);
+    break;                                                 // here you go!
+  case INPAR::ACOU::acou_dirk23:
+    ele->elesp_.resize(2);
+    ele->eleyp_.resize(2);
+    ele->elefp_.resize(2);
+    ele->elesv_.resize(2);
+    ele->eleyv_.resize(2);
+    ele->elefv_.resize(2);
+    break;
+  case INPAR::ACOU::acou_dirk33:
+  case INPAR::ACOU::acou_dirk34:
+    ele->elesv_.resize(3);
+    ele->eleyv_.resize(3);
+    ele->elefv_.resize(3);
+    ele->elesp_.resize(3);
+    ele->eleyp_.resize(3);
+    ele->elefp_.resize(3);
+    break;
+  case INPAR::ACOU::acou_dirk54:
+    ele->elesv_.resize(5);
+    ele->eleyv_.resize(5);
+    ele->elefv_.resize(5);
+    ele->elesp_.resize(5);
+    ele->eleyp_.resize(5);
+    ele->elefp_.resize(5);
+    break;
+  default:
+    break; // do nothing for impl and trap
+  }
+  for(unsigned int i=0; i<ele->elesp_.size(); ++i) // zero size if not dirk
+  {
+    ele->elesp_[i].Shape(shapes_->ndofs_,1);
+    ele->eleyp_[i].Shape(shapes_->ndofs_,1);
+    ele->elefp_[i].Shape(shapes_->ndofs_,1);
+    ele->elesv_[i].Shape(shapes_->ndofs_*nsd_,1);
+    ele->eleyv_[i].Shape(shapes_->ndofs_*nsd_,1);
+    ele->elefv_[i].Shape(shapes_->ndofs_*nsd_,1);
+  }
+
+  if(params.get<bool>("padaptivity"))
+    ele->elenodeTrace_.Shape(nen_,1);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  * ProjectField
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -457,10 +551,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 ||
            unsigned(elevec2.M()) == (nsd_+1)*shapes_->ndofs_, "Wrong size in project vector 2");
-
-  // const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  // double rho = actmat->Density();
-  // double pulse = params.get<double>("pulse");
 
   // get function
   const int *start_func = params.getPtr<int>("funct");
@@ -495,20 +585,31 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       Epetra_SerialDenseSolver inverseMass;
       inverseMass.SetMatrix(massMat);
       inverseMass.SetVectors(localMat,localMat);
-      //int err =
       inverseMass.Solve();
-      //if(err != 0) dserror("Inversion of matrix in field projection failed with errorcode %d",err);
     }
 
     for (unsigned int r=0; r<shapes_->ndofs_; ++r )
     {
-      elevec2[r*(nsd_+1)+nsd_] += localMat(r,nsd_); // pressure
-
+      //elevec2[r*(nsd_+1)+nsd_] += localMat(r,nsd_); // pressure
+      ele->eleinteriorPressnp_(r) += localMat(r,nsd_); // pressure
       for (unsigned int i=0;i<nsd_;++i)
       {
-        elevec2[r*(nsd_+1)+i] += localMat(r,i); // velocity
+        //elevec2[r*(nsd_+1)+i] += localMat(r,i); // velocity
+        ele->eleinteriorVelnp_(r+i*shapes_->ndofs_) += localMat(r,i); // velocity
       }
     }
+  }
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_bdf4:
+    ele->eleinteriorPressnmmm_ = ele->eleinteriorPressnp_; // no break here
+  case INPAR::ACOU::acou_bdf3:
+    ele->eleinteriorPressnmm_  = ele->eleinteriorPressnp_; // no break here
+  case INPAR::ACOU::acou_bdf2:
+    ele->eleinteriorPressnm_   = ele->eleinteriorPressnp_; // no break here                                          // here you go
+  default:
+    ele->eleinteriorPressn_ = ele->eleinteriorPressnp_;
+    break;
   }
 
   // in case this paramter "faceconsider" is set, we are applying Dirichlet values
@@ -574,6 +675,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
 {
 
   shapes_->Evaluate(*ele);
+
   bool meshconform = params.get<bool>("mesh conform");
 
   // this is the easy case: the corresponding optical element has exactly the same nodes
@@ -668,8 +770,22 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
     for (unsigned int r=0; r<shapes_->ndofs_; ++r )
     {
       elevec2[r*(nsd_+1)+nsd_] += localMat(r,0); // pressure
+      ele->eleinteriorPressnp_(r) += localMat(r,0); // pressure
     }
   }
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_bdf4:
+    ele->eleinteriorPressnmmm_ = ele->eleinteriorPressnp_; // no break here
+  case INPAR::ACOU::acou_bdf3:
+    ele->eleinteriorPressnmm_  = ele->eleinteriorPressnp_; // no break here
+  case INPAR::ACOU::acou_bdf2:
+    ele->eleinteriorPressnm_   = ele->eleinteriorPressnp_; // no break here                                          // here you go
+  default:
+    ele->eleinteriorPressn_ = ele->eleinteriorPressnp_;
+    break;
+  }
+
 
   return 0;
 }
@@ -804,7 +920,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
                           DRT::ELEMENTS::Acou*                 ele,
                           DRT::Discretization&                 discretization,
                           const std::vector<int>&              lm,
-                          Epetra_SerialDenseVector&            elevec1)
+                          Epetra_SerialDenseVector&            elevec1,
+                          bool                                 padaptivity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::NodeBasedValues");
 
@@ -848,37 +965,43 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
     }
   }
 
-  Epetra_SerialDenseVector fvalues(1);
-  Epetra_SerialDenseVector touchcount(nen_);
-  int sumindex = 0;
-  for (unsigned int face=0; face<nfaces_; ++face)
+  if(!padaptivity)
   {
-    shapesface_->EvaluateFace(ele->Faces()[face]->Degree(),usescompletepoly_,2*ele->Faces()[face]->Degree(),*ele,face,*shapes_);
-
-    fvalues.Resize(shapesface_->nfdofs_);
-
-    // const int * fnodeIds = ele->Faces()[face]->NodeIds();
-    for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+    Epetra_SerialDenseVector fvalues(1);
+    Epetra_SerialDenseVector touchcount(nen_);
+    int sumindex = 0;
+    for (unsigned int face=0; face<nfaces_; ++face)
     {
-      // evaluate shape polynomials in node
-      for (unsigned int idim=0;idim<nsd_-1;idim++)
-        shapesface_->xsiF(idim) = locations(idim,i);
+      shapesface_->EvaluateFace(ele->Faces()[face]->Degree(),usescompletepoly_,2*ele->Faces()[face]->Degree(),*ele,face,*shapes_);
 
-      shapesface_->polySpaceFace_->Evaluate(shapesface_->xsiF,fvalues); // TODO: fix face orientation here
+      fvalues.Resize(shapesface_->nfdofs_);
 
-      // compute values for velocity and pressure by summing over all basis functions
-      double sum = 0.0;
-      for (unsigned int k=0; k<shapesface_->nfdofs_; ++k)
-        sum += fvalues(k) * traceVal_[sumindex+k];
+      // const int * fnodeIds = ele->Faces()[face]->NodeIds();
+      for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+      {
+        // evaluate shape polynomials in node
+        for (unsigned int idim=0;idim<nsd_-1;idim++)
+          shapesface_->xsiF(idim) = locations(idim,i);
 
-      elevec1((nsd_+1)*nen_+shapesface_->faceNodeOrder[face][i]) += sum;
-      touchcount(shapesface_->faceNodeOrder[face][i])++;
+        shapesface_->polySpaceFace_->Evaluate(shapesface_->xsiF,fvalues); // TODO: fix face orientation here
+
+        // compute values for velocity and pressure by summing over all basis functions
+        double sum = 0.0;
+        for (unsigned int k=0; k<shapesface_->nfdofs_; ++k)
+          sum += fvalues(k) * traceVal_[sumindex+k];
+
+        elevec1((nsd_+1)*nen_+shapesface_->faceNodeOrder[face][i]) += sum;
+        touchcount(shapesface_->faceNodeOrder[face][i])++;
+      }
+      sumindex += shapesface_->nfdofs_;
     }
-    sumindex += shapesface_->nfdofs_;
-  }
 
-  for(unsigned int i=0; i<nen_; ++i)
-    elevec1((nsd_+1)*nen_+i) /= touchcount(i);
+    for(unsigned int i=0; i<nen_; ++i)
+      elevec1((nsd_+1)*nen_+i) /= touchcount(i);
+  }
+  else
+    for(unsigned int i=0; i<nen_; ++i)
+      elevec1((nsd_+1)*nen_+i) = ele->elenodeTrace_(i);
 
   return;
 } // NodeBasedValues
@@ -1008,6 +1131,7 @@ shapesface_(shapeValuesFace)
   int onfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
   {
+    // TODO ueber Degree gehen, so ist das ja viel zu viel um dofs zu zaehlen
     shapesface_.EvaluateFace(ele->Faces()[i]->Degree(),
                              completepoly,
                              2*ele->Faces()[i]->Degree(),
@@ -1045,6 +1169,8 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   int onfdofs = elevec.M();
   double theta = 1.0;
   if(dyna_==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
+  int stage = -1;
+  int dirk_q = -1;
 
   Epetra_SerialDenseVector tempVelnp;
   Epetra_SerialDenseVector tempPressnp;
@@ -1056,6 +1182,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVeln_[i] = interiorVelnp_[i] * 4.0 / 3.0 - interiorVelnm_[i] / 3.0;
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
       interiorPressn_[i]  = interiorPressnp_[i]  * 4.0 / 3.0 - interiorPressnm_[i]  / 3.0;
+    dt *= 2.0/3.0;
   }
   else if(dyna_ == INPAR::ACOU::acou_bdf3)
   {
@@ -1065,6 +1192,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVeln_[i] = interiorVelnp_[i] * 18.0 / 11.0 - interiorVelnm_[i] * 9.0 / 11.0 + interiorVelnmm_[i] * 2.0 / 11.0;
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
       interiorPressn_[i]  = interiorPressnp_[i]  * 18.0 / 11.0 - interiorPressnm_[i]  * 9.0 / 11.0 + interiorPressnmm_[i]  * 2.0 / 11.0;
+    dt *= 6.0/11.0;
   }
   else if(dyna_ == INPAR::ACOU::acou_bdf4)
   {
@@ -1074,15 +1202,27 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVeln_[i] = interiorVelnp_[i] * 48.0 / 25.0 - interiorVelnm_[i] * 36.0 / 25.0 + interiorVelnmm_[i] * 16.0 / 25.0 - interiorVelnmmm_[i] * 3.0 / 25.0;
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
       interiorPressn_[i]  = interiorPressnp_[i]  * 48.0 / 25.0 - interiorPressnm_[i]  * 36.0 / 25.0 + interiorPressnmm_[i]  * 16.0 / 25.0 - interiorPressnmmm_[i]  * 3.0 / 25.0;
+    dt *= 12.0/25.0;
+  }
+  else if(dyna_ == INPAR::ACOU::acou_dirk23 ||dyna_ == INPAR::ACOU::acou_dirk33 ||dyna_ == INPAR::ACOU::acou_dirk34 ||dyna_ == INPAR::ACOU::acou_dirk54 )
+  {
+    // do the dirk
+    stage = params.get<int>("stage");
+    interiorVeln_ = ele.elesv_[stage];
+    interiorPressn_ = ele.elesp_[stage];
+    interiorVeln_.Scale(dt);
+    interiorPressn_.Scale(dt);
   }
   else
   {
     interiorVeln_ = interiorVelnp_;
     interiorPressn_ = interiorPressnp_;
   }
+
   Epetra_SerialDenseVector traceVal_SDV(onfdofs);
   for(int i=0; i<onfdofs; ++i)
     traceVal_SDV(i) = traceVal_[i];
+
   Epetra_SerialDenseVector traceVal_SDV_m(onfdofs);
   if(dyna_ == INPAR::ACOU::acou_trapezoidal)
   {
@@ -1127,35 +1267,58 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   }
 
   interiorPressnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
   tempVec1.Multiply('N','N',-theta,localSolver_->Bmat,interiorPressnp_,1.0);
-
   interiorVelnp_.Multiply('N','N',1.0,localSolver_->invAmat,tempVec1,0.0);
 
-  // sort this back to the interior values vector
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorPressnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorVelnp_(xyz*shapes_->ndofs_+i/(nsd_+1));
-    }
-  }
-
   // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+  bool padaptivity = params.get<bool>("padaptivity");
 
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
+  if(dyna_ == INPAR::ACOU::acou_dirk23 ||dyna_ == INPAR::ACOU::acou_dirk33 ||dyna_ == INPAR::ACOU::acou_dirk34 ||dyna_ == INPAR::ACOU::acou_dirk54 )
   {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
+    double dirk_a[6][6];
+    double dirk_b[6];
+    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_q);
+
+    ele.eleyp_[stage] = interiorPressnp_;
+    ele.eleyv_[stage] = interiorVelnp_;
+
+    ele.elefp_[stage] = ele.eleinteriorPressn_;
+    ele.elefp_[stage].Scale(-1.0);
+    ele.elefp_[stage] += ele.eleyp_[stage];
+    ele.elefp_[stage].Scale(1.0/dt);  // dt includes a_ii
+    ele.elefv_[stage] = ele.eleinteriorVeln_;
+    ele.elefv_[stage].Scale(-1.0);
+    ele.elefv_[stage] += ele.eleyv_[stage];
+    ele.elefv_[stage].Scale(1.0/dt);
+
+    Epetra_SerialDenseVector tempVecp1(shapes_->ndofs_);
+    Epetra_SerialDenseVector tempVecv1(shapes_->ndofs_*nsd_);
+    for(int i=0; i<stage; ++i)
+    {
+      tempVecp1 = ele.elefp_[i];
+      tempVecp1.Scale(-dirk_a[stage][i]/dirk_a[stage][stage]);
+      ele.elefp_[stage] += tempVecp1;
+      tempVecv1 = ele.elefv_[i];
+      tempVecv1.Scale(-dirk_a[stage][i]/dirk_a[stage][stage]);
+      ele.elefv_[stage] += tempVecv1;
+    }
+    tempVecp1 = ele.elefp_[stage];
+    tempVecp1.Scale(dt*dirk_b[stage]/dirk_a[stage][stage]);
+    ele.eleinteriorPressnp_ += tempVecp1;
+    tempVecv1 = ele.elefv_[stage];
+    tempVecv1.Scale(dt*dirk_b[stage]/dirk_a[stage][stage]);
+    ele.eleinteriorVelnp_ += tempVecv1;
+
+    if(unsigned(stage)==dirk_q-1)
+    {
+      ele.eleinteriorPressn_ = ele.eleinteriorPressnp_;
+      ele.eleinteriorVeln_ = ele.eleinteriorVelnp_;
+    }
+  } // if(dyna_ == INPAR::ACOU::acou_dirk?? )
+  else if(!padaptivity)
+  {
+    ele.eleinteriorPressnp_ = interiorPressnp_;
+    ele.eleinteriorVelnp_ = interiorVelnp_;
   }
 
   // *****************************************************
@@ -1184,7 +1347,29 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     double err_p = CalculateError(ele,H,R,p);
 
     Teuchos::RCP<std::vector<double> > values = params.get<Teuchos::RCP<std::vector<double> > >("elevals");
-    (*values)[ele.Id()] = err_p;
+
+    if( ( stage == -1 || stage == dirk_q-1 ) && padaptivity ) // time integrators or last stage of DIRK
+    {
+      double padaptivitytol = params.get<double>("padaptivitytol");
+      double delta_k = 0.0;
+      if(err_p!=0.0) delta_k = std::ceil(std::log10(err_p/padaptivitytol));
+
+      int newdeg = (ele.Degree()+delta_k);
+      //int newdeg = ele.Degree();
+      //if(delta_k>0) newdeg++;
+      //else if(delta_k<0) newdeg--;
+      if(newdeg<1) newdeg = 1;
+      if(newdeg>6) newdeg = 6;
+      (*values)[ele.Id()] = newdeg;
+
+      // projection of the internal field (cannot yet project trace field, since the
+      // face degree depends on all neighbors! (also not needed for DIRK)
+      ProjectPadapField(ele,newdeg);
+      updateonly = true;
+      return;
+    }
+    else
+      (*values)[ele.Id()] = err_p;
   }
 
   if (updateonly) return;
@@ -1199,6 +1384,8 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * tempVelnp[i];
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
       interiorPressnp_[i]  = 4.0 / 3.0 * interiorPressnp_[i]  - 1.0 / 3.0 * tempPressnp[i];
+    ele.eleinteriorPressnm_   = tempPressnp;
+    ele.eleinteriorVelnm_     = tempVelnp;
   }
   else if(dyna_ == INPAR::ACOU::acou_bdf3)
   {
@@ -1206,6 +1393,10 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVelnp_[i] = 18.0 / 11.0 * interiorVelnp_[i] - 9.0 / 11.0 * tempVelnp[i] + 2.0 / 11.0 * interiorVelnm_[i];
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
       interiorPressnp_[i]  = 18.0 / 11.0 * interiorPressnp_[i]  - 9.0 / 11.0 * tempPressnp[i]  + 2.0 / 11.0 * interiorPressnm_[i];
+    ele.eleinteriorPressnmm_  = ele.eleinteriorPressnm_;
+    ele.eleinteriorPressnm_   = tempPressnp;
+    ele.eleinteriorVelnmm_    = ele.eleinteriorVelnm_;
+    ele.eleinteriorVelnm_     = tempVelnp;
   }
   else if(dyna_ == INPAR::ACOU::acou_bdf4)
   {
@@ -1213,8 +1404,13 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVelnp_[i] = 48.0 / 25.0 * interiorVelnp_[i] - 36.0 / 25.0 * tempVelnp[i] + 16.0 / 25.0 * interiorVelnm_[i] - 3.0 / 25.0 * interiorVelnmm_[i];
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
       interiorPressnp_[i]  = 48.0 / 25.0 * interiorPressnp_[i]  - 36.0 / 25.0 * tempPressnp[i]  + 16.0 / 25.0 * interiorPressnm_[i]  - 3.0 / 25.0 * interiorPressnmm_[i];
+    ele.eleinteriorPressnmmm_ = ele.eleinteriorPressnmm_;
+    ele.eleinteriorPressnmm_  = ele.eleinteriorPressnm_;
+    ele.eleinteriorPressnm_   = tempPressnp;
+    ele.eleinteriorVelnmmm_   = ele.eleinteriorVelnmm_;
+    ele.eleinteriorVelnmm_    = ele.eleinteriorVelnm_;
+    ele.eleinteriorVelnm_     = tempVelnp;
   }
-
   tempVec1.Resize(shapes_->ndofs_);
   tempVec1.Multiply('N','N',1.0,localSolver_->Mmat,interiorPressnp_,0.0);
   tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Hmat,interiorVelnp_,1.0);
@@ -1249,6 +1445,146 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   }
   return;
 } // UpdateInteriorVariablesAndComputeResidual
+
+/*----------------------------------------------------------------------*
+ * ProjectPadapField
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::
+ProjectPadapField(DRT::ELEMENTS::Acou &             ele,
+                  int                               newdeg)
+{
+
+  // create shape values for projection
+  Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > proj_shapes
+    = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(newdeg,usescompletepoly_,2*newdeg));
+  proj_shapes->Evaluate(ele);
+
+  // calculate mass matrix with new degree
+  Epetra_SerialDenseMatrix  massPart(proj_shapes->ndofs_,proj_shapes->nqpoints_);
+  Epetra_SerialDenseMatrix  massMat(proj_shapes->ndofs_,proj_shapes->ndofs_);
+  for (unsigned int q=0; q<proj_shapes->nqpoints_; ++q)
+  {
+    const double sqrtfac = std::sqrt(proj_shapes->jfac(q));
+    for (unsigned int i=0; i<proj_shapes->ndofs_; ++i)
+      massPart(i,q) = proj_shapes->shfunct(i,q) * sqrtfac;
+  }
+  for (unsigned int i=0; i<proj_shapes->ndofs_; ++i)
+    for (unsigned int j=0; j<proj_shapes->ndofs_; ++j)
+    {
+      double sum = 0.0;
+      for (unsigned int k=0; k<proj_shapes->nqpoints_; ++k)
+        sum += massPart(i,k) * massPart(j,k);
+      massMat(i,j) = sum;
+    }
+  // invert the mass matrix
+  {
+    Epetra_SerialDenseSolver inversemat;
+    inversemat.SetMatrix(massMat);
+    inversemat.Invert();
+  }
+
+  // calculate rectangular mass matrix with mixed degree
+  LINALG::Matrix<nsd_,1> xsi;
+  Epetra_SerialDenseVector values(shapes_->ndofs_);
+  Epetra_SerialDenseMatrix rectMat(proj_shapes->ndofs_,shapes_->ndofs_);
+
+  for (unsigned int i=0; i<proj_shapes->ndofs_; ++i)
+    for(unsigned int k=0; k<proj_shapes->nqpoints_; ++k)
+    {
+      // calculate values of original shape functions at new quadrature point
+      const double* gpcoord = proj_shapes->quadrature_->Point(k);
+      for (unsigned int idim=0;idim<nsd_;idim++)
+        xsi(idim) = gpcoord[idim];
+
+      shapes_->polySpace_->Evaluate(xsi,values);
+      for (unsigned int j=0; j<shapes_->ndofs_; ++j)
+      {
+         rectMat(i,j) += proj_shapes->jfac(k) * proj_shapes->shfunct(i,k) * values(j);
+      }
+    }
+  Epetra_SerialDenseMatrix rectMat2(proj_shapes->ndofs_,shapes_->ndofs_); // TODO this can be done nicer
+  rectMat2.Multiply('N','N',1.0,massMat,rectMat,0.0);
+
+  // build a nsd_ rectMat
+  Epetra_SerialDenseMatrix rectMat3(proj_shapes->ndofs_*nsd_,shapes_->ndofs_*nsd_);
+  for(unsigned d=0; d<nsd_; ++d)
+    for (unsigned int j=0; j<proj_shapes->ndofs_; ++j)
+      for(unsigned int i=0; i<shapes_->ndofs_; ++i)
+        rectMat3(j+proj_shapes->ndofs_*d,i+shapes_->ndofs_*d) = rectMat2(j,i);
+
+  // in case of bdf, we have to project the history as well
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_bdf4:
+    ele.eleinteriorPressnmmm_.Shape(proj_shapes->ndofs_,1);
+    ele.eleinteriorVelnmmm_.Shape(proj_shapes->ndofs_*nsd_,1);
+    ele.eleinteriorPressnmmm_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressnmm_,0.0);
+    ele.eleinteriorVelnmmm_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVelnmm_,0.0); // no break here
+  case INPAR::ACOU::acou_bdf3:
+    ele.eleinteriorPressnmm_.Shape(proj_shapes->ndofs_,1);
+    ele.eleinteriorVelnmm_.Shape(proj_shapes->ndofs_*nsd_,1);
+    ele.eleinteriorPressnmm_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressn_,0.0);
+    ele.eleinteriorVelnmm_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVeln_,0.0); // no break here
+  case INPAR::ACOU::acou_bdf2:
+    ele.eleinteriorPressnm_.Shape(proj_shapes->ndofs_,1);
+    ele.eleinteriorVelnm_.Shape(proj_shapes->ndofs_*nsd_,1);
+    ele.eleinteriorPressnm_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressnp_,0.0);
+    ele.eleinteriorVelnm_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVelnp_,0.0); // no break here
+  default:
+    ele.eleinteriorPressn_.Shape(proj_shapes->ndofs_,1);
+    ele.eleinteriorVeln_.Shape(proj_shapes->ndofs_*nsd_,1);
+    ele.eleinteriorPressn_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressnp_,0.0);
+    ele.eleinteriorVeln_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVelnp_,0.0);
+    break; // there you go
+  }
+
+  // save the projected pressure to the element!
+  ele.eleinteriorPressnp_.Shape(proj_shapes->ndofs_,1);
+  ele.eleinteriorPressnp_.Multiply('N','N',1.0,rectMat2,interiorPressnp_,0.0);
+
+  // project the velocity field as well!! (reuse matrices)
+  ele.eleinteriorVelnp_.Shape(proj_shapes->ndofs_*nsd_,1);
+  ele.eleinteriorVelnp_.Multiply('N','N',1.0,rectMat3,interiorVelnp_,0.0);
+
+  // calculation of node based trace values, since this is no longer possible afterwards!!
+  {
+    ele.elenodeTrace_.Shape(nen_,1);
+    Epetra_SerialDenseVector fvalues(1);
+    Epetra_SerialDenseVector touchcount(nen_);
+    Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+
+    int sumindex = 0;
+    for (unsigned int face=0; face<nfaces_; ++face)
+    {
+      shapesface_->EvaluateFace(ele.Faces()[face]->Degree(),usescompletepoly_,2*ele.Faces()[face]->Degree(),ele,face,*shapes_);
+      fvalues.Resize(shapesface_->nfdofs_);
+
+      for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+      {
+        // evaluate shape polynomials in node
+        for (unsigned int idim=0;idim<nsd_-1;idim++)
+          shapesface_->xsiF(idim) = locations(idim,i);
+        shapesface_->polySpaceFace_->Evaluate(shapesface_->xsiF,fvalues); // TODO: fix face orientation here
+
+        // compute values for velocity and pressure by summing over all basis functions
+        double sum = 0.0;
+        for (unsigned int k=0; k<shapesface_->nfdofs_; ++k)
+          sum += fvalues(k) * traceVal_[sumindex+k];
+
+        ele.elenodeTrace_(shapesface_->faceNodeOrder[face][i]) += sum;
+        touchcount(shapesface_->faceNodeOrder[face][i])++;
+      }
+      sumindex += shapesface_->nfdofs_;
+    }
+
+    for(unsigned int i=0; i<nen_; ++i)
+      ele.elenodeTrace_(i) /= touchcount(i);
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  * CalculateError
@@ -1792,7 +2128,6 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
     if(err != 0) dserror("Inversion of Amat failed with errorcode %d",err);
   }
 
-
   return;
 }
 
@@ -1832,8 +2167,9 @@ ComputeResidual(Epetra_SerialDenseVector          & elevec,
 
   int onfdofs = elevec.M();
   Epetra_SerialDenseVector traceVal_SDV(onfdofs);
-  for(int i=0; i<onfdofs; ++i)
-    traceVal_SDV(i) = traceVal[i];
+  if(dyna==INPAR::ACOU::acou_trapezoidal)
+    for(int i=0; i<onfdofs; ++i)
+      traceVal_SDV(i) = traceVal[i];
 
   double theta = 1.0;
   if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
@@ -1858,7 +2194,6 @@ ComputeResidual(Epetra_SerialDenseVector          & elevec,
   tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0); // right part of w
 
   Epetra_SerialDenseMatrix tempMat2(ndofs_,ndofs_);
-  // for nonlinear solves, this is not D+M but D+M(P^i)+dMdPP^i
   tempMat2 = Dmat;
   tempMat2.Scale(theta);
   tempMat2 += Mmat;
@@ -2064,7 +2399,6 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeMatrices(const Teuchos::RCP<MAT
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
   double c = actmat->SpeedofSound();
-  double tau = 1.0 / c / c / dt;
 
   // init interior matrices
   zeroMatrix(localSolver_->Amat);
@@ -2080,6 +2414,14 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeMatrices(const Teuchos::RCP<MAT
   zeroMatrix(localSolver_->Imat);
   zeroMatrix(localSolver_->Jmat);
 
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_bdf4: dt *= 12.0/25.0; break;
+  case INPAR::ACOU::acou_bdf3: dt *= 6.0/11.0; break;
+  case INPAR::ACOU::acou_bdf2: dt *= 2.0/3.0; break;
+  default: break;
+  }
+  double tau = 1.0 / c / c / dt;
 
   localSolver_->ComputeInteriorMatrices(mat,dt,dyna_);
 

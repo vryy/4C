@@ -35,7 +35,10 @@ public:
   virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
   /// call elements to calculate system matrix
-  virtual void AssembleMatAndRHS();
+  void AssembleMatAndRHS(int stage);
+
+  /// p-adaptivity
+  virtual void UpdatePolyAndState();
 
   /// Call elements to update interior variabels and to calculate the RHS vector (in this way, we can save some computing time)
   void UpdateInteriorVariables(int stage);
@@ -54,15 +57,11 @@ private:
   /// coefficients of given dirk scheme, filled in during construction
   double dirk_a_[6][6];
   double dirk_b_[6];
-  unsigned int dirk_q_;
+  int dirk_q_;
 
   /// vectors needed for interstage states, nomenclatur is in correspondence with Nguyen, 2011, "High-order implicit hybridizable
   /// discontinuous Galerkin methods for acoustics and elastodynamics".
-  std::vector<Teuchos::RCP<Epetra_Vector> > s_;
-  std::vector<Teuchos::RCP<Epetra_Vector> > y_;
-  std::vector<Teuchos::RCP<Epetra_Vector> > f_;
-  std::vector<Teuchos::RCP<Epetra_Vector> > t_;
-  std::vector<Teuchos::RCP<Epetra_Vector> > ft_;
+  Teuchos::RCP<Epetra_Vector> t_;
 };
 } // namespace ACOU
 

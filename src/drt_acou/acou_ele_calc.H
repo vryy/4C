@@ -76,11 +76,16 @@ namespace ELEMENTS
                                     Epetra_SerialDenseVector&            elevec1,
                                     Epetra_SerialDenseVector&            elevec2);
 
+    /// projection of optical field
+    virtual void ElementInit(DRT::ELEMENTS::Acou*                 ele,
+                             Teuchos::ParameterList&              params);
+
     /// map solution values to nodes
     void NodeBasedValues(DRT::ELEMENTS::Acou*                 ele,
                          DRT::Discretization&                 discretization,
                          const std::vector<int>&              lm,
-                         Epetra_SerialDenseVector&            elevec1);
+                         Epetra_SerialDenseVector&            elevec1,
+                         bool                                 padaptivity);
 
     /// map solution values to nodes
     void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
@@ -242,6 +247,10 @@ namespace ELEMENTS
                                                    bool                              errormaps,
                                                    bool                              updateonly);
 
+    /// projects field to new polynomial space
+    void ProjectPadapField(DRT::ELEMENTS::Acou &             ele,
+                           int                               newdeg);
+
     /// calls local solver to compute matrices: internal and face
     void ComputeMatrices(const Teuchos::RCP<MAT::Material> &mat,
                          DRT::ELEMENTS::Acou &             ele,
@@ -260,9 +269,15 @@ namespace ELEMENTS
                             int                          indexstart);
 
     /// reads from global vectors
-    void ReadGlobalVectors(const DRT::Element     & ele,
+    void ReadGlobalVectors(DRT::Element     * ele,
                            DRT::Discretization    & discretization,
-                           const std::vector<int> & lm);
+                           const std::vector<int> & lm,
+                           const bool               padaptivity);
+
+    /// reads from global vectors
+    void VectorHandling(DRT::ELEMENTS::Acou*     ele,
+                        Teuchos::ParameterList&       params,
+                        double& dt);
 
     void EvaluateAll(const int start_func,
                      const double (&xyz)[nsd_],
@@ -289,17 +304,6 @@ namespace ELEMENTS
 
     std::vector<double> traceVal_;          /// extracted values from trace solution vector
     std::vector<double> traceValm_;         /// extracted values from old trace
-
-    /// local values from interior solution vector (velocity gradients, velocities, pressure) at n+1
-    std::vector<double> interiorValnp_;
-    /// local values from interior solution vector (velocity gradients, velocities, pressure) at n
-    std::vector<double> interiorValn_;
-    /// local values from interior solution vector (velocity gradients, velocities, pressure) at n-1
-    std::vector<double> interiorValnm_;
-    /// local values from interior solution vector (velocity gradients, velocities, pressure) at n-2
-    std::vector<double> interiorValnmm_;
-    /// local values from interior solution vector (velocity gradients, velocities, pressure) at n-2
-    std::vector<double> interiorValnmmm_;
 
     /// local values from interior solution vector (gradient, velocity) at n+1
     Epetra_SerialDenseVector interiorVelnp_;

@@ -80,6 +80,10 @@ public:
                                   Epetra_SerialDenseVector&            elevec1,
                                   Epetra_SerialDenseVector&            elevec2);
 
+  /// projection of optical field
+  virtual void ElementInit(DRT::ELEMENTS::Acou*                 ele,
+                           Teuchos::ParameterList&              params);
+
   /// map solution values to nodes
   void NodeBasedValues(DRT::ELEMENTS::Acou*                 ele,
                        DRT::Discretization&                 discretization,
@@ -238,7 +242,7 @@ private:
   /// updates interior variables and calculates residual
   void UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &             discretization,
                                                  Teuchos::ParameterList&           params,
-                                                 DRT::ELEMENTS::Acou &             ele,
+                                                 DRT::ELEMENTS::Acou *             ele,
                                                  const Teuchos::RCP<MAT::Material> &mat,
                                                  Epetra_SerialDenseVector          & elevec,
                                                  double                            dt,
@@ -262,9 +266,14 @@ private:
                           Epetra_SerialDenseVector    &elevec);
 
   /// reads from global vectors
-  void ReadGlobalVectors(const DRT::Element     & ele,
+  void ReadGlobalVectors(DRT::Element     * ele,
                          DRT::Discretization    & discretization,
                          const std::vector<int> & lm);
+
+  /// reads from global vectors
+  void DIRKVectorHandling(DRT::ELEMENTS::Acou*     ele,
+                          Teuchos::ParameterList&       params,
+                          double dt);
 
   void EvaluateAll(const int start_func,
                    const double (&xyz)[nsd_],
