@@ -255,6 +255,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SolveStationaryProblem()
 
   while (step_< stepmax_)
   {
+    if (step_>1)
+      dserror("This analysis feature with a pseudo time loop and more than one pseudo time step\n"
+          "is currently not implemented to work correctly and combine the right steps for the adjoints");
+
     PrepareTimeStep();
 
     // output to screen
