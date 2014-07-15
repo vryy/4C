@@ -185,7 +185,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
 
   // material parameter at element center
   if ((not my::scatrapara_->MatGP()) or (not my::scatrapara_->TauGP()))
-    GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc);
+    this->GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc);
 
   //----------------------------------------------------------------------------------
   // calculate stabilization parameters (one per transported scalar) at element center
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (my::scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc,iquad);
+      this->GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc,iquad);
 
     // set internal variables at Gauss point
     varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
