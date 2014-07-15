@@ -3198,13 +3198,12 @@ void FLD::XFluid::PrepareSolve()
 {
   // compute or set interface velocities just for XFluidMovingBoundary
   // REMARK: for XFSI this is done by ApplyMeshDisplacement and ApplyInterfaceVelocities
-  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUID_BOUNDARY");
-  if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
+  if( xfluid_mov_bound_ == INPAR::XFEM::XFluidMovingBoundary)
   {
     SetInterfaceDisplacement(idispnp_);
     ComputeInterfaceVelocities();
   }
-  else if( xfluid_mov_bound == INPAR::XFEM::XFluidStationaryBoundary)
+  else if( xfluid_mov_bound_ == INPAR::XFEM::XFluidStationaryBoundary)
   {
     ComputeInterfaceVelocities();
   }
@@ -3225,9 +3224,8 @@ void FLD::XFluid::PrepareNonlinearSolve()
   // -------------------------------------------------------------------
   //  perform CUT, transform vectors from old dofset to new dofset and set state vectors
   // -------------------------------------------------------------------
-  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUID_BOUNDARY");
 
-  if(xfluid_mov_bound != INPAR::XFEM::XFluidStationaryBoundary)
+  if(xfluid_mov_bound_ != INPAR::XFEM::XFluidStationaryBoundary)
     CutAndSetStateVectors();
 
   // -------------------------------------------------------------------
