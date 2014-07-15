@@ -33,9 +33,9 @@ LINEAR_SOLVER                   1
 FSSUGRDIFF                      No
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
-MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     1000
+MAXTIME                         0.02
+NUMSTEP                         17
+RESTARTEVRY                     2
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0002
@@ -49,20 +49,15 @@ SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes
 CONVFORM                        convective
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1e-6
+CONVTOL                         1e-09
 ITEMAX                          20
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          10
-MAXTIME                         0.02
-NUMSTEP                         17
-RESTARTEVRY                     2
-TIMESTEP                        0.0002
-UPRES                           1
 TEMPERATURE                     300.0
 GALVANOSTATIC                   Yes
+GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond
 GSTATCONVTOL                    1e-6
 GSTATCURVENO                    4
 GSTATITEMAX                     20
@@ -77,7 +72,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-5                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -113,7 +108,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-5                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -147,7 +142,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-6                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -190,7 +185,7 @@ CURVE4 on EXPR FUNC (-0.0125)*((0.5*cos(pi*(t-0.003)/0.00005))+0.5) t1 0.003 t2 
 CURVE4 on EXPR FUNC 0.0 t1 0.00305 t2 0.004
 CURVE4 on PeriodicRepetition Period 0.004 t1 0.004 t2 20000.0
 ----------------------------------------------------------------------CURVE5
-CURVE5                          on PhysiologicalWaveform InterpolType Fourier Period 0.004 Flowrate -0.0125 Samplingpoints 160 Arrayread 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+CURVE5                          on PhysiologicalWaveform InterpolType Fourier Period 0.004 Flowrate -0.0125 Samplingpoints 160 Arrayread 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 //                                                             // for use of Fourier representation of pulse curve computed from set of total current values
 //                                                             // only activated for testing input reading of CURVE5
 ----------------------------------------------------------------------FUNCT1

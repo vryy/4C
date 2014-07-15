@@ -1035,7 +1035,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBAndDForMultifracSubgridScales(
   const double Pr = visc/diffus;
 
   // since there are differences in the physical behavior between low and high
-  // Prandtl/Schmidt number regime, we define a limit 
+  // Prandtl/Schmidt number regime, we define a limit
   // to distinguish between the low and high Prandtl/Schmidt number regime
   // note: there is no clear definition of the ranges
   const double Pr_limit = 2.0;
@@ -1623,7 +1623,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),convelint);
 
     // calculation of stabilization parameter at element center
-    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol,0);
+    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol);
   }
 
 
@@ -1774,7 +1774,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
       {
         // calculation of stabilization parameter related to fluid momentum
         // equation at integration point
-        CalcTau(tau[0],visc,0.0,densnp,convelint,vol,0);
+        CalcTau(tau[0],visc,0.0,densnp,convelint,vol);
         // calculation of residual-based subgrid-scale velocity
         CalcSubgrVelocity(ele,sgvelint,densam,densnp,visc,convelint,tau[0]);
 
@@ -1783,7 +1783,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
       }
 
       // calculation of stabilization parameter at integration point
-      CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol,0);
+      CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol);
     }
 
     // prepare multifractal subgrid-scale modeling
@@ -2027,8 +2027,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;

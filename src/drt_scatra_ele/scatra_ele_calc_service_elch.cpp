@@ -13,8 +13,6 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 
-#include "scatra_ele_calc_elch.H"
-
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"
 #include "scatra_ele_parameter_elch.H"
@@ -22,14 +20,17 @@ Maintainer: Andreas Ehrl
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_discret.H"  // for time curve in body force
 #include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../drt_lib/drt_globalproblem.H"  // consistency check of formulation and material
+
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/newman.H"
 #include "../drt_mat/elchphase.H"
 
+#include "scatra_ele_calc_elch.H"
 
 /*----------------------------------------------------------------------*
  * Action type: EvaluateService
@@ -49,6 +50,17 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
 {
   // get element coordinates
   GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(DRT::NURBS::IsNurbs(distype))
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+      return(0);
+  } // Nurbs specific stuff
 
   // set element id
   my::eid_ = ele->Id();
@@ -320,77 +332,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
   } // switch(action)
 
   return 0;
-}
-
-
-/*-----------------------------------------------------------------------*
-  |  Set scatra element parameter                             ehrl 01/14 |
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CheckElchElementParameter(
-  DRT::ELEMENTS::Transport*  ele
-  )
-{
-  // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
-
-  // 1) Check material specific options
-  // 2) Check if numdofpernode, numscal is set correctly
-  if (material->MaterialType() == INPAR::MAT::m_elchmat)
-  {
-    const Teuchos::RCP<const MAT::ElchMat>& actmat
-          = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
-
-    int numphase = actmat->NumPhase();
-
-    // access mat_elchmat: container material for porous structures in elch
-    if (numphase != 1) dserror("In the moment a single phase is only allowed.");
-
-    // 1) loop over single phases
-    for (int iphase=0; iphase < actmat->NumPhase();++iphase)
-    {
-      // access phase material
-      const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
-
-      // dynmic cast: get access to mat_phase
-      const Teuchos::RCP<const MAT::ElchPhase>& actphase
-                = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
-
-      // Check if numdofpernode, numscal is set correctly
-      int nummat = actphase->NumMat();
-      // enough materials defined
-      if (nummat != my::numscal_)
-        dserror("The number of scalars defined in the material ElchMat does not correspond with "
-                "the number of materials defined in the material MatPhase.");
-
-      int numdofpernode = 0;
-      if (elchpara_->CurSolVar()==true)
-        numdofpernode = nummat+DRT::Problem::Instance()->NDim()+numphase;
-      else
-        numdofpernode = nummat+numphase;
-
-      if(numdofpernode != my::numdofpernode_)
-        dserror("The chosen element formulation (e.g. current as solution variable) "
-                "does not correspond with the number of dof's defined in your material");
-
-      // 2) loop over materials of the single phase
-      for (int imat=0; imat < actphase->NumMat();++imat)
-      {
-        const int matid = actphase->MatID(imat);
-        Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
-
-        if(singlemat->MaterialType() == INPAR::MAT::m_newman)
-        {
-          // Material Newman is derived for a binary electrolyte utilizing the ENC to condense the non-reacting species
-          if(my::numscal_>1)
-            dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
-        }
-      }
-    }
-  }
-
-  return;
 }
 
 
@@ -724,7 +665,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
 
     SetFormulationSpecificInternalVariables(dme,varmanager_);
 
-    CalMatAndRhsElectricPotentialField(varmanager_,equpot,emat,erhs,fac,dme);
+    CalcMatAndRhsElectricPotentialField(varmanager_,equpot,emat,erhs,fac,dme);
   } // integration loop
 
   return;
@@ -734,8 +675,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;

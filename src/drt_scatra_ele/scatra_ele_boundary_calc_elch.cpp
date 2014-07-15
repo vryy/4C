@@ -588,10 +588,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
 
         if (not is_stationary)
         {
-          // One-step-Theta:    timefac = theta*dt
-          // BDF2:              timefac = 2/3 * dt
-          // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-          timefac = my::scatraparamstimint_->TimeFac();
+          // One-step-Theta:    timefacrhs = theta*dt
+          // BDF2:              timefacrhs = 2/3 * dt
+          // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
+          timefac = my::scatraparamstimint_->TimeFacRhs();
           if (timefac < 0.0) dserror("time factor is negative.");
         }
 
@@ -1039,7 +1039,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         else if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
         {
           if(dlcap!=0.0)
-            dserror("doubler layer charging is not implemented for Butler-Volmer-Yang1997 electrode kinetics");
+            dserror("double layer charging is not implemented for Butler-Volmer-Yang electrode kinetics");
           if(equpot_==INPAR::ELCH::equpot_divi)
             dserror("The option div i does not work in combination with Butler-Volmer-Yang1997");
 
@@ -1081,7 +1081,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         const double refcon = cond->GetDouble("refcon");
         if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Tafel electrode kinetics");
 
         if(valence_k!=nume)
           dserror("Kinetic model Butler-Volmer: The number of transfered electrodes need to be  \n "
@@ -1250,7 +1250,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         const double k_c = cond->GetDouble("k_c");
         const double beta = cond->GetDouble("beta");
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
 
         //reaction order of the cathodic and anodic reactants of ionic species k
         std::vector<int> q(my::numscal_,0);
@@ -1349,7 +1349,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
         const double c_c0 = cond->GetDouble("c_c0");
         const double c_a0 = cond->GetDouble("c_a0");
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
 
         if(nume!=1)
           dserror("electron != 1; \n "
@@ -1461,7 +1461,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
     else // secondary current distribution
     {
       const double dlcap = cond->GetDouble("dl_spec_cap");
-      if(dlcap!=0.0) dserror("doubler layer charging does not work for secondary current distribution");
+      if(dlcap!=0.0) dserror("double layer charging does not work for secondary current distribution");
 
       switch(kinetics)
       {
@@ -1649,7 +1649,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   // different time (n+af) than our output routine (n+1), resulting in slightly different values at the electrode.
   // A different approach is not possible (without major hacks) since the time-integration scheme is
   // necessary to perform galvanostatic simulations, for instance.
-  // Think about: double layer effects for genalpha time-integratio scheme
+  // Think about: double layer effects for genalpha time-integration scheme
 
   double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
@@ -1771,16 +1771,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         // surface overpotential based on opencircuit potential
         double eta = 0.0;
         // electrode potential
-        double pot = 0.0;
+        double elepot = 0.0;
 
         if(zerocur==0)
         {
           eta = epd - ocp;
-          pot = pot0;
+          elepot = pot0;
         }
         else if(zerocur==1)
         {
-          pot = potint+ocp;
+          elepot = potint+ocp;
           epd  = ocp;
         }
         else
@@ -1820,7 +1820,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           dserror("NaN detected in electrode status calculation");
 
         // compute integrals
-        electpotentialint += pot*fac;
+        electpotentialint += elepot*fac;
         overpotentialint += eta*fac;
         electdiffpotint += epd*fac;
         opencircuitpotint += ocp*fac;
@@ -1857,23 +1857,23 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double refcon = cond->GetDouble("refcon");
         if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Tafel electrode kinetics");
 
         // opencircuit potential is assumed to be zero here
         double ocp = 0.0;
         // surface overpotential based on opencircuit potential
         double eta = 0.0;
         // electrode potential
-        double pot = 0.0;
+        double elepot = 0.0;
 
         if(zerocur==0)
         {
           eta = epd - ocp;
-          pot = pot0;
+          elepot = pot0;
         }
         else if(zerocur==1)
         {
-          pot = potint+ocp;
+          elepot = potint+ocp;
           epd  = ocp;
         }
         else
@@ -1884,7 +1884,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           const double expterm = std::pow(conint[k]/refcon,gamma) * (-exp((-alpha)*frt*eta));
           linea = std::pow(conint[k]/refcon,gamma) * frt*(alpha*exp((-alpha)*frt*eta));
           // compute integrals
-          electpotentialint += pot*fac;
+          electpotentialint += elepot*fac;
           overpotentialint += eta * fac;
           electdiffpotint += epd*fac;
           opencircuitpotint += ocp*fac;
@@ -1903,7 +1903,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           //linea = (-alphac)*exp((-alphac)*eta);
 
           // compute integrals
-          electpotentialint += pot*fac;
+          electpotentialint += elepot*fac;
           overpotentialint += eta * fac;
           electdiffpotint += epd*fac;
           opencircuitpotint += ocp*fac;
@@ -1912,10 +1912,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         }
         break;
       }
-      // linear law:  i_n = frt*i_0*((alphaa+alpha_c)*(V_M - phi)) -> changed 10/13
+      // linear law:  i_n = frt*i_0*((alpha_a+alpha_c)*(V_M - phi)) -> changed 10/13
       // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
       //                         -> linearization in respect to anodic branch!!
-      //                         this is not the classical verion of a linear electrode kinetics law
+      //                         this is not the classical version of a linear electrode kinetics law
       case INPAR::SCATRA::linear:
       {
         // read model-specific parameter
@@ -1940,16 +1940,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         // surface overpotential based on opencircuit potential
         double eta = 0.0;
         // electrode potential
-        double pot = 0.0;
+        double elepot = 0.0;
 
         if(zerocur==0)
         {
           eta = epd - ocp;
-          pot = pot0;
+          elepot = pot0;
         }
         else if(zerocur==1)
         {
-          pot = potint+ocp;
+          elepot = potint+ocp;
           epd  = ocp;
         }
         else
@@ -1958,8 +1958,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         if(iselch)
         {
           // compute integrals
+          electpotentialint += elepot*fac;
           overpotentialint += eta * fac;
-          electpotentialint += pot*fac;
           electdiffpotint += epd*fac;
           opencircuitpotint += ocp*fac;
           currentintegral += i0 * pow(conint[k]/refcon,gamma)*(alphaa*frt*eta) * fac; // the negative(!) normal flux density
@@ -2007,7 +2007,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double k_c = cond->GetDouble("k_c");
         const double beta = cond->GetDouble("beta");
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
         if(zerocur!=0) dserror("The electrode kinetics flag zero_cur is not implemented for this specific kinetic model.");
 
         //reaction order of the cathodic and anodic reactants of ionic species k
@@ -2037,6 +2037,36 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         double expterm(0.0);
         double pow_conint_p = 1.0;      //product over i (c_i)^(p_i)
         double pow_conint_q = 1.0;      //product over i (c_i)^(q_i)
+
+        // overpotential based on opencircuit potential
+        double eta = 0.0;
+        // electrode potential
+        double elepot = 0.0;
+
+        // open circuit potential (ocp): time dependent electrode surface concentrations
+        // defined in Newman, 2004, p. 211, eq. 8.20
+        double ocp = 1/frt/nume*log(k_c/k_a);
+        for(int kk=0;kk<my::numscal_;++kk)
+        {
+          ocp +=  1/frt/nume*(q[kk]-p[kk])*log(conint[kk]);
+          //safety check
+          if((q[kk]-p[kk])!=-stoich[kk])
+            dserror("stoichiometry factors and the factors q,p do not correlate!!");
+        }
+
+        if(zerocur==0)
+        {
+          // overpotential based on open circuit potential
+          eta = epd - ocp;
+          elepot = pot0;
+        }
+        else if(zerocur==1)
+        {
+          elepot = potint+ocp;
+          epd  = ocp;
+        }
+        else
+          dserror("The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
         if (iselch)
         {
@@ -2068,22 +2098,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         if (std::isnan(expterm) or std::isnan(linea))
           dserror("NaN detected in electrode status calculation");
 
-        // open circuit potential (ocp): time dependent electrode surface concentrations
-        // defined in Newman, 2004, p. 211, eq. 8.20
-        double ocp = 1/frt/nume*log(k_c/k_a);
-        for(int kk=0;kk<my::numscal_;++kk)
-        {
-          ocp +=  1/frt/nume*(q[kk]-p[kk])*log(conint[kk]);
-          //safety check
-          if((q[kk]-p[kk])!=-stoich[kk])
-            dserror("stoichiometry factors and the factors q,p do not correlate!!");
-        }
-        // overpotential based on open circuit potential
-        const double eta = epd - ocp;
-
+        // compute integrals
         currentintegral += nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*fac;
-
         boundaryint += fac;
+        electpotentialint += elepot * fac;
         overpotentialint += eta * fac;
         electdiffpotint += epd*fac;
         opencircuitpotint += ocp*fac;
@@ -2107,7 +2125,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double c_c0 = cond->GetDouble("c_c0");
         const double c_a0 = cond->GetDouble("c_a0");
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        if(dlcap!=0.0) dserror("doubler layer charging is not implemented for Tafel electrode kinetics");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
         if(zerocur!=0) dserror("The electrode kinetics flag zero_cur is not implemented for this specific kinetic model.");
 
         if(nume!=1)

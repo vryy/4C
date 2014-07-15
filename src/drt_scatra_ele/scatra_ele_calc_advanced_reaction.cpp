@@ -895,8 +895,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad4>;

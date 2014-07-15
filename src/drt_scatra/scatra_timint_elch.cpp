@@ -102,6 +102,7 @@ void SCATRA::ScaTraTimIntElch::Init()
 
   // check validity of material and element formulation
   // important for porous Diffusion-Conduction formulation using material ElchMat
+  if(elchtype_==INPAR::ELCH::elchtype_diffcond)
   {
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
@@ -286,7 +287,7 @@ void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameterDeactivatedStab()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+  eleparams.set<int>("action",SCATRA::set_elch_scatra_parameter);
 
   // set type of scalar transport problem
   eleparams.set<int>("scatratype",scatratype_);
@@ -306,9 +307,8 @@ void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameterDeactivatedStab()
       "type of stabilization (if any)",
       Teuchos::tuple<std::string>("no_stabilization"),
       Teuchos::tuple<std::string>("Do not use any stabilization"),
-      Teuchos::tuple<int>(
-          INPAR::SCATRA::stabtype_no_stabilization),
-          &eleparams.sublist("STABILIZATION"));
+      Teuchos::tuple<int>(INPAR::SCATRA::stabtype_no_stabilization),
+      &eleparams.sublist("STABILIZATION"));
   DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
   DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
         "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
@@ -992,6 +992,10 @@ void SCATRA::ScaTraTimIntElch::SetupElchNatConv()
 
     // calculate mean_concentration
     const double domint  = (*scalars)[numscal_];
+
+    if (std::abs(domint) < EPS15)
+      dserror("Division by zero!");
+
     for(int k=0;k<numscal_;k++)
     {
       c0_[k] = (*scalars)[k]/domint;
@@ -1050,7 +1054,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)
-      dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linar solver!!");
+      dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linear solver!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_,"CONVFORM"))!= INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
@@ -1345,6 +1349,9 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const int curvenum = elchparams_->get<int>("GSTATCURVENO");
       const double tol = elchparams_->get<double>("GSTATCONVTOL");
       const double effective_length = elchparams_->get<double>("GSTAT_LENGTH_CURRENTPATH");
+      if(effective_length<0.0)
+        dserror("A negative effective length is not possible!");
+      const INPAR::ELCH::ApproxElectResist approxelctresist = DRT::INPUT::IntegralValue<INPAR::ELCH::ApproxElectResist>(*elchparams_,"GSTAT_APPROX_ELECT_RESIST");
 
       // There are maximal two electrode conditions by definition
       // current flow i at electrodes
@@ -1355,9 +1362,10 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       Teuchos::RCP<std::vector<double> > electrodesurface = Teuchos::rcp(new std::vector<double>(2,0.0));
       Teuchos::RCP<std::vector<double> > electrodepot = Teuchos::rcp(new std::vector<double>(2,0.0));
       Teuchos::RCP<std::vector<double> > meanoverpot = Teuchos::rcp(new std::vector<double>(2,0.0));
+      //Teuchos::RCP<std::vector<double> > meanconc = Teuchos::rcp(new std::vector<double>(2,0.0));
       double meanelectrodesurface(0.0);
       //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
-      double newtonrhs(0.0);
+      double residual(0.0);
 
       // for all time integration schemes, compute the current value for phidtnp
       // this is needed for evaluating charging currents due to double-layer capacity
@@ -1366,13 +1374,13 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       ComputeTimeDerivative();
 
       double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
-      double timefac = 1.0/ResidualScaling();
+      double timefacrhs = 1.0/ResidualScaling();
 
       double currtangent_anode(0.0);
       double currtangent_cathode(0.0);
       double potinc_ohm(0.0);
       double potdiffbulk(0.0);
-      double potdiffcell(0.0);
+      double resistance = 0.0;
 
       if(cond.size()>2)
         dserror("The framework may not work for geometrical setups containing more than two electrodes! \n"
@@ -1393,7 +1401,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
             (*currresidual)[icond],
             (*electrodesurface)[icond],
             (*electrodepot)[icond],
-            (*meanoverpot)[icond]
+            (*meanoverpot)[icond]//,
+            //(*meanconc)[icond]
             );
 
         if(cond.size()==2)
@@ -1417,23 +1426,36 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const double potold = cond[condid_cathode]->GetDouble("pot");
       double potnew = potold;
 
-      // bulk voltage loss = V_A - eta_A - (V_C -eta_C)
+      // bulk voltage loss
+      // U =  =  eta_A + delta phi_ohm - eta_C
+      // -> delta phi_ohm  = V_A - V_C - eta_A + eta_C = V_A - eta_A - (V_C  - eta_C)
       potdiffbulk = ((*electrodepot)[condid_anode]-(*meanoverpot)[condid_anode])-((*electrodepot)[condid_cathode]-(*meanoverpot)[condid_cathode]);
       // cell voltage loss = V_A - V_C
-      potdiffcell=(*electrodepot)[condid_anode]-(*electrodepot)[condid_cathode];
+      //potdiffcell=(*electrodepot)[condid_anode]-(*electrodepot)[condid_cathode];
       // tanget at anode and cathode
       currtangent_anode=(*currtangent)[condid_anode];
       currtangent_cathode=(*currtangent)[condid_cathode];
 
-      // The linarization of potential increment is based on the cathode side!!
+      if(cond.size()==2)
       {
-        //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
-        // newtonrhs = -residual, with the definition:  residual := timefac*(-I + I_target)
-        newtonrhs = + (*currresidual)[condid_cathode] - (timefac*targetcurrent); // newtonrhs is stored only from cathode!
+        // mean electrode surface of the cathode abd anode
+        meanelectrodesurface=((*electrodesurface)[0]+(*electrodesurface)[1])/2;
+      }
+      else
+        meanelectrodesurface=(*electrodesurface)[condid_cathode];
+
+      // The linarization of potential increment is always based on the cathode side!!
+
+      // Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
+      // residual := (I - timefacrhs *I_target)
+      // I_target is alway negative, since the reference electrode is the cathode
+      residual = (*currresidual)[condid_cathode] - (timefacrhs*targetcurrent); // residual is stored only from cathode!
+
+      // convergence test
+      {
         if (myrank_==0)
         {
           // format output
-          std::cout.precision(3);
           std::cout<<"\n  GALVANOSTATIC MODE:\n";
           std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
           std::cout<<"  | Convergence check: " <<std::endl;
@@ -1441,7 +1463,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
           std::cout<<"  | iteration:                          "<<std::setw(7)<<std::right<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
           std::cout<<"  | actual reaction current at cathode: "<<std::scientific<<std::setw(12)<<std::right<<(*actualcurrent)[condid_cathode]<<std::endl;
           std::cout<<"  | required total current at cathode:  "<<std::setw(12)<<std::right<<targetcurrent<<std::endl;
-          std::cout<<"  | negative residual (rhs):            "<<std::setw(12)<<std::right<<newtonrhs<<std::endl;
+          std::cout<<"  | negative residual (rhs):            "<<std::setw(12)<<std::right<<residual<<std::endl;
           std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
         }
 
@@ -1454,7 +1476,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
           }
           return true; // we proceed to next time step
         }
-        else if (abs(newtonrhs)< gstatcurrenttol)
+        else if (abs(residual)< gstatcurrenttol)
         {
           if (myrank_==0)
           {
@@ -1474,6 +1496,14 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
           return true; // galvanostatic control has converged
         }
 
+        // safety check
+        if (abs((*currtangent)[condid_cathode])<EPS13)
+          dserror("Tangent in galvanostatic control is near zero: %lf",(*currtangent)[condid_cathode]);
+      }
+
+      // calculate the cell potential increment due to ohmic resistance
+      if(approxelctresist==INPAR::ELCH::approxelctresist_effleninitcond)
+      {
         // update applied electric potential
         // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
 
@@ -1482,52 +1512,96 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         // R(I_target, I) = R_BV1(I_target, I) = R_ohmic(I_target, I) = -R_BV2(I_target, I)
         // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
         // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
-        potinc_ohm=(-1.0*effective_length*newtonrhs)/((*sigma_)[numscal_]*timefac*(*electrodesurface)[condid_cathode]);
-
-        // electrode surface of the cathode
-        meanelectrodesurface=(*electrodesurface)[condid_cathode];
-
-        // safety check
-        if (abs((*currtangent)[condid_cathode])<EPS13)
-          dserror("Tangent in galvanostatic control is near zero: %lf",(*currtangent)[condid_cathode]);
+        resistance = effective_length/((*sigma_)[numscal_]*meanelectrodesurface);
+        // potinc_ohm=(-1.0*effective_length)/((*sigma_)[numscal_]*(*electrodesurface)[condid_cathode])*residual/timefacrhs;
       }
-
-      if(cond.size()==2)
+      else if(approxelctresist==INPAR::ELCH::approxelctresist_relpotcur and cond.size()==2)
       {
-        // mean electrode surface of the cathode abd anode
-        meanelectrodesurface=((*electrodesurface)[0]+(*electrodesurface)[1])/2;
-
         // actual potential difference is used to calculate the current path length
         // -> it is possible to compute the new ohmic potential step
         //    without the input parameter GSTAT_LENGTH_CURRENTPATH
-        if (effective_length==-1.0)
-        {
-          potinc_ohm = (potdiffbulk*newtonrhs)/(timefac*(*actualcurrent)[condid_cathode]);
-        }
+        // actual current < 0,  since the reference electrode is the cathode
+        // potdiffbulk > 0,     always positive (see definition)
+        // -1.0,                resistance has to be positive
+        resistance = -1.0*(potdiffbulk/(*actualcurrent)[condid_cathode]);
+        // potinc_ohm = (potdiffbulk/(*actualcurrent)[condid_cathode])*residual/timefacrhs;
+      }
+//      else if(approxelctresist==INPAR::ELCH::approxelctresist_efflenintegcond and cond.size()==2)
+//      {
+//        double specificresistance = 0.0;
+//        double eps = 0.0;
+//        double tort = 0.0;
+//        {
+//          DRT::Element* actele = discret_->gElement(0);
+//          Teuchos::RCP<MAT::Material> mat = actele->Material();
+//
+//          if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+//          {
+//            const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+//
+//            for (int iphase=0; iphase < actmat->NumPhase();++iphase)
+//            {
+//              const int phaseid = actmat->PhaseID(iphase);
+//              Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
+//
+//              // dynmic cast: get access to mat_phase
+//              const Teuchos::RCP<const MAT::ElchPhase>& actphase = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+//
+//              if(actphase->MaterialType() == INPAR::MAT::m_elchphase)
+//              {
+//                const MAT::ElchPhase* actsinglephase = static_cast<const MAT::ElchPhase*>(singlephase.get());
+//
+//                eps = actsinglephase->Epsilon();
+//                tort = actsinglephase->Tortuosity();
+//              }
+//
+//              // 2) loop over materials of the single phase
+//              for (int imat=0; imat < actphase->NumMat();++imat)
+//              {
+//                const int matid = actphase->MatID(imat);
+//                Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
+//
+//                if(singlemat->MaterialType() == INPAR::MAT::m_newman)
+//                {
+//                  const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+//
+//                  specificresistance = actsinglemat->ComputeApproxResistance((*meanconc)[condid_cathode],(*meanconc)[condid_anode]);
+//                }
+//              }
+//            }
+//          }
+//          resistance = specificresistance*effective_length/meanelectrodesurface/(eps*tort);
+//          //potinc_ohm = -specificresistance*effective_length/(*electrodesurface)[condid_cathode]/(eps*tort)*residual/timefacrhs;
+//        }
+//      }
+      else
+        dserror("The combination of the parameter GSTAT_APPROX_ELECT_RESIST %i and the number of electrodes %i\n"
+                "is not valid!",approxelctresist,cond.size());
 
-        // Do not update the cell potential for small currents
-        if(abs((*actualcurrent)[condid_cathode]) < EPS10)
-          potinc_ohm = 0.0;
+      // calculate increment due to ohmic resistance
+      potinc_ohm=-1.0*resistance*residual/timefacrhs;
 
-        // the current flow at both electrodes has to be the same within the solution tolerances
-        if(abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])>EPS8)
+      // Do not update the cell potential for small currents
+      if(abs((*actualcurrent)[condid_cathode]) < EPS10)
+        potinc_ohm = 0.0;
+
+      // the current flow at both electrodes has to be the same within the solution tolerances
+      if(abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])>EPS8)
+      {
+        if (myrank_==0)
         {
-          if (myrank_==0)
-          {
-            std::cout.precision(3);
-            std::cout << "Warning!!!" << std::endl;
-            std::cout << "The difference of the current flow at anode and cathode is " << abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])
-                      << " larger than " << EPS8 << std::endl;
-          }
+          std::cout << "Warning!!!" << std::endl;
+          std::cout << "The difference of the current flow at anode and cathode is " << abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])
+                    << " larger than " << EPS8 << std::endl;
         }
       }
 
       // Newton step:  Jacobian * \Delta pot = - Residual
-      const double potinc_cathode = newtonrhs/((-1)*currtangent_cathode);
+      const double potinc_cathode = residual/((-1)*currtangent_cathode);
       double potinc_anode = 0.0;
       if (abs(currtangent_anode)>EPS13) // anode surface overpotential is optional
       {
-        potinc_anode = newtonrhs/((-1)*currtangent_anode);
+        potinc_anode = residual/((-1)*currtangent_anode);
       }
       gstatincrement_ = (potinc_cathode+potinc_anode+potinc_ohm);
       // update electric potential
@@ -1536,24 +1610,26 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       if(myrank_==0)
       {
         std::cout<<"  | ohmic potential increment is calculated based on" <<std::endl;
-        if(effective_length != -1.0)
-          std::cout<<"  | the GSTAT_LENGTH_CURRENTPATH as defined in the input file!" <<std::endl;
-        else
+        if(approxelctresist==INPAR::ELCH::approxelctresist_effleninitcond)
+          std::cout<<"  | the ohmic resistance is calculated based on GSTAT_LENGTH_CURRENTPATH and the initial conductivity!" <<std::endl;
+        else if (approxelctresist==INPAR::ELCH::approxelctresist_relpotcur)
           std::cout<<"  | the ohmic resistance calculated from applied potential and current flow!" <<std::endl;
+        else
+          std::cout<<"  | the ohmic resistance is calculated based on GSTAT_LENGTH_CURRENTPATH and the integrated conductivity" <<std::endl;
         std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-        std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<std::setw(12)<<std::right<< effective_length << std::endl;
+        std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<setw(6)<<std::right<< effective_length << std::endl;
+
         if((*actualcurrent)[condid_cathode]!=0.0)
-          std::cout<<"  | Approximated GSTAT_LENGTH_CURRENTPATH:          "<<std::setw(12)<<std::right<< potdiffbulk/(*actualcurrent)[condid_cathode]*(*sigma_)[numscal_]*meanelectrodesurface <<std::endl;
-        std::cout<<"  | (not directly used to calculate the ohmic potential increment)"<<std::endl;
+          std::cout<<"  | Resistance based on the intial conductivity:    "<<setw(6)<<std::right<< effective_length/((*sigma_)[numscal_]*meanelectrodesurface) <<std::endl;
+        std::cout<<"  | Resistance based on .(see GSTAT_APPROX_ELECT_RESIST): "<<setw(6)<<std::right<< resistance <<std::endl;
         std::cout<<"  | New guess for:                                  "<<std::endl;
         std::cout<<"  | - ohmic potential increment:                    "<<std::setw(12)<<std::right<< potinc_ohm <<std::endl;
         std::cout<<"  | - overpotential increment cathode (condid " << condid_cathode <<"):   " <<std::setw(12)<<std::right<< potinc_cathode << std::endl;
         std::cout<<"  | - overpotential increment anode (condid " << condid_anode <<"):     " <<std::setw(12)<<std::right<< potinc_anode << std::endl;
         std::cout<<"  | -> total increment for potential:               " <<std::setw(12)<<std::right<< gstatincrement_ << std::endl;
         std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-        std::cout<<"  | old potential at the cathode (condid "<<condid_cathode <<"):     "<<std::setw(12)<<std::right<<potold<<std::endl;
-        std::cout<<"  | new potential at the cathode (condid "<<condid_cathode <<"):     "<<std::setw(12)<<std::right<<potnew<<std::endl;
-        std::cout<<"  | new applied potential difference (condid "<<condid_cathode <<"): "<<std::setw(12)<<std::right<<potdiffcell<<std::endl;
+        std::cout<<"  | old potential at the cathode (condid "<<condid_cathode <<"):     "<<setw(12)<<std::right<<potold<<std::endl;
+        std::cout<<"  | new potential at the cathode (condid "<<condid_cathode <<"):     "<<setw(12)<<std::right<<potnew<<std::endl;
         std::cout<<"  +--------------------------------------------------------------------------" <<std::endl<<std::endl;
       }
 
@@ -1577,6 +1653,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
   return true; //default
 
 } // end ApplyGalvanostaticControl()
+
 
 /*----------------------------------------------------------------------*
  | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |

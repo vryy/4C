@@ -91,21 +91,25 @@ protected:
   );
 
   //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-  virtual void CalMatAndRhs(
-    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    Epetra_SerialDenseMatrix&                emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector&                erhs,         //!< element rhs to calculate+
-    const int                                k,            //!< index of current scalar
-    const double                             fac,          //!< domain-integration factor
-    const double                             timefacfac,   //!< domain-integration factor times time-integration factor
-    const double                             rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
-    double&                                  rhsint,       //!< rhs at Gauss point
-    const double                             hist          //!< history
+  virtual void CalcMatAndRhs(
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,
+    Epetra_SerialDenseMatrix&                                                  emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&                                                  erhs,         //!< element rhs to calculate+
+    const int                                                                  k,            //!< index of current scalar
+    const double                                                               fac,          //!< domain-integration factor
+    const double                                                               timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                                                               rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    const double                                                               taufac,       //!< tau times domain-integration factor
+    const double                                                               timetaufac,   //!< domain-integration factor times tau times time-integration factor
+    const double                                                               rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
+    LINALG::Matrix<my::nen_,1>&                                                tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&                                    dme,          //!< diffusion manager
+    double&                                                                    rhsint,       //!< rhs at Gauss point
+    const double                                                               hist          //!< history
   ){return;};
 
   //! calculate contributions to matrix and rhs (outside of loop over all scalars)
-  virtual void CalMatAndRhsOutsideScalarLoop(
+  virtual void CalcMatAndRhsOutsideScalarLoop(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&                emat,         //!< element matrix to calculate
     Epetra_SerialDenseVector&                erhs,         //!< element rhs to calculate
@@ -130,7 +134,7 @@ protected:
   ){return;};
 
   /*========================================================================*/
-  //! @name material and related and related functions
+  //! @name material and related functions
   /*========================================================================*/
 
   //! material ion
@@ -145,6 +149,30 @@ protected:
     double&                                 visc,         //!< fluid viscosity
     const int                               iquad         //!< id of current gauss point
   );
+
+  /*========================================================================*/
+  //! @name stabilization and related functions
+  /*========================================================================*/
+
+  //! Calculate quantities used for stabilization
+  virtual void PrepareStabilization(
+    std::vector<double>&                                                       tau,         //!< stabilization parameters (one per transported scalar)
+    std::vector<LINALG::Matrix<my::nen_,1> >&                                  tauderpot,   //!< derivatives of stabilization parameters w.r.t. electric potential
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,          //!< internal variable manager
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&                                    dme,         //!< diffusion manager
+    const double                                                               densnp,      //!< density at t_(n+1) or t_(n+alpha_f)
+    const double                                                               vol          //!< element volume
+  );
+
+  //! Calculate derivative of tau w.r.t. electric potential according to Taylor, Hughes and Zarins
+  virtual void CalcTauDerPotTaylorHughesZarins(
+    LINALG::Matrix<my::nen_,1>&         tauderpot,       //!< derivative of stabilization parameter w.r.t. electric potential
+    double&                             tau,             //!< stabilization parameter
+    const double                        densnp,          //!< density at t_(n+1)
+    const double                        frt,             //!< F/(RT)
+    const double                        diffusvalence,   //!< diffusion coefficient times valence
+    const LINALG::Matrix<my::nsd_,1>&   veleff           //!< effective convective velocity (fluid velocity plus migration velocity if applicable)
+  ){return;};
 
   /*========================================================================*/
   //! @name methods for evaluation of individual terms
@@ -174,9 +202,9 @@ protected:
 
   //! validity check for all elements with respect to
   //! formulation-specific parameter, degree's of freedom, number of scalars, ...
-  void CheckElchElementParameter(
+  virtual void CheckElchElementParameter(
     DRT::ELEMENTS::Transport*  ele  //!< the element we are dealing with
-    );
+  ){return;};
 
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
   virtual void CalculateFlux(
@@ -233,7 +261,7 @@ protected:
   ){return;};
 
   // Solving for electric potential field : Calculate Matrix and Rhs
-  virtual void CalMatAndRhsElectricPotentialField(
+  virtual void CalcMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseMatrix&         emat,       //!< element matrix
@@ -250,6 +278,15 @@ protected:
   DRT::ELEMENTS::ScaTraEleParameterElch* elchpara_;
 
   Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> > varmanager_;
+
+  //! flag for migration operator in the stabilization terms
+  /* The migration term in the ion transport equation can be split into a convective and a reactive part.
+   * Combining the convective part of the migration term with the convective term in the ion transport equation
+   * yields an "extended" convective term including not only the fluid velocity, but also the migration velocity.
+   * In case migrationstab_ == true, SUPG stabilization is performed for the extended convective term.
+   * In case migrationstab_ == false, SUPG stabilization is performed only for the original convective term.
+   */
+  bool migrationstab_;
 
   /*========================================================================*/
   //! @name scalar degrees of freedom and related
@@ -284,7 +321,8 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
       return;
     };
 
-    //! Access routine for valence of the single ionic species
+    //! Access routine for valence of all ionic species or of single ionic species k
+    const std::vector<double> GetValence(){return valence_;};
     const double GetValence(const int k){return valence_[k];};
 
     //! the length of the vector containing the diffusion coefficients is increased by 1
@@ -334,7 +372,8 @@ class ScaTraEleInternalVariableManagerElch
       convelint_(true),
       conv_(true),
       convphi_(numscal),
-      sgconv_(true)
+      sgconv_(true),
+      migvelint_(true)
     {return;}
 
     virtual ~ScaTraEleInternalVariableManagerElch(){};
@@ -356,30 +395,33 @@ class ScaTraEleInternalVariableManagerElch
       // -> concentration depending material parameters for the diffusion-convection formulation
       // -> avoiding of possible errors (concentration was always defined as a vector where only one
       //    entry was filled)
-      for (int k = 0; k < numscal_;++k)
+      for (int k = 0; k < numscal_; ++k)
       {
-        // calculate concentration at GP
+        // calculate concentration at GP at t_(n+1) or t_(n+alpha_F)
         conint_[k] = funct.Dot(ephinp[k]);
-        // calculate 1/concentration at GP
+        // calculate 1/concentration at GP at t_(n+1) or t_(n+alpha_F)
         conintinv_[k] = 1/conint_[k];
-        // calculatd gradient of concentration at GP
+        // calculate gradient of concentration at GP at t_(n+1) or t_(n+alpha_F)
         gradphi_[k].Multiply(derxy,ephinp[k]);
       }
-      // calculate gradient of electric potential at GP
+      // calculate gradient of electric potential at GP at t_(n+1) or t_(n+alpha_F)
       gradpot_.Multiply(derxy,epotnp);
-      // calculate velocity at GP
+      // calculate velocity at GP at t_(n+1) or t_(n+alpha_F)
 //      velint_.Multiply(evelnp,funct);
-      // calculate convective velocity at GP
+      // calculate convective velocity at GP at t_(n+1) or t_(n+alpha_F)
       convelint_.Multiply(econvelnp,funct);
-      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+      // convective part in convective form at t_(n+1) or t_(n+alpha_F): rho*u_x*N,x+ rho*u_y*N,y
       conv_.MultiplyTN(derxy,convelint_);
 
-      // convective term using current scalar value
+      // convective term using current scalar value at t_(n+1) or t_(n+alpha_F)
       for (int k = 0; k < numscal_;++k)
       {
         //convphi_[k] = convelint_.Dot(gradphi_[k]);
         convphi_[k] = conv_.Dot(ephinp[k]);
       }
+
+      //! migration velocity vector (divided by D_k*z_k) at t_(n+1) or t_(n+alpha_F): -F/(RT) \grad{\Phi}
+      migvelint_.Multiply(-frt_,derxy,epotnp);
 
       return;
     };
@@ -393,7 +435,7 @@ class ScaTraEleInternalVariableManagerElch
     const double FRT(){return frt_;};
 
   /*========================================================================*/
-  //! @name return methods for GP values
+  //! @name return methods for internal variables
   /*========================================================================*/
 
     //! return gradient of phi for species k at GP
@@ -412,12 +454,14 @@ class ScaTraEleInternalVariableManagerElch
 //    const LINALG::Matrix<NSD,1> VelInt(){return velint_;};
     //! return convective velocity at GP
     const LINALG::Matrix<NSD,1> ConVelInt(){return convelint_;};
-    //! return convective part in convective form
+    //! return convective part in convective form: u_x*N,x + u_y*N,y + u_z*N,z
     const LINALG::Matrix<NEN,1> Conv(){return conv_;};
-    //! return convective contribution
+    //! return convective contribution: conv_.Dot(ephinp[k])
     const double ConvPhi(const int k ){return convphi_[k];};
     //! return subgrid velocity
     const LINALG::Matrix<NEN,1> SGConv(){return sgconv_;};
+    //! return migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
+    const LINALG::Matrix<NSD,1> MigVelInt(){return migvelint_;};
 
   protected:
 
@@ -444,7 +488,7 @@ class ScaTraEleInternalVariableManagerElch
     double frt_;
 
   /*========================================================================*/
-  //! @name internal variables evaluated at the Gauss point
+  //! @name internal variables evaluated at element center or Gauss point
   /*========================================================================*/
 
     //! gradient of concentration at GP
@@ -459,12 +503,14 @@ class ScaTraEleInternalVariableManagerElch
 //    LINALG::Matrix<NSD,1> velint_;
     //! convective velocity at GP
     LINALG::Matrix<NSD,1> convelint_;
-    //! convective part in convective form: u_x*N,x+ u_y*N,y
+    //! convective part in convective form: u_x*N,x + u_y*N,y + u_z*N,z
     LINALG::Matrix<NEN,1> conv_;
     //! convective contribution
     std::vector<double> convphi_;
     // subgrid velocity
     LINALG::Matrix<NEN,1> sgconv_;
+    //! migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
+    LINALG::Matrix<NSD,1> migvelint_;
 };
 
 }

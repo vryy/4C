@@ -175,8 +175,11 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoro<DRT::Element::quad4>;

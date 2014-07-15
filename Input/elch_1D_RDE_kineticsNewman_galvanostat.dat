@@ -34,8 +34,8 @@ NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-CONVTOL                         1e-06
 GALVANOSTATIC                   Yes
+GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond //relation_pot_cur effective_length_with_initial_cond
 GSTATCONDID_ANODE               1
 GSTATCONDID_CATHODE             0
 GSTATCONVTOL                    1e-09
@@ -43,16 +43,10 @@ GSTATCURTOL                     1e-09
 GSTATCURVENO                    1
 GSTATITEMAX                     50
 GSTAT_LENGTH_CURRENTPATH        0.1
-ITEMAX                          8
-MAXTIME                         1000
 MOLARVOLUME                     0
 MOVINGBOUNDARY                  No
 NATURAL_CONVECTION              No
-NUMSTEP                         12
-RESTARTEVRY                     1
 TEMPERATURE                     298
-TIMESTEP                        0.01
-UPRES                           1
 EQUPOT                          ENC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
@@ -69,7 +63,7 @@ INITPOTCALC                     no
 MATID                           5
 MAXTIME                         1000
 MESHTYING                       no
-NUMSTEP                         40
+NUMSTEP                         12
 OUTMEAN                         yes
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
@@ -89,7 +83,7 @@ WRITEFLUX_IDS                   -1
 ABSTOLRES                       1e-18
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-CONVTOL                         1e-06
+CONVTOL                         1e-09
 EXPLPREDICT                     no
 ITEMAX                          100
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

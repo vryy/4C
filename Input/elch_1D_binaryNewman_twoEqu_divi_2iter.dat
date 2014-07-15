@@ -30,15 +30,15 @@ SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
-MAXTIME                         1000
-NUMSTEP                         1000
+MAXTIME                         10
+NUMSTEP                         20
 RESTARTEVRY                     10
 THETA                           0.66
 TIMEINTEGR                      Gen_Alpha
-TIMESTEP                        1.0
+TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-UPRES                           10
+UPRES                           1
 BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       No
@@ -59,12 +59,6 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        DiffCond
-ITEMAX                          2
-MAXTIME                         10
-NUMSTEP                         20
-RESTARTEVRY                     10
-TIMESTEP                        0.1
-UPRES                           1
 TEMPERATURE                     298.15                          // F/RT = 38.942
 EQUPOT                          divi
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
@@ -114,7 +108,7 @@ SCATRA DIS scatra NODE 137 QUANTITY phi2 VALUE -6.45387865102685088e-02 TOLERANC
 SCATRA DIS scatra NODE 193 QUANTITY phi1 VALUE 1.23860144453241020e-01 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 193 QUANTITY phi2 VALUE -3.73696618497741384e-02 TOLERANCE 1e-11
 // Since we stop the Newton interation after the first step,
-// the primary solution fields are not converged resulting in deviation from the div i condition 
+// the primary solution fields are not converged resulting in deviation from the div i condition
 SCATRA DIS scatra NODE 1 QUANTITY meanc VALUE 3.02417914826209507e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY meaneta VALUE -5.54275330717174941e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY meancur VALUE -6.74370788576256382e-03 TOLERANCE 1e-11

@@ -24,14 +24,15 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+SCATRATYPE                      Elch
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Gen_Alpha
 UPRES                           1
-RESTARTEVRY                     20
-NUMSTEP                         1
+RESTARTEVRY                     7                   // test writing of restart data
+NUMSTEP                         10                  // series of stationary solutions from Pe=0 up to Pe=200
 MAXTIME                         1000.0
-TIMESTEP                        0.05
+TIMESTEP                        0.5
 ALPHA_F                         0.666666
 ALPHA_M                         0.833333
 GAMMA                           0.666666
@@ -51,15 +52,9 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU integration_point //element_center
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          3                             // abort solution process -> be able to test influence of the matrix as well!
-CONVTOL                         1.0e-5
+CONVTOL                         1e-09
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          12
-MAXTIME                         1000
-NUMSTEP                         10 //101                      // series of stationary solutions from Pe=0 up to Pe=200
-RESTARTEVRY                     7                             // test writing of restart data
-TIMESTEP 0.5 //1.0
-UPRES                           1
 TEMPERATURE                     11.604506                     // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
@@ -92,15 +87,15 @@ FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0 // el. potential
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 0.1 TOLERANCE 1e-9 // Dirichlet node at right corner
-SCATRA DIS scatra NODE 9 QUANTITY phi1 VALUE 9.161349939e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 8 QUANTITY phi1 VALUE 8.221804790e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 8 QUANTITY phi2 VALUE 1.810028514e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 9 QUANTITY phi2 VALUE 1.907667952e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 8 QUANTITY phi4 VALUE 7.427797403e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 9 QUANTITY phi4 VALUE 8.643251444e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 8 QUANTITY phi5 VALUE -5.211505224e-04 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 9 QUANTITY phi5 VALUE -4.410758020e-04 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-10 // Dirichlet node at right corner
+SCATRA DIS scatra NODE 9 QUANTITY phi1 VALUE 9.16134993897404160e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 8 QUANTITY phi1 VALUE 8.22180478972785456e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 8 QUANTITY phi2 VALUE 1.81002851360154371e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 9 QUANTITY phi2 VALUE 1.90766795211058438e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 8 QUANTITY phi4 VALUE 7.42779740312726089e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 9 QUANTITY phi4 VALUE 8.64325144425127312e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 8 QUANTITY phi5 VALUE -5.21150522389382032e-04 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 9 QUANTITY phi5 VALUE -4.41075801998320918e-04 TOLERANCE 1e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0

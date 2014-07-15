@@ -41,11 +41,11 @@ FSSUGRDIFF                      No
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     10
+NUMSTEP                         1
+RESTARTEVRY                     1000
 THETA                           0.66
 TIMEINTEGR                      Stationary
-TIMESTEP                        0.2
+TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 WRITEFLUX                       totalflux_domain
@@ -63,12 +63,6 @@ STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         1
-RESTARTEVRY                     1000
-TIMESTEP                        1.0
-UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
@@ -81,7 +75,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -115,7 +109,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres

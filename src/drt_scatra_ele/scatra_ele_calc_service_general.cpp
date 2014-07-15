@@ -931,7 +931,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
       {
         // calculation of stabilization parameter at element center
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol,k);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
       }
     }
   }
@@ -985,7 +985,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       }
 
       // calculation of stabilization parameter at integration point
-      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol,k);
+      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
 
       const double fac_tau = fac*tau[k];
 
@@ -1361,8 +1361,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;

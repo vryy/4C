@@ -31,24 +31,14 @@ Maintainer: Andreas Ehrl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTau(
-  double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
-  const double                 diffus,    //!< diffusivity or viscosity
-  const double                 reacoeff,  //!< reaction coefficient
-  const double                 densnp,    //!< density at t_(n+1)
-  const LINALG::Matrix<nsd_,1>& convelint, //!< convective velocity at integration point
-  const double                 vol,       //!< element volume
-  const int                    k          //!< index of current scalar
+  double&                         tau,         //!< the stabilisation parameters (one per transported scalar)
+  const double                    diffus,      //!< diffusivity or viscosity
+  const double                    reacoeff,    //!< reaction coefficient
+  const double                    densnp,      //!< density at t_(n+1)
+  const LINALG::Matrix<nsd_,1>&   convelint,   //!< convective velocity at integration point
+  const double                    vol          //!< element volume
   )
 {
-
-  //TODO: SCATRA_ELE_CLEANING: ELCH
-  // reset
-  //tauderpot_[k].Clear();
-
-  //TODO: SCATRA_ELE_CLEANING: ELCH
-//  if (is_elch_ and migrationintau) migrationstab_=false;
-//  // dserror("FrancaValentin with migrationintau not available at the moment");
-
   //----------------------------------------------------------------------
   // computation of stabilization parameters depending on definition used
   //----------------------------------------------------------------------
@@ -89,14 +79,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTau(
     CalcTau1DExact(tau,diffus,reacoeff,densnp,convelint,vol);
     break;
   }
-  break;
   case INPAR::SCATRA::tau_zero:
   {
     // set tau's to zero (-> no stabilization effect)
     tau = 0.0;
+    break;
   }
-  break;
-  default: dserror("unknown definition for stabilization parameter tau\n"); break;
+  default:
+  {
+    dserror("unknown definition for stabilization parameter tau\n");
+    break;
+  }
   }
 
   return;
@@ -172,11 +165,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauTaylorHughesZarins(
   // effective velocity at element center:
   // (weighted) convective velocity + individual migration velocity
   LINALG::Matrix<nsd_,1> veleff(convelint);
-  //TODO: SCATRA_ELE_CLEANING: ELCH problemspezifische Fkt
-//    if (is_elch_)
-//    {
-//      if (migrationintau) veleff.Update(diffusvalence_[k],migvelint_,1.0);
-//    }
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
@@ -200,16 +188,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauTaylorHughesZarins(
       }
       normG+=G*G;
       Gnormu+=dens_sqr*veleff(nn,0)*G*veleff(rr,0);
-//      //TODO: SCATRA_ELE_CLEANING: ELCH
-//      if (is_elch_) // ELCH
-//      {
-//        if (migrationintau)
-//        {
-//          // for calculation of partial derivative of tau
-//          for (int jj=0;jj < nen_; jj++)
-//            (tauderpot_[k])(jj,0) += dens_sqr*frt*diffusvalence_[k]*((derxy_(nn,jj)*G*veleff(rr,0))+(veleff(nn,0)*G*derxy_(rr,jj)));
-//        }
-//      } // ELCH
     }
   }
 
@@ -223,12 +201,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauTaylorHughesZarins(
   // computation of stabilization parameter tau
   tau = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gdiff));
 
-  //TODO: SCATRA_ELE_CLEANING: ELCH
-  // finalize derivative of present tau w.r.t electric potential
-//  if (is_elch_)
-//  {
-//    if (migrationintau) tauderpot_[k].Scale(0.5*tau_[k]*tau_[k]*tau_[k]);
-//  }
   return;
 }
 
@@ -1110,8 +1082,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocity(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;

@@ -108,7 +108,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
  * Calculate Mat and Rhs for electric potential field        ehrl 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhsElectricPotentialField(
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsElectricPotentialField(
   Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
   const enum INPAR::ELCH::EquPot    equpot,
   Epetra_SerialDenseMatrix&         emat,
@@ -229,8 +229,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad4>;

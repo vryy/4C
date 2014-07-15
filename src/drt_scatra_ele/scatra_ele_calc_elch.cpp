@@ -13,24 +13,23 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 
-#include "scatra_ele_calc_elch.H"
 #include "scatra_ele.H"
-#include "scatra_ele_parameter_elch.H"
 
 #include "../drt_geometry/position_array.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/ion.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_inpar/inpar_elch.H"
+
+#include "../headers/definitions.h"
+
+#include "scatra_ele_calc_elch.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+    migrationstab_(true),
     epotnp_(my::numscal_)
 {
   // initialization of diffusion manager
@@ -151,15 +150,16 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 ehrl  08/08|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
-  DRT::Element*                         ele, ///< the element those matrix is calculated
-  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-  Epetra_SerialDenseVector&             subgrdiff ///< subgrid-diff.-scaling vector
+  DRT::Element*                         ele,        ///< the element whose matrix is calculated
+  Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs,       ///< element rhs to calculate
+  Epetra_SerialDenseVector&             subgrdiff   ///< subgrid-diff.-scaling vector
   )
 {
   // dynamic cast to elch-specific diffusion manager
@@ -168,11 +168,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
-  my::EvalShapeFuncAndDerivsAtEleCenter();
+  const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
 
-  //----------------------------------------------------------------------
+  //-------------------------------------------------------------------------
   // get material and stabilization parameters (evaluation at element center)
-  //----------------------------------------------------------------------
+  //-------------------------------------------------------------------------
   // density at t_(n)
   double densn(1.0);
   // density at t_(n+1) or t_(n+alpha_F)
@@ -183,9 +183,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   // fluid viscosity
   double visc(0.0);
 
-  // material parameter at the element center
-  if (not my::scatrapara_->MatGP())
-    this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  // material parameter at element center
+  if ((not my::scatrapara_->MatGP()) or (not my::scatrapara_->TauGP()))
+    GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc);
+
+  //----------------------------------------------------------------------------------
+  // calculate stabilization parameters (one per transported scalar) at element center
+  //----------------------------------------------------------------------------------
+  std::vector<double> tau(my::numscal_,0.);
+  std::vector<LINALG::Matrix<my::nen_,1> > tauderpot(my::numscal_);
+
+  if (not my::scatrapara_->TauGP())
+  {
+    // set internal variables at element center
+    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
+
+    PrepareStabilization(tau,tauderpot,varmanager_,dme,densnp,vol);
+  }
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -201,13 +215,21 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (my::scatrapara_->MatGP())
-      this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
+      GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc,iquad);
 
-    // set internal variables
+    // set internal variables at Gauss point
     varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
-
     SetFormulationSpecificInternalVariables(dme,varmanager_);
 
+    //-------------------------------------------------------------------------------------
+    // calculate stabilization parameters (one per transported scalar) at integration point
+    //-------------------------------------------------------------------------------------
+    if (my::scatrapara_->TauGP())
+      PrepareStabilization(tau,tauderpot,varmanager_,dme,densnp,vol);
+
+    //-----------------------------------------------------------------------------------
+    // calculate contributions to element matrix and right-hand side at integration point
+    //-----------------------------------------------------------------------------------
     const double timefacfac = my::scatraparatimint_->TimeFac()*fac;
     const double rhsfac    = my::scatraparatimint_->TimeFacRhs()*fac;
 
@@ -215,9 +237,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // deal with a system of transported scalars
     for (int k=0;k<my::numscal_;++k)
     {
+      const double taufac = tau[k] * fac;
+      const double timetaufac = my::scatraparatimint_->TimeFac() * taufac;
+      const double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
+
       // get history data (or acceleration)
-      double hist(0.0);
-      hist = my::funct_.Dot(my::ehist_[k]);
+      double hist = my::funct_.Dot(my::ehist_[k]);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -227,11 +252,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       my::GetRhsInt(rhsint,densnp,k);
 
       // Compute element matrix and rhs
-      CalMatAndRhs(varmanager_,emat,erhs,k,fac,timefacfac,rhsfac,dme,rhsint,hist);
+      CalcMatAndRhs(varmanager_,emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot[k],dme,rhsint,hist);
     }  // end loop over scalar
 
     // Compute element matrix and rhs
-    CalMatAndRhsOutsideScalarLoop(varmanager_,emat,erhs,fac,timefacfac,rhsfac,dme);
+    CalcMatAndRhsOutsideScalarLoop(varmanager_,emat,erhs,fac,timefacfac,rhsfac,dme);
   }
 
   return;
@@ -280,6 +305,88 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::MatIon(
 
   return;
 }
+
+/*--------------------------------------------------------------------------*
+ | Calculate quantities used for stabilization (protected)       fang 06/14 |
+ *--------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::PrepareStabilization(
+  std::vector<double>&                                                       tau,         //!< stabilization parameters (one per transported scalar)
+  std::vector<LINALG::Matrix<my::nen_,1> >&                                  tauderpot,   //!< derivatives of stabilization parameters w.r.t. electric potential
+  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,          //!< internal variable manager
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&                                    dme,         //!< diffusion manager
+  const double                                                               densnp,      //!< density at t_(n+1) or t_(n+alpha_f)
+  const double                                                               vol          //!< element volume
+  )
+{
+  // special stabilization parameters in case of binary electrolyte
+  if (SCATRA::IsBinaryElectrolyte(dme->GetValence()))
+  {
+    // do not include migration operator in stabilization terms
+    migrationstab_ = false;
+
+    // use effective diffusion coefficient for binary electrolyte solutions
+    double resdiffus = SCATRA::CalResDiffCoeff(dme->GetValence(),dme->GetIsotropicDiff(),SCATRA::GetIndicesBinaryElectrolyte(dme->GetValence()));
+
+    // loop over transported scalars
+    for (int k=0; k<my::numscal_; ++k)
+    {
+      // calculate stabilization parameter tau for charged species
+      if (abs(dme->GetValence(k)) > EPS10)
+        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp,vm->ConVelInt(),vol);
+      else
+        // calculate stabilization parameter tau for uncharged species
+        my::CalcTau(tau[k],dme->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,vm->ConVelInt(),vol);
+    }
+  }
+
+  else
+  {
+    // only include migration operator in stabilization terms in case tau is computed according to Taylor, Hughes, and Zarins
+    switch (my::scatrapara_->TauDef())
+    {
+      case INPAR::SCATRA::tau_taylor_hughes_zarins:
+      case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
+      {
+        migrationstab_ = true;
+        break;
+      }
+      default:
+      {
+        migrationstab_ = false;
+        break;
+      }
+    }
+
+    // loop over transported scalars
+    for (int k=0; k<my::numscal_; ++k)
+    {
+      // Compute effective velocity as sum of convective and migration velocities
+      LINALG::Matrix<my::nsd_,1> veleff(vm->ConVelInt());
+      veleff.Update(dme->GetValence(k)*dme->GetIsotropicDiff(k),vm->MigVelInt(),1.);
+
+      // calculate stabilization parameter tau
+      my::CalcTau(tau[k],dme->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,veleff,vol);
+
+      switch (my::scatrapara_->TauDef())
+      {
+        case INPAR::SCATRA::tau_taylor_hughes_zarins:
+        case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
+        {
+          // Calculate derivative of tau w.r.t. electric potential
+          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,vm->FRT(),dme->GetIsotropicDiff(k)*dme->GetValence(k),veleff);
+          break;
+        }
+        default:
+        {
+          break;
+        }
+      }
+    }
+  }
+
+  return;
+} // ScaTraEleCalcElch<distype>::PrepareStabilization
 
 /*----------------------------------------------------------------------------------*
 |  CalcMat: Potential equation ENC                                       ehrl  02/14|
@@ -333,8 +440,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;

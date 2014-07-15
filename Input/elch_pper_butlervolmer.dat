@@ -22,8 +22,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -32,7 +30,7 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
+CONVTOL                         1e-09
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         10
@@ -81,7 +79,7 @@ NUMSTEP                         10
 RESTARTEVRY                     10
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.2
+TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
@@ -91,19 +89,13 @@ BLOCKPRECOND                    Yes
 MATID                           5
 SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1e-6
+CONVTOL                         1e-09
 ITEMAX                          15
 EXPLPREDICT                     no                            // yes -> oszillations for neutral
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     10
-TIMESTEP                        1.0
-UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
@@ -116,7 +108,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
@@ -152,7 +144,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
@@ -186,7 +178,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
@@ -220,7 +212,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
@@ -281,21 +273,21 @@ FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0 //magnetic field
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 691 QUANTITY fluxx VALUE 2.907572256e-02 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 691 QUANTITY fluxy VALUE -3.508002930e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 691 QUANTITY fluxz VALUE 0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 695 QUANTITY phi1 VALUE 9.372012449e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 121 QUANTITY phi1 VALUE 9.960354847e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 695 QUANTITY phi2 VALUE 4.686006224e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 121 QUANTITY phi2 VALUE 4.980177423e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 695 QUANTITY phi3 VALUE 1.067270605e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 121 QUANTITY phi3 VALUE 4.505368980e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 695 QUANTITY phi4 VALUE 4.160900424e-01 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 121 QUANTITY phi4 VALUE 4.708279162e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 695 QUANTITY velx VALUE 2.069063938e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 695 QUANTITY vely VALUE -1.863981369e-06 TOLERANCE 1e-9
-FLUID DIS fluid NODE 695 QUANTITY velz VALUE 0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 695 QUANTITY pressure VALUE 3.830217115e-02 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 691 QUANTITY fluxx VALUE 2.90757225512883501e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 691 QUANTITY fluxy VALUE -3.50800292361838238e-03 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 691 QUANTITY fluxz VALUE -9.42536320005686111e-19 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 695 QUANTITY phi1 VALUE 9.37201244727844496e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 121 QUANTITY phi1 VALUE 9.96035484628543077e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 695 QUANTITY phi2 VALUE 4.68600622363921693e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 121 QUANTITY phi2 VALUE 4.98017742314268319e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 695 QUANTITY phi3 VALUE 1.06727060399836593e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 121 QUANTITY phi3 VALUE 4.50536897825162985e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 695 QUANTITY phi4 VALUE 4.16090042742937150e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 121 QUANTITY phi4 VALUE 4.70827916452282225e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 695 QUANTITY velx VALUE 2.06906393155516677e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 695 QUANTITY vely VALUE -1.86389486329301682e-06 TOLERANCE 1e-11
+FLUID DIS fluid NODE 695 QUANTITY velz VALUE 0.0e+00 TOLERANCE 1e-09
+FLUID DIS fluid NODE 695 QUANTITY pressure VALUE 3.83021708675941597e-02 TOLERANCE 1e-11
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0

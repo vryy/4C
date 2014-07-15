@@ -73,44 +73,53 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(const int numdo
 
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs                           fang 05/14 |
-*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhs(
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-  Epetra_SerialDenseMatrix&               emat,         //!< element matrix to calculate
-  Epetra_SerialDenseVector&               erhs,         //!< element rhs to calculate
-  const int                               k,            //!< index of current scalar
-  const double                            fac,          //!< domain-integration factor
-  const double                            timefacfac,   //!< domain-integration factor times time-integration factor
-  const double                            rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-  Teuchos::RCP<ScaTraEleDiffManagerElch>& dme,          //!< diffusion manager
-  double&                                 rhsint,       //!< rhs of governing equations (not of Newton-Raphson scheme) at Gauss point
-  const double                            hist          //!< history
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
+  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,
+  Epetra_SerialDenseMatrix&                                                  emat,         //!< element matrix to calculate
+  Epetra_SerialDenseVector&                                                  erhs,         //!< element rhs to calculate
+  const int                                                                  k,            //!< index of current scalar
+  const double                                                               fac,          //!< domain-integration factor
+  const double                                                               timefacfac,   //!< domain-integration factor times time-integration factor
+  const double                                                               rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+  const double                                                               taufac,       //!< tau times domain-integration factor
+  const double                                                               timetaufac,   //!< domain-integration factor times tau times time-integration factor
+  const double                                                               rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
+  LINALG::Matrix<my::nen_,1>&                                                tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&                                    dme,          //!< diffusion manager
+  double&                                                                    rhsint,       //!< rhs of Nernst-Planck equation (not of Newton-Raphson scheme) at Gauss point
+  const double                                                               hist          //!< history
   )
 {
   // dynamic cast to Nernst-Planck-specific internal variable manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchNP <my::nsd_,my::nen_> > vmnp
     = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchNP <my::nsd_,my::nen_> >(vm);
 
-  //----------------------------------------------------------------
-  // 1) element matrix: instationary terms
-  //----------------------------------------------------------------
+  // Compute residual of Nernst-Planck equation in strong form and subgrid-scale part of concentration c_k
+  const double residual = CalcRes(k,vmnp->ConInt(k),hist,vmnp->ConvPhi(k),vmnp->FRT(),dme,vmnp->MigConv(),rhsint);
+
+  //--------------------------------------------------------------------------
+  // 1) element matrix: instationary terms arising from Nernst-Planck equation
+  //--------------------------------------------------------------------------
 
   if (not my::scatraparatimint_->IsStationary())
+  {
+    // 1a) element matrix: standard Galerkin mass term
     my::CalcMatMass(emat,k,fac,1.);
 
-  //-------------------------------------------------------------------------
-  // 2) element matrix: stationary terms arising from Nernst-Planck equations
-  //-------------------------------------------------------------------------
+    // 1b) element matrix: stabilization of mass term
+    // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
+  }
 
-  //----------------------------------------------------------------
-  // standard Galerkin terms
-  //----------------------------------------------------------------
+  //------------------------------------------------------------------------
+  // 2) element matrix: stationary terms arising from Nernst-Planck equation
+  //------------------------------------------------------------------------
 
-  // 2a) element matrix: convective term
+  // 2a) element matrix: standard Galerkin convective term due to fluid flow
   my::CalcMatConv(emat,k,timefacfac,1.,vmnp->Conv(),vmnp->SGConv());
 
-  // additional terms in conservative formulation if needed
+  // 2b) element matrix: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
   {
     double vdiv(0.);
@@ -118,94 +127,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhs(
     my::CalcMatConvAddCons(emat,k,timefacfac,vdiv,1.);
   }
 
-  // 2b) element matrix: diffusion term (constant diffusion coefficient)
+  // 2c) element matrix: stabilization of convective term due to fluid flow and migration
+  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,vmnp->FRT(),dme,vmnp->Conv(),vmnp->MigConv(),vmnp->ConInt(k),vmnp->GradPhi(k),residual);
+
+  // 2d) element matrix: standard Galerkin diffusive term (constant diffusion coefficient)
   my::CalcMatDiff(emat,k,timefacfac,dme);
 
-  // 2c) element matrix: migration term
+  // 2e) element matrix: stabilization of diffusive term
+  // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
+
+  // 2f) element matrix: standard Galerkin migration term (can be split up into convective and reactive parts)
   CalcMatMigr(emat,k,timefacfac,vmnp->FRT(),dme,vmnp->MigConv(),vmnp->ConInt(k));
 
-  //----------------------------------------------------------------
-  // Stabilization terms
-  //----------------------------------------------------------------
-
-  // compute effective convective stabilization operator
-//    double conv_eff_vi = conv_(vi);
-//    if (migrationstab_)
-//      conv_eff_vi += dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv_(vi);
-
-  /* 1) convective stabilization of transient term*/
-  // emat(fvi, fui) += taufac*conv_eff_vi*my::funct_(ui);
-
-  /* 2) diffusive stabilization */
-  // not implemented. Only stabilization of SUPG type
-
-  /* 3) reactive stabilization (reactive part of migration term) */
-  // not implemented. Only stabilization of SUPG type
-
-  // compute effective convective stabilization operator
-//    double conv_eff_vi = conv(vi);
-//    if (migrationstab_)
-//    {
-//      conv_eff_vi += dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(vi);
-//    }
-
-      // TODO (ehrl)
-      // Including stabilization yields in different results for the uncharged particle and
-      // the binary electrolyte solution
-      // -> Check calculation procedure of the method
-
-      /* 0) transient stabilization */
-      // not implemented. Only stabilization of SUPG type
-
-      /* 1) convective stabilization */
-
-      /* convective term */
-
-      // I) linearization of residual part of stabilization term
-
-      // effective convective stabilization of convective term
-      // derivative of convective term in residual w.r.t. concentration c_k
-//      matvalconc += timetaufac*conv_eff_vi*conv(ui);
-
-      // migration convective stabilization of convective term
-//      double val_ui;
-//      my::GetLaplacianWeakFormRHS(val_ui,gradphi[k],ui);
-//      if (migrationinresidual_)
-//      {
-        // a) derivative w.r.t. concentration_k
-//        matvalconc += timetaufac*conv_eff_vi*dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(ui);
-
-        // b) derivative w.r.t. electric potential
-//        matvalpot -= timetaufac*conv_eff_vi*dme->GetIsotropicDiff(k)*dme->GetValence(k)*frt*val_ui;
-
-        // note: higher-order and instationary parts of residuum part are linearized elsewhere!
-//      }
-
-      // II) linearization of convective stabilization operator part of stabilization term
-//      if (migrationstab_)
-//      {
-        // a) derivative w.r.t. concentration_k
-        //    not necessary -> zero
-
-        // b) derivative w.r.t. electric potential
-//        double laplacewf(0.0);
-//        my::GetLaplacianWeakForm(laplacewf,ui,vi);
-//        matvalpot -= timetaufac*residual*dme->GetIsotropicDiff(k)*dme->GetValence(k)*frt*laplacewf;
-//      }
-
-      // III) linearization of tau part of stabilization term
-//      if (migrationintau_)
-//      {
-        // derivative of tau (only effective for Taylor_Hughes_Zarins) w.r.t. electric potential
-//        const double tauderiv_ui = ((tauderpot[k])(ui,0));
-//        matvalpot += timefacfac*tauderiv_ui*conv_eff_vi*residual;
-//      }
+  // 2g) element matrix: stabilization of reactive term due to migration
+  // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
 
   //-------------------------------------------------------------------------------------------
   // 3) element matrix: stationary terms arising from governing equation for electric potential
   //-------------------------------------------------------------------------------------------
-  // What's the governing equation for the electric potential field? We provide a lot of different options here:
-  switch (myelch::elchpara_->EquPot())
+
+  // element matrix: standard Galerkin terms from governing equation for electric potential field
+  switch (myelch::elchpara_->EquPot())   // determine type of equation used for electric potential field
   {
   case INPAR::ELCH::equpot_enc:
   {
@@ -239,84 +181,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhs(
   }
   } // end switch(elchparam_->EquPot())
 
-
-/*  if (my::use2ndderiv_)
-  {
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      const int fvi = vi*my::numdofpernode_+k;
-
-      // compute effective convective stabilization operator
-      double conv_eff_vi = conv(vi);
-      if (migrationstab_)
-      {
-        conv_eff_vi += dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(vi);
-      }
-
-      const double timetaufac_conv_eff_vi = timetaufac*conv_eff_vi;
-
-      for (int ui=0; ui<my::nen_; ++ui)
-      {
-        const int fui = ui*my::numdofpernode_+k;
-
-        // 1) convective stabilization
-
-        // diffusive term
-        // derivative w.r.t. concentration c_k
-        emat(fvi,fui) -= timetaufac_conv_eff_vi*diff(ui) ;
-
-      } // for ui
-
-      // reactive part of migration term
-      if (migrationinresidual_)
-      {
-        const double timetaufac_conv_eff_vi_conint_k_frt_valence_k =timetaufac_conv_eff_vi*conint[k]*frt*dme->GetValence(k);
-        for (int ui=0; ui<my::nen_; ++ui)
-        {
-          const int fui = ui*my::numdofpernode_+k;
-
-          // a) derivative w.r.t. concentration_k
-          emat(fvi,fui) += timetaufac_conv_eff_vi*migrea(ui) ;
-          // note: migrea_ already contains frt*diffus_valence!!!
-
-          // b) derivative w.r.t. electric potential
-          emat(fvi, ui*my::numdofpernode_+my::numscal_) -= timetaufac_conv_eff_vi_conint_k_frt_valence_k*diff(ui);
-          // note: diff_ already includes factor D_k
-
-        } // for ui
-      }
-
-      // 2) diffusive stabilization
-      // not implemented. Only stabilization of SUPG type
-
-      // 3) reactive stabilization (reactive part of migration term)
-      // not implemented. Only stabilization of SUPG type
-
-    } // for vi
-  } // use2ndderiv */
-
   //----------------------------------------------------------------------------
   // 4) element right hand side vector (negative residual of nonlinear problem):
-  //    terms arising from Nernst-Planck equations
+  //    terms arising from Nernst-Planck equation
   //----------------------------------------------------------------------------
 
-  //----------------------------------------------------------------
-  // standard Galerkin terms
-  //----------------------------------------------------------------
+  // 4a) element rhs: standard Galerkin contributions from non-history part of instationary term if needed
+  if (not my::scatraparatimint_->IsStationary())
+    my::CalcRHSLinMass(erhs,k,rhsfac,fac,1.,1.,vmnp->ConInt(k),hist);
 
-  // 4a) element rhs: contributions from non-history part of instationary term if needed
-  if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-    this->CalcRHSLinMass(erhs,k,rhsfac,fac,1.,1.,vmnp->ConInt(k),hist);
-
-  // 4b) element rhs: contributions from rhsint vector (contains body force vector and history vector)
+  // 4b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector and history vector)
   // need to adapt rhsint vector to time integration scheme first
   my::ComputeRhsInt(rhsint,1.,1.,hist);
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
-  // 4c) element rhs: convective term
+  // 4c) element rhs: stabilization of mass term
+  // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
+
+  // 4d) element rhs: standard Galerkin convective term
   my::CalcRHSConv(erhs,k,rhsfac,vmnp->ConvPhi(k));
 
-  // 4d) element rhs: additional terms in conservative formulation if needed
+  // 4e) element rhs: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
   {
     double vdiv(0.);
@@ -324,44 +209,28 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhs(
     CalcRhsConvAddCons(erhs,k,rhsfac,vmnp->ConInt(k),vdiv);
   }
 
-  // 4e) element rhs: diffusion term
+  // 4f) element rhs: stabilization of convective term due to fluid flow and migration
+  CalcRhsConvStab(erhs,k,rhstaufac,dme,vmnp->Conv(),vmnp->MigConv(),residual);
+
+  // 4g) element rhs: standard Galerkin diffusion term
   my::CalcRHSDiff(erhs,k,rhsfac,dme,vmnp->GradPhi(k));
 
-  // 4f) element rhs: nonlinear migration term
+  // 4h) element rhs: stabilization of diffusive term
+  // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
+
+  // 4i) element rhs: standard Galerkin migration term (can be split up into convective and reactive parts)
   CalcRhsMigr(erhs,k,rhsfac,dme,vmnp->MigConv(),vmnp->ConInt(k));
 
-/*    //----------------------------------------------------------------
-  // Stabilization terms
-  //----------------------------------------------------------------
-
-  // 0) transient stabilization
-  //    not implemented. Only stabilization of SUPG type
-
-  // 1) convective stabilization
-
-  erhs[fvi] -= rhstaufac*conv(vi)*residual;
-  if (migrationstab_)
-  {
-    erhs[fvi] -=  rhstaufac*dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(vi)*residual;
-  }
-
-  // 2) diffusive stabilization
-  //    not implemented. Only stabilization of SUPG type
-
-  // 3) reactive stabilization (reactive part of migration term)
-  //    not implemented. Only stabilization of SUPG type */
+  // 4j) element rhs: stabilization of reactive term due to migration
+  // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
 
   //----------------------------------------------------------------------------
   // 5) element right hand side vector (negative residual of nonlinear problem):
   //    terms arising from governing equation for electric potential
   //----------------------------------------------------------------------------
 
-  //----------------------------------------------------------------
-  // standard Galerkin terms
-  //----------------------------------------------------------------
-
-  // What's the governing equation for the electric potential field?
-  switch (myelch::elchpara_->EquPot())
+  // element rhs: standard Galerkin terms from governing equation for electric potential field
+  switch (myelch::elchpara_->EquPot())   // determine type of equation used for electric potential field
   {
   case INPAR::ELCH::equpot_enc:
   {
@@ -398,6 +267,149 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalMatAndRhs(
 }
 
 
+/*-----------------------------------------------------------------------------------------*
+ | CalcRes: Residual of Nernst-Planck equation in strong form (private)         fang 06/14 |
+ *------------------------------------------------------ ----------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
+  const int                                 k,            //!< index of current scalar
+  const double                              conint,       //!< concentration at GP
+  const double                              hist,         //!< history value at GP
+  const double                              convphi,      //!< convective term (without convective part of migration term)
+  const double                              frt,          //!< F/(RT)
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
+  const LINALG::Matrix<my::nen_,1>&         migconv,      //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+  const double                              rhsint        //!< rhs of Nernst-Planck equation (not of Newton-Raphson scheme) at Gauss point
+  )
+{
+  // Compute convective term including convective part of migration term
+  const double convmigphi = convphi + dme->GetIsotropicDiff(k)*dme->GetValence(k)*(migconv.Dot(my::ephinp_[k]));
+
+  // Compute diffusive term and reactive part of migration term (only significant for higher-order elements)
+  double diffphi(0.);
+  double reamigphi(0.);
+
+  if (my::use2ndderiv_)
+  {
+    LINALG::Matrix<my::nen_,1> laplace(true);
+    my::GetLaplacianStrongForm(laplace);
+
+    diffphi = dme->GetIsotropicDiff(k)*laplace.Dot(my::ephinp_[k]);
+    reamigphi = -frt*dme->GetIsotropicDiff(k)*dme->GetValence(k)*laplace.Dot(myelch::epotnp_)*conint;
+  }
+
+  if(my::scatraparatimint_->IsStationary())
+    return convmigphi - diffphi + reamigphi - rhsint;
+  else if(my::scatraparatimint_->IsGenAlpha())
+    return hist + convmigphi - diffphi + reamigphi - rhsint;
+  else
+    return conint - hist + my::scatraparatimint_->TimeFac()*(convmigphi - diffphi + reamigphi - rhsint);
+} // ScaTraEleCalcElchNP<distype>::CalcRes
+
+
+/*-------------------------------------------------------------------------------------------------------*
+ | CalcMat: SUPG Stabilization of convective term due to fluid flow and migration (private)   fang 06/14 |
+ *------------------------------------------------------ ------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
+  Epetra_SerialDenseMatrix&                 emat,         //!< element matrix to calculate
+  const int                                 k,            //!< index of current scalar
+  const double                              timefacfac,   //!< domain-integration factor times time-integration factor
+  const double                              taufac,       //!< stabilization parameter tau times domain-integration factor
+  const double                              timetaufac,   //!< domain-integration factor times tau times time-integration factor
+  LINALG::Matrix<my::nen_,1>&               tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
+  const double                              frt,          //!< F/(RT)
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
+  const LINALG::Matrix<my::nen_,1>&         conv,         //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
+  const LINALG::Matrix<my::nen_,1>&         migconv,      //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+  const double                              conint,       //!< concentration at GP
+  const LINALG::Matrix<my::nsd_,1>&         gradphi,      //!< gradient of concentration at GP
+  const double                              residual      //!< residual of Nernst-Planck equation in strong form
+  )
+{
+  // Compute Laplacian N,xx  +  N,yy +  N,zz of all shape functions at current integration point if needed
+  LINALG::Matrix<my::nen_,1> laplace(true);
+  if (my::use2ndderiv_)
+    my::GetLaplacianStrongForm(laplace);
+
+  for (int vi=0; vi<my::nen_; ++vi)
+  {
+    // compute effective convective stabilization operator
+    double conv_eff_vi = conv(vi);
+    if (myelch::migrationstab_)
+      conv_eff_vi += dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(vi);
+
+    // shortcuts
+    const double timetaufac_conv_eff_vi = timetaufac*conv_eff_vi;
+    const double timetaufac_conv_eff_vi_conint_k_frt_valence_k = timetaufac_conv_eff_vi*conint*frt*dme->GetValence(k);
+
+    for (int ui=0; ui<my::nen_; ++ui)
+    {
+      // matrix entries
+      double matvalconc = 0.;
+      double matvalpot = 0.;
+
+      // 1) transient term
+      if (not my::scatraparatimint_->IsStationary())
+        matvalconc += taufac*conv_eff_vi*my::funct_(ui);
+
+      // 2) convective term due to fluid flow and migration
+      // 2a) linearization of residual w.r.t. concentration c_k
+      matvalconc += timetaufac*conv_eff_vi*(conv(ui)+dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(ui));
+
+      // 2b) linearization of residual w.r.t. electric potential Phi
+      double laplawf(0.);
+      my::GetLaplacianWeakFormRHS(laplawf,gradphi,ui);
+      matvalpot -= timetaufac*conv_eff_vi*dme->GetIsotropicDiff(k)*dme->GetValence(k)*frt*laplawf;
+
+      if (myelch::migrationstab_)
+      {
+        // 2c) linearization of migration operator w.r.t. concentration c_k
+        // not necessary, since migration operator not a function of c_k
+
+        // 2d) linearization of migration operator w.r.t. electric potential Phi
+        double laplacewf(0.);
+        my::GetLaplacianWeakForm(laplacewf,ui,vi);
+        matvalpot -= timetaufac*residual*dme->GetIsotropicDiff(k)*dme->GetValence(k)*frt*laplacewf;
+      }
+
+      if (not SCATRA::IsBinaryElectrolyte(dme->GetValence()))
+      {
+        // 2e) linearization of tau w.r.t. concentration c_k
+        // not necessary, since tau not a function of c_k
+
+        // 2f) linearization of tau w.r.t. electric potential Phi (only non-zero for Taylor_Hughes_Zarins at the moment)
+        matvalpot += timefacfac*tauderpot(ui)*conv_eff_vi*residual;
+      }
+
+      if (my::use2ndderiv_)
+      {
+        // 3) diffusive term
+        // 3a) linearization w.r.t. concentration c_k
+        matvalconc -= timetaufac_conv_eff_vi*dme->GetIsotropicDiff(k)*laplace(ui);
+
+        // 3b) linearization w.r.t. electric potential Phi
+        // not necessary, since diffusive term not a function of Phi
+
+        // 4) reactive term due to migration
+        // 4a) linearization w.r.t. concentration c_k
+        matvalconc -= timetaufac_conv_eff_vi*frt*dme->GetIsotropicDiff(k)*dme->GetValence(k)*laplace.Dot(myelch::epotnp_)*my::funct_(ui);
+
+        // 4b) linearization w.r.t. electric potential Phi
+        matvalpot -= timetaufac_conv_eff_vi_conint_k_frt_valence_k*dme->GetIsotropicDiff(k)*laplace(ui);
+      }
+
+      // try to access the element matrix not too often, can be costly
+      const int fvi = vi*my::numdofpernode_+k;
+      emat(fvi,ui*my::numdofpernode_+k)            += matvalconc;
+      emat(fvi,ui*my::numdofpernode_+my::numscal_) += matvalpot;
+    }
+  }
+
+  return;
+} // ScaTraEleCalcElchNP<distype>::CalcMatMassStab
+
+
 /*-----------------------------------------------------------------------*
  |  CalcMat: Migration term (private)                         fang 05/14 |
  *-------------------------------------------------- --------------------*/
@@ -408,7 +420,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
   const double                              timefacfac,   //!< domain-integration factor times time-integration factor
   const double                              frt,          //!< F/(RT)
   Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
-  const LINALG::Matrix<my::nen_,1>&         migconv,      //!< migration operator
+  const LINALG::Matrix<my::nen_,1>&         migconv,      //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
   const double                              conint        //!< concentration at GP
   )
 {
@@ -426,7 +438,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
       emat(fvi,fui) -= v*my::funct_(ui);
 
       // b) derivative w.r.t. electric potential
-      double laplawf(0.0);
+      double laplawf(0.);
       my::GetLaplacianWeakForm(laplawf,ui,vi);
       emat(fvi,ui*my::numdofpernode_+my::numscal_) += frt*timefacfac*dme->GetIsotropicDiff(k)*dme->GetValence(k)*conint*laplawf;
     }
@@ -434,6 +446,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
 
   return;
 } // ScaTraEleCalcElchNP<distype>::CalcMatMigr
+
 
 /*-----------------------------------------------------------------------*
  |  CalcMat: Electroneutrality in PDE form (private)          fang 05/14 |
@@ -523,7 +536,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
       // b) derivative w.r.t. electric potential
       matvalpot -= frt*timefacfac*dme->GetIsotropicDiff(my::numscal_)*dme->GetValence(my::numscal_)*conint*laplawf;
 
-      // try to access the element matrix not too often. Can be costly
+      // try to access the element matrix not too often, can be costly
       const int fui = ui*my::numdofpernode_+k;
       emat(pvi,fui) += dme->GetValence(k)*matvalconc;
       const int pui = ui*my::numdofpernode_+my::numscal_;
@@ -628,6 +641,34 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvAddCons(
 
   return;
 }
+
+
+/*-------------------------------------------------------------------------------------------------------*
+ | CalcRhs: SUPG Stabilization of convective term due to fluid flow and migration (private)   fang 06/14 |
+ *------------------------------------------------------ ------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
+  Epetra_SerialDenseVector&                 erhs,        //!< element vector to be filled
+  const int                                 k,           //!< index of current scalar
+  const double                              rhstaufac,   //!< time-integration factor for rhs times tau times domain-integration factor
+  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,         //!< diffusion manager
+  const LINALG::Matrix<my::nen_,1>&         conv,        //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
+  const LINALG::Matrix<my::nen_,1>&         migconv,     //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+  const double                              residual     //!< residual of Nernst-Planck equation in strong form
+  )
+{
+  for (int vi=0; vi< my::nen_; ++vi)
+  {
+    const int fvi = vi*my::numdofpernode_+k;
+
+    erhs[fvi] -= rhstaufac*conv(vi)*residual;
+
+    if (myelch::migrationstab_)
+      erhs[fvi] -=  rhstaufac*dme->GetIsotropicDiff(k)*dme->GetValence(k)*migconv(vi)*residual;
+  }
+
+  return;
+} // ScaTraEleCalcElchNP<distype>::CalcRhsConvStab
 
 
 /*-------------------------------------------------------------------------------------*
@@ -745,8 +786,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
       erhs[pvi] -= fac*epsbyF*laplawf;
     }
 
-    // electroneutrality condition
-    // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
+    // residuum of Poisson equation on the rhs
     erhs[pvi] += dme->GetValence(k)*fac*my::funct_(vi)*conint;
   } // for vi
 
@@ -922,11 +962,65 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
 }
 
 
+/*-----------------------------------------------------------------------------------------------------------------------*
+ | Calculate derivative of tau w.r.t. electric potential according to Taylor, Hughes and Zarins (protected)   fang 06/14 |
+ *-----------------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcTauDerPotTaylorHughesZarins(
+  LINALG::Matrix<my::nen_,1>&         tauderpot,       //!< derivatives of stabilization parameter w.r.t. electric potential
+  double&                             tau,             //!< stabilization parameter
+  const double                        densnp,          //!< density at t_(n+1)
+  const double                        frt,             //!< F/(RT)
+  const double                        diffusvalence,   //!< diffusion coefficient times valence
+  const LINALG::Matrix<my::nsd_,1>&   veleff           //!< effective convective velocity (fluid velocity plus migration velocity if applicable)
+  )
+{
+  /*
+  literature:
+  1) C.A. Taylor, T.J.R. Hughes, C.K. Zarins, Finite element modeling
+  of blood flow in arteries, Comput. Methods Appl. Mech. Engrg. 158
+  (1998) 155-196.
+  2) V. Gravemeier, W.A. Wall, An algebraic variational multiscale-
+  multigrid method for large-eddy simulation of turbulent variable-
+  density flow at low Mach number, J. Comput. Phys. 229 (2010)
+  6047-6070.
+  */
+
+  // Initialization
+  tauderpot.Clear();
+
+  // Compute entries of covariant metric tensor
+  double G;
+  const double dens_sqr = densnp*densnp;
+  for (int nn=0; nn<my::nsd_; ++nn)
+  {
+    for (int rr=0; rr<my::nsd_; ++rr)
+    {
+      G = my::xij_(nn,0)*my::xij_(rr,0);
+
+      for(int tt=1; tt<my::nsd_; ++tt)
+        G += my::xij_(nn,tt)*my::xij_(rr,tt);
+
+      for (int jj=0; jj<my::nen_; ++jj)
+        tauderpot(jj) += dens_sqr*frt*diffusvalence*((my::derxy_(nn,jj)*G*veleff(rr,0))+(veleff(nn,0)*G*my::derxy_(rr,jj)));
+    }
+  }
+
+  // Finalize derivative of present tau w.r.t electric potential
+  // Note: Factor alpha_f in gen-alpha time integration scheme is included at a later point
+  tauderpot.Scale(0.5*tau*tau*tau);
+
+  return;
+}
+
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::quad4>;

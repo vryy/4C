@@ -30,15 +30,15 @@ SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
-MAXTIME                         1000
-NUMSTEP                         1000
-RESTARTEVRY                     10
+MAXTIME                         10
+NUMSTEP                         25
+RESTARTEVRY                     5
 THETA                           0.66
 TIMEINTEGR                      Gen_Alpha
-TIMESTEP                        1.0
+TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-UPRES                           10
+UPRES                           1
 BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       No
@@ -58,15 +58,8 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        DiffCond
-ITEMAX                          2
-MAXTIME                         10
-NUMSTEP                         25
-RESTARTEVRY                     5
-TIMESTEP                        0.01
-UPRES                           1
 TEMPERATURE                     298.15                          // F/RT = 38.942
 NATURAL_CONVECTION              No
-CONVTOL                         1e-5
 GALVANOSTATIC                   No
 GSTATCONVTOL                    1e-7
 GSTATCURTOL                     1e-7

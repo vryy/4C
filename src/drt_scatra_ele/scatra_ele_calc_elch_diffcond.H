@@ -73,7 +73,7 @@ private:
   /*========================================================================*/
 
   //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-  virtual void CalMatAndRhs(
+  virtual void CalcMatAndRhs(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&               emat,        //!< element matrix to calculate
     Epetra_SerialDenseVector&               erhs,        //!< element rhs to calculate+
@@ -81,13 +81,17 @@ private:
     const double                            fac,         //!< domain-integration factor
     const double                            timefacfac,  //!< domain-integration factor times time-integration factor
     const double                            rhsfac,      //!< time-integration factor for rhs times domain-integration factor
+    const double                            taufac,       //!< tau times domain-integration factor
+    const double                            timetaufac,   //!< domain-integration factor times tau times time-integration factor
+    const double                            rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
+    LINALG::Matrix<my::nen_,1>&             tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
     Teuchos::RCP<ScaTraEleDiffManagerElch>& dme,         //!< diffusion manager
     double&                                 rhsint,      //!< rhs at Gauss point
     const double                            hist         //!< history
   );
 
   //! calculate contributions to matrix and rhs (outside of loop over all scalars)
-  virtual void CalMatAndRhsOutsideScalarLoop(
+  virtual void CalcMatAndRhsOutsideScalarLoop(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&                emat,        //!< element matrix to calculate
     Epetra_SerialDenseVector&                erhs,        //!< element rhs to calculate
@@ -395,6 +399,12 @@ private:
   //! @name additional service routines
   /*========================================================================*/
 
+  //! validity check for all elements with respect to
+  //! formulation-specific parameter, degree's of freedom, number of scalars, ...
+  virtual void CheckElchElementParameter(
+    DRT::ELEMENTS::Transport*  ele  //!< the element we are dealing with
+  );
+
   //! Solving for intial time derivative: finish preparation of matrix and rhs
   virtual void PrepMatAndRhsInitialTimeDerivative(
     Epetra_SerialDenseMatrix&  elemat1_epetra,  //!< element matrix
@@ -418,7 +428,7 @@ private:
   );
 
   // Solving for electric potential field : Calculate Matrix and Rhs
-  virtual void CalMatAndRhsElectricPotentialField(
+  virtual void CalcMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseMatrix&         emat,       //!< element matrix

@@ -88,7 +88,7 @@ void elch_dyn(int restart)
       dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (empty fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read the restart information, set vectors and variables
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
@@ -120,11 +120,8 @@ void elch_dyn(int restart)
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
-    // we need a non-const list in order to be able to add sublists below!
-    Teuchos::ParameterList prbdyn(elchcontrol);
     // support for turbulent flow statistics
     const Teuchos::ParameterList& fdyn = (problem->FluidDynamicParams());
-    prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
     Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
     if (!aledis->Filled()) aledis->FillComplete();
@@ -149,7 +146,7 @@ void elch_dyn(int restart)
 
       // create an ELCH::MovingBoundaryAlgorithm instance
       Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch
-        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,prbdyn,problem->SolverParams(linsolvernumber)));
+        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol,scatradyn,problem->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
@@ -174,7 +171,7 @@ void elch_dyn(int restart)
         dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create an ELCH::Algorithm instance
-      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,prbdyn,problem->SolverParams(linsolvernumber)));
+      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol,scatradyn,fdyn,problem->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);

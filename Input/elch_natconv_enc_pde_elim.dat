@@ -31,7 +31,7 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
+CONVTOL                         1e-09
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         10
@@ -79,11 +79,11 @@ FSSUGRDIFF                      No
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     10
+NUMSTEP                         3
+RESTARTEVRY                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.2
+TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
@@ -93,7 +93,7 @@ BLOCKPRECOND No //Yes
 MATID                           5
 SCATRATYPE                      Elch             // we eliminated the 2nd ion species!
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         5e-6
+CONVTOL                         1e-09
 ITEMAX                          15
 EXPLPREDICT                     no
 ADAPTCONV                       yes
@@ -103,15 +103,8 @@ STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         3
-RESTARTEVRY                     1
-TIMESTEP                        1
-UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 NATURAL_CONVECTION              Yes
-CONVTOL                         5e-6
 EQUPOT                          ENC_PDE_ELIM
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
@@ -123,7 +116,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-6                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
@@ -157,7 +150,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
@@ -191,7 +184,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres

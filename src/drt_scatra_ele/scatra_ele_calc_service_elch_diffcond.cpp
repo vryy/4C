@@ -13,8 +13,85 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 
+#include "scatra_ele.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_mat/elchmat.H"
+#include "../drt_mat/elchphase.H"
+
 #include "scatra_ele_calc_elch_diffcond.H"
-#include "scatra_ele_parameter_elch.H"
+
+
+/*-----------------------------------------------------------------------*
+  |  Set scatra element parameter                             ehrl 01/14 |
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParameter(
+  DRT::ELEMENTS::Transport*  ele
+  )
+{
+  // get the material
+  Teuchos::RCP<const MAT::Material> material = ele->Material();
+
+  // 1) Check material specific options
+  // 2) Check if numdofpernode, numscal is set correctly
+  if (material->MaterialType() == INPAR::MAT::m_elchmat)
+  {
+    const Teuchos::RCP<const MAT::ElchMat>& actmat
+          = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
+
+    int numphase = actmat->NumPhase();
+
+    // access mat_elchmat: container material for porous structures in elch
+    if (numphase != 1) dserror("In the moment a single phase is only allowed.");
+
+    // 1) loop over single phases
+    for (int iphase=0; iphase < actmat->NumPhase();++iphase)
+    {
+      // access phase material
+      const int phaseid = actmat->PhaseID(iphase);
+      Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
+
+      // dynmic cast: get access to mat_phase
+      const Teuchos::RCP<const MAT::ElchPhase>& actphase
+                = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+
+      // Check if numdofpernode, numscal is set correctly
+      int nummat = actphase->NumMat();
+      // enough materials defined
+      if (nummat != my::numscal_)
+        dserror("The number of scalars defined in the material ElchMat does not correspond with "
+                "the number of materials defined in the material MatPhase.");
+
+      int numdofpernode = 0;
+      if (myelch::elchpara_->CurSolVar()==true)
+        numdofpernode = nummat+DRT::Problem::Instance()->NDim()+numphase;
+      else
+        numdofpernode = nummat+numphase;
+
+      if(numdofpernode != my::numdofpernode_)
+        dserror("The chosen element formulation (e.g. current as solution variable) "
+                "does not correspond with the number of dof's defined in your material");
+
+      // 2) loop over materials of the single phase
+      for (int imat=0; imat < actphase->NumMat();++imat)
+      {
+        const int matid = actphase->MatID(imat);
+        Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
+
+        if(singlemat->MaterialType() == INPAR::MAT::m_newman)
+        {
+          // Material Newman is derived for a binary electrolyte utilizing the ENC to condense the non-reacting species
+          if(my::numscal_>1)
+            dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
+        }
+      }
+    }
+  }
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -107,6 +184,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  CorrectRHSFromCalcRHSLinMass                             ehrl 06/14 |
  *----------------------------------------------------------------------*/
@@ -131,6 +209,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  * Get Conductivity                                          ehrl 02/14 |
  *----------------------------------------------------------------------*/
@@ -152,11 +231,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  * Calculate Mat and Rhs for electric potential field        ehrl 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPotentialField(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsElectricPotentialField(
   Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
   const enum INPAR::ELCH::EquPot    equpot,
   Epetra_SerialDenseMatrix&         emat,
@@ -228,6 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPote
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     ae 05/15|
@@ -338,8 +419,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateCurrent(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad4>;

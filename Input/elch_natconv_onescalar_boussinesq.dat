@@ -69,11 +69,11 @@ FSSUGRDIFF                      No
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     10
+NUMSTEP                         7
+RESTARTEVRY                     2
 THETA                           0.66
 TIMEINTEGR                      BDF2
-TIMESTEP                        0.2
+TIMESTEP                        1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_boundary
@@ -81,10 +81,10 @@ OUTMEAN                         Yes
 UPRES                           1
 BLOCKPRECOND                    No
 MATID                           2
-SCATRATYPE                      ConvectionDiffusion           // explicitely change to con-dif for one scalar!!!
+SCATRATYPE                      ConvectionDiffusion           // explicitly change to con-dif for one scalar!!!
 CONVFORM                        conservative                  // just to be tested
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         5e-6
+CONVTOL                         1e-09
 ITEMAX                          15
 EXPLPREDICT                     no
 ADAPTCONV                       yes
@@ -94,15 +94,9 @@ DEFINITION_TAU                  Franca_Valentin
 EVALUATION_TAU                  integration_point             // just to be tested
 EVALUATION_MAT                  integration_point             // just to be tested
 ----------------------------------------------------------------ELCH CONTROL
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         7
-RESTARTEVRY                     2
-TIMESTEP                        1
-UPRES                           1
+ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     1.0                           // dummy value
 NATURAL_CONVECTION              Yes
-CONVTOL                         5e-6
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -113,7 +107,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
@@ -147,7 +141,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-7                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           25                            // size of krylov space for gmres
@@ -171,8 +165,6 @@ ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing s
 ML_DAMPFINE                     0.67                          // damping fine grid
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
---------------------------------------------------------------------SOLVER 3
-NAME                            Sca_Tra_Electrical_Potential
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_fluid DYNVISCOSITY 1e-2 DENSITY 1.0
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 10.0

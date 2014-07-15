@@ -24,14 +24,15 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+SCATRATYPE                      Elch
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Stationary
 UPRES                           1
-RESTARTEVRY                     20
-NUMSTEP                         1
-MAXTIME                         1000.0
-TIMESTEP                        0.05
+RESTARTEVRY                     1000
+NUMSTEP                         101                           // series of stationary solutions from Pe=0 up to Pe=200
+MAXTIME                         1000
+TIMESTEP                        1.0
 THETA                           0.66
 VELOCITYFIELD                   function_and_curve
 VELFUNCNO                       1
@@ -48,15 +49,9 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          150
-CONVTOL                         1e-9
+CONVTOL                         1e-09
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          12
-MAXTIME                         1000
-NUMSTEP                         101                           // series of stationary solutions from Pe=0 up to Pe=200
-RESTARTEVRY                     1000
-TIMESTEP                        1.0
-UPRES                           1
 TEMPERATURE                     11.604506                     // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
@@ -89,16 +84,16 @@ FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0 // el. potential
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.006727720e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE 1.000000000e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 2.008827953e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 11 QUANTITY phi2 VALUE 1.132530120e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 10 QUANTITY phi3 VALUE 2.004200464e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 11 QUANTITY phi3 VALUE 2.065060241e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 10 QUANTITY phi4 VALUE 1.019543539e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 11 QUANTITY phi4 VALUE 1.000000000e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 10 QUANTITY phi5 VALUE -1.951934680e-02 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 11 QUANTITY phi5 VALUE -2.155856491e-02 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.00672772040393887e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 2.00882795252882662e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 11 QUANTITY phi2 VALUE 1.13253012048192758e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 10 QUANTITY phi3 VALUE 2.00420046424977594e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 11 QUANTITY phi3 VALUE 2.06506024096385588e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 10 QUANTITY phi4 VALUE 1.01954353874395931e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 11 QUANTITY phi4 VALUE 1.0e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 10 QUANTITY phi5 VALUE -1.95193467972860184e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 11 QUANTITY phi5 VALUE -2.15585649068619628e-02 TOLERANCE 1e-11
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0

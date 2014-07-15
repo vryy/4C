@@ -776,7 +776,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
 
   // Parameter OUTPUT_GID currently not used, but will be kept
-  //																										AN 2013_05
+  // AN 2013_05
   setStringToIntegralParameter<int>("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("OUTPUT_BIN","yes","Do you want to have binary output?",yesnotuple,yesnovalue,&io);
 
@@ -1150,7 +1150,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   &sdyn);
 
   // Currently not used, but structure will be kept if someone wants to reimplement
-  // 																																		AN 2013_05
+  // AN 2013_05
   setStringToIntegralParameter<int>("CONTROLTYPE","load","load, disp, arc1, arc2 control",
                                tuple<std::string>(
                                  "load",
@@ -1174,7 +1174,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::control_arc2),
                                &sdyn);
   // Currently not used, but structure will be kept if someone wants to reimplement
-  // 																																		AN 2013_05
+  // AN 2013_05
   setNumericStringParameter("CONTROLNODE","-1 -1 -1",
                             "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
                             &sdyn);
@@ -5110,14 +5110,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::ELCH::elchtype_nernst_planck,
                                    INPAR::ELCH::elchtype_diffcond),
                                    &elchcontrol);
-
-  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&elchcontrol);
-  IntParameter("NUMSTEP",24,"Total number of time steps",&elchcontrol);
-  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&elchcontrol);
-  IntParameter("ITEMAX",10,"Maximum number of outer iterations",&elchcontrol);
-  IntParameter("UPRES",1,"Increment for writing solution",&elchcontrol);
-  DoubleParameter("CONVTOL",1e-6,"Convergence check tolerance for outer loop",&elchcontrol);
-  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
+  IntParameter("MOVBOUNDARYITEMAX",10,"Maximum number of outer iterations in electrode shape change computations",&elchcontrol);
+  DoubleParameter("MOVBOUNDARYCONVTOL",1e-6,"Convergence check tolerance for outer loop in electrode shape change computations",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
   // parameter for possible types of ELCH algorithms for deforming meshes
   setStringToIntegralParameter<int>("MOVINGBOUNDARY",
@@ -5137,9 +5131,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::ELCH::elch_mov_bndry_fully_transient),
                                  &elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
-  DoubleParameter("MOVBOUNDARYTHETA",0.0,"One-step-theta factor for electrode shape change computations",&elchcontrol);
+  DoubleParameter("MOVBOUNDARYTHETA",0.0,"One-step-theta factor in electrode shape change computations",&elchcontrol);
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
+  setStringToIntegralParameter<int>("GSTAT_APPROX_ELECT_RESIST",
+                                 "relation_pot_cur",
+                                 "relation of potential and current flow",
+                                  tuple<std::string>(
+                                    "relation_pot_cur",
+                                    "effective_length_with_initial_cond",
+                                    "effective_length_with_integrated_cond"),
+                                   tuple<int>(
+                                     INPAR::ELCH::approxelctresist_relpotcur,
+                                     INPAR::ELCH::approxelctresist_effleninitcond,
+                                     INPAR::ELCH::approxelctresist_efflenintegcond),
+                                    &elchcontrol);
   IntParameter("GSTATCONDID_CATHODE",0,"condition id of electrode kinetics for cathode",&elchcontrol);
   IntParameter("GSTATCONDID_ANODE",1,"condition id of electrode kinetics for anode",&elchcontrol);
   DoubleParameter("GSTATCONVTOL",1.e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
@@ -6917,12 +6923,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
 
-	/*----------------------------------------------------------------------*/
-	Teuchos::ParameterList& acousticdyn = list->sublist("ACOUSTIC DYNAMIC",false,"control parameters for acoustic or photoacoustic problems\n");
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& acousticdyn = list->sublist("ACOUSTIC DYNAMIC",false,"control parameters for acoustic or photoacoustic problems\n");
 
-	DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
-	IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
-	DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
+  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
+  IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
+  DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
   setStringToIntegralParameter<int>("CALCERROR","No",
                                "compute error compared to analytical solution",
                                tuple<std::string>(
@@ -6936,15 +6942,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &acousticdyn);
 
 
-	IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
-	IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
-	IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
-	IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
+  IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
+  IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
 
-	// distinguish viscous and lossless flows
-	setStringToIntegralParameter<int>("PHYSICAL_TYPE","lossless",
-	                  "fluid properties",
-	                  tuple<std::string>(
+  // distinguish viscous and lossless flows
+  setStringToIntegralParameter<int>("PHYSICAL_TYPE","lossless",
+                    "fluid properties",
+                    tuple<std::string>(
                     "lossless",
                     "viscous"),
                     tuple<int>(
@@ -6953,57 +6959,57 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     &acousticdyn);
 
 
-	// for nonlinear time integration
-	DoubleParameter("CONVTOL",1.0e-9,"Convergence tolerance for Newton loop",&acousticdyn);
-	IntParameter("ITEMAX",10,"Maximum number of iterations for Newton loop",&acousticdyn);
+  // for nonlinear time integration
+  DoubleParameter("CONVTOL",1.0e-9,"Convergence tolerance for Newton loop",&acousticdyn);
+  IntParameter("ITEMAX",10,"Maximum number of iterations for Newton loop",&acousticdyn);
 
-	// photoacoustics
-	DoubleParameter("PULSEDURATION",15e-9,"Laser pulse duration",&acousticdyn);
-	BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
-	BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
+  // photoacoustics
+  DoubleParameter("PULSEDURATION",15e-9,"Laser pulse duration",&acousticdyn);
+  BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
+  BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
 
-	// local postprocessing and p-adaptivity
-	BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
-	BoolParameter("P_ADAPTIVITY","No","p-adaptivity in time integration",&acousticdyn);
-	DoubleParameter("P_ADAPT_TOL",1.0e-15,"Error tolerance for p-adaptivity",&acousticdyn);
+  // local postprocessing and p-adaptivity
+  BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
+  BoolParameter("P_ADAPTIVITY","No","p-adaptivity in time integration",&acousticdyn);
+  DoubleParameter("P_ADAPT_TOL",1.0e-15,"Error tolerance for p-adaptivity",&acousticdyn);
 
-	// time integration
-	setStringToIntegralParameter<int>("TIMEINT","impl",
-									  "Type of time integration scheme",
-									  tuple<std::string>(
-										"impl",
-										"trap",
-										"dirk23",
+  // time integration
+  setStringToIntegralParameter<int>("TIMEINT","impl",
+                    "Type of time integration scheme",
+                    tuple<std::string>(
+                    "impl",
+                    "trap",
+                    "dirk23",
                     "dirk33",
                     "dirk34",
                     "dirk54",
-										"bdf2",
-										"bdf3",
-										"bdf4"),
-									  tuple<int>(
-										INPAR::ACOU::acou_impleuler,
-										INPAR::ACOU::acou_trapezoidal,
-										INPAR::ACOU::acou_dirk23,
+                    "bdf2",
+                    "bdf3",
+                    "bdf4"),
+                    tuple<int>(
+                    INPAR::ACOU::acou_impleuler,
+                    INPAR::ACOU::acou_trapezoidal,
+                    INPAR::ACOU::acou_dirk23,
                     INPAR::ACOU::acou_dirk33,
                     INPAR::ACOU::acou_dirk34,
                     INPAR::ACOU::acou_dirk54,
-										INPAR::ACOU::acou_bdf2,
-										INPAR::ACOU::acou_bdf3,
-										INPAR::ACOU::acou_bdf4),
-									  &acousticdyn);
+                    INPAR::ACOU::acou_bdf2,
+                    INPAR::ACOU::acou_bdf3,
+                    INPAR::ACOU::acou_bdf4),
+                    &acousticdyn);
 
-	setStringToIntegralParameter<int>("INV_ANALYSIS","none",
-								 "Types of inverse analysis and on/off switch",
-								 tuple<std::string>(
-								   "none",
-								   "pat"), // here, backprojection could be added
-								 tuple<int>(
-								   INPAR::ACOU::inv_none,
-								   INPAR::ACOU::inv_pat),
-								 &acousticdyn);
+  setStringToIntegralParameter<int>("INV_ANALYSIS","none",
+                 "Types of inverse analysis and on/off switch",
+                 tuple<std::string>(
+                   "none",
+                   "pat"), // here, backprojection could be added
+                 tuple<int>(
+                   INPAR::ACOU::inv_none,
+                   INPAR::ACOU::inv_pat),
+                 &acousticdyn);
 
 
-	Teuchos::ParameterList& acou_inv = acousticdyn.sublist("PA IMAGE RECONSTRUCTION",false,"");
+  Teuchos::ParameterList& acou_inv = acousticdyn.sublist("PA IMAGE RECONSTRUCTION",false,"");
 
   setStringToIntegralParameter<int>("OPTIMIZATION","LBFGS",
                                     "types of optimization algorithm",
@@ -7015,18 +7021,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::ACOU::inv_lbfgs),
                                     &acou_inv);
 
-	StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
-	BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
-	DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
-	BoolParameter("INV_TOL_GRAD_YN","No","Flag to indicate check of the norm of the gradient",&acou_inv);
-	DoubleParameter("INV_TOL_GRAD",0.0,"Tolerance for norm of gradient of inverse pat analysis",&acou_inv);
-	BoolParameter("ELE_SCALING","No","Should gradient be scaled by element size?",&acou_inv);
-	IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);
-	IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
-	DoubleParameter("LS_DECREASECOND",0.0,"coefficient for calculation of sufficient decrease condition",&acou_inv);
-	DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
-	DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
-	DoubleParameter("BETA_MUA",0.0,"Regularization parameter for gradient of absorption coefficient",&acou_inv);
+  StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
+  BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
+  DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
+  BoolParameter("INV_TOL_GRAD_YN","No","Flag to indicate check of the norm of the gradient",&acou_inv);
+  DoubleParameter("INV_TOL_GRAD",0.0,"Tolerance for norm of gradient of inverse pat analysis",&acou_inv);
+  BoolParameter("ELE_SCALING","No","Should gradient be scaled by element size?",&acou_inv);
+  IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);
+  IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
+  DoubleParameter("LS_DECREASECOND",0.0,"coefficient for calculation of sufficient decrease condition",&acou_inv);
+  DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
+  DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
+  DoubleParameter("BETA_MUA",0.0,"Regularization parameter for gradient of absorption coefficient",&acou_inv);
   IntParameter("SIZESTORAGE",10,"number of vectors to keep in storage; defaults to 10 (lbfgs usage only)",&acou_inv);
 
   // decide which parametrization of material parameters to use
@@ -7047,7 +7053,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   StringParameter("XML_FILE", "none", "Filename of XML file with configuration of nonlinear solver", &nlnsol);
 
-	/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks
 
   // Note: the maximum number of solver blocks is hardwired here. If you change this,

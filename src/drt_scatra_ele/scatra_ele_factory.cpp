@@ -116,10 +116,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   {
     return DefineProblemType<DRT::Element::line2>(problem,numdofpernode,numscal);
   }
-//  case DRT::Element::line3:
-//  {
-//    return ScaTraImpl<DRT::Element::line3>::Instance(problem,numdofpernode,numscal);
-//  }
+  case DRT::Element::line3:
+  {
+    return DefineProblemType<DRT::Element::line3>(problem,numdofpernode,numscal);
+  }
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
     break;

@@ -41,9 +41,10 @@ namespace ELCH
 
     /// constructor
     explicit MovingBoundaryAlgorithm(
-        const Epetra_Comm& comm,             ///< communicator
-        const Teuchos::ParameterList& prbdyn,///< problem-specific parameter list
-        const Teuchos::ParameterList& solverparams
+        const Epetra_Comm& comm,                     ///< communicator
+        const Teuchos::ParameterList& elchcontrol,   ///< elch parameter list
+        const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
+        const Teuchos::ParameterList& solverparams   ///< solver parameter list
         );
 
     /// virtual destructor to support polymorph destruction

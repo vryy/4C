@@ -27,20 +27,21 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
     const Epetra_Comm& comm,
-    const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& elchcontrol,
+    const Teuchos::ParameterList& scatradyn,
     const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling",solverparams),
+:  ScaTraFluidAleCouplingAlgorithm(comm,scatradyn,"FSICoupling",solverparams),
    pseudotransient_(false),
-   molarvolume_(prbdyn.get<double>("MOLARVOLUME")),
+   molarvolume_(elchcontrol.get<double>("MOLARVOLUME")),
    idispn_(FluidField().ExtractInterfaceVeln()),
    idispnp_(FluidField().ExtractInterfaceVeln()),
    iveln_(FluidField().ExtractInterfaceVeln()),
-   itmax_ (prbdyn.get<int>("ITEMAX")),
-   ittol_ (prbdyn.get<double>("CONVTOL")),
-   theta_(prbdyn.get<double>("MOVBOUNDARYTHETA"))
+   itmax_(elchcontrol.get<int>("MOVBOUNDARYITEMAX")),
+   ittol_(elchcontrol.get<double>("MOVBOUNDARYCONVTOL")),
+   theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA"))
 {
-  pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(prbdyn,"MOVINGBOUNDARY")
+  pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol,"MOVINGBOUNDARY")
           ==INPAR::ELCH::elch_mov_bndry_pseudo_transient);
 
   idispn_->PutScalar(0.0);
@@ -200,7 +201,7 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
   AleField().PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+  /* remark: initial velocity field has been transferred to scalar transport field in constructor of
    * ScaTraFluidCouplingMovingBoundaryAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */

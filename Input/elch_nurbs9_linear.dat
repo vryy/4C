@@ -32,8 +32,8 @@ TIMEINTEGR                      Gen_Alpha
 UPRES                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
-NUMSTEP                         8
-TIMESTEP                        0.5
+NUMSTEP                         10
+TIMESTEP                        0.2
 ALPHA_F                         0.666666
 ALPHA_M                         0.833333
 GAMMA                           0.666666
@@ -56,9 +56,9 @@ SCATRATYPE                      Elch
 VELCURVENO                      -1
 WRITEFLUX_IDS 1 2 // do not write flux of species 3
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1.e-6
+CONVTOL                         1e-10
 ITEMAX                          2
-ABSTOLRES                       1e-14
+ABSTOLRES                       1e-15
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 EXPLPREDICT                     no
@@ -73,22 +73,15 @@ STABTYPE                        SUPG
 SUGRVEL                         no
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-UPRES                           1
-RESTARTEVRY                     1
-MAXTIME                         1000.0
-NUMSTEP                         10
-TIMESTEP                        0.2
-CONVTOL                         1e-06
 GALVANOSTATIC                   Yes
+GSTAT_APPROX_ELECT_RESIST       relation_pot_cur //effective_length_with_initial_cond
 GSTATCONDID_ANODE               0                               // unusual case for nightly testing ;-)
 GSTATCONDID_CATHODE             1                               // unusual case for nightly testing ;-)
-GSTATCONVTOL                    1e-04
+GSTATCONVTOL                    1e-10
 GSTATCURTOL                     1e-13
 GSTATCURVENO                    3
 GSTATITEMAX                     10
-GSTAT_LENGTH_CURRENTPATH        1.0
-ITEMAX                          2
-MAGNETICFIELD_FUNCNO            -1
+GSTAT_LENGTH_CURRENTPATH        0
 MOLARVOLUME                     0
 MOVINGBOUNDARY                  No
 NATURAL_CONVECTION              No
@@ -113,8 +106,10 @@ E 1 - OUTPUT standard // for flux calculation on these two boundaries
 E 2 - OUTPUT standard
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
-E 2 - pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 0.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
+// anodic reaction
 E 1 - pot  0.0    curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 1.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
+// cathodic reaction
+E 2 - pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 0.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
 -----------------------------------------------------------FLUID KNOTVECTORS
 -------------------------------------------------------------ALE KNOTVECTORS
 -------------------------------------------------------TRANSPORT KNOTVECTORS
@@ -479,18 +474,18 @@ CURVE3 on EXPR FUNC -20.0*((t-0.6)/0.2) t1 0.8 t2 10000.0
 FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.1
 FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION 1.1
 FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION 2.0
-FUNCT1 COMPONENT 3 EXPR 0 0 0 FUNCTION 0.0125*(y-1)
+FUNCT1 COMPONENT 3 EXPR 0 0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 79 QUANTITY phi1 VALUE 1.000062266e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 123 QUANTITY phi1 VALUE 1.03492774678582811e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 137 QUANTITY phi1 VALUE 1.08115129878991911e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 137 QUANTITY phi2 VALUE 1.104221666e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 137 QUANTITY phi3 VALUE 1.992213072e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 137 QUANTITY phi4 VALUE -6.16672706447269570e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 144 QUANTITY fluxx VALUE -7.254988175e-04 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 9 QUANTITY fluxx VALUE 7.254988175e-04 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 137 QUANTITY fluxx VALUE -7.254988175e-04 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 79 QUANTITY phi1 VALUE 1.00006226870501605e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 123 QUANTITY phi1 VALUE 1.03492754294910144e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 137 QUANTITY phi1 VALUE 1.08115154417785575e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 137 QUANTITY phi2 VALUE 1.10422163420914288e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 137 QUANTITY phi3 VALUE 1.99221295958271294e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 137 QUANTITY phi4 VALUE -6.16672711826918740e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 144 QUANTITY fluxx VALUE -7.25498817462971865e-04 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 9 QUANTITY fluxx VALUE 7.25498817463371827e-04 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 137 QUANTITY fluxx VALUE -7.25498817463030520e-04 TOLERANCE 1e-13
 -------------------------------------------------------------------------END
 //                              END

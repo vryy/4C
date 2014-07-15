@@ -29,7 +29,7 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        1.0
+TIMESTEP                        0.5
 VELFUNCNO                       0
 VELOCITYFIELD                   zero
 UPRES                           10
@@ -38,8 +38,11 @@ MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 SCATRATYPE                      Elch
+MAXTIME                         10
+NUMSTEP                         20
+RESTARTEVRY                     10
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1e-7
+CONVTOL                         1e-09
 ABSTOLRES                       1e-15
 ITEMAX                          15
 EXPLPREDICT                     no
@@ -50,21 +53,15 @@ STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          10
-MAXTIME                         10
-NUMSTEP                         20
-RESTARTEVRY                     10
-TIMESTEP                        0.5
-UPRES                           10
 TEMPERATURE                     298.15                          // F/RT = 38.942
 NATURAL_CONVECTION              No
-CONVTOL                         1e-5
 GALVANOSTATIC                   Yes
+GSTAT_APPROX_ELECT_RESIST       relation_pot_cur //relation_pot_cur effective_length_with_initial_cond
 GSTATCONVTOL                    1e-8
 GSTATCURTOL                     1e-8
 GSTATCURVENO                    1
 GSTATITEMAX                     30
-GSTAT_LENGTH_CURRENTPATH        -1.0
+GSTAT_LENGTH_CURRENTPATH        0.3
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
 EQUPOT                          ENC

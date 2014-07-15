@@ -436,7 +436,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
     //------------------------------------------------
     // element rhs
     //------------------------------------------------
-    
+
     my::CalcRHSHistAndSource(erhs,0,fac,convelint(dir,0));
 
   }
@@ -447,8 +447,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;

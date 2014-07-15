@@ -30,17 +30,19 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(
     const Epetra_Comm& comm,
-    const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& elchcontrol,
+    const Teuchos::ParameterList& scatradyn,
+    const Teuchos::ParameterList& fdyn,
     const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams),
-   natconv_(DRT::INPUT::IntegralValue<int>(prbdyn,"NATURAL_CONVECTION")),
-   itmax_ (prbdyn.get<int>("ITEMAX")),
-   ittol_ (prbdyn.get<double>("CONVTOL")),
+:  ScaTraFluidCouplingAlgorithm(comm,scatradyn,false,"scatra",solverparams),
+   natconv_(DRT::INPUT::IntegralValue<int>(elchcontrol,"NATURAL_CONVECTION")),
+   itmax_ (scatradyn.sublist("NONLINEAR").get<int>("ITEMAX")),
+   ittol_ (scatradyn.sublist("NONLINEAR").get<double>("CONVTOL")),
    velincnp_ (Teuchos::rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
    conpotincnp_ (Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
-   samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
-   samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
+   samstart_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
+   samstop_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
   // Setup of TurbulenceStatisticManager is performed in the
   // constructor of class ScaTraFluidCouplingAlgorithm

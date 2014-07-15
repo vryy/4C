@@ -30,15 +30,15 @@ SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
-MAXTIME                         1000
-NUMSTEP                         1000
+MAXTIME                         10
+NUMSTEP                         20
 RESTARTEVRY                     10
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        1.0
+TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-UPRES                           10
+UPRES                           1
 BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       No
@@ -58,12 +58,6 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        DiffCond
-ITEMAX                          2
-MAXTIME                         10
-NUMSTEP                         20
-RESTARTEVRY                     10
-TIMESTEP                        0.1
-UPRES                           1
 TEMPERATURE                     298.15                          // F/RT = 38.942
 EQUPOT                          divi
 -------------------------------------------------------ELCH CONTROL/DIFFCOND

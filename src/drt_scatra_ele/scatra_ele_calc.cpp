@@ -429,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),convelint);
 
       // calculation of stabilization parameter at element center
-      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol,k);
+      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
     }
   }
 
@@ -568,7 +568,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
           CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhsint,tau[k]);
 
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
-          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol,k);
+          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
 
           // compute artificial diffusion
           CalcArtificialDiff(vol,k,diffmanager_,densnp,convelint,gradphi,conv_phi,scatrares,tau[k]);
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
         {
           // calculation of stabilization parameter related to fluid momentum
           // equation at integration point
-          CalcTau(tau[k],visc,0.0,densnp,convelint,vol,k);
+          CalcTau(tau[k],visc,0.0,densnp,convelint,vol);
           // calculation of residual-based subgrid-scale velocity
           CalcSubgrVelocity(ele,sgvelint,densam,densnp,visc,convelint,tau[k]);
 
@@ -622,7 +622,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
         }
 
         // calculation of stabilization parameter at integration point
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol,k);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
       }
 
       // residual of convection-diffusion-reaction eq
@@ -1162,10 +1162,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
 } // ScaTraEleCalc<distype>::MatScaTra
 
 
-/*----------------------------------------------------------------------*
- |  calculate the Laplacian for all shape functions (strong form)       |
- |                                                  (private) gjb 04/10 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------*
+ |  calculate the Laplacian in strong form for all shape functions (private)   gjb 04/10 |
+ *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetLaplacianStrongForm(
   LINALG::Matrix<nen_,1>& diff
@@ -1223,6 +1222,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetRhsInt(
 
   return;
 } // GetRhsInt
+
 
 /*-----------------------------------------------------------------------------*
  |  calculation of convective element matrix in convective form     ehrl 11/13 |
@@ -2037,8 +2037,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSMFS(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;

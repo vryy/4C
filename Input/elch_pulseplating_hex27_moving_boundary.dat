@@ -59,9 +59,9 @@ LINEAR_SOLVER                   1
 FSSUGRDIFF                      No
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
-MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     1000
+MAXTIME                         0.02
+NUMSTEP                         35
+RESTARTEVRY                     2
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0002
@@ -75,26 +75,22 @@ SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes
 CONVFORM                        convective
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1e-6
+CONVTOL                         1e-09
 ITEMAX                          20
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-ITEMAX                          10
-CONVTOL                         1.0e-10
-MAXTIME                         0.02
-NUMSTEP                         35
-RESTARTEVRY                     2
-TIMESTEP                        0.0002
-UPRES                           1
 TEMPERATURE                     300.0
 GALVANOSTATIC                   Yes
+GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond
 GSTATCONVTOL                    1e-6
 GSTATCURVENO                    4
 GSTATITEMAX                     20
 MOVINGBOUNDARY                  fully-transient
+MOVBOUNDARYITEMAX               10
+MOVBOUNDARYCONVTOL              1e-10
 MOVBOUNDARYTHETA                1.0                           // backward-Euler style
 MOLARVOLUME                     10.0                          // 7.11E-3 // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
 //                                                             // Wikipedia: 7,11 x 10 a 6 m3/mol
@@ -116,7 +112,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -144,38 +140,7 @@ SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-AZSUB                           40                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT                        1                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 --------------------------------------------------------------------SOLVER 3
 NAME                            SimplePredictor
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -186,7 +151,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -220,7 +185,7 @@ AZREUSE                         0                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           40                            // size of krylov space for gmres
@@ -276,7 +241,7 @@ CURVE4 on EXPR FUNC 0.5*(0.0125)*((0.5*cos(pi*(t-0.007)/0.00005))+0.5) t1 0.007 
 CURVE4 on EXPR FUNC 0.0 t1 0.00705 t2 0.008
 CURVE4 on PeriodicRepetition Period 0.008 t1 0.008 t2 20000.0
 ----------------------------------------------------------------------CURVE5
-CURVE5                          on PhysiologicalWaveform InterpolType Fourier Period 0.004 Flowrate -0.0125 Samplingpoints 160 Arrayread 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
+CURVE5                          on PhysiologicalWaveform InterpolType Fourier Period 0.004 Flowrate -0.0125 Samplingpoints 160 Arrayread 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 //                                                             // for use of Fourier representation of pulse curve computed from set of total current values
 //                                                             // only activated for testing input reading of CURVE5
 ----------------------------------------------------------------------FUNCT1
@@ -298,23 +263,23 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1 QUANTITY vely VALUE -1.296035381e-02 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 2.532671097e-02 TOLERANCE 1e-5
-SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY fluxy VALUE 1.296035156e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 0.0000000000000 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.490164264e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 2.408568737e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 4.119104621e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE 1.406947320e-04 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 28 QUANTITY phi1 VALUE 3.470234073e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE 1.297139211e-04 TOLERANCE 1e-9
-ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.000000000e+00 TOLERANCE 1e-11
-ALE DIS ale NODE 1 QUANTITY dispy VALUE 2.584662641e-05 TOLERANCE 1e-11
-ALE DIS ale NODE 1 QUANTITY dispz VALUE 0.000000000e+00 TOLERANCE 1e-11
-ALE DIS ale NODE 28 QUANTITY dispy VALUE 2.530972531e-05 TOLERANCE 1e-11
+FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0e+00 TOLERANCE 1e-09
+FLUID DIS fluid NODE 1 QUANTITY vely VALUE -1.29603515250826286e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0e+00 TOLERANCE 1e-09
+FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 2.53240855139188550e-02 TOLERANCE 1e-05
+SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.0e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 1 QUANTITY fluxy VALUE 1.29603515299650139e-03 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 0.0e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.49016425951377052e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 2.40856873679421968e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 4.11910462168596769e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE 1.40694731223982343e-04 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 28 QUANTITY phi1 VALUE 3.47023407786326898e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE 1.29713920504101568e-04 TOLERANCE 1e-10
+ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.0e+00 TOLERANCE 1e-09
+ALE DIS ale NODE 1 QUANTITY dispy VALUE 2.58466263946655746e-05 TOLERANCE 1e-14
+ALE DIS ale NODE 1 QUANTITY dispz VALUE 0.0e+00 TOLERANCE 1e-09
+ALE DIS ale NODE 28 QUANTITY dispy VALUE 2.53097256580886223e-05 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -2193,7 +2158,6 @@ NODE 906 COORD 4.99999989e-03 9.82800946e-02 0.00000000e+00
 NODE 907 COORD 2.49999994e-03 9.82800946e-02 2.49999994e-03
 NODE 908 COORD 2.49999994e-03 9.82800946e-02 -2.49999994e-03
 NODE 909 COORD 2.49999994e-03 1.00000001e-01 0.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID3 HEX27 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 22 26 25 27 24 23 21 MAT 1 NA ALE
 2 FLUID3 HEX27 4 3 28 29 8 7 30 31 11 32 33 34 16 15 35 36 19 37 38 39 41 27 44 45 43 42 40 MAT 1 NA ALE
@@ -2245,8 +2209,4 @@ NODE 909 COORD 2.49999994e-03 1.00000001e-01 0.00000000e+00
 48 FLUID3 HEX27 839 838 856 857 841 840 858 859 843 860 861 862 846 845 863 864 848 865 866 867 869 855 872 873 871 870 868 MAT 1 NA ALE
 49 FLUID3 HEX27 857 856 874 875 859 858 876 877 861 878 879 880 864 863 881 882 866 883 884 885 887 873 890 891 889 888 886 MAT 1 NA ALE
 50 FLUID3 HEX27 875 874 892 893 877 876 894 895 879 896 897 898 882 881 899 900 884 901 902 903 905 891 908 909 907 906 904 MAT 1 NA ALE
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

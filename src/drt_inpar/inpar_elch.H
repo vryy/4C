@@ -59,6 +59,13 @@ namespace INPAR
     diffcondmat_undefined
   };
 
+  enum ApproxElectResist
+  {
+    approxelctresist_relpotcur,
+    approxelctresist_effleninitcond,
+    approxelctresist_efflenintegcond
+  };
+
   // faraday constant (general definition)
   const double faraday_const = 96485.3399;
 

@@ -57,17 +57,21 @@ private:
   /*========================================================================*/
 
   //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-  virtual void CalMatAndRhs(
-    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector&               erhs,         //!< element rhs to calculate+
-    const int                               k,            //!< index of current scalar
-    const double                            fac,          //!< domain-integration factor
-    const double                            timefacfac,   //!< domain-integration factor times time-integration factor
-    const double                            rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManagerElch>& dme,          //!< diffusion manager
-    double&                                 rhsint,       //!< rhs at Gauss point
-    const double                            hist          //!< history
+  virtual void CalcMatAndRhs(
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,
+    Epetra_SerialDenseMatrix&                                                  emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&                                                  erhs,         //!< element rhs to calculate+
+    const int                                                                  k,            //!< index of current scalar
+    const double                                                               fac,          //!< domain-integration factor
+    const double                                                               timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                                                               rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    const double                                                               taufac,       //!< tau times domain-integration factor
+    const double                                                               timetaufac,   //!< domain-integration factor times tau times time-integration factor
+    const double                                                               rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
+    LINALG::Matrix<my::nen_,1>&                                                tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&                                    dme,          //!< diffusion manager
+    double&                                                                    rhsint,       //!< rhs at Gauss point
+    const double                                                               hist          //!< history
   );
 
   //! Correction for additional flux terms / currents across Dirichlet boundaries
@@ -85,7 +89,7 @@ private:
   );
 
   /*========================================================================*/
-  //! @name material and related and related functions
+  //! @name material and related functions
   /*========================================================================*/
 
   //! get the material parameters
@@ -104,7 +108,7 @@ private:
   //! evaluate material
   virtual void Materials(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
+    const int                               k,        //!< index of current scalar
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
@@ -115,8 +119,51 @@ private:
   );
 
   /*========================================================================*/
+  //! @name stabilization and related functions
+  /*========================================================================*/
+
+  //! Calculate derivative of tau w.r.t. electric potential according to Taylor, Hughes and Zarins
+  virtual void CalcTauDerPotTaylorHughesZarins(
+    LINALG::Matrix<my::nen_,1>&         tauderpot,       //!< derivatives of stabilization parameter w.r.t. electric potential
+    double&                             tau,             //!< stabilization parameter
+    const double                        densnp,          //!< density at t_(n+1)
+    const double                        frt,             //!< F/(RT)
+    const double                        diffusvalence,   //!< diffusion coefficient times valence
+    const LINALG::Matrix<my::nsd_,1>&   veleff           //!< effective convective velocity (fluid velocity plus migration velocity if applicable)
+  );
+
+  /*========================================================================*/
   //! @name methods for evaluation of individual terms
   /*========================================================================*/
+
+  //! CalcRes: Residual of Nernst-Planck equation in strong form
+  double CalcRes(
+    const int                                 k,            //!< index of current scalar
+    const double                              conint,       //!< concentration at GP
+    const double                              hist,         //!< history value at GP
+    const double                              convphi,      //!< convective term (without convective part of migration term)
+    const double                              frt,          //!< F/(RT)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nen_,1>&         migconv,      //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const double                              rhsint        //!< rhs of Nernst-Planck equation (not of Newton-Raphson scheme) at Gauss point
+  );
+
+  //! CalcMat: SUPG Stabilization of convective term due to fluid flow and migration
+  void CalcMatConvStab(
+    Epetra_SerialDenseMatrix&                 emat,         //!< element matrix to calculate
+    const int                                 k,            //!< index of current scalar
+    const double                              timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                              taufac,       //!< stabilization parameter tau times domain-integration factor
+    const double                              timetaufac,   //!< domain-integration factor times tau times time-integration factor
+    LINALG::Matrix<my::nen_,1>&               tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
+    const double                              frt,          //!< F/(RT)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nen_,1>&         conv,         //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
+    const LINALG::Matrix<my::nen_,1>&         migconv,      //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const double                              conint,       //!< concentration at GP
+    const LINALG::Matrix<my::nsd_,1>&         gradphi,      //!< gradient of concentration at GP
+    const double                              residual      //!< residual of Nernst-Planck equation in strong form
+  );
 
   //! CalcMat: Migration term
   void CalcMatMigr(
@@ -175,6 +222,17 @@ private:
     const double                              rhsfac,   //!< time-integration factor for rhs times domain-integration factor
     const double                              conint,   //!< concentration at GP
     const double                              vdiv      //!< velocity divergence
+  );
+
+  //! CalcRhs: SUPG Stabilization of convective term due to fluid flow and migration
+  void CalcRhsConvStab(
+    Epetra_SerialDenseVector&                 erhs,        //!< element vector to be filled
+    const int                                 k,           //!< index of current scalar
+    const double                              rhstaufac,   //!< time-integration factor for rhs times tau times domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,         //!< diffusion manager
+    const LINALG::Matrix<my::nen_,1>&         conv,        //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
+    const LINALG::Matrix<my::nen_,1>&         migconv,     //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const double                              residual     //!< residual of Nernst-Planck equation in strong form
   );
 
   //! CalcRhs: Migration term
@@ -247,7 +305,7 @@ private:
   );
 
   // Solving for electric potential field : Calculate Matrix and Rhs
-  virtual void CalMatAndRhsElectricPotentialField(
+  virtual void CalcMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     Epetra_SerialDenseMatrix&         emat,       //!< element matrix
@@ -316,7 +374,7 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
       LINALG::Matrix<NSD,NEN>&                 derxy   //!< global derivatives of shape functions w.r.t x,y,z
     )
     {
-      // convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi}*\grad{N}
+      //! convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi}*\grad{N}
       migconv_.MultiplyTN(-vm::frt_,derxy,vm::gradpot_);
 
       return;
@@ -329,10 +387,10 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
     // empty
 
   /*========================================================================*/
-  //! @name return methods for GP values
+  //! @name return methods for internal variables
   /*========================================================================*/
 
-    //! return current density at GP
+    //! return convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} * \grad{N}
     const LINALG::Matrix<NEN,1> MigConv(){return migconv_;};
 
   protected:
@@ -343,11 +401,12 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
 
 
   /*========================================================================*/
-  //! @name internal variables evaluated at the Gauss point
+  //! @name internal variables evaluated at element center or Gauss point
   /*========================================================================*/
 
-    // convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi}*\grad{N}
+    //! convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} * \grad{N}
     LINALG::Matrix<NEN,1> migconv_;
+
 }; // class ScaTraEleInternalVariableManagerElchNP
 
 } // namespace ELEMENTS

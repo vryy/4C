@@ -184,7 +184,7 @@ namespace ELEMENTS
     /*========================================================================*/
     //! @name routines for additional element evaluations (called from EvaluateService)
     /*========================================================================*/
-    
+
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void CalcInitialTimeDerivative(
       DRT::ELEMENTS::Transport*             ele,       //!< the element we are dealing with
@@ -250,7 +250,7 @@ namespace ELEMENTS
       );
 
     /*========================================================================*/
-    //! @name material and related and related functions
+    //! @name material and related functions
     /*========================================================================*/
 
     //! get the material parameters
@@ -297,13 +297,12 @@ namespace ELEMENTS
 
     //! calculate stabilization parameter
     virtual void CalcTau(
-      double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
-      const double                 diffus,    //!< diffusivity or viscosity
-      const double                 reacoeff,  //!< reaction coefficient
-      const double                 densnp,    //!< density at t_(n+1)
-      const LINALG::Matrix<nsd_,1>& convelint, //!< convective velocity at integration point
-      const double                 vol,       //!< element volume
-      const int                    k          //!< index of current scalar
+      double&                         tau,         //!< the stabilisation parameters (one per transported scalar)
+      const double                    diffus,      //!< diffusivity or viscosity
+      const double                    reacoeff,    //!< reaction coefficient
+      const double                    densnp,      //!< density at t_(n+1)
+      const LINALG::Matrix<nsd_,1>&   convelint,   //!< convective velocity at integration point
+      const double                    vol          //!< element volume
     );
 
     //! calculate characteristic element length
@@ -532,7 +531,7 @@ namespace ELEMENTS
     //! @name methods for evaluation of individual terms
     /*========================================================================*/
 
-    //! calculate the Laplacian for all shape functions(strong form)
+    //! calculate the Laplacian in strong form for all shape functions
     void GetLaplacianStrongForm(
       LINALG::Matrix<nen_,1>&                diff  //!< laplace term to be computed
     );
@@ -991,7 +990,8 @@ namespace ELEMENTS
       return;
     }
 
-    //! Return the stored isotropic diffusion coefficient
+    //! Return the stored isotropic diffusion coefficients
+    virtual std::vector<double> GetIsotropicDiff(){return diff_;}
     virtual double GetIsotropicDiff(const int k){return diff_[k];}
 
     //! Return the stored sub-grid diffusion coefficient

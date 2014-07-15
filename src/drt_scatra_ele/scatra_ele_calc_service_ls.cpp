@@ -188,8 +188,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::SmoothHeavisideFunction(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLS<DRT::Element::quad4>;

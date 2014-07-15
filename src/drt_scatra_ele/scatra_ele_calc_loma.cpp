@@ -770,8 +770,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad4>;

@@ -26,17 +26,14 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE nonlinear //linear_incremental
 TIMEINTEGR                      Gen_Alpha
 UPRES                           1
-RESTARTEVRY                     10
-NUMSTEP                         100
-MAXTIME 1.0 //hill reaches point of departure (x0=2/15)
+RESTARTEVRY                     2
+NUMSTEP                         10                              // shorter run for nightly test case! //100
+MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) for 100 steps
 TIMESTEP                        0.01                            // Cr = 1.5
 THETA                           0.5
 ALPHA_M                         0.833333333333333
@@ -66,16 +63,11 @@ SCATRATYPE                      Elch
 //
 STABTYPE                        no_stabilization
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1.0e-7
+CONVTOL                         1e-09
 ITEMAX                          7
 ABSTOLRES                       5.0e-13
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
-UPRES                           1
-RESTARTEVRY                     2
-NUMSTEP                         10                              // shorter run for nightly test case! //100
-MAXTIME 1.0 //hill reaches point of departure (x0=2/15) for 100 steps
-TIMESTEP                        0.01                            // Cr = 1.5
 EQUPOT                          ENC_PDE_ELIM
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
@@ -87,7 +79,7 @@ AZREUSE                         20                              // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                         // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          500                             // max iterations
 AZSUB 200 //!!!!!!! // size of krylov space for gmres

@@ -139,7 +139,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
       my::ehist_[k](i,0) = myhist[k+(i*my::numdofpernode_)];
     } // for k
   } // for i
-  
+
   if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->UseProjectedVel())
   {
     // get velocity at nodes (pre-computed via L2 projection)
@@ -499,7 +499,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
 
       // calculation of stabilization parameter at element center
       // here, second argument is isoptropic diffusion, which is zero!
-      my::CalcTau(tau,0.0,0.0,1.0,convelint,vol,0);
+      my::CalcTau(tau,0.0,0.0,1.0,convelint,vol);
     }
   }
 
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
       if (my::scatrapara_->TauGP())
         // calculation of stabilization parameter at integration point
         // here, second argument is isoptropic diffusion, which is zero!
-        my::CalcTau(tau,0.0,0.0,1.0,convelint,vol,0);
+        my::CalcTau(tau,0.0,0.0,1.0,convelint,vol);
     }
 
     //--------------------------------------------------------------------
@@ -994,7 +994,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcMatDiff(
 
       // in case of anisotropic or crosswind diffusion, multiply 'derxy_' with diffusion tensor
       // inside 'GetLaplacianWeakForm'
-      if (crosswind) 
+      if (crosswind)
         my::GetLaplacianWeakForm(laplawf,
                                  Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(diffmanager)->GetCrosswindTensor(),
                                  ui,vi);
@@ -1051,8 +1051,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSDiff(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;

@@ -64,8 +64,11 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype>::ScaTraEleCalcStd(const int numdofperno
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad4>;

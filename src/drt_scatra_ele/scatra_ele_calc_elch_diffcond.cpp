@@ -210,7 +210,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Evaluate(
 |  calculate system matrix and rhs                           ehrl  02/14|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&                 emat,         //!< element matrix to calculate
     Epetra_SerialDenseVector&                 erhs,         //!< element rhs to calculate+
@@ -218,6 +218,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
     const double                              fac,          //!< domain-integration factor
     const double                              timefacfac,   //!< domain-integration factor times time-integration factor
     const double                              rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    const double                              taufac,       //!< tau times domain-integration factor
+    const double                              timetaufac,   //!< domain-integration factor times tau times time-integration factor
+    const double                              rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
+    LINALG::Matrix<my::nen_,1>&               tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
     Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
     double&                                   rhsint,       //!< rhs at Gauss point
     const double                              hist          //!< history
@@ -293,7 +297,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   //---------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current
   //---------------------------------------------------------------------
-  // see function CalMatAndRhsOutsideScalarLoop()
+  // see function CalcMatAndRhsOutsideScalarLoop()
 
   //-----------------------------------------------------------------------
   // 4) element right hand side vector (neg. residual of nonlinear problem)
@@ -354,7 +358,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
 |  calculate system matrix and rhs                           ehrl  02/14|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsOutsideScalarLoop(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScalarLoop(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&                 emat,         //!< element matrix to calculate
     Epetra_SerialDenseVector&                 erhs,         //!< element rhs to calculate
@@ -1540,7 +1544,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
       // get parameters (porosity and tortuosity) from mat_phase
       Materials(singlephase,iphase,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
 
-      // dynmic cast: get access to mat_phase
+      // dynamic cast: get access to mat_phase
       const Teuchos::RCP<const MAT::ElchPhase>& actphase
          = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
 
@@ -1693,8 +1697,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatNewman(
 
 // template classes
 
-// 2D elements
+// 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line3>;
+
+// 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad4>;
