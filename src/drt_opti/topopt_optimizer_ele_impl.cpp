@@ -486,27 +486,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         if (optiparams_->IsStationary())
           timestep=1; // just one stationary time step 1
 
-        if (eadjointvels.find(timestep)==eadjointvels.end())
-            dserror("Adjoint solution of time step %i not found!",timestep);
 
-        if (efluidvels.find(timestep)==efluidvels.end())
-          dserror("Fluid solution of time step %i not found!",timestep);
-
-        evel = efluidvels.find(timestep)->second;
-        fluidvelint_.Multiply(evel,funct_);
-
-        evel = eadjointvels.find(timestep)->second;
-        adjointvelint_.Multiply(evel,funct_);
-        adjointvelxy_.MultiplyNT(evel,derxy_);
-
-        if ((optiparams_->IsStationary()==false) and (timestep>0))
-        {
-          evel = efluidvels.find(timestep-1)->second;
-          fluidvelint_old_.Multiply(evel,funct_);
-        }
-
-        CalcStabParameter(fac_);
-
+        //------------------------------------------------------------------------
+        //  standard part due to objective function
+        //------------------------------------------------------------------------
         double objfac = 0.0;
         if (timestep==0)                                objfac = 1.0 - optiparams_->ThetaObj();
         else if (timestep==optiparams_->NumTimesteps()) objfac = optiparams_->ThetaObj();
@@ -514,12 +497,34 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
 
         if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
           value -= objfac*dissipation_fac*2*edens.Dot(funct_);
-        else // standard case
+        else
         {
+          if (efluidvels.find(timestep)==efluidvels.end())
+            dserror("Fluid solution of time step %i not found!",timestep);
+
+          if ((optiparams_->IsStationary()==false) and (timestep>0))
+            fluidvelint_old_ = fluidvelint_;
+
+          evel = efluidvels.find(timestep)->second;
+          fluidvelint_.Multiply(evel,funct_);
+
           value += objfac*dissipation_fac*fluidvelint_.Dot(fluidvelint_); // dissipation part, zero if not used
 
+
+          //------------------------------------------------------------------------
+          //  adjoint part (no influence of time step 0)
+          //------------------------------------------------------------------------
           if (timestep>0)
           {
+            if (eadjointvels.find(timestep)==eadjointvels.end())
+              dserror("Adjoint solution of time step %i not found!",timestep);
+
+            evel = eadjointvels.find(timestep)->second;
+            adjointvelint_.Multiply(evel,funct_);
+            adjointvelxy_.MultiplyNT(evel,derxy_);
+
+            CalcStabParameter(fac_);
+
             value +=timefac*adjointvelint_.Dot(fluidvelint_);
             if (optiparams_->IsStationary()==false)
               value +=timefac_old*adjointvelint_.Dot(fluidvelint_old_);

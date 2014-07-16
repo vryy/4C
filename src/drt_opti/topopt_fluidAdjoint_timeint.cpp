@@ -70,16 +70,12 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
 
 bool TOPOPT::ADJOINT::FluidAdjointTimeInt::TimeLoopFinished() const
 {
-  if (step_==stepmax_)
-    return true;
-
-  // TODO look here again
   // for discrete adjoints we start with step 0 and end with step stepmax-1
   // since the adjoint solution of step stepmax at time 0 does not influence
   // the optimization since the primal solution u_0 is independent of the
   // optimization variable
-//  if ((adjointtype_==INPAR::TOPOPT::discrete_adjoint) and (step_==stepmax_-1))
-//      return true;
+  if (step_==stepmax_-1)
+    return true;
 
   return false;
 }
