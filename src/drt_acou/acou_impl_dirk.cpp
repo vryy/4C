@@ -162,7 +162,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
   eleparams.set<bool>("errormaps",errormaps_);
   eleparams.set<int>("stage",stage);
   eleparams.set<bool>("padaptivity",padaptivity_);
-  if(unsigned(stage)==dirk_q_-1)eleparams.set<double>("padaptivitytol",padapttol_);
+  if(stage==dirk_q_-1)eleparams.set<double>("padaptivitytol",padapttol_);
   Teuchos::RCP<std::vector<double> > elevals;
   if(errormaps_)
     elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
