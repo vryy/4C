@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file nln_operator_quasinewton.H
+\file nln_operator_newton.H
 
-\brief Quasi-Newton
+\brief Newton-type algorithm
 
 <pre>
 Maintainer: Matthias Mayr
@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_OPERATOR_QUASI_NEWTON_H
-#define NLN_OPERATOR_QUASI_NEWTON_H
+#ifndef NLN_OPERATOR_NEWTON_H
+#define NLN_OPERATOR_NEWTON_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -53,13 +53,13 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Quasi-Newton as nonlinear preconditioner
+  /*! \brief Newton-type algorithm as nonlinear preconditioner
    *
    *  \sa NLNSOL::NlnOperatorBase()
    *
    *  \author mayr.mt \date 06/2014
    */
-  class NlnOperatorQuasiNewton : public NlnOperatorBase
+  class NlnOperatorNewton : public NlnOperatorBase
   {
   public:
 
@@ -67,10 +67,10 @@ namespace NLNSOL
     //@{
 
     //! Constructor (empty)
-    NlnOperatorQuasiNewton();
+    NlnOperatorNewton();
 
     //! Destructor
-    virtual ~NlnOperatorQuasiNewton(){}
+    virtual ~NlnOperatorNewton(){}
 
     //@}
 
@@ -99,7 +99,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NLNSOL::NlnPrecQuasiNewton"; }
+    virtual const char* Label() const { return "NLNSOL::NlnOperatorNewton"; }
 
     //@}
 
@@ -135,7 +135,7 @@ namespace NLNSOL
     //! max number of iterations
     int maxiter_;
 
-  }; // class NlnOperatorQuasiNewton
+  }; // class NlnOperatorNewton
 } // namespace NLNSOL
 
-#endif /* NLN_OPERATOR_QUASI_NEWTON_H */
+#endif /* NLN_OPERATOR_NEWTON_H */

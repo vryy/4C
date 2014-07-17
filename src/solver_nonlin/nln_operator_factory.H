@@ -64,7 +64,8 @@ namespace NLNSOL
       //! @name Creation on nonlinear operators
       //@{
 
-      /*! \brief Returns the result of a NlnOperatir inverse applied to an Epetra_MultiVector X in Y.
+      /*! \brief Returns the result of a NlnOperator inverse applied to an
+       *  Epetra_MultiVector X in Y.
        *
        *  \return Integer error code, set to 0 if successful.
        *

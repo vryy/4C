@@ -32,6 +32,11 @@ class Epetra_Comm;
 class Epetra_MultiVector;
 class Epetra_Operator;
 
+namespace LINALG
+{
+  class SparseOperator;
+}
+
 namespace NOX
 {
   namespace Abstract
@@ -88,7 +93,7 @@ namespace NLNSOL
     virtual void Init(const Epetra_Comm& comm, ///< communicator
         const Teuchos::ParameterList& params, ///< parameter list
         NOX::Abstract::Group& noxgrp, ///< NOX group for call back routines to time integration
-        Teuchos::RCP<Epetra_Operator> jac  /// Jacobian matrix of underlying problem
+        Teuchos::RCP<LINALG::SparseOperator> jac /// Jacobian matrix of underlying problem
         );
 
     //! Setup of nonlinear problem
@@ -209,12 +214,16 @@ namespace NLNSOL
 
     /*! \brief Pointer to Jacobian matrix of underlying problem
      *
+     *  This needs to be a LINALG::SparseOperator since this is the base class
+     *  for all matrix types in BACI. We can always extract an Epetra_Operator
+     *  when we want to call a Trilinos package/solver.
+     *
      *  \warning Access to time integration WIHTOUT using the NOX group #noxgrp_.
      *  Seems to be inconsistent since all other accesses to time integration
      *  are done via the NOX group #noxgrp_. However, usage of NOX group might
      *  go away at some point.
      */
-    Teuchos::RCP<Epetra_Operator> jac_;
+    Teuchos::RCP<LINALG::SparseOperator> jac_;
 
     //! @name Tolerances for convergence check
     //@{

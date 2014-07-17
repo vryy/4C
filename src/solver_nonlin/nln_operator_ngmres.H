@@ -140,7 +140,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NlnOperatorNGmres"; }
+    virtual const char* Label() const { return "NLNSOL::NlnOperatorNGmres"; }
 
     //@}
 

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file nln_operator_quasinewton.cpp
+\file nln_operator_newton.cpp
 
 <pre>
 Maintainer: Matthias Mayr
@@ -30,7 +30,7 @@ Maintainer: Matthias Mayr
 // baci
 #include "linesearch_base.H"
 #include "linesearch_factory.H"
-#include "nln_operator_quasinewton.H"
+#include "nln_operator_newton.H"
 #include "nln_problem.H"
 
 #include "../drt_io/io_control.H"
@@ -45,7 +45,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 /* Constructor (empty) */
-NLNSOL::NlnOperatorQuasiNewton::NlnOperatorQuasiNewton()
+NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 : linsolver_(Teuchos::null),
   linesearch_(Teuchos::null),
   maxiter_(1)
@@ -55,12 +55,12 @@ NLNSOL::NlnOperatorQuasiNewton::NlnOperatorQuasiNewton()
 
 /*----------------------------------------------------------------------*/
 /* Setup of the algorithm  / operator */
-void NLNSOL::NlnOperatorQuasiNewton::Setup()
+void NLNSOL::NlnOperatorNewton::Setup()
 {
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  maxiter_ = Params().get<int>("Quasi Newton: Max Iter");
+  maxiter_ = Params().get<int>("Newton: Max Iter");
 
   SetupLinearSolver();
   SetupLineSearch();
@@ -73,10 +73,10 @@ void NLNSOL::NlnOperatorQuasiNewton::Setup()
 
 /*----------------------------------------------------------------------*/
 /* Setup of linear solver */
-void NLNSOL::NlnOperatorQuasiNewton::SetupLinearSolver()
+void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 {
   // get the solver number used for structural problems
-  const int linsolvernumber = Params().get<int>("Quasi Newton: Linear Solver");
+  const int linsolvernumber = Params().get<int>("Newton: Linear Solver");
 
   // check if the solver ID is valid
   if (linsolvernumber == (-1))
@@ -91,17 +91,17 @@ void NLNSOL::NlnOperatorQuasiNewton::SetupLinearSolver()
 
 /*----------------------------------------------------------------------*/
 /* Setup of line search */
-void NLNSOL::NlnOperatorQuasiNewton::SetupLineSearch()
+void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(Params().sublist("Quasi Newton: Line Search"));
+  linesearch_ = linesearchfactory.Create(Params().sublist("Newton: Line Search"));
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Apply the preconditioner */
-int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
+int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
   int err = 0;
@@ -127,8 +127,8 @@ int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
   double fnorm2 = 1.0e+12; // residual L2 norm
   bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
 
-  if (Comm().MyPID() == 0 and Params().get<bool>("Quasi Newton: Print Iterations"))
-    IO::cout << "Quasi-Newton iteration " << iter << ": res-norm = " << fnorm2 << IO::endl;
+  if (Comm().MyPID() == 0 and Params().get<bool>("Newton: Print Iterations"))
+    IO::cout << "Newton-type iteration " << iter << ": res-norm = " << fnorm2 << IO::endl;
 
   // ---------------------------------------------------------------------------
   // do a Quasi-Newton scheme with fixed Jacobian
@@ -142,12 +142,11 @@ int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
     inc->PutScalar(0.0);
 
     // do the linear solve (no re-factorization since matrix has not changed)
-//    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, iter==1, iter==1, Teuchos::null);
-    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, true, false, Teuchos::null);
+    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, true, iter==1, Teuchos::null);
     if (linsolve_error != 0) { dserror("Linear solver failed."); }
 
     // line search
-    linesearch_->Init(NlnProblem(), Params().sublist("Quasi Newton: Line Search"), x, *inc, fnorm2);
+    linesearch_->Init(NlnProblem(), Params().sublist("Newton: Line Search"), x, *inc, fnorm2);
     linesearch_->Setup();
     steplength = linesearch_->ComputeLSParam();
 
@@ -157,10 +156,13 @@ int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
 
     // evaluate and check for convergence
     NlnProblem()->Evaluate(x, *rhs);
+
     converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
 
-    if (Params().get<bool>("Quasi Newton: Print Iterations") and Comm().MyPID() == 0)
-      IO::cout << "Quasi-Newton iteration " << iter << ": res-norm = " << fnorm2 << IO::endl;
+    if (Params().get<bool>("Newton: Print Iterations") and Comm().MyPID() == 0)
+      IO::cout << "Newton-type iteration " << iter
+               << ": res-norm = " << std::setprecision(6) << fnorm2
+               << IO::endl;
   }
 
   // ---------------------------------------------------------------------------
@@ -171,7 +173,7 @@ int NLNSOL::NlnOperatorQuasiNewton::ApplyInverse(const Epetra_MultiVector& f,
   else
   {
     if (IsSolver())
-      dserror("Quasi-Newton did not converge in %d iterations.", iter);
+      dserror("Newton-type algorithm did not converge in %d iterations.", iter);
   }
 
   // suppose non-convergence

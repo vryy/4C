@@ -143,9 +143,9 @@ STR::TimIntImpl::TimIntImpl
   else if (windkman_->HaveWindkessel())
   {
     if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
-    	if (myrank_ == 0)
-    	  dserror("Chosen solution technique %s does not work with Windkessel bc.",
-              	INPAR::STR::NonlinSolTechString(itertype_).c_str());
+      if (myrank_ == 0)
+       dserror("Chosen solution technique %s does not work with Windkessel bc.",
+                INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)
             or (itertype_ == INPAR::STR::soltech_newtonuzawanonlin) )
@@ -322,9 +322,9 @@ void STR::TimIntImpl::Predict()
     pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), accn_);
   }
 
-	// Update locals systems (which may be time dependent)
-	if (locsysman_ != Teuchos::null)
-  	locsysman_->Setup(timen_);
+  // Update locals systems (which may be time dependent)
+  if (locsysman_ != Teuchos::null)
+    locsysman_->Setup(timen_);
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
@@ -987,7 +987,7 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot
   discret_->GetCondition("SpringDashpot", springdashpotcond);
   if (springdashpotcond.size())
   {
-  	SPRINGDASHPOT::EvaluateSpringDashpot(discret_,stiff,fint,disn,veln,psprdash);
+    SPRINGDASHPOT::EvaluateSpringDashpot(discret_,stiff,fint,disn,veln,psprdash);
   }
 
   return;
@@ -1021,10 +1021,10 @@ bool STR::TimIntImpl::Converged()
     convdis = normdisi_ < toldisi_;
     break;
   case INPAR::STR::convnorm_rel:
-  	convdis = normdisi_ < std::max(normchardis_*toldisi_,1e-15);
+    convdis = normdisi_ < std::max(normchardis_*toldisi_,1e-15);
     break;
   case INPAR::STR::convnorm_mix:
-  	convdis = ( (normdisi_ < toldisi_) or (normdisi_ < std::max(normchardis_*toldisi_,1e-15)) );
+    convdis = ( (normdisi_ < toldisi_) or (normdisi_ < std::max(normchardis_*toldisi_,1e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual displacements!");
@@ -1038,10 +1038,10 @@ bool STR::TimIntImpl::Converged()
     convfres = normfres_ < tolfres_;
     break;
   case INPAR::STR::convnorm_rel:
-  	convfres = normfres_ < std::max(tolfres_*normcharforce_,1e-15);
+    convfres = normfres_ < std::max(tolfres_*normcharforce_,1e-15);
     break;
   case INPAR::STR::convnorm_mix:
-  	convfres = ( (normfres_ < tolfres_) or (normfres_ < std::max(tolfres_*normcharforce_,1e-15)) );
+    convfres = ( (normfres_ < tolfres_) or (normfres_ < std::max(tolfres_*normcharforce_,1e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
@@ -1249,9 +1249,9 @@ int STR::TimIntImpl::Solve()
   // special nonlinear iterations for contact / meshtying
   if (HaveContactMeshtying())
   {
-  	// check additionally if we have contact AND a Windkessel or constraint bc
-  	if (HaveWindkessel()) nonlin_error = CmtWindkConstrNonlinearSolve();
-  	else nonlin_error = CmtNonlinearSolve();
+    // check additionally if we have contact AND a Windkessel or constraint bc
+    if (HaveWindkessel()) nonlin_error = CmtWindkConstrNonlinearSolve();
+    else nonlin_error = CmtNonlinearSolve();
   }
 
   // special nonlinear iterations for beam contact
@@ -1336,7 +1336,7 @@ int STR::TimIntImpl::NewtonFull()
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+        GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // *********** time measurement ***********
     double dtcpu = timer_->WallTime();
@@ -2133,12 +2133,10 @@ int STR::TimIntImpl::NlnSolver()
 
   // check whether we have a sanely filled stiffness matrix
   if (not stiff_->Filled())
-  {
     dserror("Effective stiffness matrix must be filled here");
-  }
 
-  ApplyDirichletBC(timen_,disn_,veln_,accn_,true);
-
+  // take care of Dirichlet boundary conditions
+  ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
       GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
@@ -2150,7 +2148,8 @@ int STR::TimIntImpl::NlnSolver()
   // ---------------------------------------------------------------------------
   // Create NOX group
   // ---------------------------------------------------------------------------
-  // create initial guess vector of predictor result
+  // create initial guess vector of predictor result as CreateCopy to avoid
+  // direct access to disn_
   NOX::Epetra::Vector noxSoln(disn_, NOX::Epetra::Vector::CreateCopy);
 
   // use NOX::STR::Group to enable access to time integration
@@ -2166,7 +2165,7 @@ int STR::TimIntImpl::NlnSolver()
   // Create interface to nonlinear problem
   // ---------------------------------------------------------------------------
   Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem = Teuchos::rcp(new NLNSOL::NlnProblem());
-  nlnproblem->Init(Discretization()->Comm(), params->sublist("Nonlinear Problem"), *noxgrp, stiff_->EpetraOperator());
+  nlnproblem->Init(Discretization()->Comm(), params->sublist("Nonlinear Problem"), *noxgrp, stiff_);
   nlnproblem->Setup();
 
   // ---------------------------------------------------------------------------
@@ -2543,7 +2542,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
   // if everything is fine print to screen and return
   if (Converged())
   {
-    	   // compute and print monitor values
+         // compute and print monitor values
     if (conman_->HaveMonitor())
     {
       conman_->ComputeMonitorValues(disn_);
@@ -2553,9 +2552,9 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
 
-		//print Windkessel output
+    //print Windkessel output
     if (windkman_->HaveWindkessel())
-    	windkman_->PrintPresFlux();
+      windkman_->PrintPresFlux();
 
     return 0;
   }
@@ -2578,12 +2577,12 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
       if (myrank_ == 0)
         IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
         if (conman_->HaveMonitor())
-      		conman_->ComputeMonitorValues(disn_);
+          conman_->ComputeMonitorValues(disn_);
       return 0;
     }
     else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
     {
-  		dserror("Fancy divcont actions not implemented forUzawaLinearNewtonFull ");
+      dserror("Fancy divcont actions not implemented forUzawaLinearNewtonFull ");
       return 1;
     }
   }
@@ -3817,7 +3816,8 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+      GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
   // final sip
   return;
 }

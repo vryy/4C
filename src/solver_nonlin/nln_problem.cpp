@@ -38,6 +38,8 @@ Maintainer: Matthias Mayr
 #include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "../linalg/linalg_sparseoperator.H"
+
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -60,7 +62,7 @@ NLNSOL::NlnProblem::NlnProblem()
 void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     NOX::Abstract::Group& noxgrp,
-    Teuchos::RCP<Epetra_Operator> jac
+    Teuchos::RCP<LINALG::SparseOperator> jac
     )
 {
   // We need to call Setup() after Init()
@@ -105,9 +107,8 @@ void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-#ifdef DEBUG
-  if (not x.Map().PointSameAs(f.Map())) { dserror("Maps do not match."); }
-#endif
+  // check for correctness of maps
+  dsassert(x.Map().PointSameAs(f.Map()), "Maps do not match.");
 
   // set most recent solution to NOX group
   Teuchos::RCP<Epetra_Vector> xtemp = Teuchos::rcp(new Epetra_Vector(*(x(0))));
@@ -129,9 +130,8 @@ void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
   int err = f.Update(1.0, *frcp, 0.0);
   if (err != 0) { dserror("Update failed."); }
 
-#ifdef DEBUG
-  if (not x.Map().PointSameAs(f.Map())) { dserror("Maps do not match."); }
-#endif
+  // check for correctness of maps
+  dsassert(x.Map().PointSameAs(f.Map()), "Maps do not match.");
 
   return;
 }
@@ -238,5 +238,5 @@ Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
   if (jac_.is_null())
     dserror("Jacobian operator 'jac_' has not been initialized, yet.");
 
-  return jac_;
+  return jac_->EpetraOperator();
 }

@@ -23,8 +23,8 @@ Maintainer: Matthias Mayr
 #include "nln_operator_factory.H"
 #include "nln_operator_fas.H"
 #include "nln_operator_ngmres.H"
+#include "nln_operator_newton.H"
 #include "nln_operator_nonlincg.H"
-#include "nln_operator_quasinewton.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -43,9 +43,9 @@ Teuchos::RCP<NLNSOL::NlnOperatorBase>
 NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
 {
   const std::string optype = params.get<std::string>("Nonlinear Operator Type");
-  if (optype == "Quasi Newton")
+  if (optype == "Newton")
   {
-    return Teuchos::rcp(new NLNSOL::NlnOperatorQuasiNewton());
+    return Teuchos::rcp(new NLNSOL::NlnOperatorNewton());
   }
   else if (optype == "Nonlinear CG")
   {

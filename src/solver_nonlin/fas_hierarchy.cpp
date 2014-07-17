@@ -67,6 +67,9 @@ Maintainer: Matthias Mayr
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparseoperator.H"
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -148,13 +151,15 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     if (Params().sublist("Printing").get<bool>("print MueLu levels"))
       muelulevel->print(*getFancyOStream(Teuchos::rcpFromRef(std::cout)), MueLu::High);
 
-    Teuchos::RCP<Epetra_CrsMatrix> myA = Teuchos::null;
+    Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
+    Teuchos::RCP<LINALG::SparseOperator> myA = Teuchos::null;
     Teuchos::RCP<Epetra_CrsMatrix> myR = Teuchos::null;
     Teuchos::RCP<Epetra_CrsMatrix> myP = Teuchos::null;
 
     // extract matrix
     Teuchos::RCP<Matrix> myMatrix = muelulevel->Get<Teuchos::RCP<Matrix> >("A");
-    myA = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myMatrix);
+    myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myMatrix);
+    myA = Teuchos::rcp(new LINALG::SparseMatrix(myAcrs, false, true, LINALG::SparseMatrix::CRS_MATRIX));
 
     // extract transfer operators
     if (level > 0) // defined only on coarse grids
@@ -194,7 +199,7 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
 
     // create a single level and initialize
     Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel = Teuchos::rcp(new NLNSOL::FAS::NlnLevel());
-    newlevel->Init(muelulevel->GetLevelID(), H->GetNumLevels(), myA, myR, myP, Comm(), levelparams, nlnproblem);
+    newlevel->Init(muelulevel->GetLevelID(), H->GetNumLevels(), myAcrs, myR, myP, Comm(), levelparams, nlnproblem);
     newlevel->Setup();
     // -------------------------------------------------------------------------
 
