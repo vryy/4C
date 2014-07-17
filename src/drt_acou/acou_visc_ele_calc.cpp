@@ -333,6 +333,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* e
   // so, shape it, as you need it
   dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
   hdgele->eleinteriorValnp_.Shape(shapes_->ndofs_*(nsd_*nsd_+nsd_+2),1);
+  hdgele->eleinteriorValn_.Shape(shapes_->ndofs_*(nsd_*nsd_+nsd_+2),1);
   switch(dyna_)
   {
   case INPAR::ACOU::acou_bdf4:
@@ -361,6 +362,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* e
   default:
     break; // do nothing for impl and trap
   }
+
   for(unsigned int i=0; i<hdgele->eles_.size(); ++i) // zero size if not dirk
   {
     hdgele->eles_[i].Shape(shapes_->ndofs_*(nsd_*nsd_+nsd_+2),1);
@@ -397,7 +399,6 @@ DIRKVectorHandling(DRT::ELEMENTS::Acou   * ele,
 
   if(stage == 0)
     acouele->eleinteriorValnp_ = acouele->eleinteriorValn_;
-
 
   Epetra_SerialDenseVector tempVec1(shapes_->ndofs_*(nsd_*nsd_+nsd_+2));
   Epetra_SerialDenseVector tempVec2(shapes_->ndofs_*(nsd_*nsd_+nsd_+2));
@@ -509,8 +510,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::ProjectField(
   case INPAR::ACOU::acou_bdf3:
     hdgele->eleinteriorValnmm_ = hdgele->eleinteriorValnp_;  // no break here
   case INPAR::ACOU::acou_bdf2:
-    hdgele->eleinteriorValnm_ = hdgele->eleinteriorValnp_;
-    break;                                                   // here you go
+    hdgele->eleinteriorValnm_ = hdgele->eleinteriorValnp_;   // no break here
   default:
     hdgele->eleinteriorValn_ = hdgele->eleinteriorValnp_;
     break;
@@ -625,6 +625,19 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::ProjectOpticalField(
     }
 
   } // if(meshconform)
+
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_bdf4:
+    hdgele->eleinteriorValnmmm_ = hdgele->eleinteriorValnp_; // no break here
+  case INPAR::ACOU::acou_bdf3:
+    hdgele->eleinteriorValnmm_ = hdgele->eleinteriorValnp_;  // no break here
+  case INPAR::ACOU::acou_bdf2:
+    hdgele->eleinteriorValnm_ = hdgele->eleinteriorValnp_;   // no break here
+  default:
+    hdgele->eleinteriorValn_ = hdgele->eleinteriorValnp_;
+    break;
+  }
 
   // trace variable (zero, because no memory, no time derivative)
   // dsassert(unsigned(elevec1.M()) == nfaces_*shapes_->nfdofs_*nsd_, "Wrong size in project vector 1");
@@ -853,10 +866,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ComputeError(
     const std::vector<int>&       lm,
     Epetra_SerialDenseVector&     elevec)
 {
-  shapes_->Evaluate(*ele);
-
   double time = params.get<double>("time");
-
   if(params.get<INPAR::ACOU::CalcError>("error calculation") != INPAR::ACOU::calcerror_1d) dserror("no analytical solution available");
 
   const MAT::AcousticViscMat* actmat = static_cast<const MAT::AcousticViscMat*>(mat.get());
@@ -865,7 +875,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ComputeError(
   double c = actmat->SpeedofSound();
 
   // get function
-  const int *start_func = params.getPtr<int>("startfuncno");
+  const int *start_func = params.getPtr<int>("funct");
 
   double err_p = 0.0, norm_p = 0.0;
   for (unsigned int q=0; q<shapes_->nqpoints_; ++q)
