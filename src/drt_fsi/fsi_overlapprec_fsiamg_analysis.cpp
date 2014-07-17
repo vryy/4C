@@ -108,8 +108,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(
                  Asf,Afs,Afa,Aaf);
 
   exit(EXIT_SUCCESS);
-  
-  
+
+
   return;
 }
 
@@ -147,14 +147,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     sprintf(levelstr,"(level %d)",level);
     Teuchos::ParameterList subp =  params.sublist("smoother: list "+(std::string)levelstr);
     //std::cout << "pushlist\n" << pushlist << "subp\n" << subp << std::endl;
-        
+
     MLAPI::Space rspace(A[level].GetOperatorRangeSpace());
     MLAPI::Space dspace(A[level].GetOperatorDomainSpace());
     MLAPI::MultiVector xref(dspace);
     xref.Random();
     xref.Scale(10000.0);
     MLAPI::MultiVector f(rspace,true);
-    
+
     double localrate = 10.0;
     std::string localtype = "";
     double localdamp = 1.0;
@@ -202,7 +202,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       best.Damp()[level] = localdamp;
       best.S()[level]    = localS;
     }
-    if (!myrank) 
+    if (!myrank)
     {
       printf("--------------------------------------------\n");
       printf("BEST SGS: %s level %d %s damp %f poly %d\n",
@@ -234,7 +234,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
         printf("--------------------------------------------\n");
         fflush(stdout);
       }
-      double damp = 1.0; 
+      double damp = 1.0;
       std::string type = "";
       subp.set("smoother: type","MLS");
       subp.set("smoother: sweeps",1);
@@ -263,7 +263,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       best.Poly()[level] = localpoly;
       best.S()[level]    = localS;
     }
-    if (!myrank) 
+    if (!myrank)
     {
       printf("--------------------------------------------\n");
       printf("BEST Chebychev: %s level %d %s damp %f poly %d\n",
@@ -298,7 +298,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       subp.set("smoother: ifpack level-of-fill",fill*1.0);
       subp.set("smoother: sweeps",1);
       subp.set("smoother: damping factor",1.0);
-      Teuchos::ParameterList p; 
+      Teuchos::ParameterList p;
       SelectMLAPISmoother(type,level,subp,p,pushlist);
       S = Teuchos::rcp(new MLAPI::InverseOperator());
       S->Reshape(A[level],type,p,NULL);
@@ -326,7 +326,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       best.Poly()[level] = localpoly;
       best.S()[level]    = localS;
     }
-    if (!myrank) 
+    if (!myrank)
     {
       printf("--------------------------------------------\n");
       printf("BEST ILU: %s level %d %s damp %f poly %d\n",
@@ -335,7 +335,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     }
 
     //------------------------------------------------------------------
-    if (!myrank) 
+    if (!myrank)
     {
       printf("============================================\n");
       printf("BEST OVERALL: %s level %d %s damp %f poly %d\n",
@@ -343,7 +343,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       printf("============================================\n");
     }
   } // loop levels
-  
+
   //==================================================== analyze V-cycle
   if (!myrank)
   {
@@ -362,12 +362,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
   xref.Random();
   xref.Scale(10000.0);
   MLAPI::MultiVector f(rspace,true);
-  
+
   // number of sweeps per level
   std::vector<int> localVsweeps(6,1);
   std::vector<int> loops(6,1); for (int i=0; i<nlevel-1; ++i) loops[i] = 5;
   double bestVrate = 10.0;
-  
+
   for (int i=1; i<=loops[0]; ++i)
     for (int j=1; j<=loops[1]; ++j)
       for (int k=1; k<=loops[2]; ++k)
@@ -425,7 +425,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     fflush(stdout);
   }
 
-  
+
   return;
 }
 
@@ -435,7 +435,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_BGSAMG(
                        const int myrank,
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
-                       AnalyzeBest& abest,  
+                       AnalyzeBest& abest,
                        std::vector<MLAPI::Operator>& Ass,
                        std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                        std::vector<MLAPI::Operator>& Aff,
@@ -622,7 +622,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                        const int myrank,
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
-                       AnalyzeBest& abest,  
+                       AnalyzeBest& abest,
                        std::vector<MLAPI::Operator>& Ass,
                        std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                        std::vector<MLAPI::Operator>& Aff,
@@ -755,7 +755,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
     MLAPI::MultiVector ff(frspace,true);
     MLAPI::MultiVector af(arspace,true);
     for (int s=0; s<12; ++s)
-      for (int f=0; f<12; ++f)  
+      for (int f=0; f<12; ++f)
         for (int a=0; a<12; ++a)
         {
           localdamps[0][level] = 1.0-s*0.08;
@@ -861,9 +861,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                 for (int o=0; o<minnlevel_; ++o)
                   bestVsweeps[o] = localVsweeps[o];
               }
-              
-              
-  } // i,j,k,l,m,n  
+
+
+  } // i,j,k,l,m,n
 
 
   //------------------------------------------------------------------------------------
@@ -908,7 +908,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
         bestVrate = rate;
         for (int i=0; i<minnlevel_; ++i) bestVdamps[i] = localVdamps[i];
       }
-      
+
     } // j
   } // level
   // test damping parameters once more backwards starting from the previous optimal parameters
@@ -945,7 +945,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
         bestVrate = rate;
         for (int i=0; i<minnlevel_; ++i) bestVdamps[i] = localVdamps[i];
       }
-      
+
     } // j
   } // level
 
@@ -996,26 +996,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
 
 
 
-  
+
   return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

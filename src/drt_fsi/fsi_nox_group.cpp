@@ -87,11 +87,11 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::Paramet
   mfsi_.ScaleSystem(RHSVector.getEpetraVector());
   NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
   mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(),RHSVector.getEpetraVector());
-  
+
   // check return value of computeNewton call
   if(status == NOX::Abstract::Group::NotConverged || status == NOX::Abstract::Group::Failed)
     dserror("NOX::FSI::Group::computeNewton: linear solver not converged...");
-  
+
   return status;
 }
 

@@ -170,7 +170,7 @@ namespace FSI
     class AnalyzeBest
     {
      public:
-       AnalyzeBest(const int nlevel) : 
+       AnalyzeBest(const int nlevel) :
        nlevel_(nlevel),
        besttype_(6,""),
        bestdamp_(6,1.0),
@@ -194,7 +194,7 @@ namespace FSI
        std::vector<int>                          bestsweeps_;
        std::vector<Teuchos::RCP<MLAPI::InverseOperator> > S_;
     };
-    
+
     // main routine analysis of FSIAMG
     void AnalyzeFSIAMG(const int myrank,
                        const int snlevel,
@@ -216,7 +216,7 @@ namespace FSI
                        ML* sml,
                        ML* fml,
                        ML* aml);
-                       
+
     // analyze a single field
     void Analyse_SingleField(
                              const std::string fieldname,
@@ -228,31 +228,13 @@ namespace FSI
                              std::vector<MLAPI::Operator>& P,
                              std::vector<MLAPI::Operator>& R,
                              AnalyzeBest& best);
-                            
+
     // analyse BGS(AMG)
     void Analyse_BGSAMG(
                        const int myrank,
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
-                       AnalyzeBest& abest,  
-                       std::vector<MLAPI::Operator>& Ass,
-                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
-                       std::vector<MLAPI::Operator>& Aff,
-                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-                       std::vector<MLAPI::Operator>& Aaa,
-                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
-                       std::vector<MLAPI::Operator>& Asf,
-                       std::vector<MLAPI::Operator>& Afs,
-                       std::vector<MLAPI::Operator>& Afa,
-                       std::vector<MLAPI::Operator>& Aaf
-                       );
-                       
-    // analyse AMG(BGS)
-    void Analyse_AMGBGS(
-                       const int myrank,
-                       AnalyzeBest& sbest,
-                       AnalyzeBest& fbest,
-                       AnalyzeBest& abest,  
+                       AnalyzeBest& abest,
                        std::vector<MLAPI::Operator>& Ass,
                        std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                        std::vector<MLAPI::Operator>& Aff,
@@ -265,8 +247,26 @@ namespace FSI
                        std::vector<MLAPI::Operator>& Aaf
                        );
 
-    
-    double Rate(const int myrank, 
+    // analyse AMG(BGS)
+    void Analyse_AMGBGS(
+                       const int myrank,
+                       AnalyzeBest& sbest,
+                       AnalyzeBest& fbest,
+                       AnalyzeBest& abest,
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf
+                       );
+
+
+    double Rate(const int myrank,
                 double t, double r, double initr, double l) const
     {
       //r /= sqrt(l); initr /= sqrt(l);
@@ -276,15 +276,15 @@ namespace FSI
       else             lograte = t/(-log(r/initr));
       double rate = FSIAMG_STRENGTH*linrate + (1.-FSIAMG_STRENGTH)*lograte;
 #if (FSIAMG_ANALYSIS>=4)
-      if (r>initr) 
+      if (r>initr)
         if (!myrank) printf("**residual increase in individual field** r0/r:     %8.4e/%8.4e\n",initr,r);
 #endif
       return rate;
     }
 
-    
+
     // a single field single level Richardson iteration with smoother
-    double RichardsonS( 
+    double RichardsonS(
                     const std::string field,
                     const int myrank,
                     const int level,
@@ -299,7 +299,7 @@ namespace FSI
                     bool silent=true) const;
 
     // a non-Trilinos preconditioner Richardson
-    double RichardsonMixed( 
+    double RichardsonMixed(
                     const std::string field,
                     const int myrank,
                     const int level,
@@ -335,7 +335,7 @@ namespace FSI
                     bool initiguesszero=false,
                     bool analysis=false,
                     bool silent=false) const;
-                    
+
     // a single field V cycle
     void Vcycle(
                 const std::string field,
@@ -369,7 +369,7 @@ namespace FSI
                           MLAPI::MultiVector& ay,
                           const MLAPI::MultiVector& sf,
                           const MLAPI::MultiVector& ff,
-                          const MLAPI::MultiVector& af,  
+                          const MLAPI::MultiVector& af,
                           std::vector<MLAPI::Operator>& Ass,
                           std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                           std::vector<MLAPI::Operator>& Aff,
@@ -384,7 +384,7 @@ namespace FSI
                           bool analysis=false,
                           bool silent=false
                           ) const;
-    
+
     // BGS(AMG) Richardson iteration with Block Gauss Seidel (BGS)
     // and V cycle (V) or other for individual fields
     double RichardsonBGS_Mixed(
@@ -404,7 +404,7 @@ namespace FSI
                           MLAPI::MultiVector& ay,
                           const MLAPI::MultiVector& sf,
                           const MLAPI::MultiVector& ff,
-                          const MLAPI::MultiVector& af,  
+                          const MLAPI::MultiVector& af,
                           std::vector<MLAPI::Operator>& Ass,
                           std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                           std::vector<MLAPI::Operator>& Aff,
@@ -420,7 +420,7 @@ namespace FSI
                           bool silent=false
                           ) const;
 
-    // Richardson iteration with Block Gauss Seidel (BGS) 
+    // Richardson iteration with Block Gauss Seidel (BGS)
     // and Smoother (S) or Vcycle (V) for individual fields
     double RichardsonBGS_SV(
                             const int myrank,
@@ -437,7 +437,7 @@ namespace FSI
                             MLAPI::MultiVector& ay,
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
-                            const MLAPI::MultiVector& af,  
+                            const MLAPI::MultiVector& af,
                             std::vector<MLAPI::Operator>& Ass,
                             std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                             std::vector<MLAPI::Operator>& Aff,
@@ -452,8 +452,8 @@ namespace FSI
                             bool analysis=false,
                             bool silent=false
                             ) const;
-    
-    // Richardson iteration with Schurcomplement preconditioner 
+
+    // Richardson iteration with Schurcomplement preconditioner
     // for structure split case
     double RichardsonSchurStructureSplit_S(
                             const int myrank,
@@ -470,7 +470,7 @@ namespace FSI
                             MLAPI::MultiVector& ay,
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
-                            const MLAPI::MultiVector& af,  
+                            const MLAPI::MultiVector& af,
                             std::vector<MLAPI::Operator>& Ass,
                             std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                             std::vector<MLAPI::Operator>& Aff,
@@ -486,7 +486,7 @@ namespace FSI
                             bool silent=false
                             ) const;
 
-    // Richardson iteration with Schurcomplement preconditioner 
+    // Richardson iteration with Schurcomplement preconditioner
     // for fluid split case
     double RichardsonSchurFluidSplit_S(
                             const int myrank,
@@ -503,7 +503,7 @@ namespace FSI
                             MLAPI::MultiVector& ay,
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
-                            const MLAPI::MultiVector& af,  
+                            const MLAPI::MultiVector& af,
                             std::vector<MLAPI::Operator>& Ass,
                             std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                             std::vector<MLAPI::Operator>& Aff,
@@ -523,7 +523,7 @@ namespace FSI
     double Richardson_BlockV(
                              const int myrank,
                              const int sweeps,
-                             const double damp, 
+                             const double damp,
                              std::vector<int>& Vsweeps,
                              std::vector<double>& Vdamps,
                              std::vector<int>* blocksweeps,
@@ -537,7 +537,7 @@ namespace FSI
                              MLAPI::MultiVector& ay,
                              const MLAPI::MultiVector& sf,
                              const MLAPI::MultiVector& ff,
-                             const MLAPI::MultiVector& af,  
+                             const MLAPI::MultiVector& af,
                              std::vector<MLAPI::Operator>& Ass,
                              std::vector<MLAPI::Operator>& Pss,
                              std::vector<MLAPI::Operator>& Rss,
@@ -573,7 +573,7 @@ namespace FSI
                      MLAPI::MultiVector& ay,
                      const MLAPI::MultiVector& sf,
                      const MLAPI::MultiVector& ff,
-                     const MLAPI::MultiVector& af,  
+                     const MLAPI::MultiVector& af,
                      std::vector<MLAPI::Operator>& Ass,
                      std::vector<MLAPI::Operator>& Pss,
                      std::vector<MLAPI::Operator>& Rss,
@@ -587,20 +587,20 @@ namespace FSI
                      std::vector<MLAPI::Operator>& Afs,
                      std::vector<MLAPI::Operator>& Afa,
                      std::vector<MLAPI::Operator>& Aaf) const;
-    
+
     /// @name Access routines
     inline const bool& SisAMG() const { return sisml_; }
     inline const bool& FisAMG() const { return fisml_; }
     inline const bool& AisAMG() const { return aisml_; }
     //@}
-    
+
     bool                                 sisml_;
     bool                                 fisml_;
     bool                                 aisml_;
     int                                  srun_;
     int                                  frun_;
     int                                  arun_;
-    
+
     int                                  minnlevel_;      ///< min of the below nlevel_
     int                                  maxnlevel_;      ///< max of the below nlevel_
     int                                  analyze_;        ///< run analysis of FSIAMG

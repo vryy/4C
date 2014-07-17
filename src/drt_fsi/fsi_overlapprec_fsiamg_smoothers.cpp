@@ -47,7 +47,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
                             MLAPI::MultiVector& ay,
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
-                            const MLAPI::MultiVector& af,  
+                            const MLAPI::MultiVector& af,
                             std::vector<MLAPI::Operator>& Ass,
                             std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                             std::vector<MLAPI::Operator>& Aff,
@@ -112,7 +112,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
   double t1=0.0;
   double t2=0.0;
   double t3=0.0;
-  
+
 #ifdef PRINTOUT
   double norm;
 #endif
@@ -123,13 +123,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
     // !!! this is just because the monolithic FSI naming was lazy             !!!
     /*----------------------------------------------------------------------
         zbar = L^-1 r
-        
+
         consists of
         a) zbars = rs
         b) zbara = ra - AS S^-1 zbars
         c) zbarf = rf - FS S^-1 zbars - FA A^-1 zbara
     */
-    
+
     // zbars = rs
     {
       if (analysis) timer.ResetStartTime();
@@ -141,13 +141,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
 #endif
       if (analysis) t1 += timer.ElapsedTime();
     }
-    
+
     // zbara = ra - AS S^-1 zbars
     {
       if (analysis) timer.ResetStartTime();
       atmpf = af - Aaa[level] * ay;
       atmpf = atmpf - Aaf * sy;
-      
+
       if (0) // one can also skip this to be cheap...
       {
         sz = 0.0;
@@ -156,7 +156,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
         az = Aaf * sz;
         atmpf = atmpf - az;
       }
-      
+
 #ifdef PRINTOUT
       norm = sqrt(atmpf.DotProduct(atmpf));
       if (!myrank) printf("L A %10.5e\n",norm);
@@ -170,7 +170,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
       ftmpf = ff - Aff[level] * fy;
       ftmpf = ftmpf - Afs * sy;
       ftmpf = ftmpf - Afa * ay;
-      
+
       if (0) // one can also skip this to be cheap...
       {
         sz = 0.0;
@@ -178,14 +178,14 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
                     Ass[level],*(sbest.S()[level]),sz,stmpf,true,false,true);
         fz = Afs * sz;
         ftmpf = ftmpf - fz;
-      
+
         az = 0.0;
         RichardsonS("(a)",myrank,level,blocksweeps[2][level],blockdamps[2][level],
                     Aaa[level],*(abest.S()[level]),az,atmpf,true,false,true);
         fz = Afa * az;
         ftmpf = ftmpf - fz;
       }
-      
+
 #ifdef PRINTOUT
       norm = sqrt(ftmpf.DotProduct(ftmpf));
       if (!myrank) printf("L F %10.5e\n",norm);
@@ -193,16 +193,16 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
 
       if (analysis) t3 += timer.ElapsedTime();
     }
-    
+
     /*----------------------------------------------------------------------
         y = U^-1 tmpf
-        
+
         consists of
         a) fy = Schur^-1 ftmpf
         b) ay = A^-1 (atmpf + Aaf S^-1 Asf * fz)
         c) sy = S^-1 (stmpf - Asf * fz)
     */
-    
+
     // fy = Schur^-1 ftmpf
     {
       if (analysis) timer.ResetStartTime();
@@ -211,7 +211,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
       RichardsonS("(f)",myrank,level,blocksweeps[1][level],blockdamps[1][level],
                   Schurff_[level],*(fbest.S()[level]),fz,ftmpf,true,false,true);
       fy.Update(damp,fz,1.0);
-      
+
 #ifdef PRINTOUT
       {
         ftmpf = ff - Aff[level] * fy;
@@ -221,10 +221,10 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
         if (!myrank) printf("U F %10.5e\n",norm);
       }
 #endif
-      
+
       if (analysis) t3 += timer.ElapsedTime();
     }
-    
+
     // ay = A^-1 (atmpf + Aaf S^-1 Asf * fz)
     {
       if (analysis) timer.ResetStartTime();
@@ -235,12 +235,12 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
                   Ass[level],*(sbest.S()[level]),sz,stmp,true,false,true);
       az = Aaf * sz;
       atmpf = atmpf + az;
-      
+
       az = 0.0;
       RichardsonS("(a)",myrank,level,blocksweeps[2][level],blockdamps[2][level],
                   Aaa[level],*(abest.S()[level]),az,atmpf,true,false,true);
-      ay.Update(damp,az,1.0); 
-      
+      ay.Update(damp,az,1.0);
+
 #ifdef PRINTOUT
       {
         atmpf = af - Aaa[level] * ay;
@@ -249,22 +249,22 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
         if (!myrank) printf("U A %10.5e\n",norm);
       }
 #endif
-      
+
       if (analysis) t2 += timer.ElapsedTime();
     }
-    
+
     // sy = sy = S^-1 (stmpf - Asf * fz)
     {
       if (analysis) timer.ResetStartTime();
-      
+
       sz = Asf * fz;
       stmpf = stmpf - sz;
-      
+
       sz = 0.0;
       RichardsonS("(s)",myrank,level,blocksweeps[0][level],blockdamps[0][level],
                   Ass[level],*(sbest.S()[level]),sz,stmpf,true,false,true);
-      sy.Update(damp,sz,1.0); 
-      
+      sy.Update(damp,sz,1.0);
+
 #ifdef PRINTOUT
       {
         stmpf = sf - Ass[level] * sy;
@@ -273,11 +273,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
         if (!myrank) printf("U S %10.5e\n\n",norm);
       }
 #endif
-      
+
       if (analysis) t1 += timer.ElapsedTime();
     }
-    
-    
+
+
   } // iterations
 
   if (analysis)
@@ -289,13 +289,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
     stmpf = stmpf - Asf * fy;
     double srl2  = stmpf.DotProduct(stmpf);
     double srinf = stmpf.NormInf();
-    
+
     atmpf = af - Aaa[level] * ay;
     if (structuresplit_) atmpf = atmpf - Aaf * fy;
     else                 atmpf = atmpf - Aaf * sy;
     double arl2  = atmpf.DotProduct(atmpf);
     double arinf = atmpf.NormInf();
-    
+
     ftmpf = ff - Aff[level] * fy;
     ftmpf = ftmpf - Afs * sy;
     ftmpf = ftmpf - Afa * ay;
@@ -337,7 +337,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
                             MLAPI::MultiVector& ay,
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
-                            const MLAPI::MultiVector& af,  
+                            const MLAPI::MultiVector& af,
                             std::vector<MLAPI::Operator>& Ass,
                             std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                             std::vector<MLAPI::Operator>& Aff,
@@ -400,7 +400,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
   double t1=0.0;
   double t2=0.0;
   double t3=0.0;
-  
+
 #ifdef PRINTOUT
   double norm;
 #endif
@@ -409,13 +409,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
   {
     /*----------------------------------------------------------------------
         zbar = L^-1 r
-        
+
         consists of
         a) zbars = rs
         b) zbara = ra
         c) zbarf = rf -  FS S^-1 zbars - FA A^-1 zbara
     */
-    
+
     // zbars =  rs
     {
       if (analysis) timer.ResetStartTime();
@@ -427,7 +427,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
 #endif
       if (analysis) t1 += timer.ElapsedTime();
     }
-    
+
     // zbara = ra
     {
       if (analysis) timer.ResetStartTime();
@@ -446,7 +446,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
       ftmpf = ff - Aff[level] * fy;
       ftmpf = ftmpf - Afs * sy;
       ftmpf = ftmpf - Afa * ay;
-      
+
       if (0) // one can also skip this to be cheap...
       {
         sz = 0.0;
@@ -454,14 +454,14 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
                     Ass[level],*(sbest.S()[level]),sz,stmpf,true,false,true);
         fz = Afs * sz;
         ftmpf = ftmpf - fz;
-      
+
         az = 0.0;
         RichardsonS("(a)",myrank,level,blocksweeps[2][level],blockdamps[2][level],
                     Aaa[level],*(abest.S()[level]),az,atmpf,true,false,true);
         fz = Afa * az;
         ftmpf = ftmpf - fz;
       }
-      
+
 #ifdef PRINTOUT
       norm = sqrt(ftmpf.DotProduct(ftmpf));
       if (!myrank) printf("L F %10.5e\n",norm);
@@ -469,16 +469,16 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
 
       if (analysis) t3 += timer.ElapsedTime();
     }
-    
+
     /*----------------------------------------------------------------------
         y = U^-1 tmpf
-        
+
         consists of
         a) fy = Schur^-1 ftmpf
         b) ay = A^-1 (atmpf - Aaf * fy)
         c) sy = S^-1 (stmpf - Asf * fy)
     */
-    
+
     // fy = Schur^-1 ftmpf
     {
       if (analysis) timer.ResetStartTime();
@@ -487,7 +487,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
       RichardsonS("(f)",myrank,level,blocksweeps[1][level],blockdamps[1][level],
                   Schurff_[level],*(fbest.S()[level]),fz,ftmpf,true,false,true);
       fy.Update(damp,fz,1.0);
-      
+
 #ifdef PRINTOUT
       {
         ftmpf = ff - Aff[level] * fy;
@@ -497,22 +497,22 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
         if (!myrank) printf("U F %10.5e\n",norm);
       }
 #endif
-      
+
       if (analysis) t3 += timer.ElapsedTime();
     }
-    
+
     // ay = A^-1 (atmpf - beta * Aaf * fy)
     {
       if (analysis) timer.ResetStartTime();
 
       az = Aaf * fz;
       atmpf = atmpf - az;
-      
+
       az = 0.0;
       RichardsonS("(a)",myrank,level,blocksweeps[2][level],blockdamps[2][level],
                   Aaa[level],*(abest.S()[level]),az,atmpf,true,false,true);
-      ay.Update(damp,az,1.0); 
-      
+      ay.Update(damp,az,1.0);
+
 #ifdef PRINTOUT
       {
         atmpf = af - Aaa[level] * ay;
@@ -521,22 +521,22 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
         if (!myrank) printf("U A %10.5e\n",norm);
       }
 #endif
-      
+
       if (analysis) t2 += timer.ElapsedTime();
     }
-    
+
     // sy = S^-1 (stmpf - Asf * fy)
     {
       if (analysis) timer.ResetStartTime();
-      
+
       sz = Asf * fz;
       stmpf = stmpf - sz;
-      
+
       sz = 0.0;
       RichardsonS("(s)",myrank,level,blocksweeps[0][level],blockdamps[0][level],
                   Ass[level],*(sbest.S()[level]),sz,stmpf,true,false,true);
-      sy.Update(damp,sz,1.0); 
-      
+      sy.Update(damp,sz,1.0);
+
 #ifdef PRINTOUT
       {
         stmpf = sf - Ass[level] * sy;
@@ -545,11 +545,11 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
         if (!myrank) printf("U S %10.5e\n\n",norm);
       }
 #endif
-      
+
       if (analysis) t1 += timer.ElapsedTime();
     }
-    
-    
+
+
   } // iterations
 
   if (analysis)
@@ -561,13 +561,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
     stmpf = stmpf - Asf * fy;
     double srl2  = stmpf.DotProduct(stmpf);
     double srinf = stmpf.NormInf();
-    
+
     atmpf = af - Aaa[level] * ay;
     if (structuresplit_) atmpf = atmpf - Aaf * fy;
     else                 atmpf = atmpf - Aaf * sy;
     double arl2  = atmpf.DotProduct(atmpf);
     double arinf = atmpf.NormInf();
-    
+
     ftmpf = ff - Aff[level] * fy;
     ftmpf = ftmpf - Afs * sy;
     ftmpf = ftmpf - Afa * ay;
@@ -610,7 +610,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
                             MLAPI::MultiVector& ay,
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
-                            const MLAPI::MultiVector& af,  
+                            const MLAPI::MultiVector& af,
                             std::vector<MLAPI::Operator>& Ass,
                             std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                             std::vector<MLAPI::Operator>& Aff,
@@ -692,7 +692,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
                     sbest.Sweeps(),sbest.Damp(),Ass,sbest.S(),Pss,Rss,level,sbest.Nlevel(),
                     sz,stmpf,true,false,true);
 
-      sy.Update(damp,sz,1.0); 
+      sy.Update(damp,sz,1.0);
       if (analysis) t1 += timer.ElapsedTime();
     }
     //---------------------- ale block
@@ -713,7 +713,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
                     abest.Sweeps(),abest.Damp(),Aaa,abest.S(),Paa,Raa,level,abest.Nlevel(),
                     az,atmpf,true,false,true);
 
-      ay.Update(damp,az,1.0); 
+      ay.Update(damp,az,1.0);
       if (analysis) t2 += timer.ElapsedTime();
     }
     //------------------------ fluid block
@@ -734,7 +734,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
                     fbest.Sweeps(),fbest.Damp(),Aff,fbest.S(),Pff,Rff,level,fbest.Nlevel(),
                     fz,ftmpf,true,false,true);
 
-      fy.Update(damp,fz,1.0); 
+      fy.Update(damp,fz,1.0);
       if (analysis) t3 += timer.ElapsedTime();
     }
   } // iterations
@@ -748,13 +748,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
     stmpf = stmpf - Asf * fy;
     double srl2  = stmpf.DotProduct(stmpf);
     double srinf = stmpf.NormInf();
-    
+
     atmpf = af - Aaa[level] * ay;
     if (structuresplit_) atmpf = atmpf - Aaf * fy;
     else                 atmpf = atmpf - Aaf * sy;
     double arl2  = atmpf.DotProduct(atmpf);
     double arinf = atmpf.NormInf();
-    
+
     ftmpf = ff - Aff[level] * fy;
     ftmpf = ftmpf - Afs * sy;
     ftmpf = ftmpf - Afa * ay;
@@ -799,7 +799,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
                           MLAPI::MultiVector& ay,
                           const MLAPI::MultiVector& sf,
                           const MLAPI::MultiVector& ff,
-                          const MLAPI::MultiVector& af,  
+                          const MLAPI::MultiVector& af,
                           std::vector<MLAPI::Operator>& Ass,
                           std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
                           std::vector<MLAPI::Operator>& Aff,
@@ -861,7 +861,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
   double t1=0.0;
   double t2=0.0;
   double t3=0.0;
-  
+
   for (int i=1; i<=sweeps; ++i)
   {
     //--------------------- structure block
@@ -880,7 +880,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
         RichardsonMixed("(s)",myrank,0,blocksweeps[0],blockdamps[0],Ass[0],
                         Matrix(0,0),structuresolver_,sz,stmpf,const_cast<int&>(srun_),true,false,true);
 
-      sy.Update(damp,sz,1.0); 
+      sy.Update(damp,sz,1.0);
       if (analysis) t1 += timer.ElapsedTime();
     }
     //---------------------- ale block
@@ -899,8 +899,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
       else
         RichardsonMixed("(a)",myrank,0,blocksweeps[2],blockdamps[2],Aaa[0],
                         Matrix(2,2),alesolver_,az,atmpf,const_cast<int&>(arun_),true,false,true);
-      
-      ay.Update(damp,az,1.0); 
+
+      ay.Update(damp,az,1.0);
       if (analysis) t2 += timer.ElapsedTime();
     }
     //------------------------ fluid block
@@ -912,7 +912,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
       ftmpf = ftmpf - Afa[0] * ay;
       // zero initial guess
       fz = 0.0;
-      
+
       if (fisamg)
         RichardsonV("(f)",myrank,blocksweeps[1],blockdamps[1],fbest.Sweeps(),fbest.Damp(),
                     Aff,fbest.S(),Pff,Rff,0,fbest.Nlevel(),fz,ftmpf,true,false,true);
@@ -920,7 +920,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
         RichardsonMixed("(f)",myrank,0,blocksweeps[1],blockdamps[1],Aff[0],
                         Matrix(1,1),fluidsolver_,fz,ftmpf,const_cast<int&>(frun_),true,false,true);
 
-      fy.Update(damp,fz,1.0); 
+      fy.Update(damp,fz,1.0);
       if (analysis) t3 += timer.ElapsedTime();
     }
   } // iterations
@@ -934,13 +934,13 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
     stmpf = stmpf - Asf[0] * fy;
     double srl2  = stmpf.DotProduct(stmpf);
     double srinf = stmpf.NormInf();
-    
+
     atmpf = af - Aaa[0] * ay;
     if (structuresplit_) atmpf = atmpf - Aaf[0] * fy;
     else                 atmpf = atmpf - Aaf[0] * sy;
     double arl2  = atmpf.DotProduct(atmpf);
     double arinf = atmpf.NormInf();
-    
+
     ftmpf = ff - Aff[0] * fy;
     ftmpf = ftmpf - Afs[0] * sy;
     ftmpf = ftmpf - Afa[0] * ay;
@@ -987,15 +987,15 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
   analysis = true;
   silent = false;
 #endif
-  
+
   MLAPI::MultiVector r(A.GetRangeSpace(),1,true);
   MLAPI::MultiVector tmpx(A.GetDomainSpace(),1,true);
   //MLAPI::MultiVector r(f.GetVectorSpace(),1,true);
   //MLAPI::MultiVector tmpx(x.GetVectorSpace(),1,true);
-  
+
   if (initiguesszero) r = f;
   else                r = f - A * x;
-  
+
   // a view to these vectors (MUST be AFTER the above statement!)
   Teuchos::RCP<Epetra_Vector> er = Teuchos::rcp(new Epetra_Vector(View,matrix.RangeMap(),r.GetValues(0)));
   Teuchos::RCP<Epetra_Vector> etmpx = Teuchos::rcp(new Epetra_Vector(View,matrix.DomainMap(),tmpx.GetValues(0)));
@@ -1004,14 +1004,14 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
   double initrl2 = 0.0;
   double rinf=0.0;
   double rl2=0.0;
-  if (analysis) 
+  if (analysis)
   {
     initrl2 = r.Norm2();
     initrinf = r.NormInf();
   }
-  
+
   Epetra_Time timer(MLAPI::GetEpetra_Comm());
-  
+
   for (int i=1; i<=sweeps; ++i)
   {
     bool refactor = false;
@@ -1019,7 +1019,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
     tmpx = 0.0;
     solver->Solve(matrix.EpetraMatrix(),etmpx,er,refactor,false);
     x = x + damp * tmpx;
-    if (i<sweeps || analysis) 
+    if (i<sweeps || analysis)
     {
       r = f - A * x;
       // r is recreated here, so we need a fresh view (took me a while to find this one :-( )
@@ -1039,7 +1039,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
     if (!myrank && !silent) printf("RichardsonMixed %s  (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e\n",
                                    field.c_str(),level,initrl2,rl2,t,damp,sweeps,rl2rate);
     rl2rate = std::max(rl2rate,rinfrate);
-  
+
   MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
   return rl2rate;
   }
@@ -1070,21 +1070,21 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(
   MLAPI::MultiVector r(f.GetVectorSpace(),1,false);
   if (initiguesszero) r = f;
   else                r = f - A * x;
-  
+
   double initrinf = 0.0;
   double initrl2 = 0.0;
   double rinf=0.0;
   double rl2=0.0;
-  if (analysis) 
+  if (analysis)
   {
     initrl2 = r.Norm2();
     initrinf = r.NormInf();
   }
-  
+
   MLAPI::MultiVector tmpx(x.GetVectorSpace(),1,false);
-  
+
   Epetra_Time timer(MLAPI::GetEpetra_Comm());
-  
+
   for (int i=1; i<=sweeps; ++i)
   {
     tmpx = 0.0;
@@ -1104,13 +1104,9 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(
     if (!myrank && !silent) printf("RichardsonS %s      (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e\n",
                                    field.c_str(),level,initrl2,rl2,t,damp,sweeps,rl2rate);
     rl2rate = std::max(rl2rate,rinfrate);
-  
+
   MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
   return rl2rate;
   }
   else return 0.0;
 }
-
-
-
-
