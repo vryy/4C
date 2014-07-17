@@ -24,4 +24,11 @@
 // If ALE displacement of nodes are less than this value, then the nodes are not moved
 #define ALE_LEN_TOL 1e-10
 
+// If any value is less than this, then it is considered to be zero
+#define APPROX_ZERO 1e-12
+
+// If angle between diagonal node in a hex element and  propagation angle is less than this value, then
+// crack propagates through this node; One HEX is split into two WEDGE
+#define TOL_DIAG_NODE 0.03
+
 #endif

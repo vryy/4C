@@ -118,6 +118,9 @@ bool DRT::CRACK::aleCrack::sufficientMovement( const std::map<int, std::vector<d
 void DRT::CRACK::aleCrack::modifyConditions( const std::map<int, std::vector<double> >& ale_bc_nodes,
                                              const std::set<int>& new_ale_bc )
 {
+  // We created new nodes during crack propagation in the last time step
+  // These new nodes must be added to the existing volume and line ALE dirichlet conditions
+  // to maintain the geometry
   if( new_ale_bc.size() > 0 )
   {
     std::vector<Teuchos::RCP<Condition> > alldiri;
@@ -129,6 +132,7 @@ void DRT::CRACK::aleCrack::modifyConditions( const std::map<int, std::vector<dou
     }
   }
 
+  // Point dirichlet conditions at the crack tips to maintain crack propagation direction
   DRT::CRACK::UTILS::AddConditions( ale_->Discretization(), ale_bc_nodes );
   ale_->Discretization()->FillComplete();
 
@@ -157,9 +161,42 @@ void DRT::CRACK::aleCrack::ALE_Solve()
     (*ale_str)[i] = (*ale_final)[i];
 
   FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp( structdis_, ale_str );
+}
+
+/*---------------------------------------------------------------------------------------------------*
+ * clear ALE discretization -- nodes and elements                                            sudhakar 06/14
+ *---------------------------------------------------------------------------------------------------*/
+void DRT::CRACK::aleCrack::clearALE_discret()
+{
 
   ale_->Discretization()->ClearDiscret();
 
-  DRT::CRACK::UTILS::deleteConditions( ale_->Discretization() );
   ale_->Discretization()->FillComplete();
+}
+
+/*---------------------------------------------------------------------------------------------------*
+ * Return all nodes that holds ALE line Dirichlet boundary condition                         sudhakar 07/14
+ *---------------------------------------------------------------------------------------------------*/
+std::set<int> DRT::CRACK::aleCrack::getLineDirichNodes()
+{
+  std::set<int> lineDiri;
+  std::vector<DRT::Condition*> linecond;
+
+  ale_->Discretization()->GetCondition( "Dirichlet", linecond );
+
+  if( linecond.size() == 0 )
+    dserror("No Dirichlet condition found for this discretization\n");
+
+  for(unsigned i=0;i<linecond.size();i++)
+  {
+    DRT::Condition* con = linecond[i];
+    if( con->Type() == DRT::Condition::LineDirichlet )
+    {
+      const std::vector<int>* nodes = con->Nodes();
+      for( unsigned nodno = 0; nodno < nodes->size(); nodno++ )
+        lineDiri.insert( (*nodes)[nodno] );
+    }
+  }
+
+  return lineDiri;
 }

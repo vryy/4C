@@ -46,6 +46,16 @@ public:
    */
   void ALE_step( const std::map<int, std::vector<double> >& ale_bc, const std::set<int>& new_ale_bc_ );
 
+  /*!
+  \brief Delete ALE discretization
+   */
+  void clearALE_discret();
+
+  /*!
+  \brief Get all nodes that holds ALE line Dirichlet boundary conditions
+   */
+  std::set<int> getLineDirichNodes();
+
 private:
 
   /*!

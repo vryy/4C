@@ -110,7 +110,7 @@ void DRT::CRACK::UTILS::convertAngleTo_PI_mPI_range( double & ang )
 }
 
 /*-----------------------------------------------------------------------------------------*
- * Returns true if the given element has given nodeid                                 sudhakar 04/14
+ * Returns true if the given element has given nodeid                              sudhakar 04/14
  *-----------------------------------------------------------------------------------------*/
 bool DRT::CRACK::UTILS::ElementHasThisNodeId( const DRT::Element* ele, int nodeid )
 {
@@ -172,7 +172,6 @@ void DRT::CRACK::UTILS::AddConditions( Teuchos::RCP<DRT::Discretization> discret
     Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp( new DRT::Condition( id++, DRT::Condition::PointDirichlet, false, DRT::Condition::Point ) );
     std::vector<int> onoff(3,1);
 
-    //cond->SetConditionType(  DRT::Condition::PointDirichlet );
     cond->Add( "Node Ids", iter->first );
     cond->Add("onoff",onoff);
     cond->Add("val",iter->second);
@@ -232,4 +231,31 @@ void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
   }
 
   addNodesToConditions( cond, vec );
+}
+
+double DRT::CRACK::UTILS::ComputeDiracDelta( const double & dx, const double & dy, const double & h )
+{
+  double rx = fabs(dx)/h;
+  double ry = fabs(dy)/h;
+
+  if( rx > ( 2.0 + APPROX_ZERO ) or ry > ( 2.0 + APPROX_ZERO ) )
+    return 0.0;
+
+  double dirac = HatFunction( rx ) * HatFunction( ry );
+  return dirac;
+}
+
+double DRT::CRACK::UTILS::HatFunction( const double & r )
+{
+  double hat = 0.0;
+
+  if( r < 1.0 )
+    hat = 3.0 - 2.0*r + sqrt( 1.0 + 4.0*r-4.0*r*r );
+  else if( r < 2.0 + APPROX_ZERO )
+    hat = 5.0 - 2.0*r + sqrt( -7.0 + 12.0*r-4.0*r*r );
+  else
+    dserror( "Already this condition is dealt with in DRT::CRACK::UTILS::ComputeDiracDelta()\n" );
+
+  hat = hat * 0.125;
+  return hat;
 }

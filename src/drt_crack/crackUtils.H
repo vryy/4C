@@ -74,6 +74,10 @@ namespace UTILS{
    */
   void addNodesToConditions( DRT::Condition * cond, std::set<int> add );
 
+  double ComputeDiracDelta( const double & dx, const double & dy, const double & h );
+
+  double HatFunction( const double & r );
+
 } /* namespace CRACK */
 } /* namespace CRACK */
 } /* namespace DRT */

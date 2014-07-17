@@ -51,9 +51,9 @@ public:
    */
   std::map<int,int> GetOldNewNodeIds(){ return oldnew_; }
 
-	/*!
-	\brief Return the crack tip nodes after crack has been propagated
-	 */
+   /*!
+   \brief Return the crack tip nodes after crack has been propagated
+   */
   std::vector<int> GetCrackTipNodes(){ return tipnodes_; }
 
   /*!
@@ -129,6 +129,7 @@ private:
    */
   std::vector<int> findNewCrackTip();
   std::vector<int> findNewCrackTip1();
+  std::vector<int> findNewCrackTip2();
 
   /*!
   \brief Get a particular surface that lies completely in the z-plane given by "coord"
@@ -166,8 +167,12 @@ private:
 
   void DeleteConditions();
 
-
   void printConditions(std::multimap<std::string,Teuchos::RCP<Condition> > allcondn);
+
+  /*!
+  \brief Write nodes and elements in gmsh format for debugging
+   */
+  void WriteNodesDebug();
 
   //! underlying structural discretization
   Teuchos::RCP<DRT::Discretization> discret_;
@@ -262,6 +267,11 @@ private:
   //! filename to which new tip coordinates are written at each time step
   std::string tip_string_;
 
+  //! Nodes that carries ALE line Dirichlet conditions
+  std::set<int> ALE_line_nodes_;
+
+  //! Returns true for the first time crack propagation
+  bool firstStep_;
 };
 
 } /* namespace CRACK */
