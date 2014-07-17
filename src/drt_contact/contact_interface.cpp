@@ -1723,7 +1723,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
           std::cout << "\n" << iter->first << "\t" << iter->second;
         std::cout << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
-        for (iter=cnode->CoData().GetDerivteta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
+        for (iter=cnode->CoData().GetDerivTeta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
           std::cout << "\n" << iter->first << "\t" << iter->second;
         std::cout << std::endl;
       }
