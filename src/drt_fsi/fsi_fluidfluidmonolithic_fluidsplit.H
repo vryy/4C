@@ -22,20 +22,20 @@ Maintainer: Raffaela Kruse
 namespace FSI
 {
   /// monolithic hybrid FSI algorithm with overlapping interface equations
-	/*!
-	 * Monolithic fluid-fluid FSI with structure-handled interface motion, employing XFEM and NOX.
-	 * Fluid interface velocities are condensed.
-	 * \author kruse
-	 * \date 05/14
-	 */
-	class FluidFluidMonolithicFluidSplit : public MonolithicFluidSplit
-	{
+  /*!
+   * Monolithic fluid-fluid FSI with structure-handled interface motion, employing XFEM and NOX.
+   * Fluid interface velocities are condensed.
+   * \author kruse
+   * \date 05/14
+   */
+  class FluidFluidMonolithicFluidSplit : public MonolithicFluidSplit
+  {
     friend class FSI::FSIResultTest;
 
-	public:
+  public:
 
     /// constructor
-		explicit FluidFluidMonolithicFluidSplit(const Epetra_Comm& comm,
+    explicit FluidFluidMonolithicFluidSplit(const Epetra_Comm& comm,
                                             const Teuchos::ParameterList& timeparams);
 
     /// update subsequent fields, recover the Lagrange multiplier and relax the ALE-mesh
@@ -50,7 +50,7 @@ namespace FSI
     /// read restart data (requires distinguation between fluid discretizations)
     virtual void ReadRestart(int step);
 
-	private:
+  private:
 
     /// setup of extractor for merged Dirichlet maps
     void SetupDBCMapExtractor();
@@ -60,7 +60,7 @@ namespace FSI
 
     /// number of timesteps in between ALE-relaxation
     int relaxing_ale_every_;
-	};
+  };
 }
 
 #endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_ */

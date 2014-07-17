@@ -335,11 +335,11 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
       // set up sliding ale utils
-      slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(	StructureField()->Discretization(),
-                                                    					FluidField().Discretization(),
-					                                                    *coupsfm_,
-          					                                          true,
-                    					                                aleproj_));
+      slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
+                                                             FluidField().Discretization(),
+                                                             *coupsfm_,
+                                                             true,
+                                                             aleproj_));
 
       iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->SlaveDofRowMap(),true));
       iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->SlaveDofRowMap(),true));
@@ -2004,9 +2004,9 @@ void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
 double FSI::MortarMonolithicFluidSplit::SelectDtErrorBased() const
 {
   // get time step size suggestions
-  const double dtstr = GetAdaStrDt(); 									// based on all structure DOFs
-  const double dtstrfsi = GetAdaStrFSIDt(); 						// based on structure FSI DOFs
-  const double dtflinner = GetAdaFlInnerDt(); 					// based on inner fluid DOFs
+  const double dtstr = GetAdaStrDt(); // based on all structure DOFs
+  const double dtstrfsi = GetAdaStrFSIDt(); // based on structure FSI DOFs
+  const double dtflinner = GetAdaFlInnerDt(); // based on inner fluid DOFs
 
   double dt = Dt();
 
@@ -2030,23 +2030,23 @@ double FSI::MortarMonolithicFluidSplit::SelectDtErrorBased() const
 bool FSI::MortarMonolithicFluidSplit::SetAccepted() const
 {
   // get error norms
-	const double strnorm = GetAdaStrnorm();         // based on all structure DOFs
-	const double strfsinorm = GetAdaStrFSInorm();   // based on structure FSI DOFs
-	const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
+  const double strnorm = GetAdaStrnorm(); // based on all structure DOFs
+  const double strfsinorm = GetAdaStrFSInorm(); // based on structure FSI DOFs
+  const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
 
-	bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ and flinnernorm < errtolfl_;
+  bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ and flinnernorm < errtolfl_;
 
-	// in case error estimation in the fluid field is turned off:
+  // in case error estimation in the fluid field is turned off:
   if (not IsAdaFluid())
     accepted = std::max(strnorm, strfsinorm) < errtolstr_;
 
-	// in case error estimation in the structure field is turned off:
-	if (not IsAdaStructure())
-	  accepted = flinnernorm < errtolfl_;
+  // in case error estimation in the structure field is turned off:
+  if (not IsAdaStructure())
+    accepted = flinnernorm < errtolfl_;
 
-	// no error based time adaptivity
-	if ((not IsAdaStructure()) and (not IsAdaFluid()))
-	  accepted = true;
+  // no error based time adaptivity
+  if ((not IsAdaStructure()) and (not IsAdaFluid()))
+    accepted = true;
 
-	return accepted;
+  return accepted;
 }

@@ -69,15 +69,15 @@ public:
 
   // derived
   bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
-	     Teuchos::ParameterList& params);
+       Teuchos::ParameterList& params);
 
   // derived
   bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-	       const NOX::Solver::Generic& solver);
+         const NOX::Solver::Generic& solver);
 
   // derived
   virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-		       const NOX::Solver::LineSearchBased& solver);
+           const NOX::Solver::LineSearchBased& solver);
 
 private:
 

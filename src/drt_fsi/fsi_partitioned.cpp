@@ -613,7 +613,7 @@ FSI::Partitioned::CreateLinearSystem(Teuchos::ParameterList& nlParams,
     }
     else
     {
-	    linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
+      linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
     }
   }
 

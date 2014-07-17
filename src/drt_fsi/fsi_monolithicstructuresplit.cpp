@@ -1509,10 +1509,10 @@ void FSI::MonolithicStructureSplit::CalculateInterfaceEnergyIncrement()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
-                                          							Teuchos::RCP<const Epetra_Vector> sv,
-                                          							Teuchos::RCP<const Epetra_Vector> fv,
-                                          							Teuchos::RCP<const Epetra_Vector> av,
-                                          							bool fullvectors)
+                                                        Teuchos::RCP<const Epetra_Vector> sv,
+                                                        Teuchos::RCP<const Epetra_Vector> fv,
+                                                        Teuchos::RCP<const Epetra_Vector> av,
+                                                        bool fullvectors)
 {
   if (fullvectors)
   {
@@ -1560,23 +1560,23 @@ double FSI::MonolithicStructureSplit::SelectDtErrorBased() const
 bool FSI::MonolithicStructureSplit::SetAccepted() const
 {
   // get error norms
-	const double flnorm = GetAdaFlnorm(); // based on all fluid DOFs
+  const double flnorm = GetAdaFlnorm(); // based on all fluid DOFs
   const double flfsinorm = GetAdaFlFSInorm(); // based on fluid FSI DOFs
   const double strinnernorm = GetAdaStrInnernorm(); // based on inner structural DOFs
 
-	bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_ ;
+  bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_;
 
-	// in case error estimation in the fluid field is turned off:
-	if (not IsAdaFluid())
-	  accepted = strinnernorm < errtolstr_;
+  // in case error estimation in the fluid field is turned off:
+  if (not IsAdaFluid())
+    accepted = strinnernorm < errtolstr_;
 
-	// in case error estimation in the structure field is turned off:
-	if (not IsAdaStructure())
-	  accepted = std::max(flnorm,flfsinorm) < errtolfl_ ;
+  // in case error estimation in the structure field is turned off:
+  if (not IsAdaStructure())
+    accepted = std::max(flnorm,flfsinorm) < errtolfl_;
 
-	// no error based time adaptivity
-	if ((not IsAdaStructure()) and (not IsAdaFluid()))
+  // no error based time adaptivity
+  if ((not IsAdaStructure()) and (not IsAdaFluid()))
     accepted = true;
 
-	return accepted;
+  return accepted;
 }

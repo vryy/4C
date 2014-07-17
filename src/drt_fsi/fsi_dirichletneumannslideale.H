@@ -77,12 +77,10 @@ namespace UTILS
   PrepareTimeStep() to start a new time step as wellas Update() and
   Output() to finish the current step, save the result and write the
   files.
-  
+
   Furthermore this class contains a Remeshing() method containing the
-  the computation of rotation free ALE displacement values, remeshing 
-  of the fluid field and reevaluation of the Mortar interface. 
-  
-  
+  the computation of rotation free ALE displacement values, remeshing
+  of the fluid field and reevaluation of the Mortar interface.
 
   \author tk
   \date 01/10
@@ -91,13 +89,13 @@ class DirichletNeumannSlideale : public DirichletNeumann
 {
 public:
 
-	///almost empty ctor within saving of important things
+  ///almost empty ctor within saving of important things
   explicit DirichletNeumannSlideale(const Epetra_Comm& comm);
-  
-  ///computation of rotation free ALE displacement values, remeshing 
+
+  ///computation of rotation free ALE displacement values, remeshing
   ///of the fluid field and reevaluation of the Mortar interface
   void Remeshing();
-  
+
 protected:
 
   /// interface fluid operator
@@ -109,41 +107,41 @@ protected:
 
   ///predictor
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
-  
+
 //  /// compute Displacement of structural center of gravity
 //  std::vector<double> Centerdisp
 //  (
-//      Teuchos::RCP<Epetra_Vector> idisptotal,
-//      Teuchos::RCP<Epetra_Vector>idispstep
+//    Teuchos::RCP<Epetra_Vector> idisptotal,
+//    Teuchos::RCP<Epetra_Vector>idispstep
 //  );
-//  
+//
 //  std::map<int,LINALG::Matrix<3,1> > CurrentMasterPos
 //  (
-//      Teuchos::RCP<Epetra_Vector> idisptotal,
-//      Teuchos::RCP<Epetra_Vector> reddisp,
-//      DRT::Discretization& interfacedis,
-//      Teuchos::RCP<Epetra_Map> msfullelemap
+//    Teuchos::RCP<Epetra_Vector> idisptotal,
+//    Teuchos::RCP<Epetra_Vector> reddisp,
+//    DRT::Discretization& interfacedis,
+//    Teuchos::RCP<Epetra_Map> msfullelemap
 //  );
-//  
+//
 //  void SlideProjection
 //  (
-//      Teuchos::RCP<Epetra_Vector> islavestep,
-//      DRT::Discretization& interfacedis,
-//      std::vector<double> centerdisp,
-//      std::map<int, Teuchos::RCP<DRT::Element> > masterreduelements,
-//      std::map<int,LINALG::Matrix<3,1> > currentpositions
+//    Teuchos::RCP<Epetra_Vector> islavestep,
+//    DRT::Discretization& interfacedis,
+//    std::vector<double> centerdisp,
+//    std::map<int, Teuchos::RCP<DRT::Element> > masterreduelements,
+//    std::map<int,LINALG::Matrix<3,1> > currentpositions
 //  );
-  
+
 private:
 
   //! we couple based on displacements
   bool displacementcoupling_;
-  
-  Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
-  
-  Teuchos::RCP<Epetra_Vector> islave_;	      ///<displacement of slave side of the interface
-  Teuchos::RCP<Epetra_Vector> FTStemp_;	      ///<slave displacement on master side at every time step begin
-  
+
+  Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_; ///< Sliding Ale helper class
+
+  Teuchos::RCP<Epetra_Vector> islave_; ///<displacement of slave side of the interface
+  Teuchos::RCP<Epetra_Vector> FTStemp_; ///<slave displacement on master side at every time step begin
+
 };
 
 }

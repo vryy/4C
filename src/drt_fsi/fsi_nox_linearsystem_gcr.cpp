@@ -99,8 +99,8 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
 
   // Create Epetra linear problem object for the linear solve
   Epetra_LinearProblem Problem(jacPtr.get(),
-  			       &(result.getEpetraVector()),
-			       &(nonConstInput.getEpetraVector()));
+                               &(result.getEpetraVector()),
+                               &(nonConstInput.getEpetraVector()));
 
   // ************* Begin linear system scaling *******************
   if ( !Teuchos::is_null(scaling) ) {
@@ -427,8 +427,7 @@ void NOX::FSI::LinearSystemGCR::resetScaling(const Teuchos::RCP< NOX::Epetra::Sc
 
 bool NOX::FSI::LinearSystemGCR::computeJacobian(const NOX::Epetra::Vector& x)
 {
-  bool success = jacInterfacePtr->computeJacobian(x.getEpetraVector(),
-						  *jacPtr);
+  bool success = jacInterfacePtr->computeJacobian(x.getEpetraVector(), *jacPtr);
   return success;
 }
 

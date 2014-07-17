@@ -67,9 +67,10 @@ FSI::MonolithicLinearSystem::~MonolithicLinearSystem()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicLinearSystem::applyJacobianInverse(
-                     Teuchos::ParameterList &p,
-		     const NOX::Epetra::Vector& input,
-		     NOX::Epetra::Vector& result)
+    Teuchos::ParameterList &p,
+    const NOX::Epetra::Vector& input,
+    NOX::Epetra::Vector& result
+    )
 {
   // AGS: Rare option, similar to Max Iters=1 but twice as fast.
     if ( p.get("Use Preconditioner as Solver", false) )
@@ -97,8 +98,8 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
 
   // Create Epetra linear problem object for the linear solve
   Epetra_LinearProblem Problem(jacPtr.get(),
-  			       &(result.getEpetraVector()),
-			       &(nonConstInput.getEpetraVector()));
+                               &(result.getEpetraVector()),
+                               &(nonConstInput.getEpetraVector()));
 
   // Set objects in aztec solver.
   // RPP: Don't use "aztecSolverPtr->SetProblem(Problem);", it breaks
@@ -204,7 +205,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
 
     outputList.set("Number of Linear Iterations", curLinIters);
     outputList.set("Total Number of Linear Iterations",
-			    (prevLinIters + curLinIters));
+        (prevLinIters + curLinIters));
     outputList.set("Achieved Tolerance", achievedTol);
   }
 

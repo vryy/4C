@@ -6,8 +6,8 @@
 
 <pre>
 Maintainer: Raffaela Kruse
-			      kruse@lnm.mw.tum.de
-			      089 289 15249
+            kruse@lnm.mw.tum.de
+            089 289 15249
 </pre>
 */
 /*------------------------------------------------------*/
@@ -36,34 +36,34 @@ Maintainer: Raffaela Kruse
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(const Epetra_Comm& comm,
-																	                                  const Teuchos::ParameterList& timeparams)
+                                                                    const Teuchos::ParameterList& timeparams)
   : MonolithicFluidSplit(comm,timeparams)
 {
   // determine the type of monolithic approach
-	const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
+  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
   enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
-							 (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
+               (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
 
-	// XFFSI_Full_Newton is an invalid choice together with NOX,
-	// because DOF-maps can change from one iteration step to the other (XFEM cut)
-	if (monolithic_approach == INPAR::XFEM::XFFSI_Full_Newton)
-		dserror("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
+  // XFFSI_Full_Newton is an invalid choice together with NOX,
+  // because DOF-maps can change from one iteration step to the other (XFEM cut)
+  if (monolithic_approach == INPAR::XFEM::XFFSI_Full_Newton)
+    dserror("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
 
-	// should ALE-relaxation be carried out?
-	relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
+  // should ALE-relaxation be carried out?
+  relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
   // get no. of timesteps, after which ALE-mesh should be relaxed
   relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
 
-	if (! relaxing_ale_ && relaxing_ale_every_ != 0)
-	  dserror("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
+  if (! relaxing_ale_ && relaxing_ale_every_ != 0)
+    dserror("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
 
   // get the ALE-type index, defining the underlying ALE-algorithm
-	const Teuchos::ParameterList& adyn = DRT::Problem::Instance()->AleDynamicParams();
-	int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
+  const Teuchos::ParameterList& adyn = DRT::Problem::Instance()->AleDynamicParams();
+  int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
 
-	// only ALE-algorithm type 'incremental linear' and 'springs' support ALE-relaxation
-	if (aletype != INPAR::ALE::incr_lin and aletype != INPAR::ALE::springs)
-		dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
+  // only ALE-algorithm type 'incremental linear' and 'springs' support ALE-relaxation
+  if (aletype != INPAR::ALE::incr_lin and aletype != INPAR::ALE::springs)
+    dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
 }
 
 /*----------------------------------------------------------------------*/

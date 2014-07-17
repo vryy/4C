@@ -1869,19 +1869,19 @@ bool FSI::MortarMonolithicStructureSplit::SetAccepted() const
   const double flfsinorm = GetAdaFlFSInorm(); // based on fluid FSI DOFs
   const double strinnernorm = GetAdaStrInnernorm(); // based on inner structural DOFs
 
-	bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_ ;
+  bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_;
 
-	// in case error estimation in the fluid field is turned off:
-	if (not IsAdaFluid())
-	  accepted = strinnernorm < errtolstr_;
+  // in case error estimation in the fluid field is turned off:
+  if (not IsAdaFluid())
+    accepted = strinnernorm < errtolstr_;
 
-	// in case error estimation in the structure field is turned off:
-	if (not IsAdaStructure())
-	  accepted = std::max(flnorm,flfsinorm) < errtolfl_ ;
+  // in case error estimation in the structure field is turned off:
+  if (not IsAdaStructure())
+    accepted = std::max(flnorm,flfsinorm) < errtolfl_;
 
-	// no error based time adaptivity
-	if ((not IsAdaStructure()) and (not IsAdaFluid()))
+  // no error based time adaptivity
+  if ((not IsAdaStructure()) and (not IsAdaFluid()))
     accepted = true;
 
-	return accepted;
+  return accepted;
 }

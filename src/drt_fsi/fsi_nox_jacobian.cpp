@@ -104,8 +104,11 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   perturbX.update(1.,nevX,0.0);
 
   if (!useGroupForComputeF)
-    interface->computeF(perturbX.getEpetraVector(), perturbY.getEpetraVector(),
-			NOX::Epetra::Interface::Required::User);
+  {
+    interface->computeF(perturbX.getEpetraVector(),
+                        perturbY.getEpetraVector(),
+                        NOX::Epetra::Interface::Required::User);
+  }
   else
   {
     groupPtr->setX(perturbX);

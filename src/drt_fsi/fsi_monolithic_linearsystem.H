@@ -46,8 +46,8 @@ namespace FSI
 
     /// overload the solve to incorporate our own convergence test
     virtual bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-	   			      const NOX::Epetra::Vector& input,
-				      NOX::Epetra::Vector& result);
+                                      const NOX::Epetra::Vector& input,
+                                      NOX::Epetra::Vector& result);
 
   protected:
 

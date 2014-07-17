@@ -516,7 +516,7 @@ NOX::FSI::MinIters::~MinIters()
 /*----------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::FSI::MinIters::
 checkStatus(const NOX::Solver::Generic& problem,
-	    NOX::StatusTest::CheckType checkType)
+    NOX::StatusTest::CheckType checkType)
 {
   switch (checkType)
   {
