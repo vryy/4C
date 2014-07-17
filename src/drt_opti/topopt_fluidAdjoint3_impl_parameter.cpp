@@ -43,6 +43,7 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   pressure_drop_(false),
   dissipation_fac_(0.0),
   pressure_drop_fac_(0.0),
+  adjoint_type_(INPAR::TOPOPT::discrete_adjoint),
   is_stationary_(false),
   is_init_instat_step_(false),
   is_inconsistent_(false),
@@ -78,6 +79,8 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementGeneralAdjointParamete
 
   // set flag, time integration scheme
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
+
+  adjoint_type_ = params.get<INPAR::TOPOPT::AdjointType>("adjoint type");
 
   // set time integration scheme-specific element parameters
   if (timealgo_==INPAR::FLUID::timeint_stationary)
@@ -238,6 +241,8 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   std::cout << std::endl << "|-----------------------------------------------------------------------------" << std::endl;
   std::cout << "|  General Fluid Adjoint parameter: " << std::endl;
   std::cout << "|-----------------------------------------------------------------------------" << std::endl;
+  //! flag if continous or discrete adjoints are computed
+  std::cout << "|    type of adjoint equations is:    " << adjoint_type_ << std::endl;
   //! flag SetGeneralParameter was called
   std::cout << "|    method SetElmentGeneralAdjointParameter was called:    " << set_general_adjoint_parameter_ << std::endl;
   //! flag to (de)activate stationary formulation

@@ -5600,6 +5600,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
       "control parameters for the adjoint fluid of a topology optimization problem");
 
+  setStringToIntegralParameter<int>("ADJOINT_TYPE","discrete_adjoint","basic type of adjoint equations",
+      tuple<std::string>(
+          "discrete_adjoint",
+          "cont_adjoint"),
+          tuple<int>(
+              INPAR::TOPOPT::discrete_adjoint,
+              INPAR::TOPOPT::cont_adjoint),
+              &topoptadjointfluiddyn);
+
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for adjoint problem",
       tuple<std::string>(
           "zero_field",

@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file inpar_topopt.H
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -53,6 +53,13 @@ namespace INPAR
       gradientByAdjoints,
       gradientByFD1,
       gradientByFD2
+    };
+
+    /// type of adjoint equations
+    enum AdjointType
+    {
+      discrete_adjoint,
+      cont_adjoint
     };
 
     /// initial field for optimization variable

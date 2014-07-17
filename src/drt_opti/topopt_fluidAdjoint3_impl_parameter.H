@@ -50,6 +50,7 @@ public:
   double ObjDissipationFac() {return dissipation_fac_;}
   double ObjPresDropFac() {return pressure_drop_fac_;}
 
+  INPAR::TOPOPT::AdjointType AdjointType() {return adjoint_type_;}
   bool IsStationary() {return is_stationary_;}
   bool IsInitInstatStep() {return is_init_instat_step_;}
   bool IsInconsistent() {return is_inconsistent_;}
@@ -89,6 +90,8 @@ private:
   // set objective's pressure drop factor
   double pressure_drop_fac_;
 
+  //! type of adjoint equations
+  INPAR::TOPOPT::AdjointType adjoint_type_;
   //! flag to (de)activate stationary formulation
   bool is_stationary_;
   //! flag for step 0 when instationary

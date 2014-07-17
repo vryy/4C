@@ -1105,6 +1105,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
+  // set type of adjoint equations
+  eleparams.set<INPAR::TOPOPT::AdjointType>("adjoint type",adjointtype_);
   // set flag for test cases
   eleparams.set<INPAR::TOPOPT::AdjointCase>("special test case",params_->get<INPAR::TOPOPT::AdjointCase>("special test case"));
 
@@ -1173,8 +1175,16 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
   }
   else
   {
-    time_ = maxtime_+dt_;
-    step_ = -1;
+    if (adjointtype_==INPAR::TOPOPT::discrete_adjoint)
+    {
+      time_ = maxtime_+dt_;
+      step_ = -1;
+    }
+    else
+    {
+      time_ = maxtime_;
+      step_ = 0;
+    }
   }
 
   if (newFiles)
