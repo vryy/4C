@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_NGMRES_H
-#define NLN_NGMRES_H
+#ifndef NLN_OPERATOR_NGMRES_H
+#define NLN_OPERATOR_NGMRES_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -238,4 +238,4 @@ namespace NLNSOL
   }; // class NlnOperatorNGmres
 } // namespace NLNSOL
 
-#endif /* NLN_NGMRES_H */
+#endif /* NLN_OPERATOR_NGMRES_H */

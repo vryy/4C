@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef LINESEARCH_BASE_H_
-#define LINESEARCH_BASE_H_
+#ifndef LINESEARCH_BASE_H
+#define LINESEARCH_BASE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -207,4 +207,4 @@ namespace NLNSOL
   }; // class LineSearchBase
 } // namespace NLNSOL
 
-#endif /* LINESEARCH_BASE_H_ */
+#endif /* LINESEARCH_BASE_H */

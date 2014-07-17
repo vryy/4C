@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_PROBLEM_COARSELEVELH_
-#define NLN_PROBLEM_COARSELEVELH_
+#ifndef NLN_PROBLEM_COARSELEVEL_H
+#define NLN_PROBLEM_COARSELEVEL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -105,7 +105,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NlnProblemCoarseLevel"; }
+    virtual const char* Label() const { return "NLNSOL::NlnProblemCoarseLevel"; }
 
     //@}
 
@@ -116,6 +116,7 @@ namespace NLNSOL
     //! @name Access to members
     //@{
 
+    //! Access to the hierarchy of multigrid levels
     virtual const NLNSOL::FAS::AMGHierarchy& Hierarchy() const;
 
     //@}
@@ -135,4 +136,4 @@ namespace NLNSOL
   }; // class NlnProblemCoarseLevel
 } // namespace NLNSOL
 
-#endif /* NLN_PROBLEM_COARSELEVELH_ */
+#endif /* NLN_PROBLEM_COARSELEVEL_H */

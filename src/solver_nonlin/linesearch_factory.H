@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef LINESEARCH_FACTORY_H_
-#define LINESEARCH_FACTORY_H_
+#ifndef LINESEARCH_FACTORY_H
+#define LINESEARCH_FACTORY_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -77,4 +77,4 @@ namespace NLNSOL
   }; // class LineSearchFactory
 } // namespace NLNSOL
 
-#endif /* LINESEARCH_FACTORY_H_ */
+#endif /* LINESEARCH_FACTORY_H */

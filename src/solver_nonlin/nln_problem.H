@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_PROBLEM_H_
-#define NLN_PROBLEM_H_
+#ifndef NLN_PROBLEM_H
+#define NLN_PROBLEM_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -52,13 +52,15 @@ namespace NLNSOL
   /*! \brief Base class for interface of nonlinear solver to BACI
    *
    *  Interface class between the nonlinear solver and BACI. We utilize the
-   *  NOX::Abstract::Group() to access the time integration within BACI for Evaluate().
+   *  NOX::Abstract::Group() to access the time integration within BACI for
+   *  Evaluate() / computeF().
    *
    *  Whenever a nonlinear operator wants to call Evaluate() or ConvergenceCheck(),
-   *  THe NLNSOL::NlnProblem provides access to the time integration scheme in
+   *  the NLNSOL::NlnProblem provides access to the time integration scheme in
    *  BACI.
    *
-   *  NLNSOL::NlnProblem acts on the DofRowMap() of the (fine) level, only.
+   *  NLNSOL::NlnProblem acts on the DofRowMap() of the (fine) level, only. For
+   *  coarse level representations, we use NLNSOL::NlnProblemCoarseLevel().
    *
    *  \sa NLNSOL::NlnProblemCoarseLevel()
    *
@@ -160,7 +162,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NlnProblem"; }
+    virtual const char* Label() const { return "NLNSOL::NlnProblem"; }
 
     //@}
 
@@ -225,6 +227,7 @@ namespace NLNSOL
     //! @name Configuration flags for printing
     //@{
 
+    //! Print the convergence check? (yes / no)
     bool printconvcheck_;
 
     //@}
@@ -232,4 +235,4 @@ namespace NLNSOL
   }; // class NlnProblem
 } // namespace NLNSOL
 
-#endif /* NLN_PROBLEM_H_ */
+#endif /* NLN_PROBLEM_H */

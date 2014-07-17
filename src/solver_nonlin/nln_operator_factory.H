@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_OPERATOR_FACTORYH_
-#define NLN_OPERATOR_FACTORYH_
+#ifndef NLN_OPERATOR_FACTORY_H
+#define NLN_OPERATOR_FACTORY_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -83,4 +83,4 @@ namespace NLNSOL
   }; // class NlnOperatorFactory
 } // namespace NLNSOL
 
-#endif /* NLN_OPERATOR_FACTORYH_ */
+#endif /* NLN_OPERATOR_FACTORY_H */

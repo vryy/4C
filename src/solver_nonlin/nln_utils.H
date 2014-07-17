@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_UTILS_H_
-#define NLN_UTILS_H_
+#ifndef NLN_UTILS_H
+#define NLN_UTILS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -34,10 +34,14 @@ namespace Teuchos
 /* definition of methods */
 namespace NLNSOL
 {
-  namespace UTILS
-  {
-    Teuchos::RCP<Teuchos::ParameterList> CreateParamListFromXML();
-  } // namespace UTILS
+namespace UTILS
+{
+  /*! \brief Create Teuchos::ParameterList from XML-File
+   *
+   *  \author mayr.mt \date 06/2014
+   */
+  Teuchos::RCP<Teuchos::ParameterList> CreateParamListFromXML();
+} // namespace UTILS
 } // namespace NLNSOL
 
-#endif /* NLN_UTILS_H_ */
+#endif /* NLN_UTILS_H */

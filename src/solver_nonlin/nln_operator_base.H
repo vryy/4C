@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef NLN_OPERATOR_BASE_H_
-#define NLN_OPERATOR_BASE_H_
+#ifndef NLN_OPERATOR_BASE_H
+#define NLN_OPERATOR_BASE_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -51,7 +51,7 @@ namespace NLNSOL
    *  algorithms. The central method is ApplyInverse(), where the actual work is
    *  done.
    *
-   *  The operator is feeded with:
+   *  The operator is fed with:
    *  - an Epetra_Comm
    *  - a Teuchos::ParameterList for configuration
    *  - a Teuchos::RCP to the nonlinear problem interface class (connection to time integration)
@@ -80,9 +80,9 @@ namespace NLNSOL
       //@{
 
       // fill base class member variables
-      virtual void Init(const Epetra_Comm& comm,  ///< communicator
-          const Teuchos::ParameterList& params,   ///< parameter list
-          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem          ///< nonlinear problem to solve
+      virtual void Init(const Epetra_Comm& comm, ///< communicator
+          const Teuchos::ParameterList& params, ///< parameter list
+          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< nonlinear problem to solve
           );
 
       // setup the specific nonlinear operator
@@ -166,10 +166,16 @@ namespace NLNSOL
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
 
-      //! Is this nonlinear operator a solver or a smoother?
+      /*! \brief Is this nonlinear operator a solver or a smoother?
+       *
+       *  If this nonlinear operator is a solver, we perform a convergence check
+       *  and throw an dserror() if convergence fails. If this nonlinear
+       *  operator is a smoother, we do not care about convergence and just
+       *  advance with the smoothed solution.
+       */
       bool issolver_;
 
   }; // class NlnOperatorBase
 } // namespace NLNSOL
 
-#endif /* NLN_OPERATOR_BASE_H_ */
+#endif /* NLN_OPERATOR_BASE_H */

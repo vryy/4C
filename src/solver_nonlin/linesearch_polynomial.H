@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 
-#ifndef LINESEARCH_POLYNOMIAL_H_
-#define LINESEARCH_POLYNOMIAL_H_
+#ifndef LINESEARCH_POLYNOMIAL_H
+#define LINESEARCH_POLYNOMIAL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,10 +31,12 @@ namespace NLNSOL
 {
   /*! \brief Line search based on polynomials
    *
-   *  Create a serias of second order polynomials to model the L2-norm of the
+   *  Create a series of second order polynomials to model the L2-norm of the
    *  residual along the search direction. Try minimum of this polynomial model
    *  as next line search parameter. Build polynomial models recursively until
    *  the sufficient decrease condition is fulfilled.
+   *
+   *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
    *
    *  \author mayr.mt \date 05/2014
    */
@@ -91,4 +93,4 @@ namespace NLNSOL
   }; // class LineSearchPolynomial
 } // namespace NLNSOL
 
-#endif /* LINESEARCH_POLYNOMIAL_H_ */
+#endif /* LINESEARCH_POLYNOMIAL_H */

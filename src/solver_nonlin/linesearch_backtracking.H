@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef LINESEARCH_BACKTRACKING_H_
-#define LINESEARCH_BACKTRACKING_H_
+#ifndef LINESEARCH_BACKTRACKING_H
+#define LINESEARCH_BACKTRACKING_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -67,10 +67,14 @@ namespace NLNSOL
      *  interval \f$]0.0, 1.0]\f$ and finally select the one with the minimal
      *  residual norm.
      *
+     *  The sufficient decrease condition is checked.
+     *
      *  \warning This algorithm has notion of brute force, is not very
      *  efficient, but seems to be very stable and accurate.
      *
      *  \note Use this rather for testing than for real computations.
+     *
+     *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
      *
      *  \author mayr.mt
      *  \date 11/2013
@@ -91,4 +95,4 @@ namespace NLNSOL
 
 
 
-#endif /* LINESEARCH_BACKTRACKING_H_ */
+#endif /* LINESEARCH_BACKTRACKING_H */

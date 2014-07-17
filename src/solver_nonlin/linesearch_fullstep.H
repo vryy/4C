@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef LINESEARCH_FULLSTEP_H_
-#define LINESEARCH_FULLSTEP_H_
+#ifndef LINESEARCH_FULLSTEP_H
+#define LINESEARCH_FULLSTEP_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -32,8 +32,10 @@ namespace NLNSOL
   /*!
    * \brief Line search with fixed full step
    *
-   * \author mayr.mt
-   * \date 05/2014
+   *  We do not compute the step length. We always take the full step,
+   *  i.e. step length \f$\alpha = 1.0\f$.
+   *
+   * \author mayr.mt \date 05/2014
    */
   class LineSearchFullStep : public NLNSOL::LineSearchBase
   {
@@ -83,4 +85,4 @@ namespace NLNSOL
 
 
 
-#endif /* LINESEARCH_FULLSTEP_H_ */
+#endif /* LINESEARCH_FULLSTEP_H */

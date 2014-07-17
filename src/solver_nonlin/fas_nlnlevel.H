@@ -44,12 +44,17 @@ namespace NLNSOL
   {
     /*! \brief Nonlinear level
      *
-     *  Here, we store all data that belongs to a multigrid level like tranfer
-     *  operators #rop_ and #pop_, the coarse level matrix represenation #A,
+     *  Here, we store all data that belongs to a multigrid level like transfer
+     *  operators #rop_ and #pop_, the coarse level matrix representation #A_,
      *  level smoothers (#presmoother_, #postsmoother_, #coarsesolver_), ...
      *
-     *  We have acces to the nonlinear problem (#nlnproblem_) either on the fine
-     *  level (if #levelid_ == 0) or on the coarse level (if #levelid_ > 0).
+     *  We have access to the nonlinear problem (#nlnproblem_) either on the
+     *  fine level (if #levelid_ == 0) or on the coarse level (if #levelid_ > 0).
+     *
+     *  Each level can exchange / transfer data to the next finer level, only.
+     *  This transfer is managed and initiated by the NLNSOL::FAS::AMGHierarchy.
+     *
+     *  \sa NLNSOL::FAS::AMGHierarchy
      *
      * \author mayr.mt \date 06/2014
      */
@@ -155,6 +160,9 @@ namespace NLNSOL
       //! Print method
       virtual void Print(std::ostream& os) const;
 
+      //! Returns a character string describing the operator
+      virtual const char* Label() const { return "NLNSOL::FAS::NlnLevel"; }
+
       //@}
 
       //! @name Access methods
@@ -186,7 +194,7 @@ namespace NLNSOL
       //! Get postsmoother
       virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPostSmoother() const { return postsmoother_; }
 
-      //! row map of this level
+      //! DofRowMap of this level
       const Epetra_BlockMap& DofRowMap() const;
 
       //@}

@@ -124,7 +124,10 @@ namespace NLNSOL
       //! Access to a certain nonlinear level object
       virtual Teuchos::RCP<NLNSOL::FAS::NlnLevel> NlnLevel(const int i) const;
 
-      //! Get total number of levels
+      /*! \brief Get total number of levels
+       *
+       *  \return Total number of levels
+       */
       virtual const int NumLevels() const { return nlnlevels_.size(); }
 
       //@}
@@ -139,6 +142,8 @@ namespace NLNSOL
        *
        *  Check important stuff like if maps of matrices and transfer operator match.
        *
+       *  \return Boolean flag indicating whether hierarchy has been set up correctly
+       *
        *  \author mayr.mt \date 06/2014
        */
       virtual const bool CheckValidity() const;
@@ -148,12 +153,11 @@ namespace NLNSOL
        *  Level ID has to be in admissible range, i.e. between zero and the
        *  number of levels. Throw dserror() if level ID is not admissible.
        *
-       *  \return Bool indicating whether level ID is admissible
+       *  \return Boolean flag indicating whether level ID is admissible
        *
        *  \sa NumLevels()
        *
-       *  \author mayr.mt
-       *  \date 11/2013
+       *  \author mayr.mt \date 11/2013
        */
       virtual const bool CheckLevelID(const int level) const;
 

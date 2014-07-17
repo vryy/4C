@@ -99,7 +99,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NlnPrecQuasiNewton"; }
+    virtual const char* Label() const { return "NLNSOL::NlnPrecQuasiNewton"; }
 
     //@}
 
