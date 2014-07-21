@@ -268,9 +268,6 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> zeros_;     //!< a zero vector of full length
     Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
 
-    /// additional ALE residual to avoid incremental ALE errors
-    Teuchos::RCP<Epetra_Vector> aleresidual_;
-
     /// the monolithic xffsi approach
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
 

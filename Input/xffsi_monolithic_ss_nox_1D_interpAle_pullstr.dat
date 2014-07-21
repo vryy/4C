@@ -84,7 +84,7 @@ TOL_VEL_RES_L2                  1e-10
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 RELAXING_ALE                    yes
 RELAXING_ALE_EVERY              1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

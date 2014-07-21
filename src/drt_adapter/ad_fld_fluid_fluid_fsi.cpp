@@ -310,7 +310,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemM
   // Reason: the matrix splitting method from LINALG expects non-const maps
   Teuchos::RCP<Epetra_Map> innermap = Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->OtherMap()));
   Teuchos::RCP<Epetra_Map> condmap = Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->FSICondMap()));
-  return xfluidfluid_->BlockSystemMatrix(mergedfluidinterface_, innermap, condmap);
+  return xfluidfluid_->BlockSystemMatrix(innermap, condmap);
 }
 /*---------------------------------------------------------------
 * In case of fluid split:

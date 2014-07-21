@@ -3355,7 +3355,6 @@ void FLD::XFluidFluid::Evaluate(
     // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.alevelnp_
     LINALG::Export(*(alevelnp_),*(ivelnp_));
   }
-
   state_->EvaluateFluidFluid( bgdis_,
                               boundarydis_,
                               embdis_);
@@ -4297,7 +4296,8 @@ void FLD::XFluidFluid::Output()
   // write restart
   if (write_restart_data)
   {
-    IO::cout << "---  write restart... " << IO::endl;
+    if (myrank_ == 0)
+      IO::cout << "---  write restart... " << IO::endl;
 
     restart_count_++;
 
@@ -5759,7 +5759,6 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidFluid::ExtrapolateEndPoint
  | for the case of monolithic fluid-fluid fsi with fluidsplit
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
     Teuchos::RCP<Epetra_Map> innermap,
     Teuchos::RCP<Epetra_Map> condmap)
 {
@@ -5769,27 +5768,12 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
   //Get the fluid-fluid system matrix as sparse matrix
   Teuchos::RCP<LINALG::SparseMatrix> sparsesysmat = SystemMatrix();
 
-  //F_{II}
-  Teuchos::RCP<LINALG::SparseMatrix> fii;
-  //F_{I\Gamma}
-  Teuchos::RCP<LINALG::SparseMatrix> fig;
-  //F_{\GammaI}
-  Teuchos::RCP<LINALG::SparseMatrix> fgi;
-  //F_{\Gamma\Gamma}
-  Teuchos::RCP<LINALG::SparseMatrix> fgg;
-
-  // The method expects non-const objects
-  // Filling the empty block matrix with entries from sparsesysmat:
-  LINALG::SplitMatrix2x2(sparsesysmat,condmap,innermap,condmap,innermap,fgg,fgi,fig,fii);
-
-  blockmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*fsiextractor,*fsiextractor,108,false,true));
-
-  blockmat_->Assign(0,0,View,*fii);
-  blockmat_->Assign(0,1,View,*fig);
-  blockmat_->Assign(1,0,View,*fgi);
-  blockmat_->Assign(1,1,View,*fgg);
-
-  blockmat_->Complete();
+  //F_{II}, F_{I\Gamma}, F_{\GammaI}, F_{\Gamma\Gamma}
+  Teuchos::RCP<LINALG::SparseMatrix> fii, fig, fgi, fgg;
+  // Split sparse system matrix into blocks according to the given maps
+  LINALG::SplitMatrix2x2(sparsesysmat,innermap,condmap,innermap,condmap,fii,fig,fgi,fgg);
+  // create a new block matrix out of the 4 blocks
+  blockmat_ = LINALG::BlockMatrix2x2(*fii,*fig,*fgi,*fgg);
 
   if ( blockmat_ == Teuchos::null )
     dserror("Creation of fluid-fluid block matrix failed.");

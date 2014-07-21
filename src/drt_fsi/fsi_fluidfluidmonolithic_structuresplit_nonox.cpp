@@ -119,8 +119,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
-
   /*----------------------------------------------------------------------*/
   // initialize systemmatrix_
   systemmatrix_ = Teuchos::rcp(
@@ -145,10 +143,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
-
-
-  // add additional ale residual
-  Extractor().AddVector(*aleresidual_,2,f);
 
   if (firstcall)
   {
@@ -970,6 +964,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::HandleFluidDofMapChangeInNewt
   sx_n = Extractor().ExtractVector(x_sum_n,0);
   ax_n = Extractor().ExtractVector(x_sum_n,2);
 
+  // rebuild combined dof-map
   CreateCombinedDofRowMap();
   // re-initialize systemmatrix_
   systemmatrix_ = Teuchos::rcp(

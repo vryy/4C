@@ -13,7 +13,6 @@ Maintainer:  Shadan Shahmiri
              http://www.lnm.mw.tum.de
              089 - 289-15249
 </pre>
-
 *----------------------------------------------------------------------*/
 #ifndef XFLUIDFLUID_H
 #define XFLUIDFLUID_H
@@ -466,7 +465,6 @@ namespace FLD
      * \return coupled fluid-fluid block system matrix
      */
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(
-        const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
         Teuchos::RCP<Epetra_Map> innermap,
         Teuchos::RCP<Epetra_Map> condmap);
 

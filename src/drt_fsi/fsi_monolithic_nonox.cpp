@@ -639,7 +639,7 @@ void FSI::MonolithicNoNOX::Update()
 
   // In case of ale relaxation: Check, if the current step is an ale relaxation step!
   if (relaxing_ale_ && relaxing_ale_every_ != 0)
-    if (Step() % relaxing_ale_every_ == 0) aleupdate=true;
+    if (Step() % relaxing_ale_every_ != 0) aleupdate=false;
 
   // In case of ALE relaxation
   if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
@@ -688,6 +688,28 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
   FluidField().PrepareTimeStep();
   AleField().PrepareTimeStep();
 
-  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton )
-    CreateCombinedDofRowMap();
+  // no ALE-relaxation or still at the first step? leave!
+  if ( monolithic_approach_ == INPAR::XFEM::XFFSI_Full_Newton ||
+       Step() == 0 ||
+       ! relaxing_ale_) return;
+
+  if (relaxing_ale_every_ < 1)
+    dserror("You want to relax the ALE-mesh, but provide a relaxation interval of %d?!", relaxing_ale_every_);
+
+  // previous step was no relaxation step? leave!
+  if ((Step()-1) % relaxing_ale_every_ != 0)
+    return;
+
+  // recreate the combined dof-map and create a new block system matrix
+  // as we have to deal with a new map extrator
+  CreateCombinedDofRowMap();
+  systemmatrix_ = Teuchos::rcp(
+    new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      Extractor(),
+      Extractor(),
+      81,
+      false,
+      true
+      )
+    );
 }

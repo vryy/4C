@@ -103,15 +103,36 @@ void FSI::FluidFluidMonolithicFluidSplit::PrepareTimeStep()
   // prepare time step on subsequent field & increment
   FSI::MonolithicFluidSplit::PrepareTimeStep();
 
-  // when this is the first call, the DOF-maps have not
+  // when this is the first call or we haven't relaxed the ALE-mesh
+  // previously, the DOF-maps have not
   // changed since system setup
-  if (Step() == 0)
+  if (Step() == 0 || !relaxing_ale_)
     return;
 
-  // build the merged DOF map & update extractor for combined
+  if (relaxing_ale_every_ < 1)
+    dserror("You want to relax the ALE-mesh, but provide a relaxation interval of %d?!", relaxing_ale_every_);
+
+  // previous step was no relaxation step? leave!
+  if ((Step()-1) % relaxing_ale_every_ != 0)
+    return;
+
+  // REMARK:
+  // as the new xfem-cut may lead to a change in the fluid dof-map,
+  // we have to refresh the block system matrix:
+  // 1. rebuild the merged DOF map & update map extractor for combined
   // Dirichlet maps
-  FSI::MonolithicFluidSplit::CreateCombinedDofRowMap();
-  SetupDBCMapExtractor();
+  //FSI::MonolithicFluidSplit::CreateCombinedDofRowMap();
+  //SetupDBCMapExtractor();
+  // 2. refresh the fsi block system matrix
+  // (structure and ALE-maps are unaffected)
+  // Todo:
+  // currently, there is no option in LINALG::BlockSparseMatrixBase, that allows
+  // reallocation of single SparseMatrix blocks and change of the underlying MultiMapExtractor
+  // something like: SystemMatrix()->RefreshBlocks(Extractor());
+  // so as a temporary (!) solution we reallocate the whole system matrix:
+  // together with step 1, this is accomplished in SetupSystem(),
+  // where also the costly setup of ADAPTER::Coupling takes place
+  FSI::MonolithicFluidSplit::SetupSystem();
 }
 
 /*----------------------------------------------------------------------*/

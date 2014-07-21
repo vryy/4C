@@ -121,9 +121,6 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
   // Build the ALE-matrix in split system
   AleField().BuildSystemMatrix(false);
 
-  // To avoid incremental ALE errors
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
-
   // Initialize the global system matrix!
   systemmatrix_=
     Teuchos::rcp(
@@ -159,9 +156,6 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
            FluidField().RHS(),
           AleField().RHS(),
           FluidField().ResidualScaling());
-
-  // Add the additional ALE residual
-  Extractor().AddVector(*aleresidual_,2,f);
 
   /*----------------------------------------------------------------------
   The following terms are added only at the first Newton iteration!
