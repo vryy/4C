@@ -147,6 +147,10 @@ UTILS::WindkesselManager::WindkesselManager
     pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(params,"PRESTRESS");
     pstime_ = params.get("PRESTRESSTIME",0.0);
 
+    // set theta=1 for quasi-static prestressing only!
+    // if no prestressing is on and structural time-intrgeator is set to statics, we still can do OST for the windkessel
+    if (pstype_ == INPAR::STR::prestress_mulf && totaltime_ <= pstime_) theta_ = 1.0;
+
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //build Epetra_Map used as domainmap and rowmap for result vectors
     windkesselmap_=Teuchos::rcp(new Epetra_Map(*(windkesseldofset_->DofRowMap())));
@@ -225,12 +229,16 @@ UTILS::WindkesselManager::WindkesselManager
     actdisc_->SetState("displacement",disp);
 
     Teuchos::RCP<Epetra_Vector> vredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-    Teuchos::RCP<Epetra_Vector> solredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-    wk_std_->Initialize(p,vredundant,solredundant);
-    wk_heartvalvearterial_->Initialize(p,vredundant,solredundant);
-    wk_heartvalvearterial_proxdist_->Initialize(p,vredundant,solredundant);
+    Teuchos::RCP<Epetra_Vector> wkdofredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+
+    //initialize everything
+    wk_std_->Initialize(p,vredundant,wkdofredundant);
+    wk_heartvalvearterial_->Initialize(p,vredundant,wkdofredundant);
+    wk_heartvalvearterial_proxdist_->Initialize(p,vredundant,wkdofredundant);
     v_->Export(*vredundant,*windkimpo_,Add);
-    wkdof_->Export(*solredundant,*windkimpo_,Insert);
+    wkdof_->Export(*wkdofredundant,*windkimpo_,Insert);
+
+    wkdofn_->Update(1.0,*wkdof_,0.0);
 
     params_ = params;
 
@@ -405,14 +413,20 @@ void UTILS::WindkesselManager::UpdateTimeStep()
     Teuchos::ParameterList p;
     p.set("OffsetID",offsetID_);
     Teuchos::RCP<Epetra_Vector> wkdofredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+    Teuchos::RCP<Epetra_Vector> wkdofnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
     LINALG::Export(*wkdof_,*wkdofredundant);
+    LINALG::Export(*wkdofn_,*wkdofnredundant);
 
     wk_std_->Reset(p,wkdofredundant);
     wk_heartvalvearterial_->Reset(p,wkdofredundant);
     wk_heartvalvearterial_proxdist_->Reset(p,wkdofredundant);
 
+    wk_std_->Reset(p,wkdofnredundant);
+    wk_heartvalvearterial_->Reset(p,wkdofnredundant);
+    wk_heartvalvearterial_proxdist_->Reset(p,wkdofnredundant);
+
     wkdof_->Export(*wkdofredundant,*windkimpo_,Insert);
-    wkdofn_->Export(*wkdofredundant,*windkimpo_,Insert);
+    wkdofn_->Export(*wkdofnredundant,*windkimpo_,Insert);
 
   }
 
