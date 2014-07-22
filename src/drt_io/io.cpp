@@ -1163,13 +1163,16 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 #ifdef DEBUG // rauch 07/14
     // for debugging purposes of immersed method; recognized background elements and boundary elements
     // become visible in post processing
-    if(dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(0)) != NULL)
-    { // if dynamic cast is successful write those data
-      for (int i=0; i<elerowmap->NumMyElements(); ++i)
-      {
-        // write information fo immersed method
-        dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersed(names);
-        dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersedBoundary(names);
+    if ((int)elerowmap->NumMyElements() >= 1)
+    {
+      if(dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(0)) != NULL)
+      { // if dynamic cast is successful write those data
+        for (int i=0; i<elerowmap->NumMyElements(); ++i)
+        {
+          // write information fo immersed method
+          dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersed(names);
+          dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersedBoundary(names);
+        }
       }
     }
 #endif
