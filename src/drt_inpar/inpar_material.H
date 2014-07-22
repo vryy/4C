@@ -123,6 +123,7 @@ namespace INPAR
       m_0d_o2_air_saturation, ///< 0D air o2 saturation material
       m_acousticmat,  ///< acoustic material
       m_acousticviscmat, ///< viscous acoustic material
+      m_activefiber,  ///< active fiber formation for cell modeling
       m_none          ///< undefined
     };
 

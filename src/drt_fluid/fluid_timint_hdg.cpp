@@ -539,7 +539,7 @@ void FLD::TimIntHDG::Output()
     output_->WriteVector("tracevel_hdg",traceVel, IO::DiscretizationWriter::nodevector);
     output_->WriteVector("pressure_avg",cellPres, IO::DiscretizationWriter::elementvector);
 
-    if (step_==upres_ or step_ == 0) output_->WriteElementData(true,false);
+    if (step_==upres_ or step_ == 0) output_->WriteElementData(true);
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {

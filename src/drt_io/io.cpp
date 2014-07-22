@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_cell.H"
+#include "../drt_fluid_ele/fluid_ele_immersed.H"
 
 #include "../pss_full/pss_cpp.h" // access to legacy parser module
 
@@ -124,7 +125,7 @@ void IO::DiscretizationReader::ReadMesh(int step)
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeColMap()));
 
-  // unpack nodes and elements and redistirbuted to current layout
+  // unpack nodes and elements and redistributed to current layout
 
   // take care --- we are just adding elements to the discretisation
   // that means depending on the current distribution and the
@@ -157,7 +158,7 @@ void IO::DiscretizationReader::ReadNodesOnly(int step)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vector<double> >& doublevec,
-							  const std::string name)
+                const std::string name)
 {
   int length;
 
@@ -388,7 +389,7 @@ IO::DiscretizationWriter::~DiscretizationWriter()
     // apparently H5Fclose(resultfile_); does not close the file, if there are still
     // some open groups or datasets, so close them first
 
-   	// Get the number of open groups
+    // Get the number of open groups
     int num_og = H5Fget_obj_count(resultfile_, H5F_OBJ_GROUP);
 
     // get vector to store ids of open groups
@@ -1141,7 +1142,7 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteElementData(bool writeowner, bool writeisimmersed)
+void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 {
   if(binio_)
   {
@@ -1158,15 +1159,21 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner, bool writeisimm
         dis_->lRowElement(i)->VisOwner(names);
       }
     }
-    if(writeisimmersed == true)
-    {
+
+#ifdef DEBUG // rauch 07/14
+    // for debugging purposes of immersed method; recognized background elements and boundary elements
+    // become visible in post processing
+    if(dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(0)) != NULL)
+    { // if dynamic cast is successful write those data
       for (int i=0; i<elerowmap->NumMyElements(); ++i)
       {
         // write information fo immersed method
-        dis_->lRowElement(i)->VisIsImmersed(names);
-        dis_->lRowElement(i)->VisIsImmersedBoundary(names);
+        dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersed(names);
+        dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersedBoundary(names);
       }
     }
+#endif
+
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {
       // get names and dimensions from every element

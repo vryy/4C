@@ -1744,6 +1744,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       AppendMaterialDefinition(matlist,m);
     }
   /*----------------------------------------------------------------------*/
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    // active fiber formation for the modeling of living cells
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_ACTIVEFIBER",
+                                              "active fiber formation for the modeling of living cells",
+                                              INPAR::MAT::m_activefiber));
+
+      AddNamedReal(m,"DENS","Density");
+      AddNamedReal(m,"DECAY","decay constant of activation signal");
+      AddNamedInt(m,"IDMATPASSIVE","number of passive material in input file: MAT IDMATPASSIVE ...");
+      AddNamedReal(m,"KFOR","formation rate parameter kforwards");
+      AddNamedReal(m,"KBACK","dissociation parameter kbackwards");
+      AddNamedReal(m,"KVAR","fiber rate sensitivity");
+      AddNamedReal(m,"SIGMAX","maximum tension exerted by stress fibres");
+      AddNamedReal(m,"EPSNULL","reference strain rate of cross-bridge dynamics law");
+
+
+      AppendMaterialDefinition(matlist,m);
+    }
   // deliver
   return vm;
 }

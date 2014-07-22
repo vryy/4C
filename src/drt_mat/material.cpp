@@ -79,6 +79,7 @@ Maintainer: Lena Wiechert
 #include "particle_mat.H"
 #include "acoustic.H"
 #include "acoustic_visc.H"
+#include "activefiber.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -563,6 +564,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::AcousticViscMat(curmat));
     MAT::PAR::AcousticViscMat* params = static_cast<MAT::PAR::AcousticViscMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_activefiber:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ActiveFiber(curmat));
+    MAT::PAR::ActiveFiber* params = static_cast<MAT::PAR::ActiveFiber*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   default:

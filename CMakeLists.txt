@@ -568,6 +568,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_mat.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_visc.cpp
+  src/drt_mat/activefiber.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp

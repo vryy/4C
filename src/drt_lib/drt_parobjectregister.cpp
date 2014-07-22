@@ -130,6 +130,7 @@
 #include "../drt_acou/acou_ele.H"
 #include "../drt_acou/acou_visc_ele.H"
 #include "../drt_inv_analysis/smc_particle.H"
+#include "../drt_mat/activefiber.H"
 
 
 std::string DRT::ParObjectList()
@@ -293,6 +294,7 @@ std::string DRT::ParObjectList()
     << CONTACT::CoNodeType::Instance().Name() << " "
     << CONTACT::FriNodeType::Instance().Name() << " "
     << CONTACT::CoElementType::Instance().Name() << " "
+    << MAT::ActiveFiberType::Instance().Name() << " "
     // only compile this on the workstation as kaisers boost version is outdated an cant run this code
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
     << STR::INVANA::SMCParticleType::Instance().Name() << " "

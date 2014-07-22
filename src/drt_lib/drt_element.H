@@ -751,16 +751,6 @@ public:
     //names.insert(std::pair<string,int>("EleGId",1));
     return; }
 
-  virtual void VisIsImmersed(std::map<std::string,int>& names)
-  {
-    dserror("Not implemented in baseclass. Must be implemented in subclasses for immersed elements.");
-    return; }
-
-  virtual void VisIsImmersedBoundary(std::map<std::string,int>& names)
-  {
-    dserror("Not implemented in baseclass. Must be implemented in subclasses for immersed elements.");
-    return; }
-
   /*!
   \brief Query data to be visualized using BINIO of a given name
 
@@ -877,18 +867,6 @@ public:
     \param matnum : material number from input file
    */
   virtual void SetMaterial(int matnum);
-
-  /*!
-  \brief Tell element if there lie nodes of an immersed discretization in it.
-
-  */
-  virtual void SetIsImmersed(int isimmersed){dserror("Must be implemented in immersed subclass.");};
-
-  /*!
-  \brief Tell element if there lie nodes of an immersed boundary discretization in it.
-
-  */
-  virtual void SetIsImmersedBoundary(int isimmersedboundary){dserror("Must be implemented in immersed subclass.");};
 
   /// Add element material
   /*!

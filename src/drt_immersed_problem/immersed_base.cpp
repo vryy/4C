@@ -141,7 +141,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionDomain(Teuchos::RCP<D
 
       if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
       {// node i lies in element curr
-        curr->second->SetIsImmersed(1);
+        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersed(1);
         const int* nodes;
         nodes = curr->second->NodeIds();
         for(int k=0;k<curr->second->NumNode();++k)
@@ -317,7 +317,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teucho
 
       if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
       {// node i lies in element curr
-        curr->second->SetIsImmersedBoundary(1);
+        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersedBoundary(1);
         const int* nodes;
         nodes = curr->second->NodeIds();
         for(int k=0;k<curr->second->NumNode();++k)

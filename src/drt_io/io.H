@@ -263,7 +263,7 @@ public:
   virtual void ParticleOutput(const int step, const double time, const bool writerestart);
 
   //! write element data to file
-  virtual void WriteElementData(bool writeowner, bool writeisimmersed = false);
+  virtual void WriteElementData(bool writeowner);
 
   //! write a non discretisation based vector of doubles
   /*!
@@ -272,7 +272,7 @@ public:
     communicated to all present procs.
    */
   virtual void WriteRedundantDoubleVector(const std::string name,
-					  Teuchos::RCP<std::vector<double> > doublevec);
+               Teuchos::RCP<std::vector<double> > doublevec);
 
   /// overwrite result files for the inverse analysis
   void OverwriteResultFile();
