@@ -588,7 +588,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 //  LINALG::Matrix<3,3> eastrain(true);
 //  GLtoEA(*glstrain,invdefgrd,eastrain);
 
-  SetupRates(*defgrd,invdefgrd,params,defgrdrate,R,strainrate,rotationrate);
+  SetupRates(*defgrd,invdefgrd,params,defgrdrate,R,strainrate,rotationrate,gp,dt);
 
   // Evaluate active stress
   LINALG::Matrix<NUM_STRESS_3D,1> sigma(true);//6x1
@@ -875,13 +875,10 @@ void MAT::ActiveFiber::SetupRates(
     LINALG::Matrix<3,3>& defgrdrate,
     LINALG::Matrix<3,3>& R,
     LINALG::Matrix<6,1>& strainrate,
-    LINALG::Matrix<3,3>& rotationrate)
+    LINALG::Matrix<3,3>& rotationrate,
+    const int& gp,
+    const double& dt)
 {
-  // Get gauss point number of this element
-  const int gp = params.get<int>("gp",-1);
-  // Get time algorithmic parameters
-  double dt = params.get<double>("delta time");
-
   // Read history
   LINALG::Matrix<3,3> defgrdlast = histdefgrdlast_->at(gp);
 
@@ -1441,7 +1438,7 @@ void MAT::ActiveFiber::SetupCmatActive(
     for (int i=0; i<gausspoints.nquad; i++)
     {
       double omega = acos(gausspoints.qxg[i][0]);
-      double phi = ((j+1)*M_PI)/double(gausspoints.nquad);
+      double phi = ((double)(j+1)*M_PI)/((double)gausspoints.nquad);
 
       LINALG::Matrix<3,1> m(true);
       m(0) = sin(omega)*cos(phi);
@@ -1507,7 +1504,7 @@ void MAT::ActiveFiber::SetupCmatActive(
         for (int l=0; l<3; l++)          // T12
           temptens5[i][j][k][l] = temptens1[j][i][k][l] + temptens2[i][j][k][l] + temptens3[i][j][k][l] + temptens4[i][j][k][l];
   Setup6x6VoigtMatrix(cmatactive,temptens5);
-  cmatactive.Scale(2.*detF);
+  cmatactive.Scale(2.0*detF);
 
 }  // SetupCmatActive()
 
