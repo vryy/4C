@@ -280,7 +280,8 @@ void NLNSOL::FAS::AMGHierarchy::PrintNlnLevels(std::ostream& os) const
        << std::flush;
 
     // loop over all levels
-    for (std::vector<Teuchos::RCP<NLNSOL::FAS::NlnLevel> >::const_iterator level =  nlnlevels_.begin(); level < nlnlevels_.end(); ++level)
+    for (Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> >::const_iterator level =  nlnlevels_.begin();
+        level < nlnlevels_.end(); ++level)
     {
       // check if level exists
       if ((*level).is_null()) { dserror("Level does not exist."); }
