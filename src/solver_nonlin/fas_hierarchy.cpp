@@ -270,7 +270,7 @@ NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel(const Epetra_MultiVector& vecco
 /* Print all levels */
 void NLNSOL::FAS::AMGHierarchy::PrintNlnLevels(std::ostream& os) const
 {
-  // print only one proc
+  // print only on one processor
   if (Comm().MyPID() == 0)
   {
     os << "\n"

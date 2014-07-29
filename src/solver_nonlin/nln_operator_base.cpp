@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file nln_operator.cpp
 
@@ -9,9 +9,9 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 
 // Epetra
@@ -37,9 +37,9 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_dserror.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorBase::NlnOperatorBase()
 : isinit_(false),
@@ -52,7 +52,7 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Initialization */
 void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
@@ -76,7 +76,7 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Access to communicator */
 const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
 {
@@ -86,7 +86,7 @@ const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
   return *comm_;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Access to parameter list */
 const Teuchos::ParameterList& NLNSOL::NlnOperatorBase::Params() const
 {
@@ -97,7 +97,7 @@ const Teuchos::ParameterList& NLNSOL::NlnOperatorBase::Params() const
   return *params_;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Access to nonlinear problem */
 Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
 {

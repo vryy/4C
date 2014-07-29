@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file nln_operator_ngmres.H
 
@@ -11,12 +11,12 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #ifndef NLN_OPERATOR_NGMRES_H
 #define NLN_OPERATOR_NGMRES_H
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 
 // Teuchos
@@ -27,7 +27,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_dserror.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* forward declarations */
 
 class Epetra_Comm;
@@ -48,15 +48,16 @@ namespace Teuchos
   class ParameterList;
 } // namespace Teuchos
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* definition of classes */
 namespace NLNSOL
 {
   /*! \brief Nonlinear GMRES
    *
-   *  We do a nonlinear Krylov acceleration, also referred to as nonlinear GMRES (NGMRES).
-   *  By recombining previous iterates/solutions, we hope to accelerate the
-   *  convergence of the nonlinear solver. The algorithm consists of 3 steps:
+   *  We do a nonlinear Krylov acceleration, also referred to as nonlinear
+   *  GMRES (NGMRES). By recombining previous iterates/solutions, we hope to
+   *  accelerate the convergence of the nonlinear solver. The algorithm consists
+   *  of 3 steps:
    *
    *  Step 1: Generate a new tentative iterate/solution
    *
@@ -114,13 +115,13 @@ namespace NLNSOL
      *  The algorithm consists of three steps:
      *    Step 1: Generate a new tentative iterate/solution
      *
-     *    Step 2: Build a linear combination of the previous iterates and the most
-     *            recent one. The weights of each iterate are determined by solving a
-     *           least squares problem with the goal of reducing the L2-norm of the
-     *           residual.
+     *    Step 2: Build a linear combination of the previous iterates and the
+     *            most recent one. The weights of each iterate are determined by
+     *            solving a least squares problem with the goal of reducing the
+     *            L2-norm of the residual.
      *
-     *    Step 3: Line search between tentative solution (cf. step 1) and the one
-     *           obtained by linear combination (cf. step 2).
+     *    Step 3: Line search between tentative solution (cf. step 1) and the
+     *            one obtained by linear combination (cf. step 2).
      *
      *  Implementation follows this publication: Sterck, Hans De: A Nonlinear
      *  GMRES Optimization Algorithm for Canonical Tensor Decomposition,

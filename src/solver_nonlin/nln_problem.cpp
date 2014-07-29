@@ -197,7 +197,7 @@ bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f,
   return converged;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Return communicator */
 const Epetra_Comm& NLNSOL::NlnProblem::Comm() const
 {
@@ -208,7 +208,7 @@ const Epetra_Comm& NLNSOL::NlnProblem::Comm() const
   return *comm_;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Access to parameter list */
 const Teuchos::ParameterList& NLNSOL::NlnProblem::Params() const
 {
@@ -219,7 +219,7 @@ const Teuchos::ParameterList& NLNSOL::NlnProblem::Params() const
   return *params_;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Access to the NOX group */
 NOX::Abstract::Group& NLNSOL::NlnProblem::NOXGroup() const
 {
@@ -230,7 +230,7 @@ NOX::Abstract::Group& NLNSOL::NlnProblem::NOXGroup() const
   return *noxgrp_;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Access to the Jacobian operator */
 Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
 {

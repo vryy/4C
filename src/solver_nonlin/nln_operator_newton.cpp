@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file nln_operator_newton.cpp
 
@@ -9,9 +9,9 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 
 // Epetra
@@ -41,26 +41,36 @@ Maintainer: Matthias Mayr
 
 #include "../linalg/linalg_solver.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 : linsolver_(Teuchos::null),
   linesearch_(Teuchos::null),
-  maxiter_(1)
+  maxiter_(1),
+  fixedjacobian_(false)
 {
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of the algorithm  / operator */
 void NLNSOL::NlnOperatorNewton::Setup()
 {
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  maxiter_ = Params().get<int>("Newton: Max Iter");
+  // ---------------------------------------------------------------------------
+  // initialize member variables from parameter list
+  // ---------------------------------------------------------------------------
+  if (Params().isParameter("Newton: Max Iter"))
+    maxiter_ = Params().get<int>("Newton: Max Iter");
+
+  if (Params().isParameter("Newton: Fixed Jacobian"))
+    fixedjacobian_ = Params().get<bool>("Newton: Fixed Jacobian");
+
+  // ---------------------------------------------------------------------------
 
   SetupLinearSolver();
   SetupLineSearch();
@@ -71,7 +81,7 @@ void NLNSOL::NlnOperatorNewton::Setup()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of linear solver */
 void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 {
@@ -89,7 +99,7 @@ void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of line search */
 void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 {
@@ -99,7 +109,7 @@ void NLNSOL::NlnOperatorNewton::SetupLineSearch()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Apply the preconditioner */
 int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
@@ -131,7 +141,7 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     IO::cout << "Newton-type iteration " << iter << ": res-norm = " << fnorm2 << IO::endl;
 
   // ---------------------------------------------------------------------------
-  // do a Quasi-Newton scheme with fixed Jacobian
+  // do a Newton-type iteration loop
   // ---------------------------------------------------------------------------
   while (iter < GetMaxIter() && not converged)
   {

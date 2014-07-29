@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file nln_operator_ngmres.cpp
 
@@ -9,9 +9,9 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 
 // Epetra
@@ -48,9 +48,9 @@ Maintainer: Matthias Mayr
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorNGmres::NlnOperatorNGmres()
 : linsolver_(Teuchos::null),
@@ -62,7 +62,7 @@ NLNSOL::NlnOperatorNGmres::NlnOperatorNGmres()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of the algorithm */
 void NLNSOL::NlnOperatorNGmres::Setup()
 {
@@ -83,7 +83,7 @@ void NLNSOL::NlnOperatorNGmres::Setup()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of the linear solver */
 void NLNSOL::NlnOperatorNGmres::SetupLinearSolver()
 {
@@ -101,7 +101,7 @@ void NLNSOL::NlnOperatorNGmres::SetupLinearSolver()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of the line search */
 void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
 {
@@ -111,7 +111,7 @@ void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of the preconditioner */
 void NLNSOL::NlnOperatorNGmres::SetupPreconditioner()
 {
@@ -125,7 +125,7 @@ void NLNSOL::NlnOperatorNGmres::SetupPreconditioner()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* ApplyInverse of nonlinear Krylov solver */
 int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x
@@ -301,7 +301,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   return 0; // ToDo (mayr) return meaningful error code
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Compute a new tentative iterate */
 int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(const Epetra_MultiVector& fbar,
     Epetra_MultiVector& xbar
@@ -310,7 +310,7 @@ int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(const Epetra_MultiVector&
   return nlnprec_->ApplyInverse(fbar, xbar);
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Solve the least squares problem */
 Teuchos::RCP<Epetra_MultiVector> NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate
 (
@@ -414,7 +414,7 @@ Teuchos::RCP<Epetra_MultiVector> NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIt
   return xhat;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Print summary of current iteration */
 void NLNSOL::NlnOperatorNGmres::PrintIterSummary(const int iter,
     const double resnorm

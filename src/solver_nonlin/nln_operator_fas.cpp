@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file nln_operator_fas.cpp
 
@@ -9,9 +9,9 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 
 // Epetra
@@ -35,9 +35,9 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_dserror.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorFas::NlnOperatorFas()
 : hierarchy_(Teuchos::null)
@@ -45,7 +45,7 @@ NLNSOL::NlnOperatorFas::NlnOperatorFas()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Setup of the algorithm  / operator */
 void NLNSOL::NlnOperatorFas::Setup()
 {
@@ -63,7 +63,7 @@ void NLNSOL::NlnOperatorFas::Setup()
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Apply the preconditioner */
 int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
@@ -107,7 +107,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   return 0; // ToDO (mayr) provide meaningful error code
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* Do a standard V-cycle (recursive definition) */
 void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     Epetra_MultiVector& x,
@@ -238,7 +238,7 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
   return;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* access the multigrid level hierarchy */
 const Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy>
 NLNSOL::NlnOperatorFas::Hierarchy() const
