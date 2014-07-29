@@ -1122,7 +1122,7 @@ void MORTAR::BinaryTree::SetEnlarge()
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
-  if (lmin<=0.0) dserror("ERROR: Minimal element length < 0!");
+  if (lmin<=0.0) dserror("ERROR: Minimal element length <= 0!");
 
   // set the class variables
   minlengthele_= lmin;
