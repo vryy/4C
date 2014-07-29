@@ -133,7 +133,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
       break;
     }
-    
+
 
     //==================================================================================
     // internal force vector only
@@ -162,7 +162,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
       break;
     }
-    
+
     //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
@@ -1211,6 +1211,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
+//#define MATERIALFDCHECK    /* flag for finite difference check of constitutive matrix */
+#ifdef MATERIALFDCHECK
+ LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> stiffmatrix_fd(true);
+#endif
+
   // check for prestressing
   if (pstype_ != INPAR::STR::prestress_none && eastype_ != soh8_easnone)
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
@@ -1824,7 +1829,33 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,NUMDOF_SOH8> cb;
       cb.Multiply(cmat,bop);
+
+#ifndef MATERIALFDCHECK // defined at the begining of this method
+      // standard hex8 evaluation
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
+#else
+      // do fd check of constitutive matrix and/or use the approximation as jacobian for the global newton
+ usetangentstiffmatrix,
+                           stiffmatrix_fd,
+                           stress,
+                           disp,
+                           detJ_w,
+                           detJ,
+                           detJ0,
+                           bop,
+                           cb,
+                           N_XYZ,
+                           T0invT,
+                           M_GP,
+                           alpha,
+                           M,
+                           gp,
+                           true,  // throw dserror after first check
+                           true,  // print errors to screen
+                           false, // use approx. fd matrix as constitutive matrix
+                           params);
+#endif
+
 
       if(kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
@@ -2977,3 +3008,240 @@ void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
 
 /*----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ | check the constitutive tensor and/or use the approximation as        |
+ | elastic stiffness matrix                                  rauch 07/13|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::ConstitutiveTensorFDCheck(
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& stiffmatrix_fd,
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
+    std::vector<double>& disp,
+    const double detJ_w,
+    const double detJ,
+    const double detJ0,
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop,
+    const LINALG::Matrix<6,NUMDOF_SOH8>& cb,
+    const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& N_XYZ,
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,
+    const std::vector<Epetra_SerialDenseMatrix>* M_GP,
+    const Epetra_SerialDenseMatrix* alpha,
+    LINALG::SerialDenseMatrix& M,
+    const int gp,
+    bool throwerror,
+    bool output,
+    bool usetangent,
+    Teuchos::ParameterList& params)
+{
+  // build elastic stiffness matrix directly by finite differences
+
+  LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> stiffmatrix_copy(*stiffmatrix);
+
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
+
+  bool success = true;
+
+  const double delta = 1.0e-8;
+
+  // matrices and vectors
+  LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> cb_fd(true);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress_fd(true);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> finitedifference(true);
+
+  // update element geometry
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // reference coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current   coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
+
+  // get nodes
+  DRT::Node** nodes = Nodes();
+
+  //////////////////////////////////////////////////////////////////////////////
+  ////// evaluate partial derivatives of stress (S(d_n+delta) - S(d_n))/delta
+  /////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////
+  // loop over columns
+  /////////////////////////////////////////////
+  for (int i = 0; i < NUMDOF_SOH8; ++i)
+  {
+    // undo disturbance for disp[i-1]
+    if (i>0)
+      disp[i-1] -= delta;
+
+    // disturb displacements
+    disp[i] += delta;
+
+    for (int k=0; k<NUMNOD_SOH8; ++k)
+    {
+      const double* x = nodes[k]->X();
+      xrefe(k,0) = x[0];
+      xrefe(k,1) = x[1];
+      xrefe(k,2) = x[2];
+
+      xcurr(k,0) = xrefe(k,0) + disp[k*NODDOF_SOH8+0];
+      xcurr(k,1) = xrefe(k,1) + disp[k*NODDOF_SOH8+1];
+      xcurr(k,2) = xrefe(k,2) + disp[k*NODDOF_SOH8+2];
+    }
+
+    // build deformation gradient wrt to material configuration
+
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd_fd(true);
+    defgrd_fd.MultiplyTT(xcurr,N_XYZ);
+
+
+    // Right Cauchy-Green tensor = F^T * F
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen_fd(true);
+    cauchygreen_fd.MultiplyTN(defgrd_fd,defgrd_fd);
+
+    // Green-Lagrange strains matrix E = 0.5 * (cauchygreen_fd - Identity)
+    // GL strain vector glstrain_fd={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain_fd(true);
+    glstrain_fd(0) = 0.5 * (cauchygreen_fd(0,0) - 1.0);
+    glstrain_fd(1) = 0.5 * (cauchygreen_fd(1,1) - 1.0);
+    glstrain_fd(2) = 0.5 * (cauchygreen_fd(2,2) - 1.0);
+    glstrain_fd(3) = cauchygreen_fd(0,1);
+    glstrain_fd(4) = cauchygreen_fd(1,2);
+    glstrain_fd(5) = cauchygreen_fd(2,0);
+
+    // deformation gradient consistent with (potentially EAS-modified) GL strains
+    // without eas this is equal to the regular defgrd_fd.
+    LINALG::Matrix<3,3> defgrd_fd_mod(defgrd_fd);
+
+    // EAS technology: "enhance the strains"  ----------------------------- EAS
+    if (eastype_ != soh8_easnone)
+    { dserror("be careful ! fdcheck has not been tested with EAS, yet! ");
+    M.LightShape(MAT::NUM_STRESS_3D,neas_);
+    // map local M to global, also enhancement is refered to element origin
+    // M = detJ0/detJ T0^{-T} . M
+    //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+    // add enhanced strains = M . alpha to GL strains to "unlock" element
+    switch(eastype_)
+    {
+    case DRT::ELEMENTS::So_hex8::soh8_easfull:
+      LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,soh8_easfull>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,soh8_easfull,1>(1.0,glstrain_fd.A(),1.0,M.A(),alpha->A());
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_easmild:
+      LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,soh8_easmild>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,soh8_easmild,1>(1.0,glstrain_fd.A(),1.0,M.A(),alpha->A());
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+      LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,soh8_eassosh8>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,soh8_eassosh8,1>(1.0,glstrain_fd.A(),1.0,M.A(),alpha->A());
+      break;
+    case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+    }
+
+    // calculate deformation gradient consistent with modified GL strain tensor
+    if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
+      CalcConsistentDefgrd(defgrd_fd,glstrain_fd,defgrd_fd_mod);
+    } // ------------------------------------------------------------------ EAS
+
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat_fd(true);
+    so3mat->Evaluate(&defgrd_fd_mod,&glstrain_fd,params,&stress_fd,&cmat_fd,Id());
+
+    // finite difference approximation of partial derivative
+    //
+    //      d S_ij,columnindex
+    //
+    //
+    finitedifference.Update(1.0,stress_fd,-1.0,stress);
+    finitedifference.Scale(1.0/delta);
+
+    /////////////////////////
+    // loop over rows
+    ////////////////////////
+    for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
+    {
+      cb_fd(j,i) = finitedifference(j,0);
+    } //j-loop (rows)
+
+
+    // reset disp at last loop execution
+    if (i == (NUMDOF_SOH8 - 1) )
+    {
+      disp[i] -= delta;
+
+      // reset xcurr
+      for (int k=0; k<NUMNOD_SOH8; ++k)
+      {
+        const double* x = nodes[k]->X();
+        xrefe(k,0) = x[0];
+        xrefe(k,1) = x[1];
+        xrefe(k,2) = x[2];
+
+        xcurr(k,0) = xrefe(k,0) + disp[k*NODDOF_SOH8+0];
+        xcurr(k,1) = xrefe(k,1) + disp[k*NODDOF_SOH8+1];
+        xcurr(k,2) = xrefe(k,2) + disp[k*NODDOF_SOH8+2];
+      }
+    }
+
+  } // i-loop (columns)
+  /////////////////////////////// FD LOOP
+
+
+  ///////////////////////////////////////
+  // build approximated stiffness matrix
+  ///////////////////////////////////////
+  stiffmatrix_fd.MultiplyTN(detJ_w, bop, cb_fd, 1.0);
+
+  ///////////////////////////////////////
+
+  //after last gp was evaluated
+  if(gp == (NUMGPT_SOH8-1))
+  {
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> errormatrix(true);
+
+    if(output or throwerror)
+    {
+      // calc error (subtraction stiffmatrix - stiffmatrix_fd)
+      errormatrix.Update(1.0,stiffmatrix_fd,-1.0,stiffmatrix_copy);
+
+      for (int i = 0; i < NUMDOF_SOH8; ++i)
+      {
+        for (int j = 0; j < NUMDOF_SOH8; ++j)
+        {
+          if(1)
+          {
+            double relerror = abs(errormatrix(i,j))/abs((stiffmatrix_copy)(i,j));
+            if ( std::min(abs(errormatrix(i,j)),relerror) > 1e-07 )
+            {
+              if(output)
+                std::cout<<"ELEGID:"<<this->Id()<<"  gp: "<<gp<<"  ROW: "<<i<<"  COL: "<<j<<"    REL. ERROR: "<<relerror<<"    ABS. ERROR: "<<abs(errormatrix(i,j))<<"    stiff. val: "<<stiffmatrix_copy(i,j)<<"    approx. val: "<<stiffmatrix_fd(i,j)<<std::endl;
+              success = false;
+            }
+          }
+        }
+      } // check errors
+
+      if (!success and throwerror)
+      {
+        std::cout<<"FDCHECK FAILED!"<<std::endl;
+        dserror("encountered errors checking the elastic stiffness matrix");
+      }
+    } // if output == true
+
+  } // if last gp of element is reached
+
+  // reset xcurr
+  for (int k=0; k<NUMNOD_SOH8; ++k)
+  {
+    const double* x = nodes[k]->X();
+    xrefe(k,0) = x[0];
+    xrefe(k,1) = x[1];
+    xrefe(k,2) = x[2];
+
+    xcurr(k,0) = xrefe(k,0) + disp[k*NODDOF_SOH8+0];
+    xcurr(k,1) = xrefe(k,1) + disp[k*NODDOF_SOH8+1];
+    xcurr(k,2) = xrefe(k,2) + disp[k*NODDOF_SOH8+2];
+  }
+
+  // use fd matrix as material tangent
+  if(usetangent == true)
+  {
+    stiffmatrix->MultiplyTN(detJ_w, bop, cb_fd, 1.0);
+  }
+
+  return;
+}

@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 #ifndef SOH8_H
 #define SOH8_H
 
-
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -636,6 +635,29 @@ protected:
 
   /// temporary method for compatibility with solidshell, needs clarification
   std::vector<double> getthicknessvector() const {dserror("not implemented"); return std::vector<double>(3);};
+
+  /// FDCheck constitutive tensor and/or use the approximation as elastic stiffness matrix
+  void ConstitutiveTensorFDCheck(
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& stiffmatrix_fd,
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
+      std::vector<double>& disp, ///< current displacements
+      const double detJ_w, ///< jacobian determinant times gauss weigth
+      const double detJ,
+      const double detJ0,
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop,
+      const LINALG::Matrix<6,NUMDOF_SOH8>& cb,
+      const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& N_XYZ,
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,
+      const std::vector<Epetra_SerialDenseMatrix>* M_GP,
+      const Epetra_SerialDenseMatrix* alpha,
+      LINALG::SerialDenseMatrix& M,
+      const int gp,
+      bool throwerror, ///< throw dserror when errors occur
+      bool output, ///< print errors to screen
+      bool usetangent, ///< use fd approximation as elastic stiffness matrix
+      Teuchos::ParameterList& params
+      );
 
 private:
 
