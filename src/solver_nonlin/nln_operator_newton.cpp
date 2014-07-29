@@ -17,6 +17,7 @@ Maintainer: Matthias Mayr
 // Epetra
 #include <Epetra_Comm.h>
 #include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
 
 // standard
@@ -69,6 +70,9 @@ void NLNSOL::NlnOperatorNewton::Setup()
 
   if (Params().isParameter("Newton: Fixed Jacobian"))
     fixedjacobian_ = Params().get<bool>("Newton: Fixed Jacobian");
+
+  if (fixedjacobian_)
+    jac_ = NlnProblem()->GetJacobianOperator();
 
   // ---------------------------------------------------------------------------
 
@@ -132,7 +136,6 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
   // some scalars
   int iter = 0; // iteration counter
-  int linsolve_error = 0; // error code for linear solver
   double steplength = 1.0; // line search parameter
   double fnorm2 = 1.0e+12; // residual L2 norm
   bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
@@ -151,9 +154,8 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     rhs->Scale(-1.0);
     inc->PutScalar(0.0);
 
-    // do the linear solve (no re-factorization since matrix has not changed)
-    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, true, iter==1, Teuchos::null);
-    if (linsolve_error != 0) { dserror("Linear solver failed."); }
+    // compute the Newton increment
+    ComputeSearchDirection(inc, rhs, iter);
 
     // line search
     linesearch_->Init(NlnProblem(), Params().sublist("Newton: Line Search"), x, *inc, fnorm2);
@@ -188,4 +190,30 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
   // suppose non-convergence
   return 1;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Compute the search direction */
+const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
+    Teuchos::RCP<Epetra_MultiVector>& inc,
+    Teuchos::RCP<Epetra_MultiVector>& rhs,
+    const int iter) const
+{
+  // error code for linear solver
+  int linsolve_error = 0;
+
+  // compute search direction with either fixed or most recent, updated jacobian
+  if (fixedjacobian_)
+  {
+    linsolve_error = linsolver_->Solve(jac_, inc, rhs, true, iter==1, Teuchos::null);
+  }
+  else
+  {
+    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, true, iter==1, Teuchos::null);
+  }
+
+  // test for failure of linear solver
+  if (linsolve_error != 0) { dserror("Linear solver failed."); }
+
+  return linsolve_error;
 }

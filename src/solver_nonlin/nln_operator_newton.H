@@ -32,6 +32,7 @@ Maintainer: Matthias Mayr
 
 class Epetra_Comm;
 class Epetra_MultiVector;
+class Epetra_Operator;
 
 namespace LINALG
 {
@@ -126,6 +127,17 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Search Direction
+    //@{
+
+    virtual const int ComputeSearchDirection(
+        Teuchos::RCP<Epetra_MultiVector>& inc, ///< increment (to be filled)
+        Teuchos::RCP<Epetra_MultiVector>& rhs, ///< residual
+        const int iter ///< current Newton iteration
+        ) const;
+
+    //@}
+
     //! linear solver from baci
     Teuchos::RCP<LINALG::Solver> linsolver_;
 
@@ -135,8 +147,11 @@ namespace NLNSOL
     //! max number of iterations
     int maxiter_;
 
-    //! fixed jacobian?
+    //! Use a fixed jacobian?
     bool fixedjacobian_;
+
+    //! Fixed Jacobian matrix
+    Teuchos::RCP<Epetra_Operator> jac_;
 
   }; // class NlnOperatorNewton
 } // namespace NLNSOL
