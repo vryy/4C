@@ -205,7 +205,7 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
   // compute search direction with either fixed or most recent, updated jacobian
   if (fixedjacobian_)
   {
-    linsolve_error = linsolver_->Solve(jac_, inc, rhs, true, iter==1, Teuchos::null);
+    linsolve_error = linsolver_->Solve(jac_, inc, rhs, iter==1, iter==1, Teuchos::null);
   }
   else
   {
