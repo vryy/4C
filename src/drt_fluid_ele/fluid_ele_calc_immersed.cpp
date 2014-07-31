@@ -12,7 +12,7 @@ Maintainers: Andreas Rauch & Anh-Tu Vuong
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_calc.H"
 #include "fluid_ele_parameter_std.H"

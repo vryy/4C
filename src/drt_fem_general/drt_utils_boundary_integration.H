@@ -25,6 +25,10 @@ Maintainer: Andreas Ehrl
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "drt_utils_integration.H"
 #include "drt_utils_gausspoints.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_lib/drt_element_integration_select.H"
+#include "../drt_lib/drt_discret.H"
 
 namespace DRT
 {
@@ -1452,7 +1456,170 @@ inline void BoundaryGPToParentGP3(
     }
 };
 
+// Calculation of the following things for the boundary element (all outputs):
+// - Shape function 'funct' and its derivative 'deriv' at the Gauss point
+//   as well as the integration factor 'fac'
+// - Unit normal vector 'unitnormal' (pointing out of the domain) and the
+//   infinitesimal area element 'drs' at the Gauss points
+// - Coordinates of the current integration point in reference coordinates
+//   'xsi' and the node coordinates for the boundary element 'xyze'
+// Inputs:
+// - intpoints: integration points
+// - gpid: actual Gauss point
+// - myknots: nurbs specific knotes
+// - isnurbs: if true, some NURBS specific stuff is done
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void EvalShapeFuncAtBouIntPoint(
+    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,1>& funct,
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
+    double& fac,
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim+1,1>& unitnormal,
+    double& drs,
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,1>& xsi,
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim+1,DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
+    const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim>&  intpoints,
+    const int                                         gpid,
+    const std::vector<Epetra_SerialDenseVector>*      myknots,
+    const Epetra_SerialDenseVector*                   weights,
+    const bool isnurbs
+    )
+{
+  // Obtain number of spatial dimensions of boundary element
+  const int bdrynsd = DRT::UTILS::DisTypeToDim<distype>::dim;
 
+  // local coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[gpid];
+  for (int idim=0;idim<bdrynsd;++idim)
+  {
+    xsi(idim) = gpcoord[idim];
+  }
+
+  // get shape functions and derivatives in the plane of the element
+  if(not isnurbs)
+  {
+    // shape functions and their first derivatives of boundary element
+    DRT::UTILS::shape_function<distype>(xsi,funct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi,deriv);
+  }
+  // only for NURBS!!!
+  else
+  {
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
+        (funct  ,
+         deriv  ,
+         xsi     ,
+         *myknots,
+         *weights,
+         distype);
+  }
+
+  // compute measure tensor for surface element, infinitesimal area element drs
+  // and (outward-pointing) unit normal vector
+  LINALG::Matrix<bdrynsd,bdrynsd> metrictensor(true);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor,drs,&unitnormal);
+
+  // compute integration factor
+  fac = intpoints.IP().qwgt[gpid]*drs;
+
+  return;
+}; // EvalShapeFuncAtBouIntPoint
+
+// Calculate mass-consistent node normals for the boundary element
+// according to dissertation of Prof. Wall, equation (7.13)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void ElementNodeNormal(
+                       LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,1>& funct,
+                       LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
+                       double& fac,
+                       LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim+1,1>& unitnormal,
+                       double& drs,
+                       LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,1>& xsi,
+                       LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim+1,DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
+                       DRT::Element*                    ele,
+                       DRT::Discretization&             discretization,
+                       Epetra_SerialDenseVector&        elevec1,
+                       const std::vector<double>&       edispnp,
+                       const bool isnurbs,
+                       const bool isale
+                       )
+{
+  // Check for elements
+  if (not ((distype == DRT::Element::quad4) or (distype == DRT::Element::line2)))
+  {
+    dserror("Please check, if the mass-consistent node normal is properly defined for your element and if yes, add another exception for it.");
+  }
+
+  /*----------------------------------------------------------------------*
+   |                          Initialization                              |
+   *----------------------------------------------------------------------*/
+  // Number of spatial dimensions of boundary element
+  const int bdrynsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  // Number of spatial dimensions of parent element
+  static const int nsd = bdrynsd+1;
+
+  // Number of nodes of boundary element
+  static const int bdrynen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  // Number of degrees of freedom per node
+  int numdofpernode = nsd+1; // standard case is 'fluid'
+  if ((discretization.Name()=="ale") or (discretization.Name()=="structure")) numdofpernode = nsd;
+
+  // This functionality has only been tested for types fluid, ale and structure
+  if (not ((discretization.Name()=="fluid") or (discretization.Name()=="ale") or (discretization.Name()=="structure")))
+    dserror("ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be performed for discretization types 'fluid', 'ale' and 'structure'.");
+
+  // Get gaussrule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // Get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd,LINALG::Matrix<nsd,bdrynen> >(ele,xyze);
+
+  // Add displacements to reference coordinates, if an ALE description is used
+  if (isale)
+  {
+    dsassert(edispnp.size()!=0,"paranoid");
+
+    for (int inode=0;inode<bdrynen; ++inode)
+    {
+      for (int idim=0;idim<(nsd); ++idim)
+      {
+        xyze(idim,inode) += edispnp[numdofpernode*inode+idim];
+      }
+    }
+  }
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct,deriv,fac,unitnormal,drs,xsi,xyze,
+                                                    intpoints,gpid,NULL,NULL,
+                                                    isnurbs);
+
+    for (int inode=0; inode<bdrynen; ++inode)
+    {
+      for(int idim=0; idim<nsd; ++idim)
+      {
+        elevec1(inode*numdofpernode+idim) += unitnormal(idim) * funct(inode) * fac;
+      }
+      if (numdofpernode>nsd) { // this is the case for the fluid
+        // pressure dof is set to zero
+        elevec1(inode*numdofpernode+(nsd)) = 0.0;
+      }
+    }
+  } /* end of loop over integration points gpid */
+
+  return;
+} // ElementNodeNormal
 
 } // namespace UTILS
 } // namespace DRT

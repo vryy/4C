@@ -1,17 +1,17 @@
 /*!
-\file fluid_ele_utils.H
+\file drt_element_integration_select.H
 
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FLUID_ELE_UTILS_H
-#define FLUID_ELE_UTILS_H
+#ifndef DRT_ELEMENT_INTEGRATION_SELECT_H
+#define DRT_ELEMENT_INTEGRATION_SELECT_H
 
 
 #include "../drt_lib/drt_element.H"

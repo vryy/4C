@@ -13,7 +13,7 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 
 #include "fluid_ele_boundary_calc_poro.H"
 #include "fluid_ele.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
@@ -656,7 +656,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     }
 
     // evaluate my::unitnormal_ , my::deriv_, ...
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                    intpoints,gpid,NULL,NULL,
+                                                    IsNurbs<distype>::isnurbs);
 
     // my::fac_ = intpoints.IP().qwgt[gpid]*my::drs_ done in EvalShapeFuncAtBouIntPoint()
     const double timefac       = my::fldparatimint_->TimeFac();
@@ -1133,7 +1135,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+my::nsd_) -=
                 ( // sign checked to be negative
                     pfunct(inode) * pfunct(nnod) * my::unitnormal_(idof2)
-                    
+
                 )*my::fac_*timefac;//scalarintegraltransformfac;
 
 
@@ -1855,7 +1857,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                    intpoints,gpid,&myknots,&weights,
+                                                    IsNurbs<distype>::isnurbs);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
     if (IsNurbs<distype>::isnurbs)
@@ -1994,7 +1998,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                    intpoints,gpid,NULL,NULL,
+                                                    IsNurbs<distype>::isnurbs);
 
     for (int inode=0; inode<my::bdrynen_; ++inode)
     {
@@ -2066,7 +2072,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
       // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
       // Computation of the unit normal vector at the Gauss points is not activated here
       // Computation of nurb specific stuff is not activated here
-      this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+      DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                      intpoints,gpid,NULL,NULL,
+                                                      IsNurbs<distype>::isnurbs);
 
       // dxyzdrs vector -> normal which is not normalized
       LINALG::Matrix<my::bdrynsd_,my::nsd_> dxyzdrs(0.0);
@@ -2199,7 +2207,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                    intpoints,gpid,NULL,NULL,
+                                                    IsNurbs<distype>::isnurbs);
 
     for (int inode=0; inode<my::bdrynen_; ++inode)
     {
@@ -2597,7 +2607,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                    intpoints,gpid,&myknots,&weights,
+                                                    IsNurbs<distype>::isnurbs);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
     if (IsNurbs<distype>::isnurbs)
@@ -2849,7 +2861,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                    intpoints,gpid,&myknots,&weights,
+                                                    IsNurbs<distype>::isnurbs);
 
     const double timefac       = my::fldparatimint_->TimeFac() ;
     const double timefacfac    = my::fldparatimint_->TimeFac() * my::fac_;

@@ -35,7 +35,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "../drt_fluid_ele/fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
@@ -733,7 +733,7 @@ bool XFEM::XFluidTimeInt::UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<
 {
   // surrounding elements
   const GEO::CUT::plain_element_set& adj_eles = n->Elements();
-  
+
   // REMARK: Elements which are not included in the cut are always uncut and do not change the status here
 
   // assume all elements are uncut

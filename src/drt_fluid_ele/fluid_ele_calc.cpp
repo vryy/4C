@@ -18,7 +18,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_tds.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -3948,7 +3948,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
 
   if(fldpara_->Cross()==INPAR::FLUID::cross_stress_stab)
   {
-	 //const double rhsresfac_densaf=rhsresfac*densaf_;
+   //const double rhsresfac_densaf=rhsresfac*densaf_;
     for (int ui=0; ui<nen_; ++ui)
     {
       //const double v=rhsresfac_densaf*sgconv_c_(ui);
@@ -5722,9 +5722,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ReynoldsStressStab(
   double reyfac;
   if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
   {
-	  //if(fldpara_->IsGenalpha())
-		  reyfac=densaf_*tau_(1);
-	  //else
+    //if(fldpara_->IsGenalpha())
+      reyfac=densaf_*tau_(1);
+    //else
       // reyfac=densaf_*tau_(1)/fldpara_->Theta();
   }
   else reyfac=densaf_*fldparatimint_->AlphaF()*fac3;

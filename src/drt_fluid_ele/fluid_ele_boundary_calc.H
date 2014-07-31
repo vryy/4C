@@ -129,22 +129,6 @@ protected:
       const std::vector<double>&        edispnp);
 
     /*!
-      \brief Calculate node normals
-
-      Acc. to Wall (7.13), surface integral.
-
-      \param elevec1 (out)      : Weighted element normal for assembly
-      \param edispnp (in)       : Displacement-vector
-    */
-  void ElementNodeNormal(
-      DRT::ELEMENTS::FluidBoundary*   ele,
-      Teuchos::ParameterList&        params,
-      DRT::Discretization&           discretization,
-      std::vector<int>&              lm,
-      Epetra_SerialDenseVector&      elevec1,
-      const std::vector<double>&     edispnp);
-
-    /*!
       \brief Calculate mean curvature H. Interpolate the results to achieve better
       results in the surface tension algorithm (c0 field -> c1 field).
 
@@ -353,15 +337,6 @@ protected:
 
   void CreateLinesQuad(const int& nline,
       const int& nnode);
-
-      //! evaluate shape functions/derivatives, metric tensor and
-  //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
-  void EvalShapeFuncAtBouIntPoint(
-      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>& intpoints,  ///< integration points (in)
-      const int                                        iquad,      ///< actual Gauss point (in)
-      const std::vector<Epetra_SerialDenseVector>*     myknots,    ///< nurbs specific knotes (in)
-      const Epetra_SerialDenseVector*                  weights
-  );
 
   //! get density
   void GetDensity(Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material

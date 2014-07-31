@@ -16,7 +16,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_fluidAdjoint3_impl_parameter.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_inpar/inpar_topopt.H"

@@ -848,6 +848,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false)));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useupdatednodepos", 1)));
+  locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USECONSISTENTNODENORMAL")));
+  locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useconsistentnodenormal", 1)));
 
   Teuchos::RCP<ConditionDefinition> pointlocsys =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
@@ -908,7 +910,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
-  for (unsigned i=0; i<locsyscomponents.size(); ++i)
+  for (unsigned i=0; i<locsyscomponents.size()-2; ++i)
   {
     pointlocsys->AddComponent(locsyscomponents[i]);
     linelocsys->AddComponent(locsyscomponents[i]);
@@ -921,6 +923,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfalelocsys->AddComponent(locsyscomponents[i]);
     volalelocsys->AddComponent(locsyscomponents[i]);
   }
+
+  // Add node normal system option only for lines and surfaces
+  linelocsys->AddComponent(locsyscomponents[locsyscomponents.size()-2]);
+  linelocsys->AddComponent(locsyscomponents[locsyscomponents.size()-1]);
+  surflocsys->AddComponent(locsyscomponents[locsyscomponents.size()-2]);
+  surflocsys->AddComponent(locsyscomponents[locsyscomponents.size()-1]);
+  linealelocsys->AddComponent(locsyscomponents[locsyscomponents.size()-2]);
+  linealelocsys->AddComponent(locsyscomponents[locsyscomponents.size()-1]);
+  surfalelocsys->AddComponent(locsyscomponents[locsyscomponents.size()-2]);
+  surfalelocsys->AddComponent(locsyscomponents[locsyscomponents.size()-1]);
 
   condlist.push_back(pointlocsys);
   condlist.push_back(linelocsys);
@@ -1133,8 +1145,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > slipsuppcomponents;
 
-  slipsuppcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCTFORNODENORMAL")));
-  slipsuppcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("functfornodenormal",3,false,false)));
   slipsuppcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
   slipsuppcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useupdatednodepos", 1)));
 
@@ -2813,7 +2823,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   for (unsigned i=0; i<homvolscatracoupcomp.size(); ++i)
   {
-	  homvolscatracoup->AddComponent(homvolscatracoupcomp[i]);
+    homvolscatracoup->AddComponent(homvolscatracoupcomp[i]);
   }
   condlist.push_back(homvolscatracoup);
 

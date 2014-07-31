@@ -2,7 +2,7 @@
 \file fluid_ele_boundary_parent_calc.cpp
 \brief
 
-evaluate boundary conditions requiring parent-element evaluations 
+evaluate boundary conditions requiring parent-element evaluations
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -14,7 +14,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 
 #include "fluid_ele_boundary_parent_calc.H"
 #include "fluid_ele.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
@@ -589,8 +589,8 @@ template <DRT::Element::DiscretizationType bdistype,
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  
-  // (temporarily) switch off any flow-dependent pressure condition in case of zero 
+
+  // (temporarily) switch off any flow-dependent pressure condition in case of zero
   // time-curve factor
   if (curvefac > 0.0)
   {
@@ -603,7 +603,7 @@ template <DRT::Element::DiscretizationType bdistype,
     // get flow rate in this case
     LINALG::Matrix<4,1> flowrate = params.get<LINALG::Matrix<4,1> >("flow rate");
 
-    // get constant and linear coefficient for linear flow rate - pressure relation 
+    // get constant and linear coefficient for linear flow rate - pressure relation
     // and compute pressure accordingly
     const double const_coeff = (*fdp_cond).GetDouble("ConstCoeff");
     const double lin_coeff   = (*fdp_cond).GetDouble("LinCoeff");
@@ -623,9 +623,9 @@ template <DRT::Element::DiscretizationType bdistype,
 
     // compute rise in pressure due to volume reduction at boundary
     pressure = ref_pre*pow((vol0/(vol0-flow_volume(fdp_cond_id))),kappa);
-    
+
     // subtract reference pressure for usual case of zero ambient pressure
-    pressure -= ref_pre;          
+    pressure -= ref_pre;
   }
   // fixed-pressure condition (with potential time curve)
   else if (*condtype == "fixed_pressure")
@@ -633,7 +633,7 @@ template <DRT::Element::DiscretizationType bdistype,
     pressure = (*fdp_cond).GetDouble("ConstCoeff")*curvefac;
   }
   else dserror("Unknown type of flow-dependent pressure condition: %s",(*condtype).c_str());
-  
+
   //---------------------------------------------------------------------
   // get time-integration parameters and flag for linearization scheme
   //---------------------------------------------------------------------
@@ -716,7 +716,7 @@ template <DRT::Element::DiscretizationType bdistype,
   Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
   if (nsd==2)
     DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,bid);
-  else if(nsd==3) 
+  else if(nsd==3)
     DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,bid);
 
   //---------------------------------------------------------------------
@@ -760,11 +760,11 @@ template <DRT::Element::DiscretizationType bdistype,
       {
         bxyze(idim,bnode) += mybedispnp[(nsd +1)*bnode+idim];
       }
-    }        
+    }
   }
 
   //---------------------------------------------------------------------
-  // definitions and initializations for parent and boundary element 
+  // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
   LINALG::Matrix<nsd,1>    pxsi(true);
   LINALG::Matrix<piel,1>   pfunct(true);
@@ -837,7 +837,7 @@ template <DRT::Element::DiscretizationType bdistype,
     Teuchos::RCP<MAT::Material> material = parent->Material();
 
     // compute measure for rate of strain at n+alpha_F or n+1 if required
-    // for non-Newtonian fluid    
+    // for non-Newtonian fluid
     if (material->MaterialType() == INPAR::MAT::m_carreauyasuda or
         material->MaterialType() == INPAR::MAT::m_modpowerlaw or
         material->MaterialType() == INPAR::MAT::m_herschelbulkley)
@@ -869,8 +869,8 @@ template <DRT::Element::DiscretizationType bdistype,
           rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
         }
       }
-    
-      // compute square-root of (two times) product 
+
+      // compute square-root of (two times) product
       rateofstrain = sqrt(rateofstrain/2.0);
     }
 
@@ -887,7 +887,7 @@ template <DRT::Element::DiscretizationType bdistype,
       // 1) pressure term
       //   (only active if there is a dependence on flow rate and thus velocity,
       //    further non-linear dependence on velocity, e.g., in case of quadratic
-      //    dependence of pressure on flow rate, not yet considered by including 
+      //    dependence of pressure on flow rate, not yet considered by including
       //    additional term for Newton linearization)
       /*
       //             /                           \
@@ -929,7 +929,7 @@ template <DRT::Element::DiscretizationType bdistype,
                                          0.5*pderxy(2,ui)*unitnormal(2));
         nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
         nabla_u_o_n_lin[0][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(2));
-  
+
         nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
         nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
                                              pderxy(1,ui)*unitnormal(1)+
@@ -996,7 +996,7 @@ template <DRT::Element::DiscretizationType bdistype,
           //
           */
           const double timefacfacdens = timefac*fac_*densaf_;
-  
+
           // dyadic product of unit normal vector and velocity vector
           LINALG::Matrix<nsd,nsd>  n_x_u(true);
           n_x_u.MultiplyNT(pvelaf,unitnormal);
@@ -1032,7 +1032,7 @@ template <DRT::Element::DiscretizationType bdistype,
         //
         */
         const double timefacconvrhs=timefacrhs*fac_*densaf_*normvel;
- 
+
         for (int vi=0; vi<piel; ++vi)
         {
           elevec(vi*4    ) -= pfunct(vi)*timefacconvrhs*pvelaf(0);
@@ -1077,7 +1077,7 @@ template <DRT::Element::DiscretizationType bdistype,
       // 1) pressure term
       //   (only active if there is a dependence on flow rate and thus velocity,
       //    further non-linear dependence on velocity, e.g., in case of quadratic
-      //    dependence of pressure on flow rate, not yet considered by including 
+      //    dependence of pressure on flow rate, not yet considered by including
       //    additional term for Newton linearization)
       /*
       //             /                           \
@@ -1168,7 +1168,7 @@ template <DRT::Element::DiscretizationType bdistype,
           //
           */
           const double timefacfacdens = timefac*fac_*densaf_;
-  
+
           // dyadic product of unit normal vector and velocity vector
           LINALG::Matrix<nsd,nsd>  n_x_u(true);
           n_x_u.MultiplyNT(pvelaf,unitnormal);
@@ -1231,14 +1231,14 @@ template <DRT::Element::DiscretizationType bdistype,
       }
     }
     else dserror("incorrect number of spatial dimensions for parent element!");
-  } // end of integration loop  
-  } // end of (temporarily) switching off of flow-dependent pressure boundary 
+  } // end of integration loop
+  } // end of (temporarily) switching off of flow-dependent pressure boundary
     // conditions for zero time-curve factor
 
   return;
 } //DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC
 
-  
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -1842,7 +1842,7 @@ template <DRT::Element::DiscretizationType bdistype,
   bool complete_linearisation = false;
   if (*linearisation_approach == "lin_all")
     complete_linearisation = true;
-  else if(*linearisation_approach=="no_lin_conv_inflow") 
+  else if(*linearisation_approach=="no_lin_conv_inflow")
     complete_linearisation=false;
   else
     dserror("unknown linearisation for weak DBC: %s",(*linearisation_approach).c_str());
@@ -1861,7 +1861,7 @@ template <DRT::Element::DiscretizationType bdistype,
   if (curvenum>=0 && usetime)
   curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-  // (temporarily) switch off any weak Dirichlet condition in case of zero 
+  // (temporarily) switch off any weak Dirichlet condition in case of zero
   // time-curve factor
   if (curvefac > 0.0)
   {
@@ -1976,7 +1976,7 @@ template <DRT::Element::DiscretizationType bdistype,
   Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
   if (nsd==2)
     DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,bid);
-  else if(nsd==3) 
+  else if(nsd==3)
     DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,bid);
 
   //---------------------------------------------------------------------
@@ -2043,7 +2043,7 @@ template <DRT::Element::DiscretizationType bdistype,
       {
         bxyze(idim,bnode) += mybedispnp[(nsd +1)*bnode+idim];
       }
-    }        
+    }
   }
 
   //---------------------------------------------------------------------
@@ -2081,7 +2081,7 @@ template <DRT::Element::DiscretizationType bdistype,
   }*/
 
   //---------------------------------------------------------------------
-  // definitions and initializations for parent and boundary element 
+  // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
   LINALG::Matrix<nsd,1>    pxsi(true);
   LINALG::Matrix<piel,1>   pfunct(true);
@@ -2121,7 +2121,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
     // NURBS shape functions and derivatives of parent element at integration point
     // (currently not activated)
-    /*if (pdistype == DRT::Element::nurbs27) 
+    /*if (pdistype == DRT::Element::nurbs27)
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);
     else if (pdistype == DRT::Element::nurbs9)
       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);*/
@@ -2242,7 +2242,7 @@ template <DRT::Element::DiscretizationType bdistype,
     Teuchos::RCP<MAT::Material> material = parent->Material();
 
     // compute measure for rate of strain at n+alpha_F or n+1 if required
-    // for non-Newtonian fluid    
+    // for non-Newtonian fluid
     if (material->MaterialType() == INPAR::MAT::m_carreauyasuda or
         material->MaterialType() == INPAR::MAT::m_modpowerlaw or
         material->MaterialType() == INPAR::MAT::m_herschelbulkley)
@@ -2274,8 +2274,8 @@ template <DRT::Element::DiscretizationType bdistype,
           rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
         }
       }
-    
-      // compute square-root of (two times) product 
+
+      // compute square-root of (two times) product
       rateofstrain = sqrt(rateofstrain/2.0);
     }
 
@@ -2302,7 +2302,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
       // only constant density of 1.0 allowed, for the time being
       if (densaf_ != 1.0) dserror("Only incompressible flow with density 1.0 allowed for Spalding's law so far!");
-      
+
       //                             +--------------------+
       //                            /  +---+              |
       //       ||  n+af ||         /    \    n+af    n+af
@@ -2413,14 +2413,14 @@ template <DRT::Element::DiscretizationType bdistype,
 
     // normal velocity and residual (i.e., difference between velocity and
     // prescribed value) on boundary
-    double normvel = 0.0; 
+    double normvel = 0.0;
     LINALG::Matrix<nsd,1> bvres;
     for (int idim=0;idim<nsd;idim++)
     {
       normvel    += pvelintaf(idim)*unitnormal(idim);
       bvres(idim) = pvelintaf(idim)-(*val)[idim]*functionfac(idim)*curvefac;
     }
-    
+
     //---------------------------------------------------------------------
     // contributions to element matrix and element vector
     // (distinguish two- and three-dimensional case)
@@ -3665,11 +3665,11 @@ template <DRT::Element::DiscretizationType bdistype,
       } // end if normvel<0, i.e. boundary is an inflow boundary
 
     } // onlynormal
-    
+
     }
     else dserror("incorrect number of spatial dimensions for parent element!");
   } // end integration loop
-  } // end of (temporarily) switching off of weak Dirichlet boundary conditions 
+  } // end of (temporarily) switching off of weak Dirichlet boundary conditions
     // for zero time-curve factor
 
   return;
@@ -3793,7 +3793,7 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
   }
 
   //---------------------------------------------------------------------
-  // definitions and initializations for parent and boundary element 
+  // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
   LINALG::Matrix<nsd,1>    pxsi(true);
   LINALG::Matrix<piel,1>   pfunct(true);
@@ -3863,12 +3863,12 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
     const unsigned Velz = 2;
 
     /*
-    	//
-    	//    /                     \
-    	//   |                       |
-    	// + |  eps(v)*n , eps(u)*n  |
-    	//   |                       |
-    	//    \                     / boundaryele
+     //
+     //    /                     \
+     //   |                       |
+     // + |  eps(v)*n , eps(u)*n  |
+     //   |                       |
+     //    \                     / boundaryele
      */
 
     for (int vi=0; vi<piel; ++vi)
@@ -4049,11 +4049,11 @@ void  DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenv
     pderxy.Multiply(pxji,pderiv);
 
     /*
-	 //    /                \
-	 //   |                  |
-	 //   |  eps(v), eps(u)  |
-	 //   |                  |
-	 //    \                / volume
+  //    /                \
+  //   |                  |
+  //   |  eps(v), eps(u)  |
+  //   |                  |
+  //    \                / volume
      */
 
     const unsigned Velx = 0;
@@ -5317,7 +5317,7 @@ template <DRT::Element::DiscretizationType bdistype,
                 printf("y+  %12.5e\n"          ,y*utau/visc_);
               }
 #endif
-	          }
+           }
           } // if(spalding)
         }
       }

@@ -20,7 +20,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_fluid_ele/fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "../headers/definitions.h"
 
 

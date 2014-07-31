@@ -15,6 +15,9 @@ Maintainer: Christoph Meier
 
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_ale3/ale3.H"
+
 
 namespace LINALG {
   class SparseMatrix;
@@ -23,6 +26,11 @@ namespace LINALG {
 }
 
 namespace DRT {
+
+namespace ELEMENTS
+{
+class Ale3;
+}
 
 namespace UTILS {
 
@@ -208,9 +216,9 @@ public:
   void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false);
 
   /*!
-	 * \brief Apply backward transformation of a matrix
-	 *
-	 */
+   * \brief Apply backward transformation of a matrix
+   *
+   */
   void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat);
 
   /*!
@@ -218,6 +226,12 @@ public:
    *
    */
   void AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse);
+
+  /*!
+   * \brief Calculate rotation vector for (mass-consistent) normal system
+   *
+   */
+  void CalcRotationVectorForNormalSystem(int numLocsysCond, double time);
 
   //@}
 

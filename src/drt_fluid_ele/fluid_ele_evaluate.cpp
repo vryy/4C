@@ -16,7 +16,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_evaluate_utils.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_interface.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_std.H"
@@ -717,7 +717,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             }
           }
         }
-        
+
         // hand down the Cai and volume contribution to the time integration algorithm
         params.set<double>("Cai_int",Cai);
         params.set<double>("ele_vol",vol);

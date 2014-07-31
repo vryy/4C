@@ -18,7 +18,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_timint.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
@@ -1800,7 +1800,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
         eps_smag -= (2.0/3.0)*fac_*(sgvisc_*vdiv_+q_sq_)*vdiv_;
     }
-    
+
 
     //---------------------------------------------------------------
     // scale-similarity model

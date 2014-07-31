@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_calc_poro.H"
 #include "fluid_ele_parameter_poro.H"

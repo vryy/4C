@@ -19,6 +19,9 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 namespace DRT
 {
@@ -47,6 +50,8 @@ namespace ELEMENTS
 class Ale3Surface;
 class Ale3_Impl_Interface;
 template <DRT::Element::DiscretizationType distype> class Ale3_Impl;
+class Ale3Surface_Impl_Interface;
+template <DRT::Element::DiscretizationType distype> class Ale3Surface_Impl;
 
 
 class Ale3Type : public DRT::ElementType
@@ -147,7 +152,7 @@ public:
         return 5; // wedge or pyramid
       default:
         dserror("Could not determine number of surfaces");
-   	return -1;
+    return -1;
       }
   }
 
@@ -312,19 +317,19 @@ public:
 
   //@}
 
-
-private:
-
   //! action parameters recognized by ale3
   enum ActionType
   {
     none,
     calc_ale_laplace,
     calc_ale_lin_stiff,
-    calc_ale_spring,           ///< compute stiffness based on springs algorithm on last time step configuration
+    calc_ale_spring,            ///< compute stiffness based on springs algorithm on last time step configuration
     calc_ale_spring_fixed_ref,  ///< compute stiffness based on springs algorithm on initial configuration
-    calc_ale_node_normal
+    calc_ale_node_normal,
+    ba_calc_ale_node_normal     // Calculate boundary node normal
   };
+
+private:
 
   //! Gaussrule
   //DRT::UTILS::GaussRule3D                         gaussrule_;
@@ -371,7 +376,7 @@ public:
                          bool                       incremental,
                          std::vector<double>&       my_dispnp,
                          Teuchos::RCP<MAT::Material> material,
-                         Teuchos::ParameterList& 	  params) = 0;
+                         Teuchos::ParameterList&    params) = 0;
 
   virtual void static_ke_laplace(
   Ale3*                      ele,
@@ -421,7 +426,7 @@ public:
                         const std::vector<double>& displacements);
 
   void static_ke(Ale3*                      ele,
-		 DRT::Discretization&       discretization,
+   DRT::Discretization&       discretization,
                  std::vector<int>&          lm,
                  Epetra_SerialDenseMatrix&  sys_mat,
                  Epetra_SerialDenseVector&  residual,
@@ -494,7 +499,7 @@ private:
   inline void ale3_tors_spring_hex8(LINALG::Matrix<3*iel,3*iel>& sys_mat,
                                     const LINALG::Matrix<3,iel>& xyze);
   inline void ale3_tors_spring_nurbs27(LINALG::Matrix<3*iel,3*iel>& sys_mat,
-				       const LINALG::Matrix<3,iel>& xyze);
+           const LINALG::Matrix<3,iel>& xyze);
 
 
   inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
@@ -653,6 +658,39 @@ public:
   //! @name Evaluate methods
 
   /*!
+  \brief Evaluate the ale3 surface element
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(Teuchos::ParameterList&   params,
+               DRT::Discretization&      discretization,
+               std::vector<int>&         lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
+
+
+  /*!
   \brief Evaluate a Neumann boundary condition
 
   this method evaluates a surface Neumann condition on the ale3 element
@@ -690,6 +728,149 @@ private:
 
 }; // class Ale3Surface
 
+class Ale3Surface_Impl_Interface : SingletonDestruction
+{
+public:
+
+  /// Empty constructor
+  Ale3Surface_Impl_Interface() {}
+
+  virtual ~Ale3Surface_Impl_Interface() {}
+
+  /// Internal implementation class for ale surface element
+  static Ale3Surface_Impl_Interface* Impl(DRT::ELEMENTS::Ale3Surface* ele);
+
+  virtual void ElementNodeNormal(
+    Ale3Surface*              ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseVector& elevec1,
+    std::vector<double>&      mydispnp
+    ) = 0;
+};
+
+template <DRT::Element::DiscretizationType distype>
+class Ale3Surface_Impl: public Ale3Surface_Impl_Interface
+{
+
+  Ale3Surface_Impl() {}
+public:
+
+
+  ~Ale3Surface_Impl() {}
+
+  /// Singleton access method
+  static Ale3Surface_Impl<distype> * Instance( bool create=true );
+
+  /// called upon destruction
+  virtual void Done();
+
+  //! number of element nodes
+  static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  //! number of spatial dimensions of boundary element
+  static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  //! number of spatial dimensions of parent element
+  static const int nsd_ = bdrynsd_+1;
+
+  //! number of degrees of freedom per node
+  static const int numdofpernode_ = nsd_;
+
+  void ElementNodeNormal(
+    Ale3Surface*              ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseVector& elevec1,
+    std::vector<double>&      mydispnp
+    );
+
+private:
+//  static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+//  static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
+
+//  inline void ale3_edge_geometry(int i, int j, const LINALG::Matrix<3, iel>& xyze,
+//                                 double& length,
+//                                 double& dx,
+//                                 double& dy,
+//                                 double& dz);
+
+//  /*!
+//  \brief Prevents node s from penetrating face pqr.
+//
+//  The calculated dynamic triangle sjq is perpendicular to edge pr and face
+//  pqr. According to Farhat et al.
+//
+//  The interface of this function is rather wierd, I changed it to reduce
+//  re-calculation of vectors that are used multiple times.
+//
+//  \param node_i (in)    : Determine position of triangle sjq in
+//  tetrahedra.
+//  \param sq             : edge vector
+//  \param len_sq         : length
+//  \param rp             : edge vector
+//  \param len_rp         : length
+//  \param qp             : edge vector
+//  \param local_x        : vector needed in calculation
+//  \param sysmat (in/out): The element's sys_mat
+//  */
+//  void ale3_add_tria_stiffness(
+//      int node_p, int node_q, int node_r, int node_s,
+//      const LINALG::Matrix<3, 1>& sq,
+//      const double len_sq,
+//      const LINALG::Matrix<3, 1>& rp,
+//      const double len_rp,
+//      const LINALG::Matrix<3, 1>& qp,
+//      const LINALG::Matrix<3, 1>& local_x,
+//      LINALG::Matrix<3*iel,3*iel>& sys_mat);
+//
+//  /*!
+//  \brief Prevents node-face-penetration for given nodes.
+//
+//  Twelve-triangle configuration. According to Farhat et al.
+//
+//  \param tet_i (in)    : Nodes. Arbitrary succession.
+//  \param sysmat (in/out): The element's sys_mat
+//  \param xyze (in)     : The actual element coordinates
+//  */
+//  void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
+//                                LINALG::Matrix<3*iel,3*iel>& sys_mat,
+//                                const LINALG::Matrix<3,iel>& xyze);
+//  inline void ale3_tors_spring_tet4(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+//                                    const LINALG::Matrix<3,iel>& xyze);
+//  inline void ale3_tors_spring_pyramid5(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+//                                        const LINALG::Matrix<3,iel>& xyze);
+//  inline void ale3_tors_spring_wedge6(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+//                                      const LINALG::Matrix<3,iel>& xyze);
+//  inline void ale3_tors_spring_hex8(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+//                                    const LINALG::Matrix<3,iel>& xyze);
+//  inline void ale3_tors_spring_nurbs27(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+//               const LINALG::Matrix<3,iel>& xyze);
+//
+//
+//  inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
+
+  //Ale3Surface_Impl<distype> operator=(const Ale3Surface_Impl<distype> other);
+
+
+protected:
+  //! array for shape functions for boundary element
+  LINALG::Matrix<bdrynen_,1> funct_;
+  //! array for shape function derivatives for boundary element
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv_;
+  //! integration factor
+  double fac_;
+  //! normal vector pointing out of the domain
+  LINALG::Matrix<nsd_,1> unitnormal_;
+  //! infinitesimal area element drs
+  double drs_;
+  //! coordinates of current integration point in reference coordinates
+  LINALG::Matrix<bdrynsd_,1> xsi_;
+  //! node coordinates for boundary element
+  LINALG::Matrix<nsd_,bdrynen_> xyze_;
+};
 
 
 

@@ -15,7 +15,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_fluidAdjoint3_boundary.H"
 #include "topopt_fluidAdjoint3_impl_parameter.H"
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"

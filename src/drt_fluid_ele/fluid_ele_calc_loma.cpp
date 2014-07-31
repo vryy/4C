@@ -17,7 +17,7 @@ Maintainer: Volker Gravemeier
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
-#include "fluid_ele_utils.H"
+#include "../drt_lib/drt_element_integration_select.H"
 
 #include "../drt_geometry/position_array.H"
 
