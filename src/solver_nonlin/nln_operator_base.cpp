@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator.cpp
+\file nln_operator_base.cpp
 
 <pre>
 Maintainer: Matthias Mayr
@@ -17,8 +17,6 @@ Maintainer: Matthias Mayr
 // Epetra
 #include <Epetra_Comm.h>
 #include <Epetra_MultiVector.h>
-
-// NOX
 
 // standard
 #include <iostream>
