@@ -2620,15 +2620,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("MATCHINGGRID","Yes","is matching grid",&tsidyn);
 
-  // coupling strategy for BACI-INCA coupling (TFSI)
-  setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi_mortar_mortar_dual",
+  // coupling strategy for BACI-INCA coupling
+  setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi",
     "Coupling strategies for BACI-INCA coupling (TFSI)",
     tuple<std::string>(
-      "tfsi_conforming",
-      "tfsi_mortar_mortar_dual"),
+      "tfsi",
+      "fsi",
+      "conj_heat_transfer"),
     tuple<int>(
-      INPAR::TSI::conforming,
-      INPAR::TSI::mortar_mortar_dual),
+        INPAR::TSI::TFSI,
+        INPAR::TSI::FSI,
+        INPAR::TSI::ConjHeatTransfer),
     &tsidyn
     );
 

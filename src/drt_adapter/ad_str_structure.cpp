@@ -165,14 +165,18 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // overrule certain parameters
   sdyn.set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn.set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue
-      || probtype == prb_particle || probtype == prb_crack)
+  const int* step1 = prbdyn.getPtr<int>("RESULTSEVRY");
+  if(step1 != NULL)
   {
-    sdyn.set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+    sdyn.set<int>("RESULTSEVRY",*step1);
   }
   else
   {
-    sdyn.set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
+    const int* step2 = prbdyn.getPtr<int>("UPRES");
+    if(step2 != NULL)
+      sdyn.set<int>("RESULTSEVRY", *step2);
+    else
+      dserror("missing input parameter RESULTSEVRY or UPRES");
   }
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat file

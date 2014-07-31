@@ -101,13 +101,6 @@ namespace TSI
   //!
   //!  \author u.kue
   //!  \date 02/08
-  //! base class of all monolithic TSI algorithms
-  /*!
-  Monolithic TSI is a Netwon solver on a block matrix with field blocks.
-
-  \author u.kue
-  \date 02/08
-  */
   class Monolithic : public Algorithm
   {
     friend class FS3I::AeroTFSI;
@@ -419,7 +412,7 @@ namespace TSI
     double tolstrrhs_;  //!< tolerance for structural rhs
     double toltempi_;  //!< tolerance for temperature increments
     double tolthrrhs_;  //!< tolerance for thermal rhs
-    
+
     double normrhs_;  //!< norm of residual forces
     double normrhsiter0_; //!< norm of residual force of 1st iteration
     double norminc_;  //!< norm of residual unknowns

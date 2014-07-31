@@ -41,21 +41,26 @@ Maintainer: Georg Hammerl
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | implementation with 4 dofs per mortar node = TFSI        ghamm 12/11 |
+ *----------------------------------------------------------------------*/
 FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
 (
   Teuchos::RCP<DRT::Discretization> structdis,
   Teuchos::RCP<DRT::Discretization> thermodis
 ) :
+dim_(3),
+myrank_(structdis->Comm().MyPID()),
 istructdis_(0),
 ithermodis_(0),
 istructdofredumap_(0),
 ithermodofredumap_(0),
-structreduelements_(0),
 structrowmapext_(0),
 thermorowmapext_(0),
 DinvM_(0),
+dofpernode_(4),
+mechanicalcoupling_(true),
+thermalcoupling_(true),
 mastermaxdof_(0),
 mastermaxnodeid_(0),
 mastermaxeleid_(0)
@@ -105,8 +110,7 @@ mastermaxeleid_(0)
   const std::string discret_name1 = "istructdis";
   // thermo
   const std::string discret_name2 = "ithermodis";
-  const int myrank = com->MyPID();
-  
+
   for(int interf=0; interf <= maxid_; interf++)
   {
     // initialize new interface discretizations
@@ -125,7 +129,7 @@ mastermaxeleid_(0)
       {
         DRT::Node* currnode = (*nit).second;
         //ids for row map are gathered
-        if (currnode->Owner() == myrank)
+        if (currnode->Owner() == myrank_)
           nodeids.push_back(currnode->Id());
 
         //discretizations are feeded
@@ -152,19 +156,18 @@ mastermaxeleid_(0)
       for ( eit=structelementsinterf.begin(); eit != structelementsinterf.end(); eit++ )
       {
         Teuchos::RCP<DRT::Element> currele = eit->second;
-        if (currele->Owner() == myrank)
+        if (currele->Owner() == myrank_)
         {
           // each interface stores its row elements in the interface
           eleids.push_back(currele->Id() );
 
-          // structural surface elements cannot be distributed --> Bele3 element is used
+          // structural surface elements cannot be distributed --> BELE3_3 element is used
           Teuchos::RCP<DRT::Element> istructele = DRT::UTILS::Factory("BELE3_3","Polynomial", currele->Id(), currele->Owner());
           istructele->SetNodeIds(currele->NumNode(), currele->NodeIds());
           istructnewdis->AddElement( istructele );
-          // thermo interface elements
-          Teuchos::RCP<DRT::Element> ithermoele = DRT::UTILS::Factory("THERMO","Polynomial", currele->Id(), currele->Owner());
+          // thermo interface elements --> represented by BELE3_1 element
+          Teuchos::RCP<DRT::Element> ithermoele = DRT::UTILS::Factory("BELE3_1","Polynomial", currele->Id(), currele->Owner());
           ithermoele->SetNodeIds(currele->NumNode(), currele->NodeIds());
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(ithermoele,true)->SetDisType( istructele->Shape() );
           ithermonewdis->AddElement( ithermoele );
         }
       }
@@ -213,14 +216,6 @@ mastermaxeleid_(0)
     //storage of the newly created interface discretization
     istructdis_.push_back(istructnewdis);
     ithermodis_.push_back(ithermonewdis);
-    //storage of the full redundant structural elements in each interface
-    std::map<int, Teuchos::RCP<DRT::Element> > streles;
-    for (int lid=0; lid<istructnewdis->NumMyColElements(); lid++)
-    {
-      DRT::Element* strele = istructnewdis->lColElement(lid);
-      streles[strele->Id()] = Teuchos::rcp(strele, false);
-    }
-    structreduelements_.push_back(streles);
 
     //storage of useful dof maps
     istructdofredumap_.push_back(Teuchos::rcp(istructnewdis->DofColMap(), false));
@@ -246,40 +241,28 @@ mastermaxeleid_(0)
     // build mortar interface and fill it initially with fully redundant master side (=structural side)
     const Epetra_Comm& lcomm = istructdis_[interf]->Comm();
 
-    // transfer of four degrees of freedom per node
-    const int dim = 3;
-    int dofpernode = 4;
+    // set useful parameters for mortar coupling
     Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
-    // set options for mortar coupling
-    input.set<std::string>("SEARCH_ALGORITHM","Binarytree");
-    input.set<double>("SEARCH_PARAM", 0.1);
-    input.set<std::string>("SEARCH_USE_AUX_POS", "no");
-    input.set<std::string>("PARALLEL_REDIST","no");
-    input.set<std::string>("SHAPEFCN","dual");
-    // master side is given to the mortar interface once in the beginning with full overlap
-    input.set<std::string>("REDUNDANT_STORAGE","Master");
-    // for triangles which will be almost all lying in a quad element on the master side, this should be a good set of params
-    input.set<std::string>("INTTYPE","Elements");
-    input.set<int>("NUMGP_PER_DIM",3);
-    input.set<bool>("NURBS",false);
+    MortarParams(input);
 
     // create mortar interface for each coupling interface with INCA
     Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(
-        new MORTAR::MortarInterface(interf, lcomm, dim, input, INPAR::MORTAR::redundant_master));
+        new MORTAR::MortarInterface(interf, lcomm, ndim, input, INPAR::MORTAR::redundant_master));
 
     // feeding master nodes to the interface including ghosted nodes
+    // transfer of four degrees of freedom per node
+    std::vector<int> dofids(dofpernode_);
     for(int lid=0; lid<istructdis_[interf]->NumMyColNodes(); lid++)
     {
       DRT::Node* node = istructdis_[interf]->lColNode(lid);
-      std::vector<int> dofids(dofpernode);
       // get the dofs of the structural node
-      for (int k=0; k<dim; ++k)
+      for (int k=0; k<ndim; ++k)
        dofids[k] = istructdis_[interf]->Dof(node)[k];
       // fill in remaining thermal dof
-      dofids[dim] = ithermodis_[interf]->Dof(ithermodis_[interf]->lColNode(lid))[0];
+      dofids[ndim] = ithermodis_[interf]->Dof(ithermodis_[interf]->lColNode(lid))[0];
 
       Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-         node->X(), node->Owner(), dofpernode, dofids, false));
+         node->X(), node->Owner(), dofpernode_, dofids, false));
 
       interface->AddMortarNode(mrtrnode);
     }
@@ -296,6 +279,247 @@ mastermaxeleid_(0)
 
     mortarinterface_.push_back(interface);
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | implementation with 3 or 1 dof(s) per mortar node =      ghamm 06/14 |
+ |   FSI or Conjugate heat transfer problem                             |
+ *----------------------------------------------------------------------*/
+FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
+(
+  Teuchos::RCP<DRT::Discretization> dis,
+  bool mechanical
+) :
+dim_(3),
+myrank_(dis->Comm().MyPID()),
+istructdis_(0),
+ithermodis_(0),
+istructdofredumap_(0),
+ithermodofredumap_(0),
+structrowmapext_(0),
+thermorowmapext_(0),
+DinvM_(0),
+dofpernode_(mechanical ? 3 : 1),
+mechanicalcoupling_(mechanical ? true : false),
+thermalcoupling_(mechanical ? false : true),
+mastermaxdof_(0),
+mastermaxnodeid_(0),
+mastermaxeleid_(0)
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+  if(ndim != 3)
+    dserror("Coupling with Aero code is only implemented for 3D problems!!");
+
+  // build references to the discret, map and map extractors for mechanical coupling ...
+  std::vector<Teuchos::RCP<DRT::Discretization> >& idis  = istructdis_;
+  std::vector<Teuchos::RCP<const Epetra_Map> >& idofredumap = istructdofredumap_;
+  std::vector<Teuchos::RCP<const LINALG::MapExtractor> >& rowmapext = structrowmapext_;
+  std::vector<Teuchos::RCP<const Epetra_Import> >& iproc0importer = istructproc0importer_;
+  // ... or for thermal coupling
+  if(mechanical == false)
+  {
+    idis = ithermodis_;
+    idofredumap = ithermodofredumap_;
+    rowmapext = thermorowmapext_;
+    iproc0importer = ithermoproc0importer_;
+  }
+
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  lengthscaling_ = Teuchos::getIntegralValue<double>(tsidyn,"TFSI_length_unit");
+  timescaling_ = Teuchos::getIntegralValue<double>(tsidyn,"TFSI_time_unit");
+
+  // declare struct objects in interface
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structelements;
+  std::map<int, std::map<int, DRT::Node*> > dummy2;  // dummy map
+  std::map<int, std::map<int, DRT::Node*> > structgnodes; // col map of structure nodes
+
+  //initialize struct objects in interface
+  DRT::UTILS::FindConditionObjects(*dis, dummy2, structgnodes, structelements,"FSICoupling");
+
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit;
+  std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit;
+
+  int max_id = 0;
+  //determine number of coupling surfaces
+  for ( meit=structelements.begin(); meit != structelements.end(); meit++ )
+  {
+    if (meit->first > max_id)
+      max_id = meit->first;
+  }
+  dis->Comm().MaxAll(&max_id, &maxid_, 1);
+
+  //create a new discretization of the structural/thermal interface
+  if (!dis->Filled())
+  {
+    dis->FillComplete();
+  }
+
+  // initialize the new discretization
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis->Comm().Clone());
+  // structure
+  const std::string discret_name = "idis";
+
+  for(int interf=0; interf <= maxid_; interf++)
+  {
+    // initialize new interface discretization
+    Teuchos::RCP<DRT::Discretization> inewdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
+
+    std::map<int, std::map<int, DRT::Node*> >::iterator mnit;
+    std::map<int, DRT::Node* >::iterator nit;
+
+    std::vector<int> nodeids;
+
+    // nodes filled in new interface discretization
+    {
+      std::map<int, DRT::Node*> structgnodesinterf = structgnodes[interf];
+      for ( nit=structgnodesinterf.begin(); nit != structgnodesinterf.end(); nit++ )
+      {
+        DRT::Node* currnode = (*nit).second;
+        //ids for row map are gathered
+        if (currnode->Owner() == myrank_)
+          nodeids.push_back(currnode->Id());
+
+        //discretization is fed
+        inewdis->AddNode(Teuchos::rcp(new DRT::Node(currnode->Id(), currnode->X(), currnode->Owner())));
+      }
+    }
+    //row node map of interface
+    Teuchos::RCP<Epetra_Map> inoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,inewdis->Comm()));
+    //fully overlapping node map
+    Teuchos::RCP<Epetra_Map> irednodecolmap = LINALG::AllreduceEMap(*inoderowmap);
+
+    //care about eles in the interface
+    std::stringstream elename;
+    elename << "BELE3_" << dofpernode_;
+
+    std::vector<int> eleids;
+    //eles filled in new interface discretization
+    {
+      std::map<int, Teuchos::RCP<DRT::Element> > structelementsinterf = structelements[interf];
+      for ( eit=structelementsinterf.begin(); eit != structelementsinterf.end(); eit++ )
+      {
+        Teuchos::RCP<DRT::Element> currele = eit->second;
+        if (currele->Owner() == myrank_)
+        {
+          // each interface stores its row elements in the interface
+          eleids.push_back(currele->Id() );
+
+          // BELE3_3 or BELE3_1 element is used (mechanical or thermal coupling)
+          Teuchos::RCP<DRT::Element> iele = DRT::UTILS::Factory(elename.str(),"Polynomial", currele->Id(), currele->Owner());
+          iele->SetNodeIds(currele->NumNode(), currele->NodeIds());
+          inewdis->AddElement( iele );
+        }
+      }
+    }
+
+    //row ele map of this interface
+    Teuchos::RCP<Epetra_Map> ielerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,inewdis->Comm()));
+    //fully overlapping ele map
+    Teuchos::RCP<Epetra_Map> iredelecolmap = LINALG::AllreduceEMap(*ielerowmap);
+
+    //do the fully overlapping ghosting of the master side of the FSI interface to have everything redundant
+    inewdis->ExportColumnNodes(*irednodecolmap);
+    inewdis->ExportColumnElements(*iredelecolmap);
+
+    //find out if we are parallel; needed for TransparentDofSet
+    bool parallel = false;
+    if(inewdis->Comm().NumProc() != 1)
+      parallel = true;
+
+    //dofs of the original discretizations are used to set same dofs for the new interface discretization
+    Teuchos::RCP<DRT::DofSet> newdofset1=Teuchos::rcp(new DRT::TransparentDofSet(dis,parallel));
+    inewdis->ReplaceDofSet(newdofset1);
+    newdofset1=Teuchos::null;
+
+    //final fill complete to reorganize everything in the discretization
+    inewdis->FillComplete(true, false, false);
+
+    //storage of the newly created interface discretization
+    idis.push_back(inewdis);
+
+    //storage of useful dof maps
+    idofredumap.push_back(Teuchos::rcp(inewdis->DofColMap(), false));
+
+    // map extractor for the communication between the full structural/thermo field and the newly created structural/thermo surf discret
+    rowmapext.push_back(Teuchos::rcp(new LINALG::MapExtractor(*(dis->DofRowMap()),Teuchos::rcp(inewdis->DofRowMap(), false))));
+
+    // importer in order to contract result values on proc0 for communication with INCA (proc0 gets everything, other procs empty)
+    Teuchos::RCP<Epetra_Map> proc0datamap = LINALG::AllreduceEMap(*inewdis->DofRowMap(),0);
+    iproc0importer.push_back(Teuchos::rcp(new Epetra_Import (*proc0datamap,*idis[interf]->DofRowMap())));
+
+    // find largest dof/node/element id in TSI problem for offset in mortar
+    mastermaxdof_ = std::max(mastermaxdof_, dis->DofRowMap()->MaxAllGID() + 1);
+    mastermaxnodeid_ = std::max(mastermaxnodeid_, dis->NodeRowMap()->MaxAllGID() + 1);
+    mastermaxeleid_ = std::max(mastermaxeleid_, istructdis_[interf]->ElementRowMap()->MaxAllGID() + 1);
+
+    // build mortar interface and fill it initially with fully redundant master side (=structural side)
+    const Epetra_Comm& lcomm = idis[interf]->Comm();
+
+    // set useful parameters for mortar coupling
+    Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
+    MortarParams(input);
+
+    // create mortar interface for each coupling interface with INCA
+    Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(
+        new MORTAR::MortarInterface(interf, lcomm, ndim, input, INPAR::MORTAR::redundant_master));
+
+    // feeding master nodes to the interface including ghosted nodes
+    // transfer of three degrees of freedom per node
+    std::vector<int> dofids(dofpernode_);
+    for(int lid=0; lid<idis[interf]->NumMyColNodes(); lid++)
+    {
+      DRT::Node* node = idis[interf]->lColNode(lid);
+      // get the dofs of the structural node
+      for (int k=0; k<dofpernode_; ++k)
+       dofids[k] = idis[interf]->Dof(node)[k];
+
+      Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
+         node->X(), node->Owner(), dofpernode_, dofids, false));
+
+      interface->AddMortarNode(mrtrnode);
+    }
+
+    // feeding master elements to the interface
+    for(int lid=0; lid<idis[interf]->NumMyColElements(); ++lid)
+    {
+     DRT::Element* currele = idis[interf]->lColElement(lid);
+     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(currele->Id(),
+         currele->Owner(), currele->Shape(), currele->NumNode(), currele->NodeIds(), false));
+
+     interface->AddMortarElement(mrtrele);
+    }
+
+    mortarinterface_.push_back(interface);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | useful parameters for mortar coupling                    ghamm 06/14 |
+ *----------------------------------------------------------------------*/
+void FS3I::UTILS::AeroCouplingUtils::MortarParams
+(
+  Teuchos::ParameterList& mortarparams
+)
+{
+  // set options for mortar coupling
+  mortarparams.set<std::string>("SEARCH_ALGORITHM","Binarytree");
+  mortarparams.set<double>("SEARCH_PARAM", 0.1);
+  mortarparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
+  mortarparams.set<std::string>("PARALLEL_REDIST","no");
+  mortarparams.set<std::string>("SHAPEFCN","dual");
+  // master side is given to the mortar interface once in the beginning with full overlap
+  mortarparams.set<std::string>("REDUNDANT_STORAGE","Master");
+  // for triangles which will all be lying in a quad element on the master side, this should be a good set of params
+  mortarparams.set<std::string>("INTTYPE","Elements");
+  mortarparams.set<int>("NUMGP_PER_DIM",3);
+  mortarparams.set<bool>("NURBS",false);
 
   return;
 }
@@ -318,41 +542,37 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   // remove all slave nodes and elements for new coupling
   mortarinterface_[interf]->RemoveSingleInterfaceSide(true);
 
-  int myrank = mortarinterface_[interf]->Comm().MyPID();
-
-  // transfer of four degrees of freedom per node (3 str + 1 thr) in a 3D problem
-  const int dim = 3;
-  const int dofpernode = 4;
-
   // feeding slave nodes to the interface
   // Note: offset is needed for slave dofs and slave node ids
+  double nodalpos[dim_];
+  std::vector<int> dofids(dofpernode_);
   for (int nodeiter = 0; nodeiter<(int)aerocoords.size(); ++nodeiter)
   {
-    double nodalpos[dim];
-    for (int k=0; k<dim; ++k)
+    for (int k=0; k<dim_; ++k)
       nodalpos[k] = aerocoords[nodeiter](k);
-    std::vector<int> dofids(dofpernode);
-    for (int k=0; k<dofpernode; ++k)
-      dofids[k] = mastermaxdof_ + (nodeiter+nodeoffset)*dofpernode + k;
+    for (int k=0; k<dofpernode_; ++k)
+      dofids[k] = mastermaxdof_ + (nodeiter+nodeoffset)*dofpernode_ + k;
+
     Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
-        Teuchos::rcp(new MORTAR::MortarNode(nodeiter+nodeoffset+mastermaxnodeid_, nodalpos, myrank, dofpernode, dofids, true));
+        Teuchos::rcp(new MORTAR::MortarNode(nodeiter+nodeoffset+mastermaxnodeid_, nodalpos, myrank_, dofpernode_, dofids, true));
 
     mortarinterface_[interf]->AddMortarNode(mrtrnode);
   }
 
   // feeding slave elements (tris) to the interface
-  int numtris = aerocoords.size()/3;
+  const int numtris = aerocoords.size()/3;
+  const int nodeoffsetthird = nodeoffset/3;
+  std::vector<int> nodeids(3);
   for (int elemiter = 0; elemiter<numtris; ++elemiter)
   {
-    std::vector<int> nodeids(3);
     for(int k=0; k<3; ++k)
     {
       int nodeiter = elemiter*3 + k;
       nodeids[k] = nodeiter + nodeoffset + mastermaxnodeid_;
     }
 
-    Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(elemiter + nodeoffset/3 + mastermaxeleid_,
-        myrank, DRT::Element::tri3, (int)nodeids.size(), &nodeids[0], true));
+    Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(elemiter + nodeoffsetthird + mastermaxeleid_,
+        myrank_, DRT::Element::tri3, (int)nodeids.size(), &nodeids[0], true));
 
     mortarinterface_[interf]->AddMortarElement(mrtrele);
   }
@@ -371,12 +591,15 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap,slavedofrowmap, false);
   Teuchos::RCP<Epetra_Vector> mergeddispn = LINALG::CreateVector(*dofrowmap, true);
 
-  // insert current displacement status of master side; slave side is placed correctly
-  for(int i=0; i<idispn->MyLength(); ++i)
+  if(mechanicalcoupling_ == true)
   {
-    int gid = idispn->Map().GID(i);
-    int lid = mergeddispn->Map().LID(gid);
-    (*mergeddispn)[lid] = (*idispn)[i];
+    // insert current displacement status of master side; slave side is placed correctly
+    for(int i=0; i<idispn->MyLength(); ++i)
+    {
+      int gid = idispn->Map().GID(i);
+      int lid = mergeddispn->Map().LID(gid);
+      (*mergeddispn)[lid] = (*idispn)[i];
+    }
   }
 
   // set displacement state in mortar interface
@@ -418,7 +641,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   DinvM_.push_back(M);
 
   // visualize interface with gmsh
-//  if(myrank==0)
+//  if(myrank_==0)
 //    cout << "mortar interface is printed in gmsh file format" << endl;
 //  mortarinterface_[interf]->VisualizeGmsh(0,0);
 
@@ -437,16 +660,21 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
+  int offset = 0;
+  if (mechanicalcoupling_ == false && thermalcoupling_ == true)
+    offset = dim_;
+
   Teuchos::RCP<Epetra_Vector> iload_fl = LINALG::CreateVector(DinvM_[interf]->RowMap(),true);
 
   // NOTE: There is no dofset available for artificially created fluid nodes
   // Hence: Order is important and values from aeroforces can directly be inserted into interface load vector
   for(size_t nodeiter=0; nodeiter<aeroforces.size(); ++nodeiter)
   {
-    LINALG::Matrix<4,1> currload = aeroforces[nodeiter];
-    for(size_t k=0; k<4; ++k)
+    // currload is always filled with three mechanical dofs and one thermal dof
+    LINALG::Matrix<4,1>& currload = aeroforces[nodeiter];
+    for(int k=0; k<dofpernode_; ++k)
     {
-      (*iload_fl)[nodeiter*4 + k] = currload(k);
+      (*iload_fl)[nodeiter*dofpernode_ + k] = currload(k+offset);
     }
   }
 
@@ -454,24 +682,54 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
   // return type is Epetra_MultiVector because Epetra_FEVector is used in SlaveToMaster
   Teuchos::RCP<Epetra_MultiVector> iload_solid = SlaveToMaster(interf, iload_fl);
 
+  const int numnodes = iload_solid->MyLength()/dofpernode_;
   // split data in iload_solid into structural and thermal load (4 values per node)
-  int numnodes = iload_solid->MyLength()*0.25;
-  for(int nodeiter=0; nodeiter<numnodes; ++nodeiter)
+  if (mechanicalcoupling_ == true && thermalcoupling_ == true)
   {
-    // structural load
-    for(int k=0; k<3; ++k)
+    for(int nodeiter=0; nodeiter<numnodes; ++nodeiter)
     {
-      int lid = nodeiter*4 + k;
+      // structural load
+      for(int k=0; k<dim_; ++k)
+      {
+        int lid = nodeiter*dofpernode_ + k;
+        double val = (*(*iload_solid)(0))[lid];
+        int gid = iload_solid->Map().GID(lid);
+        (*iforce)[ iforce->Map().LID(gid) ] = val;
+      }
+      // thermal load
+      int lid = nodeiter*dofpernode_ + dim_;
       double val = (*(*iload_solid)(0))[lid];
       int gid = iload_solid->Map().GID(lid);
-      (*iforce)[ iforce->Map().LID(gid) ] = val;
+      (*ithermoload)[ ithermoload->Map().LID(gid) ] = val;
     }
-    // thermal load
-    int lid = nodeiter*4 + 3;
-    double val = (*(*iload_solid)(0))[lid];
-    int gid = iload_solid->Map().GID(lid);
-    (*ithermoload)[ ithermoload->Map().LID(gid) ] = val;
   }
+  else if(mechanicalcoupling_ == true && thermalcoupling_ == false)
+  {
+    for(int nodeiter=0; nodeiter<numnodes; ++nodeiter)
+    {
+      // structural load
+      for(int k=0; k<dim_; ++k)
+      {
+        int lid = nodeiter*dofpernode_ + k;
+        double val = (*(*iload_solid)(0))[lid];
+        int gid = iload_solid->Map().GID(lid);
+        (*iforce)[ iforce->Map().LID(gid) ] = val;
+      }
+    }
+  }
+  else if(mechanicalcoupling_ == false && thermalcoupling_ == true)
+  {
+    for(int nodeiter=0; nodeiter<numnodes; ++nodeiter)
+    {
+      // thermal load
+      int lid = nodeiter;
+      double val = (*(*iload_solid)(0))[lid];
+      int gid = iload_solid->Map().GID(lid);
+      (*ithermoload)[ ithermoload->Map().LID(gid) ] = val;
+    }
+  }
+  else
+    dserror("coupling type not available");
 
   return;
 }
@@ -535,8 +793,9 @@ Teuchos::RCP<Epetra_MultiVector> FS3I::UTILS::AeroCouplingUtils::SlaveToMaster
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | pack data for quad4 elements on Baci side                ghamm 12/11 |
+ *----------------------------------------------------------------------*/
 void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluid
 (
   int interf,
@@ -547,92 +806,125 @@ void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluid
   bool writedata
 )
 {
-  // make all interface data available on proc 0
-  // idisp and ivel
-  Teuchos::RCP<Epetra_Vector> proc0disp = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
-  int err = proc0disp->Import(*idisp,*istructproc0importer_[interf],Insert);
-  if (err>0)
-    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-  Teuchos::RCP<Epetra_Vector> proc0vel = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
-  err = proc0vel->Import(*ivel,*istructproc0importer_[interf],Insert);
-  if (err>0)
-    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  const int quadnodes = 4;
+  const double invlengthscaling = 1.0 / LengthScaling();
+  Teuchos::RCP<Epetra_Vector> proc0disp = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> proc0vel = Teuchos::null;
+  if(mechanicalcoupling_ == true)
+  {
+    // make all interface data available on proc 0
+    // idisp and ivel
+    proc0disp = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
+    int err = proc0disp->Import(*idisp,*istructproc0importer_[interf],Insert);
+    if (err>0)
+      dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+    proc0vel = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
+    err = proc0vel->Import(*ivel,*istructproc0importer_[interf],Insert);
+    if (err>0)
+      dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  }
 
-  // itemp
-  Teuchos::RCP<Epetra_Vector> proc0temp = Teuchos::rcp(new Epetra_Vector(ithermoproc0importer_[interf]->TargetMap()));
-  err = proc0temp->Import(*itemp,*ithermoproc0importer_[interf],Insert);
-  if (err>0)
-    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  Teuchos::RCP<Epetra_Vector> proc0temp = Teuchos::null;
+  if(thermalcoupling_ == true)
+  {
+    // itemp
+    proc0temp = Teuchos::rcp(new Epetra_Vector(ithermoproc0importer_[interf]->TargetMap()));
+    int err = proc0temp->Import(*itemp,*ithermoproc0importer_[interf],Insert);
+    if (err>0)
+      dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  }
 
   // gather data on TSI side on proc 0
-  if(istructdis_[interf]->Comm().MyPID() == 0)
+  if(myrank_ == 0)
   {
-    if(istructdis_[interf]->lColElement(0)->NumNode() != 4)
-      dserror("current implementation only for quad4 elements in the coupling interface");
-
-    int numcolele = istructdis_[interf]->NumMyColElements();
-    packeddata.resize(numcolele*35);
-    for(int lid=0; lid<istructdis_[interf]->NumMyColElements(); ++lid)
+    int numcolele = -1;
+    if(mechanicalcoupling_ == true)
     {
-      DRT::Element* struele = istructdis_[interf]->lColElement(lid);
-      // get element location vector of structural problem
+      if(istructdis_[interf]->lColElement(0)->NumNode() != quadnodes)
+        dserror("current implementation only for quad4 elements in the coupling interface");
+
+      numcolele = istructdis_[interf]->NumMyColElements();
+    }
+    else
+    {
+      if(ithermodis_[interf]->lColElement(0)->NumNode() != quadnodes)
+        dserror("current implementation only for quad4 elements in the coupling interface");
+
+      numcolele = ithermodis_[interf]->NumMyColElements();
+    }
+
+    packeddata.resize(numcolele*35);
+    for(int lid=0; lid<numcolele; ++lid)
+    {
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      struele->LocationVector(*istructdis_[interf],lm,lmowner,lmstride);
+      std::vector<double> eledisp(quadnodes*dim_, 0.0);
+      std::vector<double> elevel(quadnodes*dim_, 0.0);
+      DRT::Element* ele = NULL;
+      if(mechanicalcoupling_ == true)
+      {
+        ele = istructdis_[interf]->lColElement(lid);
+        // get element location vector of structural problem
+        ele->LocationVector(*istructdis_[interf],lm,lmowner,lmstride);
 
-      // get element data
-      // disp
-      std::vector<double> eledisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*proc0disp, eledisp ,lm);
-      // vel
-      std::vector<double> elevel(lm.size());
-      DRT::UTILS::ExtractMyValues(*proc0vel, elevel ,lm);
+        // get element data
+        // disp
+        eledisp.resize(lm.size());
+        DRT::UTILS::ExtractMyValues(*proc0disp, eledisp ,lm);
+        // vel
+        elevel.resize(lm.size());
+        DRT::UTILS::ExtractMyValues(*proc0vel, elevel ,lm);
+      }
 
-      // get element location vector of thermal problem
-      DRT::Element* threle = ithermodis_[interf]->lColElement(lid);
-      threle->LocationVector(*ithermodis_[interf],lm,lmowner,lmstride);
+      std::vector<double> eletemp(quadnodes, 0.0);
+      if(thermalcoupling_ == true)
+      {
+        // get element location vector of thermal problem
+        ele = ithermodis_[interf]->lColElement(lid);
+        ele->LocationVector(*ithermodis_[interf],lm,lmowner,lmstride);
 
-      // get element data
-      // temp
-      std::vector<double> eletemp(lm.size());
-      DRT::UTILS::ExtractMyValues(*proc0temp, eletemp ,lm);
+        // get element data
+        // temp
+        eletemp.resize(lm.size());
+        DRT::UTILS::ExtractMyValues(*proc0temp, eletemp ,lm);
+      }
 
       // fill in position, velocity and temperature for quad4 (fifth point is center point)
       // x1y1z1 x2y2z2 x3y3z3 x4y4z4 x5y5z5  u1v1w1 u2v2w2 u3v3w3 u4v4w4 u5v5w5  T1T2T3T4T5
-      int eleoffset = lid*35;
-      std::vector<double> xcenter(3, 0.0);
-      std::vector<double> velcenter(3, 0.0);
+      const int eleoffset = lid*35;
+      std::vector<double> xcenter(dim_, 0.0);
+      std::vector<double> velcenter(dim_, 0.0);
       double Tcenter = 0.0;
       // loop over nodes of element
-      for(int k=0; k<4; ++k)
+      for(int k=0; k<quadnodes; ++k)
       {
-        DRT::Node** nodes = struele->Nodes();
+        DRT::Node** nodes = ele->Nodes();
 
-        for(int d=0; d<3; ++d)
+        for(int d=0; d<dim_; ++d)
         {
           // pos
-          double pos = (nodes[k]->X()[d] + eledisp[k*3 + d]) / LengthScaling();
-          packeddata[eleoffset + k*3 + d] = pos;
-          xcenter[d] += pos/4.0;
+          double pos = (nodes[k]->X()[d] + eledisp[k*3 + d]) * invlengthscaling;
+          packeddata[eleoffset + k*dim_ + d] = pos;
+          xcenter[d] += pos*0.25;
           // vel
-          packeddata[eleoffset + (k+5)*3 + d] = (elevel[k*3 + d]) / LengthScaling() * TimeScaling();
-          velcenter[d] += elevel[k*3 + d]/4.0;
+          packeddata[eleoffset + (k+5)*3 + d] = (elevel[k*3 + d]) * invlengthscaling * TimeScaling();
+          velcenter[d] += elevel[k*dim_ + d]*0.25;
         }
         // temp
-        packeddata[eleoffset + 10*3 + k] = eletemp[k];
-        Tcenter += eletemp[k]/4.0;
+        packeddata[eleoffset + 10*dim_ + k] = eletemp[k];
+        Tcenter += eletemp[k]*0.25;
       }
       // center point is added
-      for(int d=0; d<3; ++d)
+      for(int d=0; d<dim_; ++d)
       {
         // pos
-        packeddata[eleoffset + 4*3 + d] = xcenter[d];
+        packeddata[eleoffset + 4*dim_ + d] = xcenter[d];
         // vel
-        packeddata[eleoffset + 9*3 + d] = velcenter[d];
+        packeddata[eleoffset + 9*dim_ + d] = velcenter[d];
       }
       // temp
-      packeddata[eleoffset + 10*3 + 4] = Tcenter;
+      packeddata[eleoffset + 10*dim_ + 4] = Tcenter;
     }
 
     // output
@@ -662,103 +954,6 @@ void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluid
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluidConforming
-(
-  int interf,
-  Teuchos::RCP<const Epetra_Vector> idisp,
-  Teuchos::RCP<const Epetra_Vector> itemp,
-  std::vector<double>& packeddata,
-  bool writedata
-)
-{
-  // make all interface data available on proc 0
-  // idisp
-  Teuchos::RCP<Epetra_Vector> proc0disp = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
-  int err = proc0disp->Import(*idisp,*istructproc0importer_[interf],Insert);
-  if (err>0)
-    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  // itemp
-  Teuchos::RCP<Epetra_Vector> proc0temp = Teuchos::rcp(new Epetra_Vector(ithermoproc0importer_[interf]->TargetMap()));
-  err = proc0temp->Import(*itemp,*ithermoproc0importer_[interf],Insert);
-  if (err>0)
-    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  // gather data on TSI side on proc 0
-  if(istructdis_[interf]->Comm().MyPID() == 0)
-  {
-    if(istructdis_[interf]->lColElement(0)->NumNode() != 4)
-      dserror("current implementation only for quad4 elements in the coupling interface");
-
-    int numcolele = istructdis_[interf]->NumMyColElements();
-    packeddata.resize(numcolele*4);
-    for(int lid=0; lid<istructdis_[interf]->NumMyColElements(); ++lid)
-    {
-      DRT::Element* struele = istructdis_[interf]->lColElement(lid);
-      // get element location vector of structural problem
-      std::vector<int> lm;
-      std::vector<int> lmowner;
-      std::vector<int> lmstride;
-      struele->LocationVector(*istructdis_[interf],lm,lmowner,lmstride);
-
-      // get element data
-      // disp
-      std::vector<double> eledisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*proc0disp, eledisp ,lm);
-
-      // get element location vector of thermal problem
-      DRT::Element* threle = ithermodis_[interf]->lColElement(lid);
-      threle->LocationVector(*ithermodis_[interf],lm,lmowner,lmstride);
-
-      // get element data
-      // temp
-      std::vector<double> eletemp(lm.size());
-      DRT::UTILS::ExtractMyValues(*proc0temp, eletemp ,lm);
-
-      // fill in center position and temperature of quad4
-      // x1y1z1 T1
-      int eleoffset = lid*4;
-      std::vector<double> xcenter(3, 0.0);
-      double Tcenter = 0.0;
-      // loop over nodes of element
-      for(int k=0; k<4; ++k)
-      {
-        DRT::Node** nodes = struele->Nodes();
-
-        for(int d=0; d<3; ++d)
-        {
-          // pos
-          double pos = (nodes[k]->X()[d] + eledisp[k*3 + d]) / LengthScaling();
-          xcenter[d] += pos/4.0;
-        }
-        // temp
-        Tcenter += eletemp[k]/4.0;
-      }
-      // center point is written
-      for(int d=0; d<3; ++d)
-      {
-        // pos
-        packeddata[eleoffset + d] = xcenter[d];
-      }
-      // temp
-      packeddata[eleoffset + 3] = Tcenter;
-    }
-
-    // output
-//    for(int i=0; i<(int)packeddata.size(); i++)
-//    {
-//      if(i%4 == 0)
-//        std::cout << "\n element " << i/4 << " is packed: ";
-//      std::cout << packeddata[i] << "  " ;
-//    }
-  }
-
-  return;
-}
-
-
 /// extract structural interface values for a given full field
 Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::StrExtractInterfaceVal
 (
@@ -774,7 +969,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::StrExtractInterfaceV
 Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::ThrExtractInterfaceVal
 (
   int interf,
-  Teuchos::RCP<Epetra_Vector> fullvector
+  Teuchos::RCP<const Epetra_Vector> fullvector
 )
 {
   return thermorowmapext_[interf]->ExtractCondVector(fullvector);
@@ -789,7 +984,8 @@ void FS3I::UTILS::AeroCouplingUtils::StrInsertInterfaceVal
   Teuchos::RCP<Epetra_Vector> force
 )
 {
-  structrowmapext_[interf]->InsertCondVector(iforce, force);
+  if(iforce != Teuchos::null and force != Teuchos::null)
+    structrowmapext_[interf]->InsertCondVector(iforce, force);
   return;
 }
 
@@ -802,6 +998,7 @@ void FS3I::UTILS::AeroCouplingUtils::ThrInsertInterfaceVal
   Teuchos::RCP<Epetra_Vector> force
 )
 {
-  thermorowmapext_[interf]->InsertCondVector(iforce, force);
+  if(iforce != Teuchos::null and force != Teuchos::null)
+    thermorowmapext_[interf]->InsertCondVector(iforce, force);
   return;
 }

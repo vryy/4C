@@ -426,6 +426,9 @@ namespace THR
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
     { return output_; }
 
+    //! prepare output (do nothing)
+    virtual void PrepareOutput() { ; }
+
     //! Read restart values
     void ReadRestart(
       const int step //!< restart step
@@ -495,6 +498,9 @@ namespace THR
     //! Set time step size \f$\Delta t_n\f$
     virtual void SetDt(double timestepsize)
     { (*dt_)[0] = timestepsize; }
+
+    //! Sets the target time \f$t_{n+1}\f$ of this time step
+    virtual void SetTimen(const double time) { timen_ = time; }
 
     //! Return current step number $n$
     virtual int StepOld() const { return step_; }

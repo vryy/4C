@@ -43,6 +43,13 @@ Maintainer: Georg Hammerl
 namespace TSI
 {
   class Monolithic;
+  class Partitioned;
+}
+
+namespace ADAPTER
+{
+  class Structure;
+  class Thermo;
 }
 
 
@@ -69,7 +76,8 @@ namespace FS3I
     virtual ~AeroTFSI(){};
 
     /// write output of TSI system and additional restart info
-    virtual void Output();
+    template<class A>
+    void Output(Teuchos::RCP<A> solver);
 
     /// read restart
     virtual void ReadRestart();
@@ -80,6 +88,10 @@ namespace FS3I
     /// outer level TFSI time loop
     virtual void Timeloop();
 
+    /// outer level TFSI time loop
+    template<class A>
+    void TimeloopT(Teuchos::RCP<A> solver);
+
     /// test results (if necessary)
     virtual void TestResults(
     const Epetra_Comm& comm  ///< local epetra communicator
@@ -89,18 +101,21 @@ namespace FS3I
   protected:
 
     /// get information whether INCA will stop in this time step
-    void INCAfinshed();
-
-    /// Receive time step from INCA via MPI and set it in Baci
-    void GetAndSetDt();
-
-    /// apply time step from INCA to BACI
-    void SetDt(
-    const double dt  ///< time step size to be applied to BACI
+    template<class A>
+    void INCAfinshed(
+    Teuchos::RCP<A> solver
     );
 
-    /// counter and print header; predict solution of both fields
-    void PrepareTimeStep();
+    /// Receive time step from INCA via MPI and set it in Baci
+    template<class A>
+    void GetAndSetDt(Teuchos::RCP<A> solver);
+
+    /// Correct initial time in single fields
+    void ResetInitialTimen();
+
+    /// write status file to disk
+    template<class A>
+    void WriteStatusFile(Teuchos::RCP<A> solver);
 
     /// communication with INCA in order to receive forces and temperatures in the interface
     int ReceiveAeroData(
@@ -125,9 +140,44 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> thrfifc  ///< interface thermal loads due to the fluid (on full vector)
     );
 
-    /// print chosen coupling strategy for TFSI to screen
-    void PrintCouplingStrategy();   
+    /// get full vectors of structure
+    void GetFullVectors(
+    Teuchos::RCP<Epetra_Vector>& strfifc,
+    Teuchos::RCP<Epetra_Vector>& thrfifc
+    );
 
+    /// get vectors with interface data of the solid at t_{n+1}
+    void GetInterfaceDatanp(
+    const int interf,
+    Teuchos::RCP<const Epetra_Vector>& idispnp,
+    Teuchos::RCP<const Epetra_Vector>& ivelnp,
+    Teuchos::RCP<const Epetra_Vector>& itempnp
+    );
+
+    /// get vectors with interface data of the solid at t_{n}
+    void GetInterfaceDatan(
+    const int interf,
+    Teuchos::RCP<const Epetra_Vector>& idispn,
+    Teuchos::RCP<const Epetra_Vector>& iveln,
+    Teuchos::RCP<const Epetra_Vector>& itempn
+    );
+
+    /// print chosen coupling strategy for TFSI to screen
+    void PrintCouplingStrategy();
+
+    /// compute wall clock timings
+    void ComputeTiming(
+    double& t_start,
+    double& summation
+    );
+
+    /// summarize time monitoring and print it to screen
+    void FinishTimeMonitoring(
+    double CommTime,
+    double INCATime,
+    double BACITime,
+    double BACICouplingTime
+    );
 
     int localBACIleader_;  ///< leading processor in BACI that communicates with INCA in local communicator
 
@@ -139,16 +189,19 @@ namespace FS3I
 
     const MPI_Comm mpilcomm_;   ///< local communicator in BACI stored as MPI_Comm
 
-
   private:
 
     Teuchos::RCP<TSI::Monolithic> tsi_;  ///< Monolithic TSI system that is calculated
+    Teuchos::RCP<ADAPTER::Structure> structure_;  ///< Structural field that is calculated (FSI)
+    Teuchos::RCP<ADAPTER::Thermo> thermo_;  ///< Thermal field that is calculated
 
     INPAR::TSI::BaciIncaCoupling tfsi_coupling_;   ///< Coupling strategy for TFSI problem
 
     Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
 
     int stopflag_;   ///< stop flag that is sent from INCA
+
+    double time_;  ///< time t_{n+1} of simulation
 
   }; // AeroTFSI
 

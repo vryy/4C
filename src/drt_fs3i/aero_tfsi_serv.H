@@ -86,11 +86,24 @@ namespace FS3I
     class AeroCouplingUtils
     {
     public:
-      /// constructor initializing internal variables
-        AeroCouplingUtils
+      /// constructor for TFSI coupling
+      AeroCouplingUtils
       (
         Teuchos::RCP<DRT::Discretization> structdis,  ///< structure discretization
         Teuchos::RCP<DRT::Discretization> thermodis  ///< thermo discretization
+      );
+
+      /// constructor for mechanical or thermal coupling
+      AeroCouplingUtils
+      (
+        Teuchos::RCP<DRT::Discretization> dis,
+        bool structure
+      );
+
+      /// useful parameters for mortar coupling
+      void MortarParams
+      (
+        Teuchos::ParameterList& mortarparams
       );
 
       /// empty destructor
@@ -142,16 +155,6 @@ namespace FS3I
         bool writedata = true   ///< bool whether interface point data is written to file
       );
 
-      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA using conforming interface mesh
-      void TransferStructValuesToFluidConforming
-      (
-        int interf,   ///< interface id
-        Teuchos::RCP<const Epetra_Vector> idisp,   ///< interface displacements
-        Teuchos::RCP<const Epetra_Vector> itemp,   ///< interface temperatures
-        std::vector<double>& packeddata,   ///< output: packed data, ready for sending
-        bool writedata = true   ///< bool whether interface point data is written to file
-      );
-
       /// access function for the ith interface discretization
       Teuchos::RCP<DRT::Discretization> GetInterfaceStructDis(int i){ return istructdis_[i]; }
 
@@ -172,7 +175,7 @@ namespace FS3I
       Teuchos::RCP<Epetra_Vector> ThrExtractInterfaceVal
       (
         int interf,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> fullvector  ///< state vector of the full thermal field
+        Teuchos::RCP<const Epetra_Vector> fullvector  ///< state vector of the full thermal field
       );
 
       /// apply interface tractions from the interface to a full field
@@ -192,12 +195,20 @@ namespace FS3I
       );
 
       /// length scaling factor for coupling is returned
-      double LengthScaling() { return lengthscaling_; }
+      const double LengthScaling() { return lengthscaling_; }
 
       /// time scaling factor for coupling is returned
-      double TimeScaling() { return timescaling_; }
+      const double TimeScaling() { return timescaling_; }
+
+      /// returns whether mechanical coupling is used
+      const bool MechCoupling() { return mechanicalcoupling_; }
+
+      /// returns whether thermal coupling is used
+      const bool ThermoCoupling() { return thermalcoupling_; }
 
     private:
+      const int dim_;   ///< dimension of the problem
+      const int myrank_;  ///< my processor id
       std::vector<Teuchos::RCP<DRT::Discretization> > istructdis_;  ///< discretization of structural interface
       std::vector<Teuchos::RCP<DRT::Discretization> > ithermodis_;  ///< discretization of thermal interface
 
@@ -206,8 +217,6 @@ namespace FS3I
       std::vector<Teuchos::RCP<const Epetra_Map> > istructdofredumap_;  ///< dof map of fully redundant structural interface
       std::vector<Teuchos::RCP<const Epetra_Map> > ithermodofredumap_;  ///< dof map of fully redundant structural interface
 
-      std::vector<std::map<int, Teuchos::RCP<DRT::Element> > > structreduelements_; ///< redundant version of coupling elements for each interface
-
       std::vector<Teuchos::RCP<const LINALG::MapExtractor> > structrowmapext_;  ///< map extractor between struct discret and interface struct dis
       std::vector<Teuchos::RCP<const LINALG::MapExtractor> > thermorowmapext_;  ///< map extractor between thermo discret and interface thermo dis
 
@@ -215,6 +224,10 @@ namespace FS3I
       std::vector<Teuchos::RCP<const Epetra_Import> > ithermoproc0importer_;   ///< map extractor between distributed thermo interface and data on proc 0
 
       std::vector<Teuchos::RCP<LINALG::SparseMatrix> > DinvM_;  ///< projection operator for mortar coupling
+
+      const int dofpernode_; ///< number of dofs per mortar node
+      const bool mechanicalcoupling_; ///< flag whethter mechanical coupling is activated
+      const bool thermalcoupling_; ///< flag whether thermal coupling is activated
 
       int maxid_; ///< max id of the interfaces
 

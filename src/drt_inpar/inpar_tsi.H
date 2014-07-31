@@ -45,9 +45,9 @@ namespace TSI
   //! Type of coupling strategy for BACI-INCA coupling (TFSI)
   enum BaciIncaCoupling
   {
-    undefinded,
-    conforming,
-    mortar_mortar_dual
+    TFSI,
+    FSI,
+    ConjHeatTransfer
   };
 
   //! @name Solution technique and related stuff

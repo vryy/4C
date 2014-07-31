@@ -190,9 +190,12 @@ namespace ADAPTER
     /// Set time step size for the current step
     virtual void SetDt(double timestepsize) = 0;
 
+    //! Sets the target time \f$t_{n+1}\f$ of this time step
+    virtual void SetTimen(const double time) = 0;
+
     /// Take the time and integrate (time loop)
     void Integrate();
-    
+
     /// tests if there are more time steps to do
     virtual bool NotFinished() const = 0;
 
@@ -216,6 +219,9 @@ namespace ADAPTER
 
     //! Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
+
+    /// prepare output
+    virtual void PrepareOutput() = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
@@ -280,7 +286,7 @@ namespace ADAPTER
 
     /// constructor
     explicit ThermoBaseAlgorithm(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
-    
+
     /// virtual destructor to support polymorph destruction
     virtual ~ThermoBaseAlgorithm();
 
