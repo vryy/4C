@@ -106,6 +106,7 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
 DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner) :
 DRT::Element(id,owner),
 data_(),
+analyticalmaterialtangent_(true),
 pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
@@ -122,6 +123,8 @@ time_(0.0)
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
+    if(DRT::INPUT::IntegralValue<int>(sdyn,"MATERIALTANGENT"))
+      analyticalmaterialtangent_ = false;
   }
   if (pstype_==INPAR::STR::prestress_mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
@@ -154,6 +157,7 @@ eastype_(old.eastype_),
 neas_(old.neas_),
 data_(old.data_),
 detJ_(old.detJ_),
+analyticalmaterialtangent_(old.analyticalmaterialtangent_),
 pstype_(old.pstype_),
 pstime_(old.pstime_),
 time_(old.time_)
@@ -224,6 +228,8 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,eastype_);
   // neas_
   AddtoPack(data,neas_);
+  // analyticalmaterialtangent_
+  AddtoPack(data,analyticalmaterialtangent_);
   // data_
   AddtoPack(data,data_);
 
@@ -276,6 +282,8 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   eastype_ = static_cast<EASType>( ExtractInt(position,data) );
   // neas_
   ExtractfromPack(position,data,neas_);
+  // analyticalmaterialtangent_
+  analyticalmaterialtangent_ = ExtractInt(position,data);
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

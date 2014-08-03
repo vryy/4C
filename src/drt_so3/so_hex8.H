@@ -455,6 +455,8 @@ protected:
   std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJmat_;
   //! determinant of Jacobian in material frame
   std::vector<double>                                                   detJ_;
+  //! evaluate the analytical constitutive matrix
+  bool                                                                  analyticalmaterialtangent_;
 
   /// prestressing switch & time
   INPAR::STR::PreStress                                                 pstype_;
@@ -637,15 +639,15 @@ protected:
   std::vector<double> getthicknessvector() const {dserror("not implemented"); return std::vector<double>(3);};
 
   /// FDCheck constitutive tensor and/or use the approximation as elastic stiffness matrix
-  void ConstitutiveTensorFDCheck(
+  void EvaluateFiniteDifferenceMaterialTangent(
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& stiffmatrix_fd,
       const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
       std::vector<double>& disp, ///< current displacements
       const double detJ_w, ///< jacobian determinant times gauss weigth
       const double detJ,
       const double detJ0,
-      const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop,
+      const double charelelength,
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8>& bop,
       const LINALG::Matrix<6,NUMDOF_SOH8>& cb,
       const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& N_XYZ,
       const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,
@@ -653,9 +655,6 @@ protected:
       const Epetra_SerialDenseMatrix* alpha,
       LINALG::SerialDenseMatrix& M,
       const int gp,
-      bool throwerror, ///< throw dserror when errors occur
-      bool output, ///< print errors to screen
-      bool usetangent, ///< use fd approximation as elastic stiffness matrix
       Teuchos::ParameterList& params
       );
 

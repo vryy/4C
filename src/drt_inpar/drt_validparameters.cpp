@@ -1149,6 +1149,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "sufficient descent factor in (Newton) line search scheme",
                   &sdyn);
 
+  setStringToIntegralParameter<int>("MATERIALTANGENT","analytical","way of evaluating the constitutive matrix",
+                               tuple<std::string>(
+                                 "analytical",
+                                 "finitedifferences"),
+                               tuple<int>(
+                                 0,1),
+                               &sdyn);
+
   // Currently not used, but structure will be kept if someone wants to reimplement
   // AN 2013_05
   setStringToIntegralParameter<int>("CONTROLTYPE","load","load, disp, arc1, arc2 control",

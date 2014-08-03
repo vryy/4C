@@ -57,6 +57,10 @@ MAT::PAR::ActiveFiber::ActiveFiber(
   sigmamax_(    matdata->GetDouble("SIGMAX")   ),
   epsilonnull_( matdata->GetDouble("EPSNULL")  )
 {
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"MATERIALTANGENT"))
+    analyticalmaterialtangent_ = false;
+  else
+    analyticalmaterialtangent_ = true;
 }
 
 
@@ -89,7 +93,6 @@ DRT::ParObject* MAT::ActiveFiberType::Create( const std::vector<char> & data )
 MAT::ActiveFiber::ActiveFiber()
   : params_(NULL)
 {
-
 }
 
 
@@ -113,10 +116,14 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+
+  // analytical or fd material tangent
+  //AddtoPack(data,analyticalmaterialtangent_);
+
   // matid
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
+    AddtoPack(data,matid);
 
   // pack history data
   int histsize;
@@ -138,6 +145,8 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,histdefgrdlast_->at(var));
     AddtoPack(data,etalast_->at(var));
     AddtoPack(data,sigmaomegaphilast_->at(var));
+    AddtoPack(data,etacurr_save_->at(var));
+    AddtoPack(data,sigmaomegaphicurr_save_->at(var));
     AddtoPack(data,etahat_->at(var));
     AddtoPack(data,etahor_->at(var));
     AddtoPack(data,etaver_->at(var));
@@ -171,6 +180,8 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  //analyticalmaterialtangent_ = ExtractInt(position,data);
 
   // matid and recover params_
   int matid;
@@ -211,6 +222,9 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   sigmaomegaphilast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
   sigmaomegaphicurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
 
+  etacurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+  sigmaomegaphicurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+
   // unpack average intensity level at every point in the cytoplasm
   etahat_  = Teuchos::rcp( new std::vector<double> );
   etahor_  = Teuchos::rcp( new std::vector<double> );
@@ -240,6 +254,10 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
     etalast_->push_back(tmp_matrix);
     ExtractfromPack(position, data, tmp_matrix);
     sigmaomegaphilast_->push_back(tmp_matrix);
+    ExtractfromPack(position, data, tmp_matrix);
+    etacurr_save_->push_back(tmp_matrix);
+    ExtractfromPack(position, data, tmp_matrix);
+    sigmaomegaphicurr_save_->push_back(tmp_matrix);
 
     ExtractfromPack(position, data, tmp_scalar);
     etahat_->push_back(tmp_scalar);
@@ -302,6 +320,13 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   sigmaomegaphilast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
   sigmaomegaphicurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
 
+
+  etacurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+  sigmaomegaphicurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+  etacurr_save_->resize(numgp);
+  sigmaomegaphicurr_save_->resize(numgp);
+
+
   etahat_  = Teuchos::rcp( new std::vector<double> );
   etahor_  = Teuchos::rcp( new std::vector<double> );
   etaver_  = Teuchos::rcp( new std::vector<double> );
@@ -353,6 +378,12 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     sigmaomegaphilast_->at(i) = emptymat;
     sigmaomegaphicurr_->at(i) = emptymat;
 
+//    if(!analyticalmaterialtangent_)
+//    {
+//      etacurr_save_->at(i) = emptymat;
+//      sigmaomegaphicurr_save_->at(i) = emptymat;
+//    }
+
     etahat_ ->at(i) = 0.0;
     etahor_ ->at(i) = 0.0;
     etaver_ ->at(i) = 0.0;
@@ -389,6 +420,13 @@ void MAT::ActiveFiber::ResetAll(const int numgp)
 
   sigmaomegaphilast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
   sigmaomegaphicurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+
+
+  etacurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+  sigmaomegaphicurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
+  etacurr_save_->resize(numgp);
+  sigmaomegaphicurr_save_->resize(numgp);
+
 
   etahat_ = Teuchos::rcp( new std::vector<double> );
   etahor_ = Teuchos::rcp( new std::vector<double> );
@@ -473,8 +511,8 @@ void MAT::ActiveFiber::Update()
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)
   const int histsize = histdefgrdlast_->size();
-  histdefgrdcurr_->resize(histsize);
 
+  histdefgrdcurr_->resize(histsize);
   etacurr_->resize(histsize);
   sigmaomegaphicurr_->resize(histsize);
 
@@ -535,6 +573,8 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // Get time algorithmic parameters
   double dt = params.get<double>("delta time",-1.0);
 
+  //analyticalmaterialtangent_ = params.get<int>("analyticalmaterialtangent",1);
+
 #ifdef DEBUG
   if (gp == -1)   dserror("no Gauss point number provided in material");
   if (dt == -1.0) dserror("no time step size provided in material");
@@ -569,6 +609,8 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   double sigmamax = params_->sigmamax_;
   // Reference strain rate of cross-bridge dynamics law
   double epsilonnull = params_->epsilonnull_;
+
+ bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
 
   // Setup inverse of deformation gradient
   LINALG::Matrix<3,3> invdefgrd(*defgrd);
@@ -850,7 +892,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   stress->Update(1.0,Spassive,0.0);
   stress->Update(1.0,Sactive,1.0);
 
-  if (cmat != NULL)
+  if (cmat != NULL and analyticalmaterialtangent)
   {
     // Setup active elasticity tensor cmatactive
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatactive(true);
@@ -1274,7 +1316,7 @@ void MAT::ActiveFiber::SetupCmatActive(
   LINALG::Matrix<3,3> Ccopy(C);
   LINALG::Matrix<3,3> RootCcopy(true);
   LINALG::Matrix<3,3> InvRootCcopy(true);
-  //double TensorDerivC_fd [3][3][3][3] = {{{{0.}}}};
+
   double RootCInvDerivCRootCInv[3][3][3][3] = {{{{0.}}}};
   for(int k=0;k<3;++k)
   {
@@ -1317,15 +1359,6 @@ void MAT::ActiveFiber::SetupCmatActive(
 //            std::cout<<"dsqrt(C)/dC = "<<TensorDerivC[i][j][k][l]<<" Approx = "<<TensorDerivC_fd[i][j][k][l]<<" at ijkl="<<i<<j<<k<<l<<std::endl;
 //          }
 
-//  // d sqrt(C)^-1/ d C
-//  double RootCInvDerivCRootCInv[3][3][3][3] = {{{{0.}}}};
-//  for (int i=0; i<3; i++)
-//    for (int j=0; j<3; j++)
-//      for (int k=0; k<3; k++)
-//        for (int l=0; l<3; l++)
-//          RootCInvDerivCRootCInv[i][j][k][l] = -0.5*(RootCInv(i,k)*RootCInv(j,l)+RootCInv(i,l)*RootCInv(j,k));
-
-
   // Setup transposed matrices
   LINALG::Matrix<3,3> Rtrans(true);
   Rtrans.UpdateT(R);
@@ -1338,14 +1371,11 @@ void MAT::ActiveFiber::SetupCmatActive(
 
   // 3x3x3x3 Tensor auxiliary variables
   double temptens1[3][3][3][3] = {{{{0.}}}};
-  double temptens2[3][3][3][3] = {{{{0.}}}};
   double temptens3[3][3][3][3] = {{{{0.}}}};
   double temptens4[3][3][3][3] = {{{{0.}}}};
   double temptens5[3][3][3][3] = {{{{0.}}}};
-  //double temptens6[3][3][3][3] = {{{{0.}}}};
   double temptens7[3][3][3][3] = {{{{0.}}}};
   double temptens8[3][3][3][3] = {{{{0.}}}};
-  //double temptens9[3][3][3][3] = {{{{0.}}}};
   double temptens10[3][3][3][3] = {{{{0.}}}};
   double temptensgauss[3][3][3][3] = {{{{0.}}}};
   // 3x3 matrix auxiliary variables
@@ -1360,15 +1390,16 @@ void MAT::ActiveFiber::SetupCmatActive(
   ///////////////////////////////////
   // Calculate constitutive tensor
   //////////////////////////////////
-  // [F^-1 * sigma * d F^-T d C] (^T12 in assembly by switching i and j)
+  // [F^-1 * sigma * d F^-T d C] = F^-1 * sigma * R * d sqrt(C)^-1/d C
+  // (^T12 in assembly by switching i and j)
   tempmat1.MultiplyNN(invdefgrd,cauchystress);
   tempmat2.MultiplyNN(tempmat1,R);
   MultMatrixFourTensor(temptens1,tempmat2,RootCInvDerivCRootCInv,false);
 
-  // F^-1 * sigma * R * d sqrt(C)^-1/d C
-  tempmat1.MultiplyNN(invdefgrd,cauchystress);
-  tempmat2.MultiplyNN(tempmat1,R);
-  MultMatrixFourTensor(temptens2,tempmat2,RootCInvDerivCRootCInv,true);
+//  // F^-1 * sigma * R * d sqrt(C)^-1/d C
+//  tempmat1.MultiplyNN(invdefgrd,cauchystress);
+//  tempmat2.MultiplyNN(tempmat1,R);
+//  MultMatrixFourTensor(temptens2,tempmat2,RootCInvDerivCRootCInv,true);
 
   // (F^-1*sigma*F^-T) x dJ/dC : + F^{-1} \sigma F^{-T} dyad 0.5*C^{-1} (dyadic product to obtain 4-Tensor)
   tempmat1.MultiplyNN(invdefgrd,cauchystress);
@@ -1394,17 +1425,10 @@ void MAT::ActiveFiber::SetupCmatActive(
   TransposeFourTensor12(temptens10,temptens8);
   MultMatrixFourTensor(temptens5,tempmat1,temptens10,false);
 
-  // 1/(theta*dt) * [F^-T * [R * d sqrt(C)/ dC]^T12 ]
-  // = temptens 7 from above
-
-  // [F^dot * [R * d sqrt(C)^-1 / dC]^T12 ]^T12
-  //TransposeFourTensor12(temptens6,temptens5);
-
-
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
       for (int k=0; k<3; k++)
-        for (int l=0; l<3; l++)
+        for (int l=0; l<3; l++)           // T12                                         // T12
           temptens8[i][j][k][l] = temptens7[j][i][k][l] + temptens5[i][j][k][l] + temptens5[j][i][k][l] + temptens7[i][j][k][l];
 
 
@@ -1494,15 +1518,16 @@ void MAT::ActiveFiber::SetupCmatActive(
   // F^⁻1 * [F^-1 * sigma]^T12
   MultMatrixFourTensor(temptens8,invdefgrd,temptensgauss,true);
   TransposeFourTensor12(temptensgauss,temptens8);
-  MultMatrixFourTensor(temptens4,invdefgrd,temptensgauss,true);
+  MultMatrixFourTensor(temptens4,invdefgrd,temptensgauss,false);
 
 
   // Put together active constitutive tensor
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
       for (int k=0; k<3; k++)
-        for (int l=0; l<3; l++)          // T12
-          temptens5[i][j][k][l] = temptens1[j][i][k][l] + temptens2[i][j][k][l] + temptens3[i][j][k][l] + temptens4[i][j][k][l];
+        for (int l=0; l<3; l++)                                  // T12                                           // T12
+          temptens5[i][j][k][l] = temptens1[i][j][k][l] + temptens1[j][i][k][l] + temptens3[i][j][k][l] + temptens4[j][i][k][l];
+
   Setup6x6VoigtMatrix(cmatactive,temptens5);
   cmatactive.Scale(2.0*detF);
 
@@ -1888,4 +1913,20 @@ void MAT::ActiveFiber::PrintFourTensor(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Save                                                    rauch  07/14|
+ *----------------------------------------------------------------------*/
+void MAT::ActiveFiber::SaveCurrentState(const int numgp)
+{
+  etacurr_save_->at(numgp) = etacurr_->at(numgp);
+  sigmaomegaphicurr_save_->at(numgp) = sigmaomegaphicurr_->at(numgp);
+}
 
+/*----------------------------------------------------------------------*
+ |  Write                                                   rauch  07/14|
+ *----------------------------------------------------------------------*/
+void MAT::ActiveFiber::WriteCurrentState(const int numgp)
+{
+  etacurr_->at(numgp) = etacurr_save_->at(numgp);
+  sigmaomegaphicurr_->at(numgp) = sigmaomegaphicurr_save_->at(numgp);
+}

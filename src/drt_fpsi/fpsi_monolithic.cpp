@@ -2142,7 +2142,6 @@ void FPSI::Monolithic::FPSIFDCheck()
   stiff_approx_sparse ->FillComplete();
   sparse_crs ->FillComplete();
 
-
   bool success = true;
   double error_max = 0.0;
   for (int i_loc = 0; i_loc < dofs; ++i_loc)
@@ -2155,9 +2154,9 @@ void FPSI::Monolithic::FPSIFDCheck()
         int j = DofRowMap()->GID(j_loc);
         if (not CombinedDBCMap()->MyGID(j) and not FluidField()->Interface()->FSICondMap()->MyGID(j))
         {
-          double stiff_approx_ij;
-          double sparse_ij;
-          double error_ij;
+          double stiff_approx_ij=0.0;
+          double sparse_ij=0.0;
+          double error_ij=0.0;
 
           // get error_crs entry ij
           int errornumentries;
@@ -2192,7 +2191,7 @@ void FPSI::Monolithic::FPSIFDCheck()
             else
               sparse_ij=0.0;
           }
-          // get stiff_approx entry ij
+          // get stiff_approx entry ijs
           int approxnumentries;
           int approxlength = stiff_approx->NumGlobalEntries(i);
           std::vector<double> approxvalues(approxlength);

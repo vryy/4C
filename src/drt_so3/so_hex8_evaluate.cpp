@@ -40,6 +40,8 @@ Maintainer: Moritz Frenzel
 #include "inversedesign.H"
 #include "prestress.H"
 
+#include "so3_defines.H"
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
@@ -1211,11 +1213,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
-//#define MATERIALFDCHECK    /* flag for finite difference check of constitutive matrix */
-#ifdef MATERIALFDCHECK
- LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> stiffmatrix_fd(true);
-#endif
-
   // check for prestressing
   if (pstype_ != INPAR::STR::prestress_none && eastype_ != soh8_easnone)
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
@@ -1244,6 +1241,9 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       xdisp(i,2) = disp[i*NODDOF_SOH8+2];
     }
   }
+  double elediagonallength = 0.0;
+  if(!analyticalmaterialtangent_)
+    elediagonallength = sqrt(pow(xrefe(0,0)-xrefe(6,0),2)+pow(xrefe(0,1)-xrefe(6,1),2)+pow(xrefe(0,2)-xrefe(6,2),2));
 
   // we need the (residual) displacement at the previous step
   LINALG::Matrix<NUMDOF_SOH8,1> nodaldisp;
@@ -1721,6 +1721,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     }
 
     params.set<int>("gp",gp);
+
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1830,18 +1831,17 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       LINALG::Matrix<6,NUMDOF_SOH8> cb;
       cb.Multiply(cmat,bop);
 
-#ifndef MATERIALFDCHECK // defined at the begining of this method
-      // standard hex8 evaluation
-      stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
-#else
-      // do fd check of constitutive matrix and/or use the approximation as jacobian for the global newton
- usetangentstiffmatrix,
-                           stiffmatrix_fd,
+    if(analyticalmaterialtangent_)
+      stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);  // standard hex8 evaluation
+    else
+    {
+      EvaluateFiniteDifferenceMaterialTangent(stiffmatrix,
                            stress,
                            disp,
                            detJ_w,
                            detJ,
                            detJ0,
+                           elediagonallength,
                            bop,
                            cb,
                            N_XYZ,
@@ -1850,11 +1850,9 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
                            alpha,
                            M,
                            gp,
-                           true,  // throw dserror after first check
-                           true,  // print errors to screen
-                           false, // use approx. fd matrix as constitutive matrix
                            params);
-#endif
+
+    }
 
 
       if(kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
@@ -3012,15 +3010,15 @@ void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
  | check the constitutive tensor and/or use the approximation as        |
  | elastic stiffness matrix                                  rauch 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::ConstitutiveTensorFDCheck(
+void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& stiffmatrix_fd,
     const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
     std::vector<double>& disp,
     const double detJ_w,
     const double detJ,
     const double detJ0,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop,
+    const double charelelength,
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8>& bop,
     const LINALG::Matrix<6,NUMDOF_SOH8>& cb,
     const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& N_XYZ,
     const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,
@@ -3028,20 +3026,25 @@ void DRT::ELEMENTS::So_hex8::ConstitutiveTensorFDCheck(
     const Epetra_SerialDenseMatrix* alpha,
     LINALG::SerialDenseMatrix& M,
     const int gp,
-    bool throwerror,
-    bool output,
-    bool usetangent,
     Teuchos::ParameterList& params)
 {
   // build elastic stiffness matrix directly by finite differences
 
-  LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> stiffmatrix_copy(*stiffmatrix);
-
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
 
+#ifdef MATERIALFDCHECK
+  static LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> stiffmatrix_analytical;
+  static LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> stiffmatrix_fd;
   bool success = true;
+  if(gp==0)
+  {
+    stiffmatrix_analytical.PutScalar(0.0);
+    stiffmatrix_fd.PutScalar(0.0);
+  }
+  stiffmatrix_analytical.MultiplyTN(detJ_w, bop, cb, 1.0);
+#endif
 
-  const double delta = 1.0e-8;
+  const double delta = charelelength*1.0e-8;
 
   // matrices and vectors
   LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> cb_fd(true);
@@ -3138,7 +3141,7 @@ void DRT::ELEMENTS::So_hex8::ConstitutiveTensorFDCheck(
       CalcConsistentDefgrd(defgrd_fd,glstrain_fd,defgrd_fd_mod);
     } // ------------------------------------------------------------------ EAS
 
-    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat_fd(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat_fd;
     so3mat->Evaluate(&defgrd_fd_mod,&glstrain_fd,params,&stress_fd,&cmat_fd,Id());
 
     // finite difference approximation of partial derivative
@@ -3184,19 +3187,20 @@ void DRT::ELEMENTS::So_hex8::ConstitutiveTensorFDCheck(
   ///////////////////////////////////////
   // build approximated stiffness matrix
   ///////////////////////////////////////
+  stiffmatrix->MultiplyTN(detJ_w, bop, cb_fd, 1.0);
+#ifdef MATERIALFDCHECK
   stiffmatrix_fd.MultiplyTN(detJ_w, bop, cb_fd, 1.0);
+#endif
 
   ///////////////////////////////////////
-
+#ifdef MATERIALFDCHECK
   //after last gp was evaluated
   if(gp == (NUMGPT_SOH8-1))
   {
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> errormatrix(true);
 
-    if(output or throwerror)
-    {
-      // calc error (subtraction stiffmatrix - stiffmatrix_fd)
-      errormatrix.Update(1.0,stiffmatrix_fd,-1.0,stiffmatrix_copy);
+      // calc error (subtraction stiffmatrix - stiffmatrix_analytical)
+      errormatrix.Update(1.0,stiffmatrix_fd,-1.0,stiffmatrix_analytical);
 
       for (int i = 0; i < NUMDOF_SOH8; ++i)
       {
@@ -3204,44 +3208,25 @@ void DRT::ELEMENTS::So_hex8::ConstitutiveTensorFDCheck(
         {
           if(1)
           {
-            double relerror = abs(errormatrix(i,j))/abs((stiffmatrix_copy)(i,j));
-            if ( std::min(abs(errormatrix(i,j)),relerror) > 1e-07 )
+            double relerror = abs(errormatrix(i,j))/abs((stiffmatrix_analytical)(i,j));
+            if ( std::min(abs(errormatrix(i,j)),relerror) > delta*10.0 )
             {
-              if(output)
-                std::cout<<"ELEGID:"<<this->Id()<<"  gp: "<<gp<<"  ROW: "<<i<<"  COL: "<<j<<"    REL. ERROR: "<<relerror<<"    ABS. ERROR: "<<abs(errormatrix(i,j))<<"    stiff. val: "<<stiffmatrix_copy(i,j)<<"    approx. val: "<<stiffmatrix_fd(i,j)<<std::endl;
+              std::cout<<"ELEGID:"<<this->Id()<<"  gp: "<<gp<<"  ROW: "<<i<<"  COL: "<<j<<"    REL. ERROR: "<<relerror<<"    ABS. ERROR: "<<abs(errormatrix(i,j))<<"    stiff. val: "<<stiffmatrix_analytical(i,j)<<"    approx. val: "<<stiffmatrix_fd(i,j)<<std::endl;
               success = false;
             }
           }
         }
       } // check errors
 
-      if (!success and throwerror)
+      if (!success)
       {
         std::cout<<"FDCHECK FAILED!"<<std::endl;
         dserror("encountered errors checking the elastic stiffness matrix");
       }
-    } // if output == true
 
   } // if last gp of element is reached
+#endif
 
-  // reset xcurr
-  for (int k=0; k<NUMNOD_SOH8; ++k)
-  {
-    const double* x = nodes[k]->X();
-    xrefe(k,0) = x[0];
-    xrefe(k,1) = x[1];
-    xrefe(k,2) = x[2];
-
-    xcurr(k,0) = xrefe(k,0) + disp[k*NODDOF_SOH8+0];
-    xcurr(k,1) = xrefe(k,1) + disp[k*NODDOF_SOH8+1];
-    xcurr(k,2) = xrefe(k,2) + disp[k*NODDOF_SOH8+2];
-  }
-
-  // use fd matrix as material tangent
-  if(usetangent == true)
-  {
-    stiffmatrix->MultiplyTN(detJ_w, bop, cb_fd, 1.0);
-  }
 
   return;
 }
