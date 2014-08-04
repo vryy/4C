@@ -66,6 +66,12 @@ nqpoints_ (quadrature_->NumPoints())
     LINALG::Matrix<nen_,1> myfunct(funct.A()+q*nen_,true);
     DRT::UTILS::shape_function<distype>(xsi,myfunct);
   }
+
+  // Fill support points
+  nodexyzreal.Shape(nsd_, ndofs_);
+  polySpace_->FillUnitNodePoints(nodexyzunit);
+  dsassert(nodexyzreal.M() == nodexyzunit.M() &&
+           nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
 }
 
 
@@ -115,6 +121,38 @@ DRT::UTILS::ShapeValues<distype>::Evaluate (const DRT::Element &ele)
   faceVol = 1./faceVol;
   for (unsigned int i=0; i<ndofs_; ++i)
     shfunctAvg(i) *= faceVol;
+
+  // evaluate unit cell support points
+  for (unsigned int i=0; i<ndofs_; ++i)
+  {
+    for (unsigned int idim=0;idim<nsd_;idim++)
+      xsi(idim) = nodexyzunit(idim,i);
+
+    LINALG::Matrix<nen_,1> myfunct;
+    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
+    mypoint.MultiplyNN(xyze,myfunct);
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                 schoeder 06/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace()
+:
+degree_ (-1),
+nfdofs_(-1),
+nqpoints_(-1)
+{
+  if (nsd_ == 2)
+    faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
+  else if (nsd_ == 3)
+    faceNodeOrder = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  else
+    dserror("Not implemented for dim != 2, 3");
 }
 
 
@@ -136,37 +174,53 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
 
   {
     degree_ = degree;
-    polySpaceFace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params);
-    nfdofs_ = polySpaceFace_->Size();
-    fquadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
-    nfqpoints_ = fquadrature_->NumPoints();
+    polySpace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params);
+    nfdofs_ = polySpace_->Size();
+    quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
+    nqpoints_ = quadrature_->NumPoints();
 
     Epetra_SerialDenseVector faceValues(nfdofs_);
-    xyzFreal.Shape(nsd_, nfqpoints_);
-    functF.Shape(nfn_, nfqpoints_);
+    xyzreal.Shape(nsd_, nqpoints_);
+    funct.Shape(nfn_, nqpoints_);
 
-    shfunctFNoPermute.Shape(nfdofs_, nfqpoints_);
-    shfunctF.Shape(nfdofs_, nfqpoints_);
+    shfunctNoPermute.Shape(nfdofs_, nqpoints_);
+    shfunct.Shape(nfdofs_, nqpoints_);
     shfunctI.resize(nfaces_);
     for (unsigned int f=0;f<nfaces_; ++f)
-      shfunctI[f].Shape(shapes.ndofs_, nfqpoints_);
-    normals.Shape(nsd_, nfqpoints_);
-    jfacF.Resize(nfqpoints_);
+      shfunctI[f].Shape(shapes.ndofs_, nqpoints_);
+    normals.Shape(nsd_, nqpoints_);
+    jfac.Resize(nqpoints_);
 
-    for (unsigned int q=0; q<nfqpoints_; ++q )
+    for (unsigned int q=0; q<nqpoints_; ++q )
     {
-      const double* gpcoord = fquadrature_->Point(q);
+      const double* gpcoord = quadrature_->Point(q);
 
       const unsigned int codim = nsd_-1;
       for (unsigned int idim=0;idim<codim;idim++)
-        xsiF(idim) = gpcoord[idim];
+        xsi(idim) = gpcoord[idim];
 
-      polySpaceFace_->Evaluate(xsiF,faceValues);
+      polySpace_->Evaluate(xsi,faceValues);
       for (unsigned int i=0; i<nfdofs_; ++i)
-        shfunctFNoPermute(i,q) = faceValues(i);
+        shfunctNoPermute(i,q) = faceValues(i);
 
-      LINALG::Matrix<nfn_,1> myfunct(functF.A()+q*nfn_,true);
-      DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsiF,myfunct);
+      LINALG::Matrix<nfn_,1> myfunct(funct.A()+q*nfn_,true);
+      DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    }
+
+    // Fill face support points
+    nodexyzreal.Shape(nsd_, nfdofs_);
+    polySpace_->FillUnitNodePoints(nodexyzunit);
+    dsassert(nodexyzreal.M() == nodexyzunit.M() &&
+             nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
+    for (unsigned int i=0; i<nfdofs_; ++i)
+    {
+      for (unsigned int idim=0;idim<nsd_-1;idim++)
+        xsi(idim) = nodexyzunit(idim,i);
+
+      LINALG::Matrix<nfn_,1> myfunct;
+      DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+      LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
+      mypoint.MultiplyNN(xyze,myfunct);
     }
 
   }
@@ -176,41 +230,41 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
   dsassert(faceNodeOrder[face].size() == nfn_,
            "Internal error");
 
-  LINALG::Matrix<nsd_,nen_>     xyze;
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(&ele,xyze);
+  LINALG::Matrix<nsd_,nen_> xyzeElement;
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(&ele,xyzeElement);
   for (unsigned int i=0; i<nfn_; ++i)
     for (unsigned int d=0; d<nsd_; ++d)
-      xyzeF(d,i) = xyze(d,faceNodeOrder[face][i]);
+      xyze(d,i) = xyzeElement(d,faceNodeOrder[face][i]);
 
   // evaluate geometry
-  for (unsigned int q=0; q<nfqpoints_; ++q) {
-    const double* gpcoord = fquadrature_->Point(q);
+  for (unsigned int q=0; q<nqpoints_; ++q) {
+    const double* gpcoord = quadrature_->Point(q);
     for (unsigned int idim=0;idim<nsd_-1;idim++)
-      xsiF(idim) = gpcoord[idim];
+      xsi(idim) = gpcoord[idim];
 
-    DRT::UTILS::shape_function_deriv1<facedis>(xsiF,derivF);
+    DRT::UTILS::shape_function_deriv1<facedis>(xsi,deriv);
     double jacdet = 0;
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<facedis>(xyzeF,derivF,metricTensor,jacdet,&normal);
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<facedis>(xyze,deriv,metricTensor,jacdet,&normal);
     for (unsigned int d=0; d<nsd_; ++d)
       normals(d,q) = normal(d);
-    jfacF(q) = jacdet * fquadrature_->Weight(q);
+    jfac(q) = jacdet * quadrature_->Weight(q);
 
-    LINALG::Matrix<nfn_,1> myfunct(functF.A()+q*nfn_,true);
-    LINALG::Matrix<nsd_,1> mypoint(xyzFreal.A()+q*nsd_,true);
-    mypoint.MultiplyNN(xyzeF,myfunct);
+    LINALG::Matrix<nfn_,1> myfunct(funct.A()+q*nfn_,true);
+    LINALG::Matrix<nsd_,1> mypoint(xyzreal.A()+q*nsd_,true);
+    mypoint.MultiplyNN(xyze,myfunct);
   }
 
   AdjustFaceOrientation(ele, face);
 
-  Epetra_SerialDenseMatrix quadrature(nfqpoints_,nsd_,false);
+  Epetra_SerialDenseMatrix quadrature(nqpoints_,nsd_,false);
   Epetra_SerialDenseMatrix trafo(nsd_,nsd_,false);
   Epetra_SerialDenseVector values(shapes.ndofs_);
   LINALG::Matrix<nsd_,1> xsi;
   for (unsigned int f=0; f<nfaces_; ++f)
   {
-    DRT::UTILS::BoundaryGPToParentGP<nsd_>(quadrature,trafo,*fquadrature_,distype,
+    DRT::UTILS::BoundaryGPToParentGP<nsd_>(quadrature,trafo,*quadrature_,distype,
                                            DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, f);
-    for (unsigned int q=0; q<nfqpoints_; ++q)
+    for (unsigned int q=0; q<nqpoints_; ++q)
     {
       for (unsigned int d=0; d<nsd_; ++d)
         xsi(d) = quadrature(q,d);
@@ -231,7 +285,7 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
 template <DRT::Element::DiscretizationType distype>
 void
 DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element &ele,
-                                                         const unsigned int  face)
+                                                             const unsigned int  face)
 {
   // figure out how to permute face indices by checking permutation of nodes.
   // In case there is some permutation, we need to change the order of quadrature
@@ -239,7 +293,7 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
   // contributions to the matrix.
   const int * nodeIds = ele.NodeIds();
   const int * fnodeIds = ele.Faces()[face]->NodeIds();
-  const int nqpoints1d = std::pow(nfqpoints_+0.001,1./(nsd_-1));
+  const int nqpoints1d = std::pow(nqpoints_+0.001,1./(nsd_-1));
   // easy case: standard orientation
   bool standard = true;
   for (unsigned int i=0; i<nfn_; ++i)
@@ -247,9 +301,9 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
       standard = false;
   if (standard)
   {
-    for (unsigned int q=0; q<nfqpoints_; ++q)
+    for (unsigned int q=0; q<nqpoints_; ++q)
       for (unsigned int i=0; i<nfdofs_; ++i)
-        shfunctF(i,q) = shfunctFNoPermute(i,q);
+        shfunct(i,q) = shfunctNoPermute(i,q);
   }
   // OK, the orientation is different from what I expect. see if we can find it
   else switch (nsd_)
@@ -259,10 +313,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
     {
       dsassert(nodeIds[faceNodeOrder[face][1]] == fnodeIds[0] &&
                nodeIds[faceNodeOrder[face][0]] == fnodeIds[1], "Unknown face orientation in 2D");
-      for (unsigned int q=0; q<nfqpoints_; ++q)
+      for (unsigned int q=0; q<nqpoints_; ++q)
       {
         for (unsigned int i=0; i<nfdofs_; ++i)
-          shfunctF(i,q) = shfunctFNoPermute(i,nfqpoints_-1-q);
+          shfunct(i,q) = shfunctNoPermute(i,nqpoints_-1-q);
       }
     }
     break;
@@ -278,13 +332,13 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
           nodeIds[faceNodeOrder[face][2]] == fnodeIds[3] &&
           nodeIds[faceNodeOrder[face][3]] == fnodeIds[2])    // x-direction mirrored
       {
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
           const int ax = q%nqpoints1d;
           const int ay = q/nqpoints1d;
           int permute = nqpoints1d-1-ax + ay * nqpoints1d;
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,permute);
+            shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
       else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[0] &&
@@ -292,13 +346,13 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
                nodeIds[faceNodeOrder[face][2]] == fnodeIds[2] &&
                nodeIds[faceNodeOrder[face][3]] == fnodeIds[1])    // permute x and y
       {
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
           const int ax = q%nqpoints1d;
           const int ay = q/nqpoints1d;
           int permute = ay + ax * nqpoints1d;
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,permute);
+            shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
       else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[3] &&
@@ -306,13 +360,13 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
                nodeIds[faceNodeOrder[face][2]] == fnodeIds[1] &&
                nodeIds[faceNodeOrder[face][3]] == fnodeIds[0])    // y mirrored
       {
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
           const int ax = q%nqpoints1d;
           const int ay = q/nqpoints1d;
           int permute = ax + (nqpoints1d-1-ay) * nqpoints1d;
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,permute);
+            shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
       else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[2] &&
@@ -320,13 +374,13 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
                nodeIds[faceNodeOrder[face][2]] == fnodeIds[0] &&
                nodeIds[faceNodeOrder[face][3]] == fnodeIds[1])    // x and y mirrored
       {
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
           const int ax = q%nqpoints1d;
           const int ay = q/nqpoints1d;
           int permute = (nqpoints1d-1-ax) + (nqpoints1d-1-ay) * nqpoints1d;
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,permute);
+            shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
       else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[2] &&
@@ -334,13 +388,13 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
                nodeIds[faceNodeOrder[face][2]] == fnodeIds[0] &&
                nodeIds[faceNodeOrder[face][3]] == fnodeIds[3])    // x and y mirrored and permuted
       {
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
           const int ax = q%nqpoints1d;
           const int ay = q/nqpoints1d;
           int permute = (nqpoints1d-1-ay) + (nqpoints1d-1-ax) * nqpoints1d; // note that this is for lexicographic ordering
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,permute);
+            shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
       else
@@ -358,19 +412,21 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
           nodeIds[faceNodeOrder[face][1]] == fnodeIds[0] &&
           nodeIds[faceNodeOrder[face][2]] == fnodeIds[2])
       {
-        // zeroth and first node permuted
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        // zeroth and first node permuted; the search is a bit stupid right now
+        // (one could cache the permutation coefficients r of the quadrature formula
+        // but it does not seem worth it)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
-          double point[2] = {fquadrature_->Point(q)[0], fquadrature_->Point(q)[1]};
+          double point[2] = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
           point[0] = 1.-point[1]-point[0];
           unsigned int r=0;
-          for (; r<nfqpoints_; ++r)
-            if (std::abs(fquadrature_->Point(r)[0]-point[0]) < 1e-14 &&
-                std::abs(fquadrature_->Point(r)[1]-point[1]) < 1e-14)
+          for (; r<nqpoints_; ++r)
+            if (std::abs(quadrature_->Point(r)[0]-point[0]) < 1e-14 &&
+                std::abs(quadrature_->Point(r)[1]-point[1]) < 1e-14)
               break;
-          dsassert(r<nfqpoints_, "Quadrature points seem to not be symmetric");
+          dsassert(r<nqpoints_, "Quadrature points seem to not be symmetric");
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,r);
+            shfunct(i,q) = shfunctNoPermute(i,r);
         }
       }
       else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[2] &&
@@ -378,18 +434,18 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
                nodeIds[faceNodeOrder[face][2]] == fnodeIds[0])
       {
         // zeroth and second node permuted
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
-          double point[2] = {fquadrature_->Point(q)[0], fquadrature_->Point(q)[1]};
+          double point[2] = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
           point[1] = 1.-point[1]-point[0];
           unsigned int r=0;
-          for (; r<nfqpoints_; ++r)
-            if (std::abs(fquadrature_->Point(r)[0]-point[0]) < 1e-14 &&
-                std::abs(fquadrature_->Point(r)[1]-point[1]) < 1e-14)
+          for (; r<nqpoints_; ++r)
+            if (std::abs(quadrature_->Point(r)[0]-point[0]) < 1e-14 &&
+                std::abs(quadrature_->Point(r)[1]-point[1]) < 1e-14)
               break;
-          dsassert(r<nfqpoints_, "Quadrature points seem to not be symmetric");
+          dsassert(r<nqpoints_, "Quadrature points seem to not be symmetric");
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,r);
+            shfunct(i,q) = shfunctNoPermute(i,r);
         }
       }
       else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[0] &&
@@ -397,17 +453,17 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
                nodeIds[faceNodeOrder[face][2]] == fnodeIds[1])
       {
         // first and second node permuted
-        for (unsigned int q=0; q<nfqpoints_; ++q)
+        for (unsigned int q=0; q<nqpoints_; ++q)
         {
-          double point[2] = {fquadrature_->Point(q)[1], fquadrature_->Point(q)[0]};
+          double point[2] = {quadrature_->Point(q)[1], quadrature_->Point(q)[0]};
           unsigned int r=0;
-          for (; r<nfqpoints_; ++r)
-            if (std::abs(fquadrature_->Point(r)[0]-point[0]) < 1e-14 &&
-                std::abs(fquadrature_->Point(r)[1]-point[1]) < 1e-14)
+          for (; r<nqpoints_; ++r)
+            if (std::abs(quadrature_->Point(r)[0]-point[0]) < 1e-14 &&
+                std::abs(quadrature_->Point(r)[1]-point[1]) < 1e-14)
               break;
-          dsassert(r<nfqpoints_, "Quadrature points seem to not be symmetric");
+          dsassert(r<nqpoints_, "Quadrature points seem to not be symmetric");
           for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunctF(i,q) = shfunctFNoPermute(i,r);
+            shfunct(i,q) = shfunctNoPermute(i,r);
         }
       }
       else
@@ -426,22 +482,6 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
     dserror("Only implemented in 2D and 3D");
     break;
   }
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  Constructor (public)                                 schoeder 06/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace()
-{
-  if (nsd_ == 2)
-    faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
-  else if (nsd_ == 3)
-    faceNodeOrder = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-  else
-    dserror("Not implemented for dim != 2, 3");
 }
 
 

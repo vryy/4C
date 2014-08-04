@@ -628,12 +628,12 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
     zeroMatrix(mass);
     zeroMatrix(trVec);
 
-    for (unsigned int q=0; q<shapesface_->nfqpoints_; ++q)
+    for (unsigned int q=0; q<shapesface_->nqpoints_; ++q)
     {
-      const double fac = shapesface_->jfacF(q);
+      const double fac = shapesface_->jfac(q);
       double xyz[nsd_];
       for (unsigned int d=0; d<nsd_; ++d)
-        xyz[d] = shapesface_->xyzFreal(d,q);
+        xyz[d] = shapesface_->xyzreal(d,q);
       double p;
 
       EvaluateAll((*functno)[0], xyz, p, 1.0);
@@ -643,8 +643,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       {
         // mass matrix
         for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
-          mass(i,j) += shapesface_->shfunctF(i,q) * shapesface_->shfunctF(j,q) * fac;
-        trVec(i) += shapesface_->shfunctF(i,q) * p * fac;
+          mass(i,j) += shapesface_->shfunct(i,q) * shapesface_->shfunct(j,q) * fac;
+        trVec(i) += shapesface_->shfunct(i,q) * p * fac;
       }
     }
 
@@ -981,9 +981,9 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
       {
         // evaluate shape polynomials in node
         for (unsigned int idim=0;idim<nsd_-1;idim++)
-          shapesface_->xsiF(idim) = locations(idim,i);
+          shapesface_->xsi(idim) = locations(idim,i);
 
-        shapesface_->polySpaceFace_->Evaluate(shapesface_->xsiF,fvalues); // TODO: fix face orientation here
+        shapesface_->polySpace_->Evaluate(shapesface_->xsi,fvalues); // TODO: fix face orientation here
 
         // compute values for velocity and pressure by summing over all basis functions
         double sum = 0.0;
@@ -1564,8 +1564,8 @@ ProjectPadapField(DRT::ELEMENTS::Acou &             ele,
       {
         // evaluate shape polynomials in node
         for (unsigned int idim=0;idim<nsd_-1;idim++)
-          shapesface_->xsiF(idim) = locations(idim,i);
-        shapesface_->polySpaceFace_->Evaluate(shapesface_->xsiF,fvalues); // TODO: fix face orientation here
+          shapesface_->xsi(idim) = locations(idim,i);
+        shapesface_->polySpace_->Evaluate(shapesface_->xsi,fvalues); // TODO: fix face orientation here
 
         // compute values for velocity and pressure by summing over all basis functions
         double sum = 0.0;
@@ -1735,7 +1735,7 @@ ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
     // evaluate shape polynomials in node
     for (unsigned int idim=0;idim<nsd_-1;idim++)
       xsiFl(idim) = locations(idim,i);
-    shapesface_->polySpaceFace_->Evaluate(xsiFl,fvalues); // TODO: fix face orientation here
+    shapesface_->polySpace_->Evaluate(xsiFl,fvalues); // TODO: fix face orientation here
 
     // compute values for velocity and pressure by summing over all basis functions
     double sum = 0.0;
@@ -1804,7 +1804,7 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
         // evaluate shape polynomials in node
         for (unsigned int idim=0;idim<nsd_-1;idim++)
           xsitemp(idim) = locations(idim,i);// TODO: fix face orientation here
-        shapesface_.polySpaceFace_->Evaluate(xsitemp,fvalues);
+        shapesface_.polySpace_->Evaluate(xsitemp,fvalues);
 
         // compute values for velocity and pressure by summing over all basis functions
         for (unsigned int k=0; k<shapesface_.nfdofs_; ++k)
@@ -1828,7 +1828,7 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
         else
           dserror("could not get value from node %d of element %d on proc %d ",fnodeIds[i],ele->Id(),ele->Owner());
         for(unsigned int d=0; d<nsd_; ++d)
-          fnodexyz[i][d] = shapesface_.xyzeF(d,i);
+          fnodexyz[i][d] = shapesface_.xyze(d,i);
 
       } // for(int i=0; i<numfnode; ++i)
 
@@ -1836,12 +1836,12 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
       Epetra_SerialDenseMatrix mass(shapesface_.nfdofs_,shapesface_.nfdofs_);
       Epetra_SerialDenseVector trVec(shapesface_.nfdofs_);
 
-      for(unsigned int q=0; q<shapesface_.nfqpoints_; ++q)
+      for(unsigned int q=0; q<shapesface_.nqpoints_; ++q)
       {
-        const double fac = shapesface_.jfacF(q);
+        const double fac = shapesface_.jfac(q);
         double xyz[nsd_];
         for (unsigned int d=0; d<nsd_; ++d)
-          xyz[d] = shapesface_.xyzFreal(d,q);
+          xyz[d] = shapesface_.xyzreal(d,q);
         double val = 0.0;
 
         EvaluateFaceAdjoint(fnodexyz,values,numfnode,xyz,val);
@@ -1850,8 +1850,8 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
         {
           // mass matrix
           for (unsigned int j=0; j<shapesface_.nfdofs_; ++j)
-            mass(i,j) += shapesface_.shfunctF(i,q) * shapesface_.shfunctF(j,q) * fac;
-          trVec(i) += shapesface_.shfunctF(i,q) * val * fac * double(numfnode)/double(shapesface_.nfdofs_);
+            mass(i,j) += shapesface_.shfunct(i,q) * shapesface_.shfunct(j,q) * fac;
+          trVec(i) += shapesface_.shfunct(i,q) * val * fac * double(numfnode)/double(shapesface_.nfdofs_);
         }
       } // for(unsigned int q=0; q<nfdofs_; ++q)
 
@@ -1902,9 +1902,9 @@ ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
       for (unsigned int q=0; q<=p; ++q)
       {
         double tempG = 0.0;
-        for (unsigned int i=0; i<shapesface_.nfqpoints_; ++i)
+        for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
         {
-          tempG += shapesface_.jfacF(i) * shapesface_.shfunctF(p,i) * shapesface_.shfunctF(q,i);
+          tempG += shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunct(q,i);
         }
 
         elemat(indexstart+p,indexstart+q) =
@@ -1961,7 +1961,7 @@ ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
     {
       values[i] = 0.0;
       for(unsigned int d=0; d<nsd_; ++d)
-        fnodexyz[i][d] = shapesface_.xyzeF(d,i);
+        fnodexyz[i][d] = shapesface_.xyze(d,i);
     }
     for(int i=0; i<numlinenode; ++i) values[(*indices)[i]] = linevalues[i];
 
@@ -1969,12 +1969,12 @@ ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
     Epetra_SerialDenseMatrix mass(shapesface_.nfdofs_,shapesface_.nfdofs_);
     Epetra_SerialDenseVector trVec(shapesface_.nfdofs_);
 
-    for(unsigned int q=0; q<shapesface_.nfqpoints_; ++q)
+    for(unsigned int q=0; q<shapesface_.nqpoints_; ++q)
     {
-      const double fac = shapesface_.jfacF(q);
+      const double fac = shapesface_.jfac(q);
       double xyz[nsd_];
       for (unsigned int d=0; d<nsd_; ++d)
-        xyz[d] = shapesface_.xyzFreal(d,q);
+        xyz[d] = shapesface_.xyzreal(d,q);
       double val = 0.0;
 
       EvaluateFaceAdjoint(fnodexyz,values,numfnode,xyz,val);
@@ -1983,8 +1983,8 @@ ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
       {
         // mass matrix
         for (unsigned int j=0; j<shapesface_.nfdofs_; ++j)
-          mass(i,j) += shapesface_.shfunctF(i,q) * shapesface_.shfunctF(j,q) * fac;
-        trVec(i,0) += shapesface_.shfunctF(i,q) * val * fac * double(numfnode)/double(shapesface_.nfdofs_);
+          mass(i,j) += shapesface_.shfunct(i,q) * shapesface_.shfunct(j,q) * fac;
+        trVec(i,0) += shapesface_.shfunct(i,q) * val * fac * double(numfnode)/double(shapesface_.nfdofs_);
       }
     } // for(unsigned int q=0; q<nfdofs_; ++q)
     {
@@ -2258,9 +2258,9 @@ ComputeFaceMatrices(const int                           face,
 
       // numerical integration: sum over quadrature points
       double tempE = 0.0;
-      for (unsigned int i=0; i<shapesface_.nfqpoints_; ++i)
+      for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        double temp = shapesface_.jfacF(i) * shapesface_.shfunctF(p,i) * shapesface_.shfunctI[face](q,i);
+        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunctI[face](q,i);
         tempE += temp;
         for(unsigned int j=0; j<nsd_; ++j)
         {
@@ -2284,9 +2284,9 @@ ComputeFaceMatrices(const int                           face,
     for (unsigned int q=0; q<=p; ++q)
     {
       double tempG = 0.0;
-      for (unsigned int i=0; i<shapesface_.nfqpoints_; ++i)
+      for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        tempG += shapesface_.jfacF(i) * shapesface_.shfunctF(p,i) * shapesface_.shfunctF(q,i);
+        tempG += shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunct(q,i);
       }
       Gmat(indexstart+p,indexstart+q) =
       Gmat(indexstart+q,indexstart+p) += tau * tempG;
@@ -2300,9 +2300,9 @@ ComputeFaceMatrices(const int                           face,
     for (unsigned int q=0; q<=p; ++q)
     {
       double tempD = 0.0;
-      for (unsigned int i=0; i<shapesface_.nfqpoints_; ++i)
+      for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        tempD += shapesface_.jfacF(i) * shapesface_.shfunctI[face](p,i) * shapesface_.shfunctI[face](q,i);
+        tempD += shapesface_.jfac(i) * shapesface_.shfunctI[face](p,i) * shapesface_.shfunctI[face](q,i);
       }
       Dmat(p,q) = Dmat(q,p) -= tau * tempD;
     }

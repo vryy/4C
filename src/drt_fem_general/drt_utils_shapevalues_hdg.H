@@ -80,6 +80,8 @@ namespace DRT
       Epetra_SerialDenseMatrix      funct;   /// values of mapping shape functions on all quadrature points
       LINALG::Matrix<nsd_,nen_>     deriv;   /// gradients of mapping shape functions
       Epetra_SerialDenseMatrix      xyzreal; /// coordinates of all quadrature points in real space
+      Epetra_SerialDenseMatrix      nodexyzunit; /// coordinates of all node (support) points of Lagrange basis functions in unit coordinates (all points at cell center for Legendre-type polynomials)
+      Epetra_SerialDenseMatrix      nodexyzreal; /// coordinates of all node (support) points of Lagrange basis functions in real space (all points at cell center for Legendre-type polynomials)
 
       Epetra_SerialDenseMatrix      shfunct; /// evaluated HDG shape functions on all quadrature points
       Epetra_SerialDenseVector      shfunctAvg;/// average of shfunctF on cell
@@ -116,11 +118,7 @@ namespace DRT
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /*!
-      \brief Initialize the data structure for shape functions, set element-independent data
-
-      @param degree  Degree of the polynomial
-      @param completepoly  Sets whether to use a polynomial of complete degree or tensor degree (on hex); on tet, only complete degree makes sense
-      @param quadratureDegree  Sets the degree of polynomials the Gauss formula should integrate exactly; typically 2*degree
+      \brief Constructor. Does nothing because of p-adaptivity where EvaluateFace needs to create all the data fields
        */
       ShapeValuesFace();
 
@@ -144,31 +142,34 @@ namespace DRT
       unsigned int degree_;
 
       /// underlying polynomial space for faces
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_-1> > polySpaceFace_;
+      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_-1> > polySpace_;
 
       /// scalar dofs per face
       unsigned int nfdofs_;
 
       /// quadrature rule
-      Teuchos::RCP<DRT::UTILS::GaussPoints> fquadrature_;
+      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_;
 
       /// number of integration points on face
-      unsigned int nfqpoints_;
+      unsigned int nqpoints_;
 
-      Epetra_SerialDenseMatrix      functF;  /// values of mapping shape functions on all face quadrature points
-      LINALG::Matrix<nsd_-1,nfn_>   derivF;  /// gradients of mapping shape functions on face
+      Epetra_SerialDenseMatrix      funct;  /// values of mapping shape functions on all face quadrature points
+      LINALG::Matrix<nsd_-1,nfn_>   deriv;  /// gradients of mapping shape functions on face
       LINALG::Matrix<nsd_-1,nsd_-1> metricTensor; /// metric tensor on face
       LINALG::Matrix<nsd_,1>        normal;  /// normal vector
 
-      Epetra_SerialDenseMatrix      xyzFreal;/// coordinates of face quadrature points in real space
-      Epetra_SerialDenseMatrix      shfunctF;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
-      Epetra_SerialDenseMatrix      shfunctFNoPermute;///evaluated shape functions for HDG face polynomials in natural ordering
+      Epetra_SerialDenseMatrix      xyzreal;/// coordinates of face quadrature points in real space
+      Epetra_SerialDenseMatrix      nodexyzunit; /// coordinates of all node (support) points of face Lagrange basis functions in unit coordinates (invalid for Legendre-type polynomials)
+      Epetra_SerialDenseMatrix      nodexyzreal; /// coordinates of all node (support) points of face Lagrange basis functions in real space (invalid for Legendre-type polynomials)
+
+      Epetra_SerialDenseMatrix      shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
+      Epetra_SerialDenseMatrix      shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
       std::vector<Epetra_SerialDenseMatrix> shfunctI;/// evaluated shape functions on face for interior HDG polynomials
       Epetra_SerialDenseMatrix      normals; /// normal vectors on a single face for all quadrature points
 
-      LINALG::Matrix<nsd_-1,1>      xsiF;    /// face quadrature points
-      LINALG::Matrix<nsd_,nfn_>     xyzeF;   /// face nodes
-      Epetra_SerialDenseVector      jfacF;   /// face Jacobian determinant times quadrature weight
+      LINALG::Matrix<nsd_-1,1>      xsi;    /// face quadrature points
+      LINALG::Matrix<nsd_,nfn_>     xyze;   /// face nodes
+      Epetra_SerialDenseVector      jfac;   /// face Jacobian determinant times quadrature weight
 
       std::vector<std::vector<int> > faceNodeOrder; /// numbering of nodes belonging to faces
     };

@@ -72,13 +72,14 @@ namespace UTILS
      \brief Constructor.
      */
     LagrangePolynomial (const std::vector<double> &supportPoints,
-                        const double               unitPoint)
+                        const double               nodePoint)
       :
-      supportPoints_(supportPoints)
+      supportPoints_(supportPoints),
+      nodePoint_    (nodePoint)
     {
       long double weight = 1.;
       for (unsigned int i=0; i<supportPoints.size(); ++i)
-        weight *= unitPoint - supportPoints[i];
+        weight *= nodePoint - supportPoints[i];
       dsassert((std::abs(weight) > std::numeric_limits<double>::min() &&
                 std::abs(weight) < std::numeric_limits<double>::max()),
                "Error in evaluation of polynomial");
@@ -91,15 +92,17 @@ namespace UTILS
     LagrangePolynomial (const LagrangePolynomial &other)
     :
       supportPoints_(other.supportPoints_),
+      nodePoint_(other.nodePoint_),
       weight_(other.weight_)
     {}
 
-		/*!
+    /*!
      \brief Assignment operator
      */
     LagrangePolynomial & operator = (const LagrangePolynomial &other)
     {
       supportPoints_ = other.supportPoints_;
+      nodePoint_ = other.nodePoint_;
       weight_ = other.weight_;
       return *this;
     }
@@ -117,7 +120,7 @@ namespace UTILS
 
     /*!
      \brief Evaluates the polynomial and its derivatives (up to the order given by
-     	 the length of values) on the given point
+            the length of values) on the given point
      */
     template <typename M>
     void Evaluate (const double  point,
@@ -149,8 +152,14 @@ namespace UTILS
       }
     }
 
+    double NodePoint() const
+    {
+      return nodePoint_;
+    }
+
   private:
     std::vector<double> supportPoints_;
+    double nodePoint_;
     double weight_;
   };
 
@@ -299,6 +308,13 @@ namespace UTILS
         derivatives(k) = 0;
     }
 
+    // Here, we do not know a node, so put the center of the 1d element
+    double NodePoint() const
+    {
+      return 0.;
+    }
+
+
   private:
     std::vector<double> coefficients_;
   };
@@ -390,6 +406,11 @@ namespace UTILS
      */
     virtual void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
                                  Epetra_SerialDenseMatrix     &derivatives) const = 0;
+
+    /*
+     \brief Creates an array with coordinates of the nodes supporting the polynomials.
+     */
+    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const = 0;
   };
 
 
@@ -651,6 +672,44 @@ namespace UTILS
       return indices;
     }
 
+    /*
+     \brief Creates an array with coordinates of the nodes supporting the polynomials.
+     */
+    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+    {
+      matrix.Shape(nsd_, Size());
+
+      const unsigned int size = polySpace1d_.size();
+      switch (nsd_)
+      {
+      case 3:
+        for (unsigned int i=0; i<size; ++i)
+          for (unsigned int j=0; j<size; ++j)
+            for (unsigned int k=0; k<size; ++k)
+            {
+              matrix(0,renumbering_[i*size*size+j*size+k]) = polySpace1d_[k].NodePoint();
+              matrix(1,renumbering_[i*size*size+j*size+k]) = polySpace1d_[j].NodePoint();
+              matrix(2,renumbering_[i*size*size+j*size+k]) = polySpace1d_[i].NodePoint();
+            }
+          break;
+      case 2:
+        for (unsigned int j=0; j<size; ++j)
+          for (unsigned int k=0; k<size; ++k)
+          {
+            matrix(0,renumbering_[j*size+k]) = polySpace1d_[k].NodePoint();
+            matrix(1,renumbering_[j*size+k]) = polySpace1d_[j].NodePoint();
+          }
+          break;
+      case 1:
+        for (unsigned int k=0; k<size; ++k)
+          matrix(0,renumbering_[k]) = polySpace1d_[k].NodePoint();
+          break;
+      default:
+        dserror("Invalid dimension");
+        break;
+      }
+    }
+
   private:
     std::vector<POLY> polySpace1d_;
     std::vector<int> renumbering_;
@@ -795,7 +854,8 @@ namespace UTILS
       case 3:
         for (unsigned int i=0; i<size; ++i)
           for (unsigned int j=0; j<size-i; ++j)
-            for (unsigned int k=0; k<size-i-j; ++k, ++c) {
+            for (unsigned int k=0; k<size-i-j; ++k, ++c)
+            {
               derivatives(0,renumbering_[c]) =
                   evaluation[2][i] * evaluation[1][j] * gradient[0][k];
               derivatives(1,renumbering_[c]) =
@@ -806,7 +866,8 @@ namespace UTILS
           break;
       case 2:
         for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size-j; ++k, ++c) {
+          for (unsigned int k=0; k<size-j; ++k, ++c)
+          {
             derivatives(0,renumbering_[c]) = evaluation[1][j] * gradient[0][k];
             derivatives(1,renumbering_[c]) = gradient[1][j] * evaluation[0][k];
           }
@@ -887,6 +948,46 @@ namespace UTILS
       case 1:
         for (unsigned int k=0; k<size; ++k, ++c)
           derivatives(0,renumbering_[k]) = hessian[0][k];
+          break;
+      default:
+        dserror("Invalid dimension");
+        break;
+      }
+      dsassert(c==Size(), "Internal error");
+    }
+
+    /*
+     \brief Creates an array with coordinates of the nodes supporting the polynomials.
+     */
+    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+    {
+      matrix.Shape(nsd_, Size());
+
+      const unsigned int size = polySpace1d_.size();
+      unsigned int c=0;
+      switch (nsd_)
+      {
+      case 3:
+        for (unsigned int i=0; i<size; ++i)
+          for (unsigned int j=0; j<size-i; ++j)
+            for (unsigned int k=0; k<size-i-j; ++k, ++c)
+            {
+              matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
+              matrix(1,renumbering_[c]) = polySpace1d_[j].NodePoint();
+              matrix(2,renumbering_[c]) = polySpace1d_[i].NodePoint();
+            }
+          break;
+      case 2:
+        for (unsigned int j=0; j<size; ++j)
+          for (unsigned int k=0; k<size-j; ++k, ++c)
+          {
+            matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
+            matrix(1,renumbering_[c]) = polySpace1d_[j].NodePoint();
+          }
+          break;
+      case 1:
+        for (unsigned int k=0; k<size; ++k, ++c)
+          matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
           break;
       default:
         dserror("Invalid dimension");
@@ -1014,6 +1115,20 @@ public:
                        Epetra_SerialDenseMatrix     &derivatives) const
   {
     polyspace_->Evaluate_deriv2(point, derivatives);
+  }
+
+  /*
+   \brief Creates an array with coordinates of the nodes supporting the polynomials.
+
+   For Lagrange polynomials, these are the node points of the respective Gauss-Lobatto
+   quadrature formula. For Legendre polynomials which are non-nodal, all points will be
+   the element center coordinates.
+
+   The output matrix is resized to the correct dimension.
+   */
+  void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+  {
+    polyspace_->FillUnitNodePoints(matrix);
   }
 
 private:
