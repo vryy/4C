@@ -107,6 +107,7 @@ void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
 /* Setup of multigrid hierarchy */
 void NLNSOL::FAS::AMGHierarchy::Setup()
 {
+#ifdef HAVE_MueLu
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -217,7 +218,11 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   // Setup() has been called
   SetIsSetup();
 
-  return;
+#else
+
+  dserror("Requires MueLu");
+
+#endif
 }
 
 /*----------------------------------------------------------------------------*/
