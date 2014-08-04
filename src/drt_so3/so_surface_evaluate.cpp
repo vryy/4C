@@ -62,7 +62,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     neum_none,
     neum_live,                  // standard Neumann load
     neum_pseudo_orthopressure,  // pseudo-orthopressure load
-    neum_orthopressure          // orthopressure load
+    neum_orthopressure,         // orthopressure load
+    neum_torque                 // torque
   };
 
   LoadType ltype     = neum_none;
@@ -93,6 +94,11 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   else if (*type == "neum_orthopressure")
   {
     ltype  = neum_orthopressure;
+    config = config_spatial;
+  }
+  else if (*type == "neum_torque")
+  {
+    ltype  = neum_torque;
     config = config_spatial;
   }
   else
@@ -401,6 +407,64 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     }
     break;
 
+    case neum_torque:
+    {
+      // check whether only first, fourth, fifth and sixth value is set
+      if ((*onoff)[0] != 1) dserror("Torque value not provided!");
+      if ((*onoff)[3] != 1) dserror("X-coordinate of axis for torque not provided!");
+      if ((*onoff)[4] != 1) dserror("Y-coordinate of axis for torque not provided!");
+      if ((*onoff)[5] != 1) dserror("Z-coordinate of axis for torque not provided!");
+      for (int checkdof = 1; checkdof < 3; ++checkdof)
+        if ((*onoff)[checkdof] != 0) dserror("Incorrect value for torque!");
+
+      // get values for torque and coordinates of axis
+      double torque_value = (*val)[0];
+      LINALG::Matrix<3,1> axis(true);
+      axis(0) = (*val)[3];
+      axis(1) = (*val)[4];
+      axis(2) = (*val)[5];
+
+      // compute normal vector (with area as length)
+      std::vector<double> normal(3);
+      SurfaceIntegration(normal,xc,deriv);
+
+      // compute cross product of axis and (negative) normal
+      LINALG::Matrix<3,1> crossprod(true);
+      crossprod(0) = -(axis(1)*normal[2]-axis(2)*normal[1]);
+      crossprod(1) = -(axis(2)*normal[0]-axis(0)*normal[2]);
+      crossprod(2) = -(axis(0)*normal[1]-axis(1)*normal[0]);
+
+      // factor given by spatial function
+      double functfac = 1.0;
+      int functnum = -1;
+      double val_curvefac_functfac;
+      if (spa_func) functnum = (*spa_func)[0];
+      {
+        if (functnum > 0)
+        {
+          gp_coord.Multiply('T','N',1.0,funct,xc,0.0);
+          // write coordinates in another datatype
+          double gp_coord2[numdim];
+          for(int i=0;i<numdim;i++)
+          {
+            gp_coord2[i]=gp_coord(0,i);
+          }
+          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+          // evaluate function at current gauss point
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
+        }
+        else functfac = 1.0;
+      }
+      val_curvefac_functfac = curvefac*functfac;
+
+      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * torque_value;
+      for (int node=0; node < numnode; ++node)
+        for(int dim=0 ; dim<3; dim++)
+          elevec1[node*numdf+dim] += funct[node] * crossprod(dim) * fac;
+    }
+    break;
+
     default:
       dserror("Unknown type of SurfaceNeumann load");
     break;
@@ -487,30 +551,30 @@ void DRT::ELEMENTS::StructuralSurface::automatic_DSurfaceIntegration(
   // copy data of coordinate matrix x
   for(int row=0; row < x.M(); row++)
   {
-  	for(int column = 0; column < x.N(); column++)
-  	{
-  		saccado_x[x.N()*row+column] = x(row,column);
-	  	saccado_x[x.N()*row+column].diff(x.N()*row+column,x.N()*x.M());
-  	}
+    for(int column = 0; column < x.N(); column++)
+    {
+      saccado_x[x.N()*row+column] = x(row,column);
+      saccado_x[x.N()*row+column].diff(x.N()*row+column,x.N()*x.M());
+    }
   }
 
   // copy data of shape function derivatives matrix deriv
   for(int row=0; row < deriv.M(); row++)
   {
-  	for(int column = 0; column < deriv.N(); column++)
-  	{
-  		saccado_deriv[deriv.N()*row+column]= deriv(row,column);
-	  }
+    for(int column = 0; column < deriv.N(); column++)
+    {
+      saccado_deriv[deriv.N()*row+column]= deriv(row,column);
+    }
   }
 
   // re-compute local basis vectors g1 and g2
   for(int dim = 0; dim < numdim; dim++)
   {
-	  for(int column = 0; column < deriv.N(); column++)
-	  {
-		  saccado_g1[dim] += saccado_deriv[column]* saccado_x[column*x.N()+dim];
-		  saccado_g2[dim] += saccado_deriv[column+deriv.N()]* saccado_x[column*x.N()+dim];
-	  }
+    for(int column = 0; column < deriv.N(); column++)
+    {
+      saccado_g1[dim] += saccado_deriv[column]* saccado_x[column*x.N()+dim];
+      saccado_g2[dim] += saccado_deriv[column+deriv.N()]* saccado_x[column*x.N()+dim];
+    }
   }
 
   // re-compute normal vector (cross product g1 x g2)
@@ -521,10 +585,10 @@ void DRT::ELEMENTS::StructuralSurface::automatic_DSurfaceIntegration(
   // direct access to the Sacado derivatives
   for(int dim = 0; dim < numdim; dim++)
   {
-	  for(int dxyz = 0; dxyz< numdof; dxyz++)
-	  {
-		  d_normal(dim, dxyz) = saccado_normal[dim].fastAccessDx(dxyz);
-	  }
+    for(int dxyz = 0; dxyz< numdof; dxyz++)
+    {
+      d_normal(dim, dxyz) = saccado_normal[dim].fastAccessDx(dxyz);
+    }
   }
 
   return;
@@ -614,7 +678,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_struct_centerdisp")       act = StructuralSurface::calc_struct_centerdisp;
   else if (action=="calc_struct_rotation")         act = StructuralSurface::calc_struct_rotation;
   else if (action=="calc_undo_struct_rotation")    act = StructuralSurface::calc_undo_struct_rotation;
-  else if (action=="calc_struct_area") 	           act = StructuralSurface::calc_struct_area;
+  else if (action=="calc_struct_area")             act = StructuralSurface::calc_struct_area;
   else if (action=="calc_ref_nodal_normals")       act = StructuralSurface::calc_ref_nodal_normals;
   else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
   else

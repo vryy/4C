@@ -63,8 +63,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(
       new StringConditionComponent(
         "type","Live",
-        Teuchos::tuple<std::string>("Live","Dead","PrescribedDomainLoad","constHydro_z","increaseHydro_z","pseudo_orthopressure","orthopressure","LAS","PressureGrad"),
-        Teuchos::tuple<std::string>("neum_live","neum_dead","pres_domain_load","neum_consthydro_z","neum_increhydro_z","neum_pseudo_orthopressure","neum_orthopressure","neum_LAS","neum_pgrad"),
+        Teuchos::tuple<std::string>("Live","Dead","PrescribedDomainLoad","constHydro_z","increaseHydro_z","pseudo_orthopressure","orthopressure","LAS","PressureGrad","Torque"),
+        Teuchos::tuple<std::string>("neum_live","neum_dead","pres_domain_load","neum_consthydro_z","neum_increhydro_z","neum_pseudo_orthopressure","neum_orthopressure","neum_LAS","neum_pgrad","neum_torque"),
         true)));
   neumanncomponents.push_back(
     Teuchos::rcp(
