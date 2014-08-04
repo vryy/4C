@@ -12,7 +12,7 @@ Maintainer: Moritz
 </pre>
 
 Here is everything related with writing a dat-file
-*/
+ */
 /*----------------------------------------------------------------------*/
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_reader.H"
@@ -54,7 +54,7 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
 
   // write END
   dat << "---------------------------------------------------------------END\n"\
-         "// END\n";
+      "// END\n";
 
   // close datfile
   if (dat.is_open()) dat.close();
@@ -68,11 +68,11 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
 void EXODUS::WriteDatIntro(const std::string& headfile, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   dat <<"==================================================================\n" \
-        "                  General Data File BACI\n" \
-  "==================================================================\n" \
-  "-------------------------------------------------------------TITLE\n" \
-  "created by pre_exodus \n" \
-  "------------------------------------------------------PROBLEM SIZE\n";
+      "                  General Data File BACI\n" \
+      "==================================================================\n" \
+      "-------------------------------------------------------------TITLE\n" \
+      "created by pre_exodus \n" \
+      "------------------------------------------------------PROBLEM SIZE\n";
   // print number of elements and nodes just as an comment instead of
   // a valid parameter (prevents possible misuse of these parameters in BACI)
   dat << "//ELEMENTS    " << mymesh.GetNumEle() << std::endl;
@@ -425,7 +425,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, std::ostream& dat,
-     const std::map<int,std::map<int,std::vector<std::vector<double> > > >& elecenterlineinfo)
+    const std::map<int,std::map<int,std::vector<std::vector<double> > > >& elecenterlineinfo)
 {
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
   std::vector<EXODUS::elem_def> strus;
@@ -433,6 +433,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   std::vector<EXODUS::elem_def> ales;
   std::vector<EXODUS::elem_def> transport;
   std::vector<EXODUS::elem_def> thermo;
+  std::vector<EXODUS::elem_def> acou;
   std::vector<EXODUS::elem_def>::const_iterator i_et;
 
   for(i_et=eledefs.begin();i_et!=eledefs.end();++i_et){
@@ -442,6 +443,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
     else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
     else if (acte.sec.compare("THERMO")==0) thermo.push_back(acte);
+    else if (acte.sec.compare("ACOUSTIC")==0) acou.push_back(acte);
     else if (acte.sec.compare("")==0);
     else{
       std::cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!" << std::endl;
@@ -496,6 +498,15 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
+  // print thermo elements
+  dat << "---------------------------------------------------ACOUSTIC ELEMENTS" << std::endl;
+  for(i_et=acou.begin();i_et!=acou.end();++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
+  }
+
   return;
 }
 
@@ -519,15 +530,15 @@ void EXODUS::DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS:
     for(i_n=nodes.begin();i_n!=nodes.end();++i_n) dat << *i_n << " ";
     dat << "   " << acte.desc;              // e.g. "MAT 1"
     if(elescli.size()!=0){
-    	// quick check wether elements in ele Block have a fiber direction
-    	if(elescli.find(eb_id)!=elescli.end())
-    	{
-    		// write local cosy from centerline to each element
-    	  std::vector<std::vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
-		  dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
-		  dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
-		  dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
-    	}
+      // quick check wether elements in ele Block have a fiber direction
+      if(elescli.find(eb_id)!=elescli.end())
+      {
+        // write local cosy from centerline to each element
+        std::vector<std::vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
+        dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
+        dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
+        dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
+      }
     }
     dat << std::endl;  // finish this element line
 
