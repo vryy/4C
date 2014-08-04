@@ -34,18 +34,6 @@ public:
   /// read restart information for given time step
   virtual void ReadRestart(int step);
 
-  /// set initial field to zero (needed for adjoint problem)
-  virtual void SetInitialZeroField();
-
-  /// set initial field by given function
-  virtual void SetInitialField(int startfuncno, double pulse);
-
-  /// set initial field by given light distribution
-  virtual void SetInitialPhotoAcousticField(double pulse, Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
-
-  /// update: current solution becomes old solution of next timestep
-  virtual void TimeUpdate();
-
   /// write restart
   virtual void WriteRestart();
 
@@ -55,10 +43,6 @@ public:
 private:
   /// order of the BDF scheme
   int order_;
-
-  // in contrast to the base class, BDF schemes require additional history variables
-  Teuchos::RCP<Epetra_Vector>    velnmm_;
-  Teuchos::RCP<Epetra_Vector>    velnmmm_;
 };
 
 } // namespace ACOU

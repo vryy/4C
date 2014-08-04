@@ -158,10 +158,23 @@ void ACOU::AcouImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(velnp_,"velnps");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
-  // reader.ReadVector(intvelnp_,"intvelnp");
-  //  reader.ReadVector(intveln_ ,"intveln");
-  // reader.ReadVector(intvelnm_ ,"intvelnm");
-  dserror("write read restart method which brings the values to the elements");
+
+  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intveln = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intvelnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  reader.ReadVector(intvelnp,"intvelnp");
+  reader.ReadVector(intveln ,"intveln");
+  reader.ReadVector(intvelnm ,"intvelnm");
+
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",ACOU::ele_init_from_restart);
+  eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  discret_->SetState(1,"intvelnp",intvelnp);
+  discret_->SetState(1,"intveln",intveln);
+  discret_->SetState(1,"intvelnm",intvelnm);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->ClearState();
 
   return;
 } // ReadRestart
@@ -912,9 +925,8 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
 
   discret_->SetState("trace",velnp_);
   // fill in parameters and set states needed by elements
-  if(!padaptivity_){
-    discret_->SetState("trace_m",veln_);
-  }
+  if(!padaptivity_) discret_->SetState("trace_m",veln_);
+
   eleparams.set<double>("dt",dtp_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
@@ -1432,7 +1444,26 @@ void ACOU::AcouImplicitTimeInt::WriteRestart()
   output_->WriteVector("velnps", velnp_);
   output_->WriteVector("veln", veln_);
   output_->WriteVector("velnm",velnm_);
-  dserror("TODO: write interiorfield for restart: create vector, fill it with elements and write it");
+
+  // write internal field for which we need to create and fill the corresponding vectors
+  // since this requires some effort, the WriteRestart method should not be used excessively!
+  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intveln = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intvelnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",ACOU::fill_restart_vecs);
+  eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  discret_->SetState(1,"intvelnp",intvelnp);
+  discret_->SetState(1,"intveln",intveln);
+  discret_->SetState(1,"intvelnm",intvelnm);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->ClearState();
+
+  output_->WriteVector("intvelnp",intvelnp);
+  output_->WriteVector("intveln",intveln);
+  output_->WriteVector("intvelnm",intvelnm);
 
   return;
 } // WriteRestart

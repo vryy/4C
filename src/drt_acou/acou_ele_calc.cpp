@@ -115,6 +115,19 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     ElementInit(ele,params);
     break;
   }
+  case ACOU::fill_restart_vecs:
+  {
+    bool padapty = params.get<bool>("padaptivity");
+    ReadGlobalVectors(ele,discretization,lm,padapty);
+    FillRestartVectors(ele,discretization);
+    break;
+  }
+  case ACOU::ele_init_from_restart:
+  {
+    ElementInit(ele,params);
+    ElementInitFromRestart(ele,discretization);
+    break;
+  }
   case ACOU::interpolate_hdg_to_node:
   {
     const bool padapty = params.get<bool>("padaptivity");
@@ -325,9 +338,9 @@ VectorHandling(DRT::ELEMENTS::Acou   * ele,
   else if(dyna_ == INPAR::ACOU::acou_bdf2)
   {
     for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
-      interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * interiorVeln_[i];
+      interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * interiorVelnm_[i];
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-      interiorPressnp_[i]  = 4.0 / 3.0 * interiorPressnp_[i]  - 1.0 / 3.0 * interiorPressn_[i];
+      interiorPressnp_[i]  = 4.0 / 3.0 * interiorPressnp_[i]  - 1.0 / 3.0 * interiorPressnm_[i];
   }
   else if(dyna_ == INPAR::ACOU::acou_bdf3)
   {
@@ -398,6 +411,219 @@ ReadGlobalVectors(DRT::Element           * ele,
 
   return;
 } // ReadGlobalVectors
+
+/*----------------------------------------------------------------------*
+ * FillRestartVectors
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::
+FillRestartVectors(DRT::Element           * ele,
+                   DRT::Discretization    & discretization)
+{
+  // sort this back to the interior values vector
+  std::vector<double> interiorValnp(shapes_->ndofs_*(nsd_+1));
+  for(unsigned int i=0; i<interiorValnp.size(); ++i)
+  {
+    if ((i+1)%(nsd_+1) == 0)
+      interiorValnp[i] = interiorPressnp_((i+1)/(nsd_+1)-1);
+    else
+    {
+      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
+      interiorValnp[i] = interiorVelnp_(xyz*shapes_->ndofs_+i/(nsd_+1));
+    }
+  }
+
+  // tell this change in the interior variables the discretization
+  std::vector<int> localDofs = discretization.Dof(1,ele);
+  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
+  {
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnp");
+    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+    for (unsigned int i=0; i<localDofs.size(); ++i)
+    {
+      const int lid = intdofcolmap->LID(localDofs[i]);
+      secondary[lid] = interiorValnp[i];
+    }
+  }
+
+  {
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intveln");
+    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        interiorValnp[i] = interiorPressn_((i+1)/(nsd_+1)-1);
+      else
+      {
+        int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorVeln_(xyz*shapes_->ndofs_+i/(nsd_+1));
+      }
+    }
+    for (unsigned int i=0; i<localDofs.size(); ++i)
+    {
+      const int lid = intdofcolmap->LID(localDofs[i]);
+      secondary[lid] = interiorValnp[i];
+    }
+  }
+
+  // only do this if desired!
+  if(interiorPressnm_.M()>0 && discretization.HasState(1,"intvelnm"))
+  {
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnm");
+    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        interiorValnp[i] = interiorPressnm_((i+1)/(nsd_+1)-1);
+      else
+      {
+        int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorVelnm_(xyz*shapes_->ndofs_+i/(nsd_+1));
+      }
+    }
+    for (unsigned int i=0; i<localDofs.size(); ++i)
+    {
+      const int lid = intdofcolmap->LID(localDofs[i]);
+      secondary[lid] = interiorValnp[i];
+    }
+  }
+
+  // only do this if desired!
+  if(interiorPressnmm_.M()>0 && discretization.HasState(1,"intvelnmm"))
+  {
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnmm");
+    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        interiorValnp[i] = interiorPressnmm_((i+1)/(nsd_+1)-1);
+      else
+      {
+        int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorVelnmm_(xyz*shapes_->ndofs_+i/(nsd_+1));
+      }
+    }
+    for (unsigned int i=0; i<localDofs.size(); ++i)
+    {
+      const int lid = intdofcolmap->LID(localDofs[i]);
+      secondary[lid] = interiorValnp[i];
+    }
+  }
+
+  // only do this if desired!
+  if(interiorPressnmmm_.M()>0 && discretization.HasState(1,"intvelnmmm"))
+  {
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnmmm");
+    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        interiorValnp[i] = interiorPressnmmm_((i+1)/(nsd_+1)-1);
+      else
+      {
+        int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorVelnmmm_(xyz*shapes_->ndofs_+i/(nsd_+1));
+      }
+    }
+    for (unsigned int i=0; i<localDofs.size(); ++i)
+    {
+      const int lid = intdofcolmap->LID(localDofs[i]);
+      secondary[lid] = interiorValnp[i];
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * ElementInitFromRestart
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::
+ElementInitFromRestart(DRT::Element           * ele,
+                   DRT::Discretization    & discretization)
+{
+  DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
+  std::vector<double> interiorValnp(shapes_->ndofs_*(nsd_+1));
+
+
+  Teuchos::RCP<const Epetra_Vector> intvel = discretization.GetState(1,"intvelnp");
+  std::vector<int> localDofs1 = discretization.Dof(1,ele);
+  DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
+
+  // now write this in corresponding interiorVelnp_ and interiorPressnp_
+  for(unsigned int i=0; i<interiorValnp.size(); ++i)
+  {
+    if ((i+1)%(nsd_+1) == 0)
+      acouele->eleinteriorPressnp_((i+1)/(nsd_+1)-1) = interiorValnp[i];
+    else
+    {
+      int xyz = i % (nsd_+1);
+      acouele->eleinteriorVelnp_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnp[i];
+    }
+  }
+
+  intvel = discretization.GetState(1,"intveln");
+  DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
+  for(unsigned int i=0; i<interiorValnp.size(); ++i)
+  {
+    if ((i+1)%(nsd_+1) == 0)
+      acouele->eleinteriorPressn_((i+1)/(nsd_+1)-1) = interiorValnp[i];
+    else
+    {
+      int xyz = i % (nsd_+1);
+      acouele->eleinteriorVeln_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnp[i];
+    }
+  }
+  if(discretization.HasState(1,"intvelnm")&&acouele->eleinteriorPressnm_.M()>0)
+  {
+    intvel = discretization.GetState(1,"intvelnm");
+    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        acouele->eleinteriorPressnm_((i+1)/(nsd_+1)-1) = interiorValnp[i];
+      else
+      {
+        int xyz = i % (nsd_+1);
+        acouele->eleinteriorVelnm_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnp[i];
+      }
+    }
+  }
+
+  if(discretization.HasState(1,"intvelnmm")&&acouele->eleinteriorPressnmm_.M()>0)
+  {
+    intvel = discretization.GetState(1,"intvelnmm");
+    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        acouele->eleinteriorPressnmm_((i+1)/(nsd_+1)-1) = interiorValnp[i];
+      else
+      {
+        int xyz = i % (nsd_+1);
+        acouele->eleinteriorVelnmm_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnp[i];
+      }
+    }
+  }
+
+  if(discretization.HasState(1,"intvelnmmm")&&acouele->eleinteriorPressnmmm_.M()>0)
+  {
+    intvel = discretization.GetState(1,"intvelnmmm");
+    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
+    for(unsigned int i=0; i<interiorValnp.size(); ++i)
+    {
+      if ((i+1)%(nsd_+1) == 0)
+        acouele->eleinteriorPressnmmm_((i+1)/(nsd_+1)-1) = interiorValnp[i];
+      else
+      {
+        int xyz = i % (nsd_+1);
+        acouele->eleinteriorVelnmmm_(xyz*shapes_->ndofs_+i/(nsd_+1)) = interiorValnp[i];
+      }
+    }
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * ComputeError
@@ -1411,6 +1637,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     ele.eleinteriorVelnmm_    = ele.eleinteriorVelnm_;
     ele.eleinteriorVelnm_     = tempVelnp;
   }
+
   tempVec1.Resize(shapes_->ndofs_);
   tempVec1.Multiply('N','N',1.0,localSolver_->Mmat,interiorPressnp_,0.0);
   tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Hmat,interiorVelnp_,1.0);

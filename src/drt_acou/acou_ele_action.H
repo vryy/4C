@@ -34,7 +34,9 @@ enum Action {
   interpolate_hdg_to_node,            // 9
   update_secondary_solution_and_calc_residual, // 10
   interpolate_psi_to_node,            // 11
-  ele_init                            // 12
+  ele_init,                           // 12
+  fill_restart_vecs,                  // 13
+  ele_init_from_restart               // 14
 }; // enum Action
 
 } // namespace ACOU

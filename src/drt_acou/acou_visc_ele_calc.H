@@ -270,8 +270,17 @@ private:
                          DRT::Discretization    & discretization,
                          const std::vector<int> & lm);
 
+
+  /// writes internal field to global vectors
+  void FillRestartVectors(DRT::Element           * ele,
+                          DRT::Discretization    & discretization);
+
+  /// writes internal field to global vectors
+  void ElementInitFromRestart(DRT::Element           * ele,
+                              DRT::Discretization    & discretization);
+
   /// reads from global vectors
-  void DIRKVectorHandling(DRT::ELEMENTS::Acou*     ele,
+  void VectorHandling(DRT::ELEMENTS::Acou*     ele,
                           Teuchos::ParameterList&       params,
                           double dt);
 

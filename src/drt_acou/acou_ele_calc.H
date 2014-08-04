@@ -274,6 +274,14 @@ namespace ELEMENTS
                            const std::vector<int> & lm,
                            const bool               padaptivity);
 
+    /// writes internal field to global vectors
+    void FillRestartVectors(DRT::Element           * ele,
+                            DRT::Discretization    & discretization);
+
+    /// writes internal field to global vectors
+    void ElementInitFromRestart(DRT::Element           * ele,
+                                DRT::Discretization    & discretization);
+
     /// reads from global vectors
     void VectorHandling(DRT::ELEMENTS::Acou*     ele,
                         Teuchos::ParameterList&       params,

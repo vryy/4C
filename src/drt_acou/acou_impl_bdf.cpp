@@ -43,14 +43,11 @@ ACOU::TimIntImplBDF::TimIntImplBDF(
   case INPAR::ACOU::acou_bdf3:
   {
     order_ = 3;
-    velnmm_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     break;
   }
   case INPAR::ACOU::acou_bdf4:
   {
     order_ = 4;
-    velnmm_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    velnmmm_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     break;
   }
   default:
@@ -68,109 +65,72 @@ void ACOU::TimIntImplBDF::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  reader.ReadVector(velnp_,"velnp");
+  reader.ReadVector(velnp_,"velnps");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
 
-  dserror("TODO: adapt read restart function for bdf");
+  Teuchos::RCP<Epetra_Vector> intvelnmm;
+  Teuchos::RCP<Epetra_Vector> intvelnmmm;
+  if ( order_ > 2 )
+  {
+    intvelnmm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+    reader.ReadVector(intvelnmm,"intvelnmm");
+    discret_->SetState(1,"intvelnmm",intvelnmm);
+  }
+  if ( order_ > 3 )
+  {
+    intvelnmmm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+    reader.ReadVector(intvelnmmm,"intvelnmmm");
+    discret_->SetState(1,"intvelnmmm",intvelnmmm);
+  }
+
+  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intveln = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intvelnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  reader.ReadVector(intvelnp,"intvelnp");
+  reader.ReadVector(intveln ,"intveln");
+  reader.ReadVector(intvelnm ,"intvelnm");
+
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",ACOU::ele_init_from_restart);
+  eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<bool>("padaptivity",padaptivity_);
+  discret_->SetState(1,"intvelnp",intvelnp);
+  discret_->SetState(1,"intveln",intveln);
+  discret_->SetState(1,"intvelnm",intvelnm);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->ClearState();
 
   return;
 } // ReadRestart
-
-/*----------------------------------------------------------------------*
- |  Initialization of algorithm to zero (public)         schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::TimIntImplBDF::SetInitialZeroField()
-{
-  // call base class function first
-  ACOU::AcouImplicitTimeInt::SetInitialZeroField();
-
-  // and additionally set BDF specific vectors to zero
-  if ( order_ > 2 )
-    velnmm_->PutScalar(0.0);
-
-  if ( order_ > 3 )
-    velnmmm_->PutScalar(0.0);
-
-  return;
-} // SetInitialZeroField
-
-/*----------------------------------------------------------------------*
- |  Initialization of algorithm by given function (pub)  schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::TimIntImplBDF::SetInitialField(int startfuncno, double pulse)
-{
-  // call base class function first
-  ACOU::AcouImplicitTimeInt::SetInitialField(startfuncno, pulse);
-
-  // and additionally initialize BDF specific vectors
-  if ( order_ > 2 )
-    velnmm_->Update(1.0,*velnp_,0.0);
-
-  if ( order_ > 3 )
-    velnmmm_->Update(1.0,*velnp_,0.0);
-
-
-  return;
-} // SetInitialField
-
-/*----------------------------------------------------------------------*
- | Initialization by given scatra solution vector (pub)  schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::TimIntImplBDF::SetInitialPhotoAcousticField(double pulse, Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform)
-{
-  // call base class function first
-  ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(pulse, light, scatradis, meshconform);
-
-  // and additionally initialize BDF specific vectors
-  if ( order_ > 2 )
-    velnmm_->Update(1.0,*velnp_,0.0);
-
-  if ( order_ > 3 )
-    velnmmm_->Update(1.0,*velnp_,0.0);
-
-
-  return;
-} // SetInitialPhotoAcousticField
-
-/*----------------------------------------------------------------------*
- |  Update Vectors (public)                              schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::TimIntImplBDF::TimeUpdate()
-{
-  // first update BDF specific vectors
-  if ( order_ > 3)
-  {
-    velnmmm_->Update(1.0,*velnmm_,0.0);
-    velnmm_->Update(1.0,*velnm_,0.0);
-  }
-  else if ( order_ > 2 )
-  {
-    velnmm_->Update(1.0,*velnm_,0.0);
-  }
-
-  // call base class function to update remaining vectors
-  ACOU::AcouImplicitTimeInt::TimeUpdate();
-
-  return;
-} // TimeUpdate
 
 /*----------------------------------------------------------------------*
  |  Write restart vectors (public)                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
 void ACOU::TimIntImplBDF::WriteRestart()
 {
+  Teuchos::RCP<Epetra_Vector> intvelnmm;
+  Teuchos::RCP<Epetra_Vector> intvelnmmm;
+
+  if ( order_ > 2 )
+  {
+    intvelnmm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+    discret_->SetState(1,"intvelnmm",intvelnmm);
+  }
+  if ( order_ > 3 )
+  {
+    intvelnmmm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+    discret_->SetState(1,"intvelnmmm",intvelnmmm);
+  }
+
   // call base class function first
   ACOU::AcouImplicitTimeInt::WriteRestart();
 
   // and additionally write BDF specific vectors
   if ( order_ > 2 )
-    output_->WriteVector("velnmm",velnmm_);
-
+    output_->WriteVector("intvelnmm",intvelnmm);
   if ( order_ > 3 )
-    output_->WriteVector("velnmmm",velnmmm_);
-
-  dserror("TODO: adapt write restart function for bdf");
+    output_->WriteVector("intvelnmmm",intvelnmmm);
 
   return;
 }
