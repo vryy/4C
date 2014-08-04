@@ -597,7 +597,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
-  const DRT::UTILS::GaussIntegration intpoints(distype, 5);
+  const DRT::UTILS::GaussIntegration intpoints(distype, ele->Degree()*2+3);
   return ComputeError( ele, params, mat,
                        discretization, lm,
                        elevec1, intpoints);
