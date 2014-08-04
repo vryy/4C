@@ -210,7 +210,7 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
     // Fill face support points
     nodexyzreal.Shape(nsd_, nfdofs_);
     polySpace_->FillUnitNodePoints(nodexyzunit);
-    dsassert(nodexyzreal.M() == nodexyzunit.M() &&
+    dsassert(nodexyzreal.M() == nodexyzunit.M()+1 &&
              nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
     for (unsigned int i=0; i<nfdofs_; ++i)
     {
