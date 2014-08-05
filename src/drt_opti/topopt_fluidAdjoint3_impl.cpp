@@ -229,15 +229,26 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
 
   // evaluate nodal porosities
   LINALG::Matrix<nen_,1> edens(true);
+  if (params.get<INPAR::TOPOPT::DensityField>("dens_type")==INPAR::TOPOPT::dens_node_based)
   {
-    // read nodal values from global vector
     Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
+
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();
       edens(nn,0) = (*topopt_density)[lid];
     }
   }
+  else if (params.get<INPAR::TOPOPT::DensityField>("dens_type")==INPAR::TOPOPT::dens_ele_based)
+  {
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
+
+    int lid = ele->LID();
+    for (int nn=0;nn<nen_;++nn) // set all values equal to hack a constant element porosity on element level -> inefficient, but not relevant
+      edens(nn,0) = (*topopt_density)[lid];
+  }
+  else
+    dserror("not implemented type of density function");
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);

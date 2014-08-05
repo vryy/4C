@@ -440,6 +440,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       //set additional pseudo-porosity field for topology optimization
       eleparams.set("topopt_density",topopt_density_);
 
+      // set type of density field
+      eleparams.set("dens_type",DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(optimizer_->OptiParams(),"DENS_TYPE"));
+
       discret_->ClearState();
 
       discret_->SetState("fluidveln",fluidveln_);

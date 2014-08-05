@@ -58,6 +58,12 @@ public:
         int& test_count
     );
 
+    virtual void TestElement(
+        DRT::INPUT::LineDefinition& res,
+        int& nerr,
+        int& test_count
+    );
+
 private:
 
     /// pointer to fluid discretization

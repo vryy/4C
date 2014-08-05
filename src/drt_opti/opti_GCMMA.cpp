@@ -52,6 +52,7 @@ max_inner_sub_iter_(params_.get<int>("MAX_INNER_SUB_ITER")),
 m_(numConstraints),
 n_loc_(x->MyLength()),
 n_(x->GlobalLength()),
+dens_type_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params,"DENS_TYPE")),
 x_(Teuchos::rcp(new Epetra_Vector(*x))),
 x_old_(Teuchos::rcp(new Epetra_Vector(*x))),
 x_old2_(Teuchos::rcp(new Epetra_Vector(*x))),
@@ -2297,10 +2298,16 @@ void OPTI::GCMMA::Output()
   // step number and time
   output_->NewStep(total_iter_,(double)total_iter_);
 
-  // velocity/pressure vector
-  output_->WriteVector("x_mma",x_mma_);
+  if (dens_type_==INPAR::TOPOPT::dens_node_based)
+    output_->WriteVector("x_mma_n",x_mma_);
+  else if (dens_type_==INPAR::TOPOPT::dens_ele_based)
+    output_->WriteVector("x_mma_e",x_mma_);
+  else
+    dserror("undefined type of optimization field");
 
-  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and (total_iter_%upres_ == 0))
+  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true)
+      and (total_iter_%upres_ == 0)
+      and (dens_type_==INPAR::TOPOPT::dens_node_based))
     OutputToGmsh(); // TODO look at this: total_iter_,false);
 
   // write domain decomposition for visualization (only once!)

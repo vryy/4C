@@ -25,6 +25,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -49,12 +50,14 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
   adjointvel_ = Teuchos::rcp(new std::map<int,Teuchos::RCP<Epetra_Vector> >);
 
   // topology density fields
-  dens_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeColMap(),false));
+  dens_ = Teuchos::rcp(new Epetra_Vector(*ColMap(),false));
+
 
   // value of the objective function
   obj_ = 0.0;
   // gradient of the objective function
-  obj_der_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
+  obj_der_ = Teuchos::rcp(new Epetra_Vector(*RowMap()));
+
   /// number of constraints
   switch (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(optimizer_params,"TESTCASE"))
   {
@@ -85,7 +88,7 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
   // value of the constraint(s);
   constr_ = Teuchos::rcp(new Epetra_SerialDenseVector(num_constr_));
   // gradient of the constraint(s)
-  constr_der_ = Teuchos::rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
+  constr_der_ = Teuchos::rcp(new Epetra_MultiVector(*RowMap(),num_constr_,false));
 
   int numFDPoints = 0; // number of additional points for finite differences
   switch (gradienttype_)
@@ -102,7 +105,8 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
 
-  Teuchos::RCP<Epetra_Vector> dens = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
+  // topology density fields
+  Teuchos::RCP<Epetra_Vector> dens = Teuchos::rcp(new Epetra_Vector(*RowMap(),false));
   LINALG::Export(*dens_,*dens);
 
   if (1==1) // use this when different optimizers are present
@@ -155,9 +159,9 @@ void TOPOPT::Optimizer::ComputeValues(
   params.set("fluidvel",fluidvel_);
   params.set("fluiddis",fluiddis_);
 
-  optidis_->ClearState();
+  params.set("topopt_density",Teuchos::rcp_const_cast<const Epetra_Vector>(dens_));
 
-  optidis_->SetState("density",dens_);
+  optidis_->ClearState();
   optidis_->Evaluate(params,Teuchos::null,Teuchos::null);
 
   optidis_->ClearState();
@@ -199,6 +203,7 @@ void TOPOPT::Optimizer::ComputeGradients(
   params.set("action","compute_gradients");
 
   params.set("constraints_derivations",constr_der);
+  params.set("objective_derivations",obj_der);
 
   params.set("fluidvel",fluidvel_);
   params.set("adjointvel",adjointvel_);
@@ -211,12 +216,10 @@ void TOPOPT::Optimizer::ComputeGradients(
 //      i!=adjointvel_->end();i++)
 //    std::cout << "in optimizer at gradient computation adjointvel of step " << i->first << " is " << *i->second << std::endl;
 
+  params.set("topopt_density",Teuchos::rcp_const_cast<const Epetra_Vector>(dens_));
+
   optidis_->ClearState();
-
-  optidis_->SetState("density",dens_);
-
-  optidis_->Evaluate(params,Teuchos::null,obj_der);
-
+  optidis_->Evaluate(params,Teuchos::null,Teuchos::null);
   optidis_->ClearState();
 
   // Re-Transform fluid field to rowmap
@@ -290,31 +293,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
     const int startfuncno
 )
 {
-  switch (initfield)
-  {
-  case INPAR::TOPOPT::initdensfield_zero_field:
-  {
-    dens_->PutScalar(0.0);
-    break;
-  }
-  case INPAR::TOPOPT::initdensfield_field_by_function:
-  {
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<optidis_->NumMyColNodes();lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node*  lnode      = optidis_->lColNode(lnodeid);
-
-      // evaluate component k of spatial function
-      double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
-      int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
-      if (err != 0) dserror("dof not on proc");
-    }
-    break;
-  }
-  case INPAR::TOPOPT::initdensfield_channelflow0:
-  case INPAR::TOPOPT::initdensfield_channelflow05:
-  case INPAR::TOPOPT::initdensfield_channelflow1:
+  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE")==INPAR::TOPOPT::dens_node_based)
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<optidis_->NumMyColNodes();lnodeid++)
@@ -323,65 +302,172 @@ void TOPOPT::Optimizer::SetInitialDensityField(
       DRT::Node*  lnode      = optidis_->lColNode(lnodeid);
       const double* coords = lnode->X();
 
-      // case with border value 0
-      double initialval = 0.0;
-      if (abs(coords[1])<0.2-1.0e-12)
-        initialval = 1.0;
-      else
-        initialval = 0.0;
-
-      // case with border value 0.5
-      if ((initfield==INPAR::TOPOPT::initdensfield_channelflow05) and
-          (abs(abs(coords[1])-0.2)<1.0e-12))
-        initialval = 0.5;
-
-      // case with border value 1.0
-      if ((initfield==INPAR::TOPOPT::initdensfield_channelflow1) and
-          (abs(abs(coords[1])-0.2)<1.0e-12))
-        initialval = 1.0;
-
-      // evaluate component k of spatial function
-      int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
-      if (err != 0) dserror("dof not on proc");
-    }
-    break;
-  }
-  case INPAR::TOPOPT::initdensfield_channelstepflow0:
-  case INPAR::TOPOPT::initdensfield_channelstepflow05:
-  case INPAR::TOPOPT::initdensfield_channelstepflow1:
-  {
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<optidis_->NumMyColNodes();lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node*  lnode      = optidis_->lColNode(lnodeid);
-      const double* coords = lnode->X();
-
-      // case with border value 0
-      double initialval = 1.0; // default case with density one
-      if ((coords[1]<0.4+1.0e-12) and (coords[0]>1.5-1.0e-12) and (coords[0]<1.9+1.0e-12))
-        initialval = 0.0; // edge area with val 0
-
-      if ((coords[1]>0.4-1.0e-12) and (coords[1]<0.4+1.0e-12) and
-          (coords[0]>1.5-1.0e-12) and (coords[0]<1.5+1.0e-12) and
-          (coords[0]>1.9-1.0e-12) and (coords[0]<1.9+1.0e-12)) // boundary area
+      switch (initfield)
       {
-        if (initfield==INPAR::TOPOPT::initdensfield_channelflow05) initialval = 0.5; // case with border value 0.5
-        if (initfield==INPAR::TOPOPT::initdensfield_channelflow1) initialval = 1.0; // case with border value 1.0
+      case INPAR::TOPOPT::initdensfield_zero_field:
+      {
+        dens_->PutScalar(0.0);
+        break;
       }
+      case INPAR::TOPOPT::initdensfield_field_by_function:
+      {
+        // evaluate component k of spatial function
+        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
+        int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+        if (err != 0) dserror("dof not on proc");
+        break;
+      }
+      case INPAR::TOPOPT::initdensfield_channelflow0:
+      case INPAR::TOPOPT::initdensfield_channelflow05:
+      case INPAR::TOPOPT::initdensfield_channelflow1:
+      {
+        // case with border value 0
+        double initialval = 0.0;
+        if (abs(coords[1])<0.2-1.0e-12)
+          initialval = 1.0;
+        else
+          initialval = 0.0;
 
-      // evaluate component k of spatial function
-      int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
-      if (err != 0) dserror("dof not on proc");
+        // case with border value 0.5
+        if ((initfield==INPAR::TOPOPT::initdensfield_channelflow05) and
+            (abs(abs(coords[1])-0.2)<1.0e-12))
+          initialval = 0.5;
+
+        // case with border value 1.0
+        if ((initfield==INPAR::TOPOPT::initdensfield_channelflow1) and
+            (abs(abs(coords[1])-0.2)<1.0e-12))
+          initialval = 1.0;
+
+        // evaluate component k of spatial function
+        int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+        if (err != 0) dserror("dof not on proc");
+        break;
+      }
+      case INPAR::TOPOPT::initdensfield_channelstepflow0:
+      case INPAR::TOPOPT::initdensfield_channelstepflow05:
+      case INPAR::TOPOPT::initdensfield_channelstepflow1:
+      {
+        // case with border value 0
+        double initialval = 1.0; // default case with density one
+        if ((coords[1]<0.4+1.0e-12) and (coords[0]>1.5-1.0e-12) and (coords[0]<1.9+1.0e-12))
+          initialval = 0.0; // edge area with val 0
+
+        if ((coords[1]>0.4-1.0e-12) and (coords[1]<0.4+1.0e-12) and
+            (coords[0]>1.5-1.0e-12) and (coords[0]<1.5+1.0e-12) and
+            (coords[0]>1.9-1.0e-12) and (coords[0]<1.9+1.0e-12)) // boundary area
+        {
+          if (initfield==INPAR::TOPOPT::initdensfield_channelflow05) initialval = 0.5; // case with border value 0.5
+          if (initfield==INPAR::TOPOPT::initdensfield_channelflow1) initialval = 1.0; // case with border value 1.0
+        }
+
+        // evaluate component k of spatial function
+        int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+        if (err != 0) dserror("dof not on proc");
+        break;
+      }
+      default:
+      {
+        dserror("unknown initial field");
+        break;
+      }
+      }
     }
-    break;
   }
-  default:
+  else if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE")==INPAR::TOPOPT::dens_ele_based)
   {
-    dserror("unknown initial field");
-    break;
+    const int nsd = DRT::Problem::Instance()->NDim();
+
+    // loop all nodes on the processor
+    for(int leleid=0;leleid<optidis_->NumMyColElements();leleid++)
+    {
+      const DRT::Element* ele = optidis_->lColElement(leleid);
+
+      // get "approximation of element center"
+      Epetra_SerialDenseMatrix coords(nsd,1);
+      const DRT::Node* const* nodes = ele->Nodes();
+      for (int i=0;i<ele->NumNode();i++)
+      {
+        Epetra_SerialDenseMatrix nodecoords(nsd,1);
+        for (int idim=0;idim<nsd;idim++)
+          nodecoords(idim,0) = nodes[i]->X()[idim];
+
+        coords+=nodecoords;
+      }
+      coords.Scale(1.0/ele->NumNode());
+
+      switch (initfield)
+      {
+      case INPAR::TOPOPT::initdensfield_zero_field:
+      {
+        dens_->PutScalar(0.0);
+        break;
+      }
+      case INPAR::TOPOPT::initdensfield_field_by_function:
+      {
+        // evaluate component k of spatial function
+        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,coords.A(),0.0,NULL); // scalar
+        int err = dens_->ReplaceMyValues(1,&initialval,&leleid); // lnodeid = ldofid
+        if (err != 0) dserror("dof not on proc");
+        break;
+      }
+      case INPAR::TOPOPT::initdensfield_channelflow0:
+      case INPAR::TOPOPT::initdensfield_channelflow05:
+      case INPAR::TOPOPT::initdensfield_channelflow1:
+      {
+        // case with border value 0
+        double initialval = 0.0;
+        if (abs(coords(1,0))<0.2-1.0e-12)
+          initialval = 1.0;
+        else
+          initialval = 0.0;
+
+        // case with border value 0.5
+        if ((initfield==INPAR::TOPOPT::initdensfield_channelflow05) and
+            (abs(abs(coords(1,0))-0.2)<1.0e-12))
+          initialval = 0.5;
+
+        // case with border value 1.0
+        if ((initfield==INPAR::TOPOPT::initdensfield_channelflow1) and
+            (abs(abs(coords(1,0))-0.2)<1.0e-12))
+          initialval = 1.0;
+
+        // evaluate component k of spatial function
+        int err = dens_->ReplaceMyValues(1,&initialval,&leleid); // lnodeid = ldofid
+        if (err != 0) dserror("dof not on proc");
+        break;
+      }
+      case INPAR::TOPOPT::initdensfield_channelstepflow0:
+      case INPAR::TOPOPT::initdensfield_channelstepflow05:
+      case INPAR::TOPOPT::initdensfield_channelstepflow1:
+      {
+        // case with border value 0
+        double initialval = 1.0; // default case with density one
+        if ((coords(1,0)<0.4+1.0e-12) and (coords(0,0)>1.5-1.0e-12) and (coords(0,0)<1.9+1.0e-12))
+          initialval = 0.0; // edge area with val 0
+
+        if ((coords(1,0)>0.4-1.0e-12) and (coords(1,0)<0.4+1.0e-12) and
+            (coords(0,0)>1.5-1.0e-12) and (coords(0,0)<1.5+1.0e-12) and
+            (coords(0,0)>1.9-1.0e-12) and (coords(0,0)<1.9+1.0e-12)) // boundary area
+        {
+          if (initfield==INPAR::TOPOPT::initdensfield_channelflow05) initialval = 0.5; // case with border value 0.5
+          if (initfield==INPAR::TOPOPT::initdensfield_channelflow1) initialval = 1.0; // case with border value 1.0
+        }
+
+        // evaluate component k of spatial function
+        int err = dens_->ReplaceMyValues(1,&initialval,&leleid); // lnodeid = ldofid
+        if (err != 0) dserror("dof not on proc");
+        break;
+      }
+      default:
+      {
+        dserror("unknown initial field");
+        break;
+      }
+      }
+    }
   }
-  }
+  else
+    dserror("not implemented type of density function");
 }
 
 
@@ -478,6 +564,8 @@ void TOPOPT::Optimizer::ImportFlowParams(
   opti_ele_params.set("theta_obj",params_.sublist("TOPOLOGY OPTIMIZER").get<double>("THETA"));
 
   opti_ele_params.set("vol_bd",params_.sublist("TOPOLOGY OPTIMIZER").get<double>("VOLUME_BOUNDARY"));
+
+  opti_ele_params.set<INPAR::TOPOPT::DensityField>("dens_type",DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE"));
 
   opti_ele_params.set<INPAR::TOPOPT::OptiCase>("opti_case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
 
@@ -606,14 +694,10 @@ bool TOPOPT::Optimizer::Converged(
  *----------------------------------------------------------------------*/
 bool TOPOPT::Optimizer::CheckData(const bool doAdjoint)
 {
-  // n timesteps
-  // -> solutions at time t^0,t^1,...,t^n
-  // -> n+1 solutions
+  size_t num_sols = fluidParams_->get<int>("max number timesteps");
 
   if (fluidParams_->get<int>("time int algo")==INPAR::FLUID::timeint_stationary)
   {
-    size_t num_sols = fluidParams_->get<int>("max number timesteps");
-
     if (num_sols!=fluidvel_->size())
       dserror("fluid field and time step numbers do not fit: n_f = %i, n_t = %i",fluidvel_->size(),num_sols);
 
@@ -625,6 +709,9 @@ bool TOPOPT::Optimizer::CheckData(const bool doAdjoint)
   }
   else
   {
+    // n timesteps
+    // -> solutions at time t^0,t^1,...,t^n
+    // -> n+1 solutions
     size_t num_sols = fluidParams_->get<int>("max number timesteps")+1;
 
     if (num_sols!=fluidvel_->size())
@@ -686,7 +773,14 @@ void TOPOPT::Optimizer::TransformFlowFields(const bool doAdjoint, const bool row
  *----------------------------------------------------------------------*/
 const Epetra_Map* TOPOPT::Optimizer::RowMap()
 {
-  return optidis_->NodeRowMap();
+  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE")==INPAR::TOPOPT::dens_node_based)
+    return optidis_->NodeRowMap();
+  else if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE")==INPAR::TOPOPT::dens_ele_based)
+    return optidis_->ElementRowMap();
+  else
+    dserror("not implemented type of density field");
+
+  return NULL;
 }
 
 
@@ -695,7 +789,14 @@ const Epetra_Map* TOPOPT::Optimizer::RowMap()
  *----------------------------------------------------------------------*/
 const Epetra_Map* TOPOPT::Optimizer::ColMap()
 {
-  return optidis_->NodeColMap();
+  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE")==INPAR::TOPOPT::dens_node_based)
+    return optidis_->NodeColMap();
+  else if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(params_,"DENS_TYPE")==INPAR::TOPOPT::dens_ele_based)
+    return optidis_->ElementColMap();
+  else
+    dserror("not implemented type of density field");
+
+  return NULL;
 }
 
 

@@ -17,6 +17,7 @@ Maintainer: Martin Winklmaier
 
 
 #include<Teuchos_RCP.hpp>
+#include "../drt_inpar/inpar_topopt.H"
 
 class Epetra_MultiVector;
 class Epetra_SerialDenseVector;
@@ -235,6 +236,7 @@ namespace OPTI
     //@}
 
     //! @name optimization variable data
+    const INPAR::TOPOPT::DensityField dens_type_; /// type of optimization field
 
     Teuchos::RCP<Epetra_Vector> x_; /// current optimization variable
     Teuchos::RCP<Epetra_Vector> x_old_; /// last optimization variable

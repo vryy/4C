@@ -71,6 +71,8 @@ public:
 
   double VolBd() {return vol_bd_;}
 
+  INPAR::TOPOPT::DensityField DensType() {return dens_type_;}
+
   INPAR::TOPOPT::OptiCase OptiCase() {return opti_case_;}
 
 private:
@@ -131,6 +133,8 @@ private:
   //@}
 
   double vol_bd_; /// maximal percentage of fluid in background domain
+
+  INPAR::TOPOPT::DensityField dens_type_; /// type of optimization field
 
   INPAR::TOPOPT::OptiCase opti_case_; /// type of optimization (e.g. special test cases)
 

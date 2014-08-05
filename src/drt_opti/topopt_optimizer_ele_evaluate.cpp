@@ -78,8 +78,7 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
           this,
           params,
           optidis,
-          mat,
-          lm
+          mat
       );
     }
     break;
@@ -90,9 +89,7 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
         this,
         params,
         optidis,
-        mat,
-        lm,
-        elevec1
+        mat
     );
     break;
   }

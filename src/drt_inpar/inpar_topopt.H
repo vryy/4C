@@ -62,6 +62,14 @@ namespace INPAR
       cont_adjoint
     };
 
+    /// type of adjoint equations
+    enum DensityField
+    {
+      dens_undefined,
+      dens_node_based,
+      dens_ele_based
+    };
+
     /// initial field for optimization variable
     enum InitialDensityField
     {

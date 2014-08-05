@@ -284,7 +284,8 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("dispnp", "ale-displacement", nodebased, field->problem()->num_dim());
 
   // write optimization field
-  writer_->WriteResult("x_mma","optimization_variable", dofbased,1);
+  writer_->WriteResult("x_mma_n","optimization_variable", nodebased,1);
+  writer_->WriteResult("x_mma_e","optimization_variable", elementbased,1);
 
   //additional output for biofilm problems
   writer_->WriteResult("scfld_growth_displ", "scfld_growth_displ", nodebased, 3);

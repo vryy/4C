@@ -30,6 +30,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_inpar/inpar_turbulence.H"
+#include "../drt_inpar/inpar_topopt.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -295,11 +296,23 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   {
     // read nodal values from global vector
     Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
-    for (int nn=0;nn<nen_;++nn)
+
+    if (params.get<INPAR::TOPOPT::DensityField>("dens_type")==INPAR::TOPOPT::dens_node_based)
     {
-      int lid = (ele->Nodes()[nn])->LID();
-      eporo(nn,0) = (*topopt_density)[lid];
+      for (int nn=0;nn<nen_;++nn)
+      {
+        int lid = (ele->Nodes()[nn])->LID();
+        eporo(nn,0) = (*topopt_density)[lid];
+      }
     }
+    else if (params.get<INPAR::TOPOPT::DensityField>("dens_type")==INPAR::TOPOPT::dens_ele_based)
+    {
+      int lid = ele->LID();
+      for (int nn=0;nn<nen_;++nn) // set all values equal to hack a constant element porosity on element level -> inefficient, but not relevant
+        eporo(nn,0) = (*topopt_density)[lid];
+    }
+    else
+      dserror("not implemented type of density function");
   }
 
   // ---------------------------------------------------------------------

@@ -338,11 +338,22 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
-  DRT::INPUT::LineDefinition opti;
-  opti
+  DRT::INPUT::LineDefinition opti_node;
+  opti_node
     .AddTag("OPTI")
     .AddNamedString("DIS")
     .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
+  DRT::INPUT::LineDefinition opti_ele;
+  opti_ele
+    .AddTag("OPTI")
+    .AddNamedString("DIS")
+    .AddNamedInt("ELEMENT")
     .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
@@ -434,7 +445,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(red_airway);
   lines->Add(art_net);
   lines->Add(fld_adj);
-  lines->Add(opti);
+  lines->Add(opti_node);
+  lines->Add(opti_ele);
   lines->Add(fsi_node);
   lines->Add(fsi_special);
   lines->Add(invana);

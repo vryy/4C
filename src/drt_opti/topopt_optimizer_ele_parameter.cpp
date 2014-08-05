@@ -58,6 +58,7 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   theta_obj_(-1.0),
   theta_(-1.0),
   vol_bd_(-1.0),
+  dens_type_(INPAR::TOPOPT::dens_undefined),
   opti_case_(INPAR::TOPOPT::optitest_no)
 {
 }
@@ -169,6 +170,8 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
 
   vol_bd_ = params.get<double>("vol_bd");
 
+  dens_type_ = params.get<INPAR::TOPOPT::DensityField>("dens_type");
+
   opti_case_ = params.get<INPAR::TOPOPT::OptiCase>("opti_case");
 }
 
@@ -203,6 +206,8 @@ void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
   std::cout << "|    objective dissipation factor:    " << dissipation_fac_ << std::endl;
   // objective's pressure drop factor
   std::cout << "|    objective pressure drop factor:    " << pressure_drop_fac_ << std::endl;
+  // type of optimization field
+  std::cout << "|    type of optimization field:    " << dens_type_ << std::endl;
   // test case scenario
   std::cout << "|    optimization test case number:    " << opti_case_ << std::endl;
 

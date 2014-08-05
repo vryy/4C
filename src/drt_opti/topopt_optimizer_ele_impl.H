@@ -59,8 +59,7 @@ public:
       DRT::Element*               ele,
       Teuchos::ParameterList&     params,
       DRT::Discretization&        optidis,
-      Teuchos::RCP<MAT::Material> mat,
-      std::vector<int>&           lm
+      Teuchos::RCP<MAT::Material> mat
   ) = 0;
 
   //! Evaluate the gradient of the objective of element
@@ -72,9 +71,7 @@ public:
       DRT::Element*              ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       optidis,
-      Teuchos::RCP<MAT::Material> mat,
-      std::vector<int>&          lm,
-      Epetra_SerialDenseVector&  elevec1_epetra
+      Teuchos::RCP<MAT::Material> mat
   ) = 0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
@@ -129,8 +126,7 @@ public:
       DRT::Element*               ele,            //!< the element we are dealing with
       Teuchos::ParameterList&     params,         //!< the parameter list
       DRT::Discretization&        optidis, //!< the discretization the element is part of
-      Teuchos::RCP<MAT::Material> mat,
-      std::vector<int>&           lm              //!< location matrix
+      Teuchos::RCP<MAT::Material> mat
   );
 
   //! Evaluate objective value
@@ -139,7 +135,6 @@ public:
       Teuchos::ParameterList&       params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material>   mat,
-      std::vector<int>&             lm,             //!< location matrix
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
   );
 
@@ -148,9 +143,7 @@ public:
       DRT::Element*              ele,            //!< the element we are dealing with
       Teuchos::ParameterList&    params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
-      Teuchos::RCP<MAT::Material> mat,
-      std::vector<int>&          lm,             //!< location matrix
-      Epetra_SerialDenseVector&  elevec1_epetra
+      Teuchos::RCP<MAT::Material> mat
   );
 
   //! Evaluate gradient of objective
@@ -159,8 +152,6 @@ public:
       Teuchos::ParameterList&       params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material>   mat,
-      std::vector<int>&             lm,             //!< location matrix
-      Epetra_SerialDenseVector&     elevec1_epetra,
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
   );
 
@@ -198,8 +189,8 @@ private:
     std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvels,
     std::map<int,LINALG::Matrix<nen_,1> >& eadjointpress,
     LINALG::Matrix<nen_,1>& edens,
-    LINALG::Matrix<nen_,1>& egrad,
-    LINALG::Matrix<nen_,1>& econstr_der,
+    Epetra_SerialDenseVector& obj_deriv,
+    Epetra_SerialDenseVector& constr_deriv,
     Teuchos::RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );

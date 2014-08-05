@@ -5481,6 +5481,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&topoptcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&topoptcontrol);
 
+  setStringToIntegralParameter<int>("DENS_TYPE","node_based","type of optimization = density = porosity field",
+      tuple<std::string>(
+          "node_based",
+          "element_based"),
+          tuple<int>(
+              INPAR::TOPOPT::dens_node_based,
+              INPAR::TOPOPT::dens_ele_based),
+              &topoptcontrol);
+
   setStringToIntegralParameter<int>("GRADIENT_TYPE","adjoints","basic type of adjoint equations",
       tuple<std::string>(
           "adjoints",

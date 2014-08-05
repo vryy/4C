@@ -16,9 +16,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_optimizer_ele_parameter.H"
 
 #include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "../headers/definitions.h"
@@ -159,8 +157,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
-  Teuchos::RCP<MAT::Material>         mat,
-  std::vector<int>&          lm
+  Teuchos::RCP<MAT::Material> mat
 )
 {
   return EvaluateValues(
@@ -168,7 +165,6 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
       params,
       optidis,
       mat,
-      lm,
       intpoints_
   );
 }
@@ -182,7 +178,6 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   Teuchos::ParameterList&       params,
   DRT::Discretization&          optidis,
   Teuchos::RCP<MAT::Material>            mat,
-  std::vector<int>&             lm,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
@@ -208,12 +203,28 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
     efluidvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
-  Teuchos::RCP<const Epetra_Vector> dens = optidis.GetState("density");
+  // evaluate nodal porosities
   LINALG::Matrix<nen_,1> edens(true);
+  if (optiparams_->DensType()==INPAR::TOPOPT::dens_node_based)
+  {
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
 
-  std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*dens,mymatrix,lm);
-  for (int inode=0; inode<nen_; ++inode) edens(inode,0) = mymatrix[inode];
+    for (int nn=0;nn<nen_;++nn)
+    {
+      int lid = (ele->Nodes()[nn])->LID();
+      edens(nn,0) = (*topopt_density)[lid];
+    }
+  }
+  else if (optiparams_->DensType()==INPAR::TOPOPT::dens_ele_based)
+  {
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
+
+    int lid = ele->LID();
+    for (int nn=0;nn<nen_;++nn) // set all values equal to hack a constant element porosity on element level -> inefficient, but not relevant
+      edens(nn,0) = (*topopt_density)[lid];
+  }
+  else
+    dserror("not implemented type of density function");
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
@@ -333,9 +344,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
-  Teuchos::RCP<MAT::Material>         mat,
-  std::vector<int>&          lm,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Teuchos::RCP<MAT::Material> mat
   )
 {
   return EvaluateGradients(
@@ -343,8 +352,6 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
       params,
       optidis,
       mat,
-      lm,
-      elevec1_epetra,
       intpoints_
   );
 }
@@ -358,15 +365,24 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   Teuchos::ParameterList&       params,
   DRT::Discretization&          optidis,
   Teuchos::RCP<MAT::Material>            mat,
-  std::vector<int>&             lm,
-  Epetra_SerialDenseVector&     elevec1_epetra,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
-  LINALG::Matrix<nen_,1> egrad(elevec1_epetra,true);
+  Epetra_SerialDenseVector obj_deriv;
+  Epetra_SerialDenseVector constr_deriv; // volume constraint
 
-  Epetra_SerialDenseVector constr_deriv(nen_);
-  LINALG::Matrix<nen_,1> econstr_der(constr_deriv,true); // volume constraint
+  if (optiparams_->DensType()==INPAR::TOPOPT::dens_node_based)
+  {
+    obj_deriv.Size(nen_);
+    constr_deriv.Size(nen_);
+  }
+  else if (optiparams_->DensType()==INPAR::TOPOPT::dens_ele_based)
+  {
+    obj_deriv.Size(1);
+    constr_deriv.Size(1);
+  }
+  else
+    dserror("not implemented type of density function");
 
   Teuchos::RCP<DRT::Discretization> fluiddis = params.get<Teuchos::RCP<DRT::Discretization> >("fluiddis");
 
@@ -400,12 +416,28 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
     eadjointpress.insert(std::pair<int,LINALG::Matrix<nen_,1> >(i->first,eadjointpres));
   }
 
-  Teuchos::RCP<const Epetra_Vector> dens = optidis.GetState("density");
+  // evaluate nodal porosities
   LINALG::Matrix<nen_,1> edens(true);
+  if (optiparams_->DensType()==INPAR::TOPOPT::dens_node_based)
+  {
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
 
-  std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*dens,mymatrix,lm);
-  for (int inode=0; inode<nen_; ++inode) edens(inode,0) = mymatrix[inode];
+    for (int nn=0;nn<nen_;++nn)
+    {
+      int lid = (ele->Nodes()[nn])->LID();
+      edens(nn,0) = (*topopt_density)[lid];
+    }
+  }
+  else if (optiparams_->DensType()==INPAR::TOPOPT::dens_ele_based)
+  {
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
+
+    int lid = ele->LID();
+    for (int nn=0;nn<nen_;++nn) // set all values equal to hack a constant element porosity on element level -> inefficient, but not relevant
+      edens(nn,0) = (*topopt_density)[lid];
+  }
+  else
+    dserror("not implemented type of density function");
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
@@ -417,23 +449,37 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
       eadjointvels,
       eadjointpress,
       edens,
-      egrad,
-      econstr_der,
+      obj_deriv,
+      constr_deriv,
       mat,
       intpoints
   );
 
-  // the derivation of the constraints is not handled by the standard assembly process
-  // since it is a MultiVector. Thus it is handled manually here
+  // In advance, the map of the constraints and objectives derivation is unknown.
+  // Thus, the assembly of both vectors is handled manually here.
+  Teuchos::RCP<Epetra_MultiVector> obj_der = params.get<Teuchos::RCP<Epetra_Vector> >("objective_derivations");
   Teuchos::RCP<Epetra_MultiVector> constr_der = params.get<Teuchos::RCP<Epetra_MultiVector> >("constraints_derivations");
 
-  std::vector<int> dummylm; // the same as lm
-  std::vector<int> dummylmstride; // not required
-  std::vector<int> lmowner; // owners of the lm-dofs
-  ele->LocationVector(optidis,dummylm,lmowner,dummylmstride);
-  if (dummylm!=lm) dserror("non fitting local maps which shall be identical");
+  if (optiparams_->DensType()==INPAR::TOPOPT::dens_node_based)
+  {
+    std::vector<int> lm; // the same as lm
+    std::vector<int> dummylmstride; // not required
+    std::vector<int> lmowner; // owners of the lm-dofs
+    ele->LocationVector(optidis,lm,lmowner,dummylmstride);
 
-  LINALG::Assemble(*constr_der,0,constr_deriv,lm,lmowner);
+    LINALG::Assemble(*obj_der,0,obj_deriv,lm,lmowner);
+    LINALG::Assemble(*constr_der,0,constr_deriv,lm,lmowner);
+  }
+  else if (optiparams_->DensType()==INPAR::TOPOPT::dens_ele_based)
+  {
+    std::vector<int> lm; lm.push_back(ele->Id());
+    std::vector<int> lmowner; lmowner.push_back(ele->Owner());
+
+    LINALG::Assemble(*obj_der,0,obj_deriv,lm,lmowner);
+    LINALG::Assemble(*constr_der,0,constr_deriv,lm,lmowner);
+  }
+  else
+    dserror("not implemented type of density function");
 
   return 0;
 }
@@ -448,8 +494,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvels,
   std::map<int,LINALG::Matrix<nen_,1> >& eadjointpress,
   LINALG::Matrix<nen_,1>& edens,
-  LINALG::Matrix<nen_,1>& egrad,
-  LINALG::Matrix<nen_,1>& econstr_der,
+  Epetra_SerialDenseVector& obj_deriv,
+  Epetra_SerialDenseVector& constr_deriv,
   Teuchos::RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
@@ -563,11 +609,21 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
     else // standard case
       value*= fac_*optiparams_->Dt()*poroderdens_; // scale with integration factor, time step size and poro-derivative
 
-    for (int vi=0;vi<nen_;vi++)
+    if (optiparams_->DensType()==INPAR::TOPOPT::dens_node_based)
     {
-      egrad(vi,0) += value*funct_(vi);
-      econstr_der(vi,0) += fac_*funct_(vi);
+      for (int vi=0;vi<nen_;vi++)
+      {
+        obj_deriv(vi) += value*funct_(vi);
+        constr_deriv(vi) += fac_*funct_(vi);
+      }
     }
+    else if (optiparams_->DensType()==INPAR::TOPOPT::dens_ele_based)
+    {
+      obj_deriv(0) += value;
+      constr_deriv(0) += fac_;
+    }
+    else
+      dserror("not implemented type of density function");
   }
   //------------------------------------------------------------------------
   //  end loop over integration points

@@ -79,6 +79,7 @@ void FLD::TimIntTopOpt::Solve()
 void FLD::TimIntTopOpt::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
   eleparams.set("topopt_density",Teuchos::rcp_const_cast<const Epetra_Vector>(density_scaling_));
+  eleparams.set("dens_type",DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(optimizer_->OptiParams(),"DENS_TYPE"));
   return;
 }
 

@@ -264,7 +264,7 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
 
   double c = 1.0e-5; // good step size for gradient approximation (low discretization and round-off error)
 
-  for (int i=0;i<Optimizer()->OptiDis()->NodeRowMap()->NumGlobalElements();i++)
+  for (int i=0;i<Optimizer()->RowMap()->NumGlobalElements();i++)
   {
     if (Optimizer()->OptiDis()->Comm().MyPID() == 0)
     {
