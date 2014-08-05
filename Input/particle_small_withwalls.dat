@@ -34,15 +34,15 @@ LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   1.0
-BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
+BOUNDINGBOX                     -3.000001 -3.000001 -3.100001 3.000001 3.000001 3.000001
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-RESULTSEVRY                     1   
-RESTARTEVRY                     3   
+RESULTSEVRY                     1
+RESTARTEVRY                     3
 TIMESTEP                        0.05
-NUMSTEP                         8   
-MAXTIME                         0.5 
-GRAVITY_ACCELERATION            0.0 0.0 -9.81                
+NUMSTEP                         8
+MAXTIME                         0.5
+GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 RESULTSEVRY                     1
 RESTARTEVRY                     3
@@ -79,8 +79,8 @@ DSURF                           1
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
-NODE                            8 DPARTICLE 1                
-NODE                            10 DPARTICLE 2               
+NODE                            8 DPARTICLE 1
+NODE                            10 DPARTICLE 2
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

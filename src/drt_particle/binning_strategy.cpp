@@ -909,7 +909,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos
   int ijk[3] = {0,0,0};
   for(int dim=0; dim < 3; dim++)
   {
-    ijk[dim] = (int)((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]));
   }
 
   return ConvertijkToGid(&ijk[0]);
@@ -924,7 +924,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
   {
-    ijk[dim] = (int)((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]));
   }
 
   return ConvertijkToGid(&ijk[0]);
@@ -938,7 +938,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk)
 {
   for(int dim=0; dim<3; ++dim)
   {
-    ijk[dim] = (int)((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]));
   }
   return;
 }
@@ -952,7 +952,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1> pos)
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
   {
-    ijk[dim] = (int)((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]);
+    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]));
   }
 
   return ConvertijkToGid(&ijk[0]);
@@ -966,7 +966,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1> pos
 {
   for(int dim=0; dim<3; ++dim)
   {
-    ijk[dim] = (int)((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]);
+    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]));
   }
   return;
 }
