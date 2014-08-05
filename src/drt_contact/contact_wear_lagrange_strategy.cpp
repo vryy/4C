@@ -2590,7 +2590,6 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
     {
       // blocks for w-lines
       interface_[i]->AssembleTE(*twmatrix_,*ematrix_);
-
       interface_[i]->AssembleLinT_D(*lintdis_);
       interface_[i]->AssembleLinT_LM(*lintlm_);
       interface_[i]->AssembleLinE_D(*linedis_);
@@ -2608,7 +2607,6 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
       {
         // blocks for w-lines
         interface_[i]->AssembleTE_Master(*twmatrixM_,*ematrixM_);
-
         interface_[i]->AssembleLinT_D_Master(*lintdisM_);
         interface_[i]->AssembleLinT_LM_Master(*lintlmM_);
         interface_[i]->AssembleLinE_D_Master(*linedisM_);

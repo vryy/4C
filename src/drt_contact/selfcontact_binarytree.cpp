@@ -146,8 +146,8 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   DRT::Element::DiscretizationType dt = celement->Shape();
   if (dt==CoElement::tri3 || dt==CoElement::tri6)
   {
-    loccenter[0] = 1.0/3;
-    loccenter[1] = 1.0/3;
+    loccenter[0] = 1.0/3.0;
+    loccenter[1] = 1.0/3.0;
   }
   else if (dt==CoElement::line2 || dt==CoElement::line3 || dt==CoElement::quad4 ||
            dt==CoElement::quad8 || dt==CoElement::quad9)
@@ -277,13 +277,13 @@ void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop()
       for(int j=0;j<kdop_/2;++j)
       {
         //= ax+by+cz=d/sqrt(aa+bb+cc)
-        double num = dopnormals_(j,0)*pos[0]
+        const double num = dopnormals_(j,0)*pos[0]
                    + dopnormals_(j,1)*pos[1]
                    + dopnormals_(j,2)*pos[2];
-        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+        const double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
                            +(dopnormals_(j,1)*dopnormals_(j,1))
                            +(dopnormals_(j,2)*dopnormals_(j,2)));
-        double dcurrent = num/denom;
+        const double dcurrent = num/denom;
 
         if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
@@ -307,13 +307,13 @@ void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop()
       for (int j=0;j<kdop_/2;++j)
       {
         //= ax+by+cz=d/sqrt(aa+bb+cc)
-        double num = dopnormals_(j,0)*auxpos[0]
+        const double num = dopnormals_(j,0)*auxpos[0]
                    + dopnormals_(j,1)*auxpos[1]
                    + dopnormals_(j,2)*auxpos[2];
-        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+        const double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
                            +(dopnormals_(j,1)*dopnormals_(j,1))
                            +(dopnormals_(j,2)*dopnormals_(j,2)));
-        double dcurrent = num/denom;
+        const double dcurrent = num/denom;
 
         if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
@@ -382,13 +382,13 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
       for (int j=0;j<kdop_/2;++j)
       {
         //= ax+by+cz=d/sqrt(aa+bb+cc)
-        double num = dopnormals_(j,0)*pos[0]
+        const double num = dopnormals_(j,0)*pos[0]
                    + dopnormals_(j,1)*pos[1]
                    + dopnormals_(j,2)*pos[2];
-        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+        const double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
                            +(dopnormals_(j,1)*dopnormals_(j,1))
                            +(dopnormals_(j,2)*dopnormals_(j,2)));
-        double dcurrent = num/denom;
+        const double dcurrent = num/denom;
 
         if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
@@ -412,13 +412,13 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
       for (int j=0;j<kdop_/2;++j)
       {
         //= ax+by+cz=d/sqrt(aa+bb+cc)
-        double num = dopnormals_(j,0)*auxpos[0]
+        const double num = dopnormals_(j,0)*auxpos[0]
                    + dopnormals_(j,1)*auxpos[1]
                    + dopnormals_(j,2)*auxpos[2];
-        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+        const double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
                            +(dopnormals_(j,1)*dopnormals_(j,1))
                            +(dopnormals_(j,2)*dopnormals_(j,2)));
-        double dcurrent = num/denom;
+        const double dcurrent = num/denom;
 
         if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
@@ -626,11 +626,11 @@ void CONTACT::SelfDualEdge::CalculateCosts()
 
       if (scalar==0)
       {
-         double lcurrent2 = abs(parentslabs(j,1)-parentslabs(j,0));
+         const double lcurrent2 = abs(parentslabs(j,1)-parentslabs(j,0));
          if (lmaxdop2 < lcurrent2) lmaxdop2 = lcurrent2;
       }
     }
-    double doparea = lmaxdop * lmaxdop2;
+    const double doparea = lmaxdop * lmaxdop2;
 
     // cost function = nele * ( A / A_max )
     int nele = node1_->Elelist().size() + node2_->Elelist().size();

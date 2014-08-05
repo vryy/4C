@@ -523,7 +523,6 @@ void GlobalToLocal(
    return;
 };
 
-
 }//namespace UTILS
 }//namespace MORTAR
 

@@ -71,7 +71,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
   case quad8:{ distype_line = line3; break;}
   case quad9:{ distype_line = line3; break;}
   case nurbs4:{ distype_line = nurbs2; break;}
-  case nurbs8:{ distype_line = nurbs3; break;}
   case nurbs9:{ distype_line = nurbs3; break;}
   default: dserror("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
   }

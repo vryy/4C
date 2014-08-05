@@ -204,7 +204,7 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
  |  Assemble Mortar wear matrices (for master side)          farah 11/13|
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
-                                      LINALG::SparseMatrix& eglobal)
+                                               LINALG::SparseMatrix& eglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -423,7 +423,9 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
     if (fnode->FriDataPlus().GetT().size()>0)
     {
       // map iterator
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int,double>::const_iterator           CI;
+      typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
       std::map<int,double>& nmap = fnode->FriDataPlus().GetT()[0];
 
       // loop over col entries
@@ -437,11 +439,11 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
 
         for (int u=0;u<Dim();++u)
         {
-          std::map<int,double>& numap = csnode->CoData().GetDerivN()[u];
+          GEN::pairedvector<int,double>& numap = csnode->CoData().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
-          for (CI b=numap.begin(); b!=numap.end(); ++b)
+          for (_CI b=numap.begin(); b!=numap.end(); ++b)
           {
             int row     =   fnode->Dofs()[0];
             int col     =   (b->first);
@@ -565,7 +567,9 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
     if (fnode->FriDataPlus().GetT().size()>0)
     {
       // map iterator
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int,double>::const_iterator           CI;
+      typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
       std::map<int,double>& nmap = fnode->FriDataPlus().GetT()[0];
 
       // loop over col entries
@@ -579,11 +583,11 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
 
         for (int u=0;u<Dim();++u)
         {
-          std::map<int,double>& numap = csnode->CoData().GetDerivN()[u];
+          GEN::pairedvector<int,double>& numap = csnode->CoData().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
-          for (CI b=numap.begin(); b!=numap.end(); ++b)
+          for (_CI b=numap.begin(); b!=numap.end(); ++b)
           {
             int row     =   fnode->Dofs()[0];
             int col     =   (b->first);
@@ -947,411 +951,424 @@ void CONTACT::WearInterface::EvaluateNodalNormals()
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::ExportNodalNormals()
 {
- // create empty data objects
- std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > triad;
+  // create empty data objects
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > triad;
 
- std::map<int,std::vector<int> > n_x_key;
- std::map<int,std::vector<int> > n_y_key;
- std::map<int,std::vector<int> > n_z_key;
- std::map<int,std::vector<int> > txi_x_key;
- std::map<int,std::vector<int> > txi_y_key;
- std::map<int,std::vector<int> > txi_z_key;
- std::map<int,std::vector<int> > teta_x_key;
- std::map<int,std::vector<int> > teta_y_key;
- std::map<int,std::vector<int> > teta_z_key;
+  std::map<int,std::vector<int> > n_x_key;
+  std::map<int,std::vector<int> > n_y_key;
+  std::map<int,std::vector<int> > n_z_key;
+  std::map<int,std::vector<int> > txi_x_key;
+  std::map<int,std::vector<int> > txi_y_key;
+  std::map<int,std::vector<int> > txi_z_key;
+  std::map<int,std::vector<int> > teta_x_key;
+  std::map<int,std::vector<int> > teta_y_key;
+  std::map<int,std::vector<int> > teta_z_key;
 
- std::map<int,std::vector<double> > n_x_val;
- std::map<int,std::vector<double> > n_y_val;
- std::map<int,std::vector<double> > n_z_val;
- std::map<int,std::vector<double> > txi_x_val;
- std::map<int,std::vector<double> > txi_y_val;
- std::map<int,std::vector<double> > txi_z_val;
- std::map<int,std::vector<double> > teta_x_val;
- std::map<int,std::vector<double> > teta_y_val;
- std::map<int,std::vector<double> > teta_z_val;
+  std::map<int,std::vector<double> > n_x_val;
+  std::map<int,std::vector<double> > n_y_val;
+  std::map<int,std::vector<double> > n_z_val;
+  std::map<int,std::vector<double> > txi_x_val;
+  std::map<int,std::vector<double> > txi_y_val;
+  std::map<int,std::vector<double> > txi_z_val;
+  std::map<int,std::vector<double> > teta_x_val;
+  std::map<int,std::vector<double> > teta_y_val;
+  std::map<int,std::vector<double> > teta_z_val;
 
- std::map<int,double>::iterator iter;
+  GEN::pairedvector<int,double>::iterator iter;
 
- // build info on row map
- for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
- {
-   int gid = snoderowmapbound_->GID(i);
-   DRT::Node* node = idiscret_->gNode(gid);
-   if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-   CoNode* cnode = static_cast<CoNode*>(node);
+  // build info on row map
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
+  {
+    int gid = snoderowmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
 
-   // fill nodal matrix
-   Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
-   (*loc)(0,0) = cnode->MoData().n()[0];
-   (*loc)(1,0) = cnode->MoData().n()[1];
-   (*loc)(2,0) = cnode->MoData().n()[2];
-   (*loc)(0,1) = cnode->CoData().txi()[0];
-   (*loc)(1,1) = cnode->CoData().txi()[1];
-   (*loc)(2,1) = cnode->CoData().txi()[2];
-   (*loc)(0,2) = cnode->CoData().teta()[0];
-   (*loc)(1,2) = cnode->CoData().teta()[1];
-   (*loc)(2,2) = cnode->CoData().teta()[2];
+    // fill nodal matrix
+    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
+    (*loc)(0,0) = cnode->MoData().n()[0];
+    (*loc)(1,0) = cnode->MoData().n()[1];
+    (*loc)(2,0) = cnode->MoData().n()[2];
+    (*loc)(0,1) = cnode->CoData().txi()[0];
+    (*loc)(1,1) = cnode->CoData().txi()[1];
+    (*loc)(2,1) = cnode->CoData().txi()[2];
+    (*loc)(0,2) = cnode->CoData().teta()[0];
+    (*loc)(1,2) = cnode->CoData().teta()[1];
+    (*loc)(2,2) = cnode->CoData().teta()[2];
 
-   triad[gid] = loc;
+    triad[gid] = loc;
 
-   // fill nodal derivative vectors
-   std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-   std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-   std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+    // fill nodal derivative vectors
+    std::vector<GEN::pairedvector<int,double> >& derivn    = cnode->CoData().GetDerivN();
+    std::vector<GEN::pairedvector<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+    std::vector<GEN::pairedvector<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
 
-   for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
-   {
-     n_x_key[gid].push_back(iter->first);
-     n_x_val[gid].push_back(iter->second);
-   }
-   for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
-   {
-     n_y_key[gid].push_back(iter->first);
-     n_y_val[gid].push_back(iter->second);
-   }
-   for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
-   {
-     n_z_key[gid].push_back(iter->first);
-     n_z_val[gid].push_back(iter->second);
-   }
-
-   for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
-   {
-     txi_x_key[gid].push_back(iter->first);
-     txi_x_val[gid].push_back(iter->second);
-   }
-   for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
-   {
-     txi_y_key[gid].push_back(iter->first);
-     txi_y_val[gid].push_back(iter->second);
-   }
-   for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
-   {
-     txi_z_key[gid].push_back(iter->first);
-     txi_z_val[gid].push_back(iter->second);
-   }
-
-   for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
-   {
-     teta_x_key[gid].push_back(iter->first);
-     teta_x_val[gid].push_back(iter->second);
-   }
-   for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
-   {
-     teta_y_key[gid].push_back(iter->first);
-     teta_y_val[gid].push_back(iter->second);
-   }
-   for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
-   {
-     teta_z_key[gid].push_back(iter->first);
-     teta_z_val[gid].push_back(iter->second);
-   }
- }
-
- // communicate from slave node row to column map
- DRT::Exporter ex(*snoderowmapbound_,*snodecolmapbound_,Comm());
- ex.Export(triad);
-
- ex.Export(n_x_key);
- ex.Export(n_x_val);
- ex.Export(n_y_key);
- ex.Export(n_y_val);
- ex.Export(n_z_key);
- ex.Export(n_z_val);
-
- ex.Export(txi_x_key);
- ex.Export(txi_x_val);
- ex.Export(txi_y_key);
- ex.Export(txi_y_val);
- ex.Export(txi_z_key);
- ex.Export(txi_z_val);
-
- ex.Export(teta_x_key);
- ex.Export(teta_x_val);
- ex.Export(teta_y_key);
- ex.Export(teta_y_val);
- ex.Export(teta_z_key);
- ex.Export(teta_z_val);
-
- // extract info on column map
- for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
- {
-   // only do something for ghosted nodes
-   int gid = snodecolmapbound_->GID(i);
-   if (snoderowmapbound_->MyGID(gid)) continue;
-
-   DRT::Node* node = idiscret_->gNode(gid);
-   if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-   CoNode* cnode = static_cast<CoNode*>(node);
-
-   // extract info
-   Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
-   cnode->MoData().n()[0]    = (*loc)(0,0);
-   cnode->MoData().n()[1]    = (*loc)(1,0);
-   cnode->MoData().n()[2]    = (*loc)(2,0);
-   cnode->CoData().txi()[0]  = (*loc)(0,1);
-   cnode->CoData().txi()[1]  = (*loc)(1,1);
-   cnode->CoData().txi()[2]  = (*loc)(2,1);
-   cnode->CoData().teta()[0] = (*loc)(0,2);
-   cnode->CoData().teta()[1] = (*loc)(1,2);
-   cnode->CoData().teta()[2] = (*loc)(2,2);
-
-   // extract derivative info
-   std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-   std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-   std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
-
-   for (int k=0;k<(int)(derivn.size());++k)
-     derivn[k].clear();
-   derivn.resize(3);
-   for (int k=0;k<(int)(derivtxi.size());++k)
-     derivtxi[k].clear();
-   derivtxi.resize(3);
-   for (int k=0;k<(int)(derivteta.size());++k)
-     derivteta[k].clear();
-   derivteta.resize(3);
-
-   for (int k=0;k<(int)(n_x_key[gid].size());++k)
-     (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
-   for (int k=0;k<(int)(n_y_key[gid].size());++k)
-     (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
-   for (int k=0;k<(int)(n_z_key[gid].size());++k)
-     (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
-
-   for (int k=0;k<(int)(txi_x_key[gid].size());++k)
-     (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
-   for (int k=0;k<(int)(txi_y_key[gid].size());++k)
-     (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
-   for (int k=0;k<(int)(txi_z_key[gid].size());++k)
-     (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
-
-   for (int k=0;k<(int)(teta_x_key[gid].size());++k)
-     (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
-   for (int k=0;k<(int)(teta_y_key[gid].size());++k)
-     (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
-   for (int k=0;k<(int)(teta_z_key[gid].size());++k)
-     (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
- }
-
- // free memory
- triad.clear();
-
- n_x_key.clear();
- n_y_key.clear();
- n_z_key.clear();
- txi_x_key.clear();
- txi_y_key.clear();
- txi_z_key.clear();
- teta_x_key.clear();
- teta_y_key.clear();
- teta_z_key.clear();
-
- n_x_val.clear();
- n_y_val.clear();
- n_z_val.clear();
- txi_x_val.clear();
- txi_y_val.clear();
- txi_z_val.clear();
- teta_x_val.clear();
- teta_y_val.clear();
- teta_z_val.clear();
-
-
-
- // --------------------------------------------------------------------------------------
- // for both-sided discrete wear we need the same normal information on the master side:
- // --------------------------------------------------------------------------------------
- if(wearbothdiscr_)
- {
-   const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
-
-   // build info on row map
-    for(int i=0; i<mnoderowmap_->NumMyElements();++i)
+    for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
     {
-      int gid = mnoderowmap_->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
-
-      // fill nodal matrix
-      Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
-      (*loc)(0,0) = cnode->MoData().n()[0];
-      (*loc)(1,0) = cnode->MoData().n()[1];
-      (*loc)(2,0) = cnode->MoData().n()[2];
-      (*loc)(0,1) = cnode->CoData().txi()[0];
-      (*loc)(1,1) = cnode->CoData().txi()[1];
-      (*loc)(2,1) = cnode->CoData().txi()[2];
-      (*loc)(0,2) = cnode->CoData().teta()[0];
-      (*loc)(1,2) = cnode->CoData().teta()[1];
-      (*loc)(2,2) = cnode->CoData().teta()[2];
-
-      triad[gid] = loc;
-
-      // fill nodal derivative vectors
-      std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-      std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-      std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
-
-      for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
-      {
-        n_x_key[gid].push_back(iter->first);
-        n_x_val[gid].push_back(iter->second);
-      }
-      for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
-      {
-        n_y_key[gid].push_back(iter->first);
-        n_y_val[gid].push_back(iter->second);
-      }
-      for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
-      {
-        n_z_key[gid].push_back(iter->first);
-        n_z_val[gid].push_back(iter->second);
-      }
-
-      for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
-      {
-        txi_x_key[gid].push_back(iter->first);
-        txi_x_val[gid].push_back(iter->second);
-      }
-      for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
-      {
-        txi_y_key[gid].push_back(iter->first);
-        txi_y_val[gid].push_back(iter->second);
-      }
-      for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
-      {
-        txi_z_key[gid].push_back(iter->first);
-        txi_z_val[gid].push_back(iter->second);
-      }
-
-      for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
-      {
-        teta_x_key[gid].push_back(iter->first);
-        teta_x_val[gid].push_back(iter->second);
-      }
-      for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
-      {
-        teta_y_key[gid].push_back(iter->first);
-        teta_y_val[gid].push_back(iter->second);
-      }
-      for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
-      {
-        teta_z_key[gid].push_back(iter->first);
-        teta_z_val[gid].push_back(iter->second);
-      }
+      n_x_key[gid].push_back(iter->first);
+      n_x_val[gid].push_back(iter->second);
+    }
+    for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
+    {
+      n_y_key[gid].push_back(iter->first);
+      n_y_val[gid].push_back(iter->second);
+    }
+    for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
+    {
+      n_z_key[gid].push_back(iter->first);
+      n_z_val[gid].push_back(iter->second);
     }
 
-    // communicate from master node row to column map
-    DRT::Exporter ex(*mnoderowmap_,*masternodes,Comm());
-    ex.Export(triad);
-
-    ex.Export(n_x_key);
-    ex.Export(n_x_val);
-    ex.Export(n_y_key);
-    ex.Export(n_y_val);
-    ex.Export(n_z_key);
-    ex.Export(n_z_val);
-
-    ex.Export(txi_x_key);
-    ex.Export(txi_x_val);
-    ex.Export(txi_y_key);
-    ex.Export(txi_y_val);
-    ex.Export(txi_z_key);
-    ex.Export(txi_z_val);
-
-    ex.Export(teta_x_key);
-    ex.Export(teta_x_val);
-    ex.Export(teta_y_key);
-    ex.Export(teta_y_val);
-    ex.Export(teta_z_key);
-    ex.Export(teta_z_val);
-
-    // extract info on column map
-    for(int i=0; i<masternodes->NumMyElements();++i)
+    for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
     {
-      // only do something for ghosted nodes
-      int gid = masternodes->GID(i);
-      DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
-
-      if (cnode->Owner()==Comm().MyPID())
-        continue;
-
-      // extract info
-      Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
-      cnode->MoData().n()[0]    = (*loc)(0,0);
-      cnode->MoData().n()[1]    = (*loc)(1,0);
-      cnode->MoData().n()[2]    = (*loc)(2,0);
-      cnode->CoData().txi()[0]  = (*loc)(0,1);
-      cnode->CoData().txi()[1]  = (*loc)(1,1);
-      cnode->CoData().txi()[2]  = (*loc)(2,1);
-      cnode->CoData().teta()[0] = (*loc)(0,2);
-      cnode->CoData().teta()[1] = (*loc)(1,2);
-      cnode->CoData().teta()[2] = (*loc)(2,2);
-
-      // extract derivative info
-      std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-      std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-      std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
-
-      for (int k=0;k<(int)(derivn.size());++k)
-        derivn[k].clear();
-      derivn.resize(3);
-      for (int k=0;k<(int)(derivtxi.size());++k)
-        derivtxi[k].clear();
-      derivtxi.resize(3);
-      for (int k=0;k<(int)(derivteta.size());++k)
-        derivteta[k].clear();
-      derivteta.resize(3);
-
-      for (int k=0;k<(int)(n_x_key[gid].size());++k)
-        (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
-      for (int k=0;k<(int)(n_y_key[gid].size());++k)
-        (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
-      for (int k=0;k<(int)(n_z_key[gid].size());++k)
-        (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
-
-      for (int k=0;k<(int)(txi_x_key[gid].size());++k)
-        (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
-      for (int k=0;k<(int)(txi_y_key[gid].size());++k)
-        (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
-      for (int k=0;k<(int)(txi_z_key[gid].size());++k)
-        (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
-
-      for (int k=0;k<(int)(teta_x_key[gid].size());++k)
-        (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
-      for (int k=0;k<(int)(teta_y_key[gid].size());++k)
-        (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
-      for (int k=0;k<(int)(teta_z_key[gid].size());++k)
-        (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+      txi_x_key[gid].push_back(iter->first);
+      txi_x_val[gid].push_back(iter->second);
+    }
+    for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
+    {
+      txi_y_key[gid].push_back(iter->first);
+      txi_y_val[gid].push_back(iter->second);
+    }
+    for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
+    {
+      txi_z_key[gid].push_back(iter->first);
+      txi_z_val[gid].push_back(iter->second);
     }
 
-    // free memory
-    triad.clear();
+    for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
+    {
+      teta_x_key[gid].push_back(iter->first);
+      teta_x_val[gid].push_back(iter->second);
+    }
+    for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
+    {
+      teta_y_key[gid].push_back(iter->first);
+      teta_y_val[gid].push_back(iter->second);
+    }
+    for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
+    {
+      teta_z_key[gid].push_back(iter->first);
+      teta_z_val[gid].push_back(iter->second);
+    }
+  }
 
-    n_x_key.clear();
-    n_y_key.clear();
-    n_z_key.clear();
-    txi_x_key.clear();
-    txi_y_key.clear();
-    txi_z_key.clear();
-    teta_x_key.clear();
-    teta_y_key.clear();
-    teta_z_key.clear();
+  // communicate from slave node row to column map
+  DRT::Exporter ex(*snoderowmapbound_,*snodecolmapbound_,Comm());
+  ex.Export(triad);
 
-    n_x_val.clear();
-    n_y_val.clear();
-    n_z_val.clear();
-    txi_x_val.clear();
-    txi_y_val.clear();
-    txi_z_val.clear();
-    teta_x_val.clear();
-    teta_y_val.clear();
-    teta_z_val.clear();
- }
+  ex.Export(n_x_key);
+  ex.Export(n_x_val);
+  ex.Export(n_y_key);
+  ex.Export(n_y_val);
+  ex.Export(n_z_key);
+  ex.Export(n_z_val);
 
- return;
+  ex.Export(txi_x_key);
+  ex.Export(txi_x_val);
+  ex.Export(txi_y_key);
+  ex.Export(txi_y_val);
+  ex.Export(txi_z_key);
+  ex.Export(txi_z_val);
+
+  ex.Export(teta_x_key);
+  ex.Export(teta_x_val);
+  ex.Export(teta_y_key);
+  ex.Export(teta_y_val);
+  ex.Export(teta_z_key);
+  ex.Export(teta_z_val);
+
+  // extract info on column map
+  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+  {
+    // only do something for ghosted nodes
+    int gid = snodecolmapbound_->GID(i);
+    if (snoderowmapbound_->MyGID(gid)) continue;
+
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+    int linsize = cnode->GetLinsize()+(int)(n_x_key[gid].size());
+
+    // extract info
+    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+    cnode->MoData().n()[0]    = (*loc)(0,0);
+    cnode->MoData().n()[1]    = (*loc)(1,0);
+    cnode->MoData().n()[2]    = (*loc)(2,0);
+    cnode->CoData().txi()[0]  = (*loc)(0,1);
+    cnode->CoData().txi()[1]  = (*loc)(1,1);
+    cnode->CoData().txi()[2]  = (*loc)(2,1);
+    cnode->CoData().teta()[0] = (*loc)(0,2);
+    cnode->CoData().teta()[1] = (*loc)(1,2);
+    cnode->CoData().teta()[2] = (*loc)(2,2);
+
+    // extract derivative info
+    std::vector<GEN::pairedvector<int,double> >& derivn    = cnode->CoData().GetDerivN();
+    std::vector<GEN::pairedvector<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+    std::vector<GEN::pairedvector<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+    for (int k=0;k<(int)(derivn.size());++k)
+      derivn[k].clear();
+    derivn.resize(3,linsize);
+    for (int k=0;k<(int)(derivtxi.size());++k)
+      derivtxi[k].clear();
+    derivtxi.resize(3,linsize);
+    for (int k=0;k<(int)(derivteta.size());++k)
+      derivteta[k].clear();
+    derivteta.resize(3,linsize);
+
+    for (int k=0;k<(int)(n_x_key[gid].size());++k)
+      (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+    for (int k=0;k<(int)(n_y_key[gid].size());++k)
+      (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+    for (int k=0;k<(int)(n_z_key[gid].size());++k)
+      (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+
+    for (int k=0;k<(int)(txi_x_key[gid].size());++k)
+      (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+    for (int k=0;k<(int)(txi_y_key[gid].size());++k)
+      (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+    for (int k=0;k<(int)(txi_z_key[gid].size());++k)
+      (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+
+    for (int k=0;k<(int)(teta_x_key[gid].size());++k)
+      (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+    for (int k=0;k<(int)(teta_y_key[gid].size());++k)
+      (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+    for (int k=0;k<(int)(teta_z_key[gid].size());++k)
+      (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+  }
+
+  // free memory
+  triad.clear();
+
+  n_x_key.clear();
+  n_y_key.clear();
+  n_z_key.clear();
+  txi_x_key.clear();
+  txi_y_key.clear();
+  txi_z_key.clear();
+  teta_x_key.clear();
+  teta_y_key.clear();
+  teta_z_key.clear();
+
+  n_x_val.clear();
+  n_y_val.clear();
+  n_z_val.clear();
+  txi_x_val.clear();
+  txi_y_val.clear();
+  txi_z_val.clear();
+  teta_x_val.clear();
+  teta_y_val.clear();
+  teta_z_val.clear();
+
+  // --------------------------------------------------------------------------------------
+  // for both-sided discrete wear we need the same normal information on the master side:
+  // --------------------------------------------------------------------------------------
+  if(wearbothdiscr_)
+  {
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
+
+    // build info on row map
+     for(int i=0; i<mnoderowmap_->NumMyElements();++i)
+     {
+       int gid = mnoderowmap_->GID(i);
+       DRT::Node* node = idiscret_->gNode(gid);
+       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+       CoNode* cnode = static_cast<CoNode*>(node);
+
+       // fill nodal matrix
+       Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
+       (*loc)(0,0) = cnode->MoData().n()[0];
+       (*loc)(1,0) = cnode->MoData().n()[1];
+       (*loc)(2,0) = cnode->MoData().n()[2];
+       (*loc)(0,1) = cnode->CoData().txi()[0];
+       (*loc)(1,1) = cnode->CoData().txi()[1];
+       (*loc)(2,1) = cnode->CoData().txi()[2];
+       (*loc)(0,2) = cnode->CoData().teta()[0];
+       (*loc)(1,2) = cnode->CoData().teta()[1];
+       (*loc)(2,2) = cnode->CoData().teta()[2];
+
+       triad[gid] = loc;
+
+       // fill nodal derivative vectors
+       std::vector<GEN::pairedvector<int,double> >& derivn    = cnode->CoData().GetDerivN();
+       std::vector<GEN::pairedvector<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+       std::vector<GEN::pairedvector<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+       for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
+       {
+         n_x_key[gid].push_back(iter->first);
+         n_x_val[gid].push_back(iter->second);
+       }
+       for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
+       {
+         n_y_key[gid].push_back(iter->first);
+         n_y_val[gid].push_back(iter->second);
+       }
+       for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
+       {
+         n_z_key[gid].push_back(iter->first);
+         n_z_val[gid].push_back(iter->second);
+       }
+
+       for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
+       {
+         txi_x_key[gid].push_back(iter->first);
+         txi_x_val[gid].push_back(iter->second);
+       }
+       for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
+       {
+         txi_y_key[gid].push_back(iter->first);
+         txi_y_val[gid].push_back(iter->second);
+       }
+       for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
+       {
+         txi_z_key[gid].push_back(iter->first);
+         txi_z_val[gid].push_back(iter->second);
+       }
+
+       for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
+       {
+         teta_x_key[gid].push_back(iter->first);
+         teta_x_val[gid].push_back(iter->second);
+       }
+       for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
+       {
+         teta_y_key[gid].push_back(iter->first);
+         teta_y_val[gid].push_back(iter->second);
+       }
+       for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
+       {
+         teta_z_key[gid].push_back(iter->first);
+         teta_z_val[gid].push_back(iter->second);
+       }
+     }
+
+     // communicate from master node row to column map
+     DRT::Exporter ex(*mnoderowmap_,*masternodes,Comm());
+     ex.Export(triad);
+
+     ex.Export(n_x_key);
+     ex.Export(n_x_val);
+     ex.Export(n_y_key);
+     ex.Export(n_y_val);
+     ex.Export(n_z_key);
+     ex.Export(n_z_val);
+
+     ex.Export(txi_x_key);
+     ex.Export(txi_x_val);
+     ex.Export(txi_y_key);
+     ex.Export(txi_y_val);
+     ex.Export(txi_z_key);
+     ex.Export(txi_z_val);
+
+     ex.Export(teta_x_key);
+     ex.Export(teta_x_val);
+     ex.Export(teta_y_key);
+     ex.Export(teta_y_val);
+     ex.Export(teta_z_key);
+     ex.Export(teta_z_val);
+
+     // extract info on column map
+     for(int i=0; i<masternodes->NumMyElements();++i)
+     {
+       // only do something for ghosted nodes
+       int gid = masternodes->GID(i);
+       DRT::Node* node = idiscret_->gNode(gid);
+       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+       CoNode* cnode = static_cast<CoNode*>(node);
+       int linsize = cnode->GetLinsize()+(int)(n_x_key[gid].size());
+
+       if (cnode->Owner()==Comm().MyPID())
+         continue;
+
+       // extract info
+       Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+       cnode->MoData().n()[0]    = (*loc)(0,0);
+       cnode->MoData().n()[1]    = (*loc)(1,0);
+       cnode->MoData().n()[2]    = (*loc)(2,0);
+       cnode->CoData().txi()[0]  = (*loc)(0,1);
+       cnode->CoData().txi()[1]  = (*loc)(1,1);
+       cnode->CoData().txi()[2]  = (*loc)(2,1);
+       cnode->CoData().teta()[0] = (*loc)(0,2);
+       cnode->CoData().teta()[1] = (*loc)(1,2);
+       cnode->CoData().teta()[2] = (*loc)(2,2);
+
+       // extract derivative info
+       std::vector<GEN::pairedvector<int,double> >& derivn    = cnode->CoData().GetDerivN();
+       std::vector<GEN::pairedvector<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+       std::vector<GEN::pairedvector<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+       for (int k=0;k<(int)(derivn.size());++k)
+         derivn[k].clear();
+       derivn.resize(3,linsize);
+       for (int k=0;k<(int)(derivtxi.size());++k)
+         derivtxi[k].clear();
+       derivtxi.resize(3,linsize);
+       for (int k=0;k<(int)(derivteta.size());++k)
+         derivteta[k].clear();
+       derivteta.resize(3,linsize);
+
+       cnode->CoData().GetDerivN()[0].resize(linsize);
+       cnode->CoData().GetDerivN()[1].resize(linsize);
+       cnode->CoData().GetDerivN()[2].resize(linsize);
+
+       cnode->CoData().GetDerivTxi()[0].resize(linsize);
+       cnode->CoData().GetDerivTxi()[1].resize(linsize);
+       cnode->CoData().GetDerivTxi()[2].resize(linsize);
+
+       cnode->CoData().GetDerivTeta()[0].resize(linsize);
+       cnode->CoData().GetDerivTeta()[1].resize(linsize);
+       cnode->CoData().GetDerivTeta()[2].resize(linsize);
+
+       for (int k=0;k<(int)(n_x_key[gid].size());++k)
+         (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+       for (int k=0;k<(int)(n_y_key[gid].size());++k)
+         (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+       for (int k=0;k<(int)(n_z_key[gid].size());++k)
+         (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+
+       for (int k=0;k<(int)(txi_x_key[gid].size());++k)
+         (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+       for (int k=0;k<(int)(txi_y_key[gid].size());++k)
+         (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+       for (int k=0;k<(int)(txi_z_key[gid].size());++k)
+         (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+
+       for (int k=0;k<(int)(teta_x_key[gid].size());++k)
+         (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+       for (int k=0;k<(int)(teta_y_key[gid].size());++k)
+         (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+       for (int k=0;k<(int)(teta_z_key[gid].size());++k)
+         (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+     }
+
+     // free memory
+     triad.clear();
+
+     n_x_key.clear();
+     n_y_key.clear();
+     n_z_key.clear();
+     txi_x_key.clear();
+     txi_y_key.clear();
+     txi_z_key.clear();
+     teta_x_key.clear();
+     teta_y_key.clear();
+     teta_z_key.clear();
+
+     n_x_val.clear();
+     n_y_val.clear();
+     n_z_val.clear();
+     txi_x_val.clear();
+     txi_y_val.clear();
+     txi_z_val.clear();
+     teta_x_val.clear();
+     teta_y_val.clear();
+     teta_z_val.clear();
+
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1480,7 +1497,6 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
                                           LINALG::SparseMatrix& linstickDISglobal,
                                           Epetra_Vector& linstickRHSglobal)
 {
-
   // get out of here if not participating in interface
   if (!lComm())
     return;
@@ -1492,6 +1508,11 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements()==0)
     return;
+
+  // information from interface contact parameter list
+  const double frcoeff = IParams().get<double>("FRCOEFF");
+  const double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
 
   INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
@@ -1519,9 +1540,9 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
         dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
-      std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
+      std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
       std::map<int,double> dgmap = cnode->CoData().GetDerivG();
 
       // check for Dimension of derivative maps
@@ -1540,18 +1561,14 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
-      // information from interface contact parameter list
-      double frcoeff = IParams().get<double>("FRCOEFF");
-      double ct = IParams().get<double>("SEMI_SMOOTH_CT");
-      double cn = IParams().get<double>("SEMI_SMOOTH_CN");
-
       // more information from node
       double* n = cnode->MoData().n();
       double* z = cnode->MoData().lm();
       double& wgap = cnode->CoData().Getg();
 
       // iterator for maps
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator           colcurr;
+      GEN::pairedvector<int,double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row (Dim()-1);
@@ -1673,18 +1690,18 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
         {
           // linearization of normal direction *****************************************
           // loop over all entries of the current derivative map
-          for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+          for (_colcurr=dnmap[dim].begin();_colcurr!=dnmap[dim].end();++_colcurr)
           {
-            int col = colcurr->first;
+            int col = _colcurr->first;
             double valtxi=0.0;
-            valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
+            valtxi = - frcoeff * z[dim] * _colcurr->second * ct * jumptxi;
             // do not assemble zeros into matrix
             if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
 
             if (Dim()==3)
             {
               double valteta=0.0;
-              valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
+              valteta = - frcoeff * z[dim] * _colcurr->second * ct * jumpteta;
               // do not assemble zeros into matrix
               if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
             }
@@ -1721,11 +1738,11 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
 
           // linearization first tangential direction *********************************
           // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[dim].begin();colcurr!=dtximap[dim].end();++colcurr)
+          for (_colcurr=dtximap[dim].begin();_colcurr!=dtximap[dim].end();++_colcurr)
           {
-            int col = colcurr->first;
+            int col = _colcurr->first;
             double valtxi=0.0;
-            valtxi = - frcoeff*(znor-cn*wgap) * ct * jump[dim] * colcurr->second;
+            valtxi = - frcoeff*(znor-cn*wgap) * ct * jump[dim] * _colcurr->second;
 
             // do not assemble zeros into matrix
             if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
@@ -1734,11 +1751,11 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           if (Dim()==3)
           {
             // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[dim].begin();colcurr!=dtetamap[dim].end();++colcurr)
+            for (_colcurr=dtetamap[dim].begin();_colcurr!=dtetamap[dim].end();++_colcurr)
             {
-              int col = colcurr->first;
+              int col = _colcurr->first;
               double valteta=0.0;
-              valteta = - frcoeff * (znor-cn*wgap) * ct * jump[dim] * colcurr->second;
+              valteta = - frcoeff * (znor-cn*wgap) * ct * jump[dim] * _colcurr->second;
 
               // do not assemble zeros into matrix
               if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
@@ -1746,18 +1763,18 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           }
           // linearization of normal direction *****************************************
           // loop over all entries of the current derivative map
-          for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+          for (_colcurr=dnmap[dim].begin();_colcurr!=dnmap[dim].end();++_colcurr)
           {
-            int col = colcurr->first;
+            int col = _colcurr->first;
             double valtxi=0.0;
-            valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
+            valtxi = - frcoeff * z[dim] * _colcurr->second * ct * jumptxi;
             // do not assemble zeros into matrix
             if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
 
             if (Dim()==3)
             {
               double valteta=0.0;
-              valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
+              valteta = - frcoeff * z[dim] * _colcurr->second * ct * jumpteta;
               // do not assemble zeros into matrix
               if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
             }
@@ -1818,8 +1835,8 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
         dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
       for (int j=0;j<Dim()-1;++j)
         if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
@@ -1833,7 +1850,8 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       }
 
       // iterator for maps
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator           colcurr;
+      GEN::pairedvector<int,double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row (Dim()-1);
@@ -1967,10 +1985,10 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
         for (int j=0;j<Dim();++j)
         {
           // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
           {
-            int col = colcurr->first;
-            double val = jump[j]*colcurr->second;
+            int col = _colcurr->first;
+            double val = jump[j]*_colcurr->second;
 
             // do not assemble zeros into s matrix
             if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row[0],col);
@@ -1979,10 +1997,10 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           if(Dim()==3)
           {
             // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
-              double val = jump[j]*colcurr->second;
+              int col = _colcurr->first;
+              double val = jump[j]*_colcurr->second;
 
               // do not assemble zeros into matrix
               if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row[1],col);
@@ -2036,9 +2054,9 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
         // prepare assembly, get information from node
-        std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
-        std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-        std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+        std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
+        std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+        std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
         double scalefac=1.;
         std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
 
@@ -2237,9 +2255,9 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
-      std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-      std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
+      std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
       double scalefac=1.;
       std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
       bool scderiv=false;
@@ -2275,7 +2293,8 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
       wgap /= scalefac;
 
       // iterator for maps
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator           colcurr;
+      GEN::pairedvector<int,double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row (Dim()-1);
@@ -2411,10 +2430,10 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         for (int j=0;j<Dim();++j)
         {
           // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
           {
-            int col = colcurr->first;
-            double val = (colcurr->second)*z[j];
+            int col = _colcurr->first;
+            double val = (_colcurr->second)*z[j];
 
             // do not assemble zeros into matrix
             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
@@ -2423,10 +2442,10 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           if (Dim()==3)
           {
             // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
-              double val = (colcurr->second)*z[j];
+              int col = _colcurr->first;
+              double val = (_colcurr->second)*z[j];
 
               // do not assemble zeros into s matrix
               if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[1],col);
@@ -2698,10 +2717,10 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         for (int j=0;j<Dim();++j)
         {
           // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
           {
-            int col = colcurr->first;
-            double val = euclidean*(colcurr->second)*z[j];
+            int col = _colcurr->first;
+            double val = euclidean*(_colcurr->second)*z[j];
 
 #ifdef CONSISTENTSLIP
             val = val / (znor - cn * wgap);
@@ -2714,10 +2733,10 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           if (Dim()==3)
           {
             // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
-              double val = euclidean*(colcurr->second)*z[j];
+              int col = _colcurr->first;
+              double val = euclidean*(_colcurr->second)*z[j];
 
 #ifdef CONSISTENTSLIP
             val = val / (znor - cn * wgap);
@@ -2734,11 +2753,11 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         for (int j=0;j<Dim();++j)
         {
           // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
           {
-            int col = colcurr->first;
-            double valtxi = (ztxi+ct*jumptxi)/euclidean*(colcurr->second)*z[j]*ztxi;
-            double valteta = (ztxi+ct*jumptxi)/euclidean*(colcurr->second)*z[j]*zteta;
+            int col = _colcurr->first;
+            double valtxi = (ztxi+ct*jumptxi)/euclidean*(_colcurr->second)*z[j]*ztxi;
+            double valteta = (ztxi+ct*jumptxi)/euclidean*(_colcurr->second)*z[j]*zteta;
 
 #ifdef CONSISTENTSLIP
             valtxi  = valtxi / (znor - cn*wgap);
@@ -2754,11 +2773,11 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           if(Dim()==3)
           {
             // 3D loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
-              double valtxi = (zteta+ct*jumpteta)/euclidean*(colcurr->second)*z[j]*ztxi;
-              double valteta = (zteta+ct*jumpteta)/euclidean*(colcurr->second)*z[j]*zteta;
+              int col = _colcurr->first;
+              double valtxi = (zteta+ct*jumpteta)/euclidean*(_colcurr->second)*z[j]*ztxi;
+              double valteta = (zteta+ct*jumpteta)/euclidean*(_colcurr->second)*z[j]*zteta;
 
 #ifdef CONSISTENTSLIP
               valtxi  = valtxi / (znor - cn*wgap);
@@ -2783,11 +2802,11 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           for (int j=0;j<Dim();++j)
           {
             // loop over all entries of the current derivative map (txi)
-            for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+            for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
-              double valtxi = (ztxi+ct*jumptxi)/euclidean*ct*(colcurr->second)*jump[j]*ztxi;
-              double valteta = (ztxi+ct*jumptxi)/euclidean*ct*(colcurr->second)*jump[j]*zteta;
+              int col = _colcurr->first;
+              double valtxi = (ztxi+ct*jumptxi)/euclidean*ct*(_colcurr->second)*jump[j]*ztxi;
+              double valteta = (ztxi+ct*jumptxi)/euclidean*ct*(_colcurr->second)*jump[j]*zteta;
 
   #ifdef CONSISTENTSLIP
               valtxi  = valtxi / (znor - cn*wgap);
@@ -2802,11 +2821,11 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             if(Dim()==3)
             {
               // loop over all entries of the current derivative map (teta)
-              for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+              for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
               {
-                int col = colcurr->first;
-                double valtxi = (zteta+ct*jumpteta)/euclidean*ct*(colcurr->second)*jump[j]*ztxi;
-                double valteta = (zteta+ct*jumpteta)/euclidean*ct*(colcurr->second)*jump[j]*zteta;
+                int col = _colcurr->first;
+                double valtxi = (zteta+ct*jumpteta)/euclidean*ct*(_colcurr->second)*jump[j]*ztxi;
+                double valteta = (zteta+ct*jumpteta)/euclidean*ct*(_colcurr->second)*jump[j]*zteta;
 
   #ifdef CONSISTENTSLIP
                 valtxi  = valtxi / (znor - cn*wgap);
@@ -2826,13 +2845,13 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         for (int j=0;j<Dim();++j)
         {
           // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
           {
-            int col = colcurr->first;
+            int col = _colcurr->first;
 #ifdef CONSISTENTSLIP
-            double val = - frcoeff * (colcurr->second)*z[j];
+            double val = - frcoeff * (_colcurr->second)*z[j];
 #else
-            double val = (-1)*(frcoeff*(znor-cn*wgap))*(colcurr->second)*z[j];
+            double val = (-1)*(frcoeff*(znor-cn*wgap))*(_colcurr->second)*z[j];
 #endif
             // do not assemble zeros into matrix
             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
@@ -2841,13 +2860,13 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           if(Dim()==3)
           {
             // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
+              int col = _colcurr->first;
 #ifdef CONSISTENTSLIP
-              double val = - frcoeff * (colcurr->second) * z[j];
+              double val = - frcoeff * (_colcurr->second) * z[j];
 #else
-              double val = (-1)*(frcoeff*(znor-cn*wgap))*(colcurr->second)*z[j];
+              double val = (-1.0)*(frcoeff*(znor-cn*wgap))*(_colcurr->second)*z[j];
 #endif
               // do not assemble zeros into matrix
               if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[1],col);
@@ -2866,13 +2885,13 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           for (int j=0;j<Dim();++j)
           {
             // loop over all entries of the current derivative map (txi)
-            for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+            for (_colcurr=dtximap[j].begin();_colcurr!=dtximap[j].end();++_colcurr)
             {
-              int col = colcurr->first;
+              int col = _colcurr->first;
   #ifdef CONSISTENTSLIP
-              double val = - frcoeff * ct * (colcurr->second) * jump[j];
+              double val = - frcoeff * ct * (_colcurr->second) * jump[j];
   #else
-              double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
+              double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(_colcurr->second)*jump[j];
   #endif
               // do not assemble zeros into matrix
               if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
@@ -2881,13 +2900,13 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             if(Dim()==3)
             {
               // loop over all entries of the current derivative map (teta)
-              for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+              for (_colcurr=dtetamap[j].begin();_colcurr!=dtetamap[j].end();++_colcurr)
               {
-                int col = colcurr->first;
+                int col = _colcurr->first;
   #ifdef CONSISTENTSLIP
-                double val = - frcoeff * ct * (colcurr->second) * jump[j];
+                double val = - frcoeff * ct * (_colcurr->second) * jump[j];
   #else
-                double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
+                double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(_colcurr->second)*jump[j];
   #endif
                 // do not assemble zeros into s matrix
                 if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[1],col);
@@ -2902,11 +2921,11 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         for (int j=0;j<Dim();++j)
         {
           // loop over all entries of the current derivative map
-          for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
+          for (_colcurr=dnmap[j].begin();_colcurr!=dnmap[j].end();++_colcurr)
           {
-            int col = colcurr->first;
-            double valtxi = (-1)*(ztxi+ct*jumptxi)*frcoeff*(colcurr->second)*z[j];
-            double valteta = (-1)*(zteta+ct*jumpteta)*frcoeff*(colcurr->second)*z[j];
+            int col = _colcurr->first;
+            double valtxi = (-1.0)*(ztxi+ct*jumptxi)*frcoeff*(_colcurr->second)*z[j];
+            double valteta = (-1.0)*(zteta+ct*jumpteta)*frcoeff*(_colcurr->second)*z[j];
 
             // do not assemble zeros into s matrix
             if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
@@ -3088,7 +3107,6 @@ void CONTACT::WearInterface::AssembleLinWLmSt(LINALG::SparseMatrix& sglobal)
       dserror("ERROR: Node ownership inconsistency!");
 
     // prepare assembly, get information from node
-    std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
     std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();
 
     double* jump = cnode->FriData().jump();
@@ -3172,6 +3190,7 @@ void CONTACT::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
   // get input params
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  double frcoeff = IParams().get<double>("FRCOEFF");
 
   // loop over all active slave nodes of the interface
   for (int i=0;i<slipnodes_->NumMyElements();++i)
@@ -3185,9 +3204,6 @@ void CONTACT::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
       dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
     // prepare assembly, get information from node
-    std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
-    std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-    //std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
     std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();
 
     double* jump = cnode->FriData().jump();
@@ -3255,7 +3271,6 @@ void CONTACT::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
       }
     }
 #else
-    double frcoeff = IParams().get<double>("FRCOEFF");
     // loop over all entries of the current derivative map
     for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
     {
@@ -4568,7 +4583,7 @@ void CONTACT::WearInterface::Initialize()
     CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
     // reset feasible projection and segmentation status
-    node->HasProj() = false;
+    node->HasProj()    = false;
     node->HasSegment() = false;
 
     if (friction_)
@@ -4632,7 +4647,7 @@ void CONTACT::WearInterface::Initialize()
     for (int j=0;j<(int)((cnode->MoData().GetMmod()).size());++j)
       (cnode->MoData().GetMmod())[j].clear();
 
-    (cnode->MoData().GetD()).resize(0);
+    (cnode->MoData().GetD()).resize(0,0);
     (cnode->MoData().GetM()).resize(0);
     (cnode->MoData().GetMmod()).resize(0);
 
@@ -4643,15 +4658,15 @@ void CONTACT::WearInterface::Initialize()
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
       (cnode->CoData().GetDerivN())[j].clear();
-    (cnode->CoData().GetDerivN()).resize(0);
+    (cnode->CoData().GetDerivN()).resize(0,0);
 
     // reset derivative maps of tangent vectors
     for (int j=0;j<(int)((cnode->CoData().GetDerivTxi()).size());++j)
       (cnode->CoData().GetDerivTxi())[j].clear();
-    (cnode->CoData().GetDerivTxi()).resize(0);
+    (cnode->CoData().GetDerivTxi()).resize(0,0);
     for (int j=0;j<(int)((cnode->CoData().GetDerivTeta()).size());++j)
       (cnode->CoData().GetDerivTeta())[j].clear();
-    (cnode->CoData().GetDerivTeta()).resize(0);
+    (cnode->CoData().GetDerivTeta()).resize(0,0);
 
     // reset derivative map of Mortar matrices
     (cnode->CoData().GetDerivD()).clear();

@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_mortar.H"
-
+#include "../headers/pairedvector.H"
 
 // forward declarations
 namespace LINALG
@@ -158,7 +158,7 @@ public:
   \brief Return directional derivative of matrix of dual shape function coefficients
 
   */
-  virtual Teuchos::RCP<std::vector<std::vector<std::map<int,double> > > >& DerivDualShape() {return derivdualshapecoeff_; }
+  virtual Teuchos::RCP<std::vector<std::vector<GEN::pairedvector<int,double> > > >& DerivDualShape() {return derivdualshapecoeff_; }
 
   /*!
   \brief Reset matrix of dual shape function coefficients and free memory
@@ -187,7 +187,7 @@ protected:
   Teuchos::RCP<LINALG::SerialDenseMatrix> dualshapecoeff_;
 
   // derivative of coefficient matrix for dual shape functions
-  Teuchos::RCP<std::vector<std::vector<std::map<int,double> > > > derivdualshapecoeff_;
+  Teuchos::RCP<std::vector<std::vector<GEN::pairedvector<int,double> > > > derivdualshapecoeff_;
 
 }; // class MortarEleDataContainer
 
@@ -562,7 +562,7 @@ public:
          This function is a real stand-alone function to be called
          for a CoElement in order to compute a unit normal derivative at any point.
   */
-  virtual void DerivUnitNormalAtXi(double* xi, std::vector<std::map<int,double> >& derivn);
+  virtual void DerivUnitNormalAtXi(double* xi, std::vector<GEN::pairedvector<int,double> >& derivn);
 
   /*!
   \brief Get nodal reference / spatial coords of current element
@@ -601,7 +601,7 @@ public:
   /*!
   \brief Compute Jacobian determinant derivative
   */
-  virtual void DerivJacobian(double* xi, std::map<int,double>& derivjac);
+  virtual void DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac);
 
   /*!
   \brief Compute length/area of the element
@@ -623,7 +623,7 @@ public:
                          (= derivatives of the dual coefficient matrix Ae)
   */
   void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
-                                   std::vector<std::vector<std::map<int,double> > >& derivdual);
+                                   std::vector<std::vector<GEN::pairedvector<int,double> > >& derivdual);
 
   /*!
   \brief Evaluate displacement shape functions and derivatives
@@ -659,7 +659,7 @@ public:
   \param derivdual (in): derivative maps to be filled
                          (= derivatives of the dual coefficient matrix Ae)
   */
-  virtual bool DerivShapeDual(std::vector<std::vector<std::map<int,double> > >& derivdual);
+  virtual bool DerivShapeDual(std::vector<std::vector<GEN::pairedvector<int,double> > >& derivdual);
 
   /*!
   \brief Interpolate global coordinates for given local element coordinates
@@ -791,19 +791,19 @@ public:
   \brief Return number of Gauss points
 
   */
-  int nGP() {return ngp_;}
+  int& nGP() {return ngp_;}
 
   /*!
   \brief Return coordinates of a specific GP
 
   */
-  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
+  double& Coordinate(int& gp, int dir) {return coords_(gp,dir);}
 
   /*!
   \brief Return weight of a specific GP in 1D/2D CElement
 
   */
-  double Weight(int& gp) {return weights_[gp];}
+  double& Weight(int& gp) {return weights_[gp];}
 
   //@}
 

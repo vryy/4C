@@ -76,22 +76,22 @@ TIMEADAPTON                     yes
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-5
 ITEMAX                          100
-TOL_DIS_INC_INF                 1e-11
-TOL_DIS_INC_L2                  1e-11
-TOL_DIS_RES_INF                 1e-11
-TOL_DIS_RES_L2                  1e-11
-TOL_FSI_INC_INF                 1e-11
-TOL_FSI_INC_L2                  1e-11
-TOL_FSI_RES_INF                 1e-11
-TOL_FSI_RES_L2                  1e-11
-TOL_PRE_INC_INF                 1e-11
-TOL_PRE_INC_L2                  1e-11
-TOL_PRE_RES_INF                 1e-11
-TOL_PRE_RES_L2                  1e-11
-TOL_VEL_INC_INF                 1e-11
-TOL_VEL_INC_L2                  1e-11
-TOL_VEL_RES_INF                 1e-11
-TOL_VEL_RES_L2                  1e-11
+TOL_DIS_INC_INF                 1e-12
+TOL_DIS_INC_L2                  1e-12
+TOL_DIS_RES_INF                 1e-12
+TOL_DIS_RES_L2                  1e-12
+TOL_FSI_INC_INF                 1e-12
+TOL_FSI_INC_L2                  1e-12
+TOL_FSI_RES_INF                 1e-12
+TOL_FSI_RES_L2                  1e-12
+TOL_PRE_INC_INF                 1e-12
+TOL_PRE_INC_L2                  1e-12
+TOL_PRE_RES_INF                 1e-12
+TOL_PRE_RES_L2                  1e-12
+TOL_VEL_INC_INF                 1e-12
+TOL_VEL_INC_L2                  1e-12
+TOL_VEL_RES_INF                 1e-12
+TOL_VEL_RES_L2                  1e-12
 -------------------------------------------------------------MORTAR COUPLING
 REDUNDANT_STORAGE               all
 --------------------------------------------------------------------SOLVER 1
@@ -111,14 +111,14 @@ FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)
 STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -6.64913057980891188e-05 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 6.25761052133564678e-03 TOLERANCE 1e-10
 FLUID DIS fluid NODE 841 QUANTITY velx VALUE -5.10426513614166237e-03 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE 1.67833554423088629e-02 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -7.14043177423268338e-02 TOLERANCE 1e-13
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE 1.67833554423088629e-02 TOLERANCE 1e-12
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -7.14043177423268338e-02 TOLERANCE 1e-10
 ALE DIS ale NODE 841 QUANTITY dispx VALUE 1.15468493369896125e-04 TOLERANCE 1e-13
 ALE DIS ale NODE 841 QUANTITY dispy VALUE 3.00137699015187460e-03 TOLERANCE 1e-13
 FSI NODE 37 QUANTITY lambdax VALUE -1.05335689297324708e-03 TOLERANCE 1e-10
-FSI NODE 37 QUANTITY lambday VALUE 6.07277716997453379e-02 TOLERANCE 1e-13
-FSI SPECIAL QUANTITY dt VALUE 7.72670912308108249e-02 TOLERANCE 1.0e-13
-FSI SPECIAL QUANTITY time VALUE 7.23058292812636116e-01 TOLERANCE 1.0e-13
+FSI NODE 37 QUANTITY lambday VALUE 6.07277716997453379e-02 TOLERANCE 1e-11
+FSI SPECIAL QUANTITY dt VALUE 7.72670912308108249e-02 TOLERANCE 1.0e-12
+FSI SPECIAL QUANTITY time VALUE 7.23058292812636116e-01 TOLERANCE 1.0e-11
 FSI SPECIAL QUANTITY adasteps VALUE 2 TOLERANCE 1.0e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         5

@@ -60,7 +60,8 @@ DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
+MORTAR::MortarNodeDataContainer::MortarNodeDataContainer():
+    drows_(0,0)
 {
   for (int i=0;i<3;++i)
   {
@@ -130,6 +131,7 @@ dofs_(dofs),
 hasproj_(false),
 hassegment_(false),
 detected_(false),
+dentries_(0),
 nurbsw_(-1.0)
 {
   for (int i=0;i<3;++i)
@@ -330,14 +332,14 @@ void MORTAR::MortarNode::AddDValue(int& row, int& col, double& val)
 
   // check if this has been called before
   if ((int)MoData().GetD().size()==0)
-    MoData().GetD().resize(NumDof());
+    MoData().GetD().resize(NumDof(),dentries_);
 
   // check row index input
   if ((int)MoData().GetD().size()<=row)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  std::map<int,double>& dmap = MoData().GetD()[row];
+  GEN::pairedvector<int,double>& dmap = MoData().GetD()[row];
   dmap[col] += val;
 
   return;
@@ -416,6 +418,12 @@ void MORTAR::MortarNode::AddScValue(double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::InitializeDataContainer()
 {
+  // get maximum size of lin vectors
+  dentries_ = 0;
+  for(int i=0;i<NumElement();++i)
+    for(int j=0;j<Elements()[i]->NumNode();++j)
+      dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+
   // only initialize if not yet done
   if (modata_==Teuchos::null)
     modata_=Teuchos::rcp(new MORTAR::MortarNodeDataContainer());

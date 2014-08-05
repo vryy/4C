@@ -52,7 +52,10 @@ namespace MORTAR
 {
 
 // forward declarations
-
+//namespace UTILS
+//{
+//template<typename _Key, typename _Tp> class fixedsizemap;
+//}
 /*!
 \brief A class representing a special mortar element for 3D quadratic
        mortar coupling with the use auf auxiliary planes. This approach
@@ -120,8 +123,8 @@ public:
   \brief Affine map of IntElement coordinate derivatives to parent element
 
   */
-  virtual bool MapToParent(const std::vector<std::map<int,double> >& dxi,
-                           std::vector<std::map<int,double> >& dparxi);
+  virtual bool MapToParent(const std::vector<GEN::pairedvector<int,double> >& dxi,
+                           std::vector<GEN::pairedvector<int,double> >& dparxi);
 
 protected:
 
@@ -161,12 +164,12 @@ public:
   performed in parallel by individual processes.
 
   */
-  IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+  IntCell(int id, int nvertices, LINALG::Matrix<3,3>& coords,
           double* auxn, const DRT::Element::DiscretizationType& shape,
-          std::vector<std::map<int,double> >& linv1,
-          std::vector<std::map<int,double> >& linv2,
-          std::vector<std::map<int,double> >& linv3,
-          std::vector<std::map<int,double> >& linauxn);
+          std::vector<GEN::pairedvector<int,double> >& linv1,
+          std::vector<GEN::pairedvector<int,double> >& linv2,
+          std::vector<GEN::pairedvector<int,double> >& linv3,
+          std::vector<GEN::pairedvector<int,double> >& linauxn);
 
   /*!
   \brief Destructor
@@ -198,7 +201,7 @@ public:
   \brief Return coordinates of intcell vertices
 
   */
-  const Epetra_SerialDenseMatrix& Coords() { return coords_; }
+  const LINALG::Matrix<3,3>& Coords() { return coords_; }
 
   /*!
   \brief Return normal of auxiliary plane of this intcell
@@ -222,7 +225,7 @@ public:
   is addressed by an int-variable and checked internally.
 
   */
-  virtual std::vector<std::map<int,double> >& GetDerivVertex(int i)
+  virtual std::vector<GEN::pairedvector<int,double> >& GetDerivVertex(int i)
   {
     if (i<0 || i>2) dserror("ERROR: IntCell has 3 vertex linearizations only!");
     return linvertex_[i];
@@ -232,7 +235,7 @@ public:
   \brief Return the 'DerivAuxn' map (vector) of this intcell
 
   */
-  virtual std::vector<std::map<int,double> >& GetDerivAuxn() { return linauxn_; }
+  virtual std::vector<GEN::pairedvector<int,double> >& GetDerivAuxn() { return linauxn_; }
 
   //@}
 
@@ -257,8 +260,9 @@ public:
   \brief Evaluate shape functions and derivatives
 
   */
-  virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-                             LINALG::SerialDenseMatrix& deriv);
+  virtual bool EvaluateShape(const double* xi,
+      LINALG::Matrix<3,1>& val,
+      LINALG::Matrix<3,2>& deriv);
 
   /*!
   \brief Evaluate Jacobian determinant for parameter space integration
@@ -271,7 +275,7 @@ public:
          Note that this is a linearization with respect to the intcell
          vertices, which themselves have to be linearized later, of course!
   */
-  virtual void DerivJacobian(double* xi, std::map<int,double>& derivjac);
+  virtual void DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac);
 
   //@}
 
@@ -284,13 +288,13 @@ protected:
   int                        id_;              // local ID of this intcell
   int                        nvertices_;       // number of vertices (always 3)
   double                     area_;            // integration cell area
-  Epetra_SerialDenseMatrix   coords_;          // coords of cell vertices
+  LINALG::Matrix<3,3>        coords_;          // coords of cell vertices
   double                     auxn_[3];         // normal of auxiliary plane (3D)
 
   bool                                              auxplane_;  // flag indicating coupling strategy (true = auxplane)
   DRT::Element::DiscretizationType                  shape_;     // shape of this element (always tri3)
-  std::vector<std::vector<std::map<int,double> > >  linvertex_; // derivatives of the 3 vertices
-  std::vector<std::map<int,double> >                linauxn_;   // derivatives of auxiliary plane normal
+  std::vector<std::vector<GEN::pairedvector<int,double> > >  linvertex_; // derivatives of the 3 vertices
+  std::vector<GEN::pairedvector<int,double> >                linauxn_;   // derivatives of auxiliary plane normal
 
 }; // class IntCell
 

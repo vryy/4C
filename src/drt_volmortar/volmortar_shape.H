@@ -39,11 +39,11 @@ namespace UTILS
 
 template<class V>
 void volmortar_shape_function_3D_deriv(
-  V&                                 deriv1,   ///< to be filled with shape function values
+  V&                                 deriv1,  ///< to be filled with shape function values
   double&                            r,       ///< xi0 coordinate
   double&                            s,       ///< xi1 coordinate
   double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distuinguish between mortar shape
+  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
   );
 
 template<DRT::Element::DiscretizationType distype>
@@ -96,8 +96,8 @@ void volmortar_dualshape_function_3D(
   const double&                            xi0,     ///< xi0 coordinate
   const double&                            xi1,     ///< xi1 coordinate
   const double&                            xi2,     ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape,    ///< distinguish between mortar shape
-  INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadr. element modification
+  const DRT::Element::DiscretizationType&  shape,   ///< distinguish between mortar shape
+  INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
   );
 
 /*----------------------------------------------------------------------*
@@ -339,10 +339,10 @@ double Jacobian(const double* xi, DRT::Element& ele)
  *----------------------------------------------------------------------*/
 template<class V>
 void volmortar_shape_function_2D(
-  V&                                 funct,   ///< to be filled with shape function values
-  double&                            xi0,       ///< xi0 coordinate
-  double&                            xi1,       ///< xi1 coordinate
-  DRT::Element::DiscretizationType  shape    ///< distuinguish between mortar shape
+  V&                                 funct,  ///< to be filled with shape function values
+  double&                            xi0,    ///< xi0 coordinate
+  double&                            xi1,    ///< xi1 coordinate
+  DRT::Element::DiscretizationType  shape    ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -353,7 +353,7 @@ void volmortar_shape_function_2D(
   // *********************************************************************
   case DRT::Element::tri3:
   {
-    funct(0) = 1-xi0-xi1;
+    funct(0) = 1.0 - xi0 - xi1;
     funct(1) = xi0;
     funct(2) = xi1;
     break;
@@ -364,10 +364,10 @@ void volmortar_shape_function_2D(
   // *********************************************************************
   case DRT::Element::quad4:
   {
-    funct(0) = 0.25*(1-xi0)*(1-xi1);
-    funct(1) = 0.25*(1+xi0)*(1-xi1);
-    funct(2) = 0.25*(1+xi0)*(1+xi1);
-    funct(3) = 0.25*(1-xi0)*(1+xi1);
+    funct(0) = 0.25*(1.0-xi0)*(1.0-xi1);
+    funct(1) = 0.25*(1.0+xi0)*(1.0-xi1);
+    funct(2) = 0.25*(1.0+xi0)*(1.0+xi1);
+    funct(3) = 0.25*(1.0-xi0)*(1.0+xi1);
     break;
   }
   default:
@@ -386,19 +386,19 @@ void volmortar_shape_function_3D(
   double&                            r,       ///< xi0 coordinate
   double&                            s,       ///< xi1 coordinate
   double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distuinguish between mortar shape
+  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
   )
 {
   switch (shape)
   {
   case DRT::Element::hex8:
   {
-    const double rp=1.0+r;
-    const double rm=1.0-r;
-    const double sp=1.0+s;
-    const double sm=1.0-s;
-    const double tp=1.0+t;
-    const double tm=1.0-t;
+    const double rp  = 1.0+r;
+    const double rm  = 1.0-r;
+    const double sp  = 1.0+s;
+    const double sm  = 1.0-s;
+    const double tp  = 1.0+t;
+    const double tm  = 1.0-t;
     const double Q18 = 1.0/8.0;
 
     funct(0)=Q18*rm*sm*tm;
@@ -415,15 +415,15 @@ void volmortar_shape_function_3D(
   case DRT::Element::hex20:
   {
     const double Q18 = 1.0/8.0;
-    const double rp=1.0+r;
-    const double rm=1.0-r;
-    const double sp=1.0+s;
-    const double sm=1.0-s;
-    const double tp=1.0+t;
-    const double tm=1.0-t;
-    const double rrm=1.0-r*r;
-    const double ssm=1.0-s*s;
-    const double ttm=1.0-t*t;
+    const double rp  = 1.0+r;
+    const double rm  = 1.0-r;
+    const double sp  = 1.0+s;
+    const double sm  = 1.0-s;
+    const double tp  = 1.0+t;
+    const double tm  = 1.0-t;
+    const double rrm = 1.0-r*r;
+    const double ssm = 1.0-s*s;
+    const double ttm = 1.0-t*t;
 
     // corner nodes
     funct(0) =Q18*rm*sm*tm*(rm+sm+tm-5.0);
@@ -457,15 +457,15 @@ void volmortar_shape_function_3D(
   }
   case DRT::Element::hex27:
   {
-    const double rm1=0.5*r*(r - 1.0);
-    const double r00=(1.0 - r*r);
-    const double rp1=0.5*r*(r + 1.0);
-    const double sm1=0.5*s*(s - 1.0);
-    const double s00=(1.0 - s*s);
-    const double sp1=0.5*s*(s + 1.0);
-    const double tm1=0.5*t*(t - 1.0);
-    const double t00=(1.0 - t*t);
-    const double tp1=0.5*t*(t + 1.0);
+    const double rm1 = 0.5*r*(r - 1.0);
+    const double r00 = (1.0 - r*r);
+    const double rp1 = 0.5*r*(r + 1.0);
+    const double sm1 = 0.5*s*(s - 1.0);
+    const double s00 = (1.0 - s*s);
+    const double sp1 = 0.5*s*(s + 1.0);
+    const double tm1 = 0.5*t*(t - 1.0);
+    const double t00 = (1.0 - t*t);
+    const double tp1 = 0.5*t*(t + 1.0);
 
     funct( 0) = rm1*sm1*tm1;
     funct( 1) = rp1*sm1*tm1;
@@ -513,10 +513,10 @@ void volmortar_shape_function_3D(
   {
       const double u=1.0-r-s-t;
 
-      funct(0) =u*(2*u -1);
-      funct(1) =r*(2*r -1);
-      funct(2) =s*(2*s -1);
-      funct(3) =t*(2*t -1);
+      funct(0) =u*(2*u -1.0);
+      funct(1) =r*(2*r -1.0);
+      funct(2) =s*(2*s -1.0);
+      funct(3) =t*(2*t -1.0);
       funct(4) =4*r*u;
       funct(5) =4*r*s;
       funct(6) =4*s*u;
@@ -542,7 +542,7 @@ void volmortar_shape_function_3D_modified(
   double&                            r,       ///< xi0 coordinate
   double&                            s,       ///< xi1 coordinate
   double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distuinguish between mortar shape
+  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -550,15 +550,15 @@ void volmortar_shape_function_3D_modified(
   case DRT::Element::hex20:
   {
     const double Q18 = 1.0/8.0;
-    const double rp=1.0+r;
-    const double rm=1.0-r;
-    const double sp=1.0+s;
-    const double sm=1.0-s;
-    const double tp=1.0+t;
-    const double tm=1.0-t;
-    const double rrm=1.0-r*r;
-    const double ssm=1.0-s*s;
-    const double ttm=1.0-t*t;
+    const double rp  = 1.0+r;
+    const double rm  = 1.0-r;
+    const double sp  = 1.0+s;
+    const double sm  = 1.0-s;
+    const double tp  = 1.0+t;
+    const double tm  = 1.0-t;
+    const double rrm = 1.0-r*r;
+    const double ssm = 1.0-s*s;
+    const double ttm = 1.0-t*t;
 
     LINALG::Matrix<20,1> valtmp;
 
@@ -593,7 +593,7 @@ void volmortar_shape_function_3D_modified(
     // *******************************
     // Basis-Trafo:
 
-    double alpha = 0.3;
+    const double alpha = 0.3;
 
     // corner nodes
     funct(0) = valtmp(0) + alpha * (valtmp(8)  + valtmp(11) + valtmp(12));
@@ -626,21 +626,21 @@ void volmortar_shape_function_3D_modified(
     const double u=1.0-r-s-t;
     LINALG::Matrix<10,1> valtmp;
 
-    valtmp(0) =u*(2*u -1);
-    valtmp(1) =r*(2*r -1);
-    valtmp(2) =s*(2*s -1);
-    valtmp(3) =t*(2*t -1);
-    valtmp(4) =4*r*u;
-    valtmp(5) =4*r*s;
-    valtmp(6) =4*s*u;
-    valtmp(7) =4*t*u;
-    valtmp(8) =4*r*t;
-    valtmp(9) =4*s*t;
+    valtmp(0) = u*(2.0*u -1.0);
+    valtmp(1) = r*(2.0*r -1.0);
+    valtmp(2) = s*(2.0*s -1.0);
+    valtmp(3) = t*(2.0*t -1.0);
+    valtmp(4) = 4.0*r*u;
+    valtmp(5) = 4.0*r*s;
+    valtmp(6) = 4.0*s*u;
+    valtmp(7) = 4.0*t*u;
+    valtmp(8) = 4.0*r*t;
+    valtmp(9) = 4.0*s*t;
 
     // *******************************
     // Basis-Trafo:
 
-    double alpha = 0.3;
+    const double alpha = 0.3;
 
     // corner nodes
     funct(0) = valtmp(0) + alpha * (valtmp(4)  + valtmp(6) + valtmp(7));
@@ -672,9 +672,9 @@ template<class V>
 void volmortar_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
   DRT::Element&                            ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -685,9 +685,9 @@ void volmortar_dualshape_function_2D(
   // *********************************************************************
   case DRT::Element::tri3:
   {
-    funct(0) = 3-4*xi0-4*xi1;
-    funct(1) = 4*xi0-1;
-    funct(2) = 4*xi1-1;
+    funct(0) = 3.0 - 4.0*xi0 - 4.0*xi1;
+    funct(1) = 4.0 * xi0     - 1.0;
+    funct(2) = 4.0 * xi1     - 1.0;
 
     break;
   }
@@ -698,19 +698,18 @@ void volmortar_dualshape_function_2D(
   // *********************************************************************
   case DRT::Element::quad4:
   {
-    int nnodes = ele.NumNode();
+    const int nnodes = 4;
     // get solution matrix with dual parameters
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    LINALG::Matrix<4,1>      stdval;
-
-    // establish fundamental data
-    double detg = 0.0;
+    LINALG::Matrix<nnodes,1>      stdval;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
     MORTAR::ElementIntegrator integrator(ele.Shape());
 
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    // establish fundamental data
+    double detg = 0.0;
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<integrator.nGP();++i)
     {
@@ -727,8 +726,7 @@ void volmortar_dualshape_function_2D(
     }
 
     // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
@@ -762,8 +760,8 @@ void volmortar_dualshape_function_3D(
   const double&                            xi0,     ///< xi0 coordinate
   const double&                            xi1,     ///< xi1 coordinate
   const double&                            xi2,     ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape,   ///< distuinguish between mortar shape
-  INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadr. element modification
+  const DRT::Element::DiscretizationType&  shape,   ///< distinguish between mortar shape
+  INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
   )
 {
   switch (shape)
@@ -793,7 +791,7 @@ void volmortar_dualshape_function_3D(
       weights[i]=intpoints.qwgt[i];
     }
 
-    int nnodes = ele.NumNode();
+    const int nnodes = 8;//ele.NumNode();
     // get solution matrix with dual parameters
     LINALG::Matrix<8,1>      stdval;
 
@@ -801,9 +799,9 @@ void volmortar_dualshape_function_3D(
     double detg = 0.0;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<ngp;++i)
     {
@@ -819,9 +817,8 @@ void volmortar_dualshape_function_3D(
         }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    // calcute coefficient matrix
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
@@ -862,7 +859,7 @@ void volmortar_dualshape_function_3D(
       weights[i]=intpoints.qwgt[i];
     }
 
-    int nnodes = ele.NumNode();
+    const int nnodes = 20;
     // get solution matrix with dual parameters
     LINALG::Matrix<20,1>      stdval;
 
@@ -870,9 +867,9 @@ void volmortar_dualshape_function_3D(
     double detg = 0.0;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<ngp;++i)
     {
@@ -894,9 +891,8 @@ void volmortar_dualshape_function_3D(
         }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    // calcute coefficient matrix
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
@@ -942,7 +938,7 @@ void volmortar_dualshape_function_3D(
       weights[i]=intpoints.qwgt[i];
     }
 
-    int nnodes = ele.NumNode();
+    const int nnodes = 27;//ele.NumNode();
     // get solution matrix with dual parameters
     LINALG::Matrix<27,1>      stdval;
 
@@ -950,9 +946,9 @@ void volmortar_dualshape_function_3D(
     double detg = 0.0;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<ngp;++i)
     {
@@ -968,9 +964,8 @@ void volmortar_dualshape_function_3D(
         }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    // calcute coefficient matrix
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
@@ -1023,7 +1018,7 @@ void volmortar_dualshape_function_3D(
       weights[i]=intpoints.qwgt[i];
     }
 
-    int nnodes = ele.NumNode();
+    const int nnodes = 10;//ele.NumNode();
     // get solution matrix with dual parameters
     LINALG::Matrix<10,1>      stdval;
 
@@ -1031,9 +1026,9 @@ void volmortar_dualshape_function_3D(
     double detg = 0.0;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<ngp;++i)
     {
@@ -1055,9 +1050,8 @@ void volmortar_dualshape_function_3D(
         }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    // calcute coefficient matrix
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
@@ -1092,10 +1086,10 @@ void volmortar_dualshape_function_3D(
 template<class V>
 void volmortar_shape_function_3D_deriv(
   V&                                 deriv1,   ///< to be filled with shape function values
-  double&                            r,       ///< xi0 coordinate
-  double&                            s,       ///< xi1 coordinate
-  double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distuinguish between mortar shape
+  double&                            r,        ///< xi0 coordinate
+  double&                            s,        ///< xi1 coordinate
+  double&                            t,        ///< xi2 coordinate
+  DRT::Element::DiscretizationType  shape      ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -1103,15 +1097,15 @@ void volmortar_shape_function_3D_deriv(
   case DRT::Element::hex20:
   {
     // form basic values
-    const double rp=1.0+r;
-    const double rm=1.0-r;
-    const double sp=1.0+s;
-    const double sm=1.0-s;
-    const double tp=1.0+t;
-    const double tm=1.0-t;
-    const double rrm=1.0-r*r;
-    const double ssm=1.0-s*s;
-    const double ttm=1.0-t*t;
+    const double rp  = 1.0+r;
+    const double rm  = 1.0-r;
+    const double sp  = 1.0+s;
+    const double sm  = 1.0-s;
+    const double tp  = 1.0+t;
+    const double tm  = 1.0-t;
+    const double rrm = 1.0-r*r;
+    const double ssm = 1.0-s*s;
+    const double ttm = 1.0-t*t;
     const double Q18 = 1.0/8.0;
 
     LINALG::Matrix<3,20> valtmp;
@@ -1203,7 +1197,7 @@ void volmortar_shape_function_3D_deriv(
     // *******************************
     // Basis-Trafo:
 
-    double alpha = 0.1;
+    const double alpha = 0.1;
 
     // corner nodes
     deriv1(0,0) = valtmp(0,0) + alpha * (valtmp(0,8)  + valtmp(0,11) + valtmp(0,12));

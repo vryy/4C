@@ -59,7 +59,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-  
+
   //**********************************************************************
   // GMSH output of all interface elements
   //**********************************************************************
@@ -128,7 +128,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         fps = fopen(filenameslave.str().c_str(), "w");
         fpm = fopen(filenamemaster.str().c_str(), "w");
       }
-      else 
+      else
       {
         fp = fopen(filename.str().c_str(), "a");
         fps = fopen(filenameslave.str().c_str(), "a");
@@ -185,7 +185,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,1) << ")";
             gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "};" << std::endl;
           }
-          
+
         }
 
         // 2D quadratic case (3noded line elements)
@@ -637,7 +637,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     lComm()->Barrier();
   }
 
-  
+
   //**********************************************************************
   // GMSH output of all treenodes (DOPs) on all layers
   //**********************************************************************
@@ -685,7 +685,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filenametn << iter;
 #endif // #ifdef MORTARGMSH3
-  
+
   if (lComm()->MyPID()==0)
   {
     for (int i=0; i<gnslayers;i++)
@@ -820,7 +820,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   }
 #endif // ifdef MORTARGMSHTN
 
-  
+
   //**********************************************************************
   // GMSH output of all active treenodes (DOPs) on leaf level
   //**********************************************************************
@@ -884,7 +884,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           std::ostringstream currentfilename;
           std::ostringstream gmshfile;
           std::ostringstream newgmshfile;
-          
+
           // create new sheet for slave
           if (lComm()->MyPID()==0 && j==0)
           {
@@ -892,7 +892,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
             fp = fopen(currentfilename.str().c_str(), "w");
             gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp,gmshfile.str().c_str());
-            fclose(fp);     
+            fclose(fp);
             (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
           else
@@ -901,10 +901,10 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
             fp = fopen(currentfilename.str().c_str(), "a");
             gmshfile << "};" << std::endl << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp,gmshfile.str().c_str());
-            fclose(fp);     
+            fclose(fp);
             (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
-          
+
           // create new sheet for master
           fp = fopen(currentfilename.str().c_str(), "a");
           newgmshfile << "};" << std::endl << "View \" Step " << step << " Iter " << iter << " CM  \" {" << std::endl;
@@ -971,7 +971,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
 
   // problem dimension (2D or 3D)
   int dim = Dim();
-  
+
   // store all nodal normals / derivatives (reference)
   for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
   {
@@ -979,7 +979,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     DRT::Node* jnode = idiscret_->gNode(jgid);
     if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
     CoNode* jcnode = static_cast<CoNode*>(jnode);
-    
+
     // store reference normals / tangents
     refnx[j] = jcnode->MoData().n()[0];
     refny[j] = jcnode->MoData().n()[1];
@@ -991,13 +991,13 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     reftetay[j] = jcnode->CoData().teta()[1];
     reftetaz[j] = jcnode->CoData().teta()[2];
   }
-  
+
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
   for (int i=0; i<dim*snodefullmap->NumMyElements();++i)
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // reset normal etc.
     Initialize();
 
@@ -1012,7 +1012,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
 
     int sdof = snode->Dofs()[i%dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
-    
+
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1080,7 +1080,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       newteta[0] = newtetax[k];
       newteta[1] = newtetay[k];
       newteta[2] = newtetaz[k];
-      
+
       // print results (derivatives) to screen
       if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12 || abs(newn[2]-refn[2]) > 1e-12)
       {
@@ -1089,11 +1089,11 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
          double finit = (newn[d]-refn[d])/delta;
          double analy = (kcnode->CoData().GetDerivN()[d])[snode->Dofs()[i%dim]];
          double dev = finit - analy;
-  
+
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "NORMAL(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
-  
+
          if( abs(dev) > 1e-4 )
          {
            std::cout << " ***** WARNING ***** ";
@@ -1104,11 +1104,11 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
            std::cout << " ***** warning ***** ";
            w++;
          }
-  
+
          std::cout << std::endl;
         }
       }
-      
+
       if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 || abs(newtxi[2]-reftxi[2]) > 1e-12)
       {
         for (int d=0;d<dim;++d)
@@ -1116,11 +1116,11 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
          double finit = (newtxi[d]-reftxi[d])/delta;
          double analy = (kcnode->CoData().GetDerivTxi()[d])[snode->Dofs()[i%dim]];
          double dev = finit - analy;
-  
+
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
-  
+
          if( abs(dev) > 1e-4 )
          {
            std::cout << " ***** WARNING ***** ";
@@ -1131,11 +1131,11 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
            std::cout << " ***** warning ***** ";
            w++;
          }
-  
+
          std::cout << std::endl;
         }
       }
-      
+
       if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 || abs(newteta[2]-refteta[2]) > 1e-12)
       {
         for (int d=0;d<dim;++d)
@@ -1143,11 +1143,11 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
          double finit = (newteta[d]-refteta[d])/delta;
          double analy = (kcnode->CoData().GetDerivTeta()[d])[snode->Dofs()[i%dim]];
          double dev = finit - analy;
-  
+
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
-  
+
          if( abs(dev) > 1e-4 )
          {
            std::cout << " ***** WARNING ***** ";
@@ -1158,7 +1158,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
            std::cout << " ***** warning ***** ";
            w++;
          }
-  
+
          std::cout << std::endl;
         }
       }
@@ -1177,7 +1177,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     {
       snode->xspatial()[2] -= delta;
     }
-    
+
     std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
   }
 
@@ -1187,10 +1187,10 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
 
   // compute element areas
   SetElementAreas();
-  
+
   // contents of Evaluate()
   Evaluate();
-  
+
   return;
 }
 
@@ -1216,7 +1216,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
 
   // problem dimension (2D or 3D)
   int dim = Dim();
-  
+
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
@@ -1226,8 +1226,9 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    //typedef std::map<int,double>::const_iterator CI;
+    typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    typedef std::map<int,double>::const_iterator CI;
+    typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
     if ((int)(cnode->MoData().GetD().size())==0)
       continue;
@@ -1235,7 +1236,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     for( int d=0; d<dim; d++ )
     {
       int dof = cnode->Dofs()[d];
-      refD[dof] = cnode->MoData().GetD()[d];
+      for(_CI it = cnode->MoData().GetD()[d].begin(); it!=cnode->MoData().GetD()[d].end();++it)
+        refD[dof][it->first] = it->second;
     }
 
     refDerivD[gid] = cnode->CoData().GetDerivD();
@@ -1299,13 +1301,16 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
+      typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
+        for(_CI it = kcnode->MoData().GetD()[d].begin(); it!=kcnode->MoData().GetD()[d].end();++it)
+          newD[dof][it->first] = it->second;
 
         // store D-values into refD
-        newD[dof] = kcnode->MoData().GetD()[d];
+        //newD[dof] = kcnode->MoData().GetD()[d];
 
         // print results (derivatives) to screen
         for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
@@ -1413,13 +1418,16 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
+      typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
+        for(_CI it = kcnode->MoData().GetD()[d].begin(); it!=kcnode->MoData().GetD()[d].end();++it)
+          newD[dof][it->first] = it->second;
 
         // store D-values into refD
-        newD[dof] = kcnode->MoData().GetD()[d];
+//        newD[dof] = kcnode->MoData().GetD()[d];
 
         // print results (derivatives) to screen
         for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
@@ -1506,7 +1514,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 
   // problem dimension (2D or 3D)
   int dim = Dim();
-  
+
   // print reference to screen (M-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
@@ -2260,7 +2268,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
   // problem dimension (2D or 3D)
   int dim = Dim();
-  
+
   // store reference
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements();++i)
@@ -2322,7 +2330,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // Initialize
     Initialize();
 
@@ -2334,7 +2342,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
     int sdof = snode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
-    
+
     // apply finite difference scheme
     /*if (Comm().MyPID()==snode->Owner())
     {
@@ -2418,17 +2426,17 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
       // store gap-values into newG
       newG[k]=kcnode->CoData().Getg();
-      
+
       if (abs(newG[k]-refG[k]) > 1e-12 && newG[k]!=1.0e12 && refG[k] != 1.0e12)
       {
          double finit = (newG[k]-refG[k])/delta;
          double analy = kcnode->CoData().GetDerivG()[snode->Dofs()[fd%dim]];
          double dev = finit - analy;
-  
+
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
-  
+
          if( abs(dev) > 1e-4 )
          {
            std::cout << " ***** WARNING ***** ";
@@ -2439,7 +2447,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
            std::cout << " ***** warning ***** ";
            w++;
          }
-  
+
          std::cout << std::endl;
       }
     }
@@ -2456,7 +2464,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     {
       snode->xspatial()[2] -= delta;
     }
-    
+
     std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
   }
 
@@ -2465,7 +2473,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
@@ -2479,7 +2487,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
     int mdof = mnode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-    
+
     // apply finite difference scheme
     /*if (Comm().MyPID()==mnode->Owner())
     {
@@ -2563,17 +2571,17 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
       // store gap-values into newG
       newG[k]=kcnode->CoData().Getg();
-      
+
       if (abs(newG[k]-refG[k]) > 1e-12 && newG[k]!=1.0e12 && refG[k] != 1.0e12)
       {
          double finit = (newG[k]-refG[k])/delta;
          double analy = kcnode->CoData().GetDerivG()[mnode->Dofs()[fd%dim]];
          double dev = finit - analy;
-  
+
          // kgid: id of currently tested slave node
          // mnode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
-  
+
          if( abs(dev) > 1e-4 )
          {
            std::cout << " ***** WARNING ***** ";
@@ -2584,7 +2592,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
            std::cout << " ***** warning ***** ";
            w++;
          }
-  
+
          std::cout << std::endl;
       }
     }
@@ -2602,7 +2610,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     {
       mnode->xspatial()[2] -= delta;
     }
-    
+
     std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
   }
 
@@ -2676,15 +2684,15 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->CoData().GetDerivN()).size());++j)
         (node->CoData().GetDerivN())[j].clear();
-      (node->CoData().GetDerivN()).resize(0);
+      (node->CoData().GetDerivN()).resize(0,0);
 
       // reset derivative maps of tangent vectors
       for (int j=0;j<(int)((node->CoData().GetDerivTxi()).size());++j)
         (node->CoData().GetDerivTxi())[j].clear();
-      (node->CoData().GetDerivTxi()).resize(0);
+      (node->CoData().GetDerivTxi()).resize(0,0);
       for (int j=0;j<(int)((node->CoData().GetDerivTeta()).size());++j)
         (node->CoData().GetDerivTeta())[j].clear();
-      (node->CoData().GetDerivTeta()).resize(0);
+      (node->CoData().GetDerivTeta()).resize(0,0);
 
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->MoData().GetD()).size());++j)
@@ -2694,7 +2702,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       for (int j=0;j<(int)((node->MoData().GetMmod()).size());++j)
         (node->MoData().GetMmod())[j].clear();
 
-      (node->MoData().GetD()).resize(0);
+      (node->MoData().GetD()).resize(0,0);
       (node->MoData().GetM()).resize(0);
       (node->MoData().GetMmod()).resize(0);
 
@@ -2788,7 +2796,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
       // empty vector of master element pointers
       std::vector<MORTAR::MortarElement*> melements;
-    
+
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
       for (int j=0;j<selement->MoData().NumSearchElements();++j)
@@ -2799,7 +2807,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
         MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
         melements.push_back(melement);
       }
-    
+
       //********************************************************************
       // 1) perform coupling (projection + overlap detection for sl/m pair)
       // 2) integrate Mortar matrix M and weighted gap g
@@ -2883,15 +2891,15 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // reset derivative maps of normal vector
       for (int j=0;j<(int)((node->CoData().GetDerivN()).size());++j)
         (node->CoData().GetDerivN())[j].clear();
-      (node->CoData().GetDerivN()).resize(0);
+      (node->CoData().GetDerivN()).resize(0,0);
 
       // reset derivative maps of tangent vectors
       for (int j=0;j<(int)((node->CoData().GetDerivTxi()).size());++j)
         (node->CoData().GetDerivTxi())[j].clear();
-      (node->CoData().GetDerivTxi()).resize(0);
+      (node->CoData().GetDerivTxi()).resize(0,0);
       for (int j=0;j<(int)((node->CoData().GetDerivTeta()).size());++j)
         (node->CoData().GetDerivTeta())[j].clear();
-      (node->CoData().GetDerivTeta()).resize(0);
+      (node->CoData().GetDerivTeta()).resize(0,0);
 
       // reset nodal Mortar maps
       for (int j=0;j<(int)((node->MoData().GetD()).size());++j)
@@ -2901,7 +2909,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       for (int j=0;j<(int)((node->MoData().GetMmod()).size());++j)
         (node->MoData().GetMmod())[j].clear();
 
-      (node->MoData().GetD()).resize(0);
+      (node->MoData().GetD()).resize(0,0);
       (node->MoData().GetM()).resize(0);
       (node->MoData().GetMmod()).resize(0);
 
@@ -2995,7 +3003,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
       // empty vector of master element pointers
       std::vector<MORTAR::MortarElement*> melements;
-    
+
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
       for (int j=0;j<selement->MoData().NumSearchElements();++j)
@@ -3006,7 +3014,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
         MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
         melements.push_back(melement);
       }
-    
+
       //********************************************************************
       // 1) perform coupling (projection + overlap detection for sl/m pair)
       // 2) integrate Mortar matrix M and weighted gap g
@@ -3089,15 +3097,15 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((node->CoData().GetDerivN()).size());++j)
       (node->CoData().GetDerivN())[j].clear();
-    (node->CoData().GetDerivN()).resize(0);
+    (node->CoData().GetDerivN()).resize(0,0);
 
     // reset derivative maps of tangent vectors
     for (int j=0;j<(int)((node->CoData().GetDerivTxi()).size());++j)
       (node->CoData().GetDerivTxi())[j].clear();
-    (node->CoData().GetDerivTxi()).resize(0);
+    (node->CoData().GetDerivTxi()).resize(0,0);
     for (int j=0;j<(int)((node->CoData().GetDerivTeta()).size());++j)
       (node->CoData().GetDerivTeta())[j].clear();
-    (node->CoData().GetDerivTeta()).resize(0);
+    (node->CoData().GetDerivTeta()).resize(0,0);
 
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->MoData().GetD()).size());++j)
@@ -3107,7 +3115,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     for (int j=0;j<(int)((node->MoData().GetMmod()).size());++j)
       (node->MoData().GetMmod())[j].clear();
 
-    (node->MoData().GetD()).resize(0);
+    (node->MoData().GetD()).resize(0,0);
     (node->MoData().GetM()).resize(0);
     (node->MoData().GetMmod()).resize(0);
 
@@ -3173,7 +3181,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
     // empty vector of master element pointers
     std::vector<MORTAR::MortarElement*> melements;
-  
+
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int j=0;j<selement->MoData().NumSearchElements();++j)
@@ -3184,7 +3192,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
       melements.push_back(melement);
     }
-  
+
     //********************************************************************
     // 1) perform coupling (projection + overlap detection for sl/m pair)
     // 2) integrate Mortar matrix M and weighted gap g
@@ -3850,7 +3858,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       refCteta[i] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
     }
     else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
- 
+
     refCtxi[i] = euclidean*ztxi-(frcoeff*(znor-cn*cnode->CoData().Getg()))*(ztxi+ct*jumptxi);
     refCteta[i] = euclidean*zteta-(frcoeff*(znor-cn*cnode->CoData().Getg()))*(zteta+ct*jumpteta);
 

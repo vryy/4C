@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
+//#include "mortar_calc_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_node.H"
@@ -129,26 +130,26 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     {
     case 0:
     {
-      parxi[0] =  xi[0] - 1;
-      parxi[1] =  xi[1] - 1;
+      parxi[0] =  xi[0] - 1.0;
+      parxi[1] =  xi[1] - 1.0;
       break;
     }
     case 1:
     {
-      parxi[0] = -xi[1] + 1;
-      parxi[1] =  xi[0] - 1;
+      parxi[0] = -xi[1] + 1.0;
+      parxi[1] =  xi[0] - 1.0;
       break;
     }
     case 2:
     {
-      parxi[0] = -xi[0] + 1;
-      parxi[1] = -xi[1] + 1;
+      parxi[0] = -xi[0] + 1.0;
+      parxi[1] = -xi[1] + 1.0;
       break;
     }
     case 3:
     {
-      parxi[0] =  xi[1] - 1;
-      parxi[1] = -xi[0] + 1;
+      parxi[0] =  xi[1] - 1.0;
+      parxi[1] = -xi[0] + 1.0;
       break;
     }
     case 4:
@@ -250,11 +251,11 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 /*----------------------------------------------------------------------*
  |  map IntElement coord derivatives to Element (public)      popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& dxi,
-                                     std::vector<std::map<int,double> >& dparxi)
+bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int,double> >& dxi,
+                                     std::vector<GEN::pairedvector<int,double> >& dparxi)
 {
   // map iterator
-  typedef std::map<int,double>::const_iterator CI;
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
 
   // *********************************************************************
   // do mapping for given IntElement and Element
@@ -312,33 +313,33 @@ bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& d
     case 0:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] += 1.0 * (p->second);
+        dparxi[0][p->first] += (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] += 1.0 * (p->second);
+        dparxi[1][p->first] += (p->second);
       break;
     }
     case 1:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[1][p->first] += 1.0 * (p->second);
+        dparxi[1][p->first] += (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[0][p->first] -= 1.0 * (p->second);
+        dparxi[0][p->first] -= (p->second);
       break;
     }
     case 2:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] -= 1.0 * (p->second);
+        dparxi[0][p->first] -= (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] -= 1.0 * (p->second);
+        dparxi[1][p->first] -= (p->second);
       break;
     }
     case 3:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[1][p->first] -= 1.0 * (p->second);
+        dparxi[1][p->first] -= (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[0][p->first] += 1.0 * (p->second);
+        dparxi[0][p->first] += (p->second);
       break;
     }
     case 4:
@@ -416,9 +417,9 @@ bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& d
     case 0:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 1.0 * (p->second);
+        dparxi[0][p->first] = (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 1.0 * (p->second);
+        dparxi[1][p->first] = (p->second);
       break;
     }
     default:
@@ -437,9 +438,9 @@ bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& d
     case 0:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 1.0 * (p->second);
+        dparxi[0][p->first] = (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 1.0 * (p->second);
+        dparxi[1][p->first] = (p->second);
       break;
     }
     default:
@@ -460,17 +461,18 @@ bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& d
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::IntCell::IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3,3>& coords,
                          double* auxn, const DRT::Element::DiscretizationType& shape,
-                         std::vector<std::map<int,double> >& linv1,
-                         std::vector<std::map<int,double> >& linv2,
-                         std::vector<std::map<int,double> >& linv3,
-                         std::vector<std::map<int,double> >& linauxn) :
+                         std::vector<GEN::pairedvector<int,double> >& linv1,
+                         std::vector<GEN::pairedvector<int,double> >& linv2,
+                         std::vector<GEN::pairedvector<int,double> >& linv3,
+                         std::vector<GEN::pairedvector<int,double> >& linauxn) :
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
 shape_(shape)
 {
+#ifdef DEBUG
    // check nvertices_ and shape_
   if (nvertices_!=3) dserror("ERROR: Integration cell must have 3 vertices");
   if (shape_!=DRT::Element::tri3) dserror("ERROR: Integration cell must be tri3");
@@ -478,6 +480,7 @@ shape_(shape)
   // check dimensions of coords_
   if (coords_.M() != 3) dserror("ERROR: Inconsistent coord matrix");
   if (coords_.N() != nvertices_) dserror("ERROR: Inconsistent coord matrix");
+#endif
 
   // store auxiliary plane normal
   for (int k=0;k<3;++k) Auxn()[k] = auxn[k];
@@ -519,22 +522,21 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi,
   if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
 
   // collect fundamental data
-  int nnodes = NumVertices();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  static LINALG::Matrix<3,1> val;
+  static LINALG::Matrix<3,2> deriv;
 
   // Evaluate shape, get nodal coords and interpolate global coords
   EvaluateShape(xi, val, deriv);
   for (int i=0;i<3;++i) globcoord[i]=0.0;
 
-  for (int i=0;i<nnodes;++i)
+  for (int i=0;i<3;++i)
   {
     if (inttype==0)
     {
       // use shape function values for interpolation
-      globcoord[0]+=val[i]*Coords()(0,i);
-      globcoord[1]+=val[i]*Coords()(1,i);
-      globcoord[2]+=val[i]*Coords()(2,i);
+      globcoord[0]+=val(i)*Coords()(0,i);
+      globcoord[1]+=val(i)*Coords()(1,i);
+      globcoord[2]+=val(i)*Coords()(2,i);
     }
     else if (inttype==1)
     {
@@ -561,8 +563,8 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi,
  |  Evaluate shape functions (IntCell)                        popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::IntCell::EvaluateShape(const double* xi,
-                                    LINALG::SerialDenseVector& val,
-                                    LINALG::SerialDenseMatrix& deriv)
+                                    LINALG::Matrix<3,1>& val,
+                                    LINALG::Matrix<3,2>& deriv)
 {
   if (!xi)
     dserror("ERROR: EvaluateShape (IntCell) called with xi=NULL");
@@ -570,9 +572,9 @@ bool MORTAR::IntCell::EvaluateShape(const double* xi,
   // 3noded triangular element
   if(Shape()==DRT::Element::tri3)
   {
-    val[0] = 1-xi[0]-xi[1];
-    val[1] = xi[0];
-    val[2] = xi[1];
+    val(0) = 1.0-xi[0]-xi[1];
+    val(1) = xi[0];
+    val(2) = xi[1];
     deriv(0,0) = -1.0; deriv(0,1) = -1.0;
     deriv(1,0) =  1.0; deriv(1,1) =  0.0;
     deriv(2,0) =  0.0; deriv(2,1) =  1.0;
@@ -590,12 +592,10 @@ bool MORTAR::IntCell::EvaluateShape(const double* xi,
 double MORTAR::IntCell::Jacobian(double* xi)
 {
   double jac = 0.0;
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
 
   // 2D linear case (2noded line element)
   if (Shape()==DRT::Element::tri3)
-    jac = Area()*2;
+    jac = Area()*2.0;
 
   // unknown case
   else dserror("ERROR: Jacobian (IntCell) called for unknown ele type!");
@@ -606,16 +606,16 @@ double MORTAR::IntCell::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(double* xi, std::map<int,double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac)
 {
   // metrics routine gives local basis vectors
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+  static std::vector<double> gxi(3);
+  static std::vector<double> geta(3);
 
   for (int k=0;k<3;++k)
   {
-    gxi[k]=Coords()(k,1)-Coords()(k,0);
-    geta[k]=Coords()(k,2)-Coords()(k,0);
+    gxi[k]  = Coords()(k,1) - Coords()(k,0);
+    geta[k] = Coords()(k,2) - Coords()(k,0);
   }
 
   // cross product of gxi and geta
@@ -624,8 +624,9 @@ void MORTAR::IntCell::DerivJacobian(double* xi, std::map<int,double>& derivjac)
   cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
   cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
 
-  double jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-  typedef std::map<int,double>::const_iterator CI;
+  // inverse jacobian
+  const double jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
 
   // 2D linear case (2noded line element)
   if (Shape()==DRT::Element::tri3)
@@ -636,58 +637,58 @@ void MORTAR::IntCell::DerivJacobian(double* xi, std::map<int,double>& derivjac)
     // first vertex (Coords(k,0)) is part of gxi and geta
     for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
     {
-      derivjac[p->first] -= 1/jac*cross[1]*gxi[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[1]*geta[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*gxi[1]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*geta[1]*(p->second);
+      derivjac[p->first] -= jacinv*cross[1]*gxi[2]*(p->second);
+      derivjac[p->first] += jacinv*cross[1]*geta[2]*(p->second);
+      derivjac[p->first] += jacinv*cross[2]*gxi[1]*(p->second);
+      derivjac[p->first] -= jacinv*cross[2]*geta[1]*(p->second);
     }
     for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
     {
-      derivjac[p->first] += 1/jac*cross[0]*gxi[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[0]*geta[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*gxi[0]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*geta[0]*(p->second);
+      derivjac[p->first] += jacinv*cross[0]*gxi[2]*(p->second);
+      derivjac[p->first] -= jacinv*cross[0]*geta[2]*(p->second);
+      derivjac[p->first] -= jacinv*cross[2]*gxi[0]*(p->second);
+      derivjac[p->first] += jacinv*cross[2]*geta[0]*(p->second);
     }
     for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
     {
-      derivjac[p->first] -= 1/jac*cross[0]*gxi[1]*(p->second);
-      derivjac[p->first] += 1/jac*cross[0]*geta[1]*(p->second);
-      derivjac[p->first] += 1/jac*cross[1]*gxi[0]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[1]*geta[0]*(p->second);
+      derivjac[p->first] -= jacinv*cross[0]*gxi[1]*(p->second);
+      derivjac[p->first] += jacinv*cross[0]*geta[1]*(p->second);
+      derivjac[p->first] += jacinv*cross[1]*gxi[0]*(p->second);
+      derivjac[p->first] -= jacinv*cross[1]*geta[0]*(p->second);
     }
 
     // second vertex (Coords(k,1)) is part of gxi
     for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
     {
-      derivjac[p->first] -= 1/jac*cross[1]*geta[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*geta[1]*(p->second);
+      derivjac[p->first] -= jacinv*cross[1]*geta[2]*(p->second);
+      derivjac[p->first] += jacinv*cross[2]*geta[1]*(p->second);
     }
     for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
     {
-      derivjac[p->first] += 1/jac*cross[0]*geta[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*geta[0]*(p->second);
+      derivjac[p->first] += jacinv*cross[0]*geta[2]*(p->second);
+      derivjac[p->first] -= jacinv*cross[2]*geta[0]*(p->second);
     }
     for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
     {
-      derivjac[p->first] -= 1/jac*cross[0]*geta[1]*(p->second);
-      derivjac[p->first] += 1/jac*cross[1]*geta[0]*(p->second);
+      derivjac[p->first] -= jacinv*cross[0]*geta[1]*(p->second);
+      derivjac[p->first] += jacinv*cross[1]*geta[0]*(p->second);
     }
 
     // third vertex (Coords(k,2)) is part of geta
     for (CI p=GetDerivVertex(2)[0].begin();p!=GetDerivVertex(2)[0].end();++p)
     {
-      derivjac[p->first] += 1/jac*cross[1]*gxi[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*gxi[1]*(p->second);
+      derivjac[p->first] += jacinv*cross[1]*gxi[2]*(p->second);
+      derivjac[p->first] -= jacinv*cross[2]*gxi[1]*(p->second);
     }
     for (CI p=GetDerivVertex(2)[1].begin();p!=GetDerivVertex(2)[1].end();++p)
     {
-      derivjac[p->first] -= 1/jac*cross[0]*gxi[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*gxi[0]*(p->second);
+      derivjac[p->first] -= jacinv*cross[0]*gxi[2]*(p->second);
+      derivjac[p->first] += jacinv*cross[2]*gxi[0]*(p->second);
     }
     for (CI p=GetDerivVertex(2)[2].begin();p!=GetDerivVertex(2)[2].end();++p)
     {
-      derivjac[p->first] += 1/jac*cross[0]*gxi[1]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[1]*gxi[0]*(p->second);
+      derivjac[p->first] += jacinv*cross[0]*gxi[1]*(p->second);
+      derivjac[p->first] -= jacinv*cross[1]*gxi[0]*(p->second);
     }
   }
 

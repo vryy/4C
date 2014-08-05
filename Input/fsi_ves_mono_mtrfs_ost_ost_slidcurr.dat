@@ -56,151 +56,151 @@ NONLINITER                      Newton
 THETA                           0.66
 -----------------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_mortar_monolithicfluidsplit
-MAXTIME                         1.0
-NUMSTEP                         2
+MAXTIME                         15.0
+NUMSTEP                         5
 RESTARTEVRY                     2
 SECONDORDER                     Yes
 SLIDEALEPROJ                    Curr
-TIMESTEP                        0.5
+TIMESTEP                        3.0
 UPRES                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.0
-ALEPCITER                       1 1 1                        
-ALEPCOMEGA                      0.8 0.8 1.0 
+ALEPCITER                       1 1 1
+ALEPCOMEGA                      0.8 0.8 1.0
 BASETOL                         1.0E-12
-FLUIDPCITER                     3 3 1                        
+FLUIDPCITER                     3 3 1
 FLUIDPCOMEGA                    0.6 0.6 1.0
 INFNORMSCALING                  yes
 ITEMAX                          10
 LINEARBLOCKSOLVER               FSIAMG
-PCITER                          2 1 1                        
+PCITER                          2 1 1
 PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                Yes
-STRUCTPCITER                    2 2 1                        
-STRUCTPCOMEGA                   0.7 0.7 1.0 
+STRUCTPCITER                    2 2 1
+STRUCTPCOMEGA                   0.7 0.7 1.0
 SYMMETRICPRECOND                no
-TOL_DIS_INC_INF                 1e-12
-TOL_DIS_INC_L2                  1e-12
-TOL_DIS_RES_INF                 6e-12
-TOL_DIS_RES_L2                  1e-12
-TOL_FSI_INC_INF                 1e-12
-TOL_FSI_INC_L2                  1e-12
-TOL_FSI_RES_INF                 6e-12
-TOL_FSI_RES_L2                  1e-12
-TOL_PRE_INC_INF                 4e-13
-TOL_PRE_INC_L2                  1e-13
-TOL_PRE_RES_INF                 1e-12
-TOL_PRE_RES_L2                  1e-12
-TOL_VEL_INC_INF                 1e-12
-TOL_VEL_INC_L2                  1e-12
-TOL_VEL_RES_INF                 1e-12
-TOL_VEL_RES_L2                  1e-12
+TOL_DIS_INC_INF                 1e-11
+TOL_DIS_INC_L2                  1e-11
+TOL_DIS_RES_INF                 6e-11
+TOL_DIS_RES_L2                  1e-11
+TOL_FSI_INC_INF                 1e-11
+TOL_FSI_INC_L2                  1e-11
+TOL_FSI_RES_INF                 6e-11
+TOL_FSI_RES_L2                  1e-11
+TOL_PRE_INC_INF                 4e-12
+TOL_PRE_INC_L2                  1e-12
+TOL_PRE_RES_INF                 1e-11
+TOL_PRE_RES_L2                  1e-11
+TOL_VEL_INC_INF                 1e-11
+TOL_VEL_INC_L2                  1e-11
+TOL_VEL_RES_INF                 1e-11
+TOL_VEL_RES_L2                  1e-11
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        laplace
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-SOLVER                          Aztec_MSR                     
-AZOUTPUT                        0                             
-AZSOLVE                         CG                            
-AZPREC                          ML                            
-AZREUSE                         10                            
-AZDROP                          0.0                           
-IFPACKFILL                      1.0                           
-IFPACKGFILL                     0                             
-AZTOL                           1.0E-4                        
-AZCONV                          AZ_r0                         
-AZITER                          1000                          
-AZSUB                           40                            
-AZOMEGA                         1.0                           
-AZGRAPH                         1                             
-AZPOLY                          5                             
-IFPACKOVERLAP                   0                             
+SOLVER                          Aztec_MSR
+AZOUTPUT                        5
+AZSOLVE                         CG
+AZPREC                          ML
+AZREUSE                         10
+AZDROP                          0.0
+IFPACKFILL                      1.0
+IFPACKGFILL                     0
+AZTOL                           1.0E-14
+AZCONV                          AZ_r0
+AZITER                          1000
+AZSUB                           40
+AZOMEGA                         1.0
+AZGRAPH                         1
+AZPOLY                          5
+IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Zero
-AZSCAL                          infnorm                       
-ML_PRINT                        0                             
-ML_MAXCOARSESIZE                1                             
-ML_MAXLEVEL                     2                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  1.33                          
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 ILU                           
-ML_SMOOTHERMED                  ILU                           
-ML_SMOOTHERCOARSE               Umfpack                       
-ML_SMOTIMES                     0 0 0                         
-ML_DAMPFINE                     1.0                           
-ML_DAMPMED                      1.0                           
-ML_DAMPCOARSE                   1.0                           
+AZSCAL                          infnorm
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     2
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     0 0 0
+ML_DAMPFINE                     1.0
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR                     
-AZOUTPUT                        0                             
-AZSOLVE                         CG                            
-AZPREC                          ML                            
-AZREUSE                         10                            
-AZDROP                          0.0                           
-IFPACKFILL                      1.0                           
-IFPACKGFILL                     0                             
-AZTOL                           1.0E-4                        
-AZCONV                          AZ_r0                         
-AZITER                          1200                          
-AZSUB                           25                            
-AZOMEGA                         0.79                          
-AZGRAPH                         1                             
-AZPOLY                          5                             
-IFPACKOVERLAP                   0                             
+SOLVER                          Aztec_MSR
+AZOUTPUT                        5
+AZSOLVE                         CG
+AZPREC                          ML
+AZREUSE                         10
+AZDROP                          0.0
+IFPACKFILL                      1.0
+IFPACKGFILL                     0
+AZTOL                           1.0E-14
+AZCONV                          AZ_r0
+AZITER                          1200
+AZSUB                           25
+AZOMEGA                         0.79
+AZGRAPH                         1
+AZPOLY                          5
+IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add
-AZSCAL                          none                          
-ML_PRINT                        0                             
-ML_MAXCOARSESIZE                1                             
-ML_MAXLEVEL                     1                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  1.33                          
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 Chebychev                     
-ML_SMOOTHERMED                  Chebychev                     
-ML_SMOOTHERCOARSE               Umfpack                       
-ML_SMOTIMES                     12 12 0                       
-ML_DAMPFINE                     1.0                           
-ML_DAMPMED                      1.0                           
-ML_DAMPCOARSE                   1.0                           
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     1
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 Chebychev
+ML_SMOOTHERMED                  Chebychev
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     12 12 0
+ML_DAMPFINE                     1.0
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     
-AZOUTPUT                        0                             
-AZSOLVE                         GMRES                         
-AZPREC                          MLFLUID2                      
-AZREUSE                         1                             
-AZDROP                          0.0                           
-IFPACKFILL                      1.0                           
-IFPACKGFILL                     3                             
-AZTOL                           1.0E-4                        
-AZCONV                          AZ_r0                         
-AZITER                          1200                          
-AZSUB                           50                            
-AZOMEGA                         0.69                          
-AZGRAPH                         1                             
-AZPOLY                          5                             
+SOLVER                          Aztec_MSR
+AZOUTPUT                        5
+AZSOLVE                         GMRES
+AZPREC                          MLFLUID2
+AZREUSE                         1
+AZDROP                          0.0
+IFPACKFILL                      1.0
+IFPACKGFILL                     3
+AZTOL                           1.0E-14
+AZCONV                          AZ_r0
+AZITER                          1200
+AZSUB                           50
+AZOMEGA                         0.69
+AZGRAPH                         1
+AZPOLY                          5
 IFPACKOVERLAP                   3
 IFPACKCOMBINE                   Zero
-AZSCAL                          none                          
-ML_PRINT                        0                             
-ML_MAXCOARSESIZE                1000                          
-ML_MAXLEVEL                     2                             
-ML_COARSEN                      UC                            
-ML_AGG_SIZE                     27                            
-ML_PROLONG_SMO                  1.33                          
-ML_PROLONG_THRES                0.0                           
-ML_SMOOTHERFINE                 ILU                           
-ML_SMOOTHERMED                  ILU                           
-ML_SMOOTHERCOARSE               Umfpack                       
-ML_SMOTIMES                     0 0 0                         
-ML_DAMPFINE                     1.0                           
-ML_DAMPMED                      1.0                           
-ML_DAMPCOARSE                   1.0                           
+AZSCAL                          none
+ML_PRINT                        0
+ML_MAXCOARSESIZE                1000
+ML_MAXLEVEL                     2
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOTIMES                     0 0 0
+ML_DAMPFINE                     1.0
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 30.25 DENSITY 1.1E-3
 MAT 2 MAT_fluid DYNVISCOSITY 200.2 DENSITY 1.1E-3
@@ -242,13 +242,13 @@ E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DSURF 5
 // fluidxsurfs
 E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// fluidysurfs               
+// fluidysurfs
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
-// fluidzsurfs               
+// fluidzsurfs
 E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
-// fluidsym                  
+// fluidsym
 E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// extextrude_aux_flat       
+// extextrude_aux_flat
 E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE 3
@@ -5829,9 +5829,9 @@ NODE 2393 COORD 1.2437880660728e-07 2.9000000000000e+00 0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.84536682890626174e-05 TOLERANCE 1e-12
-FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.84562334572178375e-05 TOLERANCE 1e-12
-FLUID DIS fluid NODE 960 QUANTITY pressure VALUE -3.76612211154075092e-05 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.48056211635773681e-05 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.48067370954007326e-05 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.77071204702109824e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.77065164583712236e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 960 QUANTITY pressure VALUE -1.41091217795459817e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 2.15663657814453291e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -2.15662137498863447e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END

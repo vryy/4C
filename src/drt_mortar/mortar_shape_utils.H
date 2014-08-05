@@ -78,7 +78,7 @@ template<class V>
 void mortar_shape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   const double&                            r,       ///< r coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   );
 
 template<class V>
@@ -86,24 +86,24 @@ void mortar_dualshape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
   const double&                            r,       ///< r coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   );
 
 template<class V>
 void mortar_shape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   );
 
 template<class V>
 void mortar_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   );
 
 // nurbs shape function evaluation
@@ -111,16 +111,16 @@ template<class V>
 void mortar_nurbs_shape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
   );
 
 template<class V>
 void mortar_nurbs_dualshape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
   );
 
 // ----------------------------------------------------------------------
@@ -514,7 +514,7 @@ template<class V>
 void mortar_shape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   const double&                            r,       ///< r coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -525,8 +525,8 @@ void mortar_shape_function_1D(
   // *********************************************************************
   case MORTAR::MortarElement::lin1D:
   {
-    funct(0) = 0.5*(1-r);
-    funct(1) = 0.5*(1+r);
+    funct(0) = 0.5*(1.0-r);
+    funct(1) = 0.5*(1.0+r);
     break;
   }
   // *********************************************************************
@@ -535,8 +535,8 @@ void mortar_shape_function_1D(
   // *********************************************************************
   case MORTAR::MortarElement::lin1D_edge0:
   {
-    funct(0) = 0;
-    funct(1) = 1;
+    funct(0) = 0.0;
+    funct(1) = 1.0;
     break;
   }
   // *********************************************************************
@@ -545,8 +545,8 @@ void mortar_shape_function_1D(
   // *********************************************************************
   case MORTAR::MortarElement::lin1D_edge1:
   {
-    funct(0) = 1;
-    funct(1) = 0;
+    funct(0) = 1.0;
+    funct(1) = 0.0;
     break;
   }
   // *********************************************************************
@@ -555,9 +555,9 @@ void mortar_shape_function_1D(
   // *********************************************************************
   case MORTAR::MortarElement::quad1D:
   {
-    funct(0) = 0.5*r*(r-1);
-    funct(1) = 0.5*r*(r+1);
-    funct(2) = (1-r)*(1+r);
+    funct(0) = 0.5*r*(r-1.0);
+    funct(1) = 0.5*r*(r+1.0);
+    funct(2) = (1.0-r)*(1.0+r);
     break;
   }
   // *********************************************************************
@@ -566,9 +566,9 @@ void mortar_shape_function_1D(
   // *********************************************************************
   case MORTAR::MortarElement::quad1D_edge0:
   {
-    funct(0) = 0;
+    funct(0) = 0.0;
     funct(1) = r;
-    funct(2) = 1-r;
+    funct(2) = 1.0-r;
     break;
   }
   // *********************************************************************
@@ -578,8 +578,8 @@ void mortar_shape_function_1D(
   case MORTAR::MortarElement::quad1D_edge1:
   {
     funct(0) = -r;
-    funct(1) = 0;
-    funct(2) = 1+r;
+    funct(1) = 0.0;
+    funct(2) = 1.0+r;
     break;
   }
   // *********************************************************************
@@ -608,22 +608,22 @@ void mortar_dualshape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
   const double&                            r,       ///< r coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   )
 {
   switch (shape)
   {
   // *********************************************************************
   // 1D dual linear shape functions (line2)
-  // (used for interpolation of Lagrange mutliplier field)
+  // (used for interpolation of Lagrange multiplier field)
   // *********************************************************************
   case MortarElement::lindual1D:
   {
     // use element-based dual shape functions if no coefficient matrix is stored
     if (ele.MoData().DualShape()==Teuchos::null)
     {
-      funct(0) = 0.5*(1-3*r);
-      funct(1) = 0.5*(1+3*r);
+      funct(0) = 0.5*(1-3.0*r);
+      funct(1) = 0.5*(1+3.0*r);
     }
 
     // pre-calculated consistent dual shape functions
@@ -651,43 +651,46 @@ void mortar_dualshape_function_1D(
   }
   // *********************************************************************
   // 1D modified dual shape functions (const replacing linear, line2)
-  // (used for interpolation of Lagrange mult. field near boundaries)
+  // (used for interpolation of Lagrange multiplier field near boundaries)
   // *********************************************************************
   case MortarElement::lindual1D_edge0:
   {
-    funct(0) = 0;
-    funct(1) = 1;
+    funct(0) = 0.0;
+    funct(1) = 1.0;
     break;
   }
   // *********************************************************************
   // 1D modified dual shape functions (const replacing linear, line2)
-  // (used for interpolation of Lagrange mult. field near boundaries)
+  // (used for interpolation of Lagrange multiplier field near boundaries)
   // *********************************************************************
   case MortarElement::lindual1D_edge1:
   {
-    funct(0) = 1;
-    funct(1) = 0;
+    funct(0) = 1.0;
+    funct(1) = 0.0;
     break;
   }
   // *********************************************************************
   // 1D dual quadratic shape functions (line3)
-  // (used for interpolation of Lagrange mutliplier field)
+  // (used for interpolation of Lagrange multiplier field)
   // (including adaption process for distorted elements)
   // *********************************************************************
   case MortarElement::quaddual1D:
   {
     // establish fundamental data
     double detg = 0.0;
-    int nnodes = ele.NumNode();
+    const int nnodes = 3;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
     MORTAR::ElementIntegrator integrator(ele.Shape());
 
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    LINALG::Matrix<3,1>     stdval;
-    LINALG::Matrix<3,1>     valtemp;
-    for(int i=0;i<3;++i)
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
+
+    LINALG::Matrix<nnodes,1> stdval;
+    LINALG::Matrix<nnodes,1> valtemp;
+
+    for(int i=0;i<nnodes;++i)
       valtemp(i)=0.0;
 
     for (int i=0;i<integrator.nGP();++i)
@@ -699,19 +702,17 @@ void mortar_dualshape_function_1D(
       detg = ele.Jacobian(gpc);
 
       for (int j=0;j<nnodes;++j)
+      {
         for (int k=0;k<nnodes;++k)
         {
           me(j,k)+=integrator.Weight(i)*stdval(j)*stdval(k)*detg;
           de(j,k)+=(j==k)*integrator.Weight(i)*stdval(j)*detg;
         }
+      }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-
     // get solution matrix with dual parameters
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
@@ -737,7 +738,7 @@ void mortar_dualshape_function_1D(
   case MortarElement::dual1D_base_for_edge0:
   {
     funct(0) = r;
-    funct(1) = 1-r;
+    funct(1) = 1.0-r;
     break;
   }
   // *********************************************************************
@@ -748,7 +749,7 @@ void mortar_dualshape_function_1D(
   case MortarElement::dual1D_base_for_edge1:
   {
     funct(0) = -r;
-    funct(1) = 1+r;
+    funct(1) = 1.0+r;
     break;
   }
   // *********************************************************************
@@ -904,9 +905,9 @@ void mortar_dualshape_function_1D(
 template<class V>
 void mortar_shape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -1015,7 +1016,7 @@ void mortar_shape_function_2D(
   }
   // *********************************************************************
   // 2D linear part of standard quadratic shape functions (tri6)
-  // (used for linear interpolation of std LM field in 3D quadratic mortar)
+  // (used for linear interpolation of std. LM field in 3D quadratic mortar)
   // *********************************************************************
   case MortarElement::quad2D_only_lin:
   {
@@ -1101,7 +1102,7 @@ void mortar_shape_function_2D(
     valtmp(7)=0.5*s2*rm;
 
     // define constant modification factor 1/5
-    double fac = 1.0/5.0;
+    const double fac = 1.0/5.0;
 
     // apply constant modification at vertex nodes and PoU
     funct(0)=valtmp(0)+(valtmp(4)+valtmp(7))*fac;
@@ -1220,7 +1221,7 @@ void mortar_shape_function_2D(
 
     // define constant modification factor
     // (CURRENTLY NOT USED -> ZERO)
-    double fac = 0.0;
+    const double fac = 0.0;
 
     // apply constant modification at vertex nodes and PoU
     funct(0)=valtmp(0)+(valtmp(4)+valtmp(7))*fac+0.5*valtmp(8)*fac;
@@ -1297,28 +1298,28 @@ template<class V>
 void mortar_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const double&                            xi1,       ///< xi1 coordinate
-  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const MortarElement::ShapeType&          shape    ///< distinguish between mortar shape
   )
 {
   switch (shape)
   {
   // *********************************************************************
   // 2D dual linear shape functions (tri3)
-  // (used for interpolation of Lagrange mutliplier field)
+  // (used for interpolation of Lagrange multiplier field)
   // *********************************************************************
   case MortarElement::lindual2D:
   {
     if (ele.MoData().DualShape()==Teuchos::null)
     {
-      funct(0) = 3-4*xi0-4*xi1;
-      funct(1) = 4*xi0-1;
-      funct(2) = 4*xi1-1;
+      funct(0) = 3.0-4.0*xi0-4.0*xi1;
+      funct(1) = 4.0*xi0-1.0;
+      funct(2) = 4.0*xi1-1.0;
     }
     else
     {
-      int nnodes = 3;
+      const int nnodes = 3;
       // get solution matrix with dual parameters
       LINALG::SerialDenseMatrix ae(nnodes,nnodes);
       // get dual shape functions coefficient matrix from data container
@@ -1326,12 +1327,12 @@ void mortar_dualshape_function_2D(
 
       // evaluate dual shape functions at loc. coord. xi
       // need standard shape functions at xi first
-      LINALG::Matrix<3,1>      stdval;
+      LINALG::Matrix<nnodes,1>      stdval;
       double xi[2] = {xi0,xi1};
       EvaluateShape_Displ(xi,stdval,ele,false);
 
       // evaluate dual shape functions
-      LINALG::Matrix<3,1>      valtemp;
+      LINALG::Matrix<nnodes,1>      valtemp;
       valtemp.Clear();
       for (int i=0;i<nnodes;++i)
         for (int j=0;j<nnodes;++j)
@@ -1345,28 +1346,27 @@ void mortar_dualshape_function_2D(
   }
   // *********************************************************************
   // 2D dual bilinear shape functions (quad4)
-  // (used for interpolation of Lagrange mutliplier field)
+  // (used for interpolation of Lagrange multiplier field)
   // (including adaption process for distorted elements)
   // *********************************************************************
   case MortarElement::bilindual2D:
   {
-    int nnodes = ele.NumNode();
+    const int nnodes = 4;
     // get solution matrix with dual parameters
     LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    LINALG::Matrix<4,1>      stdval;
+    LINALG::Matrix<nnodes,1>      stdval;
 
     // no pre-computed dual shape functions
     if (ele.MoData().DualShape()==Teuchos::null)
     {
       // establish fundamental data
       double detg = 0.0;
-      int nnodes = ele.NumNode();
 
       // compute entries to bi-ortho matrices me/de with Gauss quadrature
       MORTAR::ElementIntegrator integrator(ele.Shape());
 
-      LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-      LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+      LINALG::Matrix<nnodes,nnodes> me(true);
+      LINALG::Matrix<nnodes,nnodes> de(true);
 
       for (int i=0;i<integrator.nGP();++i)
       {
@@ -1383,8 +1383,7 @@ void mortar_dualshape_function_2D(
       }
 
       // invert bi-ortho matrix me
-      LINALG::SymmetricInverse(me,nnodes);
-      ae.Multiply('N','N',1.0,de,me,0.0);
+      LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
     }
 
     // pre-computed dual shape functions
@@ -1400,33 +1399,29 @@ void mortar_dualshape_function_2D(
     EvaluateShape_Displ(xi,stdval,ele,false);
 
     // evaluate dual shape functions
-    LINALG::SerialDenseVector valtemp(nnodes,true);
+    LINALG::Matrix<nnodes,1> valtemp(true);
     for (int i=0;i<nnodes;++i)
       for (int j=0;j<nnodes;++j)
-        valtemp[i]+=ae(i,j)*stdval(j);
+        valtemp(i)+=ae(i,j)*stdval(j);
 
-    funct(0)=valtemp[0];
-    funct(1)=valtemp[1];
-    funct(2)=valtemp[2];
-    funct(3)=valtemp[3];
+    funct(0)=valtemp(0);
+    funct(1)=valtemp(1);
+    funct(2)=valtemp(2);
+    funct(3)=valtemp(3);
 
     break;
   }
   // *********************************************************************
   // 2D dual quadratic shape functions (tri6)
-  // 2D dual serendipity shape functions (quad8)
-  // 2D dual biquadratic shape functions (quad9)
-  // (used for interpolation of Lagrange mutliplier field)
+  // (used for interpolation of Lagrange multiplier field)
   // (including adaption process for distorted elements)
   // (including modification of displacement shape functions)
   // *********************************************************************
   case MortarElement::quaddual2D:
-  case MortarElement::serendipitydual2D:
-  case MortarElement::biquaddual2D:
   {
     // establish fundamental data
     double detg = 0.0;
-    int nnodes = ele.NumNode();
+    const int nnodes = 6;
 
     // empty shape function vals + derivs
     LINALG::SerialDenseVector valquad(nnodes);
@@ -1434,8 +1429,9 @@ void mortar_dualshape_function_2D(
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
     MORTAR::ElementIntegrator integrator(ele.Shape());
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<integrator.nGP();++i)
     {
@@ -1444,19 +1440,123 @@ void mortar_dualshape_function_2D(
       detg = ele.Jacobian(gpc);
 
       for (int j=0;j<nnodes;++j)
+      {
         for (int k=0;k<nnodes;++k)
         {
           me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
           de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
         }
+      }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
+    // get solution matrix with dual parameters
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
+
+    // evaluate dual shape functions at loc. coord. xi
+    double xi[2] = {xi0,xi1};
+    ele.EvaluateShape(xi, valquad, derivquad, nnodes, true);
+    for(int i=0;i<nnodes;++i)
+      funct(i)=0;
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        funct(i)+=ae(i,j)*valquad[j];
+
+    break;
+  }
+  // *********************************************************************
+  // 2D dual serendipity shape functions (quad8)
+  // (used for interpolation of Lagrange multiplier field)
+  // (including adaption process for distorted elements)
+  // (including modification of displacement shape functions)
+  // *********************************************************************
+  case MortarElement::serendipitydual2D:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    const int nnodes = 8;
+
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,2);
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(ele.Shape());
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
+
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      ele.EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+      detg = ele.Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+      {
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
+        }
+      }
+    }
 
     // get solution matrix with dual parameters
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
+
+    // evaluate dual shape functions at loc. coord. xi
+    double xi[2] = {xi0,xi1};
+    ele.EvaluateShape(xi, valquad, derivquad, nnodes, true);
+    for(int i=0;i<nnodes;++i)
+      funct(i)=0;
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        funct(i)+=ae(i,j)*valquad[j];
+
+    break;
+  }
+  // *********************************************************************
+  // 2D dual biquadratic shape functions (quad9)
+  // (used for interpolation of Lagrange multiplier field)
+  // (including adaption process for distorted elements)
+  // (including modification of displacement shape functions)
+  // *********************************************************************
+  case MortarElement::biquaddual2D:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    const int nnodes = 9;
+
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,2);
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(ele.Shape());
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
+
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      ele.EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+      detg = ele.Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+      {
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
+        }
+      }
+    }
+
+    // get solution matrix with dual parameters
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     double xi[2] = {xi0,xi1};
@@ -1472,19 +1572,15 @@ void mortar_dualshape_function_2D(
   }
   // *********************************************************************
   // 2D dual quadratic shape functions (tri6)
-  // 2D dual serendipity shape functions (quad8)
-  // 2D dual biquadratic shape functions (quad9)
-  // (used for LINEAR interpolation of Lagrange mutliplier field)
+  // (used for LINEAR interpolation of Lagrange multiplier field)
   // (including adaption process for distorted elements)
   // (including modification of displacement shape functions)
   // *********************************************************************
   case MortarElement::quaddual2D_only_lin:
-  case MortarElement::serendipitydual2D_only_lin:
-  case MortarElement::biquaddual2D_only_lin:
   {
     // establish fundamental data
     double detg = 0.0;
-    int nnodes = ele.NumNode();
+    const int nnodes = 6;
 
     // empty shape function vals + derivs
     LINALG::SerialDenseVector valquad(nnodes);
@@ -1492,42 +1588,37 @@ void mortar_dualshape_function_2D(
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
     MORTAR::ElementIntegrator integrator(ele.Shape());
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::Matrix<nnodes,nnodes> me(true);
     LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
     for (int i=0;i<integrator.nGP();++i)
     {
       double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-      if (shape==MortarElement::quaddual2D_only_lin)
-        ele.ShapeFunctions(MortarElement::quad2D_only_lin,gpc,valquad,derivquad);
-      else if (shape==MortarElement::serendipitydual2D_only_lin)
-        ele.ShapeFunctions(MortarElement::serendipity2D_only_lin,gpc,valquad,derivquad);
-      else if (shape==MortarElement::biquaddual2D_only_lin)
-        ele.ShapeFunctions(MortarElement::biquad2D_only_lin,gpc,valquad,derivquad);
+      ele.ShapeFunctions(MortarElement::quad2D_only_lin,gpc,valquad,derivquad);
+
       detg = ele.Jacobian(gpc);
 
       for (int j=0;j<nnodes;++j)
+      {
         for (int k=0;k<nnodes;++k)
         {
           me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
           de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
         }
+      }
     }
 
     // how many non-zero nodes
-    int nnodeslin = 0;
-    if (shape==MortarElement::quaddual2D_only_lin)             nnodeslin = 3;
-    else if (shape==MortarElement::serendipitydual2D_only_lin) nnodeslin = 4;
-    else if (shape==MortarElement::biquaddual2D_only_lin)      nnodeslin = 4;
+    const int nnodeslin = 3;
 
     // reduce me to non-zero nodes before inverting
-    LINALG::SerialDenseMatrix melin(nnodeslin,nnodeslin,true);
+    LINALG::Matrix<nnodeslin,nnodeslin> melin;
     for (int j=0;j<nnodeslin;++j)
       for (int k=0;k<nnodeslin;++k)
         melin(j,k) = me(j,k);
 
     // invert bi-ortho matrix melin
-    LINALG::SymmetricInverse(melin,nnodeslin);
+    LINALG::Inverse3x3(melin);
 
     // re-inflate inverse of melin to full size
     LINALG::SerialDenseMatrix invme(nnodes,nnodes,true);
@@ -1542,12 +1633,151 @@ void mortar_dualshape_function_2D(
     // evaluate dual shape functions at loc. coord. xi
     double xi[2] = {xi0,xi1};
 
-    if (shape==MortarElement::quaddual2D_only_lin)
-      ele.ShapeFunctions(MortarElement::quad2D_only_lin,xi,valquad,derivquad);
-    else if (shape==MortarElement::serendipitydual2D_only_lin)
-      ele.ShapeFunctions(MortarElement::serendipity2D_only_lin,xi,valquad,derivquad);
-    else if (shape==MortarElement::biquaddual2D_only_lin)
-      ele.ShapeFunctions(MortarElement::biquad2D_only_lin,xi,valquad,derivquad);
+    ele.ShapeFunctions(MortarElement::quad2D_only_lin,xi,valquad,derivquad);
+
+    for(int i=0;i<nnodes;++i)
+      funct(i)=0;
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        funct(i)+=ae(i,j)*valquad[j];
+
+    break;
+  }
+  // *********************************************************************
+  // 2D dual serendipity shape functions (quad8)
+  // (used for LINEAR interpolation of Lagrange multiplier field)
+  // (including adaption process for distorted elements)
+  // (including modification of displacement shape functions)
+  // *********************************************************************
+  case MortarElement::serendipitydual2D_only_lin:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    const int nnodes = 8;
+
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,2);
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(ele.Shape());
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      ele.ShapeFunctions(MortarElement::serendipity2D_only_lin,gpc,valquad,derivquad);
+
+      detg = ele.Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+      {
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
+        }
+      }
+    }
+
+    // how many non-zero nodes
+    const int nnodeslin = 4;
+
+    // reduce me to non-zero nodes before inverting
+    LINALG::Matrix<nnodeslin,nnodeslin> melin;
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k)
+        melin(j,k) = me(j,k);
+
+    // invert bi-ortho matrix melin
+    LINALG::Inverse4x4(melin);
+
+    // re-inflate inverse of melin to full size
+    LINALG::SerialDenseMatrix invme(nnodes,nnodes,true);
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k)
+        invme(j,k) = melin(j,k);
+
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,invme,0.0);
+
+    // evaluate dual shape functions at loc. coord. xi
+    double xi[2] = {xi0,xi1};
+    ele.ShapeFunctions(MortarElement::serendipity2D_only_lin,xi,valquad,derivquad);
+
+    for(int i=0;i<nnodes;++i)
+      funct(i)=0;
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        funct(i)+=ae(i,j)*valquad[j];
+
+    break;
+  }
+  // *********************************************************************
+  // 2D dual biquadratic shape functions (quad9)
+  // (used for LINEAR interpolation of Lagrange multiplier field)
+  // (including adaption process for distorted elements)
+  // (including modification of displacement shape functions)
+  // *********************************************************************
+  case MortarElement::biquaddual2D_only_lin:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    const int nnodes = 9;
+
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,2);
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(ele.Shape());
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      ele.ShapeFunctions(MortarElement::biquad2D_only_lin,gpc,valquad,derivquad);
+      detg = ele.Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+      {
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
+        }
+      }
+    }
+
+    // how many non-zero nodes
+    const int nnodeslin = 4;
+
+    // reduce me to non-zero nodes before inverting
+    LINALG::Matrix<nnodeslin,nnodeslin> melin;
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k)
+        melin(j,k) = me(j,k);
+
+    // invert bi-ortho matrix melin
+    LINALG::Inverse4x4(melin);
+    // re-inflate inverse of melin to full size
+    LINALG::SerialDenseMatrix invme(nnodes,nnodes,true);
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k)
+        invme(j,k) = melin(j,k);
+
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,invme,0.0);
+
+    // evaluate dual shape functions at loc. coord. xi
+    double xi[2] = {xi0,xi1};
+    ele.ShapeFunctions(MortarElement::biquad2D_only_lin,xi,valquad,derivquad);
 
     for(int i=0;i<nnodes;++i)
       funct(i)=0;
@@ -1572,8 +1802,8 @@ template<class V>
 void mortar_nurbs_shape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
   )
 {
   switch (shape)
@@ -1628,8 +1858,8 @@ template<class V>
 void mortar_nurbs_dualshape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
-  const double&                            xi0,       ///< xi0 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distuinguish between shape
+  const double&                            xi0,     ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
   )
 {
   switch (shape)
@@ -1638,13 +1868,14 @@ void mortar_nurbs_dualshape_function_1D(
   {
     // establish fundamental data
     double detg = 0.0;
-    int nnodes = ele.NumNode();
+    const int nnodes = 3;
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
     MORTAR::ElementIntegrator integrator(shape);
 
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
 
     for (int i=0;i<integrator.nGP();++i)
     {
@@ -1653,36 +1884,32 @@ void mortar_nurbs_dualshape_function_1D(
       detg = ele.Jacobian(gpc);
 
       for (int j=0;j<nnodes;++j)
+      {
         for (int k=0;k<nnodes;++k)
         {
           me(j,k)+=integrator.Weight(i)*funct(j)*funct(k)*detg;
           de(j,k)+=(j==k)*integrator.Weight(i)*funct(j)*detg;
         }
+      }
     }
 
-    // invert bi-ortho matrix me
-    LINALG::SymmetricInverse(me,nnodes);
-
     // get solution matrix with dual parameters
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    ae.Multiply('N','N',1.0,de,me,0.0);
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
     mortar_nurbs_shape_function_1D(funct, ele, xi0, DRT::Element::nurbs3);
 
-    // check whether this is a 1D or 2D mortar element
-    int dim = 1;
     // evaluate dual shape functions
-    LINALG::SerialDenseVector valtemp(nnodes,true);
-    LINALG::SerialDenseMatrix derivtemp(nnodes,dim,true);
+    LINALG::Matrix<nnodes,1> valtemp(true);
+
     for (int i=0;i<nnodes;++i)
       for (int j=0;j<nnodes;++j)
-        valtemp[i]+=ae(i,j)*funct(j);
+        valtemp(i)+=ae(i,j)*funct(j);
 
-    funct(0)=valtemp[0];
-    funct(1)=valtemp[1];
-    funct(2)=valtemp[2];
+    funct(0)=valtemp(0);
+    funct(1)=valtemp(1);
+    funct(2)=valtemp(2);
 
     break;
   }

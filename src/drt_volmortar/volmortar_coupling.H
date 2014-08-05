@@ -8,7 +8,7 @@ Maintainer: Philipp Farah
             089 - 289-15257
 </pre>
 
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 
 #ifndef VOLMORTAR_COUPLING_H_
 #define VOLMORTAR_COUPLING_H_
@@ -27,355 +27,364 @@ Maintainer: Philipp Farah
  *---------------------------------------------------------------------*/
 namespace DRT
 {
-  class Discretization;
-  class Element;
+class Discretization;
+class Element;
 }
 
 namespace LINALG
 {
-  class SparseMatrix;
+class SparseMatrix;
 }
 
 namespace GEO
 {
-  class SearchTree;
+class SearchTree;
 }
 
 namespace MORTAR
 {
-  class IntCell;
-  class Vertex;
+class IntCell;
+class Vertex;
 }
 /*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
+ \brief MORTAR: namespace of the BACI mortar coupling algorithms
 
-*/
+ */
 namespace VOLMORTAR
 {
 class Cell;
 
 /// Class for generating projection matrices for 3D mortar
 /*!
-  The idea is to glue two non-matching meshes together using the mortar method.
-  In general, this works for displacement fields, as well as any other field
-  (e.g. temperature field in tsi). 
-  The constructor expects the two discretizations, which are filled properly. 
-  Both discretization are expected to have at least two dofsets of which the first
-  of one discretization is meant to be coupled with the second of the other 
-  discretization. I.e. in TSI the structure must have temperature dofs as second 
-  dof set and the thermo discretization must have displacement dofs as second dof set.
-  When calling Evaluate() this class will identify volume cells (using polygon 
-  clipping in 2D and the cut algorithm in 3D) OR skip this and ignore weak discontinuities,
-  and build a volmortar integrator class, which evaluates the two projection matrices.
+ The idea is to glue two non-matching meshes together using the mortar method.
+ In general, this works for displacement fields, as well as any other field
+ (e.g. temperature field in tsi).
+ The constructor expects the two discretizations, which are filled properly.
+ Both discretization are expected to have at least two dofsets of which the first
+ of one discretization is meant to be coupled with the second of the other
+ discretization. I.e. in TSI the structure must have temperature dofs as second
+ dof set and the thermo discretization must have displacement dofs as second dof set.
+ When calling Evaluate() this class will identify volume cells (using polygon
+ clipping in 2D and the cut algorithm in 3D) OR skip this and ignore weak discontinuities,
+ and build a volmortar integrator class, which evaluates the two projection matrices.
 
-  \author vuong 01/14
-*/
+ \author vuong 01/14
+ */
 class VolMortarCoupl
 {
 public:
 
   /*!
-  \brief Constructor
+   \brief Constructor
 
-  */
-  VolMortarCoupl(int dim,
-                 Teuchos::RCP<DRT::Discretization> slavedis,
-                 Teuchos::RCP<DRT::Discretization> masterdis);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~VolMortarCoupl() {}
+   */
+  VolMortarCoupl(int dim, Teuchos::RCP<DRT::Discretization> slavedis,
+      Teuchos::RCP<DRT::Discretization> masterdis);
 
   /*!
-  \brief Evaluate volmortar coupling (basic routine)
+   \brief Destructor
 
-  */
+   */
+  virtual ~VolMortarCoupl()
+  {
+  }
+
+  /*!
+   \brief Evaluate volmortar coupling (basic routine)
+
+   */
   virtual void EvaluateVolmortar();
 
   /*!
-  \brief Evaluate consistent interpolation (NO VOLMORTAR)
+   \brief Evaluate consistent interpolation (NO VOLMORTAR)
 
-  */
+   */
   virtual void EvaluateConsistentInterpolation();
 
+  /*!
+   \brief get projection matrix A
+
+   */
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB()
+  {
+    return pmatrixA_;
+  }
+  ;
 
   /*!
-  \brief get projection matrix A
+   \brief get projection matrix B
 
-  */
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB() {return pmatrixA_;};
-
-  /*!
-  \brief get projection matrix B
-
-  */
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA() {return pmatrixB_;};
+   */
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA()
+  {
+    return pmatrixB_;
+  }
+  ;
 
 protected:
   /*!
-  \brief Get discretization of A-field
+   \brief Get discretization of A-field
 
-  */
-  virtual Teuchos::RCP<const DRT::Discretization> ADiscret() const { return Adiscret_; }
+   */
+  virtual Teuchos::RCP<const DRT::Discretization> ADiscret() const
+  {
+    return Adiscret_;
+  }
 
   /*!
-  \brief Assemble p matrix for cons. interpolation approach
+   \brief Assemble p matrix for cons. interpolation approach
 
-  */
+   */
   virtual void AssembleConsistentInterpolation_ADis(DRT::Node* node);
 
   /*!
-  \brief Assemble p matrix for cons. interpolation approach
+   \brief Assemble p matrix for cons. interpolation approach
 
-  */
+   */
   virtual void AssembleConsistentInterpolation_BDis(DRT::Node* node);
 
   /*!
-  \brief check initial coupling constraint
+   \brief check initial coupling constraint
 
-  */
+   */
   virtual void AssignMaterials();
 
   /*!
-  \brief Get discretization of B-field
+   \brief Get discretization of B-field
 
-  */
-  virtual Teuchos::RCP<DRT::Discretization> BDiscret() const { return Bdiscret_; }
-
-  /*!
-  \brief get auxiliary plane normal (2D)
-
-  */
-  virtual double* Auxn() { return auxn_; }
+   */
+  virtual Teuchos::RCP<DRT::Discretization> BDiscret() const
+  {
+    return Bdiscret_;
+  }
 
   /*!
-  \brief calc dops for background mesh
+   \brief get auxiliary plane normal (2D)
 
-  */
-  virtual std::map<int,LINALG::Matrix<9,2> > CalcBackgroundDops(Teuchos::RCP<DRT::Discretization> searchdis);
-
-  /*!
-  \brief calc dops for one element
-
-  */
-  virtual LINALG::Matrix<9,2> CalcDop(DRT::Element& ele);
+   */
+  virtual double* Auxn()
+  {
+    return auxn_;
+  }
 
   /*!
-  \brief check if we need cut (3D)
+   \brief calc dops for background mesh
 
-  */
-  virtual bool CheckCut(DRT::Element& sele,
-                        DRT::Element& mele);
-
-  /*!
-  \brief check if we can integrate element-wise (3D)
-
-  */
-  virtual bool CheckEleIntegration(DRT::Element& sele,
-                                   DRT::Element& mele);
+   */
+  virtual std::map<int, LINALG::Matrix<9, 2> > CalcBackgroundDops(
+      Teuchos::RCP<DRT::Discretization> searchdis);
 
   /*!
-  \brief check initial coupling constraint
+   \brief calc dops for one element
 
-  */
+   */
+  virtual LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+
+  /*!
+   \brief check if we need cut (3D)
+
+   */
+  virtual bool CheckCut(DRT::Element& sele, DRT::Element& mele);
+
+  /*!
+   \brief check if we can integrate element-wise (3D)
+
+   */
+  virtual bool CheckEleIntegration(DRT::Element& sele, DRT::Element& mele);
+
+  /*!
+   \brief check initial coupling constraint
+
+   */
   virtual void CheckInitialResiduum();
 
   /*!
-  \brief complete created matrices
+   \brief complete created matrices
 
-  */
+   */
   virtual void Complete();
 
   /*!
-  \brief compute projection matrices D^-1 * M
+   \brief compute projection matrices D^-1 * M
 
-  */
+   */
   virtual void CreateProjectionOpterator();
 
   /*!
-  \brief compute trafo operator
+   \brief compute trafo operator
 
-  */
+   */
   virtual void CreateTrafoOperator(DRT::Element& ele,
-                                   Teuchos::RCP<DRT::Discretization> searchdis,
-                                   bool dis,
-                                   std::set<int>& donebefore);
+      Teuchos::RCP<DRT::Discretization> searchdis, bool dis,
+      std::set<int>& donebefore);
 
   /*!
-  \brief define vertices for 2D polygon clipping (master)
+   \brief define vertices for 2D polygon clipping (master)
 
-  */
+   */
   virtual void DefineVerticesMaster(DRT::Element& ele,
-                                    std::vector<MORTAR::Vertex>& SlaveVertices);
+      std::vector<MORTAR::Vertex>& SlaveVertices);
 
   /*!
-  \brief define vertices for 2D polygon clipping (slave)
+   \brief define vertices for 2D polygon clipping (slave)
 
-  */
+   */
   virtual void DefineVerticesSlave(DRT::Element& ele,
-                                   std::vector<MORTAR::Vertex>& SlaveVertices);
+      std::vector<MORTAR::Vertex>& SlaveVertices);
 
   /*!
-  \brief create integration cells for 2D volmortar
+   \brief create integration cells for 2D volmortar
 
-  */
-  virtual bool DelaunayTriangulation(std::vector<Teuchos::RCP<MORTAR::IntCell> >&  cells,
-                                     std::vector<MORTAR::Vertex> & clip,
-                                     double tol);
+   */
+  virtual bool DelaunayTriangulation(
+      std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells,
+      std::vector<MORTAR::Vertex> & clip, double tol);
 
   /*!
-  \brief Evaluate element-based
+   \brief Evaluate element-based
 
-  */
+   */
   virtual void EvaluateElements();
 
   /*!
-  \brief Evaluate segment-based
+   \brief Evaluate segment-based
 
-  */
+   */
   virtual void EvaluateSegments();
 
   /*!
-  \brief Evaluate segment-based for 2D problems
+   \brief Evaluate segment-based for 2D problems
 
-  */
-  virtual void EvaluateSegments2D(DRT::Element& Aele,
-                                  DRT::Element& Bele);
-
-  /*!
-  \brief Evaluate segment-based for 3D problems
-
-  */
-  virtual void EvaluateSegments3D(DRT::Element* Aele,
-                                  DRT::Element* Bele);
+   */
+  virtual void EvaluateSegments2D(DRT::Element& Aele, DRT::Element& Bele);
 
   /*!
-  \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
+   \brief Evaluate segment-based for 3D problems
 
-  */
+   */
+  virtual void EvaluateSegments3D(DRT::Element* Aele, DRT::Element* Bele);
+
+  /*!
+   \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
+
+   */
   std::vector<int> GetAdjacentNodes(DRT::Element::DiscretizationType shape,
-                                    int& lid);
+      int& lid);
 
   /*!
-  \brief Initialize / reset volmortar coupling
+   \brief Initialize / reset volmortar coupling
 
-  */
+   */
   virtual void Initialize();
 
   /*!
-  \brief Initialize DOP normals for DOP calculation (Search algorithm)
+   \brief Initialize DOP normals for DOP calculation (Search algorithm)
 
-  */
+   */
   virtual void InitDopNormals();
 
   /*!
-  \brief Initialize search tree
+   \brief Initialize search tree
 
-  */
-  virtual Teuchos::RCP<GEO::SearchTree> InitSearch(Teuchos::RCP<DRT::Discretization> searchdis);
-
-  /*!
-  \brief perform 2D integration
-
-  */
-  virtual void Integrate2D(DRT::Element& sele,
-                           DRT::Element& mele,
-                           std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells);
+   */
+  virtual Teuchos::RCP<GEO::SearchTree> InitSearch(
+      Teuchos::RCP<DRT::Discretization> searchdis);
 
   /*!
-  \brief perform 3D element-wise integration
+   \brief perform 2D integration
 
-  */
-  virtual void Integrate3D(DRT::Element& sele,
-                           DRT::Element& mele,
-                           int domain);
+   */
+  virtual void Integrate2D(DRT::Element& sele, DRT::Element& mele,
+      std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells);
 
   /*!
-  \brief perform 3D element-wise integration for ADis
+   \brief perform 3D element-wise integration
 
-  */
+   */
+  virtual void Integrate3D(DRT::Element& sele, DRT::Element& mele, int domain);
+
+  /*!
+   \brief perform 3D element-wise integration for ADis
+
+   */
   virtual void Integrate3DEleBased_ADis(DRT::Element& sele,
-                                        std::vector<int>& foundeles);
+      std::vector<int>& foundeles);
 
   /*!
-  \brief perform 3D element-wise integration for BDis
+   \brief perform 3D element-wise integration for BDis
 
-  */
+   */
   virtual void Integrate3DEleBased_BDis(DRT::Element& sele,
-                                        std::vector<int>& foundeles);
+      std::vector<int>& foundeles);
 
   /*!
-  \brief perform 3D integration of created cells
+   \brief perform 3D integration of created cells
 
-  */
-  virtual void Integrate3DCell(DRT::Element& sele,
-                               DRT::Element& mele,
-                               std::vector<Teuchos::RCP<Cell> >& cells);
+   */
+  virtual void Integrate3DCell(DRT::Element& sele, DRT::Element& mele,
+      std::vector<Teuchos::RCP<Cell> >& cells);
 
   /*!
-  \brief perform 3D integration of created cells
+   \brief perform 3D integration of created cells
 
-  */
+   */
   virtual void Integrate3DCell_DirectDivergence(DRT::Element& sele,
-                                                DRT::Element& mele,
-                                                bool switched_conf = false);
+      DRT::Element& mele, bool switched_conf = false);
   /*!
-  \brief perform mesh init procedure
+   \brief perform mesh init procedure
 
-  */
+   */
   virtual void MeshInit();
 
   /*!
-  \brief get parameter list
+   \brief get parameter list
 
-  */
-  Teuchos::ParameterList& Params() {return params_;};
-
-  /*!
-  \brief perform cut and create integration cells (3D)
-
-  */
-  virtual void PerformCut(DRT::Element* sele,
-                          DRT::Element* mele,
-                          bool switched_conf = false);
+   */
+  Teuchos::ParameterList& Params()
+  {
+    return params_;
+  }
+  ;
 
   /*!
-  \brief perform 2D polygon clipping
+   \brief perform cut and create integration cells (3D)
 
-  */
+   */
+  virtual void PerformCut(DRT::Element* sele, DRT::Element* mele,
+      bool switched_conf = false);
+
+  /*!
+   \brief perform 2D polygon clipping
+
+   */
   virtual bool PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
-                                                      std::vector<MORTAR::Vertex>& poly2,
-                                                      std::vector<MORTAR::Vertex>& respoly,
-                                                      DRT::Element& sele,
-                                                      DRT::Element& mele,
-                                                      double& tol);
+      std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly,
+      DRT::Element& sele, DRT::Element& mele, double& tol);
 
   /*!
-  \brief Output for evaluation status -- progress
+   \brief Output for evaluation status -- progress
 
-  */
-  virtual void PrintStatus(int& i, bool dis_switch=false);
+   */
+  virtual void PrintStatus(int& i, bool dis_switch = false);
 
   /*!
-  \brief Get required parameters and check for validity
+   \brief Get required parameters and check for validity
 
-  */
+   */
   virtual void ReadAndCheckInput();
 
   /*!
-  \brief search algorithm
+   \brief search algorithm
 
-  */
+   */
   virtual std::vector<int> Search(DRT::Element& ele,
-                                  Teuchos::RCP<GEO::SearchTree> SearchTree,
-                                  std::map<int,LINALG::Matrix<9,2> >& currentKDOPs);
+      Teuchos::RCP<GEO::SearchTree> SearchTree,
+      std::map<int, LINALG::Matrix<9, 2> >& currentKDOPs);
 
   //@}
 
   // don't want = operator and cctor
-  VolMortarCoupl operator = (const VolMortarCoupl& old);
+  VolMortarCoupl operator =(const VolMortarCoupl& old);
   VolMortarCoupl(const VolMortarCoupl& old);
 
   // global problem information
@@ -397,7 +406,7 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> TA_;              /// global trafo matrix for A dis
   Teuchos::RCP<LINALG::SparseMatrix> TB_;              /// global trafo matrix for B dis
 
-  // quantitie for 2D segmentation
+  // quantity for 2D segmentation
   double                             auxn_[3];         /// normal of auxiliary plane (2D problems)
 
   // counter and stat. information
@@ -413,8 +422,8 @@ protected:
   //cut specific quantities
   GEO::CUT::plain_volumecell_set     volcell_;         /// set of volume cells for direct divergence integration
 
-  // seach algorithm
-  Epetra_SerialDenseMatrix           dopnormals_;      /// dop normals for seach algorithm
+  // search algorithm
+  LINALG::Matrix<9,3>                dopnormals_;      /// dop normals for seach algorithm
 
   //input
   INPAR::VOLMORTAR::DualQuad         dualquad_;        /// type of quadratic weighting interpolation

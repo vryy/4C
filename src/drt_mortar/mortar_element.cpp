@@ -43,6 +43,8 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
+#include "mortar_calc_utils.H"
+
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 
 
@@ -79,8 +81,8 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
 {
   // initialize area
   Area()=0.0;
-  dualshapecoeff_=Teuchos::null;
-  derivdualshapecoeff_=Teuchos::null;
+  dualshapecoeff_      = Teuchos::null;
+  derivdualshapecoeff_ = Teuchos::null;
 
   return;
 }
@@ -111,8 +113,8 @@ void MORTAR::MortarEleDataContainer::Unpack(std::vector<char>::size_type& positi
   // searchelements_
   DRT::ParObject::ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
 
-  dualshapecoeff_=Teuchos::null;
-  derivdualshapecoeff_=Teuchos::null;
+  dualshapecoeff_      = Teuchos::null;
+  derivdualshapecoeff_ = Teuchos::null;
   return;
 }
 
@@ -530,8 +532,6 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i,
   elens(1,i) = (gxi[2]*geta[0]-gxi[0]*geta[2])*NormalFac();
   elens(2,i) = (gxi[0]*geta[1]-gxi[1]*geta[0])*NormalFac();
 
-
-
   // store length of normal and other information into elens
   elens(4,i) = sqrt(elens(0,i)*elens(0,i)+elens(1,i)*elens(1,i)+elens(2,i)*elens(2,i));
   if (elens(4,i)==0.0) dserror("ERROR: ComputeNormalAtXi gives normal of length 0!");
@@ -563,7 +563,7 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
   n[2] = (gxi[0]*geta[1]-gxi[1]*geta[0]) * NormalFac();
 
   // build unit normal
-  double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+  const double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
   if (length==0.0) dserror("ERROR: Normal of length zero!");
   for (int i=0;i<3;++i) n[i] /= length;
 
@@ -574,19 +574,19 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
  |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
-                std::vector<std::map<int,double> >& derivn)
+                std::vector<GEN::pairedvector<int,double> >& derivn)
 {
-  // resize derivn
-  if ((int)derivn.size()!=3) derivn.resize(3);
-
   // initialize variables
-  int nnodes = NumNode();
+  const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
   std::vector<double> gxi(3);
   std::vector<double> geta(3);
+
+  // resize derivn
+  if ((int)derivn.size()!=3) derivn.resize(3,nnodes*3); // assume that each node has 3 dofs...
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
@@ -601,13 +601,13 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
   n[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
 
   // build unit normal
-  double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+  const double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
   if (length==0.0) dserror("ERROR: Normal of length zero!");
   for (int i=0;i<3;++i) n[i] /= length;
 
   // non-unit normal derivative
-  std::vector<std::map<int,double> > derivnnu(3);
-  typedef std::map<int,double>::const_iterator CI;
+  std::vector<GEN::pairedvector<int,double> > derivnnu(3,nnodes*3); // assume that each node has 3 dofs...
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
 
   // now the derivative
   for (int n=0;n<nnodes;++n)
@@ -634,36 +634,38 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
         (derivnnu[j])[mymrtrnode->Dofs()[k]] += F(j,k);
   }
 
-  double ll = length*length;
-  double sxsx = n[0]*n[0]*ll;
-  double sxsy = n[0]*n[1]*ll;
-  double sxsz = n[0]*n[2]*ll;
-  double sysy = n[1]*n[1]*ll;
-  double sysz = n[1]*n[2]*ll;
-  double szsz = n[2]*n[2]*ll;
+  const double ll     = length*length;
+  const double linv   = 1.0/length;
+  const double lllinv = 1.0/(length*length*length);
+  const double sxsx   = n[0]*n[0]*ll;
+  const double sxsy   = n[0]*n[1]*ll;
+  const double sxsz   = n[0]*n[2]*ll;
+  const double sysy   = n[1]*n[1]*ll;
+  const double sysz   = n[1]*n[2]*ll;
+  const double szsz   = n[2]*n[2]*ll;
 
   for (CI p=derivnnu[0].begin();p!=derivnnu[0].end();++p)
   {
-    derivn[0][p->first] += 1/length*(p->second);
-    derivn[0][p->first] -= 1/(length*length*length)*sxsx*(p->second);
-    derivn[1][p->first] -= 1/(length*length*length)*sxsy*(p->second);
-    derivn[2][p->first] -= 1/(length*length*length)*sxsz*(p->second);
+    derivn[0][p->first] += linv*(p->second);
+    derivn[0][p->first] -= lllinv*sxsx*(p->second);
+    derivn[1][p->first] -= lllinv*sxsy*(p->second);
+    derivn[2][p->first] -= lllinv*sxsz*(p->second);
   }
 
   for (CI p=derivnnu[1].begin();p!=derivnnu[1].end();++p)
   {
-    derivn[1][p->first] += 1/length*(p->second);
-    derivn[1][p->first] -= 1/(length*length*length)*sysy*(p->second);
-    derivn[0][p->first] -= 1/(length*length*length)*sxsy*(p->second);
-    derivn[2][p->first] -= 1/(length*length*length)*sysz*(p->second);
+    derivn[1][p->first] += linv*(p->second);
+    derivn[1][p->first] -= lllinv*sysy*(p->second);
+    derivn[0][p->first] -= lllinv*sxsy*(p->second);
+    derivn[2][p->first] -= lllinv*sysz*(p->second);
   }
 
   for (CI p=derivnnu[2].begin();p!=derivnnu[2].end();++p)
   {
-    derivn[2][p->first] += 1/length*(p->second);
-    derivn[2][p->first] -= 1/(length*length*length)*szsz*(p->second);
-    derivn[0][p->first] -= 1/(length*length*length)*sxsz*(p->second);
-    derivn[1][p->first] -= 1/(length*length*length)*sysz*(p->second);
+    derivn[2][p->first] += linv*(p->second);
+    derivn[2][p->first] -= lllinv*szsz*(p->second);
+    derivn[0][p->first] -= lllinv*sxsz*(p->second);
+    derivn[1][p->first] -= lllinv*sysz*(p->second);
   }
 
   return;
@@ -675,7 +677,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
 void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
                                            bool isinit)
 {
-  int nnodes = NumNode();
+  const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
   if (coord.M()!=3 || coord.N()!=nnodes) dserror("ERROR: GetNodalCoords: Dimensions!");
@@ -707,7 +709,7 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
 void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
                                               bool isinit)
 {
-  int nnodes = NumNode();
+  const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: GetNodalCoordsOld: Null pointer!");
   if (coord.M()!=3 || coord.N()!=nnodes) dserror("ERROR: GetNodalCoordsOld: Dimensions!");
@@ -755,7 +757,7 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
                                     std::vector<double>& geta)
 {
-  int nnodes = NumNode();
+  const int nnodes = NumNode();
   int dim = 0;
   DRT::Element::DiscretizationType dt = Shape();
   if (dt==line2 || dt==line3 || dt==nurbs2 || dt==nurbs3) dim = 2;
@@ -811,12 +813,12 @@ double MORTAR::MortarElement::Jacobian(double* xi)
   // 2D linear case (2noded line element)
   if (dt==line2)
   {
-    jac = MoData().Area()/2;
+    jac = MoData().Area()*0.5;
   }
 
   // 3D linear case (3noded triangular element)
   else if (dt==tri3)
-    jac = MoData().Area()*2;
+    jac = MoData().Area()*2.0;
 
   // 2D quadratic case (3noded line element)
   // 3D bilinear case (4noded quadrilateral element)
@@ -848,15 +850,15 @@ double MORTAR::MortarElement::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::DerivJacobian(double* xi, std::map<int,double>& derivjac)
+void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac)
 {
   // get element nodes
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: DerivJacobian: Null pointer!");
 
-  // the Jacobian itself
-  double jac = 0.0;
+  // the inverse Jacobian
+  double jacinv = 0.0;
   std::vector<double> gxi(3);
   std::vector<double> geta(3);
 
@@ -877,10 +879,10 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, std::map<int,double>& deri
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt==line2) jac = MoData().Area()/2;
+  if (dt==line2) jacinv = 2.0/MoData().Area();
 
   // 3D linear case (3noded triangular element)
-  else if (dt==tri3) jac = MoData().Area()*2;
+  else if (dt==tri3) jacinv = 1.0/(MoData().Area()*2.0);
 
   // 2D quadratic case (3noded line element)
   // 3D bilinear case (4noded quadrilateral element)
@@ -889,7 +891,7 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, std::map<int,double>& deri
   // 3D biquadratic case (9noded quadrilateral element)
   else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  || dt==quad9 ||
            dt==nurbs2 || dt==nurbs3 || dt==nurbs4 || dt==nurbs8 || dt==nurbs9)
-    jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
   else
     dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
 
@@ -907,15 +909,15 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, std::map<int,double>& deri
     MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: DerivJacobian: Null pointer!");
 
-    derivjac[mymrtrnode->Dofs()[0]] += 1/jac*(cross[2]*geta[1]-cross[1]*geta[2])*deriv(i,0);
-    derivjac[mymrtrnode->Dofs()[0]] += 1/jac*(cross[1]*gxi[2]-cross[2]*gxi[1])*deriv(i,1);
-    derivjac[mymrtrnode->Dofs()[1]] += 1/jac*(cross[0]*geta[2]-cross[2]*geta[0])*deriv(i,0);
-    derivjac[mymrtrnode->Dofs()[1]] += 1/jac*(cross[2]*gxi[0]-cross[0]*gxi[2])*deriv(i,1);
+    derivjac[mymrtrnode->Dofs()[0]] += jacinv*(cross[2]*geta[1]-cross[1]*geta[2])*deriv(i,0);
+    derivjac[mymrtrnode->Dofs()[0]] += jacinv*(cross[1]*gxi[2]-cross[2]*gxi[1])*deriv(i,1);
+    derivjac[mymrtrnode->Dofs()[1]] += jacinv*(cross[0]*geta[2]-cross[2]*geta[0])*deriv(i,0);
+    derivjac[mymrtrnode->Dofs()[1]] += jacinv*(cross[2]*gxi[0]-cross[0]*gxi[2])*deriv(i,1);
 
     if (mymrtrnode->NumDof()==3)
     {
-      derivjac[mymrtrnode->Dofs()[2]] += 1/jac*(cross[1]*geta[0]-cross[0]*geta[1])*deriv(i,0);
-      derivjac[mymrtrnode->Dofs()[2]] += 1/jac*(cross[0]*gxi[1]-cross[1]*gxi[0])*deriv(i,1);
+      derivjac[mymrtrnode->Dofs()[2]] += jacinv*(cross[1]*geta[0]-cross[0]*geta[1])*deriv(i,0);
+      derivjac[mymrtrnode->Dofs()[2]] += jacinv*(cross[0]*gxi[1]-cross[1]*gxi[0])*deriv(i,1);
     }
   }
 
