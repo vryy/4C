@@ -5097,7 +5097,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
         }
 
         reatensorlinODvel_(idim, gid)     += val_reatensorlinODvel;
-        reatensorlinODgridvel_(idim, gid) += val_reatensorlinODvel;
+        reatensorlinODgridvel_(idim, gid) += val_reatensorlinODgridvel;
       }
     }
   }
