@@ -90,6 +90,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     case Wall1::calc_struct_nlnstiff:
     case Wall1::calc_struct_internalforce:
     case Wall1::calc_struct_stress:
+    case Wall1::calc_struct_errornorms:
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis
   =
@@ -799,12 +800,12 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
       gp(1)=e2;
 
       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-	(funct  ,
-	 deriv  ,
-	 gp     ,
-	 myknots,
-	 weights,
-	 distype);
+      (funct  ,
+       deriv  ,
+       gp     ,
+       myknots,
+       weights,
+       distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1036,12 +1037,12 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
       gp(1)=e2;
 
       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-	(funct  ,
-	 deriv  ,
-	 gp     ,
-	 myknots,
-	 weights,
-	 distype);
+     (funct  ,
+      deriv  ,
+      gp     ,
+      myknots,
+      weights,
+      distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1171,7 +1172,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
      {
      case INPAR::STR::strain_gl:
      {
-    	 if (elestrain == NULL) dserror("no strain data available");
+       if (elestrain == NULL) dserror("no strain data available");
        (*elestrain)(ip,0) = strain(0);
        (*elestrain)(ip,1) = strain(1);
        (*elestrain)(ip,2) = 0.0;
