@@ -2469,7 +2469,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     tempVec1.Scale(dt*dirk_b[stage]/dirk_a[stage][stage]);
     hdgele->eleinteriorValnp_ += tempVec1;
 
-    if(unsigned(stage)==dirk_q-1)
+    if(stage==dirk_q-1)
       hdgele->eleinteriorValn_ = hdgele->eleinteriorValnp_;
   }
   else
