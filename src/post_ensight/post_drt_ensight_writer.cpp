@@ -41,7 +41,8 @@ EnsightWriter::EnsightWriter(PostField* field,
                              const std::string &filename)
 :
     PostWriterBase(field, filename),
-    nodeidgiven_(true)
+    nodeidgiven_(true),
+    writecp_(false)
 {
   // initialize proc0map_ correctly
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
@@ -93,97 +94,126 @@ void EnsightWriter::WriteFiles(PostFilterBase &filter)
 #ifndef PARALLEL
   if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
+
   PostResult result(field_);
 
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
   const unsigned int numsoltimes = soltime.size();
 
-  ///////////////////////////////////
-  //  write geometry file          //
-  ///////////////////////////////////
-  const std::string geofilename = filename_ + "_"+ field_->name() + ".geo";
-  const size_t found_path = geofilename.find_last_of("/\\");
-  const std::string geofilename_nopath = geofilename.substr(found_path+1);
-  WriteGeoFile(geofilename);
-  std::vector<int> filesteps;
-  filesteps.push_back(1);
-  filesetmap_["geo"] = filesteps;
-  std::vector<double> timesteps;
-  if (soltime.size()>0)
-    timesteps.push_back(soltime[0]);
-  else
-    timesteps.push_back(0.0);
-  timesetmap_["geo"] = timesteps;
-  // at the moment, we can only print out the first step -> to be changed
+  // When spatial approximation is based on NURBS, we want to write
+  // real geometry data and control point information. Therefore,
+  // we perform one standard writing step and one additional step
+  // for the control points. Here, a new .case file is created which
+  // ends with "_cp".
+  int iter = 1;
+  if(field_->problem()->SpatialApproximation()=="Nurbs")
+    iter++;
 
-  ///////////////////////////////////
-  //  write solution fields files  //
-  ///////////////////////////////////
-  filter.WriteAllResults(field_);
-
-  // prepare the time sets and file sets for case file creation
-  int setcounter = 0;
-  int allresulttimeset = 0;
-  for (std::map<std::string,std::vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry)
+  // For none-NURBS cases, this loop is just passed through once!
+  for(int i=0;i<iter;++i)
   {
-    std::string key = entry->first;
-    if ((entry->second).size()== numsoltimes)
+    // for control point output:
+    // define aux string for control point (cp) files and set writecp_ to true
+    // if necessary
+    std::string aux = "";
+    writecp_ = false;
+    if(i==1)
     {
-      if (allresulttimeset == 0)
+      writecp_ = true;
+      aux = aux + "_cp";
+
+      // should be cleared for control point output
+      filesetmap_.clear();
+    }
+
+    ///////////////////////////////////
+    //  write geometry file          //
+    ///////////////////////////////////
+    const std::string geofilename = filename_ + "_"+ field_->name() + aux + ".geo";
+    const size_t found_path = geofilename.find_last_of("/\\");
+    const std::string geofilename_nopath = geofilename.substr(found_path+1);
+    WriteGeoFile(geofilename);
+    std::vector<int> filesteps;
+    filesteps.push_back(1);
+    filesetmap_["geo"] = filesteps;
+    std::vector<double> timesteps;
+    if (soltime.size()>0)
+      timesteps.push_back(soltime[0]);
+    else
+      timesteps.push_back(0.0);
+    timesetmap_["geo"] = timesteps;
+    // at the moment, we can only print out the first step -> to be changed
+
+    ///////////////////////////////////
+    //  write solution fields files  //
+    ///////////////////////////////////
+    filter.WriteAllResults(field_);
+
+    // prepare the time sets and file sets for case file creation
+    int setcounter = 0;
+    int allresulttimeset = 0;
+    for (std::map<std::string,std::vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry)
+    {
+      std::string key = entry->first;
+      if ((entry->second).size()== numsoltimes)
+      {
+        if (allresulttimeset == 0)
+        {
+          setcounter++;
+          allresulttimeset = setcounter;
+        }
+        timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
+      }
+      else
       {
         setcounter++;
-        allresulttimeset = setcounter;
+        timesetnumbermap_[key] = setcounter; // a new time set number is needed
       }
-      timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
     }
-    else
+
+    // Paraview wants the geo file to be fileset number one
+    setcounter = 1;
+    for (std::map<std::string,std::vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
     {
-      setcounter++;
-      timesetnumbermap_[key] = setcounter; // a new time set number is needed
+      std::string key = entry->first;
+      if (entry->first=="geo")
+      {
+        filesetnumbermap_[key] = 1;
+      }
+      else
+      {
+        setcounter++;
+        filesetnumbermap_[key] = setcounter;
+      }
     }
-  }
 
-  // Paraview wants the geo file to be fileset number one
-  setcounter = 1;
-  for (std::map<std::string,std::vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
-  {
-    std::string key = entry->first;
-    if (entry->first=="geo")
+    ///////////////////////////////////
+    //  now write the case file      //
+    ///////////////////////////////////
+    if (myrank_ == 0)
     {
-      filesetnumbermap_[key] = 1;
+      const std::string casefilename = filename_ + "_"+ field_->name() + aux + ".case";
+      std::ofstream casefile;
+      casefile.open(casefilename.c_str());
+      casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
+
+      casefile << "\nGEOMETRY\n\n";
+      casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
+
+      casefile << "\nVARIABLE\n\n";
+      casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+
+      casefile << "\nTIME\n\n";
+      casefile << GetTimeSectionStringFromTimesets(timesetmap_);
+
+      casefile << "\nFILE\n\n";
+      casefile << GetFileSectionStringFromFilesets(filesetmap_);
+
+      casefile.close();
     }
-    else
-    {
-      setcounter++;
-      filesetnumbermap_[key] = setcounter;
-    }
-  }
+  } // end of loop
 
-  ///////////////////////////////////
-  //  now write the case file      //
-  ///////////////////////////////////
-  if (myrank_ == 0)
-  {
-    const std::string casefilename = filename_ + "_"+ field_->name() + ".case";
-    std::ofstream casefile;
-    casefile.open(casefilename.c_str());
-    casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
-
-    casefile << "\nGEOMETRY\n\n";
-    casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
-
-    casefile << "\nVARIABLE\n\n";
-    casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
-
-    casefile << "\nTIME\n\n";
-    casefile << GetTimeSectionStringFromTimesets(timesetmap_);
-
-    casefile << "\nFILE\n\n";
-    casefile << GetFileSectionStringFromFilesets(filesetmap_);
-
-    casefile.close();
-  }
   return;
 }
 
@@ -423,7 +453,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 
 
   //switch between nurbs an others
-  if(field_->problem()->SpatialApproximation()=="Nurbs")
+  if(field_->problem()->SpatialApproximation()=="Nurbs" && !writecp_)
   {
     // cast dis to NurbsDiscretisation
     DRT::NURBS::NurbsDiscretization* nurbsdis
@@ -505,8 +535,14 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   }
   else if(field_->problem()->SpatialApproximation()=="Nurbs")
   {
-    WriteCoordinatesForNurbsShapefunctions(
-      geofile,dis,proc0map);
+    // write real geometry coordinates
+    if(!writecp_)
+      WriteCoordinatesForNurbsShapefunctions(
+          geofile,dis,proc0map);
+    // write control point coordinates
+    else
+      WriteCoordinatesForPolynomialShapefunctions(
+        geofile,dis,proc0map);
   }
   else
   {
@@ -637,18 +673,76 @@ void EnsightWriter::WriteCells(
                 nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
           break;
         }
-	case DRT::Element::nurbs4:
-	case DRT::Element::nurbs9:
-	case DRT::Element::nurbs27:
-	{
-          WriteNurbsCell(
-            actele->Shape(),
-            actele->Id()   ,
-            geofile        ,
-            nodevector     ,
-            dis            ,
-            proc0map       );
-	}
+        case DRT::Element::nurbs4:
+        {
+          if(!writecp_)
+            WriteNurbsCell(
+                actele->Shape(),
+                actele->Id()   ,
+                geofile        ,
+                nodevector     ,
+                dis            ,
+                proc0map       );
+          else
+          {
+            // standard case with direct support
+            const int numnp = actele->NumNode();
+            for (int inode=0; inode<numnp; ++inode)
+            {
+              if (myrank_==0) // proc0 can write its elements immediately
+                Write(geofile, proc0map->LID(nodes[inode]->Id())+1);
+              else // elements on other procs have to store their global node ids
+                nodevector.push_back(nodes[inode]->Id());
+            }
+          }
+          break;
+        }
+        case DRT::Element::nurbs9:
+        {
+          if(!writecp_)
+            WriteNurbsCell(
+                actele->Shape(),
+                actele->Id()   ,
+                geofile        ,
+                nodevector     ,
+                dis            ,
+                proc0map       );
+          else
+          {
+            // write subelements
+            for (int isubele=0; isubele<GetNumSubEle(DRT::Element::quad9); ++isubele)
+              for (int isubnode=0; isubnode<4; ++isubnode)
+                if (myrank_==0) // proc0 can write its elements immidiately
+                  Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id())
+                        +1);
+                else // elements on other procs have to store their global node ids
+                  nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
+          }
+          break;
+        }
+        case DRT::Element::nurbs27:
+        {
+          if(!writecp_)
+            WriteNurbsCell(
+                actele->Shape(),
+                actele->Id()   ,
+                geofile        ,
+                nodevector     ,
+                dis            ,
+                proc0map       );
+          else
+          {
+            // write subelements
+            for (int isubele=0; isubele<GetNumSubEle(DRT::Element::hex27); ++isubele)
+              for (int isubnode=0; isubnode<8; ++isubnode)
+                if (myrank_==0) // proc0 can write its elements immidiately
+                  Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id())
+                        +1);
+                else // elements on other procs have to store their global node ids
+                  nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
+          }
+          break;
+        }
         break;
         default:
           dserror("don't know, how to write this element type as a cell");
@@ -1036,8 +1130,15 @@ void EnsightWriter::WriteResult(const std::string groupname,
   // new for file continuation
   bool multiple_files = false;
 
+  // For NURBS control point output filename is extened by "_cp"
+  std::string aux = "";
+  if(writecp_)
+  {
+    aux = aux + "_cp";
+  }
+
   // open file
-  const std::string filename = filename_ + "_"+ field_->name() + "."+ name;
+  const std::string filename = filename_ + "_"+ field_->name() + aux + "."+ name;
   std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
@@ -1055,7 +1156,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
   case dofbased:
   {
     if (myrank_==0)
-      std::cout<<"writing node-based field "<<name<<std::endl;
+      std::cout<<"writing dof-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "node";
 
@@ -1225,8 +1326,15 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result,
   // more tricky are the things that happen in FileSwitcher --> need adaptation for variable geometry
   bool multiple_files = false;
 
+  // For NURBS control point output filename is extened by "_cp"
+  std::string aux = "";
+  if(writecp_)
+  {
+    aux = aux + "_cp";
+  }
+
   // open file
-  const std::string filename = filename_ + "_"+ field_->name() + "."+ name;
+  const std::string filename = filename_ + "_"+ field_->name() + aux + "."+ name;
   std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
@@ -1638,7 +1746,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     offset=0;
 
   //switch between nurbs an others
-  if(field_->problem()->SpatialApproximation()=="Nurbs")
+  if(field_->problem()->SpatialApproximation()=="Nurbs" && !writecp_)
   {
     WriteDofResultStepForNurbs(
       file ,
@@ -1650,7 +1758,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
   }
   else if(field_->problem()->SpatialApproximation()=="Polynomial" or
           field_->problem()->SpatialApproximation()=="Meshfree" or
-          field_->problem()->SpatialApproximation()=="HDG")
+          field_->problem()->SpatialApproximation()=="HDG" or
+          (field_->problem()->SpatialApproximation()=="Nurbs" && writecp_))
   {
     //------------------------------------------------------
     // each processor provides its result values for proc 0
@@ -1819,7 +1928,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = data->Map();
 
   //switch between nurbs an others
-  if(field_->problem()->SpatialApproximation()=="Nurbs")
+  if(field_->problem()->SpatialApproximation()=="Nurbs" && !writecp_)
   {
     WriteNodalResultStepForNurbs(
       file ,
@@ -1831,9 +1940,9 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   }
   else if(field_->problem()->SpatialApproximation()=="Polynomial" or
           field_->problem()->SpatialApproximation()=="Meshfree" or
-          field_->problem()->SpatialApproximation()=="HDG")
+          field_->problem()->SpatialApproximation()=="HDG" or
+          (field_->problem()->SpatialApproximation()=="Nurbs" && writecp_))
   {
-
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
       Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
     Epetra_Import proc0dofimporter(*proc0map_,datamap);

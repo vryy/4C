@@ -119,8 +119,8 @@ protected:
     const int from=0, ///< start position of values in nodes
     const bool fillzeros=false ///< zeros are filled to ensight file when no data is available
     );
-    
-    
+
+
     /*!
      \brief write all time steps of a result in one time step
 
@@ -176,7 +176,7 @@ protected:
   {
     // only processor 0 does the writing !!
     if (myrank_==0)
-  	os.write(reinterpret_cast<const char*>(&i), sizeof(T));
+    os.write(reinterpret_cast<const char*>(&i), sizeof(T));
   }
 
   void Write(
@@ -512,6 +512,7 @@ protected:
     ) const;
 
   bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
+  bool writecp_;     ///< NURBS-specific: defines if control point information should be written to file
 
   NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
   EleGidPerDisType eleGidPerDisType_; ///< global ids of corresponding elements per element discretization type
