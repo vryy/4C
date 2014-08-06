@@ -36,6 +36,13 @@ namespace
   {
     std::memset(mat.A(), 0, sizeof(double)*mat.M()*mat.N());
   }
+
+  void reshapeMatrixIfNecessary(Epetra_SerialDenseMatrix &matrix,
+                                const int nrows, const int ncols)
+  {
+    if (nrows != matrix.M() || ncols != matrix.N())
+      matrix.Shape(nrows, ncols);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -373,16 +380,16 @@ ReadGlobalVectors(DRT::Element           * ele,
   DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
 
   // read vectors from element storage
-  interiorVelnp_.Shape(acouele->eleinteriorVelnp_.M(),1);
-  interiorPressnp_.Shape(acouele->eleinteriorPressnp_.M(),1);
-  interiorVeln_.Shape(acouele->eleinteriorVeln_.M(),1);
-  interiorPressn_.Shape(acouele->eleinteriorPressn_.M(),1);
-  interiorVelnm_.Shape(acouele->eleinteriorVelnm_.M(),1);
-  interiorPressnm_.Shape(acouele->eleinteriorPressnm_.M(),1);
-  interiorVelnmm_.Shape(acouele->eleinteriorVelnmm_.M(),1);
-  interiorPressnmm_.Shape(acouele->eleinteriorPressnmm_.M(),1);
-  interiorVelnmmm_.Shape(acouele->eleinteriorVelnmmm_.M(),1);
-  interiorPressnmmm_.Shape(acouele->eleinteriorPressnmmm_.M(),1);
+  reshapeMatrixIfNecessary(interiorVelnp_,acouele->eleinteriorVelnp_.M(),1);
+  reshapeMatrixIfNecessary(interiorPressnp_,acouele->eleinteriorPressnp_.M(),1);
+  reshapeMatrixIfNecessary(interiorVeln_,acouele->eleinteriorVeln_.M(),1);
+  reshapeMatrixIfNecessary(interiorPressn_,acouele->eleinteriorPressn_.M(),1);
+  reshapeMatrixIfNecessary(interiorVelnm_,acouele->eleinteriorVelnm_.M(),1);
+  reshapeMatrixIfNecessary(interiorPressnm_,acouele->eleinteriorPressnm_.M(),1);
+  reshapeMatrixIfNecessary(interiorVelnmm_,acouele->eleinteriorVelnmm_.M(),1);
+  reshapeMatrixIfNecessary(interiorPressnmm_,acouele->eleinteriorPressnmm_.M(),1);
+  reshapeMatrixIfNecessary(interiorVelnmmm_,acouele->eleinteriorVelnmmm_.M(),1);
+  reshapeMatrixIfNecessary(interiorPressnmmm_,acouele->eleinteriorPressnmmm_.M(),1);
 
   interiorVelnp_ = acouele->eleinteriorVelnp_;
   interiorPressnp_ = acouele->eleinteriorPressnp_;
@@ -1348,11 +1355,11 @@ shapes_(shapeValues),
 shapesface_(shapeValuesFace)
 {
   // shape all matrices
-  Amat.Shape(nsd_*ndofs_,nsd_*ndofs_);
-  invAmat.Shape(nsd_*ndofs_,nsd_*ndofs_);
-  Bmat.Shape(nsd_*ndofs_,ndofs_);
-  Mmat.Shape(ndofs_,ndofs_);
-  Dmat.Shape(ndofs_,ndofs_);
+  reshapeMatrixIfNecessary(Amat,nsd_*ndofs_,nsd_*ndofs_);
+  reshapeMatrixIfNecessary(invAmat,nsd_*ndofs_,nsd_*ndofs_);
+  reshapeMatrixIfNecessary(Bmat,nsd_*ndofs_,ndofs_);
+  reshapeMatrixIfNecessary(Mmat,ndofs_,ndofs_);
+  reshapeMatrixIfNecessary(Dmat,ndofs_,ndofs_);
 
   int onfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
@@ -1367,13 +1374,13 @@ shapesface_(shapeValuesFace)
     onfdofs += shapesface_.nfdofs_;
   }
 
-  Cmat.Shape(nsd_*ndofs_,onfdofs);
-  Emat.Shape(ndofs_,onfdofs);
-  Gmat.Shape(onfdofs,onfdofs);
+  reshapeMatrixIfNecessary(Cmat,nsd_*ndofs_,onfdofs);
+  reshapeMatrixIfNecessary(Emat,ndofs_,onfdofs);
+  reshapeMatrixIfNecessary(Gmat,onfdofs,onfdofs);
 
-  Hmat.Shape(ndofs_,nsd_*ndofs_);
-  Imat.Shape(onfdofs,nsd_*ndofs_);
-  Jmat.Shape(onfdofs,ndofs_);
+  reshapeMatrixIfNecessary(Hmat,ndofs_,nsd_*ndofs_);
+  reshapeMatrixIfNecessary(Imat,onfdofs,nsd_*ndofs_);
+  reshapeMatrixIfNecessary(Jmat,onfdofs,ndofs_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1744,39 +1751,40 @@ ProjectPadapField(DRT::ELEMENTS::Acou &             ele,
   switch(dyna_)
   {
   case INPAR::ACOU::acou_bdf4:
-    ele.eleinteriorPressnmmm_.Shape(proj_shapes->ndofs_,1);
-    ele.eleinteriorVelnmmm_.Shape(proj_shapes->ndofs_*nsd_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorPressnmmm_,proj_shapes->ndofs_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorVelnmmm_,proj_shapes->ndofs_*nsd_,1);
     ele.eleinteriorPressnmmm_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressnmm_,0.0);
     ele.eleinteriorVelnmmm_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVelnmm_,0.0); // no break here
   case INPAR::ACOU::acou_bdf3:
-    ele.eleinteriorPressnmm_.Shape(proj_shapes->ndofs_,1);
-    ele.eleinteriorVelnmm_.Shape(proj_shapes->ndofs_*nsd_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorPressnmm_,proj_shapes->ndofs_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorVelnmm_,proj_shapes->ndofs_*nsd_,1);
     ele.eleinteriorPressnmm_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressn_,0.0);
     ele.eleinteriorVelnmm_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVeln_,0.0); // no break here
   case INPAR::ACOU::acou_bdf2:
-    ele.eleinteriorPressnm_.Shape(proj_shapes->ndofs_,1);
-    ele.eleinteriorVelnm_.Shape(proj_shapes->ndofs_*nsd_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorPressnm_,proj_shapes->ndofs_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorVelnm_,proj_shapes->ndofs_*nsd_,1);
     ele.eleinteriorPressnm_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressnp_,0.0);
     ele.eleinteriorVelnm_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVelnp_,0.0); // no break here
   default:
-    ele.eleinteriorPressn_.Shape(proj_shapes->ndofs_,1);
-    ele.eleinteriorVeln_.Shape(proj_shapes->ndofs_*nsd_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorPressn_,proj_shapes->ndofs_,1);
+    reshapeMatrixIfNecessary(ele.eleinteriorVeln_,proj_shapes->ndofs_*nsd_,1);
     ele.eleinteriorPressn_.Multiply('N','N',1.0,rectMat2,ele.eleinteriorPressnp_,0.0);
     ele.eleinteriorVeln_.Multiply('N','N',1.0,rectMat3,ele.eleinteriorVelnp_,0.0);
     break; // there you go
   }
 
   // save the projected pressure to the element!
-  ele.eleinteriorPressnp_.Shape(proj_shapes->ndofs_,1);
+  reshapeMatrixIfNecessary(ele.eleinteriorPressnp_,proj_shapes->ndofs_,1);
   ele.eleinteriorPressnp_.Multiply('N','N',1.0,rectMat2,interiorPressnp_,0.0);
 
   // project the velocity field as well!! (reuse matrices)
-  ele.eleinteriorVelnp_.Shape(proj_shapes->ndofs_*nsd_,1);
+  reshapeMatrixIfNecessary(ele.eleinteriorVelnp_,proj_shapes->ndofs_*nsd_,1);
   ele.eleinteriorVelnp_.Multiply('N','N',1.0,rectMat3,interiorVelnp_,0.0);
 
   // calculation of node based trace values, since this is no longer possible afterwards!!
   {
-    ele.elenodeTrace_.Shape(nen_,1);
+    //ele.elenodeTrace_.Shape(nen_,1);
+    reshapeMatrixIfNecessary(ele.elenodeTrace_,nen_,1);
     Epetra_SerialDenseVector fvalues(1);
     Epetra_SerialDenseVector touchcount(nen_);
     Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
@@ -2570,12 +2578,10 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
   double theta = 1.0;
   if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,ndofs_*nsd_);
+  Epetra_SerialDenseMatrix tempMat1(ndofs_,ndofs_*nsd_);
   tempMat1.Multiply('N','N',theta,Hmat,invAmat,0.0); // =  H A^{-1}
 
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
+  Epetra_SerialDenseMatrix tempMat2(ndofs_,ndofs_);
 
   // for nonlinear solves, this is not D+M but D+M(P^i)+dMdPP^i
   tempMat2 = Dmat;
