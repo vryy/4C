@@ -507,7 +507,7 @@ private:
   bool                   locsys_;
   int                    locsysid_;
   // current edge node radius
-  double 								 radius_;
+  double                  radius_;
   // a time curve
   DRT::UTILS::TimeCurve& tc_;
   // number of the material in the input file
@@ -516,23 +516,23 @@ private:
   int                    curve_;
   double                 viscosity_;
   // FSI switch
-  bool									 fsi_;
+  bool                   fsi_;
   // toggle coordinate transformation of edge node (once per time step)
-  bool 									 dotrafo_;
+  bool                    dotrafo_;
   // store t_(n-1) for comparison with t_n
-  double              	 tnminus1_;
+  double                 tnminus1_;
 
   // further variables
   // number of harmonics that are used in the synthesis of the timecurve
-  int										 noharm_;
+  int                     noharm_;
   // time curve frequency
-  double								 fbase_;
-      	 // time curve value of the previous time step (needed in current version to circumvent division by 0)
-      	double								 tcprevious_;
+  double                 fbase_;
+         // time curve value of the previous time step (needed in current version to circumvent division by 0)
+        double                 tcprevious_;
   // imaginary number i
   std::complex<double>   i_;
   // storage vector for velocity@1s for profile transition 0<t<1
-  std::vector<double>	   vtemp_;
+  std::vector<double>     vtemp_;
   // storage vector for Fourier Transform output
   std::vector< std::complex<double> > fouphyscurve_;
 
@@ -681,6 +681,37 @@ private:
 
   // Current acceleration (at t)
   LINALG::Matrix<3,1> acc_B_;
+};
+
+/// special implementation for ramping to a specified value
+class RampToValueFunction : public Function
+{
+public:
+
+  /// ctor
+  RampToValueFunction(double value, double startTime, double duration, std::string type);
+
+  /// evaluate function at given position in space
+  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+private:
+  // Time of previous time step (at t-deltaT)
+  double timeOld_;
+
+  // Value to which is ramped
+  double value_;
+
+  // Time to start the ramping
+  double startTime_;
+
+  // Duration of the ramping
+  double duration_;
+
+  // Ramping type (1: ZERORAMPCONST, 2: ZERORAMPZERO)
+  int type_;
+
+  // Current value (at t)
+  double valueCurrent_;
 };
 
 /// special implementation for the node normals of a specified geometry
@@ -995,6 +1026,16 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedString("FILE")
     ;
 
+  DRT::INPUT::LineDefinition ramptovalue;
+  ramptovalue
+    .AddNamedInt("FUNCT")
+    .AddTag("RAMPTOVALUE")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("STARTTIME")
+    .AddNamedDouble("DURATION")
+    .AddNamedString("TYPE")
+    ;
+
   DRT::INPUT::LineDefinition nodenormal;
   nodenormal
     .AddNamedInt("FUNCT")
@@ -1064,6 +1105,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(levelsetcuttest);
   lines->Add(controlledrotation);
   lines->Add(accelerationprofile);
+  lines->Add(ramptovalue);
   lines->Add(nodenormal);
   lines->Add(rotationvectorfornormalsystem);
   lines->Add(componentexpr);
@@ -1316,25 +1358,25 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           function->ExtractInt("Local",e);
         }
         else
-        	dserror("Please give a number of an existing local coordinate system in the Womersley function definition under 'Local'!");
+          dserror("Please give a number of an existing local coordinate system in the Womersley function definition under 'Local'!");
         // read material
         int mat = -1;
         function->ExtractInt("MAT",mat);
-				if(mat<=0) dserror("Please give a (reasonable) 'MAT'/material in WOMERSLEY FUNCT");
-				// read curve
+        if(mat<=0) dserror("Please give a (reasonable) 'MAT'/material in WOMERSLEY FUNCT");
+        // read curve
         int curve = -1;
         function->ExtractInt("CURVE",curve);
         if(curve<=0) dserror("Please give a (resonable) 'CURVE' in WOMERSLEY FUNCT");
-				// read option FSI
+        // read option FSI
         bool fsi = false;
         if(function->HaveNamed("FSI"))
         {
-        	std::string read;
-        	function->ExtractString("FSI", read);
-        	if(read=="Yes")
-        		fsi = true;
-        	else
-        		fsi = false;
+          std::string read;
+          function->ExtractString("FSI", read);
+          if(read=="Yes")
+            fsi = true;
+          else
+            fsi = false;
         }
 
         functions_.push_back(Teuchos::rcp(new WomersleyFunction(localcoordsystem,e-1,mat,curve-1,fsi)));
@@ -1414,6 +1456,22 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractString("FILE", fileName);
 
         functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
+      }
+      else if (function->HaveNamed("RAMPTOVALUE"))
+      {
+        double value;
+        function->ExtractDouble("VALUE",value);
+
+        double startTime;
+        function->ExtractDouble("STARTTIME",startTime);
+
+        double duration;
+        function->ExtractDouble("DURATION",duration);
+
+        std::string type;
+        function->ExtractString("TYPE",type);
+
+        functions_.push_back(Teuchos::rcp(new RampToValueFunction(value, startTime, duration, type)));
       }
       else if (function->HaveNamed("NODENORMAL"))
       {
@@ -2556,7 +2614,7 @@ double DRT::UTILS::JefferyHamelFlowFunction::Evaluate(int index, const double* x
 
 
 /*----------------------------------------------------------------------*
- | constructor																				    mueller  04/10|
+ | constructor                                            mueller  04/10|
  *----------------------------------------------------------------------*/
 DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e, int mat, int curve, bool fsi) :
 Function(),
@@ -2573,7 +2631,7 @@ locsyscond_(NULL)
 {
 }
 /*----------------------------------------------------------------------*
- |Evaluate Womersley Function 												    mueller 04/10 |
+ |Evaluate Womersley Function                             mueller 04/10 |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
@@ -2619,13 +2677,13 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
    * - a FUNCT definition like this one:
    *   FUNCT1 WOMERSLEY Local 2 MAT 1 CURVE 1 FSI Yes
    * - in addition: for serial use (NumProc()==1), the origin is calculated anew.
-   * 								This might come in handy, when one is to determine the center
-   * 								of gravity, i.e. the center line, of the inflow surface.
-   * 								(current "usage": you might run it in serial mode first, get the COG-
-   * 								coordinates, change your input file accordingly (->LOCSYS) and then rerun
-   * 								it in parallel mode. Getting this section to run in parallel mode still causes
-   * 								me some headaches. For the time being, just stick to this method!
-   * 								Also, for now, please define your inflow surface as ONE Design surface.)
+   *                 This might come in handy, when one is to determine the center
+   *                 of gravity, i.e. the center line, of the inflow surface.
+   *                 (current "usage": you might run it in serial mode first, get the COG-
+   *                 coordinates, change your input file accordingly (->LOCSYS) and then rerun
+   *                 it in parallel mode. Getting this section to run in parallel mode still causes
+   *                 me some headaches. For the time being, just stick to this method!
+   *                 Also, for now, please define your inflow surface as ONE Design surface.)
    *
    * further preparations in the FSI DYNAMIC section of your input file
    * - set SHAPEDERIVATIVES to 'no'
@@ -2692,9 +2750,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       // some output
       std::cout<<"\n"<<"== Womersley Function on surface "<<locsysid_+1;
       if(fsi_)
-      	std::cout<<" with FSI-part activated! =="<<std::endl;
+        std::cout<<" with FSI-part activated! =="<<std::endl;
       else
-      	std::cout<<" with FSI-part disabled! =="<<std::endl;
+        std::cout<<" with FSI-part disabled! =="<<std::endl;
 
       //**************************************************************
       // get inflow surface edge nodes
@@ -2820,7 +2878,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
         // store r and phi of current node
         phi_.push_back(atan2(xpedgeloc.at(2), xpedgeloc.at(1)));
         noderadius_.push_back(sqrt(xpedge.at(0)*xpedge.at(0) +
-																	 xpedge.at(1)*xpedge.at(1) +
+                                   xpedge.at(1)*xpedge.at(1) +
                                    xpedge.at(2)*xpedge.at(2)));
       }
       // check for redundant values resulting from having read redundant nodes:
@@ -2848,7 +2906,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       }
     }
     else //if locsys == false
-    	dserror("Please check your Womersley Function Definition in your Input file concerning local coordinate systems!");
+      dserror("Please check your Womersley Function Definition in your Input file concerning local coordinate systems!");
 
     //****************************************************************
     // Fourier Analysis of a given time CURVE
@@ -2958,8 +3016,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
             for(int k=0; k<3; k++)
             {
               tempcoords.at(k) = coords[k];
-              //	if(t>0.0)
-              //		tempcoords.at(k) += (*disp)[dis->DofRowMap()->LID( dofnode[k] )];
+              //  if(t>0.0)
+              //    tempcoords.at(k) += (*disp)[dis->DofRowMap()->LID( dofnode[k] )];
             }
             xnode.push_back(tempcoords.at(0));
             ynode.push_back(tempcoords.at(1));
@@ -2989,8 +3047,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       }
       phi_.at(i) = atan2(xpedgeloc.at(2), xpedgeloc.at(1));
       noderadius_.at(i) = sqrt(xpedge.at(0)*xpedge.at(0) +
-															 xpedge.at(1)*xpedge.at(1) +
-															 xpedge.at(2)*xpedge.at(2));
+                               xpedge.at(1)*xpedge.at(1) +
+                               xpedge.at(2)*xpedge.at(2));
     }
     // check for redundant values
     for(int i=0;i<(int)phi_.size();i++)
@@ -3076,8 +3134,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     // find location i of closest value phi to phicurr
     if(fabs(phi_.at(i)-phicurr)<closest)
     {
-			closest = fabs(phi_.at(i)-phicurr);
-			imin1 = i;
+      closest = fabs(phi_.at(i)-phicurr);
+      imin1 = i;
     }
   }
   for(int i=0;i<(int)phi_.size();i++)
@@ -3217,7 +3275,7 @@ std::complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(std::complex<doubl
     for(int m=0;m<end;m++)
     {
       for(int k=2;k<=m;k++)
-	fac *= (double)(k);
+  fac *= (double)(k);
       J += (std::complex<double>)((double)(pow(-1.0,(double)(m)))/pow(fac,2.0))*
       pow((z/(std::complex<double>)(2.0)),(std::complex<double>)(2*m));
       fac = 1.0;
@@ -3231,7 +3289,7 @@ std::complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(std::complex<doubl
     for(int m=0;m<end;m++)
     {
       for(int k=2;k<=m;k++)
-	fac *= (double)(k);
+  fac *= (double)(k);
       J += (std::complex<double>)((pow(-1.0,(double)(m)))/((double)(m+1)*pow(fac,2.0)))*
       pow((z/std::complex<double>(2.0)),(std::complex<double>)(2*m+1));
       fac = 1.0;
@@ -3639,6 +3697,82 @@ double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index, const double
     // Return the acceleration of the node for the given index
     // *****************************************************************************
     return acc_B_(index,0);
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor of RampToValueFunction                        hahn 08/14 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::RampToValueFunction::RampToValueFunction(double value, double startTime, double duration, std::string type) :
+Function()
+{
+  // Initialize time of previous time step (at t-deltaT)
+  timeOld_ = 0.0;
+
+  // Initialize value to which is ramped
+  value_ = value;
+
+  // Initialize time at which the ramping shall start
+  startTime_ = startTime;
+
+  // Initialize duration
+  duration_ = duration;
+
+  // Initialize ramping type (1: ZERORAMPCONST, 2: ZERORAMPZERO)
+  if (type == "ZERORAMPCONST") {
+      type_ = 1;
+  } else if (type == "ZERORAMPZERO") {
+      type_ = 2;
+  } else {
+      dserror("No proper type has been specified for the RAMPTOVALUE function.");
+  }
+
+  // Initialize current value (at t)
+  valueCurrent_ = 0.0;
+}
+
+/*--------------------------------------------------------------------*
+ | Evaluate RampToValueFunction and return the proper current ramping |
+ | value. The ramping is done via a phase and amplitude shifted       |
+ | sinusoidal (smooth) profile, which reaches the desired value in    |
+ | the desired duration.                                   hahn 08/14 |
+ *--------------------------------------------------------------------*/
+double DRT::UTILS::RampToValueFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  // Calculate time difference since last time step
+  double deltaT = t - timeOld_;
+
+  // Calculate ramping values only once per time step
+  if (deltaT>1e-9) {
+
+    // Calculate time at which the ramping is done
+    double endTimeRamp = duration_ + startTime_;
+
+    // Calculate frequency and natural frequency of ramping
+    double freq = 1/(2*duration_);
+    double omega = 2*PI*freq;
+
+    // Calculate current value
+    if ((t>=startTime_) && (t<=endTimeRamp)) { // During ramping
+      valueCurrent_ = value_ * (0.5 * sin(omega*(t-startTime_) - PI/2) + 0.5);
+    } else if (t<startTime_) {                 // Before ramping
+      valueCurrent_ = 0.0;
+    } else if (t>endTimeRamp) {                // After ramping
+      if (type_==1) {                          // - Stay at value
+        valueCurrent_ = value_;
+      } else if (type_==2) {                   // - Set value to zero
+        valueCurrent_ = 0.0;
+      }
+    }
+
+    // Output info about current value
+    printf("Current ramping value: %e\n", valueCurrent_);
+
+    // Update info about last time step
+    timeOld_ = t;
+  }
+
+  // Return current ramping value
+  return valueCurrent_;
 }
 
 /*----------------------------------------------------------------------*

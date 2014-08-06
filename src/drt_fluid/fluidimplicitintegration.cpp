@@ -2232,7 +2232,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
     {
       printf("|   --/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
         itmax,ittol,vresnorm_,presnorm_);
-      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      printf(" (      --     ,te=%10.3E",dtele_);
       if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
         printf(",tf=%10.3E",dtfilter_);
       printf(")\n");

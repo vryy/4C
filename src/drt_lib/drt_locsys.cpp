@@ -66,6 +66,9 @@ locsyscurvefunct_(false)
     }
   }
 
+  // Set boolean that indicates, if a locsys warning has already been thrown, to false
+  warningThrown_ = false;
+
   //First Setup is made in the constructor. If we have no time dependent locsys conditions
   //in our problem, this is the only time where the whole setup routine is conducted.
   Setup(-1.0);
@@ -696,15 +699,21 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   // complete transformation matrix
   trafo_->Complete();
 
-  // throw warning if transformation matrix has zero diagonal elements since
-  // they end up on the diagonal of the system matrix
-  if(sanity_check)
+  // Throw warning if transformation matrix has zero diagonal elements since
+  // they end up on the diagonal of the system matrix. Show this warning only
+  // once.
+  if ((not warningThrown_) && sanity_check)
   {
-    printf("Locsys warning:\n");
-    printf("A zero diagonal element on the transformation matrix occured on proc %d.\n",Comm().MyPID());
-    printf("This will probably cause a crash in the AZTEC preconditioner.\n");
-    printf("Try not to rotate your local coordinate system by 90 degrees \n");
-    printf("or more or use the slow version.\n");
+    if (Comm().MyPID() == 0) {
+      warningThrown_ = true;
+
+      printf("Locsys warning:\n");
+      printf("A zero diagonal element on the transformation matrix occured.\n");
+      printf("This will probably cause a crash in the AZTEC preconditioner.\n");
+      printf("Try not to rotate your local coordinate system by 90 degrees \n");
+      printf("or more or use the slow version.\n");
+      printf("This warning won't be repeated anymore.\n");
+    }
   }
 
   //**********************************************************************
