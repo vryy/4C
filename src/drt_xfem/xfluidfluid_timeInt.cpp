@@ -54,26 +54,26 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   ) :
   embdis_(embdis),
   step_(step)
-  {
-    myrank_ = bgdis->Comm().MyPID();
-    numproc_ = bgdis->Comm().NumProc();
-    CreateBgNodeMaps(bgdis,wizard);
-    currentbgdofmap_ = bgdis->DofRowMap();
-    timeintapproach_ = xfem_timeintapproach;
-    params_ = params;
+{
+  myrank_ = bgdis->Comm().MyPID();
+  numproc_ = bgdis->Comm().NumProc();
+  CreateBgNodeMaps(bgdis,wizard);
+  currentbgdofmap_ = bgdis->DofRowMap();
+  timeintapproach_ = xfem_timeintapproach;
+  params_ = params;
 
-    Teuchos::ParameterList&   params_xfem  = params_.sublist("XFEM");
-    gmsh_debug_out_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
+  Teuchos::ParameterList&   params_xfem  = params_.sublist("XFEM");
+  gmsh_debug_out_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
 
-    Teuchos::ParameterList&   params_xf_gen = params_.sublist("XFLUID DYNAMIC/GENERAL");
-    searchradius_fac_= params_xf_gen.get<double>("XFLUIDFLUID_SEARCHRADIUS");
+  Teuchos::ParameterList&   params_xf_gen = params_.sublist("XFLUID DYNAMIC/GENERAL");
+  searchradius_fac_= params_xf_gen.get<double>("XFLUIDFLUID_SEARCHRADIUS");
 
-    // find the radius of the search tree
-    SearchRadius();
+  // find the radius of the search tree
+  SearchRadius();
 
-    return;
+  return;
 
-  } // end constructor
+} // end constructor
 
 // -------------------------------------------------------------------
 // map of standard node ids and their dof-gids in for this time step
@@ -263,7 +263,7 @@ int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DR
   else samemaps_ = false;
 
   if (gmsh_debug_out_)
-	  GmshOutput(bgdis);
+    GmshOutput(bgdis);
 
   return samemaps_;
 }
@@ -307,20 +307,20 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
       timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved or
       timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
     SetNewBgStatevectorFullProjection(bgdis,
-    		                      bgstatevn1, bgstatevnp1, embstatevn1,
-    		                      bgstatevn2, bgstatevnp2, embstatevn2,
-    		                      bgstatevn3, bgstatevnp3, embstatevn3,
-    		                      bgstatevn4, bgstatevnp4, embstatevn4,
-    		                      bgstatevn5, bgstatevnp5, embstatevn5,
-    		                      aledispn);
+                              bgstatevn1, bgstatevnp1, embstatevn1,
+                              bgstatevn2, bgstatevnp2, embstatevn2,
+                              bgstatevn3, bgstatevnp3, embstatevn3,
+                              bgstatevn4, bgstatevnp4, embstatevn4,
+                              bgstatevn5, bgstatevnp5, embstatevn5,
+                              aledispn);
   else if(timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues)
     SetNewBgStatevectorKeepGhostValues(bgdis,
-    		                       bgstatevn1, bgstatevnp1, embstatevn1,
-    		                       bgstatevn2, bgstatevnp2, embstatevn2,
-    		                       bgstatevn3, bgstatevnp3, embstatevn3,
-    		                       bgstatevn4, bgstatevnp4, embstatevn4,
-    		                       bgstatevn5, bgstatevnp5, embstatevn5,
-    		                       aledispn);
+                               bgstatevn1, bgstatevnp1, embstatevn1,
+                               bgstatevn2, bgstatevnp2, embstatevn2,
+                               bgstatevn3, bgstatevnp3, embstatevn3,
+                               bgstatevn4, bgstatevnp4, embstatevn4,
+                               bgstatevn5, bgstatevnp5, embstatevn5,
+                               aledispn);
   else
     dserror("xfem time integration approach unknown!");
 }
@@ -330,21 +330,21 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
 // nodes.
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>       bgdis,
-									 Teuchos::RCP<Epetra_Vector>          bgstatevn1,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevnp1,
-		                                                         Teuchos::RCP<Epetra_Vector>          embstatevn1,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevn2,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevnp2,
-		                                                         Teuchos::RCP<Epetra_Vector>          embstatevn2,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevn3,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevnp3,
-	                                                                 Teuchos::RCP<Epetra_Vector>          embstatevn3,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevn4,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevnp4,
-		                                                         Teuchos::RCP<Epetra_Vector>          embstatevn4,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevn5,
-		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevnp5,
-		                                                         Teuchos::RCP<Epetra_Vector>          embstatevn5,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevn1,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevnp1,
+                                                             Teuchos::RCP<Epetra_Vector>          embstatevn1,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevn2,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevnp2,
+                                                             Teuchos::RCP<Epetra_Vector>          embstatevn2,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevn3,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevnp3,
+                                                             Teuchos::RCP<Epetra_Vector>          embstatevn3,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevn4,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevnp4,
+                                                             Teuchos::RCP<Epetra_Vector>          embstatevn4,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevn5,
+                                                             Teuchos::RCP<Epetra_Vector>          bgstatevnp5,
+                                                             Teuchos::RCP<Epetra_Vector>          embstatevn5,
                                                                          Teuchos::RCP<Epetra_Vector>          aledispn)
 {
 
@@ -439,12 +439,12 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const T
 
   // call the Round Robin Communicator
   CommunicateNodes(bgdis,bgnodes_coords,interpolated_vecs,
-		           bgnodeidwithnohistory,aledispn,
-		           embstatevn1,bgstatevnp1,bgstatevn1,
-		           embstatevn2,bgstatevnp2,bgstatevn2,
-		           embstatevn3,bgstatevnp3,bgstatevn3,
-		           embstatevn4,bgstatevnp4,bgstatevn4,
-		           embstatevn5,bgstatevnp5,bgstatevn5);
+               bgnodeidwithnohistory,aledispn,
+               embstatevn1,bgstatevnp1,bgstatevn1,
+               embstatevn2,bgstatevnp2,bgstatevn2,
+               embstatevn3,bgstatevnp3,bgstatevn3,
+               embstatevn4,bgstatevnp4,bgstatevn4,
+               embstatevn5,bgstatevnp5,bgstatevn5);
 
 }//XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection
 
@@ -544,7 +544,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const Teuchos::RCP<DRT::
       // -----------------------
       // do what we wanted to do
       FindEmbeleAndInterpolatevalues(bgnodes_coords,interpolated_vecs,NodeDone,
-    		                         aledispn,embstatevn1,embstatevn2,embstatevn3,embstatevn4,embstatevn5);
+                                 aledispn,embstatevn1,embstatevn2,embstatevn3,embstatevn4,embstatevn5);
 
       // Pack info into block to sendit
       PackValues(bgnodes_coords,interpolated_vecs,bgnodeidwithnohistory,NodeDone,sblock);
@@ -572,29 +572,29 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const Teuchos::RCP<DRT::
       {
         // offset for different state vectors
         int countvecs = 0;
-    	for (std::size_t isd = 0; isd < 4; ++isd){
-    		(*bgstatevnp1)[bgstatevnp1->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-    	}
+      for (std::size_t isd = 0; isd < 4; ++isd){
+        (*bgstatevnp1)[bgstatevnp1->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+      }
 
-    	countvecs += 4;
-    	for (std::size_t isd = 0; isd < 4; ++isd){
-    		(*bgstatevnp2)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-    	}
+      countvecs += 4;
+      for (std::size_t isd = 0; isd < 4; ++isd){
+        (*bgstatevnp2)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+      }
 
-    	countvecs += 4;
-    	for (std::size_t isd = 0; isd < 4; ++isd){
-    		(*bgstatevnp3)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-    	}
+      countvecs += 4;
+      for (std::size_t isd = 0; isd < 4; ++isd){
+        (*bgstatevnp3)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+      }
 
-    	countvecs += 4;
-    	for (std::size_t isd = 0; isd < 4; ++isd){
-    		(*bgstatevnp4)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-    	}
+      countvecs += 4;
+      for (std::size_t isd = 0; isd < 4; ++isd){
+        (*bgstatevnp4)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+      }
 
-    	countvecs += 4;
-    	for (std::size_t isd = 0; isd < 4; ++isd){
-    		(*bgstatevnp5)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-    	}
+      countvecs += 4;
+      for (std::size_t isd = 0; isd < 4; ++isd){
+        (*bgstatevnp5)[bgstatevnp2->Map().LID(bgdis->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+      }
 
         offset += 4;
       }
@@ -744,41 +744,43 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
                                                                       Teuchos::RCP<Epetra_Vector>          embstatevn5)
 
 {
+  //init of 3D search tree
+  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
+
+  // find current positions for emb fluid discretization
+  std::map<int,LINALG::Matrix<3,1> > currentpositions;
+  for (int lid = 0; lid < embdis_->NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = embdis_->lColNode(lid);
+    LINALG::Matrix<3,1> currpos;
+    std::vector<int> pgdofs(4);
+    std::vector<double> mydisp(4);
+
+    // get the current displacement
+    embdis_->Dof(node,0,pgdofs);
+    DRT::UTILS::ExtractMyValues(*aledispn,mydisp,pgdofs);
+
+    currpos(0) = node->X()[0]+mydisp.at(0);
+    currpos(1) = node->X()[1]+mydisp.at(1);
+    currpos(2) = node->X()[2]+mydisp.at(2);
+
+    currentpositions[node->Id()] = currpos;
+  }
+
+  // find the bounding box of the elements and initialize the search tree
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*embdis_,currentpositions);
+  searchTree->initializeTree(rootBox,*embdis_,GEO::TreeType(GEO::OCTTREE));
+
   // loop over bgnodes_coords
   for (size_t i=0; i<bgnodes_coords.size(); ++i)
   {
+    // indicates that we found the embedded element, the background node is covered by
+    bool insideelement = false;
+
     // bgnode coordinate
     LINALG::Matrix<3,1> bgnodecords = bgnodes_coords.at(i);
     // interpolated vector which is zero at the beginning
     LINALG::Matrix<20,1> interpolatedvec = interpolated_vecs.at(i);
-
-    bool insideelement = false;
-    //init of 3D search tree
-    Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
-
-    // find current positions for emb fluid discretization
-    std::map<int,LINALG::Matrix<3,1> > currentpositions;
-    for (int lid = 0; lid < embdis_->NumMyColNodes(); ++lid)
-    {
-      const DRT::Node* node = embdis_->lColNode(lid);
-      LINALG::Matrix<3,1> currpos;
-      std::vector<int> pgdofs(4);
-      std::vector<double> mydisp(4);
-
-      // get the current displacement
-      embdis_->Dof(node,0,pgdofs);
-      DRT::UTILS::ExtractMyValues(*aledispn,mydisp,pgdofs);
-
-      currpos(0) = node->X()[0]+mydisp.at(0);
-      currpos(1) = node->X()[1]+mydisp.at(1);
-      currpos(2) = node->X()[2]+mydisp.at(2);
-
-      currentpositions[node->Id()] = currpos;
-    }
-
-    // find the bounding box of the elements and initialize the search tree
-    const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*embdis_,currentpositions);
-    searchTree->initializeTree(rootBox,*embdis_,GEO::TreeType(GEO::OCTTREE));
 
     //search for near elements to the background node's coord
     std::map<int,std::set<int> >  closeeles =
@@ -789,29 +791,29 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
 
     if(closeeles.empty() == false)
     {
-    	for(std::map<int, std::set<int> >::const_iterator closele = closeeles.begin(); closele != closeeles.end(); closele++)
-    	{
-        	if (insideelement) break;
-    		for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
-    		{
-    			if (insideelement) break;
-    			DRT::Element* pele = embdis_->gElement(*eleIter); // eleIter is the gid of the pele
-    			insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,
-    					                                               embstatevn1,embstatevn2,embstatevn3,embstatevn4,embstatevn5,
-    		    		                                               aledispn,embdis_);
+      for(std::map<int, std::set<int> >::const_iterator closele = closeeles.begin(); closele != closeeles.end(); closele++)
+      {
+        if (insideelement) break;
+        for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+        {
+          if (insideelement) break;
+          DRT::Element* pele = embdis_->gElement(*eleIter); // eleIter is the gid of the pele
+          insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,
+                                                             embstatevn1,embstatevn2,embstatevn3,embstatevn4,embstatevn5,
+                                                               aledispn,embdis_);
 
-    			if (insideelement and NodeDone.at(i)==0)
-    		    {
-    			  	// Set NodeDone to 1 if the embedded-element is found
-    			  	NodeDone.at(i) = 1;
-    			  	for (size_t j=0; j<20; ++j)
-    			  	{
-    			  		//set the interpolated values
-    			  		interpolated_vecs.at(i)(j) = interpolatedvec(j);
-    			  	}
-    		    }
-    		}
-    	}
+          if (insideelement and NodeDone.at(i)==0)
+            {
+              // Set NodeDone to 1 if the embedded-element is found
+              NodeDone.at(i) = 1;
+              for (size_t j=0; j<20; ++j)
+              {
+                //set the interpolated values
+                interpolated_vecs.at(i)(j) = interpolatedvec(j);
+              }
+            }
+        }
+      }
     }
     else IO::cout << "The search radius is empty on one processor! You may need to change the XFLUIDFLUID_SEARCHRADIUS is your dat-file."<< IO::endl;
   }
@@ -822,22 +824,22 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
 // embedded fluid)
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>        bgdis,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevn1,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp1,
-                                                                          Teuchos::RCP<Epetra_Vector>           embstatevn1,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevn2,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp2,
-                                                                          Teuchos::RCP<Epetra_Vector>           embstatevn2,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevn3,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp3,
-                                                                          Teuchos::RCP<Epetra_Vector>           embstatevn3,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevn4,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp4,
-                                                                          Teuchos::RCP<Epetra_Vector>           embstatevn4,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevn5,
-                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp5,
-                                                                          Teuchos::RCP<Epetra_Vector>           embstatevn5,
-                                                                          Teuchos::RCP<Epetra_Vector>           aledispn)
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevn1,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevnp1,
+                                                                                Teuchos::RCP<Epetra_Vector>           embstatevn1,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevn2,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevnp2,
+                                                                                Teuchos::RCP<Epetra_Vector>           embstatevn2,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevn3,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevnp3,
+                                                                                Teuchos::RCP<Epetra_Vector>           embstatevn3,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevn4,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevnp4,
+                                                                                Teuchos::RCP<Epetra_Vector>           embstatevn4,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevn5,
+                                                                                Teuchos::RCP<Epetra_Vector>           bgstatevnp5,
+                                                                                Teuchos::RCP<Epetra_Vector>           embstatevn5,
+                                                                                Teuchos::RCP<Epetra_Vector>           aledispn)
 {
 
   // coordinates of bg-nodes which need the projection from embedded dis
@@ -871,7 +873,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       // Information
 #ifdef DEBUG
       if (iterstn->second.size()>4)
-    	  IO::cout << " INFO: more standard sets!!!! "<< "Node GID " << bgnode->Id() << IO::endl;
+        IO::cout << " INFO: more standard sets!!!! "<< "Node GID " << bgnode->Id() << IO::endl;
 #endif
 
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp1,bgstatevn1);
@@ -953,13 +955,13 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
   // call the Round Robin Communicator
 
   CommunicateNodes(bgdis,
-		           bgnodes_coords,interpolated_vecs,bgnodeidwithnohistory,
-		           aledispn,
-		           embstatevn1,bgstatevnp1,bgstatevn1,
-		           embstatevn2,bgstatevnp2,bgstatevn2,
-		           embstatevn3,bgstatevnp3,bgstatevn3,
-		           embstatevn4,bgstatevnp4,bgstatevn4,
-		           embstatevn5,bgstatevnp5,bgstatevn5);
+               bgnodes_coords,interpolated_vecs,bgnodeidwithnohistory,
+               aledispn,
+               embstatevn1,bgstatevnp1,bgstatevn1,
+               embstatevn2,bgstatevnp2,bgstatevn2,
+               embstatevn3,bgstatevnp3,bgstatevn3,
+               embstatevn4,bgstatevnp4,bgstatevn4,
+               embstatevn5,bgstatevnp5,bgstatevn5);
 
 }//XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues
 
@@ -1056,37 +1058,37 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
 
         if(embstate_n1 != Teuchos::null)
         {
-        	DRT::UTILS::ExtractMyValues(*embstate_n1,myval,pgdofs);
-        	for (std::size_t isd = 0; isd < 4; ++isd)
-        		veln1(isd,inode) = myval[isd];
+          DRT::UTILS::ExtractMyValues(*embstate_n1,myval,pgdofs);
+          for (std::size_t isd = 0; isd < 4; ++isd)
+            veln1(isd,inode) = myval[isd];
         }
 
         if(embstate_n2 != Teuchos::null)
         {
-        	DRT::UTILS::ExtractMyValues(*embstate_n2,myval,pgdofs);
-        	for (std::size_t isd = 0; isd < 4; ++isd)
-        		veln2(isd,inode) = myval[isd];
+          DRT::UTILS::ExtractMyValues(*embstate_n2,myval,pgdofs);
+          for (std::size_t isd = 0; isd < 4; ++isd)
+            veln2(isd,inode) = myval[isd];
         }
 
         if(embstate_n3 != Teuchos::null)
         {
-        	DRT::UTILS::ExtractMyValues(*embstate_n3,myval,pgdofs);
-        	for (std::size_t isd = 0; isd < 4; ++isd)
-        		veln3(isd,inode) = myval[isd];
+          DRT::UTILS::ExtractMyValues(*embstate_n3,myval,pgdofs);
+          for (std::size_t isd = 0; isd < 4; ++isd)
+            veln3(isd,inode) = myval[isd];
         }
 
         if(embstate_n4 != Teuchos::null)
         {
-        	DRT::UTILS::ExtractMyValues(*embstate_n4,myval,pgdofs);
-        	for (std::size_t isd = 0; isd < 4; ++isd)
-        		veln4(isd,inode) = myval[isd];
+          DRT::UTILS::ExtractMyValues(*embstate_n4,myval,pgdofs);
+          for (std::size_t isd = 0; isd < 4; ++isd)
+            veln4(isd,inode) = myval[isd];
         }
 
         if(embstate_n5 != Teuchos::null)
         {
-        	DRT::UTILS::ExtractMyValues(*embstate_n5,myval,pgdofs);
-        	for (std::size_t isd = 0; isd < 4; ++isd)
-        		veln5(isd,inode) = myval[isd];
+          DRT::UTILS::ExtractMyValues(*embstate_n5,myval,pgdofs);
+          for (std::size_t isd = 0; isd < 4; ++isd)
+            veln5(isd,inode) = myval[isd];
         }
 
         // get the coordinates of patch element
@@ -1128,37 +1130,37 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
         for (int inode = 0; inode < numnodes; ++inode){
           int offset = 0;
           if(embstate_n1 != Teuchos::null){
-        	  for (std::size_t isd = 0; isd < 4; ++isd){
-        		  interpolatedvec(isd+offset) += veln1(isd,inode)*shp(inode);
-        	  }
+            for (std::size_t isd = 0; isd < 4; ++isd){
+              interpolatedvec(isd+offset) += veln1(isd,inode)*shp(inode);
+            }
           }
 
           offset += 4;
           if(embstate_n2 != Teuchos::null){
-        	  for (std::size_t isd = 0; isd < 4; ++isd){
-        		  interpolatedvec(isd+offset) += veln2(isd,inode)*shp(inode);
-        	  }
+            for (std::size_t isd = 0; isd < 4; ++isd){
+              interpolatedvec(isd+offset) += veln2(isd,inode)*shp(inode);
+            }
           }
 
           offset += 4;
           if(embstate_n3 != Teuchos::null){
-        	  for (std::size_t isd = 0; isd < 4; ++isd){
-        		  interpolatedvec(isd+offset) += veln3(isd,inode)*shp(inode);
-        	  }
+            for (std::size_t isd = 0; isd < 4; ++isd){
+              interpolatedvec(isd+offset) += veln3(isd,inode)*shp(inode);
+            }
           }
 
           offset += 4;
           if(embstate_n4 != Teuchos::null){
-        	  for (std::size_t isd = 0; isd < 4; ++isd){
-        		  interpolatedvec(isd+offset) += veln4(isd,inode)*shp(inode);
-        	  }
+            for (std::size_t isd = 0; isd < 4; ++isd){
+              interpolatedvec(isd+offset) += veln4(isd,inode)*shp(inode);
+            }
           }
 
           offset += 4;
           if(embstate_n5 != Teuchos::null){
-        	  for (std::size_t isd = 0; isd < 4; ++isd){
-        		  interpolatedvec(isd+offset) += veln5(isd,inode)*shp(inode);
-        	  }
+            for (std::size_t isd = 0; isd < 4; ++isd){
+              interpolatedvec(isd+offset) += veln5(isd,inode)*shp(inode);
+            }
           }
         }
         inside = true;
@@ -1320,7 +1322,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const Teuchos::RCP<D
   std::vector<int> pgdofs(4);
 
   if (gmsh_debug_out_)
-	  GmshOutputForInterpolateFSI(bgdis,aledispnp,aledispnpoldstate);
+    GmshOutputForInterpolateFSI(bgdis,aledispnp,aledispnpoldstate);
 
   // dummy state vectors
   Teuchos::RCP<Epetra_Vector>    vec1;
@@ -1328,7 +1330,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const Teuchos::RCP<D
   Teuchos::RCP<Epetra_Vector>    vec3;
   Teuchos::RCP<Epetra_Vector>    vec4;
 
-  
+
   for (int lnid=0; lnid<embdis_->NumMyRowNodes(); lnid++)
   {
     DRT::Node* embnode = embdis_->lRowNode(lnid);
@@ -1357,9 +1359,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const Teuchos::RCP<D
         LINALG::Matrix<20,1> interpolatedvec(true);
         //std::cout << "pele id " << pele->Id() << std::endl;
 
-        insideelement = ComputeSpacialToElementCoordAndProject(pele,embnodecords,interpolatedvec,
-        													   statevemb_n,vec1, vec2, vec3, vec4,
-        		                                               aledispnpoldstate,embdis_);
+        insideelement = ComputeSpacialToElementCoordAndProject(
+            pele,embnodecords,interpolatedvec,
+            statevemb_n,vec1, vec2, vec3, vec4,
+            aledispnpoldstate,embdis_);
         if (insideelement)
         {
           // here set state
@@ -1412,23 +1415,23 @@ void XFEM::XFluidFluidTimeIntegration::SearchRadius()
     const DRT::Element* actele = embdis_->lColElement(0);
     const DRT::Node* const* nodes = actele->Nodes();
 
-	LINALG::Matrix<3,8> xyze(true);
+  LINALG::Matrix<3,8> xyze(true);
 
     switch ( actele->Shape() )
     {
       case DRT::Element::hex8:
       {
-    	  for(int i=0; i<8; i++)
-    	  {
-    		  const double* x = nodes[i]->X();
-    		  xyze(0,i)=x[0];
-    		  xyze(1,i)=x[1];
-    		  xyze(2,i)=x[2];
-    	  }
-    	  break;
+        for(int i=0; i<8; i++)
+        {
+          const double* x = nodes[i]->X();
+          xyze(0,i)=x[0];
+          xyze(1,i)=x[1];
+          xyze(2,i)=x[2];
+        }
+        break;
       }
       default:
-    	  dserror("Element-type not supported here!");
+        dserror("Element-type not supported here!");
     }
 
     double line0 = 0.0;
@@ -1440,12 +1443,12 @@ void XFEM::XFluidFluidTimeIntegration::SearchRadius()
 
     for(int i=0; i<3; i++)
     {
-    	line0 += (xyze(i,0) - xyze(i,2))*(xyze(i,0) - xyze(i,2));
-    	line1 += (xyze(i,1) - xyze(i,4))*(xyze(i,1) - xyze(i,4));
-    	line2 += (xyze(i,1) - xyze(i,6))*(xyze(i,1) - xyze(i,6));
-    	line3 += (xyze(i,3) - xyze(i,6))*(xyze(i,3) - xyze(i,6));
-    	line4 += (xyze(i,0) - xyze(i,7))*(xyze(i,0) - xyze(i,7));
-    	line5 += (xyze(i,4) - xyze(i,6))*(xyze(i,4) - xyze(i,6));
+      line0 += (xyze(i,0) - xyze(i,2))*(xyze(i,0) - xyze(i,2));
+      line1 += (xyze(i,1) - xyze(i,4))*(xyze(i,1) - xyze(i,4));
+      line2 += (xyze(i,1) - xyze(i,6))*(xyze(i,1) - xyze(i,6));
+      line3 += (xyze(i,3) - xyze(i,6))*(xyze(i,3) - xyze(i,6));
+      line4 += (xyze(i,0) - xyze(i,7))*(xyze(i,0) - xyze(i,7));
+      line5 += (xyze(i,4) - xyze(i,6))*(xyze(i,4) - xyze(i,6));
     }
 
     line0 = sqrt(line0);
@@ -1456,7 +1459,7 @@ void XFEM::XFluidFluidTimeIntegration::SearchRadius()
     line5 = sqrt(line5);
 
     minradius_ =  searchradius_fac_*std::max(line0,std::max(line1,std::max(line2,std::max(line3,std::max(line4,line5)))));
-    
+
 }//SearchRadius
 
 // -------------------------------------------------------------------
@@ -1501,107 +1504,107 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput(const Teuchos::RCP<DRT::Discre
 // Gmsh Output for interpolated-Ale FSI-Approach
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI(const Teuchos::RCP<DRT::Discretization>    bgdis,
-		                                                           Teuchos::RCP<Epetra_Vector>    aledispnp,
+                                                               Teuchos::RCP<Epetra_Vector>    aledispnp,
                                                                    Teuchos::RCP<Epetra_Vector>    aledispnpoldstate)
 {
-	const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis->Comm().MyPID());
-	std::ofstream gmshfilecontent(filename.c_str());
-	{
-		{
-			// draw embedded elements with associated gid at the old  position
-			gmshfilecontent << "View \" " << "emb Element(old)->Id() \" {\n";
-			for (int i=0; i<embdis_->NumMyColElements(); ++i)
-			{
-				const DRT::Element* actele = embdis_->lColElement(i);
-				const DRT::Node*const* pelenodes = actele->Nodes();
-				std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    {
+      // draw embedded elements with associated gid at the old  position
+      gmshfilecontent << "View \" " << "emb Element(old)->Id() \" {\n";
+      for (int i=0; i<embdis_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = embdis_->lColElement(i);
+        const DRT::Node*const* pelenodes = actele->Nodes();
+        std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-				std::vector<int> lm;
-				std::vector<int> lmowner;
-				std::vector<int> lmstride;
-				actele->LocationVector(*embdis_, lm, lmowner, lmstride);
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+        actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-				std::vector<double> myolddisp(lm.size());
-				DRT::UTILS::ExtractMyValues(*aledispnpoldstate, myolddisp, lm);
+        std::vector<double> myolddisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*aledispnpoldstate, myolddisp, lm);
 
-				for (int inode = 0; inode < actele->NumNode(); ++inode)
-				{
-					// the coordinates of the actuall node
-					LINALG::Matrix<3,1> inodepos(true);
-					inodepos(0,0) = pelenodes[inode]->X()[0] + myolddisp[0+(inode*4)];
-					inodepos(1,0) = pelenodes[inode]->X()[1] + myolddisp[1+(inode*4)];
-					inodepos(2,0) = pelenodes[inode]->X()[2] + myolddisp[2+(inode*4)];
+        for (int inode = 0; inode < actele->NumNode(); ++inode)
+        {
+          // the coordinates of the actuall node
+          LINALG::Matrix<3,1> inodepos(true);
+          inodepos(0,0) = pelenodes[inode]->X()[0] + myolddisp[0+(inode*4)];
+          inodepos(1,0) = pelenodes[inode]->X()[1] + myolddisp[1+(inode*4)];
+          inodepos(2,0) = pelenodes[inode]->X()[2] + myolddisp[2+(inode*4)];
 
-					mapofnodepos[pelenodes[inode]->Id()] = inodepos;
-				}
-				IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
-			  };
-			  gmshfilecontent << "};\n";
-		  }
+          mapofnodepos[pelenodes[inode]->Id()] = inodepos;
+        }
+        IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
+        };
+        gmshfilecontent << "};\n";
+      }
 
-		  {
-			  // draw embedded elements with associated gid at the current position
-			  gmshfilecontent << "View \" " << "emb Element(new)->Id() \" {\n";
-			  for (int i=0; i<embdis_->NumMyColElements(); ++i)
-			  {
-				  const DRT::Element* actele = embdis_->lColElement(i);
-				  const DRT::Node*const* pelenodes = actele->Nodes();
-				  std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
+      {
+        // draw embedded elements with associated gid at the current position
+        gmshfilecontent << "View \" " << "emb Element(new)->Id() \" {\n";
+        for (int i=0; i<embdis_->NumMyColElements(); ++i)
+        {
+          const DRT::Element* actele = embdis_->lColElement(i);
+          const DRT::Node*const* pelenodes = actele->Nodes();
+          std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-				  std::vector<int> lm;
-				  std::vector<int> lmowner;
-				  std::vector<int> lmstride;
-				  actele->LocationVector(*embdis_, lm, lmowner, lmstride);
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
+          actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-				  std::vector<double> mydisp(lm.size());
-				  DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
+          std::vector<double> mydisp(lm.size());
+          DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
 
-				  for (int inode = 0; inode < actele->NumNode(); ++inode)
-				  {
-					  // the coordinates of the actuall node
-					  LINALG::Matrix<3,1> inodepos(true);
-					  inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
-					  inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
-					  inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
+          for (int inode = 0; inode < actele->NumNode(); ++inode)
+          {
+            // the coordinates of the actuall node
+            LINALG::Matrix<3,1> inodepos(true);
+            inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
+            inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
+            inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
 
-					  mapofnodepos[pelenodes[inode]->Id()] = inodepos;
-				  }
-				  IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
-			  };
-			  gmshfilecontent << "};\n";
-		  }
+            mapofnodepos[pelenodes[inode]->Id()] = inodepos;
+          }
+          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
+        };
+        gmshfilecontent << "};\n";
+      }
 
-		  {
-			  // draw embedded nodes with associated gid at the current position
-			  gmshfilecontent << "View \" " << "emb Node(new)->Id() \" {\n";
-			  for (int i=0; i<embdis_->NumMyColElements(); ++i)
-			  {
-				  const DRT::Element* actele = embdis_->lColElement(i);
-				  const DRT::Node*const* pelenodes = actele->Nodes();
-				  std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
+      {
+        // draw embedded nodes with associated gid at the current position
+        gmshfilecontent << "View \" " << "emb Node(new)->Id() \" {\n";
+        for (int i=0; i<embdis_->NumMyColElements(); ++i)
+        {
+          const DRT::Element* actele = embdis_->lColElement(i);
+          const DRT::Node*const* pelenodes = actele->Nodes();
+          std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-				  std::vector<int> lm;
-				  std::vector<int> lmowner;
-				  std::vector<int> lmstride;
-				  actele->LocationVector(*embdis_, lm, lmowner, lmstride);
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
+          actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-				  std::vector<double> mydisp(lm.size());
-				  DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
+          std::vector<double> mydisp(lm.size());
+          DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
 
-				  for (int inode = 0; inode < actele->NumNode(); ++inode)
-				  {
-					  // the coordinates of the actuall node
-					  LINALG::Matrix<3,1> inodepos(true);
-					  inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
-					  inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
-					  inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
-					  IO::GMSH::cellWithScalarToStream(DRT::Element::point1, pelenodes[inode]->Id(), inodepos, gmshfilecontent);
-				  }
-			   };
-			   gmshfilecontent << "};\n";
-		  	}
-	  }
-	  gmshfilecontent.close();
+          for (int inode = 0; inode < actele->NumNode(); ++inode)
+          {
+            // the coordinates of the actuall node
+            LINALG::Matrix<3,1> inodepos(true);
+            inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
+            inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
+            inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, pelenodes[inode]->Id(), inodepos, gmshfilecontent);
+          }
+         };
+         gmshfilecontent << "};\n";
+        }
+    }
+    gmshfilecontent.close();
 }
 // -----------------------------------------------------------------------
 // all cut elements at tn with full dofs are included in incompressibility
@@ -1675,7 +1678,7 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const Te
 
     if (iterpatchnodes == incompnodeids_set_.end())
     {
-    	IO::cout << "STOP!! Nodes found which were in projected set but not in incompressibility patch! " << *iter << IO::endl;
+      IO::cout << "STOP!! Nodes found which were in projected set but not in incompressibility patch! " << *iter << IO::endl;
 
       //get all adjacent elements of this node
       int numberOfElements = bgdis->gNode(*iter)->NumElement();
@@ -1975,7 +1978,7 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const Teuchos::
 
       if (cell_sets.size() == 0)
       {
-    	  IO::cout << "Warning: Element " << actele->Id() << " has all it's volume-cells in void. Check if all nodes are "<<
+        IO::cout << "Warning: Element " << actele->Id() << " has all it's volume-cells in void. Check if all nodes are "<<
           "included in other elements." << IO::endl;
         continue;
       }
@@ -2327,8 +2330,8 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
 
   if (myrank_ == 0)
   {
-	  IO::cout << " Incompressibility Check.. " << IO::endl;
-	  IO::cout << " Original:  "  << sum << ",  After solving optimization problem: "  << sum_opt << IO::endl;
+    IO::cout << " Incompressibility Check.. " << IO::endl;
+    IO::cout << " Original:  "  << sum << ",  After solving optimization problem: "  << sum_opt << IO::endl;
   }
 
   LINALG::Export(*(u_incomp),*(initialvel));
