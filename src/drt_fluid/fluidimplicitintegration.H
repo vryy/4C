@@ -435,11 +435,11 @@ public:
   */
   virtual void ResetStep()
   {
-	  accnp_ ->Update(1.0, *accn_ ,0.0);
-	  velnp_ ->Update(1.0, *veln_ ,0.0);
-	  dispnp_->Update(1.0, *dispn_,0.0);
+    accnp_ ->Update(1.0, *accn_ ,0.0);
+    velnp_ ->Update(1.0, *veln_ ,0.0);
+    dispnp_->Update(1.0, *dispn_,0.0);
 
-	  return;
+    return;
   }
 
   /*!
@@ -517,6 +517,12 @@ public:
 
   */
   virtual Teuchos::RCP<double> EvaluateDivU();
+
+  /*!
+  \brief calculate adaptive time step with the CFL number
+
+  */
+  virtual void EvaluateDtWithCFL();
 
   /*!
   \brief calculate stresses
@@ -693,10 +699,10 @@ public:
 
   virtual void UpdateStepandTime()
   {
-	  step_ += 1;
-	  time_ += dta_;
+    step_ += 1;
+    time_ += dta_;
 
-	  return;
+    return;
   }
 
   /*!
@@ -786,7 +792,7 @@ public:
   /// set the initial porosity field
   virtual void SetInitialPorosityField(
     const INPAR::POROELAST::InitialField,   ///< type of initial field
-	//const int,                                ///< type of initial field
+  //const int,                                ///< type of initial field
     const int startfuncno                   ///< number of spatial function
     ) {dserror("not implemented in base class");}
 

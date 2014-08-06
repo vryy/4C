@@ -3267,6 +3267,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integration factor for starting scheme",&fdyn);
 
+  DoubleParameter("CFL_NUMBER",-1.0,"CFL number for adaptive time step",&fdyn);
+  IntParameter("FREEZE_ADAPTIVE_DT_AT",1000000,"keep time step constant after this step, otherwise turbulence statistics sampling is not consistent",&fdyn);
+
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE",
                                "no",
                                "Flag to (de)activate potential Strong 3D redD coupling",

@@ -686,6 +686,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //              set time-dependent parameters
   // -------------------------------------------------------------------
+  EvaluateDtWithCFL();
   IncrementTimeAndStep();
 
   // Sets theta_ to a specific value for bdf2 and calculates
@@ -4396,6 +4397,54 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
   else
     return Teuchos::null;
 } // end EvaluateDivU
+
+/*----------------------------------------------------------------------*
+ | calculate adaptive time step with the CFL number             bk 08/14|
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
+{
+  double CFL = params_->get<double>("CFL_NUMBER",-1.0);
+  int stependadaptivedt =     params_->get<int>   ("FREEZE_ADAPTIVE_DT_AT",10000000);
+  if(step_+1==stependadaptivedt&&myrank_==0)
+    std::cout << "\n    !!time step is kept constant from now on for sampling of turbulence statistics!!\n" << std::endl;
+  if(CFL>0.0 && step_+1<stependadaptivedt)
+  {
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+
+    // action for elements
+    eleparams.set<int>("action",FLD::calc_dt_via_cfl);
+
+    discret_->SetState("velnp", velnp_);
+
+    const Epetra_Map* elementrowmap = discret_->ElementRowMap();
+    Teuchos::RCP<Epetra_MultiVector> h_u = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
+
+    // optional: elementwise defined div u may be written to standard output file (not implemented yet)
+    discret_->EvaluateScalars(eleparams, h_u);
+
+    discret_->ClearState();
+
+    double min_h_u = 0.0;
+
+    h_u->MinValue(&min_h_u);
+
+    //if the initial velocity field is zero and there are no non-zero Dirichlet-boundaries,
+    //min_h_u is zero. In this case, we use the time step stated in the input file
+    //and write this to the screen
+    if(min_h_u<1.0e3)
+    {
+      if(step_>0)
+        dta_+=0.8*(CFL*min_h_u-dtp_);
+      else //start of simulation
+        dta_=CFL*min_h_u;
+    }
+    else if(myrank_==0)
+      std::cout << "Calculated time step is zero due to zero velocity field: use time step stated in input file for the first step!" << std::endl;
+  }
+
+  return;
+} // end EvaluateDtWithCFL
 
 
 

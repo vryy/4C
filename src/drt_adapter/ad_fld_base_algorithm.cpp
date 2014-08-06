@@ -637,7 +637,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
           coupling == fsi_iter_constr_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
-          coupling == fsi_iter_fluidfluid_monolithicstructuresplit 	or
+          coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
           coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox or
           coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
@@ -1118,6 +1118,10 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<double> ("total time"          ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
   fluidtimeparams->set<int>    ("max number timesteps",prbdyn.get<int>("NUMSTEP"));
+  // CFL number for adaptive calculation of time step
+  fluidtimeparams->set<double> ("CFL_NUMBER"          ,prbdyn.get<double>("CFL_NUMBER"));
+  // keep adaptive time step constant after this step for sampling of turbulence statistics
+  fluidtimeparams->set<int>    ("FREEZE_ADAPTIVE_DT_AT",prbdyn.get<int>("FREEZE_ADAPTIVE_DT_AT"));
 
   // -------- additional parameters in list for generalized-alpha scheme
 #if 1

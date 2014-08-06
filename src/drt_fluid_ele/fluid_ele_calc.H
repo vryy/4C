@@ -185,6 +185,18 @@ public:
 //    const DRT::UTILS::GaussIntegration & intpoints
   );
 
+
+  /*! \brief Calculate properties for adaptive time step based on CFL number
+   *
+   *  \author bk \date 08/2014
+   */
+  virtual int CalcTimeStep(
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseVector&       elevec1
+      );
+
   /*! \brief Calculate channel statistics
    *
    *  \author bk \date 05/2014

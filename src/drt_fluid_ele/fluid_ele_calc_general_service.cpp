@@ -139,6 +139,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
       return 0;
     }
     break;
+    case FLD::calc_dt_via_cfl:
+    {
+      return CalcTimeStep(ele, discretization, lm, elevec1);
+    }
+    break;
     default:
       dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
     break;
@@ -3302,6 +3307,61 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
   {
     dserror("Unknown element type for mean value evaluation\n");
   }
+
+  return 0;
+}
+
+/*-----------------------------------------------------------------------------*
+ | Calculate properties for adaptive time step based on CFL number  bk 08/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::CalcTimeStep(
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Epetra_SerialDenseVector&       elevec1
+    )
+{
+  // ---------------------------------------------------------------------------
+  // Geometry
+  // ---------------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // Do ALE specific updates if necessary
+  if (ele->IsAle())
+    dserror("The adaptive time step is not implemented for Ale flow up to now. How is the CFL number defined with Ale? Update and test yourself, it is easy.");
+
+  // evaluate shape functions and derivatives element center
+  EvalShapeFuncAndDerivsAtEleCenter();
+
+  // np_genalpha: additional vector for velocity at time n+1
+  LINALG::Matrix<nsd_,nen_> evelnp(true);
+
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
+
+  LINALG::Matrix<nsd_,1> velint(true);
+  velint.Multiply(evelnp,funct_);
+
+  //calculate element length via the stream length definition, see corresponding implementation
+  //in fluid_ele_calc for calculation of the stabilization parameter
+  double h=0.0;
+  double vel_norm=velint.Norm2();
+  if(vel_norm>1.0e-6)
+  {
+    LINALG::Matrix<nsd_,1> velino(true);
+    velino.Update(1.0/vel_norm,velint);
+
+    // get streamlength using the normed velocity at element centre
+    LINALG::Matrix<nen_,1> tmp;
+    tmp.MultiplyTN(derxy_,velino);
+    const double val = tmp.Norm1();
+    h = 2.0/val; // h=streamlength
+
+    elevec1[0] = h/vel_norm;
+  }
+  else
+    elevec1[0] = 1.0e12;
 
   return 0;
 }
