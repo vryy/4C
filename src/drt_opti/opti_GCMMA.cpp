@@ -2298,6 +2298,8 @@ void OPTI::GCMMA::Output()
   // step number and time
   output_->NewStep(total_iter_,(double)total_iter_);
 
+  // for result test distinction between element and node based vector required
+  // for restart and standard output not, so only current objective variable distincted
   if (dens_type_==INPAR::TOPOPT::dens_node_based)
     output_->WriteVector("x_mma_n",x_mma_);
   else if (dens_type_==INPAR::TOPOPT::dens_ele_based)
@@ -2435,10 +2437,15 @@ Teuchos::RCP<IO::DiscretizationReader> OPTI::GCMMA::ReadRestart(int step)
   inner_iter_ = reader->ReadInt("in_it");
 
   // optimization algorithm data - part 1 (Epetra_Vector)
+  if (dens_type_==INPAR::TOPOPT::dens_node_based)
+    output_->WriteVector("x_mma_n",x_mma_);
+  else if (dens_type_==INPAR::TOPOPT::dens_ele_based)
+    output_->WriteVector("x_mma_e",x_mma_);
+  else
+    dserror("undefined type of optimization field");
   reader->ReadVector(x_,"x");
   reader->ReadVector(x_old_, "x_old");
   reader->ReadVector(x_old2_,"x_old2");
-  reader->ReadVector(x_mma_,"x_mma");
   reader->ReadVector(xsi_,"xsi");
   reader->ReadVector(eta_,"eta");
   reader->ReadVector(asymp_max_,"asymp_max");
