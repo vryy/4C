@@ -1226,8 +1226,6 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
     typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
     if ((int)(cnode->MoData().GetD().size())==0)

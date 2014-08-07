@@ -1355,9 +1355,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
   bool duallin = false;
@@ -2871,7 +2868,6 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   }
 
   // prepare linearizations
-  typedef std::map<int,double>::const_iterator      CI;
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // *********************************************************************
@@ -3114,7 +3110,6 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   fac_ymsl_gp -= sgpx[1];
 
   // prepare linearization
-  typedef std::map<int,double>::const_iterator      CI;
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // build directional derivative of slave GP coordinates
@@ -4109,7 +4104,6 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
      int nintrow)
 {
   // map iterator
-  typedef std::map<int,double>::const_iterator CI;
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // get slave element nodes themselves

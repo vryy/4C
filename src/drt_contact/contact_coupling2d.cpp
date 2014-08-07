@@ -478,7 +478,6 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     }
 
     // map iterator
-    typedef std::map<int,double>::const_iterator CI;
     typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
     // no overlap: the applied dual shape functions don't matter, as the integration domain is void

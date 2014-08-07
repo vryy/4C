@@ -103,7 +103,7 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
   if (hasdata != 0)
   {
     int dentries[3] =
-    { drowsold_[0].size(), drowsold_[1].size(), drowsold_[2].size() };
+    { (int)drowsold_[0].size(), (int)drowsold_[1].size(), (int)drowsold_[2].size() };
     DRT::ParObject::AddtoPack(data, dentries, 3 * sizeof(int));
 
     for (int i = 0; i < hasdata; i++)
