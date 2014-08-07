@@ -411,61 +411,61 @@ void DRT::UTILS::LineGPToParentGP(
       derivtrafo(0,1)= 1.0;
       break;
     }
-    else if( (distype==DRT::Element::line2 && pdistype==DRT::Element::tri3) or
-        (distype==DRT::Element::line3 && pdistype==DRT::Element::tri6) )
-    {
-      switch(lineid)
-      {
-      case 0:
-      {
-        // s=0
-        /*
-                    parent               line
-
-                 s|
-                  |
-
-                2 +
-                  |
-                  |
-                  |             r
-                  +-------+  -----      +-------+   -----r
-                 0        1             0       1
-         */
-
-        for (int iquad=0;iquad<pqxg.M();++iquad)
-        {
-          pqxg(iquad,0)= 0.5 + 0.5 * intpoints.Point(iquad)[0];
-          pqxg(iquad,1)= 0.0;
-        }
-        break;
-      }
-      case 1:
-      {
-        // 1-r-s=0
-        for (int iquad=0;iquad<pqxg.M();++iquad)
-        {
-          pqxg(iquad,0)= 0.5 - 0.5 * intpoints.Point(iquad)[0];
-          pqxg(iquad,1)= 0.5 + 0.5 * intpoints.Point(iquad)[0];
-        }
-        break;
-      }
-      case 2:
-      {
-        // r=0
-        for (int iquad=0;iquad<pqxg.M();++iquad)
-        {
-          pqxg(iquad,0)= 0.0;
-          pqxg(iquad,1)= 0.5 - 0.5 * intpoints.Point(iquad)[0];
-        }
-        break;
-      }
-      default:
-        dserror("invalid number of surfaces, unable to determine intpoint in parent");
-      }
-    }
     default:
       dserror("invalid number of lines, unable to determine intpoint in parent");
+    }
+  }
+  else if( (distype==DRT::Element::line2 && pdistype==DRT::Element::tri3) or
+      (distype==DRT::Element::line3 && pdistype==DRT::Element::tri6) )
+  {
+    switch(lineid)
+    {
+    case 0:
+    {
+      // s=0
+      /*
+                  parent               line
+
+               s|
+                |
+
+              2 +
+                |
+                |
+                |             r
+                +-------+  -----      +-------+   -----r
+               0        1             0       1
+       */
+
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 0.5 + 0.5 * intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= 0.0;
+      }
+      break;
+    }
+    case 1:
+    {
+      // 1-r-s=0
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 0.5 - 0.5 * intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= 0.5 + 0.5 * intpoints.Point(iquad)[0];
+      }
+      break;
+    }
+    case 2:
+    {
+      // r=0
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 0.0;
+        pqxg(iquad,1)= 0.5 - 0.5 * intpoints.Point(iquad)[0];
+      }
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
     }
   }
   else
