@@ -496,6 +496,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"SHAPEFCN");
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
+  INPAR::CONTACT::SystemType      systype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact,"SYSTEM");
 
   // check mortar contact or meshtying conditions
   std::vector<DRT::Condition*> mortarconditions(0);
@@ -583,14 +584,14 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // visualization of initial configuration
 #ifdef MORTARGMSH3
-    if(cman_ != Teuchos::null)
+    if(cmtbridge_ != Teuchos::null)
     {
-      cmtman_->GetStrategy().VisualizeGmsh(0,0);
+      cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
     }
 
-    if(mtman_ != Teuchos::null)
+    if(cmtbridge_ != Teuchos::null)
     {
-      mtman_->GetStrategy().VisualizeGmsh(0,0);
+      cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
     }
 #endif // #ifdef MORTARGMSH3
 
@@ -653,31 +654,123 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     }
 
-    // output of strategy type to screen
+    // output of strategy / shapefcn / system type to screen
     {
       // output
       if (!myrank_)
       {
-        if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
-          std::cout << "===== Standard Lagrange multiplier strategy ====================\n" << std::endl;
-        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
-          std::cout << "===== Dual Lagrange multiplier strategy ========================\n" << std::endl;
-        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
-          std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n" << std::endl;
-        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
-          std::cout << "===== Standard Penalty strategy ================================\n" << std::endl;
-        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
-          std::cout << "===== Dual Penalty strategy ====================================\n" << std::endl;
-        else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
-          std::cout << "===== Standard Augmented Lagrange strategy =====================\n" << std::endl;
-        else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
-          std::cout << "===== Dual Augmented Lagrange strategy =========================\n" << std::endl;
+        // saddle point formulation
+        if (systype == INPAR::CONTACT::system_saddlepoint)
+        {
+          if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Standard Lagrange multiplier strategy ====================" << std::endl;
+            std::cout << "===== (Saddle point formulation)            ====================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Dual Lagrange multiplier strategy ========================" << std::endl;
+            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
+            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Standard Penalty strategy ================================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Dual Penalty strategy ====================================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Standard Augmented Lagrange strategy =====================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Dual Augmented Lagrange strategy =========================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+        }
+
+        // condensed formulation
+        else if (systype == INPAR::CONTACT::system_condensed)
+        {
+          if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Dual Lagrange multiplier strategy ========================" << std::endl;
+            std::cout << "===== (Condensed formulation) ==================================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
+            std::cout << "===== (Condensed formulation) ==================================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Standard Penalty strategy ================================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Dual Penalty strategy ====================================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Standard Augmented Lagrange strategy =====================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Dual Augmented Lagrange strategy =========================" << std::endl;
+            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+        }
+
+        // invalid system type
+        else dserror("ERROR: Invalid system type for contact/meshtying");
       }
     }
   }
 
   return;
 }
+
 /*----------------------------------------------------------------------*/
 /* Check for semi-smooth Newton type of plasticity and do preparations */
 void STR::TimInt::PrepareSemiSmoothPlasticity()
