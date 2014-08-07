@@ -314,17 +314,17 @@ mastermaxeleid_(0)
     dserror("Coupling with Aero code is only implemented for 3D problems!!");
 
   // build references to the discret, map and map extractors for mechanical coupling ...
-  std::vector<Teuchos::RCP<DRT::Discretization> >& idis  = istructdis_;
-  std::vector<Teuchos::RCP<const Epetra_Map> >& idofredumap = istructdofredumap_;
-  std::vector<Teuchos::RCP<const LINALG::MapExtractor> >& rowmapext = structrowmapext_;
-  std::vector<Teuchos::RCP<const Epetra_Import> >& iproc0importer = istructproc0importer_;
+  std::vector<Teuchos::RCP<DRT::Discretization> >* idis  = &istructdis_;
+  std::vector<Teuchos::RCP<const Epetra_Map> >* idofredumap = &istructdofredumap_;
+  std::vector<Teuchos::RCP<const LINALG::MapExtractor> >* rowmapext = &structrowmapext_;
+  std::vector<Teuchos::RCP<const Epetra_Import> >* iproc0importer = &istructproc0importer_;
   // ... or for thermal coupling
   if(mechanical == false)
   {
-    idis = ithermodis_;
-    idofredumap = ithermodofredumap_;
-    rowmapext = thermorowmapext_;
-    iproc0importer = ithermoproc0importer_;
+    idis = &ithermodis_;
+    idofredumap = &ithermodofredumap_;
+    rowmapext = &thermorowmapext_;
+    iproc0importer = &ithermoproc0importer_;
   }
 
   // call the TSI parameter list
@@ -439,25 +439,25 @@ mastermaxeleid_(0)
     inewdis->FillComplete(true, false, false);
 
     //storage of the newly created interface discretization
-    idis.push_back(inewdis);
+    idis->push_back(inewdis);
 
     //storage of useful dof maps
-    idofredumap.push_back(Teuchos::rcp(inewdis->DofColMap(), false));
+    idofredumap->push_back(Teuchos::rcp(inewdis->DofColMap(), false));
 
     // map extractor for the communication between the full structural/thermo field and the newly created structural/thermo surf discret
-    rowmapext.push_back(Teuchos::rcp(new LINALG::MapExtractor(*(dis->DofRowMap()),Teuchos::rcp(inewdis->DofRowMap(), false))));
+    rowmapext->push_back(Teuchos::rcp(new LINALG::MapExtractor(*(dis->DofRowMap()),Teuchos::rcp(inewdis->DofRowMap(), false))));
 
     // importer in order to contract result values on proc0 for communication with INCA (proc0 gets everything, other procs empty)
     Teuchos::RCP<Epetra_Map> proc0datamap = LINALG::AllreduceEMap(*inewdis->DofRowMap(),0);
-    iproc0importer.push_back(Teuchos::rcp(new Epetra_Import (*proc0datamap,*idis[interf]->DofRowMap())));
+    iproc0importer->push_back(Teuchos::rcp(new Epetra_Import (*proc0datamap,*(*idis)[interf]->DofRowMap())));
 
     // find largest dof/node/element id in TSI problem for offset in mortar
     mastermaxdof_ = std::max(mastermaxdof_, dis->DofRowMap()->MaxAllGID() + 1);
     mastermaxnodeid_ = std::max(mastermaxnodeid_, dis->NodeRowMap()->MaxAllGID() + 1);
-    mastermaxeleid_ = std::max(mastermaxeleid_, istructdis_[interf]->ElementRowMap()->MaxAllGID() + 1);
+    mastermaxeleid_ = std::max(mastermaxeleid_, (*idis)[interf]->ElementRowMap()->MaxAllGID() + 1);
 
     // build mortar interface and fill it initially with fully redundant master side (=structural side)
-    const Epetra_Comm& lcomm = idis[interf]->Comm();
+    const Epetra_Comm& lcomm = (*idis)[interf]->Comm();
 
     // set useful parameters for mortar coupling
     Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
@@ -470,12 +470,12 @@ mastermaxeleid_(0)
     // feeding master nodes to the interface including ghosted nodes
     // transfer of three degrees of freedom per node
     std::vector<int> dofids(dofpernode_);
-    for(int lid=0; lid<idis[interf]->NumMyColNodes(); lid++)
+    for(int lid=0; lid<(*idis)[interf]->NumMyColNodes(); lid++)
     {
-      DRT::Node* node = idis[interf]->lColNode(lid);
+      DRT::Node* node = (*idis)[interf]->lColNode(lid);
       // get the dofs of the structural node
       for (int k=0; k<dofpernode_; ++k)
-       dofids[k] = idis[interf]->Dof(node)[k];
+       dofids[k] = (*idis)[interf]->Dof(node)[k];
 
       Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
          node->X(), node->Owner(), dofpernode_, dofids, false));
@@ -484,9 +484,9 @@ mastermaxeleid_(0)
     }
 
     // feeding master elements to the interface
-    for(int lid=0; lid<idis[interf]->NumMyColElements(); ++lid)
+    for(int lid=0; lid<(*idis)[interf]->NumMyColElements(); ++lid)
     {
-     DRT::Element* currele = idis[interf]->lColElement(lid);
+     DRT::Element* currele = (*idis)[interf]->lColElement(lid);
      Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(currele->Id(),
          currele->Owner(), currele->Shape(), currele->NumNode(), currele->NodeIds(), false));
 

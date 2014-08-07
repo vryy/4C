@@ -107,7 +107,6 @@ FS3I::AeroTFSI::AeroTFSI(
   }
   case INPAR::TSI::ConjHeatTransfer:
   {
-    dserror("not yet tested");
     // access the thermal discretization
     Teuchos::RCP<DRT::Discretization> thermodis = DRT::Problem::Instance()->GetDis("thermo");
 
