@@ -577,12 +577,21 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 // =================================================================================
   if (NULL != actdis->GetCondition("VolumetricSurfaceFlowCond"))
   {
-      if (prb_fluid_redmodels != probtype)
+      if ( not(prb_fluid_redmodels == probtype or prb_fsi_redmodels == probtype) )
       {
-        dserror("ERROR: Given Volumetric Womersly infow condition only works with Problemtyp Fluid_RedModels. \n"
-            " --> If you want to use this conditions change Problemtyp to Fluid_RedModels. \n"
+        dserror("ERROR: Given Volumetric Womersly infow condition only works with Problemtyp Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
+            " --> If you want to use this conditions change Problemtyp to Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
             " --> If you don't want to use this condition comment the respective bcFluid section." );
       }
+      if (prb_fsi_redmodels == probtype)
+        {
+          const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+          const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+          if (coupling == fsi_iter_monolithicfluidsplit)
+            {
+              dserror("ERROR: Volumetric infow condition in Fluid_Structure_Interaction_RedModels seems not to work with FSI fluidsplit. Don't know why, but you can go and fix it!");
+            }
+        }
   }
 
 //  if ( prb_fluid_redmodels != probtype)
@@ -803,7 +812,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_fsi_redmodels:
     { //
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-      std::cout << "\n Warning: FSI_RedModels has never been tested. Test it! \n" << std::endl;
+      std::cout << "\n Warning: FSI_RedModels is little tested. Keep testing! \n" << std::endl;
       if(timeint == INPAR::FLUID::timeint_stationary)
         tmpfluid = Teuchos::rcp(new FLD::TimIntRedModelsStat(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_one_step_theta)
