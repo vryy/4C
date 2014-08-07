@@ -2437,12 +2437,9 @@ Teuchos::RCP<IO::DiscretizationReader> OPTI::GCMMA::ReadRestart(int step)
   inner_iter_ = reader->ReadInt("in_it");
 
   // optimization algorithm data - part 1 (Epetra_Vector)
-  if (dens_type_==INPAR::TOPOPT::dens_node_based)
-    output_->WriteVector("x_mma_n",x_mma_);
-  else if (dens_type_==INPAR::TOPOPT::dens_ele_based)
-    output_->WriteVector("x_mma_e",x_mma_);
-  else
-    dserror("undefined type of optimization field");
+  if (dens_type_==INPAR::TOPOPT::dens_node_based)     reader->ReadVector(x_mma_,"x_mma_n");
+  else if (dens_type_==INPAR::TOPOPT::dens_ele_based) reader->ReadVector(x_mma_,"x_mma_e");
+  else                                                dserror("undefined type of optimization field");
   reader->ReadVector(x_,"x");
   reader->ReadVector(x_old_, "x_old");
   reader->ReadVector(x_old2_,"x_old2");
