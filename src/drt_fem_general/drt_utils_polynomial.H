@@ -262,7 +262,6 @@ namespace UTILS
   /*!
    \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
    */
-  inline
   std::vector<LagrangePolynomial> generateLagrangeBasis1D (const unsigned int degree);
 
 
@@ -274,7 +273,6 @@ namespace UTILS
    to the usual mathematical definition, we also scale the polynomials such that
    they are actually orthonormal on the unit interval.
    */
-  inline
   std::vector<Polynomial> generateLegendreBasis1D (const unsigned int degree);
 
 
