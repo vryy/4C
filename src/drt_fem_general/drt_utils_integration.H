@@ -33,10 +33,10 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15235
 </pre>
 */
 #ifndef UTILS_INTEGRATION_H
@@ -186,9 +186,9 @@ enum GaussRule1D
     intrule_line_8point,           ///< degree of precision: 15 (open)
     intrule_line_9point,           ///< degree of precision: 17 (open)
     intrule_line_10point,          ///< degree of precision: 19 (open)
-    intrule_line_16point,					 ///< degree of precision: 31 (open)
+    intrule_line_16point,          ///< degree of precision: 31 (open)
     intrule_line_20point,          ///< degree of precision: 39 (open)
-    intrule_line_32point,					 ///< degree of precision: 63 (open)
+    intrule_line_32point,          ///< degree of precision: 63 (open)
     intrule_line_lobatto2point,    ///< degree of precision: 1  (closed)
     intrule_line_lobatto3point,    ///< degree of precision: 3  (closed)
     intrule_line_lobatto4point,    ///< degree of precision: 5  (closed)
@@ -197,7 +197,11 @@ enum GaussRule1D
     intrule_line_lobatto7point,    ///< degree of precision: 11 (closed)
     intrule_line_lobatto8point,    ///< degree of precision: 13 (closed)
     intrule_line_lobatto9point,    ///< degree of precision: 15 (closed)
-    intrule_line_lobatto10point    ///< degree of precision: 17 (closed)
+    intrule_line_lobatto10point,   ///< degree of precision: 17 (closed)
+    intrule_line_lobatto11point,   ///< degree of precision: 19 (closed)
+    intrule_line_lobatto12point,   ///< degree of precision: 21 (closed)
+    intrule_line_lobatto13point,   ///< degree of precision: 23 (closed)
+    intrule_line_lobatto14point    ///< degree of precision: 25 (closed)
 
 };
 

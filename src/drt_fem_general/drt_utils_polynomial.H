@@ -15,8 +15,9 @@ Maintainer: Martin Kronbichler
 #ifndef DRT_UTILS_POLYNOMIAL
 #define DRT_UTILS_POLYNOMIAL
 
-#include "drt_utils_integration.H"
 #include "drt_utils_local_connectivity_matrices.H"
+
+#include "Epetra_SerialDenseSolver.h"
 
 namespace DRT
 {
@@ -166,73 +167,10 @@ namespace UTILS
 
 
   /*!
-   \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
-   */
-  inline
-  std::vector<LagrangePolynomial> generateLagrangeBasis1D (const unsigned int degree)
-  {
-    std::vector<LagrangePolynomial> poly1d;
-    if (degree==0)
-    {
-      poly1d.push_back(DRT::UTILS::LagrangePolynomial(std::vector<double>(), 0.));
-      return poly1d;
-    }
-
-    dsassert(degree<10, "Not implemented");
-    DRT::UTILS::IntegrationPoints1D gaussLobattoPoints
-      (DRT::UTILS::GaussRule1D(DRT::UTILS::intrule_line_lobatto2point+degree-1));
-    std::vector<double> points(degree);
-    for (unsigned int i=0; i<=degree; ++i)
-    {
-      for (unsigned int j=0, c=0; j<=degree; ++j)
-        if (i!=j) {
-          points[c] = gaussLobattoPoints.qxg[j][0];
-          ++c;
-        }
-      poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
-    }
-    return poly1d;
-  }
-
-
-
-  /*!
-   \brief generates complete Lagrange basis in 1D for [0,1]-based elements (TET)
-   */
-  inline
-  std::vector<LagrangePolynomial> generateLagrangeBasisTET1D (const unsigned int degree)
-  {
-    std::vector<LagrangePolynomial> poly1d;
-    if (degree==0)
-    {
-      poly1d.push_back(DRT::UTILS::LagrangePolynomial(std::vector<double>(), 0.));
-      return poly1d;
-    }
-
-    dsassert(degree<10, "Not implemented");
-    DRT::UTILS::IntegrationPoints1D gaussLobattoPoints
-      (DRT::UTILS::GaussRule1D(DRT::UTILS::intrule_line_lobatto2point+degree-1));
-    std::vector<double> points(degree);
-    for (unsigned int i=0; i<=degree; ++i)
-    {
-      // need to transform the Gauss points from [-1,1] to the interval [0,1]
-      for (unsigned int j=0, c=0; j<=degree; ++j)
-        if (i!=j) {
-          points[c] = 0.5 + 0.5 * gaussLobattoPoints.qxg[j][0];
-          ++c;
-        }
-      poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
-    }
-    return poly1d;
-  }
-
-
-
-  /*!
    \brief A class of polynomials based on monomial coefficients
 
-   This class takes a vector of coefficients of the monomials and creates a
-   polynomial from them. The evaluation is done by the Horner scheme.
+   This class takes a vector of coefficients of the monomials and evaluates a
+   polynomial from these coefficients. The evaluation is done by the Horner scheme.
    */
   class Polynomial
   {
@@ -308,7 +246,7 @@ namespace UTILS
         derivatives(k) = 0;
     }
 
-    // Here, we do not know a node, so put the center of the 1d element
+    // Here, we do not know about nodes, so put the center of the 1d element
     double NodePoint() const
     {
       return 0.;
@@ -322,6 +260,14 @@ namespace UTILS
 
 
   /*!
+   \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
+   */
+  inline
+  std::vector<LagrangePolynomial> generateLagrangeBasis1D (const unsigned int degree);
+
+
+
+  /*!
    \brief generates complete Legendre basis in 1D
 
    Legendre polynomials are orthogonal on the unit interval [-1, 1]. As opposed
@@ -329,48 +275,7 @@ namespace UTILS
    they are actually orthonormal on the unit interval.
    */
   inline
-  std::vector<Polynomial> generateLegendreBasis1D (const unsigned int degree)
-  {
-    // Legendre polynomials are defined recursively by the following scheme:
-    // L_0 (x) = 1
-    // L_1 (x) = x
-    // L_n (x) = (2n-1)/n * x * L_{n-1} (x) - (n-1)/n * L_{n-2}(x), n>=2
-    // (This is usually referred to as Bonnet's recursion formula)
-
-    std::vector<Polynomial> polynomials;
-
-    std::vector<double> coefficients(1, 1.);
-    polynomials.push_back(Polynomial(coefficients));
-    if (degree == 0)
-      return polynomials;
-
-    std::vector<double> coefficients_n1(2, 0.);
-    coefficients_n1[1] = 1.;
-    for (unsigned int n=2; ; ++n)
-    {
-      dsassert(coefficients_n1.size() == n, "Internal error");
-      {
-        // Scale coefficients to make polynomials orthonormal
-        std::vector<double> scaledCoefficients(coefficients_n1);
-        for (unsigned int q=0; q<scaledCoefficients.size(); ++q)
-          scaledCoefficients[q] *= (2.*n-1.)*0.5;
-        polynomials.push_back(Polynomial(scaledCoefficients));
-      }
-
-      if (n > degree)
-        break;
-
-      coefficients.resize(n+1);
-      for (unsigned int i=0; i<n-1; ++i)
-        coefficients[i] *= -static_cast<double>(n-1) / n;
-      for (unsigned int i=0; i<n; ++i)
-        coefficients[i+1] += coefficients_n1[i] * static_cast<double>(2*n-1) / n;
-
-      coefficients.swap(coefficients_n1);
-    }
-
-    return polynomials;
-  }
+  std::vector<Polynomial> generateLegendreBasis1D (const unsigned int degree);
 
 
 
@@ -465,182 +370,30 @@ namespace UTILS
     }
 
     /*
-     \brief Evaluates the values of all polynomials on the given point
+     \brief Evaluates the values of the whole polynomial space in the given point
      */
     virtual void Evaluate (const LINALG::Matrix<nsd_,1> &point,
-                           Epetra_SerialDenseVector     &values) const
-    {
-      Evaluate<Epetra_SerialDenseVector>(point, values);
-    }
+                           Epetra_SerialDenseVector     &values) const;
 
     /*
-     \brief Evaluates the values of all polynomials on the given point
-     */
-    template <typename M>
-    void Evaluate(const LINALG::Matrix<nsd_,1> &point,
-                  M                            &values) const
-    {
-      const unsigned int size = polySpace1d_.size();
-      dsassert(size < 20, "Not implemented");
-
-      // avoid memory allocation by allocating values on the stack
-      double evaluation[nsd_][20];
-      for (unsigned int i=0; i<size; ++i)
-        for (unsigned int d=0; d<nsd_; ++d)
-          evaluation[d][i] = polySpace1d_[i].Evaluate(point(d));
-
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size; ++j)
-            for (unsigned int k=0; k<size; ++k)
-              values(renumbering_[i*size*size+j*size+k]) =
-                  evaluation[2][i] * evaluation[1][j] * evaluation[0][k];
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size; ++k)
-            values(renumbering_[j*size+k]) =
-                evaluation[1][j] * evaluation[0][k];
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k)
-          values(renumbering_[k]) =
-              evaluation[0][k];
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-    }
-
-    /*
-     \brief Evaluates the values of all polynomials on the given point
+     \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv1 (const LINALG::Matrix<nsd_,1> &point,
-                                  Epetra_SerialDenseMatrix     &derivatives) const
-    {
-      Evaluate_deriv1<Epetra_SerialDenseMatrix>(point, derivatives);
-    }
+                                  Epetra_SerialDenseMatrix     &derivatives) const;
 
     /*
-     \brief Evaluates the first derivative of all polynomials on the given point
-     */
-    template <typename M>
-    void Evaluate_deriv1(const LINALG::Matrix<nsd_,1> &point,
-                         M                            &derivatives) const
-    {
-      const unsigned int size = polySpace1d_.size();
-      dsassert(size < 20, "Not implemented");
-
-      // avoid memory allocation by allocating values on the stack
-      double evaluation[nsd_][20], gradient[nsd_][20];
-      LINALG::TMatrix<double,2,1> eval;
-      for (unsigned int i=0; i<size; ++i)
-        for (unsigned int d=0; d<nsd_; ++d) {
-          polySpace1d_[i].Evaluate(point(d), eval);
-          evaluation[d][i] = eval(0);
-          gradient[d][i] = eval(1);
-        }
-
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size; ++j)
-            for (unsigned int k=0; k<size; ++k) {
-              derivatives(0,renumbering_[i*size*size+j*size+k]) =
-                  evaluation[2][i] * evaluation[1][j] * gradient[0][k];
-              derivatives(1,renumbering_[i*size*size+j*size+k]) =
-                  evaluation[2][i] * gradient[1][j] * evaluation[0][k];
-              derivatives(2,renumbering_[i*size*size+j*size+k]) =
-                  gradient[2][i] * evaluation[1][j] * evaluation[0][k];
-            }
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size; ++k) {
-            derivatives(0,renumbering_[j*size+k]) = evaluation[1][j] * gradient[0][k];
-            derivatives(1,renumbering_[j*size+k]) = gradient[1][j] * evaluation[0][k];
-          }
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k)
-          derivatives(0,renumbering_[k]) = gradient[0][k];
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-    }
-
-    /*
-     \brief Evaluates the first derivative of all polynomials on the given point
+     \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
-                                 Epetra_SerialDenseMatrix     &derivatives) const
-    {
-      Evaluate_deriv2<Epetra_SerialDenseMatrix>(point, derivatives);
-    }
+                                 Epetra_SerialDenseMatrix     &derivatives) const;
 
     /*
-     \brief Evaluates the first derivative of all polynomials on the given point
+     \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     template <typename M>
     void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
                          M                            &derivatives) const
     {
-      const unsigned int size = polySpace1d_.size();
-      dsassert(size < 20, "Not implemented");
-
-      // avoid memory allocation by allocating values on the stack
-      double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-      LINALG::TMatrix<double,3,1> eval;
-      for (unsigned int i=0; i<size; ++i)
-        for (unsigned int d=0; d<nsd_; ++d) {
-          polySpace1d_[i].Evaluate(point(d), eval);
-          evaluation[d][i] = eval(0);
-          gradient[d][i] = eval(1);
-          hessian[d][i] = eval(2);
-        }
-
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size; ++j)
-            for (unsigned int k=0; k<size; ++k) {
-              derivatives(0,renumbering_[i*size*size+j*size+k]) =
-                  evaluation[2][i] * evaluation[1][j] * hessian[0][k];
-              derivatives(1,renumbering_[i*size*size+j*size+k]) =
-                  evaluation[2][i] * hessian[1][j] * evaluation[0][k];
-              derivatives(2,renumbering_[i*size*size+j*size+k]) =
-                  hessian[2][i] * evaluation[1][j] * evaluation[0][k];
-              derivatives(3,renumbering_[i*size*size+j*size+k]) =
-                  evaluation[2][i] * gradient[1][j] * gradient[0][k];
-              derivatives(4,renumbering_[i*size*size+j*size+k]) =
-                  gradient[2][i] * evaluation[1][j] * gradient[0][k];
-              derivatives(5,renumbering_[i*size*size+j*size+k]) =
-                  gradient[2][i] * gradient[1][j] * evaluation[0][k];
-            }
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size; ++k) {
-            derivatives(0,renumbering_[j*size+k]) = evaluation[1][j] * hessian[0][k];
-            derivatives(1,renumbering_[j*size+k]) = hessian[1][j] * evaluation[0][k];
-            derivatives(2,renumbering_[j*size+k]) = gradient[1][j] * gradient[0][k];
-          }
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k)
-          derivatives(0,renumbering_[k]) = hessian[0][k];
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
     }
 
     /*
@@ -675,40 +428,7 @@ namespace UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
-    {
-      matrix.Shape(nsd_, Size());
-
-      const unsigned int size = polySpace1d_.size();
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size; ++j)
-            for (unsigned int k=0; k<size; ++k)
-            {
-              matrix(0,renumbering_[i*size*size+j*size+k]) = polySpace1d_[k].NodePoint();
-              matrix(1,renumbering_[i*size*size+j*size+k]) = polySpace1d_[j].NodePoint();
-              matrix(2,renumbering_[i*size*size+j*size+k]) = polySpace1d_[i].NodePoint();
-            }
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size; ++k)
-          {
-            matrix(0,renumbering_[j*size+k]) = polySpace1d_[k].NodePoint();
-            matrix(1,renumbering_[j*size+k]) = polySpace1d_[j].NodePoint();
-          }
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k)
-          matrix(0,renumbering_[k]) = polySpace1d_[k].NodePoint();
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-    }
+    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const;
 
   private:
     std::vector<POLY> polySpace1d_;
@@ -767,234 +487,27 @@ namespace UTILS
     }
 
     /*
-     \brief Evaluates the values of all polynomials on the given point
+     \brief Evaluates the values of the whole polynomial space in the given point
      */
     virtual void Evaluate (const LINALG::Matrix<nsd_,1> &point,
-                           Epetra_SerialDenseVector     &values) const
-    {
-      Evaluate<Epetra_SerialDenseVector>(point, values);
-    }
+                           Epetra_SerialDenseVector     &values) const;
 
     /*
-     \brief Evaluates the values of all polynomials on the given point
-     */
-    template <typename M>
-    void Evaluate(const LINALG::Matrix<nsd_,1> &point,
-                  M                            &values) const
-    {
-      const unsigned int size = polySpace1d_.size();
-      dsassert(size < 20, "Not implemented");
-
-      // avoid memory allocation by allocating values on the stack
-      double evaluation[nsd_][20];
-      for (unsigned int i=0; i<size; ++i)
-        for (unsigned int d=0; d<nsd_; ++d)
-          evaluation[d][i] = polySpace1d_[i].Evaluate(point(d));
-
-      unsigned int c=0;
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size-i; ++j)
-            for (unsigned int k=0; k<size-i-j; ++k, ++c)
-              values(renumbering_[c]) =
-                  evaluation[2][i] * evaluation[1][j] * evaluation[0][k];
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size-j; ++k, ++c)
-            values(renumbering_[c]) =
-                evaluation[1][j] * evaluation[0][k];
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k, ++c)
-          values(renumbering_[k]) = evaluation[0][k];
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-
-      dsassert(c==Size(), "Internal error");
-    }
-
-    /*
-     \brief Evaluates the values of all polynomials on the given point
+     \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv1 (const LINALG::Matrix<nsd_,1> &point,
-                                  Epetra_SerialDenseMatrix     &derivatives) const
-    {
-      Evaluate_deriv1<Epetra_SerialDenseMatrix>(point, derivatives);
-    }
+                                  Epetra_SerialDenseMatrix     &derivatives) const;
 
     /*
-     \brief Evaluates the first derivative of all polynomials on the given point
-     */
-    template <typename M>
-    void Evaluate_deriv1(const LINALG::Matrix<nsd_,1> &point,
-                         M                            &derivatives) const
-    {
-      const unsigned int size = polySpace1d_.size();
-      dsassert(size < 20, "Not implemented");
-
-      // avoid memory allocation by allocating values on the stack
-      double evaluation[nsd_][20], gradient[nsd_][20];
-      LINALG::TMatrix<double,2,1> eval;
-      for (unsigned int i=0; i<size; ++i)
-        for (unsigned int d=0; d<nsd_; ++d) {
-          polySpace1d_[i].Evaluate(point(d), eval);
-          evaluation[d][i] = eval(0);
-          gradient[d][i] = eval(1);
-        }
-
-      unsigned int c=0;
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size-i; ++j)
-            for (unsigned int k=0; k<size-i-j; ++k, ++c)
-            {
-              derivatives(0,renumbering_[c]) =
-                  evaluation[2][i] * evaluation[1][j] * gradient[0][k];
-              derivatives(1,renumbering_[c]) =
-                  evaluation[2][i] * gradient[1][j] * evaluation[0][k];
-              derivatives(2,renumbering_[c]) =
-                  gradient[2][i] * evaluation[1][j] * evaluation[0][k];
-            }
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size-j; ++k, ++c)
-          {
-            derivatives(0,renumbering_[c]) = evaluation[1][j] * gradient[0][k];
-            derivatives(1,renumbering_[c]) = gradient[1][j] * evaluation[0][k];
-          }
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k, ++c)
-          derivatives(0,renumbering_[k]) = gradient[0][k];
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-
-      dsassert(c==Size(), "Internal error");
-    }
-
-    /*
-     \brief Evaluates the first derivative of all polynomials on the given point
+     \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
-                                 Epetra_SerialDenseMatrix     &derivatives) const
-    {
-      Evaluate_deriv2<Epetra_SerialDenseMatrix>(point, derivatives);
-    }
-
-    /*
-     \brief Evaluates the first derivative of all polynomials on the given point
-     */
-    template <typename M>
-    void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
-                         M                            &derivatives) const
-    {
-      const unsigned int size = polySpace1d_.size();
-      dsassert(size < 20, "Not implemented");
-
-      // avoid memory allocation by allocating values on the stack
-      double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-      LINALG::TMatrix<double,3,1> eval;
-      for (unsigned int i=0; i<size; ++i)
-        for (unsigned int d=0; d<nsd_; ++d) {
-          polySpace1d_[i].Evaluate(point(d), eval);
-          evaluation[d][i] = eval(0);
-          gradient[d][i] = eval(1);
-          hessian[d][i] = eval(2);
-        }
-
-      unsigned int c=0;
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size-i; ++j)
-            for (unsigned int k=0; k<size-i-j; ++k, ++c)
-            {
-              derivatives(0,renumbering_[c]) =
-                  evaluation[2][i] * evaluation[1][j] * hessian[0][k];
-              derivatives(1,renumbering_[c]) =
-                  evaluation[2][i] * hessian[1][j] * evaluation[0][k];
-              derivatives(2,renumbering_[c]) =
-                  hessian[2][i] * evaluation[1][j] * evaluation[0][k];
-              derivatives(3,renumbering_[c]) =
-                  evaluation[2][i] * gradient[1][j] * gradient[0][k];
-              derivatives(4,renumbering_[c]) =
-                  gradient[2][i] * evaluation[1][j] * gradient[0][k];
-              derivatives(5,renumbering_[c]) =
-                  gradient[2][i] * gradient[1][j] * evaluation[0][k];
-            }
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size-j; ++k, ++c)
-          {
-            derivatives(0,renumbering_[c]) = evaluation[1][j] * hessian[0][k];
-            derivatives(1,renumbering_[c]) = hessian[1][j] * evaluation[0][k];
-            derivatives(2,renumbering_[c]) = gradient[1][j] * gradient[0][k];
-          }
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k, ++c)
-          derivatives(0,renumbering_[k]) = hessian[0][k];
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-      dsassert(c==Size(), "Internal error");
-    }
+                                 Epetra_SerialDenseMatrix     &derivatives) const;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
-    {
-      matrix.Shape(nsd_, Size());
-
-      const unsigned int size = polySpace1d_.size();
-      unsigned int c=0;
-      switch (nsd_)
-      {
-      case 3:
-        for (unsigned int i=0; i<size; ++i)
-          for (unsigned int j=0; j<size-i; ++j)
-            for (unsigned int k=0; k<size-i-j; ++k, ++c)
-            {
-              matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
-              matrix(1,renumbering_[c]) = polySpace1d_[j].NodePoint();
-              matrix(2,renumbering_[c]) = polySpace1d_[i].NodePoint();
-            }
-          break;
-      case 2:
-        for (unsigned int j=0; j<size; ++j)
-          for (unsigned int k=0; k<size-j; ++k, ++c)
-          {
-            matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
-            matrix(1,renumbering_[c]) = polySpace1d_[j].NodePoint();
-          }
-          break;
-      case 1:
-        for (unsigned int k=0; k<size; ++k, ++c)
-          matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
-          break;
-      default:
-        dserror("Invalid dimension");
-        break;
-      }
-      dsassert(c==Size(), "Internal error");
-    }
+    void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const;
 
   private:
     std::vector<POLY> polySpace1d_;
@@ -1009,115 +522,208 @@ namespace UTILS
    for higher order). This class is usually not directly called in user code, as
    its functionality can be accessed through PolynomialSpace<nsd_>.
   */
- template <int nsd_>
- class LagrangeBasis : public PolynomialSpaceTensor<nsd_, LagrangePolynomial>
- {
- public:
-   /*
+  template <int nsd_>
+  class LagrangeBasis : public PolynomialSpaceTensor<nsd_, LagrangePolynomial>
+  {
+  public:
+    /*
     \brief Constructor from a vector of one-dimensional polynomials
-    */
-   LagrangeBasis (const unsigned int degree)
-   :
-     PolynomialSpaceTensor<nsd_,LagrangePolynomial> (generateLagrangeBasis1D(degree))
-   {}
+     */
+    LagrangeBasis (const unsigned int degree)
+    :
+      PolynomialSpaceTensor<nsd_,LagrangePolynomial> (generateLagrangeBasis1D(degree))
+      {}
 
-   ~LagrangeBasis ()
-   {}
- };
+    ~LagrangeBasis ()
+    {}
+  };
 
 
 
- /*!
+  /*!
   \brief Class of Legendre polynomials that are pairwise orthogonal. This class
    is usually not directly called in user code, as its functionality can be
    accessed through PolynomialSpace<nsd_>.
- */
-template <int nsd_>
-class LegendreBasis : public PolynomialSpaceComplete<nsd_, Polynomial>
-{
-public:
-  /*
+  */
+  template <int nsd_>
+  class LegendreBasis : public PolynomialSpaceComplete<nsd_, Polynomial>
+  {
+  public:
+    /*
    \brief Constructor from a vector of one-dimensional polynomials
+     */
+    LegendreBasis (const unsigned int degree)
+    :
+      PolynomialSpaceComplete<nsd_,Polynomial> (generateLegendreBasis1D(degree))
+      {}
+  };
+
+
+
+  /*!
+  \brief Lagrange basis for tetrahedral elements.
+
+   This class constructs a Lagrangian basis for tetrahedral elements of arbitrary degree
+   by a transformation of Legendre polynomials onto so-called Fekete nodes, which are
+   a generalization of Gauss-Lobatto points to higher dimensions on triangules. For the
+   transformation, a Vandermonde matrix is used to map the nodeless orthonormal Legendre
+   polynomials onto the desired node distribution.
+
+   The transformation with the Vandermonde matrix is described in
+   R. Sevilla, S. Fernandez-Mendez, A. Huerta, NURBS-Enhanced Finite Element Method,
+   Arch. Comput. Methods Eng. (2011), 441-484
+
+   Author: kronbichler 08/14
    */
-  LegendreBasis (const unsigned int degree)
-  :
-    PolynomialSpaceComplete<nsd_,Polynomial> (generateLegendreBasis1D(degree))
-  {}
-};
-
-
-
-/*!
- \brief General polynomial class that encapsulates the various polynomial shapes
-
- For QUAD/HEX elements, this class allows to select between the usual tensor
- polynomial space LagrangeBasisHEX and the complete polynomial space
- LegendreBasis. For TRI/TET elements, Legendre polynomials are always used.
- We might want to implement a Lagrange basis for triangles at some point but
- for that we need a special transform to be able to use the above truncated
- tensor product.
-*/
-template <int nsd_>
-class PolynomialSpace
-{
-public:
-  PolynomialSpace (const DRT::Element::DiscretizationType distype,
-                   const unsigned int degree,
-                   const bool completeSpace)
-  :
-    // TODO: Use Legendre basis for triangles, but should rescale polynomial to interval [0,1]
-    polyspace_ (completeSpace || (getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1) ?
-                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LegendreBasis<nsd_>(degree)) :
-                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LagrangeBasis<nsd_>(degree)))
+  template <int nsd_>
+  class LagrangeBasisTet : public PolynomialSpaceBase<nsd_>
   {
-    if (nsd_ != getDimension(distype))
-      dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
-  }
+  public:
+    LagrangeBasisTet (const unsigned int degree)
+    :
+      legendre_(degree)
+    {
+      FillFeketePoints(degree);
+      ComputeVandermondeMatrices(degree);
+    }
 
-  PolynomialSpace (PolynomialSpaceParams params)
-  :
-    polyspace_ (params.completeSpace_ || (getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1) ?
-                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LegendreBasis<nsd_>(params.degree_)) :
-                static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LagrangeBasis<nsd_>(params.degree_)))
+    virtual ~LagrangeBasisTet() {}
+
+    /*
+     \brief Return the number of polynomials (over all dimensions)
+     */
+    static std::size_t Size(const std::size_t degree)
+    {
+      std::size_t size = degree+1;
+      for (unsigned int d=1; d<nsd_; ++d)
+      {
+        size *= degree+1+d;
+        size /= (d+1);      // This integer division is always without remainder
+      }
+      return size;
+    }
+
+    /*
+     \brief Return the number of polynomials (over all dimensions)
+     */
+    virtual std::size_t Size() const
+    {
+      return legendre_.Size();
+    }
+
+    /*
+     \brief Evaluates the values of the whole polynomial space in the given point
+     */
+    virtual void Evaluate (const LINALG::Matrix<nsd_,1> &point,
+                           Epetra_SerialDenseVector     &values) const;
+
+    /*
+     \brief Evaluates the first derivative of the whole polynomial space in the given point
+     */
+    virtual void Evaluate_deriv1 (const LINALG::Matrix<nsd_,1> &point,
+                                  Epetra_SerialDenseMatrix     &derivatives) const;
+
+    /*
+     \brief Evaluates the second derivative of the whole polynomial space in the given point
+     */
+    virtual void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
+                                 Epetra_SerialDenseMatrix     &derivatives) const;
+
+    /*
+     \brief Creates an array with coordinates of the nodes supporting the polynomials.
+     */
+    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+    {
+      matrix = feketePoints_;
+    }
+
+  private:
+    void FillFeketePoints(const unsigned int degree);
+    void ComputeVandermondeMatrices(const unsigned int degree);
+
+    Epetra_SerialDenseMatrix vandermonde_;
+    mutable Epetra_SerialDenseSolver vandermondeFactor_;
+    mutable Epetra_SerialDenseMatrix evaluateVec_;
+    Epetra_SerialDenseMatrix feketePoints_;
+    LegendreBasis<nsd_> legendre_;
+  };
+
+
+
+  /*!
+   \brief General polynomial class that encapsulates the various polynomial shapes
+
+   For QUAD/HEX elements, this class allows to select between the usual tensor
+   polynomial space LagrangeBasisHEX and the complete polynomial space
+   LegendreBasis. For TRI/TET elements, Legendre polynomials are always used.
+   We might want to implement a Lagrange basis for triangles at some point but
+   for that we need a special transform to be able to use the above truncated
+   tensor product.
+   */
+  template <int nsd_>
+  class PolynomialSpace
   {
-  }
+  public:
+    PolynomialSpace (const DRT::Element::DiscretizationType distype,
+                     const unsigned int degree,
+                     const bool completeSpace)
+    :
+      polyspace_ ((getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1) ?
+                  static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*> (new DRT::UTILS::LagrangeBasisTet<nsd_>(degree)) :
+                  completeSpace ?
+                  static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LegendreBasis<nsd_>(degree)) :
+                  static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LagrangeBasis<nsd_>(degree)))
+    {
+      if (nsd_ != getDimension(distype))
+        dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
+    }
 
-  /*
+    PolynomialSpace (PolynomialSpaceParams params)
+    :
+      polyspace_ ((getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1) ?
+                  static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*> (new DRT::UTILS::LagrangeBasisTet<nsd_>(params.degree_)) :
+                  params.completeSpace_ ?
+                  static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LegendreBasis<nsd_>(params.degree_)) :
+                  static_cast<DRT::UTILS::PolynomialSpaceBase<nsd_>*>(new DRT::UTILS::LagrangeBasis<nsd_>(params.degree_)))
+    {
+    }
+
+    /*
    \brief Return the number of polynomials (over all dimensions)
-   */
-  std::size_t Size() const
-  {
-    return polyspace_->Size();
-  }
+     */
+    std::size_t Size() const
+    {
+      return polyspace_->Size();
+    }
 
-  /*
+    /*
    \brief Evaluates the values of all polynomials on the given point
-   */
-  void Evaluate (const LINALG::Matrix<nsd_,1> &point,
-                 Epetra_SerialDenseVector     &values) const
-  {
-    polyspace_->Evaluate(point, values);
-  }
+     */
+    void Evaluate (const LINALG::Matrix<nsd_,1> &point,
+                   Epetra_SerialDenseVector     &values) const
+    {
+      polyspace_->Evaluate(point, values);
+    }
 
-  /*
+    /*
    \brief Evaluates the values of all polynomials on the given point
-   */
-  void Evaluate_deriv1 (const LINALG::Matrix<nsd_,1> &point,
-                        Epetra_SerialDenseMatrix     &derivatives) const
-  {
-    polyspace_->Evaluate_deriv1(point, derivatives);
-  }
+     */
+    void Evaluate_deriv1 (const LINALG::Matrix<nsd_,1> &point,
+                          Epetra_SerialDenseMatrix     &derivatives) const
+    {
+      polyspace_->Evaluate_deriv1(point, derivatives);
+    }
 
-  /*
+    /*
    \brief Evaluates the first derivative of all polynomials on the given point
-   */
-  void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
-                       Epetra_SerialDenseMatrix     &derivatives) const
-  {
-    polyspace_->Evaluate_deriv2(point, derivatives);
-  }
+     */
+    void Evaluate_deriv2(const LINALG::Matrix<nsd_,1> &point,
+                         Epetra_SerialDenseMatrix     &derivatives) const
+    {
+      polyspace_->Evaluate_deriv2(point, derivatives);
+    }
 
-  /*
+    /*
    \brief Creates an array with coordinates of the nodes supporting the polynomials.
 
    For Lagrange polynomials, these are the node points of the respective Gauss-Lobatto
@@ -1125,56 +731,56 @@ public:
    the element center coordinates.
 
    The output matrix is resized to the correct dimension.
+     */
+    void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+    {
+      polyspace_->FillUnitNodePoints(matrix);
+    }
+
+  private:
+    Teuchos::RCP<PolynomialSpaceBase<nsd_> > polyspace_;
+  };
+
+  /*!
+  \brief Cache for polynomial space so we do not need to calculate again
+
+   In analogy to GaussPointCache
+   Author: schoeder 06/14
    */
-  void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+  template <int nsd_>
+  class PolynomialSpaceCache : public DRT::SingletonDestruction
   {
-    polyspace_->FillUnitNodePoints(matrix);
-  }
+  public:
 
-private:
-  Teuchos::RCP<PolynomialSpaceBase<nsd_> > polyspace_;
-};
+    static PolynomialSpaceCache<nsd_> & Instance();
 
-/*!
- \brief Cache for polynomial space so we do not need to calculate again
+    /// cleanup
+    virtual void Done();
 
- In analogy to GaussPointCache
- Author: schoeder 06/14
- */
-template <int nsd_>
-class PolynomialSpaceCache : public DRT::SingletonDestruction
-{
-public:
+    Teuchos::RCP<PolynomialSpace<nsd_> > Create(PolynomialSpaceParams params);
 
-  static PolynomialSpaceCache<nsd_> & Instance();
+  private:
 
-  /// cleanup
-  virtual void Done();
+    static PolynomialSpaceCache<nsd_> * instance_;
 
-  Teuchos::RCP<PolynomialSpace<nsd_> > Create(PolynomialSpaceParams params);
+    /// cache of already created polynomial spaces
+    std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd_> > > ps_cache_;
+  };
 
-private:
+  /*!
+   \brief Returns the size of the polynomial space.
 
-  static PolynomialSpaceCache<nsd_> * instance_;
-
-  /// cache of already created polynomial spaces
-  std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd_> > > ps_cache_;
-};
-
-/*!
- \brief Returns the size of the polynomial space.
-
- Note: This class must always be synchronized with PolynomialSpace above!
- */
-inline
-int getBasisSize(const DRT::Element::DiscretizationType distype,
-                 const int degree,
-                 const bool completeSpace)
-{
-  const int dim = getDimension(distype);
-  const int nfaces = getNumberOfElementFaces(distype);
-  switch (dim)
+   Note: This class must always be synchronized with PolynomialSpace above!
+   */
+  inline
+  int getBasisSize(const DRT::Element::DiscretizationType distype,
+      const int degree,
+      const bool completeSpace)
   {
+    const int dim = getDimension(distype);
+    const int nfaces = getNumberOfElementFaces(distype);
+    switch (dim)
+    {
     case 3:
       if ( completeSpace || (nfaces == dim+1) )
         return LegendreBasis<3>::Size(degree);
@@ -1193,8 +799,8 @@ int getBasisSize(const DRT::Element::DiscretizationType distype,
     default:
       dserror("Invalid dimension");
       return -1;
+    }
   }
-}
 
 } // namespace UTILS
 } // namespace DRT
