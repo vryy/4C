@@ -393,12 +393,10 @@ void CONTACT::CoNode::BuildAveragedNormal()
       n_tmp[j]+=elens(j,i)/elens(4,i);
   }
 
-#ifdef CONTACTCONSTRAINTXYZ
   // modify normal in case of symmetry condition
   for (int i=0; i<3; i++)
     if (DbcDofs()[i])
       n_tmp[i]=0.;
-#endif // CONTACTCONSTRAINTXYZ
 
   // create unit normal vector
   double length = sqrt(n_tmp[0]*n_tmp[0]+n_tmp[1]*n_tmp[1]+n_tmp[2]*n_tmp[2]);
@@ -492,12 +490,10 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     adjcele->DerivNormalAtNode(Id(),i,elens,CoData().GetDerivN());
   }
 
-#ifdef CONTACTCONSTRAINTXYZ
   // modify normal in case of symmetry condition
   for (int i=0; i<3; i++)
     if (DbcDofs()[i])
       CoData().GetDerivN()[i].clear();
-#endif // CONTACTCONSTRAINTXYZ
 
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)

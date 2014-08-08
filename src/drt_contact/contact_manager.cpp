@@ -420,7 +420,6 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
             cnode->NurbsW() = cp->W();
           }
 
-#ifdef CONTACTCONSTRAINTXYZ
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
           Discret().GetCondition("mrtrsym",contactSymconditions);
@@ -432,14 +431,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
             for (unsigned k=0; k<onoff->size(); k++)
             if (onoff->at(k)==1)
             cnode->DbcDofs()[k]=true;
-          }
-#else
-          std::vector<DRT::Condition*> contactSymconditions(0);
-          Discret().GetCondition("mrtrsym", contactSymconditions);
-          if (contactSymconditions.size() != 0)
-            dserror(
-                "Contact symmetry condition only with CONTACTCONSTRAINTXYZ flag");
+#ifndef CONTACTCONSTRAINTXYZ
+             if (stype==INPAR::CONTACT::solution_lagmult)
+               dserror("Contact symmetry with Lagrange multiplier method"
+                   " only with CONTACTCONSTRAINTXYZ-flag");
 #endif
+          }
 
           // note that we do not have to worry about double entries
           // as the AddNode function can deal with this case!
@@ -475,7 +472,14 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
                   std::vector<int> >("onoff");
               for (unsigned k = 0; k < onoff->size(); k++)
                 if (onoff->at(k) == 1)
+                {
                   cnode->DbcDofs()[k] = true;
+#ifndef CONTACTCONSTRAINTXYZ
+                  if (stype==INPAR::CONTACT::solution_lagmult)
+                    dserror("Contact symmetry with Lagrange multiplier method "
+                        "only with CONTACTCONSTRAINTXYZ-flag");
+#endif
+                }
             }
 
           // note that we do not have to worry about double entries
