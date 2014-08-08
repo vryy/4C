@@ -102,7 +102,7 @@ namespace NLNSOL
 
     //@}
 
-    //! Setup the nonlinear GMRES algorithm
+    //! Setup of nonlinear GMRES algorithm
     virtual void Setup();
 
     //@}
@@ -147,11 +147,6 @@ namespace NLNSOL
 
   protected:
 
-    //! @name Attribute set methods
-    //@{
-
-    //@}
-
   private:
 
     //! @name Setup
@@ -182,8 +177,8 @@ namespace NLNSOL
      */
     virtual int ComputeTentativeIterate
     (
-      const Epetra_MultiVector& fbar,  ///< current residual
-      Epetra_MultiVector& xbar   ///< current solution
+      const Epetra_MultiVector& fbar, ///< current residual
+      Epetra_MultiVector& xbar ///< current solution
     ) const;
 
     /*! \brief Compute the accelerated iterate
@@ -197,22 +192,22 @@ namespace NLNSOL
      */
     virtual Teuchos::RCP<Epetra_MultiVector> ComputeAcceleratedIterate
     (
-      const Teuchos::RCP<Epetra_MultiVector>& xbar,               ///< tentative iterate / current solution
-      const Teuchos::RCP<Epetra_MultiVector>& fbar,               ///< residual based on tentative iterate / current solution
-      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol,  ///< collection of previous solution iterates
-      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res,  ///< collection of previous residuals
-      const int wsize                                             ///< current window size
+      const Teuchos::RCP<const Epetra_MultiVector>& xbar, ///< tentative iterate / current solution
+      const Teuchos::RCP<const Epetra_MultiVector>& fbar, ///< residual based on tentative iterate / current solution
+      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol, ///< collection of previous solution iterates
+      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res ///< collection of previous residuals
     ) const;
 
     //@}
 
-    //! @name Utilities
+    //! @name Access routines
     //@{
 
-    //! Print summary of current iteration
-    virtual void PrintIterSummary(const int iter, ///< iteration counter
-        const double resnorm  ///< residual norm
-        ) const;
+    //! Get max allowed number of iterations
+    virtual const unsigned int GetMaxIter() const { return itermax_; }
+
+    //! Get the maximally allowed window size
+    virtual const unsigned int GetMaxWindowSize() const { return windowsizemax_; }
 
     //@}
 
@@ -230,11 +225,16 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Algorithmic parameters
+    //@{
+
     //! max number of iterations
     int itermax_;
 
-    //! max window size;
-    int windowsize_;
+    //! max window size
+    int windowsizemax_;
+
+    //@}
 
   }; // class NlnOperatorNGmres
 } // namespace NLNSOL

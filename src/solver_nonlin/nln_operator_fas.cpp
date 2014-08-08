@@ -40,7 +40,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorFas::NlnOperatorFas()
-: hierarchy_(Teuchos::null)
+: maxiter_(1),
+  hierarchy_(Teuchos::null)
 {
   return;
 }
@@ -56,6 +57,9 @@ void NLNSOL::NlnOperatorFas::Setup()
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
   hierarchy_->Init(Comm(), Params(), NlnProblem());
   hierarchy_->Setup();
+
+  if (Params().isParameter("max fas cycles"))
+    maxiter_ = Params().get<int>("max fas cycles");
 
   // Setup() has been called
   SetIsSetup();
@@ -76,8 +80,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   double fnorm2 = 1.0e+12;
 
   int iter = 0;
-  const int itemax = Params().get<int>("max fas cycles");
-  while (not converged and iter < itemax)
+  while (not converged and iter < GetMaxIter())
   {
     ++iter;
 
@@ -89,8 +92,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 
     converged = NlnProblem()->ConvergenceCheck(f, fnorm2);
 
-    if (Comm().MyPID() == 0)
-      IO::cout << IO::endl << "Finished a full VCycle run. |f| = " << fnorm2 << "." << IO::endl;
+    PrintIterSummary(iter, fnorm2);
   }
 
   if (converged)
@@ -142,7 +144,8 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     Hierarchy()->NlnLevel(level)->RestrictToNextCoarserLevel(xbar);
     Hierarchy()->NlnLevel(level)->RestrictToNextCoarserLevel(fhat);
 
-    // set zero vectors for fhat and fbar to enable evaluation of fhat. Note: 'fhat' is zero here.
+    // Set zero vectors for fhat and fbar to enable evaluation of fhat.
+    // Note: 'fhat' is zero here.
     Hierarchy()->NlnLevel(level)->NlnProblem()->SetFHatFBar(fhat, fhat);
 
     // evaluate coarse-grid residual
@@ -160,7 +163,10 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     fhat->PutScalar(0.0);
   } // do nothing on the fine level
   else
-    dserror("Level ID %d is not a valid level ID. Level ID has to be in [0,%d]", level, Hierarchy()->NumLevels()-1);
+  {
+    dserror("Level ID %d is not a valid level ID. Level ID has to be in [0,%d]",
+        level, Hierarchy()->NumLevels() - 1);
+  }
 
   Teuchos::RCP<Epetra_MultiVector> fhatbar = Teuchos::rcp(new Epetra_MultiVector(*fhat));
   err = fhatbar->Update(1.0, *fbar, -1.0);

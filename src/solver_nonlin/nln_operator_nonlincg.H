@@ -172,14 +172,24 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Necessary sub-algorithms
+    //@{
+
     //! linear solver from baci
     Teuchos::RCP<LINALG::Solver> linsolver_;
 
     //! line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
+    //@}
+
+    //! @name Algorithmic parameters
+    //@{
+
     //! max number of iterations
     int maxiter_;
+
+    //@}
 
   }; // class NlnOperatorNonlinCG
 } // namespace NLNSOL

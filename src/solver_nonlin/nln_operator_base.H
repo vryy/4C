@@ -149,6 +149,16 @@ namespace NLNSOL
 
       //@}
 
+      //! @name Utilities
+      //@{
+
+      //! Print summary of current iteration
+      virtual void PrintIterSummary(const int iter, ///< iteration counter
+          const double fnorm2 ///< L2-norm of residual
+          ) const;
+
+      //@}
+
     private:
 
       //! Init() has been called

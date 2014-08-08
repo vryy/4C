@@ -25,6 +25,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_ngmres.H"
 #include "nln_operator_newton.H"
 #include "nln_operator_nonlincg.H"
+#include "nln_operator_sd.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -58,6 +59,10 @@ NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
   else if (optype == "NGMRES")
   {
     return Teuchos::rcp(new NLNSOL::NlnOperatorNGmres());
+  }
+  else if (optype == "Steepest Descent")
+  {
+    return Teuchos::rcp(new NLNSOL::NlnOperatorSD());
   }
   else
   {

@@ -219,10 +219,10 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   SetIsSetup();
 
 #else
-
-  dserror("Requires MueLu");
-
+  dserror("Setup of an AMG hierarchy requires MueLu.");
 #endif
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/

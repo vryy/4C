@@ -56,7 +56,8 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  maxiter_ = Params().get<int>("Nonlinear CG: Max Iter");
+  if (Params().isParameter("Nonlinear CG: Max Iter"))
+    maxiter_ = Params().get<int>("Nonlinear CG: Max Iter");
 
   SetupLinearSolver();
   SetupLineSearch();
@@ -134,8 +135,8 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
-  if (Comm().MyPID() == 0 and Params().get<bool>("Nonlinear CG: Print Iterations"))
-    IO::cout << "Nonlinear CG iteration " << iter << ": res-norm = " << fnorm2 << IO::endl;
+  if (Params().get<bool>("Nonlinear CG: Print Iterations"))
+    PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
   // the nonlinear CG loop
@@ -172,8 +173,8 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 
     ++iter;
 
-    if (Params().get<bool>("Nonlinear CG: Print Iterations") and Comm().MyPID() == 0)
-      IO::cout << "Nonlinear CG iteration " << iter << ": res-norm = " << fnorm2 << IO::endl;
+    if (Params().get<bool>("Nonlinear CG: Print Iterations"))
+      PrintIterSummary(iter, fnorm2);
   }
 
   // ---------------------------------------------------------------------------

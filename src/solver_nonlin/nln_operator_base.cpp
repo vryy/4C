@@ -105,3 +105,19 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
 
   return nlnproblem_;
 }
+
+/*----------------------------------------------------------------------------*/
+/* Print summary of current iteration */
+void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
+    const double fnorm2
+    ) const
+{
+  // print only on one processor
+  if (Comm().MyPID() == 0)
+  {
+    IO::cout << std::setprecision(6)
+             << Label() << " iteration " << iter
+             << ": |f| = " << fnorm2
+             << IO::endl;
+  }
+}

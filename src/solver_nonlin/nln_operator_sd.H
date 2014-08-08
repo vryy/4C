@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_newton.H
+\file nln_operator_sd.H
 
-\brief Newton-type algorithm
+\brief Steepest-descent algorithm
 
 <pre>
 Maintainer: Matthias Mayr
@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef NLN_OPERATOR_NEWTON_H
-#define NLN_OPERATOR_NEWTON_H
+#ifndef NLN_OPERATOR_SD_H
+#define NLN_OPERATOR_SD_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -32,13 +32,6 @@ Maintainer: Matthias Mayr
 
 class Epetra_Comm;
 class Epetra_MultiVector;
-class Epetra_Operator;
-
-namespace LINALG
-{
-  class Solver;
-  class SparseOperator;
-} // namespace LINALG
 
 namespace NLNSOL
 {
@@ -54,13 +47,13 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Newton-type algorithm as nonlinear preconditioner
+  /*! \brief Steepest-descent algorithm as nonlinear preconditioner
    *
    *  \sa NLNSOL::NlnOperatorBase()
    *
-   *  \author mayr.mt \date 06/2014
+   *  \author mayr.mt \date 08/2014
    */
-  class NlnOperatorNewton : public NlnOperatorBase
+  class NlnOperatorSD : public NlnOperatorBase
   {
   public:
 
@@ -68,10 +61,10 @@ namespace NLNSOL
     //@{
 
     //! Constructor (empty)
-    NlnOperatorNewton();
+    NlnOperatorSD();
 
     //! Destructor
-    virtual ~NlnOperatorNewton(){}
+    virtual ~NlnOperatorSD(){}
 
     //@}
 
@@ -86,11 +79,11 @@ namespace NLNSOL
     //! @name Mathematical functions
     //@{
 
-    /*! \brief Apply the preconditioner, i.e. do one step of Quasi-Newton
+    /*! \brief Apply the preconditioner
      *
      * \return Integer error code, set to 0 if successful.
      *
-     * \author mayr.mt \date 03/2014
+     * \author mayr.mt \date 08/2014
      */
     virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
         Epetra_MultiVector& x ///< solution
@@ -100,7 +93,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NLNSOL::NlnOperatorNewton"; }
+    virtual const char* Label() const { return "NLNSOL::NlnOperatorSD"; }
 
     //@}
 
@@ -110,9 +103,6 @@ namespace NLNSOL
 
     //! @name Setup
     //@{
-
-    //! Setup of linear solver
-    virtual void SetupLinearSolver();
 
     //! Setup of line search
     virtual void SetupLineSearch();
@@ -131,18 +121,14 @@ namespace NLNSOL
     //@{
 
     virtual const int ComputeSearchDirection(
-        Teuchos::RCP<Epetra_MultiVector>& rhs, ///< residual
-        Teuchos::RCP<Epetra_MultiVector>& inc, ///< increment (to be filled)
-        const int iter ///< current Newton iteration
+        const Epetra_MultiVector& rhs, ///< residual
+        Epetra_MultiVector& inc ///< increment (to be filled)
         ) const;
 
     //@}
 
     //! @name Necessary sub-algorithms
     //@{
-
-    //! linear solver from baci
-    Teuchos::RCP<LINALG::Solver> linsolver_;
 
     //! line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
@@ -155,15 +141,9 @@ namespace NLNSOL
     //! max number of iterations
     int maxiter_;
 
-    //! Use a fixed jacobian?
-    bool fixedjacobian_;
-
     //@}
 
-    //! Fixed Jacobian matrix
-    Teuchos::RCP<Epetra_Operator> jac_;
-
-  }; // class NlnOperatorNewton
+  }; // class NlnOperatorSD
 } // namespace NLNSOL
 
-#endif /* NLN_OPERATOR_NEWTON_H */
+#endif /* NLN_OPERATOR_SD_H */
