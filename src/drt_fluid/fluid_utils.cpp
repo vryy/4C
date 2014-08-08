@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
@@ -415,7 +416,7 @@ void FLD::UTILS::LiftDrag(
             distances(idim,0) += (*dispnp)[rowdofmap.LID(dof[idim])];
           }
         }
-        
+
         // calculate nodal angular moment with respect to global coordinate system
         LINALG::Matrix<3,1> actmoment_gc (true);
         actmoment_gc(0,0) = distances(1)*actforces(2,0)-distances(2)*actforces(1,0); // zero for 2D
@@ -607,7 +608,7 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
     dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
     //if(dofrowmap->Comm().MyPID()==0)
-    //	std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;
+    // std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;
 
     //ATTENTION: new definition: outflow is positive and inflow is negative
     volumeflowrateperline[condID] = flowrate;
@@ -769,4 +770,140 @@ void FLD::UTILS::WriteDoublesToFile(
     f << s.str() << "\n";
     f.close();
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
+  Teuchos::RCP<DRT::Discretization> dis,
+  Teuchos::RCP<const Epetra_Vector> velocity
+  )
+{
+  if(not velocity->Map().SameAs(*dis->DofRowMap()))
+    dserror("input map is not a dof row map of the fluid");
+
+  const int dim = DRT::Problem::Instance()->NDim();
+  const int dimsquare = dim*dim;
+
+  dis->ClearState();
+  dis->SetState("vel",velocity);
+
+  // get node row map of fluid field --> will be used for setting up linear system
+  const Epetra_Map* noderowmap = dis->NodeRowMap();
+
+  // create empty matrix
+  Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*noderowmap,108,false,true));
+  // create empty right hand side
+  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,dimsquare));
+
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // get number of elements
+  const int numele = dis->NumMyColElements();
+
+  // loop column elements
+  for (int i=0; i<numele; ++i)
+  {
+    DRT::Element* actele = dis->lColElement(i);
+    const int numnode = actele->NumNode();
+
+    // get element location vector and ownerships
+    actele->LocationVector(*dis,lm,lmowner,lmstride);
+
+    // Reshape element matrices and vectors and initialize to zero
+    elevector1.Size(numnode);
+    elematrix1.Shape(numnode,numnode);
+    elematrix2.Shape(numnode,dimsquare);
+
+    // set action in order to project element void fraction to nodal void fraction
+    Teuchos::ParameterList params;
+    params.set<int>("action",FLD::velgradient_projection);
+
+    // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
+    actele->Evaluate(params,*dis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+
+    // get element location vector for nodes
+    lm.resize(numnode);
+    lmowner.resize(numnode);
+
+    DRT::Node** nodes = actele->Nodes();
+    for(int n=0; n<numnode; ++n)
+    {
+      lm[n] = nodes[n]->Id();
+      lmowner[n] = nodes[n]->Owner();
+    }
+
+    // mass matrix assembling into node map
+    massmatrix->Assemble(actele->Id(),elematrix1,lm,lmowner);
+    // assemble dim*dim entries in velocity gradient sequentially
+    for(int n=0; n<dimsquare; ++n)
+    {
+      // copy results into Serial_DenseVector for assembling
+      for(int inode=0; inode<numnode; ++inode)
+        elevector1(inode) = elematrix2(inode,n);
+      // assemble into nth vector of MultiVector
+      LINALG::Assemble(*rhs,n,elevector1,lm,lmowner);
+    }
+  } //end element loop
+
+  // finalize the matrix
+  massmatrix->Complete();
+
+  // get solver parameter list of linear solver
+  const int solvernumber = DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
+  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(solvernumber);
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  if(solvertype != INPAR::SOLVER::belos)
+    dserror("You have to choose Belos as solver for velocity gradient projection.");
+
+  Teuchos::RCP<LINALG::Solver> solver =
+                                  Teuchos::rcp(new LINALG::Solver(solverparams,
+                                  dis->Comm(),
+                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+  switch (prectyp)
+  {
+  case INPAR::SOLVER::azprec_ML:
+  case INPAR::SOLVER::azprec_MLfluid:
+  case INPAR::SOLVER::azprec_MLAPI:
+  case INPAR::SOLVER::azprec_MLfluid2:
+  {
+    solver->Params().sublist("ML Parameters").set("PDE equations",1);
+    dis->ComputeNullSpaceIfNecessary(solver->Params());
+  }
+  break;
+  case INPAR::SOLVER::azprec_MueLuAMG_sym:
+  case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+  {
+    solver->Params().sublist("MueLu Parameters").set("PDE equations",1);
+    dis->ComputeNullSpaceIfNecessary(solver->Params());
+  }
+  break;
+  case INPAR::SOLVER::azprec_ILU:
+  case INPAR::SOLVER::azprec_ILUT:
+    // do nothing
+  break;
+  default:
+    dserror("You have to choose ML, MueLu or ILU preconditioning");
+  break;
+  }
+
+  // solution vector based on node row map
+  Teuchos::RCP<Epetra_MultiVector> nodevec = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,dimsquare));
+
+  // solve for dim*dim right hand sides at the same time using Belos solver
+  solver->Solve(massmatrix->EpetraOperator(), nodevec, rhs, true, true);
+
+  return nodevec;
 }

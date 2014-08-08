@@ -3282,6 +3282,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
+  IntParameter("VELGRAD_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&fdyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("RESIDUAL-BASED STABILIZATION",false,"");
 

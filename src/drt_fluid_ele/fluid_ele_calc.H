@@ -223,6 +223,19 @@ public:
     );
 
 
+  /*! \brief Project velocity gradient to nodal level
+   *
+   *   \author ghamm
+   *   \date   06/2014
+   */
+  virtual int VelGradientProjection(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2);
+
 
   /*! \brief Calculate a divergence of velocity at the element center
    *

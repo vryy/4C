@@ -530,6 +530,25 @@ std::map<int,LINALG::Matrix<3,1> > ComputeSurfaceImpulsRates(
                                            ///< (only velocities are used)
     );
 
+
+/*!
+  \brief compute L2 projection of velocity gradient in order to obtain a nodal vector of gradients
+
+  \return an Epetra_MultiVector based on the discret's node row map containing dim^2 vectors
+          with the projected velocity gradient
+          in 3D:  ux,x  ux,y  ux,z  uy,x  uy,y  uy,z  uz,x  uz,y  uz,z
+          in 2D:  ux,x  ux,y  uy,x  uy,y
+          in 1D:  ux,x
+
+  \author Georg Hammerl
+  \date 06/14
+ */
+Teuchos::RCP<Epetra_MultiVector> ComputeL2ProjectedVelGradient(
+  Teuchos::RCP<DRT::Discretization> dis,        ///< the fluid discretisation
+  Teuchos::RCP<const Epetra_Vector> velocity    ///< solution vector with velocities and pressure
+                                                ///< (only velocities are used)
+  );
+
 } // namespace UTILS
 } // namespace FLD
 

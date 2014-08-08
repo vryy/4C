@@ -65,7 +65,8 @@ enum Action {
     set_two_phase_parameter,
     project_fluid_field,
     interpolate_hdg_to_node,
-    calc_dt_via_cfl,
+    velgradient_projection,
+    calc_dt_via_cfl
 }; // enum Action
 
 /*--------------------------------------------------------------------------
