@@ -1729,6 +1729,9 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip2()
         }
         poss_neigh_nodes[poss->Id()] = vec_neigh;
         /*****************/
+
+        if( not found_edge )
+          dserror("New crack tip node not found\n");
       }
     }
     comm_.SumAll( &lnewtip, &gnewtip, 1 );
