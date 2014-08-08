@@ -644,9 +644,6 @@ VtuWriter::WriteDofResultStep(
   // on the row elements, so need to get the DofColMap to have this access
   const Epetra_Map* colmap = dis->DofColMap(0);
   const Epetra_BlockMap& vecmap = data->Map();
-  int offset = vecmap.MinAllGID()-dis->DofRowMap(0)->MinAllGID();
-  if (fillzeros)
-    offset = 0;
 
   Teuchos::RCP<Epetra_Vector> ghostedData;
   if (colmap->SameAs(vecmap))
@@ -679,7 +676,7 @@ VtuWriter::WriteDofResultStep(
       dis->Dof(ele->Nodes()[numbering[n]], nodedofs);
 
       for (int d=0; d<numdf; ++d) {
-        const int lid = ghostedData->Map().LID(nodedofs[d+from]+offset);
+        const int lid = ghostedData->Map().LID(nodedofs[d+from]);
         if (lid > -1)
           solution.push_back((*ghostedData)[lid]);
         else {
@@ -894,7 +891,64 @@ VtuWriter::WriteFiles(PostFilterBase &filter)
     WriteVtuFooter(filename_base);
   }
 
+  WriteVtuMasterFile(filenames, dirname);
+}
 
+
+
+void
+VtuWriter::WriteFilesChangingGeom(PostFilterBase &filter)
+{
+  std::vector<int> solstep;
+  std::vector<double> soltime;
+  {
+    PostResult result = PostResult(field_);
+    result.get_result_timesandsteps(field_->name(), soltime, solstep);
+  }
+
+  unsigned int ntdigits = ndigits(soltime.size()),
+      npdigits = ndigits(field_->discretization()->Comm().NumProc());
+  std::vector<std::pair<double, std::string> > filenames;
+
+  const std::string dirname = filename_ + "-files";
+  boost::filesystem::create_directories(dirname);
+
+  for (timestep_=0; timestep_<(int)soltime.size(); ++timestep_) {
+    const std::string filename_base = field_->name() + "-" + int2string(timestep_,ntdigits);
+    time_ = soltime[timestep_];
+    filenames.push_back(std::pair<double,std::string>(time_, filename_base+".pvtu"));
+
+    currentout_.close();
+    currentout_.open((dirname + "/" + filename_base + "-" +
+                      int2string(myrank_,npdigits) + ".vtu").c_str());
+
+    if (myrank_ == 0) {
+      currentmasterout_.close();
+      currentmasterout_.open((dirname + "/" + filename_base + ".pvtu").c_str());
+    }
+
+    int fieldpos = field_->field_pos();
+    std::string fieldname = field_->name();
+    field_->problem()->re_read_mesh(fieldpos, fieldname, solstep[timestep_]);
+
+    WriteVtuHeader();
+
+    WriteGeo();
+
+    filter.WriteAllResults(field_);
+
+    WriteVtuFooter(filename_base);
+  }
+
+  WriteVtuMasterFile(filenames, dirname);
+}
+
+
+
+void
+VtuWriter::WriteVtuMasterFile(const std::vector<std::pair<double, std::string> > &filenames,
+                              const std::string &dirname) const
+{
   // finally, write a single masterfile
   if (myrank_ == 0) {
     std::ofstream masterfile((filename_ + "-" + field_->name() + ".pvd").c_str());

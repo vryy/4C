@@ -58,11 +58,8 @@ public:
   //! write the whole thing
   virtual void WriteFiles(PostFilterBase &filter);
 
-  //! write the whole thing
-  virtual void WriteFilesChangingGeom(PostFilterBase &filter)
-  {
-    CurrentlyNotImplemented();
-  }
+  //! write the whole thing for changing geometries
+  virtual void WriteFilesChangingGeom(PostFilterBase &filter);
 
 protected:
 
@@ -169,6 +166,11 @@ protected:
    */
   void WriteVtuFooter (const std::string &filenamebase);
 
+  /*!
+   \brief write a master file for VTU that collects links to all time steps
+   */
+  void WriteVtuMasterFile (const std::vector<std::pair<double, std::string> > &filenames,
+                           const std::string &dirname) const;
 
   /*!
    \brief writes debug output as long as this filter is incomplete (TODO MK: should go away at some point)
