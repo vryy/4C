@@ -1693,6 +1693,7 @@ set(OBJS_DRT_CRACK
   src/drt_crack/propagateCrack.cpp
   src/drt_crack/crackUtils.cpp
   src/drt_crack/aleCrack.cpp
+  src/drt_crack/SplitHexIntoTwoWedges.cpp
 )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
