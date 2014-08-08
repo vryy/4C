@@ -70,6 +70,12 @@ public:
   ///  set internal state of the material
   void SetInternalState(const int k, const double val);
 
+  ///  return number of ionic currents
+  int GetNumberOfIonicCurrents() const;
+
+  ///  return ionic currents
+  double GetIonicCurrents(const int k) const;
+
   /// time update for this material
   void Update(const double phi, const double dt);
 

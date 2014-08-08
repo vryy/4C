@@ -76,8 +76,8 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::EvaluateService(
 
            if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
            {
-             // reference to Teuchos::rcp not possible here, since the material is required to be
-             // not const for this application
+             // reference to Teuchos::rcp not possible here, since the material
+             // is required to be not const for this application
              updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat));
            }
          }
@@ -113,10 +113,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::EvaluateService(
            }
          }
 
-         // use one-point Gauss rule to do calculations at the element center
-         DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-         my::EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,ele->Id());
+         my::EvalShapeFuncAndDerivsAtEleCenter();
 
          for (unsigned i=0;i<updatemat.size();i++)
          {

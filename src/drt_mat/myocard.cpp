@@ -376,9 +376,9 @@ void MAT::Myocard::Initialize()
 {
   if (*(params_->model) == "MV") myocard_mat_ = Teuchos::rcp(new Myocard_Minimal(params_->dt_deriv,*(params_->tissue)));
   else if (*(params_->model) == "FHN") myocard_mat_ = Teuchos::rcp(new Myocard_Fitzhugh_Nagumo(params_->dt_deriv,*(params_->tissue)));
-  //else if (*(params_->model) == "INADA") myocard_mat_ = Teuchos::rcp(new Myocard_Inada(params_->dt_deriv,*(params_->tissue)));
+  else if (*(params_->model) == "INADA") myocard_mat_ = Teuchos::rcp(new Myocard_Inada(params_->dt_deriv,*(params_->tissue)));
   else if (*(params_->model) == "TNNP") myocard_mat_ = Teuchos::rcp(new Myocard_TenTusscher(params_->dt_deriv,*(params_->tissue)));
-  //else if (*(params_->model) == "SAN") myocard_mat_ = Teuchos::rcp(new Myocard_SAN_Garny(params_->dt_deriv,*(params_->tissue)));
+  else if (*(params_->model) == "SAN") myocard_mat_ = Teuchos::rcp(new Myocard_SAN_Garny(params_->dt_deriv,*(params_->tissue)));
   else dserror("Myocard Material type is not supported! (for the moment only MV,FHN,INADA and TNNP)");
 
   return;

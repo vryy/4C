@@ -75,7 +75,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
- |  evaluate single material  (protected)                    ehrl 11/13 |
+ |  evaluate single material  (protected)                    ljag 06/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Materials(
@@ -100,7 +100,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Materials(
 
 
 /*----------------------------------------------------------------------*
- |  Material ScaTra                                          ehrl 11/13 |
+ |  Material ScaTra                                          ljag 06/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(

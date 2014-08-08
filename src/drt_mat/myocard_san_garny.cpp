@@ -578,6 +578,9 @@ int Myocard_SAN_Garny::GetNumberOfInternalStateVariables() const
 double Myocard_SAN_Garny::GetInternalState(const int k) const
 {
   double val=0.0;
+  if ( k==-1 && s0_[0]>-20 ) {
+    val = 1;
+  }
   val = s0_[k];
   return val;
 }
@@ -590,6 +593,39 @@ void Myocard_SAN_Garny::SetInternalState(const int k, const double val)
   s0_[k] = val;
   s_[k] = val;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int Myocard_SAN_Garny::GetNumberOfIonicCurrents() const
+{
+  return 13;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double Myocard_SAN_Garny::GetIonicCurrents(const int k) const
+{
+  double val=0.0;
+  switch (k) {
+    case 0: val = a_[27]; break;
+    case 1: val = a_[34]; break;
+    case 2: val = a_[39]; break;
+    case 3: val = a_[40]; break;
+    case 4: val = a_[41]; break;
+    case 5: val = a_[44]; break;
+    case 6: val = a_[45]; break;
+    case 7: val = a_[46]; break;
+    case 8: val = a_[47]; break;
+    case 9: val = a_[48]; break;
+    case 10: val = a_[49]; break;
+    case 11: val = a_[50]; break;
+    case 12: val = a_[51]; break;
+  }
+
+  return val;
 }
 
 /*----------------------------------------------------------------------*

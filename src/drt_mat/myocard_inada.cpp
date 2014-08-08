@@ -812,7 +812,13 @@ int Myocard_Inada::GetNumberOfInternalStateVariables() const
 double Myocard_Inada::GetInternalState(const int k) const
 {
   double val=0.0;
-  val = s0_[k];
+  if (k == -1) {
+    val = s0_[19];
+  }
+  else {
+    val = s0_[k];
+  }
+
   return val;
 }
 
@@ -824,6 +830,37 @@ void Myocard_Inada::SetInternalState(const int k, const double val)
   s0_[k] = val;
   s_[k] = val;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int Myocard_Inada::GetNumberOfIonicCurrents() const
+{
+  return 11;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double Myocard_Inada::GetIonicCurrents(const int k) const
+{
+  double val=0.0;
+  switch (k) {
+    case 0: val = a_[34]; break;
+    case 1: val = a_[42]; break;
+    case 2: val = a_[50]; break;
+    case 3: val = a_[51]; break;
+    case 4: val = a_[52]; break;
+    case 5: val = a_[65]; break;
+    case 6: val = a_[66]; break;
+    case 7: val = a_[67]; break;
+    case 8: val = a_[68]; break;
+    case 9: val = a_[70]; break;
+    case 10: val = a_[71]; break;
+  }
+
+  return val;
 }
 
 /*----------------------------------------------------------------------*

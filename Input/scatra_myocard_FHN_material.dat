@@ -1,24 +1,41 @@
+//
+// Maintainer: Lasse Jagschies
+// lasse.jagschies@tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-10365
+//
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-10 line elements for test of Myocard FHN material
-Maintainter: Cristobal Bertoglio
+FHN Myocard material
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        10
-NODES                           11
-DIM                             2
+ELEMENTS                        1
+NODES                           8
+DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+PROBLEMTYP                      Cardiac_Monodomain
 RESTART                         0
+--------------------------------------------------------------------------IO
+OUTPUT_GID                      No
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     No
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
-RESTARTEVRY                     1
+UPRES                           20
+RESTARTEVRY                     20
 NUMSTEP                         100000
-MAXTIME                         10.0
+MAXTIME                         900
 TIMESTEP                        0.1
 THETA                           0.5
 VELOCITYFIELD                   zero
@@ -28,59 +45,64 @@ FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
-SCATRATYPE                      Cardio_Monodomain
+SCATRATYPE                      Cardiac_Monodomain
+WRITEMAXINTSTATE                1
+WRITEMAXIONICCURRENTS           2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 ABSTOLRES                       1e-10
 CONVTOL                         1e-05
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  element_center         
+STABTYPE                        no_stabilization
+DEFINITION_TAU                  Zero
+EVALUATION_MAT                  element_center
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_myocard MAIN_DIFFUSIVITY 0.001171 OFF_DIFFUSIVITY 0.001171 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
+MAT 1 MAT_myocard DIFF1 0.0001171 DIFF2 0.0001171 DIFF3 0.0001171 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.02 t1 0.0 t2 2.0      //2ms activation
+CURVE1 on EXPR FUNC 1.0   t1    0.0 t2    2.0      //2ms activation S1
+CURVE1 on EXPR FUNC 0.0   t1    2.0 t2  350.0
+CURVE1 on EXPR FUNC 1.0   t1  350.0 t2  352.0      //2ms activation S1
+CURVE1 on EXPR FUNC 0.0   t1  352.0 t2  850.0
+CURVE1 on EXPR FUNC 1.0   t1  850.0 t2  852.0      //2ms activation S1
+CURVE1 on EXPR FUNC 0.0   t1  852.0 t2  853.0
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 1
+NDPOINT 0
+NDLINE  0
+NDSURF  0
+NDVOL   1
+-----------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL 1
 // left end
-E 1 - 1 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+E 1 - 1 1 0 0 0 0 0  0.3 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
-NODE    1 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+NODE  1  DVOL 1
+NODE  2  DVOL 1
+NODE  3  DVOL 1
+NODE  4  DVOL 1
+NODE  5  DVOL 1
+NODE  6  DVOL 1
+NODE  7  DVOL 1
+NODE  8  DVOL 1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 1 0 0 FUNCTION 0.0 // -86.2
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.61685079141518062e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  1.41843977883288774e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.30029870220736243e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  1.23237376663240417e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 1.20107658227618463e+00  TOLERANCE 1e-4
+FUNCT1 EXPR 1 0 0 FUNCTION 0.0
 -----------------------------------------------------------------NODE COORDS
-NODE  1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
-NODE  2 COORD 1.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  3 COORD 2.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  4 COORD 3.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  5 COORD 4.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  6 COORD 5.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  7 COORD 6.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  8 COORD 7.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE  9 COORD 8.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE 10 COORD 9.00000000e-02 0.00000000e+00 0.00000000e+00
-NODE 11 COORD 1.00000000e-01 0.00000000e+00 0.00000000e+00
+NODE 1   COORD   0.0000000000000001e-03  -5.0000000000000001e-03   5.0000000000000001e-03
+NODE 2   COORD   0.0000000000000001e-03  -5.0000000000000001e-03  -5.0000000000000001e-03
+NODE 3   COORD   0.0000000000000001e-03   5.0000000000000001e-03  -5.0000000000000001e-03
+NODE 4   COORD   0.0000000000000001e-03   5.0000000000000001e-03   5.0000000000000001e-03
+NODE 5   COORD  10.0000000000000001e-03  -5.0000000000000001e-03   5.0000000000000001e-03
+NODE 6   COORD  10.0000000000000001e-03  -5.0000000000000001e-03  -5.0000000000000001e-03
+NODE 7   COORD  10.0000000000000001e-03   5.0000000000000001e-03  -5.0000000000000001e-03
+NODE 8   COORD  10.0000000000000001e-03   5.0000000000000001e-03   5.0000000000000001e-03
 ----------------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP LINE2 1 2 MAT 1 FIBER1 1.0 0.0 0.0
-2 TRANSP LINE2 2 3 MAT 1 FIBER1 1.0 0.0 0.0
-3 TRANSP LINE2 3 4 MAT 1 FIBER1 1.0 0.0 0.0
-4 TRANSP LINE2 4 5 MAT 1 FIBER1 1.0 0.0 0.0
-5 TRANSP LINE2 5 6 MAT 1 FIBER1 1.0 0.0 0.0
-6 TRANSP LINE2 6 7 MAT 1 FIBER1 1.0 0.0 0.0
-7 TRANSP LINE2 7 8 MAT 1 FIBER1 1.0 0.0 0.0
-8 TRANSP LINE2 8 9 MAT 1 FIBER1 1.0 0.0 0.0
-9 TRANSP LINE2 9 10 MAT 1 FIBER1 1.0 0.0 0.0
-10 TRANSP LINE2 10 11 MAT 1 FIBER1 1.0 0.0 0.0
+1 TRANSP HEX8  1 2 3 4 5 6 7 8  MAT 1  FIBER1 1.0 0.0 0.0
+----------------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 7.77840329682382370e-01 TOLERANCE 1e-4
 -------------------------------------------------------------------------END
-//                              END
+// END
