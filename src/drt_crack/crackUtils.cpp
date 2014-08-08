@@ -133,6 +133,29 @@ bool DRT::CRACK::UTILS::ElementHasThisNodeId( const DRT::Element* ele, int nodei
 }
 
 /*-----------------------------------------------------------------------------------------*
+ * Returns true if the given element has given nodeid                              sudhakar 07/14
+ *-----------------------------------------------------------------------------------------*/
+bool DRT::CRACK::UTILS::ElementHasThisNodeId( const Teuchos::RCP<DRT::Element>& ele, int nodeid )
+{
+  bool found = false;
+
+  const int* nodes = ele->NodeIds();
+  const int numNodes = ele->NumNode();
+
+  for( int iNode = 0; iNode < numNodes; iNode++ )
+  {
+    int surnodeid = nodes[iNode];
+
+    if( surnodeid == nodeid )
+    {
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
+
+/*-----------------------------------------------------------------------------------------*
  * Delete all Dirichlet conditions that has only one associated node                sudhakar 06/14
  * These are the conditions that we added to fix crack tip to desire location
  *-----------------------------------------------------------------------------------------*/
@@ -257,5 +280,25 @@ double DRT::CRACK::UTILS::HatFunction( const double & r )
     dserror( "Already this condition is dealt with in DRT::CRACK::UTILS::ComputeDiracDelta()\n" );
 
   hat = hat * 0.125;
+  return hat;
+}
+
+double DRT::CRACK::UTILS::SineHatFunction( const double &r, double n )
+{
+  double PI = 22.0/7.0;
+
+  if( r > n )
+    return 0.0;
+
+  double hat = 0.5 * (1.0+cos(PI*fabs(r)/n));
+  return hat;
+}
+
+double DRT::CRACK::UTILS::QuadraticHatFunction( const double &r, double n )
+{
+  if( r > n )
+    return 0.0;
+
+  double hat = (n*n-r*r)/(n*n);
   return hat;
 }

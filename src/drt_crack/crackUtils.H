@@ -50,6 +50,11 @@ namespace UTILS{
   bool ElementHasThisNodeId( const DRT::Element* ele, int nodeid );
 
   /*!
+  \brief Returns true when the given element has given nodeid
+   */
+  bool ElementHasThisNodeId( const Teuchos::RCP<DRT::Element>& ele, int nodeid );
+
+  /*!
   \brief Delete all Dirichlet conditions that has only one associated node
    */
   void deleteConditions( Teuchos::RCP<DRT::Discretization> discret );
@@ -77,6 +82,10 @@ namespace UTILS{
   double ComputeDiracDelta( const double & dx, const double & dy, const double & h );
 
   double HatFunction( const double & r );
+
+  double SineHatFunction( const double &r, double n );
+
+  double QuadraticHatFunction( const double &r, double n );
 
 } /* namespace CRACK */
 } /* namespace CRACK */

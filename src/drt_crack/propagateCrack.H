@@ -130,6 +130,11 @@ private:
   std::vector<int> findNewCrackTip();
   std::vector<int> findNewCrackTip1();
   std::vector<int> findNewCrackTip2();
+  std::vector<int> findNewCrackTip3();
+
+  void GetTwoCorrectNewTipEle( std::map<int,Teuchos::RCP<DRT::Element> >& eles, int tipid );
+
+  double GetAbsoluteMinAngle( Teuchos::RCP<DRT::Element>& ele, int tipid, std::vector<double>& tipcoord );
 
   /*!
   \brief Get a particular surface that lies completely in the z-plane given by "coord"
@@ -173,6 +178,31 @@ private:
   \brief Write nodes and elements in gmsh format for debugging
    */
   void WriteNodesDebug();
+
+  void SplitEleData( std::map<int,Teuchos::RCP<DRT::Element> >& zele, int add_id );
+
+  void SplitEleData( int ele_id, int node_id );
+
+  void split_All_HEX_Elements();
+
+  struct splitThisEle_
+  {
+    void print()
+    {
+      std::cout<<"split this element with id "<<element_id_<<" ";
+      std::cout<<"Cut along diagonals with ids = "<<node_ids_ele_[0]<<" "<<node_ids_ele_[1]<<"\n";
+    }
+
+    int element_id_;
+    std::vector<int> node_ids_ele_;
+  };
+
+  //! Collection of all HEX elements that must be split
+  std::vector<splitThisEle_> all_split_ele_;
+
+  //! Ids of all HEX elements that should be split into WEDGEs
+  // Necessary to maintain unique element id for new elements across all processors
+  std::set<int> all_split_ele_ids_;
 
   //! underlying structural discretization
   Teuchos::RCP<DRT::Discretization> discret_;
@@ -253,7 +283,9 @@ private:
   //! each time we add a new element
   // This number is set from the input file. It should be more than the total no of nodes in all the discretization of the problem
   // included
-  int startNewId_;
+  int startNewNodeId_;
+
+  int startNewEleId_;
 
   //! value of PI
   double PI_;
@@ -271,7 +303,10 @@ private:
   std::set<int> ALE_line_nodes_;
 
   //! Returns true for the first time crack propagation
-  bool firstStep_;
+  int step_;
+
+  //! Whether HEX elements need to be split into two WEDGE in this time step
+  bool DoHexSplit_;
 };
 
 } /* namespace CRACK */

@@ -6943,8 +6943,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("GMSH_OUT","No","Do you want to write Gmsh output of displacement each timestep?",
                                  yesnotuple,yesnovalue,&crackdyn);
 
-  IntParameter("START_NEW_ID",1001,"Id of first node that will be introduced into discretization while propagating crack. This "
-      "should be set greater than total no of nodes in the whole simulation",&crackdyn);
+  IntParameter("START_NEW_NODE_ID",0,"Id of first node that will be introduced into discretization while propagating crack. This "
+      "should be set greater than total no of nodes in the initial discretization",&crackdyn);
+
+  IntParameter("START_NEW_ELE_ID",0,"Id of first wedge element that will be introduced into discretization while propagating crack. This "
+        "should be set greater than total no of elements in the initial discretization",&crackdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsi_crackdyn = list->sublist("FSI-CRACK",false,"");
