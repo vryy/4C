@@ -1542,7 +1542,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     tempVecv1.Scale(dt*dirk_b[stage]/dirk_a[stage][stage]);
     ele.eleinteriorVelnp_ += tempVecv1;
 
-    if(unsigned(stage)==dirk_q-1)
+    if(stage==dirk_q-1)
     {
       ele.eleinteriorPressn_ = ele.eleinteriorPressnp_;
       ele.eleinteriorVeln_ = ele.eleinteriorVelnp_;
