@@ -40,6 +40,7 @@ Maintainer: Andreas Rauch
 #include "../drt_io/io_control.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_so3/so3_defines.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -145,18 +146,16 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,histdefgrdlast_->at(var));
     AddtoPack(data,etalast_->at(var));
     AddtoPack(data,sigmaomegaphilast_->at(var));
-    AddtoPack(data,etacurr_save_->at(var));
-    AddtoPack(data,sigmaomegaphicurr_save_->at(var));
     AddtoPack(data,etahat_->at(var));
     AddtoPack(data,etahor_->at(var));
     AddtoPack(data,etaver_->at(var));
     AddtoPack(data,etadiag_->at(var));
-    AddtoPack(data,dxx_->at(var));
-    AddtoPack(data,dyy_->at(var));
-    AddtoPack(data,dzz_->at(var));
-    AddtoPack(data,dxy_->at(var));
-    AddtoPack(data,dyz_->at(var));
-    AddtoPack(data,dxz_->at(var));
+//    AddtoPack(data,dxx_->at(var));
+//    AddtoPack(data,dyy_->at(var));
+//    AddtoPack(data,dzz_->at(var));
+//    AddtoPack(data,dxy_->at(var));
+//    AddtoPack(data,dyz_->at(var));
+//    AddtoPack(data,dxz_->at(var));
   }
 
   // Pack data of passive elastic material
@@ -222,21 +221,18 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   sigmaomegaphilast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
   sigmaomegaphicurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
 
-  etacurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
-  sigmaomegaphicurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
-
   // unpack average intensity level at every point in the cytoplasm
   etahat_  = Teuchos::rcp( new std::vector<double> );
   etahor_  = Teuchos::rcp( new std::vector<double> );
   etaver_  = Teuchos::rcp( new std::vector<double> );
   etadiag_ = Teuchos::rcp( new std::vector<double> );
 
-  dxx_  = Teuchos::rcp( new std::vector<double> );
-  dyy_  = Teuchos::rcp( new std::vector<double> );
-  dzz_  = Teuchos::rcp( new std::vector<double> );
-  dxy_  = Teuchos::rcp( new std::vector<double> );
-  dyz_  = Teuchos::rcp( new std::vector<double> );
-  dxz_  = Teuchos::rcp( new std::vector<double> );
+//  dxx_  = Teuchos::rcp( new std::vector<double> );
+//  dyy_  = Teuchos::rcp( new std::vector<double> );
+//  dzz_  = Teuchos::rcp( new std::vector<double> );
+//  dxy_  = Teuchos::rcp( new std::vector<double> );
+//  dyz_  = Teuchos::rcp( new std::vector<double> );
+//  dxz_  = Teuchos::rcp( new std::vector<double> );
 
   for (int var=0; var<histsize; ++var)
   {
@@ -254,10 +250,6 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
     etalast_->push_back(tmp_matrix);
     ExtractfromPack(position, data, tmp_matrix);
     sigmaomegaphilast_->push_back(tmp_matrix);
-    ExtractfromPack(position, data, tmp_matrix);
-    etacurr_save_->push_back(tmp_matrix);
-    ExtractfromPack(position, data, tmp_matrix);
-    sigmaomegaphicurr_save_->push_back(tmp_matrix);
 
     ExtractfromPack(position, data, tmp_scalar);
     etahat_->push_back(tmp_scalar);
@@ -267,18 +259,18 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
     etaver_->push_back(tmp_scalar);
     ExtractfromPack(position, data, tmp_scalar);
     etadiag_->push_back(tmp_scalar);
-    ExtractfromPack(position, data, tmp_scalar);
-    dxx_ ->push_back(tmp_scalar);
-    ExtractfromPack(position, data, tmp_scalar);
-    dyy_ ->push_back(tmp_scalar);
-    ExtractfromPack(position, data, tmp_scalar);
-    dzz_ ->push_back(tmp_scalar);
-    ExtractfromPack(position, data, tmp_scalar);
-    dxy_ ->push_back(tmp_scalar);
-    ExtractfromPack(position, data, tmp_scalar);
-    dyz_ ->push_back(tmp_scalar);
-    ExtractfromPack(position, data, tmp_scalar);
-    dxz_ ->push_back(tmp_scalar);
+//    ExtractfromPack(position, data, tmp_scalar);
+//    dxx_ ->push_back(tmp_scalar);
+//    ExtractfromPack(position, data, tmp_scalar);
+//    dyy_ ->push_back(tmp_scalar);
+//    ExtractfromPack(position, data, tmp_scalar);
+//    dzz_ ->push_back(tmp_scalar);
+//    ExtractfromPack(position, data, tmp_scalar);
+//    dxy_ ->push_back(tmp_scalar);
+//    ExtractfromPack(position, data, tmp_scalar);
+//    dyz_ ->push_back(tmp_scalar);
+//    ExtractfromPack(position, data, tmp_scalar);
+//    dxz_ ->push_back(tmp_scalar);
 
     // current vectors have to be initialized
     histdefgrdcurr_->push_back(tmp_matrix3x3);
@@ -320,24 +312,17 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   sigmaomegaphilast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
   sigmaomegaphicurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
 
-
-  etacurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
-  sigmaomegaphicurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
-  etacurr_save_->resize(numgp);
-  sigmaomegaphicurr_save_->resize(numgp);
-
-
   etahat_  = Teuchos::rcp( new std::vector<double> );
   etahor_  = Teuchos::rcp( new std::vector<double> );
   etaver_  = Teuchos::rcp( new std::vector<double> );
   etadiag_ = Teuchos::rcp( new std::vector<double> );
 
-  dxx_  = Teuchos::rcp( new std::vector<double> );
-  dyy_  = Teuchos::rcp( new std::vector<double> );
-  dzz_  = Teuchos::rcp( new std::vector<double> );
-  dxy_  = Teuchos::rcp( new std::vector<double> );
-  dyz_  = Teuchos::rcp( new std::vector<double> );
-  dxz_  = Teuchos::rcp( new std::vector<double> );
+//  dxx_  = Teuchos::rcp( new std::vector<double> );
+//  dyy_  = Teuchos::rcp( new std::vector<double> );
+//  dzz_  = Teuchos::rcp( new std::vector<double> );
+//  dxy_  = Teuchos::rcp( new std::vector<double> );
+//  dyz_  = Teuchos::rcp( new std::vector<double> );
+//  dxz_  = Teuchos::rcp( new std::vector<double> );
 
   // set all history variables to zero
   histdefgrdlast_->resize(numgp);
@@ -354,12 +339,12 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   etaver_->resize(numgp);
   etadiag_->resize(numgp);
 
-  dxx_->resize(numgp);
-  dyy_->resize(numgp);
-  dzz_->resize(numgp);
-  dxy_->resize(numgp);
-  dyz_->resize(numgp);
-  dxz_->resize(numgp);
+//  dxx_->resize(numgp);
+//  dyy_->resize(numgp);
+//  dzz_->resize(numgp);
+//  dxy_->resize(numgp);
+//  dyz_->resize(numgp);
+//  dxz_->resize(numgp);
 
   LINALG::Matrix<numbgp,twice> emptymat(true);
 
@@ -378,23 +363,17 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     sigmaomegaphilast_->at(i) = emptymat;
     sigmaomegaphicurr_->at(i) = emptymat;
 
-//    if(!analyticalmaterialtangent_)
-//    {
-//      etacurr_save_->at(i) = emptymat;
-//      sigmaomegaphicurr_save_->at(i) = emptymat;
-//    }
-
     etahat_ ->at(i) = 0.0;
     etahor_ ->at(i) = 0.0;
     etaver_ ->at(i) = 0.0;
     etadiag_->at(i) = 0.0;
 
-    dxx_->at(i) = 0.0;
-    dyy_->at(i) = 0.0;
-    dzz_->at(i) = 0.0;
-    dxy_->at(i) = 0.0;
-    dyz_->at(i) = 0.0;
-    dxz_->at(i) = 0.0;
+//    dxx_->at(i) = 0.0;
+//    dyy_->at(i) = 0.0;
+//    dzz_->at(i) = 0.0;
+//    dxy_->at(i) = 0.0;
+//    dyz_->at(i) = 0.0;
+//    dxz_->at(i) = 0.0;
   }
 
   // Setup of passive material
@@ -421,24 +400,17 @@ void MAT::ActiveFiber::ResetAll(const int numgp)
   sigmaomegaphilast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
   sigmaomegaphicurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
 
-
-  etacurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
-  sigmaomegaphicurr_save_ = Teuchos::rcp( new std::vector<LINALG::Matrix<numbgp,twice> > );
-  etacurr_save_->resize(numgp);
-  sigmaomegaphicurr_save_->resize(numgp);
-
-
   etahat_ = Teuchos::rcp( new std::vector<double> );
   etahor_ = Teuchos::rcp( new std::vector<double> );
   etaver_ = Teuchos::rcp( new std::vector<double> );
   etadiag_ = Teuchos::rcp( new std::vector<double> );
 
-  dxx_  = Teuchos::rcp( new std::vector<double> );
-  dyy_  = Teuchos::rcp( new std::vector<double> );
-  dzz_  = Teuchos::rcp( new std::vector<double> );
-  dxy_  = Teuchos::rcp( new std::vector<double> );
-  dyz_  = Teuchos::rcp( new std::vector<double> );
-  dxz_  = Teuchos::rcp( new std::vector<double> );
+//  dxx_  = Teuchos::rcp( new std::vector<double> );
+//  dyy_  = Teuchos::rcp( new std::vector<double> );
+//  dzz_  = Teuchos::rcp( new std::vector<double> );
+//  dxy_  = Teuchos::rcp( new std::vector<double> );
+//  dyz_  = Teuchos::rcp( new std::vector<double> );
+//  dxz_  = Teuchos::rcp( new std::vector<double> );
 
   // set all history variables to zero
   histdefgrdlast_->resize(numgp);
@@ -476,12 +448,12 @@ void MAT::ActiveFiber::ResetAll(const int numgp)
     etaver_ ->at(i) = 0.0;
     etadiag_->at(i) = 0.0;
 
-    dxx_->at(i) = 0.0;
-    dyy_->at(i) = 0.0;
-    dzz_->at(i) = 0.0;
-    dxy_->at(i) = 0.0;
-    dyz_->at(i) = 0.0;
-    dxz_->at(i) = 0.0;
+//    dxx_->at(i) = 0.0;
+//    dyy_->at(i) = 0.0;
+//    dzz_->at(i) = 0.0;
+//    dxy_->at(i) = 0.0;
+//    dyz_->at(i) = 0.0;
+//    dxz_->at(i) = 0.0;
   }
 
   matpassive_->ResetAll(numgp);
@@ -640,11 +612,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   LINALG::Matrix<numbgp,twice> emptymat(true);
 
   const LINALG::Matrix<numbgp,twice> etalast = etalast_->at(gp);
-  LINALG::Matrix<numbgp,twice> etacurr       = etacurr_->at(gp);
-  // for first iteration step of each time step eta_n+1 = eta_n
-  if (etacurr==emptymat)
-    etacurr = etalast;
-  LINALG::Matrix<numbgp,twice> etanew(etacurr);
+  LINALG::Matrix<numbgp,twice> etanew;
 
   double etahat  = 0.0;
   double etahor  = 0.0;
@@ -652,12 +620,6 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   double etadiag = 0.0;
 
   const LINALG::Matrix<numbgp,twice> sigmaomegaphilast = sigmaomegaphilast_->at(gp);
-
-  LINALG::Matrix<numbgp,twice> sigmaomegaphicurr = sigmaomegaphicurr_->at(gp);
-  // for first iteration step of each time step
-  if (sigmaomegaphicurr==emptymat)
-    sigmaomegaphicurr = sigmaomegaphilast;
-
   LINALG::Matrix<numbgp,twice> sigmaomegaphinew(true);
 
   // Calculation of activation signal at current and last time step
@@ -673,7 +635,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
 
   double tol  = 1e-12;
-  int maxiter = 5;
+  int maxiter = 4;
 
   // parameters for sigmoid function
   //
@@ -735,8 +697,9 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       ///////////////////////////////////////////////
       double residual = 1.0;
 
+      // predict
       etanew(i,j) = onebyetafac *
-          (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphicurr(i,j)*onebysigmax
+          (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebysigmax
               + eta_m);
 
       exponent = 1.0/etanew(i,j)*aa*epsomegaphi(i,j) + b;
@@ -747,7 +710,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         denom = 1.0;
         onebydenom = 1.0;
 
-        residual = sigmaomegaphicurr(i,j) - (etanew(i,j)*sigmamax);
+        residual = sigmaomegaphinew(i,j) - (etanew(i,j)*sigmamax);
       }
       else if(exponent<-30.0)
       {
@@ -767,7 +730,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         denom = 1.0 + efunct;
         onebydenom = 1./denom;
 
-        residual = sigmaomegaphicurr(i,j) - (etanew(i,j)*sigmamax)*onebydenom;
+        residual = sigmaomegaphinew(i,j) - (etanew(i,j)*sigmamax)*onebydenom;
       }
 
       /////////////////
@@ -891,7 +854,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // Stress including active and passive part
   stress->Update(1.0,Spassive,0.0);
   stress->Update(1.0,Sactive,1.0);
-
+#ifndef  MATERIALFDCHECK
   if (cmat != NULL and analyticalmaterialtangent)
   {
     // Setup active elasticity tensor cmatactive
@@ -902,6 +865,18 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     cmat->Update(1.0,cmatpassive,0.0);
     cmat->Update(1.0,cmatactive,1.0);
   }
+#else
+  if (cmat != NULL)
+  {
+    // Setup active elasticity tensor cmatactive
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatactive(true);
+    SetupCmatActive(cmatactive,rotationrate,strainrate,*defgrd,defgrdrate,R,invdefgrd,etanew,sigmaomegaphinew,cauchystress,params,theta,Csignal);
+
+    // constitutive matrix including active and passive part
+    cmat->Update(1.0,cmatpassive,0.0);
+    cmat->Update(1.0,cmatactive,1.0);
+  }
+#endif
 
 }
 
@@ -924,8 +899,12 @@ void MAT::ActiveFiber::SetupRates(
   // Read history
   LINALG::Matrix<3,3> defgrdlast = histdefgrdlast_->at(gp);
 
+//  LINALG::Matrix<3,3> scaleddefgrd(defgrd);
+//  LINALG::Matrix<3,3> scaleddefgrdinv(scaleddefgrd.Invert());
+//  scaleddefgrd.Scale(params_->epsilonnull_);
+
   // Rate of deformation gradient: \dot{F} = \frac {F^n - F^{n-1}} {\Delta t}
-  defgrdrate.Update(1.0,defgrd,0.0);        // Null so ok???
+  defgrdrate.Update(1.0,defgrd,0.0);
   defgrdrate.Update(-1.0,defgrdlast,1.0);
   defgrdrate.Scale(1.0/dt);
 
@@ -944,12 +923,12 @@ void MAT::ActiveFiber::SetupRates(
   strainrate(5) = velgradient(0,2) + velgradient(2,0);
   strainrate.Scale(0.5);
 
-  dxx_->at(gp)=strainrate(0);
-  dyy_->at(gp)=strainrate(1);
-  dzz_->at(gp)=strainrate(2);
-  dxy_->at(gp)=strainrate(3);
-  dyz_->at(gp)=strainrate(4);
-  dxz_->at(gp)=strainrate(5);
+//  dxx_->at(gp)=strainrate(0);
+//  dyy_->at(gp)=strainrate(1);
+//  dzz_->at(gp)=strainrate(2);
+//  dxy_->at(gp)=strainrate(3);
+//  dyz_->at(gp)=strainrate(4);
+//  dxz_->at(gp)=strainrate(5);
 
   // Rate of rotation tensor (!= skew part w of velocity gradient l, see Holzapfel S.99)
   // Determine rotation tensor R from F (F=R*U) -> polar decomposition of displacement based F
@@ -1762,18 +1741,18 @@ void MAT::ActiveFiber::VisNames(std::map<std::string,int>& names)
   names[fiber] = 1; // scalar
   fiber = "Etadiag";
   names[fiber] = 1; // scalar
-  fiber = "dxx";
-  names[fiber] = 1; // scalar
-  fiber = "dyy";
-  names[fiber] = 1; // scalar
-  fiber = "dzz";
-  names[fiber] = 1; // scalar
-  fiber = "dxy";
-  names[fiber] = 1; // scalar
-  fiber = "dyz";
-  names[fiber] = 1; // scalar
-  fiber = "dxz";
-  names[fiber] = 1; // scalar
+//  fiber = "dxx";
+//  names[fiber] = 1; // scalar
+//  fiber = "dyy";
+//  names[fiber] = 1; // scalar
+//  fiber = "dzz";
+//  names[fiber] = 1; // scalar
+//  fiber = "dxy";
+//  names[fiber] = 1; // scalar
+//  fiber = "dyz";
+//  names[fiber] = 1; // scalar
+//  fiber = "dxz";
+//  names[fiber] = 1; // scalar
   matpassive_->VisNames(names);
 
 }  //VisNames()
@@ -1819,60 +1798,60 @@ bool MAT::ActiveFiber::VisData(const std::string& name, std::vector<double>& dat
       temp += etadiag_()->at(iter);
     data[0] = temp/numgp;
   }
-  else if (name == "dxx")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += dxx_()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (name == "dyy")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += dyy_()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (name == "dzz")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += dzz_()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (name == "dxy")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += dxy_()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (name == "dyz")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += dyz_()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (name == "dxz")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += dxz_()->at(iter);
-    data[0] = temp/numgp;
-  }
+//  else if (name == "dxx")
+//  {
+//    if ((int)data.size()!=1)
+//      dserror("size mismatch");
+//    double temp = 0.0;
+//    for (int iter=0; iter<numgp; iter++)
+//      temp += dxx_()->at(iter);
+//    data[0] = temp/numgp;
+//  }
+//  else if (name == "dyy")
+//  {
+//    if ((int)data.size()!=1)
+//      dserror("size mismatch");
+//    double temp = 0.0;
+//    for (int iter=0; iter<numgp; iter++)
+//      temp += dyy_()->at(iter);
+//    data[0] = temp/numgp;
+//  }
+//  else if (name == "dzz")
+//  {
+//    if ((int)data.size()!=1)
+//      dserror("size mismatch");
+//    double temp = 0.0;
+//    for (int iter=0; iter<numgp; iter++)
+//      temp += dzz_()->at(iter);
+//    data[0] = temp/numgp;
+//  }
+//  else if (name == "dxy")
+//  {
+//    if ((int)data.size()!=1)
+//      dserror("size mismatch");
+//    double temp = 0.0;
+//    for (int iter=0; iter<numgp; iter++)
+//      temp += dxy_()->at(iter);
+//    data[0] = temp/numgp;
+//  }
+//  else if (name == "dyz")
+//  {
+//    if ((int)data.size()!=1)
+//      dserror("size mismatch");
+//    double temp = 0.0;
+//    for (int iter=0; iter<numgp; iter++)
+//      temp += dyz_()->at(iter);
+//    data[0] = temp/numgp;
+//  }
+//  else if (name == "dxz")
+//  {
+//    if ((int)data.size()!=1)
+//      dserror("size mismatch");
+//    double temp = 0.0;
+//    for (int iter=0; iter<numgp; iter++)
+//      temp += dxz_()->at(iter);
+//    data[0] = temp/numgp;
+//  }
   else
   {
     return matpassive_->VisData(name, data, numgp, eleID);
@@ -1911,22 +1890,4 @@ void MAT::ActiveFiber::PrintFourTensor(
         for(int l=0;l<3;++l)
           std::cout<<"ELEMENT "<<i<<j<<k<<l<<" : "<<FourTensor[i][j][k][l]<<std::endl;
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  Save                                                    rauch  07/14|
- *----------------------------------------------------------------------*/
-void MAT::ActiveFiber::SaveCurrentState(const int numgp)
-{
-  etacurr_save_->at(numgp) = etacurr_->at(numgp);
-  sigmaomegaphicurr_save_->at(numgp) = sigmaomegaphicurr_->at(numgp);
-}
-
-/*----------------------------------------------------------------------*
- |  Write                                                   rauch  07/14|
- *----------------------------------------------------------------------*/
-void MAT::ActiveFiber::WriteCurrentState(const int numgp)
-{
-  etacurr_->at(numgp) = etacurr_save_->at(numgp);
-  sigmaomegaphicurr_->at(numgp) = sigmaomegaphicurr_save_->at(numgp);
 }

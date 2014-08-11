@@ -176,12 +176,6 @@ namespace MAT
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
     virtual void ResetAll(int numgp);
 
-    /// Save Current State
-    void SaveCurrentState(const int numgp);
-
-    // Write Current State
-    void WriteCurrentState(const int numgp);
-
     /// Update
     virtual void Update();
 
@@ -211,14 +205,16 @@ namespace MAT
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
-  public:
+    /// Return parameter of this material
+    MAT::PAR::ActiveFiber* GetMaterialParams(){return params_;};
+
+  private:
 
     /// my material parameters
     MAT::PAR::ActiveFiber* params_;
 
     /// (current) fiber activation level
     Teuchos::RCP<std::vector<LINALG::Matrix<numbgp,twice> > > etacurr_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<numbgp,twice> > > etacurr_save_;
     /// fiber activation level of old timestep (last converged state)
     Teuchos::RCP<std::vector<LINALG::Matrix<numbgp,twice> > > etalast_;
     /// average intensity level at every point of the cytoplasm
@@ -227,15 +223,14 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > etahor_;
     Teuchos::RCP<std::vector<double> > etaver_;
     Teuchos::RCP<std::vector<double> > etadiag_;
-    Teuchos::RCP<std::vector<double> > dxx_;
-    Teuchos::RCP<std::vector<double> > dyy_;
-    Teuchos::RCP<std::vector<double> > dzz_;
-    Teuchos::RCP<std::vector<double> > dxy_;
-    Teuchos::RCP<std::vector<double> > dyz_;
-    Teuchos::RCP<std::vector<double> > dxz_;
+//    Teuchos::RCP<std::vector<double> > dxx_;
+//    Teuchos::RCP<std::vector<double> > dyy_;
+//    Teuchos::RCP<std::vector<double> > dzz_;
+//    Teuchos::RCP<std::vector<double> > dxy_;
+//    Teuchos::RCP<std::vector<double> > dyz_;
+//    Teuchos::RCP<std::vector<double> > dxz_;
     /// (current) stress in (omega,phi) direction
     Teuchos::RCP<std::vector<LINALG::Matrix<numbgp,twice> > > sigmaomegaphicurr_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<numbgp,twice> > > sigmaomegaphicurr_save_;
     /// stress in (omega,phi) direction of old timestep (last converged state)
     Teuchos::RCP<std::vector<LINALG::Matrix<numbgp,twice> > > sigmaomegaphilast_;
     /// (current) deformation gradient
