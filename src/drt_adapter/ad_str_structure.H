@@ -240,7 +240,7 @@ namespace ADAPTER {
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;
 
-    //! Set upper limit of time range of interest 
+    //! Set upper limit of time range of interest
     virtual void SetTimeEnd(double timemax) = 0;
 
     /// Get time step size \f$\Delta t_n\f$
@@ -270,7 +270,7 @@ namespace ADAPTER {
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time) = 0;
-    
+
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time) = 0;
 
@@ -284,6 +284,10 @@ namespace ADAPTER {
     \f$x^n+1_i+1 = x^n     + disstepinc\f$
 
     with \f$n\f$ and \f$i\f$ being time and Newton iteration step
+
+    Note: The structure expects an iteration increment.
+    In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
+    which is then transformed into an iteration increment
     */
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> disiterinc ///< displacement increment between Newton iteration i and i+1
@@ -445,13 +449,13 @@ namespace ADAPTER {
     /// Propagate crack within the structure and accordingly modify the discretization
     virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace) = 0;
 
-		/// Write Gmsh output for structural field
+    /// Write Gmsh output for structural field
     virtual void writeGmshStrucOutputStep() = 0;
 
-		/// Get map of newly introduced node ids with their corresponding old node ids
+    /// Get map of newly introduced node ids with their corresponding old node ids
     virtual std::map<int,int> getOldNewCrackNodes() = 0;
 
-		/// Get new crack tip nodes after propagation
+    /// Get new crack tip nodes after propagation
     virtual std::vector<int> GetCrackTipNodes() = 0;
     //@}
 
