@@ -926,12 +926,8 @@ void FLD::FluidImplicitTimeInt::Solve()
         if (fluid_infnormscaling_!= Teuchos::null)
           fluid_infnormscaling_->ScaleSystem(sysmat_, *residual_);
 
-        bool resetSolver = (itnum == 1);
-        if (step_%10 != 0 && (uprestart_ == 0 || step_%uprestart_!=1) && step_>3)
-          resetSolver = false;
-
          // solve the system
-        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,resetSolver, projector_);
+        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, projector_);
 
         // unscale solution
         if (fluid_infnormscaling_!= Teuchos::null)
