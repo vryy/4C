@@ -115,6 +115,8 @@ STR::TimInt::TimInt
   errfile_(xparams.get<FILE*>("err file")),
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
+  outputeveryiter_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_EVERY_ITER")),
+  oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
   writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
@@ -666,7 +668,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           {
             std::cout << "================================================================" << std::endl;
             std::cout << "===== Standard Lagrange multiplier strategy ====================" << std::endl;
-            std::cout << "===== (Saddle point formulation)            ====================" << std::endl;
+            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
           else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
@@ -697,18 +699,25 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
             std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
-          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
+          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
           {
             std::cout << "================================================================" << std::endl;
-            std::cout << "===== Standard Augmented Lagrange strategy =====================" << std::endl;
+            std::cout << "===== Uzawa Augmented Lagrange strategy ========================" << std::endl;
             std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
-          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
+          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
           {
             std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Augmented Lagrange strategy =========================" << std::endl;
+            std::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================" << std::endl;
             std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+            std::cout << "================================================================\n" << std::endl;
+          }
+          else if (soltype == INPAR::CONTACT::solution_augmented && shapefcn == INPAR::MORTAR::shape_standard)
+          {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "===== Augmented Lagrange strategy ==============================" << std::endl;
+            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
           else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
@@ -745,17 +754,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
             std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
-          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
+          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
           {
             std::cout << "================================================================" << std::endl;
-            std::cout << "===== Standard Augmented Lagrange strategy =====================" << std::endl;
+            std::cout << "===== Uzawa Augmented Lagrange strategy ========================" << std::endl;
             std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
-          else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
+          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
           {
             std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Augmented Lagrange strategy =========================" << std::endl;
+            std::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================" << std::endl;
             std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
             std::cout << "================================================================\n" << std::endl;
           }
@@ -1810,6 +1819,57 @@ void STR::TimInt::PrepareOutput()
   if (havemicromat_) PrepareOutputMicro();
 }
 
+/*----------------------------------------------------------------------*
+ *   Write Output while the Newton Iteration         by hiermeier 09/13 *
+ *   (useful for debugging purposes)                                    */
+void STR::TimInt::OutputEveryIter(bool nw, bool ls)
+{
+  // prevents repeated initialization of output writer
+  bool datawritten = false;
+
+  // Reinitialize the result file in the initial step
+  if (outputcounter_ == 0)
+  {
+    firstoutputofrun_ = true;
+    /*--------------------------------------------------------------------------------*
+     | We modify the maximum number of steps per output file here, because we use the |
+     | step number as indicator for the differentiation between time-,Newton- and     |
+     | Line Search-steps. This is the minimal invasive change to prevent the output   |
+     | routine to generate too many output files. We assume that the Newton method    |
+     | needs an average cumulated number of 5 Newton/Line-Search steps per time step. |
+     *--------------------------------------------------------------------------------*/
+    int newFileSteps = 0;
+    if (output_->Output()->FileSteps() >= std::numeric_limits<int>::max()/50000)
+      newFileSteps = std::numeric_limits<int>::max();
+    else
+      newFileSteps = output_->Output()->FileSteps()*50000;
+
+    output_->Output()->SetFileSteps(newFileSteps);
+
+    output_->NewResultFile("EveryIter",oei_filecounter_);
+    output_->WriteMesh(0, 0.0);
+  }
+
+  // increase counter value
+  if (ls)
+    // for line search steps the outputcounter_ is increased by one
+    outputcounter_++;
+  else if (nw)
+    // for Newton steps the outputcounter_ is increased by 100
+    outputcounter_ += 100 - (outputcounter_%100);
+  else
+    // for time steps the outputcounter_ is increased by 100 000
+    outputcounter_ += 100000 - (outputcounter_%100000);
+  // time and step number
+
+  output_->WriteMesh(outputcounter_, (double) outputcounter_); //(*time_)[0]
+
+//  output_->OverwriteResultFile();
+  OutputState(datawritten);
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
@@ -2061,8 +2121,16 @@ void STR::TimInt::OutputState
   datawritten = true;
 
   // write now
-  output_->NewStep(step_, (*time_)[0]);
-  output_->WriteVector("displacement", (*dis_)(0));
+  if (outputeveryiter_)
+  {
+    output_->NewStep(outputcounter_, (double) outputcounter_);
+    output_->WriteVector("displacement",Teuchos::rcp_static_cast<Epetra_MultiVector>(disn_));
+  }
+  else
+  {
+    output_->NewStep(step_, (*time_)[0]);
+    output_->WriteVector("displacement", (*dis_)(0));
+  }
 
   if( (dismatn_!=Teuchos::null))
     output_->WriteVector("material_displacement", (*dism_)(0));
@@ -3065,7 +3133,8 @@ int STR::TimInt::Integrate()
       UpdateStepElement();
 
       // write output
-      OutputStep();
+      if (outputeveryiter_) OutputEveryIter();
+      else OutputStep();
 
       // print info about finished time step
       PrintStep();

@@ -174,7 +174,7 @@ class StrategyBase
     //@}
 
     //! @name Purely virtual functions
-    
+
     // All these functions are defined in one or more specific derived classes,
     // such as CONTACT::ContactLagrangeStrategy or CONTACT::MeshtyingPenaltyStrategy.
     // As the base class MORTAR::StrategyBase is always called from the control routine
@@ -230,6 +230,7 @@ class StrategyBase
     virtual const int NumberOfActiveNodes() = 0;
     virtual const int NumberOfSlipNodes() = 0;
     virtual void OutputStresses() = 0;
+    virtual void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g) = 0;
     virtual void OutputWear() = 0;
     virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
@@ -248,7 +249,7 @@ class StrategyBase
     virtual void Update(int istep, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
     virtual void UpdateActiveSetSemiSmooth() = 0;
-    virtual void UpdateAugmentedLagrange() = 0;
+    virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
     virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
     virtual bool WasInContact() = 0;

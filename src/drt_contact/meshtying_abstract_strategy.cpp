@@ -162,7 +162,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 {
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
-  // ------------------------------------------------------------------------                     
+  // ------------------------------------------------------------------------
 
   // make sure to remove all existing maps first
   // (do NOT remove map of non-interface dofs after redistribution)
@@ -204,7 +204,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     gndofrowmap_ = LINALG::SplitMap(*ProblemDofs(), *gsdofrowmap_);
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
   }
-  
+
   // setup combined global slave and master dof map
   // setup global displacement dof map
   gsmdofrowmap_ = LINALG::MergeMap(*gsdofrowmap_,*gmdofrowmap_,false);
@@ -212,7 +212,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
-  // ------------------------------------------------------------------------   
+  // ------------------------------------------------------------------------
 
   // setup Lagrange multiplier vectors
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -312,7 +312,7 @@ void CONTACT::MtAbstractStrategy::SetState(const std::string& statename,
     for (int i=0; i<(int)interface_.size(); ++i)
       interface_[i]->SetState(statename, vec);
   }
-  
+
   return;
 }
 
@@ -320,7 +320,7 @@ void CONTACT::MtAbstractStrategy::SetState(const std::string& statename,
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
-{ 
+{
   //********************************************************************
   // initialize and evaluate interfaces
   //********************************************************************
@@ -329,11 +329,11 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
   {
     // initialize / reset interfaces
     interface_[i]->Initialize();
-    
+
     // evaluate interfaces
     interface_[i]->Evaluate();
   }
-  
+
   //********************************************************************
   // restrict mortar treatment to actual meshtying zone
   //********************************************************************
@@ -350,7 +350,7 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
   // assemble D- and M-matrix on all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
-  
+
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
@@ -366,7 +366,7 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
   mmatrix_->Multiply(false,*xm,*Mxm);
   g_->Update(1.0,*Dxs,1.0);
   g_->Update(-1.0,*Mxm,1.0);
-  
+
   return;
 }
 
@@ -484,7 +484,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // (1) perform mesh initialization node by node
   //**********************************************************************
   // IMPORTANT NOTE:
-  // We have to be very careful on which nodes on which processor to 
+  // We have to be very careful on which nodes on which processor to
   // relocate! Basically, every processor needs to know about relocation
   // of all its column nodes in the standard column map with overlap=1,
   // because all these nodes participate in the processor's element
@@ -509,7 +509,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // second modification (DRT::Node) is only performed if the respective
   // node in contained in the problem node column map.
   //**************************************************************
-  
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -518,13 +518,13 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
     Teuchos::RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
     Epetra_Vector Xslavemodcol(*fullsdofs,false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
-    
+
     // loop over all slave nodes on the current interface
     for (int j=0; j<fullsnodes->NumMyElements(); ++j)
     {
       // get global ID of current node
       int gid = fullsnodes->GID(j);
-      
+
       // be careful to modify BOTH mtnode in interface discret ...
       // (check if the node is available on this processor)
       bool isininterfacecolmap = false;
@@ -538,7 +538,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         mtnode = static_cast<MORTAR::MortarNode*>(node);
       }
-      
+
       // ... AND standard node in underlying problem discret
       // (check if the node is available on this processor)
       bool isinproblemcolmap = false;
@@ -550,7 +550,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
         pnode = ProblemDiscret().gNode(gid);
         if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
       }
-      
+
       // new nodal position and problem dimension
       double Xnew[3] = {0.0, 0.0, 0.0};
       double Xnewglobal[3] = {0.0, 0.0, 0.0};
@@ -627,7 +627,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
       }
     }
   }
- 
+
   //**********************************************************************
   // (2) re-evaluate constraints in reference configuration
   //**********************************************************************
@@ -653,7 +653,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // the access method ProblemDiscret(). Thus, we directly hand in the class
   // member variable probdiscret_, which is of type DRT::Discretization&.
   DRT::ParObjectFactory::Instance().InitializeElements(probdiscret_);
-  
+
   return;
 }
 
@@ -762,7 +762,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           // throw a dserror if node is Active and DBC
           if (mtnode->IsDbc())
             dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", mtnode->Id());
-     
+
           // store updated LM into node
           mtnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
@@ -840,16 +840,16 @@ void CONTACT::MtAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
   // (we need this for interpolation of the next generalized mid-point)
   zold_->Update(1.0,*z_,0.0);
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
-  
+
   // old displacements in nodes
   // (this is needed for calculating the auxiliary positions in
   // binarytree contact search)
   SetState("olddisplacement",dis);
 
-#ifdef MORTARGMSH1  
+#ifdef MORTARGMSH1
   VisualizeGmsh(istep);
 #endif // #ifdef MORTARGMSH1
-  
+
   return;
 }
 
@@ -861,7 +861,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 {
   // set displacement state
   SetState("displacement",dis);
-    
+
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -870,16 +870,16 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   reader.ReadVector(LagrMultOld(),"mt_lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
-  
-  // only for Augmented strategy
+
+  // only for Uzawa strategy
   INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-  if (st == INPAR::CONTACT::solution_auglag)
+  if (st == INPAR::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     reader.ReadVector(LagrMultUzawa(),"mt_lagrmultold");
     StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   }
-    
+
   return;
 }
 
@@ -891,16 +891,16 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
-  
+
   // get out of here if no output wanted
   if (emtype==INPAR::CONTACT::output_none) return;
-    
+
   // compute discrete slave and master interface forces
   Teuchos::RCP<Epetra_Vector> fcslavetemp = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
   Teuchos::RCP<Epetra_Vector> fcmastertemp = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   dmatrix_->Multiply(true, *z_, *fcslavetemp);
   mmatrix_->Multiply(true, *z_, *fcmastertemp);
-  
+
   // export the interface forces to full dof layout
   Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
@@ -1090,7 +1090,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       filename << filebase << ".interface";
       MyFile = fopen(filename.str().c_str(), "at+");
-      
+
       if (MyFile)
       {
         for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcs[i]);
@@ -1102,9 +1102,9 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       }
       else
         dserror("ERROR: File for writing meshtying forces could not be opened.");
-    } 
+    }
   }
-  
+
   // print interface results to screen
   if (emtype == INPAR::CONTACT::output_screen ||
       emtype == INPAR::CONTACT::output_both)

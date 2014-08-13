@@ -74,53 +74,53 @@ class MtLagrangeStrategy : public MtAbstractStrategy
 
     /*!
     \brief Do mortar coupling in reference configuration
-     
+
     Only do this ONCE for meshtying upon initialization!
-    
+
     */
     void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
     \brief Mesh intialization for rotational invariance
-    
+
     Only do this ONCE for meshtying upon initialization!
     (only implemented for DUAL shape functions)
-    
+
     */
     void MeshInitialization();
-      
+
     /*!
     \brief Evaluate meshtying
-    
+
     This is the main routine of our meshtying algorithms on a global level.
     It contains the setup of the global linear system including meshtying.
-     
+
     For a Lagrangian strategy this involves heavy modification to the initial kteff and feff.
     Hence, they are in fact build from scratch here. The application of modifications to
     groups of dofs (slave, master, etc.) results in some matrix and vector splitting and a
     lot of matrix-vector calculation in here!
-    
+
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
     \param dis (in): current displacement state
-    
+
     */
     void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                            Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
     \brief Solve linear system of saddle point type
-   
+
     \param solver (in): LINALG::Solver object
     \param kdd (in): the displacement dof stiffness (upper left block)
     \param fd (in): the displacement dof r.h.s. (upper block)
     \param sold (in/out): the displacement dof solution increment
     \param dirichtoggle (in): toggle vector for dirichlet conditions
     \param numiter (in): current nonlinear iteration step
-    
+
     This routine is called by the <tt>LinearSolve</tt> function in the (contact) structure time integration algorithm.
     The <tt>SaddlePointSolve</tt> problem is only used for saddle point problems (contact or meshtying). The solver must be
-    a LINALG::Solver object with a block preconditioner (e.g. CheapSIMPLE). The fallback solver is used whenever there is no 
+    a LINALG::Solver object with a block preconditioner (e.g. CheapSIMPLE). The fallback solver is used whenever there is no
     contact and a pure (symmetric) structural problem has to be solved. Therefore per default the STRUCT SOLVER block parameters
     are used.
     */
@@ -132,32 +132,34 @@ class MtLagrangeStrategy : public MtAbstractStrategy
                           Teuchos::RCP<Epetra_Vector>          dirichtoggle,
                           int numiter);
 
+    void EvalConstrRHS(){std::cout << "Warning: The EvalConstrRHS() function is not yet implemented for meshtying." << std::endl; }
+
     /*!
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been statically condensed during
     the setup of the global problem!
-    
+
     */
     void Recover(Teuchos::RCP<Epetra_Vector> disi);
-    
+
     //@}
-    
+
     //! @name Empty functions (Penalty meshtying)
-        
+
     // All these functions only have functionality in Penalty meshtying simulations,
     // thus they are defined as dserror here in the case of Lagrange meshtying..
-    
+
     double ConstraintNorm() {return 0.0;}
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
-    double InitialPenalty() {return 0.0;}   
+    double InitialPenalty() {return 0.0;}
     void ResetPenalty() {}
     void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
-    void UpdateAugmentedLagrange() {}
+    void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
-    
+
     //@}
-    
+
   protected:
 
     // don't want = operator and cctor
@@ -165,8 +167,8 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     MtLagrangeStrategy(const MtLagrangeStrategy& old);
 
     Teuchos::RCP<LINALG::SparseMatrix> conmatrix_;   // constraint matrix for saddle point system
-    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M    
-    
+    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M
+
     Teuchos::RCP<Epetra_Vector>        fs_;          // slave side effective forces (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)

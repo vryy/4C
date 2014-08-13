@@ -80,7 +80,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
 
   // refer call to parent class
   MtAbstractStrategy::MortarCoupling(dis);
- 
+
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
   //----------------------------------------------------------------------
@@ -106,7 +106,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
   mtd_ = LINALG::MLMultiply(*mmatrix_,true,*dmatrix_,false,false,false,true);
   dtm_ = LINALG::MLMultiply(*dmatrix_,true,*mmatrix_,false,false,false,true);
   dtd_ = LINALG::MLMultiply(*dmatrix_,true,*dmatrix_,false,false,false,true);
-  
+
   // transform rows of mortar matrix products to parallel distribution
   // of the global problem (stored in the "p"-version of dof maps)
   if (ParRedist())
@@ -139,7 +139,7 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
     std::cout << "Performing mesh initialization...........";
     fflush(stdout);
   }
-  
+
   //**********************************************************************
   // (1) get master positions on global level
   //**********************************************************************
@@ -154,20 +154,20 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
   Teuchos::RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*gsdofrowmap_,true);
   Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_,true);
   mmatrix_->Multiply(false,*Xmaster,*rhs);
-  
+
   // solve with default solver
   LINALG::Solver solver(Comm());
   solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
-      
+
   //**********************************************************************
   // (3) perform mesh initialization node by node
   //**********************************************************************
   // this can be done in the AbstractStrategy now
   MtAbstractStrategy::MeshInitialization(Xslavemod);
-  
+
   // print message
   if(Comm().MyPID()==0) std::cout << "done!\n" << std::endl;
-      
+
   return;
 }
 
@@ -181,7 +181,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   // since we will modify the graph of kteff by adding additional
   // meshtyong stiffness entries, we have to uncomplete it
   kteff->UnComplete();
-    
+
   /**********************************************************************/
   /* Global setup of kteff, feff (including meshtying)                  */
   /**********************************************************************/
@@ -192,7 +192,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   kteff->Add(*mtd_,false,-pp,1.0);
   kteff->Add(*dtm_,false,-pp,1.0);
   kteff->Add(*dtd_,false,pp,1.0);
-  
+
   //***************************************************************************
   // build constraint vector
   //***************************************************************************
@@ -214,7 +214,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   LINALG::Export(*dis,*tempvec3);
   mmatrix_->Multiply(false,*tempvec3,*tempvec4);
   g_->Update(1.0,*tempvec4,1.0);
-  
+
   // update LM vector
   // (in the pure penalty case, zuzawa is zero)
   z_->Update(1.0,*zuzawa_,0.0);
@@ -222,20 +222,20 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
 
   // store updated LM into nodes
   StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
-  
+
   // add penalty meshtying force terms
   Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   mmatrix_->Multiply(true,*z_,*fm);
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fm,*fmexp);
   feff->Update(1.0,*fmexp,1.0);
-  
+
   Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(true,*z_,*fs);
   Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fs,*fsexp);
   feff->Update(-1.0,*fsexp,1.0);
-  
+
   // add old contact forces (t_n)
   Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(true,*zold_,*fsold);
@@ -248,7 +248,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fmold,*fmoldexp);
   feff->Update(-alphaf_,*fmoldexp,1.0);
-  
+
   return;
 }
 
@@ -264,31 +264,31 @@ void CONTACT::MtPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOper
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fm,*fmexp);
   feff->Update(-1.0,*fmexp,1.0);
-  
+
   Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false,*z_,*fs);
   Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fs,*fsexp);
   feff->Update(1.0,*fsexp,1.0);
-    
+
   // update LM vector
   double pp = Params().get<double>("PENALTYPARAM");
   z_->Update(1.0,*zuzawa_,0.0);
   z_->Update(-pp,*g_,1.0);
-  
+
   // add penalty meshtying force terms
   Teuchos::RCP<Epetra_Vector> fmnew = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   mmatrix_->Multiply(true,*z_,*fmnew);
   Teuchos::RCP<Epetra_Vector> fmexpnew = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fmnew,*fmexpnew);
   feff->Update(1.0,*fmexpnew,1.0);
-  
+
   Teuchos::RCP<Epetra_Vector> fsnew = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false,*z_,*fsnew);
   Teuchos::RCP<Epetra_Vector> fsexpnew = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fsnew,*fsexpnew);
   feff->Update(-1.0,*fsexpnew,1.0);
-  
+
   return;
 }
 
@@ -299,14 +299,14 @@ void CONTACT::MtPenaltyStrategy::ResetPenalty()
 {
   // reset penalty parameter in strategy
   Params().set<double>("PENALTYPARAM",InitialPenalty());
-  
-  
+
+
   // reset penalty parameter in all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
-  { 
+  {
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
   }
-  
+
   return;
 }
 
@@ -318,19 +318,19 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   // initialize parameters
   double cnorm = 0.0;
   bool updatepenalty = false;
-  double ppcurr = Params().get<double>("PENALTYPARAM");   
+  double ppcurr = Params().get<double>("PENALTYPARAM");
 
   // compute constraint norm
   g_->Norm2(&cnorm);
-  
+
   //********************************************************************
   // adaptive update of penalty parameter
-  // (only for Augmented Lagrange strategy)
+  // (only for Uzawa Augmented Lagrange strategy)
   //********************************************************************
   INPAR::CONTACT::SolvingStrategy soltype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-  
-  if (soltype==INPAR::CONTACT::solution_auglag)
+
+  if (soltype==INPAR::CONTACT::solution_uzawa)
   {
     // check convergence of cnorm and update penalty parameter
     // only do this for second, third, ... Uzawa iteration
@@ -338,10 +338,10 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     if ((uzawaiter >= 2) && (cnorm > 0.25 * ConstraintNorm()))
     {
       updatepenalty = true;
-      
+
       // update penalty parameter in strategy
       Params().set<double>("PENALTYPARAM",10*ppcurr);
-      
+
       // update penalty parameter in all interfaces
       for (int i=0; i<(int)interface_.size(); ++i)
       {
@@ -350,12 +350,12 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         interface_[i]->IParams().set<double>("PENALTYPARAM",10*ippcurr);
       }
     }
-  } 
+  }
   //********************************************************************
-  
+
   // update constraint norm
   constrnorm_ = cnorm;
-  
+
   // output to screen
   if (Comm().MyPID()==0)
   {
@@ -371,7 +371,7 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 /*----------------------------------------------------------------------*
  | store Lagrange multipliers for next Uzawa step             popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::UpdateAugmentedLagrange()
+void CONTACT::MtPenaltyStrategy::UpdateUzawaAugmentedLagrange()
 {
   // store current LM into Uzawa LM
   // (note that this is also done after the last Uzawa step of one
@@ -379,7 +379,7 @@ void CONTACT::MtPenaltyStrategy::UpdateAugmentedLagrange()
   // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
-  
+
   return;
 }
 

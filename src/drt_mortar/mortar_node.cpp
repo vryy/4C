@@ -418,11 +418,19 @@ void MORTAR::MortarNode::AddScValue(double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::InitializeDataContainer()
 {
-  // get maximum size of lin vectors
+  // get maximum size of nodal D-entries
   dentries_ = 0;
+  std::set<int> sIdCheck;
+  std::pair<std::set<int>::iterator,bool> check;
   for(int i=0;i<NumElement();++i)
+  {
+    const int* snodeIds = Elements()[i]->NodeIds();
     for(int j=0;j<Elements()[i]->NumNode();++j)
-      dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+    {
+      check = sIdCheck.insert(snodeIds[j]);
+      if (check.second) dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+    }
+  }
 
   // only initialize if not yet done
   if (modata_==Teuchos::null)

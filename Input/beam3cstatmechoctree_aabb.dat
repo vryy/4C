@@ -70,7 +70,7 @@ THETA                           1
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
-STRATEGY                        Augmented
+STRATEGY                        Uzawa
 PENALTYPARAM                    1e+06
 UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   25

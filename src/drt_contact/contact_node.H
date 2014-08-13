@@ -51,15 +51,9 @@ class CoNodeType: public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const
-  {
-    return "CoNodeType";
-  }
+  std::string Name() const { return "CoNodeType"; }
 
-  static CoNodeType & Instance()
-  {
-    return instance_;
-  }
+  static CoNodeType & Instance() { return instance_; }
   ;
 
   virtual DRT::ParObject* Create(const std::vector<char> & data);
@@ -95,10 +89,7 @@ public:
    \brief Destructor
 
    */
-  virtual ~CoNodeDataContainer()
-  {
-    return;
-  }
+  virtual ~CoNodeDataContainer() { return; }
 
   /*!
    \brief Pack this class so that it can be communicated
@@ -128,34 +119,93 @@ public:
   /*!
    \brief Return current nodal tangent t_xi (only for slave side!) (length 3)
    */
-  virtual double* txi()
-  {
-    return txi_;
-  }
+  virtual double* txi() { return txi_; }
 
   /*!
    \brief Return current nodal tangent t_eta (only for slave side!) (length 3)
    */
-  virtual double* teta()
-  {
-    return teta_;
-  }
+  virtual double* teta() { return teta_; }
 
   /*!
    \brief Return the weighted gap (scalar) of this node
    */
-  virtual double& Getg()
-  {
-    return grow_;
-  }
+  virtual double& Getg() { return grow_; }
 
   /*!
-   \brief Return contact status of last converged state n (active=true)
-   */
-  virtual inline bool& ActiveOld()
-  {
-    return activeold_;
-  }
+  \brief Return the weighted gap (scalar) of this node
+
+  */
+  virtual double& GetWGap() { return wGap_; }
+
+  /*!
+  \brief Return the scaling factor kappa for this node
+
+  */
+  virtual double& GetKappa() { return kappa_; }
+
+  /*!
+  \brief Return the linearization of the scaling factor kappa
+
+  */
+  virtual std::map<int,double>& GetKappaLin() { return kappaLin_; }
+
+  /*!
+  \brief Return the scaling factor augA
+
+  Integration over the whole slave interface, without consideration of
+  the segments
+  */
+  virtual double& GetAugA() { return augA_; }
+
+  /*!
+  \brief Return the linearization of the scaling factor augA
+
+  Integration over the whole slave interface, without consideration of
+  the segments
+  */
+  virtual std::map<int,double>& GetAugALin() { return augALin_; }
+
+  /*!
+  \brief Return the linearization of the averaged weighted gap
+
+  */
+  virtual std::map<int,double>& GetAWGapLin() {return aWGapLin_; }
+
+  /*!
+  \brief Return the linearization of the weighted gap
+
+  */
+  virtual std::map<int,double>& GetWGapLin() {return wGapLin_; }
+
+  /*!
+  \brief Return the variation of the weighted gap (slave part)
+
+  */
+  virtual GEN::pairedvector<int,std::pair<int,double> >& GetVarWGapSl() {return varWGapSl_; }
+
+  /*!
+  \brief Return the variation of the weighted gap (slave part)
+
+  */
+  virtual std::map<int,std::pair<int,double> >& GetVarWGapMa() {return varWGapMa_; }
+
+  /*!
+  \brief Return the linearization of the variation of the weighted gap (slave part)
+
+  */
+  virtual std::map<int,std::map<int,double> >& GetVarWGapLinSl() {return varWGapLinSl_; }
+
+  /*!
+  \brief Return the linearization of the variation of the weighted gap (master part)
+
+  */
+  virtual std::map<int,std::map<int,double> >& GetVarWGapLinMa() {return varWGapLinMa_; }
+
+  /*!
+  \brief Return contact status of last converged state n (active=true)
+
+  */
+  virtual inline bool& ActiveOld() { return activeold_; }
 
   /*!
    \brief Return the 'DerivN' map (vector) of this node
@@ -165,10 +215,7 @@ public:
    A vector is used because the normal itself is a vector (2 or 3 components).
 
    */
-  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivN()
-  {
-    return derivn_;
-  }
+  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivN() { return derivn_; }
 
   /*!
    \brief Return the 'DerivTxi' map (vector) of this node
@@ -178,10 +225,7 @@ public:
    A vector is used because the tangent itself is a vector (2 or 3 components).
 
    */
-  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivTxi()
-  {
-    return derivtxi_;
-  }
+  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivTxi() { return derivtxi_; }
 
   /*!
    \brief Return the 'DerivTeta' map (vector) of this node
@@ -191,10 +235,7 @@ public:
    A vector is used because the tangent itself is a vector (2 or 3 components).
 
    */
-  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivTeta()
-  {
-    return derivteta_;
-  }
+  virtual std::vector<GEN::pairedvector<int, double> >& GetDerivTeta() { return derivteta_; }
 
   /*!
    \brief Return the 'DerivD' map of this node
@@ -209,10 +250,7 @@ public:
    support arbitrary types of shape functions, this is not possible anymore.
 
    */
-  virtual std::map<int, std::map<int, double> >& GetDerivD()
-  {
-    return derivd_;
-  }
+  virtual std::map<int, std::map<int, double> >& GetDerivD() { return derivd_; }
 
   /*!
    \brief Return the 'DerivM' map of maps of this node
@@ -224,10 +262,7 @@ public:
    all directional derivatives l existing for M_ik.
 
    */
-  virtual std::map<int, std::map<int, double> >& GetDerivM()
-  {
-    return derivm_;
-  }
+  virtual std::map<int, std::map<int, double> >& GetDerivM() { return derivm_; }
 
   /*!
    \brief Return one specific 'DerivD' map of this node
@@ -268,19 +303,13 @@ public:
    weighted gap entry g~ with respect to the slave/master displacements.
 
    */
-  virtual std::map<int, double>& GetDerivG()
-  {
-    return derivg_;
-  }
+  virtual std::map<int, double>& GetDerivG() { return derivg_; }
 
   /*!
    \brief Return the 'DerivGlm' map of this node
 
    */
-  virtual std::map<int, double>& GetDerivGW()
-  {
-    return derivgw_;
-  }
+  virtual std::map<int, double>& GetDerivGW() { return derivgw_; }
 
   /*!
    \brief Return the 'DerivW' map of this node
@@ -289,10 +318,7 @@ public:
    weighted wear increment entry w~ with respect to the slave/master displacements.
 
    */
-  virtual std::map<int, double>& GetDerivW()
-  {
-    return derivw_;
-  }
+  virtual std::map<int, double>& GetDerivW() { return derivw_; }
 
   /*!
    \brief Return the 'DerivW' map of this node
@@ -301,10 +327,7 @@ public:
    weighted wear increment entry w~ with respect to the lagr. mult.
 
    */
-  virtual std::map<int, double>& GetDerivWlm()
-  {
-    return derivw_lm_;
-  }
+  virtual std::map<int, double>& GetDerivWlm() { return derivw_lm_; }
 
   /*!
    \brief Return scaling factor for weighted gap
@@ -312,10 +335,7 @@ public:
    Note: This is only calculated when performing a penalty strategy
 
    */
-  virtual double& Kappa()
-  {
-    return kappa_;
-  }
+  virtual double& Kappa() { return kappa_; }
 
   /*!
    \brief Return the 'DerivZ map of this node
@@ -326,10 +346,7 @@ public:
    Note: This is only calculated when performing a penalty strategy
 
    */
-  virtual std::vector<std::map<int, double> >& GetDerivZ()
-  {
-    return derivz_;
-  }
+  virtual std::vector<std::map<int, double> >& GetDerivZ() { return derivz_; }
 
   /*!
    \brief Return the 'Derivscalefac_' map of this node
@@ -338,10 +355,7 @@ public:
    scaling factor witch is needed for better conditioning
 
    */
-  virtual std::map<int, double>& GetDerivScale()
-  {
-    return derivscalefac_;
-  }
+  virtual std::map<int, double>& GetDerivScale() { return derivscalefac_; }
 
   //@}
 
@@ -357,21 +371,37 @@ protected:
 
   bool activeold_; // true if cnode was in contact (last converged state n)
 
-  // Penalty-related quantities
-  double kappa_; // gap-scaling factor kappa
-  std::vector<std::map<int, double> > derivz_; // direction derivative of nodal z-matrix value
-
   std::vector<GEN::pairedvector<int, double> > derivn_;    // directional derivative of nodal normal
   std::vector<GEN::pairedvector<int, double> > derivtxi_;  // directional derivative of nodal tangent t_xi
   std::vector<GEN::pairedvector<int, double> > derivteta_; // directional derivative of nodal tangent t_eta
-  std::map<int, std::map<int, double> > derivd_; // directional derivative of nodal D-matrix value
-  std::map<int, std::map<int, double> > derivm_; // directional derivative of nodal M-matrix values
-  std::map<int, double> derivg_;        // directional derivative of nodal weighted gap value
-  std::map<int, double> derivgw_;       // directional derivative of nodal weighted gap value
-  std::map<int, double> derivw_;        // directional derivative of nodal weighted wear value
-  std::map<int, double> derivw_lm_;     // directional derivative of nodal weighted wear value  std::map<int,double>                    derivscalefac_; // direction derivative of nodal scale factor value
-  std::map<int, double> derivscalefac_; // directional derivative of nodal scale factor value
+  std::map<int, std::map<int, double> > derivd_;           // directional derivative of nodal D-matrix value
+  std::map<int, std::map<int, double> > derivm_;           // directional derivative of nodal M-matrix values
+  std::map<int, double> derivg_;                           // directional derivative of nodal weighted gap value
+  std::map<int, double> derivgw_;                          // directional derivative of nodal weighted gap value
+  std::map<int, double> derivw_;                           // directional derivative of nodal weighted wear value
+  std::map<int, double> derivw_lm_;                        // directional derivative of nodal weighted wear value
+  std::map<int, double> derivscalefac_;                    // directional derivative of nodal scale factor value
 
+  // *** Augmented Lagrangian formulation ********************
+  // nodal scalar values
+  double                                  wGap_;         // nodal entry of weighted gap vector
+  double                                  augA_;         // nodal scaling factor
+
+  // Variation -- RHS
+  GEN::pairedvector<int,std::pair<int,double> > varWGapSl_; // variation of the weighted gap (slave)
+  std::map<int,std::pair<int,double> > varWGapMa_;          // variation of the weighted gap (master)
+
+  // Linearization
+  std::map<int,std::map<int,double> > varWGapLinSl_;  // linearization of the weighted gap variation (slave)
+  std::map<int,std::map<int,double> > varWGapLinMa_; // linearization of the weighted gap variation (master)
+  std::map<int,double> kappaLin_;     // linearization of the scaling factor (segment based integration)
+  std::map<int,double> augALin_;      // linearization of the scaling factor (element based integration)
+  std::map<int,double> aWGapLin_;     // linearization of the averaged weighted gap
+  std::map<int,double> wGapLin_;      // linearization of the weighted gap
+
+  // *** Penalty-related quantities **************************
+  double kappa_;                               // gap-scaling factor kappa
+  std::vector<std::map<int, double> > derivz_; // direction derivative of nodal z-matrix value
 };
 // class CoNodeDataContainer
 
@@ -506,10 +536,13 @@ public:
     return active_;
   }
 
-  virtual bool& InvolvedM()
-  {
-    return involvedm_;
-  }
+  /*!
+  \brief Return augmented contact status of this node (augActive=true)
+
+  */
+  virtual bool& AugActive() { return augActive_; }
+
+  virtual bool& InvolvedM() { return involvedm_; }
 
   /*!
    \brief Return data container of this node
@@ -518,10 +551,7 @@ public:
    contact specific quantities/information are stored.
 
    */
-  inline CONTACT::CoNodeDataContainer& CoData()
-  {
-    return *codata_;
-  }
+  inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
 
   //@}
 
@@ -539,18 +569,57 @@ public:
   void AddgValue(double& val);
 
   /*!
-   \brief Add a value to the map of LM derivatives of this node
+  \brief Add a value to the weighted gap of this node (augmented Lagrange)
 
-   The 'DerivZ' map is later assembled to the global DerivZ matrix.
-   Note that derivz_ here is a vector.
+  This value is later assembled to the averaged weighted gap vec.
+  Note that grow_ here is a scalar.
 
-   Note: This is only calculated when performing a penalty strategy
+  \param val : value to be added
+
+  */
+  void AddWGapValue(double& val);
+
+  /*!
+  \brief Add a value to the scaling factor kappa of this node (augmented Lagrange)
+
+  This value is later assembled needed during the assembling of the averaged
+  weighted gap. Note that kappa_ is a scalar.
+
+  \param val : value to be added
+  */
+  void AddKappaValue(double& val);
+
+  /*!
+  \brief Add a value to the variation of weighted gap (slave)
+
+  \param cal : slave dof id
+  \param gid : slave gid
+  \param val : value to be added
+  */
+  void AddVarWGapSl(int& col, int& gid, double& val);
+
+  /*!
+  \brief Add a value to the variation of weighted gap (master)
+
+  \param cal : master dof id
+  \param gid : master gid
+  \param val : value to be added
+  */
+  void AddVarWGapMa(int& col, int& gid, double& val);
+
+  /*!
+  \brief Add a value to the map of LM derivatives of this node
+
+  The 'DerivZ' map is later assembled to the global DerivZ matrix.
+  Note that derivz_ here is a vector.
+
+  Note: This is only calculated when performing a penalty strategy
 
    \param row : local dof row id to add to (rowwise)
-   \param val : value to be added
-   \param col : global dof column id of the value added
+  \param val : value to be added
+  \param col : global dof column id of the value added
 
-   */
+  */
   void AddDerivZValue(int& row, const int& col, double val);
 
   /*!
@@ -599,10 +668,7 @@ public:
    \brief Get number of linearization entries
 
    */
-  virtual int& GetLinsize()
-  {
-    return linsize_;
-  }
+  virtual int& GetLinsize() { return linsize_; }
   ;
 
   //@}
@@ -612,33 +678,22 @@ public:
   // All these functions only have functionality for friction nodes, thus they are
   // defined as empty here in the general mortar node. They can be called whenever you like.
 
-  virtual void AddSNode(int node)
-  {
-  }
-  virtual void AddMNode(int node)
-  {
-  }
-  virtual void AddAValue(int& row, int& col, double& val)
-  {
-  }
-  virtual void AddANode(int node)
-  {
-  }
-  virtual void AddBValue(int& row, int& col, double& val)
-  {
-  }
-  virtual void AddBNode(int node)
-  {
-  }
+  virtual void AddSNode(int node) {}
+  virtual void AddMNode(int node) {}
+  virtual void AddAValue(int& row, int& col, double& val) {}
+  virtual void AddANode(int node) {}
+  virtual void AddBValue(int& row, int& col, double& val) {}
+  virtual void AddBNode(int node) {}
 
   //@}
 
 protected:
 
-  bool active_;     // true if cnode is in contact (active set strategy)
-  bool initactive_; // true if node is initialized as active node
-  bool involvedm_;  // cnode is an master node for which the mortar integration is performed (both-sided wear)
-  int linsize_;     // number of lin entries per direction vector
+  bool active_;         // true if cnode is in contact (active set strategy)
+  bool augActive_;      // true if cnode is in contact (augmented active set strategy)
+  bool initactive_;     // true if node is initialized as active node
+  bool involvedm_;      // cnode is an master node for which the mortar integration is performed (both-sided wear)
+  int  linsize_;     // number of lin entries per direction vector
 
   Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_; // additional information of proc's contact nodes
 

@@ -65,9 +65,9 @@ namespace CONTACT
 
 /*!
 \brief Main abstract class for meshtying solution strategies
- 
+
 This is the templating abstract class for all meshyting solution algorithms.
-Every solution algorithm has to fit into the set of functions and calls definied herein 
+Every solution algorithm has to fit into the set of functions and calls definied herein
 and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
 
 This class it itself derived from the MORTAR::StrategyBase class, which is an even
@@ -81,9 +81,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     /*!
     \brief Standard Constructor
-     
-    Creates the strategy object and initializes all global variables, including 
-    all necessary Epetra_Maps and global vector and matrix quantities. 
+
+    Creates the strategy object and initializes all global variables, including
+    all necessary Epetra_Maps and global vector and matrix quantities.
 
     */
     MtAbstractStrategy(DRT::Discretization& probdiscret,
@@ -96,18 +96,18 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     virtual ~MtAbstractStrategy() {};
-    
+
     //! @name Access methods
 
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)
-     
+
     */
     Teuchos::RCP<Epetra_Vector> LagrMult() { return z_; }
 
     /*!
     \brief Return old Lagrange multiplier vector (t_n)
-     
+
     */
     Teuchos::RCP<Epetra_Vector> LagrMultOld() { return zold_; }
 
@@ -116,10 +116,10 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() ;
-    
+
     /*!
     \brief Return Lagrange multiplier vector from last Uzawa step
-     
+
     */
     Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
 
@@ -146,7 +146,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     Teuchos::RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
-    
+
     /*!
     \brief Return mortar matrix M
 
@@ -201,50 +201,50 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     of a parallel redistribution, this method is called again
     to re-setup the above mentioned quantities. In this case
     the input parameter is set to TRUE.
-    
+
     */
     void Setup(bool redistributed);
 
     /*!
     \brief Global evaluation method called from time integrator
-    
+
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt,
                             Teuchos::RCP<Epetra_Vector>& f,
                             const int step, const int iter,
                             bool predictor = false);
-    
+
     /*!
     \brief Set current deformation state
-     
+
     All interfaces are called to set the current deformation state.
-     
+
     \param statename (in): std::string defining which quantity to set (only "displacement" applicable)
     \param vec (in): current global state of the quantity defined by statename
-     
+
     */
     void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
-   
+
     /*!
     \brief Do mortar coupling in reference configuration
-     
+
     Only do this ONCE for meshtying upon initialization!
     This method calls Initialize() on all contact interfaces, which
     resets all kind of nodal quantities. It then calls Evaluate() on
     all meshtying interfaces, which does all the geometric coupling stuff.
     Concretely, this is an evaluation of all involved quantites at nodal
     level. It includes the nodal normal calculations, search, projection
-    and overlap detection and integration of the Mortar terms D and M. 
-    
-    Then - on global level - it resets the Mortar matrices D and M accordingly. 
+    and overlap detection and integration of the Mortar terms D and M.
+
+    Then - on global level - it resets the Mortar matrices D and M accordingly.
     The nodal quantites computed before are assembled to global matrices. No
     setup of the global system is to be done here yet, so there is no need to
     pass in the effective stiffness K or the effective load vector f.
-    
+
     Note: Only quantities common to all subsequent solving strategies (Lagrange,
     Penalty) are computed here. In case they need additional mortar variables,
     use the overloaded function call in the derived class and refer back to this function.
-    
+
     */
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
 
@@ -266,7 +266,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     /*!
     \brief Do mesh intialization for rotational invariance
-    
+
     Only do this ONCE for meshtying upon initialization!
     This method relocates the slave nodes such that the meshtying constraint
     is satisifed in the reference condiguration, which is a prerequisite for
@@ -278,15 +278,15 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     and we apply a default LINALG::Solver to solve for the modified slave poitions.
     Thus, this linear system solve is done in the derived method FIRST and then
     we refer back to this base class function.
-    
+
     \param Xslavemod (in): modified slave reference configuration
-     
-    */   
+
+    */
     virtual void MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
-    
+
     /*!
     \brief Evaluate contact
-     
+
     This is just a tiny control routine, deciding which Evaluate-routine
     of those listed below is to be called (based on input-file information)
     Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
@@ -294,18 +294,18 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     new effective stiffness matrix with contact, we can simply let the pointer
     kteff point onto the new object. The same is true for the effective force
     vector feff. Be careful: kteff is of type Teuchos::RCP<LINALG::SparseOperator>&.
-    
+
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
-     
+
     */
     void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                   Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
     //@}
-    
+
     //! @name Quantity control methods
-    
+
     /*!
     \brief Get some nodal quantity globally and store into MortarNodes
 
@@ -316,14 +316,14 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     (not necessarily converged) value of the LM_n+1. "lmupdate" is a special
     option called only in Recover() after the update of the Lagr. multipliers.
     It basically does the same as "lmcurrent", but also checks for D.B.C.
-    problems. Finally, "lmuzawa" addresses the LM update within an
+    problems. Finally, "lmuzawa" addresses the LM update within an Uzawa
     augmented Lagrangian scheme.
 
     \param type (in): enum defining which quantity to store into MortarNodes
 
     */
     void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
-    
+
     /*!
     \brief Get dirichlet B.C. status and store into MortarNodes
 
@@ -334,7 +334,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
-    
+
     /*!
     \brief Update meshtying at end of time step
 
@@ -343,33 +343,33 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void Update(int istep, Teuchos::RCP<Epetra_Vector> dis);
-      
+
     /*!
     \brief Perform a write restart
-    
+
     A write restart is initiated by the contact manager. However, the manager has no
     direct access to the nodal quantities. Different from writing a restart step, now
     all the restart action has to be performed on the level of the meshtying algorithm,
-    for short: here's the right place. 
-    
+    for short: here's the right place.
+
     */
     void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
 
     //@}
-    
+
     //! @name Debugging methods
-    
+
     /*!
     \brief Compute interface forces and moments
-     
+
     Compute current interface forces and moments at n+1-alphaf using current
     Lagrange multiplier values and current Mortar matrices D and M at n+1. When
     doing dynamics with alpha_f > 0, this also uses the old LM and Mortar
     matrices of the last converged time / load step n (TR-like interpolation).
-     
+
     \param fresm (in): residual / force vector at state n+1 of current Newton step
     \param output (in): flag indicating whether force output shall be written
-     
+
     */
     void InterfaceForces(bool output = false);
 
@@ -378,13 +378,13 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void Print(std::ostream& os) const;
-    
+
     /*!
     \brief Print current active set to screen for debugging purposes
-     
+
     */
     void PrintActiveSet();
-    
+
     /*!
     \brief Visualize contact stuff with gmsh
 
@@ -393,16 +393,16 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void VisualizeGmsh(const int step, const int iter = 0);
-    
+
     //@}
 
     //! @name Purely virtual functions
-    
+
     // All these functions are defined in one or more specific derived classes,
     // i.e CONTACT::MeshtyingLagrangeStrategy or CONTACT::MeshtyingPenaltyStrategy.
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
-    
+
     virtual double ConstraintNorm() = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
@@ -410,17 +410,17 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
     virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
-    virtual void UpdateAugmentedLagrange() = 0;
+    virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
-    
+
     //@}
-    
+
     //! @name Empty functions (contact)
-        
+
     // All these functions only have functionality in contact simulations, thus they
     // are defined as empty here in the case of meshtying. They can be called from the
     // control routine (time integrator), whenever you like.
-    
+
     bool ActiveSetConverged() {return true;}
     bool ActiveSetSemiSmoothConverged() {return true;}
     bool Friction() {return false;}
@@ -443,6 +443,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     const int NumberOfActiveNodes() {return 0;}
     const int NumberOfSlipNodes() {return 0;}
     void OutputStresses() {}
+    void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g){};
     void OutputWear() {}
     void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis) {}
     void ResetActiveSet() {}
@@ -468,14 +469,14 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
     virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
     //@}
-        
+
   protected:
 
     // don't want cctor (= operator impossible anyway for abstract class)
     MtAbstractStrategy(const MtAbstractStrategy& old);
 
     std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface_; // meshtying interfaces
-    
+
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;         // global Lagrange mult. dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gmdofrowmap_;          // global master dof row map (of all interfaces)

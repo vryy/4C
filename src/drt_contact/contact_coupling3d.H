@@ -90,9 +90,7 @@ public:
    \brief Destructor
 
    */
-  virtual ~CoCoupling3d()
-  {
-  }
+  virtual ~CoCoupling3d() {}
 
   //! @name Evlauation methods
 
@@ -190,8 +188,7 @@ public:
 
    */
   virtual bool CenterLinearization(
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
-      ,
+      const std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex,
       std::vector<GEN::pairedvector<int, double> >& lincenter);
 
   /*!
@@ -200,8 +197,7 @@ public:
    */
   INPAR::CONTACT::WearType WearType()
   {
-    return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,
-        "WEARTYPE");
+    return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE");
   }
 
   //@}
@@ -212,10 +208,12 @@ protected:
   CoCoupling3d operator =(const CoCoupling3d& old);
   CoCoupling3d(const CoCoupling3d& old);
 
-  // no new variables as compared to base class
 
-};
-// class CoCoupling3d
+    // new variables as compared to base class
+    INPAR::CONTACT::SolvingStrategy stype_;
+
+}; // class CoCoupling3d
+
 
 /*!
  \brief A class representing the framework for mortar coupling of ONE
@@ -261,9 +259,7 @@ public:
    \brief Destructor
 
    */
-  virtual ~CoCoupling3dQuad()
-  {
-  }
+  virtual ~CoCoupling3dQuad() {}
 
   //! @name Access methods
 
@@ -271,19 +267,13 @@ public:
    \brief Get coupling slave integration element
 
    */
-  MORTAR::IntElement& SlaveIntElement() const
-  {
-    return sintele_;
-  }
+  MORTAR::IntElement& SlaveIntElement() const { return sintele_; }
 
   /*!
    \brief Get coupling master integration element
 
    */
-  MORTAR::IntElement& MasterIntElement() const
-  {
-    return mintele_;
-  }
+  MORTAR::IntElement& MasterIntElement() const { return mintele_; }
 
   /*!
    \brief Return the Lagrange multiplier interpolation and testing type
@@ -291,8 +281,7 @@ public:
    */
   INPAR::MORTAR::LagMultQuad LagMultQuad()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,
-        "LAGMULT_QUAD");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD");
   }
 
   //@}
@@ -350,46 +339,31 @@ public:
    \brief Get coupling slave element
 
    */
-  virtual MORTAR::MortarElement& SlaveElement() const
-  {
-    return *sele_;
-  }
+  virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
 
   /*!
    \brief Get one specific coupling master element
 
    */
-  virtual MORTAR::MortarElement& MasterElement(int k) const
-  {
-    return *(mele_[k]);
-  }
+  virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
 
   /*!
    \brief Get all coupling master elements
 
    */
-  virtual std::vector<MORTAR::MortarElement*> MasterElements() const
-  {
-    return mele_;
-  }
+  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
 
   /*!
    \brief Get coupling pairs
 
    */
-  virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling3d> >& Coupling()
-  {
-    return coup_;
-  }
+  virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling3d> >& Coupling() { return coup_; }
 
   /*!
    \brief Get number of integration cells
 
    */
-  virtual const int& IntegrationCells()
-  {
-    return ncells_;
-  }
+  virtual const int& IntegrationCells() { return ncells_; }
 
   /*!
    \brief Get integration type
@@ -397,8 +371,7 @@ public:
    */
   INPAR::MORTAR::IntType IntType()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,
-        "INTTYPE");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
   }
   ;
 
@@ -406,10 +379,7 @@ public:
    \brief Get coupling type
 
    */
-  virtual const bool& Quad()
-  {
-    return quad_;
-  }
+  virtual const bool& Quad() { return quad_; }
   ;
 
   /*!
@@ -418,8 +388,7 @@ public:
    */
   INPAR::MORTAR::LagMultQuad LagMultQuad()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,
-        "LAGMULT_QUAD");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD");
   }
 
   /*!
@@ -440,8 +409,7 @@ public:
    */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,
-        "SHAPEFCN");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN");
   }
 
   /*!
@@ -458,14 +426,15 @@ protected:
   CoCoupling3dManager operator =(const CoCoupling3dManager& old);
   CoCoupling3dManager(const CoCoupling3dManager& old);
 
-  DRT::Discretization& idiscret_; // discretization of the contact interface
-  int dim_; // problem dimension (here: 3D)
-  bool quad_; // flag indicating coupling type (true = quadratic)
-  Teuchos::ParameterList& imortar_; // containing contact input parameters
-  MORTAR::MortarElement* sele_; // slave element
-  std::vector<MORTAR::MortarElement*> mele_; // master elements
-  std::vector<Teuchos::RCP<CoCoupling3d> > coup_; // coupling pairs
-  int ncells_; // total number of integration cells
+  DRT::Discretization&                     idiscret_; // discretization of the contact interface
+  int                                      dim_;      // problem dimension (here: 3D)
+  bool                                     quad_;     // flag indicating coupling type (true = quadratic)
+  Teuchos::ParameterList&                  imortar_;  // containing contact input parameters
+  MORTAR::MortarElement*                   sele_;     // slave element
+  std::vector<MORTAR::MortarElement*>      mele_;     // master elements
+  std::vector<Teuchos::RCP<CoCoupling3d> > coup_;     // coupling pairs
+  int                                      ncells_;   // total number of integration cells
+  INPAR::CONTACT::SolvingStrategy          stype_;    // solving strategy
 };
 // class CoCoupling3dManager
 
@@ -485,27 +454,19 @@ public:
    \brief Destructor
 
    */
-  virtual ~CoCoupling3dQuadManager()
-  {
-  }
+  virtual ~CoCoupling3dQuadManager() {}
 
   /*!
    \brief Get number of slave / master integration pairs of this interface (proc local)
 
    */
-  virtual const int& SlaveMasterIntPairs()
-  {
-    return smintpairs_;
-  }
+  virtual const int& SlaveMasterIntPairs() { return smintpairs_; }
 
   /*!
    \brief Get number of integration cells of this interface (proc local)
 
    */
-  virtual const int& IntegrationCells()
-  {
-    return intcells_;
-  }
+  virtual const int& IntegrationCells() { return intcells_; }
 
   /*!
    \brief Return the LM shape fcn type
@@ -513,8 +474,7 @@ public:
    */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,
-        "SHAPEFCN");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN");
   }
 
   /*!

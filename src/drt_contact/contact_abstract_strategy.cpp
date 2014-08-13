@@ -39,6 +39,7 @@
 #include "contact_abstract_strategy.H"
 #include "contact_defines.H"
 #include "contact_interface.H"
+#include "../drt_contact_aug/contact_augmented_interface.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
@@ -56,15 +57,25 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
-CONTACT::CoAbstractStrategy::CoAbstractStrategy(
-    DRT::Discretization& probdiscret, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-    MORTAR::StrategyBase(probdiscret, params, dim, comm, alphaf, maxdof), interface_(
-        interface), step_(0), iter_(0), isincontact_(false), wasincontact_(
-        false), wasincontactlts_(false), isselfcontact_(false), friction_(
-        false), dualquadslave3d_(false), tsi_(false), wear_(false), wbdiscr_(
-        false)
+CONTACT::CoAbstractStrategy::CoAbstractStrategy(DRT::Discretization& probdiscret,
+                                                Teuchos::ParameterList params,
+                                                std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+                                                int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+MORTAR::StrategyBase(probdiscret,params,dim,comm,alphaf,maxdof),
+interface_(interface),
+step_(0),
+iter_(0),
+iterls_(-1),
+isincontact_(false),
+wasincontact_(false),
+wasincontactlts_(false),
+isselfcontact_(false),
+friction_(false),
+dualquadslave3d_(false),
+tsi_(false),
+wear_(false),
+wbdiscr_(false),
+stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -385,7 +396,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   }
 
   // setup global non-slave-or-master dof map
-  // (this is done by splitting from the dicretization dof map)
+  // (this is done by splitting from the discretization dof map)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
@@ -672,12 +683,18 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(
     EvaluateRelMov();
 
   // update active set
-  if (!predictor)
+  if (!predictor and (stype_ != INPAR::CONTACT::solution_augmented))
     UpdateActiveSetSemiSmooth();
 
   // apply contact forces and stiffness
   Initialize(); // init lin-matrices
   Evaluate(kt, f, dis); // assemble lin. matrices, condensation ...
+
+  // Evaluate structural and constraint rhs. This is also necessary, if the rhs did not
+  // change during the predictor step, but a redistribution was executed!
+  UpdateStructuralRHS(f);
+  UpdateStructuralStiff(kt);
+  EvalConstrRHS();
 
   //only for debugging:
   InterfaceForces();
@@ -775,8 +792,7 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(
   else
   {
     // TODO: should be fixed for static problems!
-    dserror(
-        "Binning Strategy is only recommended for dynamic problems! Please use a different Parallel Strategy!");
+    dserror("Binning Strategy is only recommended for dynamic problems! Please use a different Parallel Strategy!");
   }
   return;
 }
@@ -824,6 +840,10 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY");
   INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<
       INPAR::MORTAR::RedundantStorage>(Params(), "REDUNDANT_STORAGE");
+  // check solving strategy
+  if (stype_ == INPAR::CONTACT::solution_augmented && strat!=INPAR::MORTAR::ghosting_redundant)
+      dserror("ERROR: Augmented Lagrange strategy supports only redundant ghosting of "
+          "master and slave.");
 
   // Evaluation for all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
@@ -882,8 +902,23 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
      ************************************************************/
     else //std. evaluation for redundant ghosting
     {
-      // evaluate
-      interface_[i]->Evaluate(0, step_, iter_);
+      if (stype_ == INPAR::CONTACT::solution_augmented)
+      {
+        Teuchos::RCP<CONTACT::AugmentedInterface> augInterface =
+            Teuchos::rcp_static_cast<CONTACT::AugmentedInterface>(interface_[i]);
+        // evaluate averaged weighted gap
+        augInterface->Evaluate(0,step_,iter_);
+        // Calculate weighted gap
+        augInterface->WGap();
+        // Do the augmented active set decision
+        BuildGlobalAugActiveSet(i);
+        // Calculate averaged weighted gap linearization for all active nodes
+        augInterface->AWGapLin();
+        // evaluate remaining entities and linearization
+        augInterface->RedEvaluate();
+      }
+      else
+        interface_[i]->Evaluate(0,step_,iter_);
     }
   } // end interface loop
 
@@ -1049,6 +1084,9 @@ void CONTACT::CoAbstractStrategy::InitMortar()
   if (IsSelfContact())
     UpdateMasterSlaveSetsGlobal();
 
+  // check solving strategy
+  if (stype_ == INPAR::CONTACT::solution_augmented) return;
+
   // initialize Dold and Mold if not done already
   if (dold_ == Teuchos::null)
   {
@@ -1098,6 +1136,9 @@ void CONTACT::CoAbstractStrategy::InitMortar()
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::AssembleMortar()
 {
+  // check solving strategy
+  if (stype_ == INPAR::CONTACT::solution_augmented) return;
+
   // for all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
@@ -2164,11 +2205,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
 
-  // only for Augmented strategy
+  // only for Uzawa augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
-  INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
-  if (st == INPAR::CONTACT::solution_auglag)
+  if (stype_ == INPAR::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     if (!restartwithcontact)
@@ -2928,10 +2967,9 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 
       // increase active counters
       CoNode* cnode = static_cast<CoNode*>(node);
-      if (cnode->Active())
-        activenodes += 1;
-      else
-        inactivenodes += 1;
+
+      if (cnode->Active() or cnode->AugActive()) activenodes   += 1;
+      else                                       inactivenodes += 1;
 
       // increase friction counters
       if (friction_)

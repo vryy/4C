@@ -127,10 +127,10 @@ void CONTACT::CoPenaltyStrategy::EvaluateRelMovPredict()
 {
   // only for frictional contact
   if (friction_ == false) return;
-  
+
   // call evaluation method of base class
   EvaluateRelMov();
-  
+
   return;
 }
 
@@ -146,7 +146,7 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 
   // (re)setup global vector containing lagrange multipliers
   z_ = LINALG::CreateVector(*gsdofrowmap_, true);
-  
+
   // (re)setup global matrix containing lagrange multiplier derivatives
   linzmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
 
@@ -184,9 +184,9 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
     if(friction_ and soltype==INPAR::CONTACT::solution_penalty)
       interface_[i]->AssembleRegTangentForcesPenalty();
 
-    if(friction_ and soltype==INPAR::CONTACT::solution_auglag)
-      interface_[i]->AssembleRegTangentForcesAugmented();
-    
+    if(friction_ and soltype==INPAR::CONTACT::solution_uzawa)
+      interface_[i]->AssembleRegTangentForcesUzawa();
+
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
   }
@@ -219,7 +219,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
 #ifdef CONTACTCONSTRAINTXYZ
   gactivedofs_=Teuchos::null;
 #endif
-  
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -437,7 +437,7 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
     interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
   }
-  
+
   return;
 }
 
@@ -514,7 +514,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOper
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CoNode* cnode = static_cast<CoNode*>(node);
-      
+
       for (int k=0; k<(int)((cnode->CoData().GetDerivZ()).size()); ++k)
         (cnode->CoData().GetDerivZ())[k].clear();
       (cnode->CoData().GetDerivZ()).resize(0);
@@ -527,7 +527,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOper
   // and finally redo Evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
   Evaluate(kteff,feff,nullvec);
-  
+
   // complete stiffness matrix
   kteff->Complete();
 
@@ -575,7 +575,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 
     // compute constraint norm
     gact->Norm2(&cnorm);
-    
+
     // Evaluate norm in tangential direction for frictional contact
     if (friction_)
     {
@@ -587,12 +587,12 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 
     //********************************************************************
     // adaptive update of penalty parameter
-    // (only for Augmented Lagrange strategy)
+    // (only for Uzawa Augmented Lagrange strategy)
     //********************************************************************
     INPAR::CONTACT::SolvingStrategy soltype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
 
-    if (soltype==INPAR::CONTACT::solution_auglag)
+    if (soltype==INPAR::CONTACT::solution_uzawa)
     {
       // check convergence of cnorm and update penalty parameter
       // only do this for second, third, ... Uzawa iteration
@@ -631,7 +631,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
       }
     }
     //********************************************************************
-    
+
     // update constraint norm
     constrnorm_ = cnorm;
     constrnormtan_ = cnormtan;
@@ -650,14 +650,14 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
      std::cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
     std::cout << "********************************************\n";
   }
-  
+
   return;
 }
 
 /*----------------------------------------------------------------------*
  | store Lagrange multipliers for next Uzawa step             popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::UpdateAugmentedLagrange()
+void CONTACT::CoPenaltyStrategy::UpdateUzawaAugmentedLagrange()
 {
   // store current LM into Uzawa LM
   // (note that this is also done after the last Uzawa step of one

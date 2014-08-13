@@ -1215,8 +1215,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   }
 #endif
   /**********************************************************************/
-  /* calculate*/
-
+  /* calculate                                                          */
   /**********************************************************************/
   /* build global matrix t with tangent vectors of active nodes         */
   /* and global matrix s with normal derivatives of active nodes        */
@@ -1940,6 +1939,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       LINALG::Export(*fm,*fmexp);
       feff->Update(1.0-alphaf_,*fmexp,1.0);
 
+      // Check linear and angular momentum conservation
+#ifdef CHECKCONSERVATIONLAWS
+      CheckConservationLaws(*fs,*fm);
+#endif
+
       // add old contact forces (t_n)
       Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dold_->Multiply(true,*zold_,*fsold);
@@ -2014,9 +2018,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   Teuchos::RCP<Epetra_Vector>        mergedsol   = LINALG::CreateVector(*mergedmap);
   Teuchos::RCP<Epetra_Vector>        mergedzeros = LINALG::CreateVector(*mergedmap);
 
-  // initialize constraint r.h.s. (still with wrong map)
-  Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-
   // initialize transformed constraint matrices
   Teuchos::RCP<LINALG::SparseMatrix> trkdz, trkzd, trkzz;
 
@@ -2067,55 +2068,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
-
-    /****************************************************************************************
-     ***                        RIGHT-HAND SIDE                                           ***
-     ****************************************************************************************/
-
-
-    // We solve for the incremental Langrange multiplier dz_. Hence,
-    // we can keep the contact force terms on the right-hand side!
-    //
-    // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
-
-    // export weighted gap vector
-#ifdef CONTACTCONSTRAINTXYZ
-    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
-    if (gact->GlobalLength())
-    {
-      LINALG::Export(*g_,*gact);
-    }
-#else
-    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
-    if (gact->GlobalLength())
-    {
-      LINALG::Export(*g_,*gact);
-      gact->ReplaceMap(*gactiven_);
-    }
-#endif
-
-    Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*gact,*gactexp);
-
-    // export inactive rhs
-    Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*inactiverhs_, *inactiverhsexp);
-
-    // build constraint rhs (1)
-    constrrhs->Update(1.0, *inactiverhsexp, 1.0);
-
-    // export tangential rhs
-    Teuchos::RCP<Epetra_Vector> tangrhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*tangrhs_, *tangrhsexp);
-
-    // build constraint rhs (2)
-    constrrhs->Update(1.0, *tangrhsexp, 1.0);
-
-    // build constraint rhs (3)
-    constrrhs->Update(-1.0,*gactexp,1.0);
-    constrrhs->ReplaceMap(*glmdofrowmap_);
-
-    constrrhs_ = constrrhs; // set constraint rhs vector
   }
 
   //**********************************************************************
@@ -2183,55 +2135,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
-
-   /****************************************************************************************
-    ***                        RIGHT-HAND SIDE                                           ***
-    ****************************************************************************************/
-
-
-    // We solve for the incremental Langrange multiplier dz_. Hence,
-    // we can keep the contact force terms on the right-hand side!
-    //
-    // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
-
-    // export weighted gap vector
-#ifdef CONTACTCONSTRAINTXYZ
-    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
-    if (gact->GlobalLength())
-    {
-      LINALG::Export(*g_,*gact);
-    }
-#else
-    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
-    if (gact->GlobalLength())
-    {
-      LINALG::Export(*g_,*gact);
-      gact->ReplaceMap(*gactiven_);
-    }
-#endif
-    Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*gact,*gactexp);
-
-    // export stick and slip r.h.s.
-    Teuchos::RCP<Epetra_Vector> stickexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*linstickRHS_,*stickexp);
-    Teuchos::RCP<Epetra_Vector> slipexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*linslipRHS_,*slipexp);
-
-    // export inactive rhs
-    Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*inactiverhs_, *inactiverhsexp);
-
-    // build constraint rhs (1)
-    constrrhs->Update(1.0, *inactiverhsexp, 1.0);
-
-    // build constraint rhs
-    constrrhs->Update(-1.0,*gactexp,1.0);
-    constrrhs->Update(1.0,*stickexp,1.0);
-    constrrhs->Update(1.0,*slipexp,1.0);
-    constrrhs->ReplaceMap(*glmdofrowmap_);
-
-    constrrhs_ = constrrhs; // set constraint rhs vector
   }
 
   //**********************************************************************
@@ -2280,7 +2183,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*fd,*fresmexp);
     mergedrhs->Update(1.0,*fresmexp,1.0);
     Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*constrrhs,*constrexp);
+    LINALG::Export(*constrrhs_,*constrexp);
     mergedrhs->Update(1.0,*constrexp,1.0);
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
@@ -2309,10 +2212,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // thus we have to reinitialize the LM vector map
   {
     zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
-    LINALG::Export(*z_, *zincr_);                   // change the map of z_
+    LINALG::Export(*z_, *zincr_);                     // change the map of z_
     z_ = Teuchos::rcp(new Epetra_Vector(*zincr_));
-    zincr_->Update(1.0, *sollm, 0.0);               // save sollm in zincr_
-    z_->Update(1.0, *zincr_, 1.0);                  // update z_
+    zincr_->Update(1.0, *sollm, 0.0);                 // save sollm in zincr_
+    z_->Update(1.0, *zincr_, 1.0);                    // update z_
   }
   else
   {
@@ -2320,6 +2223,89 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     z_->Update(1.0, *zincr_, 1.0);
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate constraint RHS entries                      hiermeier 08/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
+{
+  // get system type
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+  if (systype == INPAR::CONTACT::system_condensed) return;
+
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  {
+    // (re)setup the vector
+    constrrhs_          = Teuchos::null;
+    return;
+  }
+
+  // initialize constraint r.h.s. (still with wrong map)
+  Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+
+  // We solve for the incremental Lagrange multiplier dz_. Hence,
+  // we can keep the contact force terms on the right-hand side!
+  //
+  // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
+
+  // export weighted gap vector
+#ifdef CONTACTCONSTRAINTXYZ
+  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
+  if (gact->GlobalLength())
+  {
+    LINALG::Export(*g_,*gact);
+  }
+#else
+  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
+  if (gactiven_->NumGlobalElements())
+  {
+    LINALG::Export(*g_,*gact);
+    gact->ReplaceMap(*gactiven_);
+  }
+#endif
+
+  Teuchos::RCP<Epetra_Vector> gact_exp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*gact,*gact_exp);
+
+  constrrhs->Update(-1.0,*gact_exp,1.0);
+
+  // export inactive rhs
+  Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*inactiverhs_, *inactiverhsexp);
+
+  // build constraint rhs (1)
+  constrrhs->Update(1.0, *inactiverhsexp, 1.0);
+
+  // *** CASE 1: FRICTIONLESS CONTACT *******************************************************
+  if (!friction_)
+  {
+    // export tangential rhs
+    Teuchos::RCP<Epetra_Vector> tangrhs_exp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*tangrhs_, *tangrhs_exp);
+
+    // build constraint rhs (2)
+    constrrhs->Update(1.0, *tangrhs_exp, 1.0);
+
+  }
+  // *** CASE 2: FRICTIONAL CONTACT *******************************************************
+  else
+  {
+    // export stick and slip r.h.s.
+    Teuchos::RCP<Epetra_Vector> stickexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*linstickRHS_,*stickexp);
+    Teuchos::RCP<Epetra_Vector> slipexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*linslipRHS_,*slipexp);
+
+    // build constraint rhs
+    constrrhs->Update(1.0,*stickexp,1.0);
+    constrrhs->Update(1.0,*slipexp,1.0);
+  }
+
+  constrrhs->ReplaceMap(*glmdofrowmap_);
+
+  constrrhs_ = constrrhs;                                 // set constraint rhs vector
   return;
 }
 
@@ -2924,7 +2910,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       // check nodes of active set ***************************************
       else
       {
-        // check for fulfilment of contact condition
+        // check for fulfillment of contact condition
         //if (abs(wgap) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
         //       << "for node ID: " << cnode->Id() << std::endl;
@@ -3149,3 +3135,44 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Check conservation laws                              hiermeier 06/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::CheckConservationLaws(const Epetra_Vector& fs,
+                                                        const Epetra_Vector& fm)
+{
+  // change sign (adapt sign convention from the augmented Lagrange formulation)
+  Teuchos::RCP<Epetra_Vector> tmpFm = Teuchos::rcp(new Epetra_Vector(fm));
+  tmpFm->Scale(-1.0);
+  /*-------------------------------*
+   | LINEAR MOMENTUM CONSERVATION  |
+   *-------------------------------*/
+  double ssum = 0.0;
+  double msum = 0.0;
+  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+  std::cout << ">>      Linear Momentum Conservation      <<" << std::endl;
+  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+  std::cout << ">>      Standard terms (lm)               <<" << std::endl;
+  for (int i=0;i<fs.GlobalLength();++i) ssum+=fs[i];
+  std::cout << "SLAVE:   " << std::setw(14) << ssum<< std::endl;
+  for (int i=0;i<fm.GlobalLength();++i) msum+=(*tmpFm)[i];
+  std::cout << "MASTER:  " << std::setw(14) << msum << std::endl;
+  std::cout << "Balance: " << std::setw(14) << ssum+msum << std::endl;
+
+  /*-------------------------------*
+   | ANGULAR MOMENTUM CONSERVATION |
+   *-------------------------------*/
+  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+  std::cout << ">>      Angular Momentum Conservation     <<" << std::endl;
+  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    std::cout << ">>----- Interface " << std::setw(2) << i;
+    std::cout << " ---------------------<<" << std::endl;
+    std::cout << ">>      Standard terms (lm)               <<" << std::endl;
+    interface_[i]->EvalResultantMoment(fs,*tmpFm);
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+  }
+
+  return;
+}

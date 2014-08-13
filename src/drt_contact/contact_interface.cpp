@@ -2060,7 +2060,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     {
       if((nz - cn*gap > 0) or cnode->Active()) activeinfuture = true;
     }
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_auglag)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_uzawa)
     {
       if(lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
     }
@@ -2519,7 +2519,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     // if its gap is equal zero or positive.
     // -> the regularization reads: lambda_n = kappa * pp * < -gap >
     //
-    // CASE 2: Augmented Lagrange approach
+    // CASE 2: Uzawa augmented Lagrange approach
     // A node is activated if its Lagrange multiplier, stemming from the
     // last Uzawa Lagrange multiplier AND the current regularization is
     // negative or deactivated if its LM is equal zero or positive.
@@ -2959,9 +2959,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate regularized tangential forces (Aug. Lagr.)   gitterle 10/09|
+ |  Evaluate regularized tangential forces                gitterle 10/09|
+ |  (Uzawa Aug. Lagr.)                                                  |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
+void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -7566,4 +7567,73 @@ void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Calculate angular interface moments                  hiermeier 08/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
+                                               const Epetra_Vector& fm)
+{
+  // get out of here if not participating in interface
+  if (!lComm()) return;
 
+  double resMoSl[3] = {0.0,0.0,0.0};
+  double resMoMa[3] = {0.0,0.0,0.0};
+  double balMo[3]   = {0.0,0.0,0.0};
+
+  // loop over proc's slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(gid));
+
+    if (Dim()==2)
+      resMoSl[2] += snode->xspatial()[0] * fs[2*i+1] - snode->xspatial()[1]*fs[2*i];
+    else
+    {
+      resMoSl[0] += snode->xspatial()[1] * fs[3*i+2] - snode->xspatial()[2] * fs[3*i+1];
+      resMoSl[1] += snode->xspatial()[2] * fs[3*i]   - snode->xspatial()[0] * fs[3*i+2];
+      resMoSl[2] += snode->xspatial()[0] * fs[3*i+1] - snode->xspatial()[1] * fs[3*i];
+    }
+  }
+
+  // loop over proc's master nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<mnoderowmap_->NumMyElements();++i)
+  {
+    int gid = mnoderowmap_->GID(i);
+    CoNode* mnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+
+    if (Dim()==2)
+      resMoMa[2] += mnode->xspatial()[0] * fm[2*i+1] - mnode->xspatial()[1]*fm[2*i];
+    else
+    {
+      resMoMa[0] += mnode->xspatial()[1] * fm[3*i+2] - mnode->xspatial()[2] * fm[3*i+1];
+      resMoMa[1] += mnode->xspatial()[2] * fm[3*i]   - mnode->xspatial()[0] * fm[3*i+2];
+      resMoMa[2] += mnode->xspatial()[0] * fm[3*i+1] - mnode->xspatial()[1] * fm[3*i];
+    }
+  }
+
+  for (int d=0;d<3;++d)
+  {
+    balMo[d] = resMoSl[d] + resMoMa[d];
+//    if (abs(balMo[d])>1.0e-11) dserror("Conservation of angular momentum is not fulfilled!");
+  }
+
+  std::cout << "SLAVE:   " <<
+      " [" << std::setw(14) << std::setprecision(5) << std::scientific << resMoSl[0] <<
+      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoSl[1] <<
+      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoSl[2] <<
+      "]"  << std::endl;
+  std::cout << "Master:  " <<
+      " [" << std::setw(14) << std::setprecision(5) << std::scientific << resMoMa[0] <<
+      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoMa[1] <<
+      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoMa[2] <<
+      "]"  << std::endl;
+  std::cout << "Balance: " <<
+      " [" << std::setw(14) << std::setprecision(5) << std::scientific << balMo[0] <<
+      ", " << std::setw(14) << std::setprecision(5) << std::scientific << balMo[1] <<
+      ", " << std::setw(14) << std::setprecision(5) << std::scientific << balMo[2] <<
+      "]"  << std::endl;
+  return;
+}

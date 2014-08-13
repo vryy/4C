@@ -73,9 +73,9 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     */
     virtual ~CoLagrangeStrategy() {};
-    
+
     //! @name Access methods
-    
+
     /*!
     \brief Return convergence status of semi-smooth active set search
 
@@ -84,7 +84,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     loops, then this method simply returns true, of course. Convergence
     of the active set is monitored with the flag activesetconv_ in
     this case and activesetssconv_ is meaningless.
-    
+
     */
     bool ActiveSetSemiSmoothConverged()
     {
@@ -92,7 +92,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
       if (semismooth) return activesetssconv_;
       else            return true;
     }
-    
+
     /*!
     \brief Return convergence status of fixed-point active set search
 
@@ -101,7 +101,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     loops, then this method simply returns true, of course. Convergence
     of the active set is monitored with the flag activesetssconv_ in
     this case and activesetconv_ is meaningless.
-    
+
     */
     bool ActiveSetConverged()
     {
@@ -109,46 +109,46 @@ class CoLagrangeStrategy : public CoAbstractStrategy
       if (!semismooth) return activesetconv_;
       else             return true;
     }
-    
+
     /*!
     \brief Return no. of fixed-point active sets in this time step
 
     */
     int ActiveSetSteps() { return activesetsteps_; }
-    
+
     //@}
 
     //! @name Evaluation methods
-    
+
     /*!
     \brief Initialize general contact variables for next Newton step
-     
-    For a lagrangian strategy this includes the global normal / tangent matrices N and T, 
+
+    For a lagrangian strategy this includes the global normal / tangent matrices N and T,
     the global derivative matrices S and P and Tresca friction matrix L + vector r.
-    
+
     */
     void Initialize();
 
     /*!
     \brief Evaluate contact
-     
+
     For a lagrangian strategy this involves heavy modification to the initial kteff and feff.
     Hence, they are infact build from scratch here.
     The application of modifications to groups of dofs (slave, master, active etc.)
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
-    
+
     */
     void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Evaluate frictional contact
-     
+
     */
     void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Solve linear system of saddle point type
-   
+
     \param solver (in): LINALG::Solver object
     \param solver (in): LINALG::Solver object (fallback solver)
     \param kdd (in): the displacement dof stiffness (upper left block)
@@ -156,10 +156,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     \param sold (in/out): the displacement dof solution increment
     \param dirichtoggle (in): toggle vector for dirichlet conditions
     \param numiter (in): current nonlinear iteration step
-    
+
     This routine is called by the <tt>LinearSolve</tt> function in the (contact) structure time integration algorithm.
     The <tt>SaddlePointSolve</tt> problem is only used for saddle point problems (contact or meshtying). The solver must be
-    a LINALG::Solver object with a block preconditioner (e.g. CheapSIMPLE). The fallback solver is used whenever there is no 
+    a LINALG::Solver object with a block preconditioner (e.g. CheapSIMPLE). The fallback solver is used whenever there is no
     contact and a pure (symmetric) structural problem has to be solved. Therefore per default the STRUCT SOLVER block parameters
     are used.
     */
@@ -170,7 +170,14 @@ class CoLagrangeStrategy : public CoAbstractStrategy
                           Teuchos::RCP<Epetra_Vector>          sold,
                           Teuchos::RCP<Epetra_Vector>          dirichtoggle,
                           int numiter);
-    
+
+    /*!
+    \brief The entries of the constraint right-hand side are
+    calculated. This function is outsourced cause
+    the vector is needed for the line search algorithm.
+
+    */
+    void EvalConstrRHS();
 
     /*!
     \brief Recovery method
@@ -179,13 +186,13 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     statically condensated during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.
-    
+
     */
     void Recover(Teuchos::RCP<Epetra_Vector> disi);
 
     /*!
     \brief Update active set and check for convergence
-     
+
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
@@ -195,13 +202,13 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     called AFTER convergence of the inner Newton iteration. If there
     is a change in the active set, another full Newton iteration has
     to be performed for the current time / load step.
-     
+
     */
     void UpdateActiveSet();
 
     /*!
     \brief Update active set and check for convergence
-     
+
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
@@ -215,7 +222,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     */
     void UpdateActiveSetSemiSmooth();
-    
+
     /*!
     \brief Reset active set status for next time step
 
@@ -227,23 +234,33 @@ class CoLagrangeStrategy : public CoAbstractStrategy
       activesetsteps_ = 1;
       return;
     }
-    
+
     /*!
     \brief Return matrix T
 
     */
     Teuchos::RCP<LINALG::SparseMatrix> TMatrix() { return tmatrix_; }
-    
+
     //@}
-    
+
+    //! @name Debugging and visualization methods
+
+    /*!
+    \brief Check linear and angular momentum conservation
+
+    */
+    void CheckConservationLaws(const Epetra_Vector& fs, const Epetra_Vector& fm);
+
+    //@}
+
     //! @name Empty methods
-      
+
     /*!
     \brief Empty methods only relevant for other strategies
-    
+
     For a Lagrange strategy these are functions without functionality.
     Call them whenever you like.
-    
+
     */
     double ConstraintNorm() {return 0.0;}
     void EvaluateRelMovPredict() {}
@@ -251,9 +268,9 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     void ResetPenalty() {}
     void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
-    void UpdateAugmentedLagrange() {}
+    void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
-    
+
     // same procedure for wear stuff:
     void OutputWear() {};
     Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
@@ -274,10 +291,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     CoLagrangeStrategy(const CoLagrangeStrategy& old);
 
     bool activesetssconv_;    // convergence flag for semi-smooth active set search
-    bool activesetconv_;      // convergence flag for fixed-point active set search      
+    bool activesetconv_;      // convergence flag for fixed-point active set search
     int  activesetsteps_;     // number of fixed-point active set steps in this time step
-    
-    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M    
+
+    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M
 
     Teuchos::RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
     Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
@@ -297,7 +314,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     Teuchos::RCP<LINALG::SparseMatrix>  linstickLM_;  // global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<LINALG::SparseMatrix>  linstickDIS_; // global matrix containing derivatives (DIS) of stick condition
     Teuchos::RCP<Epetra_Vector>         linstickRHS_; // r.h.s vector for friction stick condition
-    
+
     Teuchos::RCP<Epetra_Map> zigzagone_;   // active node set of last active set try
     Teuchos::RCP<Epetra_Map> zigzagtwo_;   // active node set of second-last active set try
     Teuchos::RCP<Epetra_Map> zigzagthree_; // active node set of third-last active set try

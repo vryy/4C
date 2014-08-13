@@ -61,7 +61,7 @@ ALPHA_F                         0.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
-STRATEGY                        Augmented
+STRATEGY                        Uzawa
 PENALTYPARAM                    100000
 PENALTYPARAMTAN                 100000
 UZAWAMAXSTEPS                   10

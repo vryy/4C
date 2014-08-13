@@ -65,16 +65,16 @@ public:
 
   /*!
   \brief Constructor with shape function specification
-  
+
   Constructs an instance of this class and enables custom shape function types.<br>
   Note that this is \b not a collective call as coupling is
   performed in parallel by individual processes.
-  
-  */  
+
+  */
   CoCoupling2d(DRT::Discretization& idiscret,
                int dim, bool quad, Teuchos::ParameterList& params,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
-  
+
   /*!
   \brief Destructor
 
@@ -89,7 +89,7 @@ public:
   Derived version! Most importantly, in this derived version
   a CONTACT::CoIntegrator instance is created, which also
   does integration of the mortar quantity linearizations
-  
+
   This method integrates the overlap of the current MortarElement
   pair sele_ / mele_ based on the integration limits (xiproj). The
   integration includes the Mortar matrices D/M and the gap g.
@@ -119,8 +119,9 @@ protected:
     // don't want = operator and cctor
     CoCoupling2d operator = (const CoCoupling2d& old);
     CoCoupling2d(const CoCoupling2d& old);
-    
-    // no new variables as compared to base class
+
+    // new variables as compared to base class
+    INPAR::CONTACT::SolvingStrategy stype_;
 
 }; // class CoCoupling2d
 
@@ -243,6 +244,7 @@ protected:
     MORTAR::MortarElement*                    sele_;      // slave element
     std::vector<MORTAR::MortarElement*>       mele_;      // master elements
     std::vector<Teuchos::RCP<CoCoupling2d> >  coup_;      // coupling pairs
+    INPAR::CONTACT::SolvingStrategy           stype_;     // solving strategy
 
 }; // class CoCoupling2dManager
 

@@ -148,6 +148,7 @@ void STR::TimIntStatMech::StatMechPrintBCType()
         break;
       default:
         std::cout<<"- standard input file based definition of Neumann boundary conditions / no NBCs"<< std::endl;
+        break;
     }
   }
   return;
@@ -841,7 +842,7 @@ void STR::TimIntStatMech::NewtonFull()
   INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
 //  if(HaveBeamContact())
 //    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-//  if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
+//  if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_uzawa)
 //    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
 
   // test whether max iterations was hit
@@ -864,12 +865,12 @@ void STR::TimIntStatMech::NewtonFull()
     break;
     case INPAR::STR::divcont_continue:
     {
-      if(soltype != INPAR::CONTACT::solution_auglag && !discret_->Comm().MyPID() && (fresmnormdivergent || iter_ >= itermax_))
+      if(soltype != INPAR::CONTACT::solution_uzawa && !discret_->Comm().MyPID() && (fresmnormdivergent || iter_ >= itermax_))
         printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
       return;
     }
     break;
-    default: dserror("Unknown DIVERCONT type! Check input file!");
+    default: dserror("Unknown DIVERCONT type! Check input file!"); break;
   }
 } // STR::TimIntStatMech::FullNewton()
 
@@ -1231,7 +1232,7 @@ void STR::TimIntStatMech::PTC()
   double nc;
   fres_->NormInf(&nc);
   double resinit = nc;
-  
+
   if(nc==0.0)
     dserror("nc == 0.0! PTC scheme not applicable! Choose fullnewton");
 
@@ -1354,7 +1355,7 @@ void STR::TimIntStatMech::PTC()
       INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
       if(HaveBeamContact())
         soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-      if(!myrank_ && soltype != INPAR::CONTACT::solution_auglag)
+      if(!myrank_ && soltype != INPAR::CONTACT::solution_uzawa)
         std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
     }
 
@@ -1427,14 +1428,14 @@ void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool 
   {
     ConvergenceStatusUpdate();
 
-    // Only augmented lagrange:
+    // Only Uzawa augmented lagrange:
     // We take a look at the change in the contact constraint norm.
     // Reason: when the constraint tolerance is a relative measure (gap compared to the smaller of the two beam radii),
     // configurations arise, where (especially in network simulations) the constraint is fullfilled by almost all of the contact
     // pairs except for a very tiny number of pairs (often only 1 pair), where one radius is significantly smaller than the other
     // (pair linker/filament).
 //    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-//    if(soltype==INPAR::CONTACT::solution_auglag)
+//    if(soltype==INPAR::CONTACT::solution_uzawa)
 //    {
 //      double cnorm = 1e6;
 //      // get the constraint norm and decrease penalty parameter
@@ -1578,13 +1579,13 @@ void STR::TimIntStatMech::BeamContactNonlinearSolve()
       BeamContactPenalty();
     break;
     //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON (PTC))
-    case INPAR::CONTACT::solution_auglag:
+    case INPAR::CONTACT::solution_uzawa:
     {
       BeamContactAugLag();
     }
     break;
     default:
-      dserror("Only penalty and augmented Lagrange implemented in statmech_time.cpp for beam contact");
+      dserror("Only penalty and Uzawa augmented Lagrange implemented in statmech_time.cpp for beam contact");
       break;
   }
   return;

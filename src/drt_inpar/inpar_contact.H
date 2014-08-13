@@ -82,11 +82,12 @@ namespace INPAR
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy
     {
-      solution_lagmult,  ///< method of lagrange multipliers
+      solution_lagmult,  ///< method of Lagrange multipliers
       solution_penalty,  ///< penalty approach
-      solution_auglag    ///< augmented lagrange approach
+      solution_uzawa,    ///< Uzawa augmented Lagrange approach
+      solution_augmented ///< augmented Lagrange approach
     };
-    
+
     /// Type of linear system setup and solution
     /// (this enum represents the input file parameter SYSTEM)
     enum SystemType
@@ -94,7 +95,7 @@ namespace INPAR
       system_condensed,   ///< condensed system
       system_saddlepoint  ///< saddle point system
     };
-    
+
     /// Type of energy and momentum output
     /// (this enum represents the input file parameter EMOUTPUT)
     enum EmOutputType

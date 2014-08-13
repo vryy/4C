@@ -43,6 +43,8 @@
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_lagrange_strategy.H"
+#include "../drt_contact_aug/contact_augmented_strategy.H"
+#include "../drt_contact_aug/contact_augmented_interface.H"
 #include "contact_wear_lagrange_strategy.H"
 #include "contact_wear_interface.H"
 #include "contact_penalty_strategy.H"
@@ -335,19 +337,16 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
 //    if (isself[0]==false && redundant != INPAR::MORTAR::redundant_master)
 //      dserror("ERROR: CoManager: Contact requires redundant master storage");
     if (isself[0] == true && redundant != INPAR::MORTAR::redundant_all)
-      dserror(
-          "ERROR: CoManager: Self contact requires redundant slave and master storage");
+      dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
-    // decide between contactinterface and wearinterface
-    Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
-    if (wlaw != INPAR::CONTACT::wear_none)
-      newinterface = Teuchos::rcp(
-          new CONTACT::WearInterface(groupid1, Comm(), dim, icparams, isself[0],
-              redundant));
+    // decide between contactinterface, augmented interface and wearinterface
+    Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
+    if (stype==INPAR::CONTACT::solution_augmented)
+      newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+    else if(wlaw!=INPAR::CONTACT::wear_none)
+      newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
-      newinterface = Teuchos::rcp(
-          new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],
-              redundant));
+      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
     interfaces.push_back(newinterface);
 
     // get it again
@@ -355,10 +354,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
         interfaces[(int) interfaces.size() - 1];
 
     // note that the nodal ids are unique because they come from
-    // one global problem discretization conatining all nodes of the
-    // contact interface
+    // one global problem discretization containing all nodes of the
+    // contact interface.
     // We rely on this fact, therefore it is not possible to
-    // do contact between two distinct discretizations here
+    // do contact between two distinct discretizations here.
 
     // collect all intial active nodes
     std::vector<int> initialactive;
@@ -504,7 +503,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
       // but ids are not unique among 2 distinct conditions
       // due to the way elements in conditions are build.
       // We therefore have to give the second, third,... set of elements
-      // different ids. ids do not have to be continous, we just add a large
+      // different ids. ids do not have to be continuous, we just add a large
       // enough number ggsize to all elements of cond2, cond3,... so they are
       // different from those in cond1!!!
       // note that elements in ele1/ele2 already are in column (overlapping) map
@@ -583,10 +582,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
     strategy_ = Teuchos::rcp(
         new CoPenaltyStrategy(Discret(), cparams, interfaces, dim, comm_,
             alphaf, maxdof));
-  else if (stype == INPAR::CONTACT::solution_auglag)
+  else if (stype == INPAR::CONTACT::solution_uzawa)
     strategy_ = Teuchos::rcp(
         new CoPenaltyStrategy(Discret(), cparams, interfaces, dim, comm_,
             alphaf, maxdof));
+  else if (stype == INPAR::CONTACT::solution_augmented)
+    strategy_ = Teuchos::rcp(new AugmentedLagrangeStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
   if (Comm().MyPID() == 0)
@@ -690,27 +691,27 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
-      "STRATEGY") == INPAR::CONTACT::solution_auglag
+      "STRATEGY") == INPAR::CONTACT::solution_uzawa
       && contact.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
-      "STRATEGY") == INPAR::CONTACT::solution_auglag
+      "STRATEGY") == INPAR::CONTACT::solution_uzawa
       && DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,
           "FRICTION") != INPAR::CONTACT::friction_none
       && contact.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
-      "STRATEGY") == INPAR::CONTACT::solution_auglag
+      "STRATEGY") == INPAR::CONTACT::solution_uzawa
       && contact.get<int>("UZAWAMAXSTEPS") < 2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
-      "STRATEGY") == INPAR::CONTACT::solution_auglag
+      "STRATEGY") == INPAR::CONTACT::solution_uzawa
       && contact.get<double>("UZAWACONSTRTOL") <= 0.0)
-    dserror(
-        "Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,
       "FRICTION") != INPAR::CONTACT::friction_none
@@ -778,6 +779,14 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror(
         "ERROR: Mesh adaptive cn and ct only for semi-smooth Newton strategy");
 
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_augmented &&
+      contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
+    dserror("Regularization parameter cn, must be greater than 0 for contact problems");
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_augmented &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+    dserror("The augmented Lagrange formulation does not support dual shape functions.");
+
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -791,9 +800,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       && dim == 3)
     dserror("3D frictional contact only implemented with Semi-smooth Newton");
 
-  if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
-    dserror(
-        "ERROR: Crosspoints / edge node modification not yet implemented for 3D");
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_augmented &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
+    dserror("Frictional contact is for the augmented Lagrange formulation not yet implemented!");
+
+  if (DRT::INPUT::IntegralValue<int>(mortar,"CROSSPOINTS") == true && dim == 3)
+    dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
@@ -1317,6 +1329,26 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   }
 #endif //CONTACTEXPORT
 #endif //CONTACTFORCEOUTPUT
+
+  // Evaluate the interface forces for the augmented Lagrange formulation
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(DRT::Problem::Instance()->ContactDynamicParams(),"STRATEGY")
+      ==INPAR::CONTACT::solution_augmented)
+  {
+    Teuchos::RCP<Epetra_Vector> augfs_lm = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<Epetra_Vector> augfs_g  = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<Epetra_Vector> augfm_lm = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<Epetra_Vector> augfm_g  = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+
+    // evaluate augmented contact forces
+    GetStrategy().AugForces(*augfs_lm,*augfs_g,*augfm_lm,*augfm_g);
+
+    // contact forces on slave and master side
+    output.WriteVector("norslaveforcelm",augfs_lm);
+    output.WriteVector("norslaveforceg" ,augfs_g);
+    output.WriteVector("normasterforcelm",augfm_lm);
+    output.WriteVector("normasterforceg" ,augfm_g);
+  }
+
   // *********************************************************************
   // wear
   // *********************************************************************

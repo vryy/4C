@@ -286,16 +286,16 @@ btsolconstrnorm_(0.0)
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
    dserror("ERROR: The given input parameters are not for beam contact");
   if (scontact_.get<double>("PENALTYPARAM") <= 0.0)
-   dserror("ERROR: The penalty parameter has to be positive.");  
-  
+   dserror("ERROR: The penalty parameter has to be positive.");
+
   // initialize contact element pairs
   pairs_.resize(0);
   oldpairs_.resize(0);
   btsolpairs_.resize(0);
-  
+
   // initialize input parameters
   currentpp_ = scontact_.get<double>("PENALTYPARAM");
-  
+
   // initialize Uzawa iteration index
   uzawaiter_ = 0;
 
@@ -329,8 +329,10 @@ btsolconstrnorm_(0.0)
   {
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_penalty )
       std::cout << "Strategy               = Penalty" << std::endl;
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_auglag)
-      std::cout << "Strategy               = Augmented Lagrange" << std::endl;
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_uzawa)
+      std::cout << "Strategy               = Uzawa Augmented Lagrange" << std::endl;
+    else
+      dserror("Unrecognized strategy");
     std::cout <<"================================================================\n" << std::endl;
   }
 
@@ -347,7 +349,7 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
     os << "Beam3 Contact Discretization:" << std::endl;
-  
+
   ProblemDiscret().Print(os);
 
   return;
@@ -1041,26 +1043,26 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ComputeSearchRadius()
 {
-  
+
   // some local variables
   double charactlength = 0.0;
   double globalcharactlength = 0.0;
   double maxeleradius = 0.0;
   double maxelelength = 0.0;
-    
+
   // look for maximum element radius in the whole discretization
   GetMaxEleRadius(maxeleradius);
-  
+
   // look for maximum element length in the whole discretization
   GetMaxEleLength(maxelelength);
-  
+
   // select characeteristic length
-  if (maxeleradius > maxelelength) charactlength = maxeleradius;   
-  else                             charactlength = maxelelength;  
-  
+  if (maxeleradius > maxelelength) charactlength = maxeleradius;
+  else                             charactlength = maxelelength;
+
   // communicate among all procs to find the global maximum
   Comm().MaxAll(&charactlength,&globalcharactlength,1);
-  
+
   // compute the search radius
   // the factor is only empiric yet it must be greater than 2
   // in order to account for the circular beam cross sections
@@ -1074,7 +1076,7 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
     std::cout << "Maximum element length = " << maxelelength << std::endl;
     std::cout << "Search radius          = " << searchradius_  << std::endl << std::endl;
   }
-  
+
   return;
 }
 
@@ -1083,13 +1085,13 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
 {
-  // loop over all elements in row map 
+  // loop over all elements in row map
   for (int i=0;i<RowElements()->NumMyElements();++i)
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
     DRT::Element* thisele = BTSolDiscret().gElement(gid);
-    
+
     if (!BEAMCONTACT::BeamElement(*thisele))
       dserror("The function GetMAxEleRadius is only defined for beam elements!");
 
@@ -1097,11 +1099,11 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
     // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
 
     double eleradius = CalcEleRadius(thisele);
-    
+
     // if current radius is larger than maximum radius -> update
     if (eleradius > maxeleradius) maxeleradius = eleradius;
   }
-  
+
   return;
 }
 
@@ -1116,7 +1118,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
     // get pointer onto element
     int gid = RowElements()->GID(i);
     DRT::Element* thisele = BTSolDiscret().gElement(gid);
-    
+
     if (!BEAMCONTACT::BeamElement(*thisele))
       dserror("The function GetMaxEleLength is only defined for beam elements!");
 
@@ -1125,7 +1127,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
     int node1_gid = thisele->NodeIds()[1];
     DRT::Node* node0 = BTSolDiscret().gNode(node0_gid);
     DRT::Node* node1 = BTSolDiscret().gNode(node1_gid);
-    
+
     // get coordinates of edge nodes
     std::vector<double> x_n0(3);
     std::vector<double> x_n1(3);
@@ -1134,15 +1136,15 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
       x_n0[j] = node0->X()[j];
       x_n1[j] = node1->X()[j];
     }
-        
+
     // compute distance vector and length
     // (APPROXIMATION FOR HIGHER-ORDER ELEMENTS !!!)
     std::vector<double> dist(3);
     for (int j=0;j<3;++j) dist[j] = x_n0[j] - x_n1[j];
     double elelength = sqrt(dist[0]*dist[0]+dist[1]*dist[1]+dist[2]*dist[2]);
-    
+
     // if current length is larger than maximum length -> update
-    if (elelength > maxelelength) maxelelength = elelength;     
+    if (elelength > maxelelength) maxelelength = elelength;
   }
 
   return;
@@ -1162,7 +1164,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
 #ifdef GMSHTIMESTEPS
   GmshOutput(disrow, timestep, newtonstep, true);
 #endif
-  
+
   // print some data to screen
   ConsoleOutput();
 
@@ -1178,7 +1180,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   // clear potential contact pairs
   pairs_.clear();
   pairs_.resize(0);
-  
+
   contactpairmap_.clear();
 
   // clear potential beam-to-solid contact pairs
@@ -1198,7 +1200,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   //**********************************************************************
   // create filename for ASCII-file for output
   //**********************************************************************
-  
+
   //Only write out put every OUTPUTEVERY^th step
   if (timestep%OUTPUTEVERY!=0)
     return;
@@ -1213,7 +1215,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
   else /*(timestep>=1000000)*/
     dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
-  
+
   // STEPS 2/3: OUTPUT OF UZAWA AND NEWTON STEP INDEX
   // (for the end of time step output, omit this)
   int uzawastep = 99;
@@ -1223,7 +1225,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     INPAR::CONTACT::SolvingStrategy soltype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
 
-    if (soltype==INPAR::CONTACT::solution_auglag)
+    if (soltype==INPAR::CONTACT::solution_uzawa)
     {
       uzawastep = uzawaiter_;
       if (uzawastep<10)
@@ -1234,7 +1236,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         dserror("ERROR: Gmsh output implemented for max 99 Uzawa steps");
       filename << uzawastep;
     }
-    
+
     // Newton index is always needed, of course
     if (newtonstep<10)
       filename << "_n0";
@@ -1244,7 +1246,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       dserror("ERROR: Gmsh output implemented for max 99 Newton steps");
     filename << newtonstep;
   }
-  
+
   // finish filename
   filename<<".pos";
 
@@ -1266,12 +1268,12 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
     // do output to file in c-style
     FILE* fp = NULL;
-    
+
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
-  
+
     std::stringstream gmshfileheader;
-    // write output to temporary std::stringstream; 
+    // write output to temporary std::stringstream;
     gmshfileheader <<"General.BackgroundGradient = 0;\n";
     gmshfileheader <<"View.LineType = 1;\n";
     gmshfileheader <<"View.LineWidth = 1.4;\n";
@@ -1308,14 +1310,14 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Step T" << timestep;
-            
+
     // information about Uzawa and Newton step
     if (!endoftimestep)
       gmshfilecontent << " U" << uzawastep << " N" << newtonstep;
 
     // finish step information
     gmshfilecontent << " \" {" << std::endl;
-    
+
     // loop over all column elements on this processor
     for (int i=0;i<ColElements()->NumMyElements();++i)
     {
@@ -1477,16 +1479,16 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         dserror("Your chosen type of beam element is not allowed for beam contact!");
       }
     }
-    
+
     // finish data section of this view by closing curley brackets (somehow needed to get color)
     gmshfilecontent <<"SP(0.0,0.0,0.0){0.0,0.0};"<<std::endl;
     gmshfilecontent << "};" << std::endl;
-    
+
     // write content into file and close
     fprintf(fp,gmshfilecontent.str().c_str());
-    fclose(fp); 
+    fclose(fp);
   }
- 
+
 
   return;
 }
@@ -1494,7 +1496,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 /*----------------------------------------------------------------------*
  |  Compute rotation matrix R                                cyron 01/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::TransformAngleToTriad(Epetra_SerialDenseVector& theta, 
+void CONTACT::Beam3cmanager::TransformAngleToTriad(Epetra_SerialDenseVector& theta,
                                                    Epetra_SerialDenseMatrix& R)
 {
   // compute spin matrix according to Crisfield Vol. 2, equation (16.8)
@@ -1503,11 +1505,11 @@ void CONTACT::Beam3cmanager::TransformAngleToTriad(Epetra_SerialDenseVector& the
 
   // nompute norm of theta
   double theta_abs = theta.Norm2();
-  
+
   // build an identity matrix
-  Epetra_SerialDenseMatrix identity(3,3);      
+  Epetra_SerialDenseMatrix identity(3,3);
   for(int i=0;i<3;i++) identity(i,i) = 1.0;
-  
+
   // square of spin matrix
   Epetra_SerialDenseMatrix spin2(3,3);
   for (int i=0;i<3;i++)
@@ -1515,12 +1517,12 @@ void CONTACT::Beam3cmanager::TransformAngleToTriad(Epetra_SerialDenseVector& the
       for(int k=0;k<3;k++)
         spin2(i,k) += spin(i,j) * spin(j,k);
 
-  
+
   // compute rotation matrix according to Crisfield Vol. 2, equation (16.22)
   for(int i=0;i<3;i++)
     for(int j=0;j<3;j++)
       R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
-  
+
   return;
 }
 
@@ -1529,17 +1531,17 @@ void CONTACT::Beam3cmanager::TransformAngleToTriad(Epetra_SerialDenseVector& the
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
                                          Epetra_SerialDenseVector& rotationangle)
-{  
+{
   // initialization
   const double spinscale = 1.0;
   for (int i=0;i<rotationangle.Length();++i)
     rotationangle[i] *= spinscale;
-  
+
   // initialize spin with zeros
   for(int i=0;i<3;i++)
     for(int j=0;j<3;j++)
       spin(i,j) = 0;
-  
+
   // fill spin with values (see Crisfield Vol. 2, equation (16.8))
   spin(0,0) = 0;
   spin(0,1) = -rotationangle[2];
@@ -1550,7 +1552,7 @@ void CONTACT::Beam3cmanager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
   spin(2,0) = -rotationangle[1];
   spin(2,1) = rotationangle[0];
   spin(2,2) = 0;
-  
+
   return;
 }
 
@@ -1594,12 +1596,12 @@ void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
 /*----------------------------------------------------------------------*
  |  Reset all Uzawa-based Lagrange multipliers                popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::ResetAlllmuzawa() 
+void CONTACT::Beam3cmanager::ResetAlllmuzawa()
 {
   // loop over all potential contact pairs
   for(int i=0;i<(int)pairs_.size();i++)
     pairs_[i]->Resetlmuzawa();
-  
+
   for(int i=0;i<(int)btsolpairs_.size();i++)
     btsolpairs_[i]->Resetlmuzawa();
 
@@ -1723,10 +1725,10 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   Comm().MaxAll(&btsollocnorm,&btsolglobnorm,1);
 
   // update penalty parameter if necessary
-  // (only possible for AUGMENTED LAGRANGE strategy)
+  // (only possible for UZAWA AUGMENTED LAGRANGE strategy)
   bool updatepp = false;
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
-  if (soltype==INPAR::CONTACT::solution_auglag)
+  if (soltype==INPAR::CONTACT::solution_uzawa)
       updatepp = IncreaseCurrentpp(globnorm);
 
    // print results to screen
@@ -1748,8 +1750,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   }
   else //=necessary for statmech
     *cnorm = globnorm;
-  
-  return; 
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1775,7 +1777,7 @@ void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
 
   for (int i=0;i<(int)btsolpairs_.size();++i)
     btsolpairs_[i]->Updatelmuzawa(currentpp_);
-    
+
   return;
 }
 
@@ -1786,7 +1788,7 @@ void CONTACT::Beam3cmanager::ResetCurrentpp()
 {
   // get initial value from input file and reset
   currentpp_ = GeneralContactParameters().get<double>("PENALTYPARAM");
-  
+
   return;
 }
 
@@ -1840,7 +1842,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     if (Comm().MyPID()==0)
       std::cout << "\nActive contact set--------------------------------------------------------------\n";
     Comm().Barrier();
-      
+
     // loop over all pairs
     for (int i=0;i<(int)pairs_.size();++i)
     {
@@ -1900,35 +1902,35 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
   // Note: dirichtoggle is 1 for DOFs with DBC and 0 elsewise
   Epetra_Vector fbearing(*BTSolDiscret().DofRowMap());
   fbearing.Multiply(1.0,dirichtogglebc,fintbc,0.0);
-  
+
   // std::stringstream for filename
   std::ostringstream filename;
   filename << "o/gmsh_output/reaction_forces_moments.csv";
-  
+
   // do output to file in c-style
   FILE* fp = NULL;
-      
+
   // open file to write output data into
   if (timestep==1) fp = fopen(filename.str().c_str(), "w");
   else             fp = fopen(filename.str().c_str(), "a");
-  
+
   // std::stringstream for file content
   std::ostringstream CSVcontent;
   CSVcontent << std::endl << timestep <<",";
-  
+
   // only implemented for one single node
   int i=0;  // CHOOSE YOUR NODE ID HERE!!!
   const DRT::Node* thisnode = BTSolDiscret().gNode(i);
   const std::vector<int> DofGIDs = BTSolDiscret().Dof(thisnode);
   CSVcontent << i;
-  
+
   // write reaction forces and moments
   for (int j=0;j<6;++j) CSVcontent << "," << fbearing[i*6+j];
-    
+
   // write content into file and close
   fprintf(fp,CSVcontent.str().c_str());
   fclose(fp);
-    
+
   return;
 }
 
@@ -1948,46 +1950,46 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   Epetra_SerialDenseVector auxvec(3);
   Epetra_SerialDenseVector theta(3);
   Epetra_SerialDenseMatrix R(3,3);
-        
+
   double eleradius = CalcEleRadius(thisele);
-  
+
   // declaring variable for color of elements
-  double color = 1.0;   
+  double color = 1.0;
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
     int id1 = (pairs_[i]->Element1())->Id();
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
-    
+
     // if element is memeber of an active contact pair, choose different color
     if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
-    
+
   // compute three dimensional angle theta
   for (int j=0;j<theta.Length();++j)
     axis[j] = coord(j,1) - coord(j,0);
   double norm_axis = axis.Norm2();
   for (int j=0;j<axis.Length();++j)
-    theta[j] = axis[j] / norm_axis * 2 * M_PI / n;   
-  
+    theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+
   // Compute rotation matirx R
   TransformAngleToTriad(theta,R);
-  
+
   // Now the first prism will be computed via two radiusvectors, that point from each of
   // the nodes to two points on the beam surface. Further prisms will be computed via a
   // for-loop, where the second node of the previous prism is used as the first node of the
   // next prism, whereas the central points (=nodes) stay  identic for each prism. The
-  // second node will be computed by a rotation matrix and a radiusvector. 
-        
+  // second node will be computed by a rotation matrix and a radiusvector.
+
   // compute radius vector for first surface node of first prims
   for (int j=0;j<3;++j) auxvec[j] = coord(j,0) + norm_axis;
-  
+
   // radiusvector for point on surface
   radiusvec1[0] = auxvec[1]*axis[2] - auxvec[2]*axis[1];
   radiusvec1[1] = auxvec[2]*axis[0] - auxvec[0]*axis[2];
   radiusvec1[2] = auxvec[0]*axis[1] - auxvec[1]*axis[0];
-  
+
   // initialize all prism points to nodes
   for (int j=0;j<3;++j)
   {
@@ -1998,26 +2000,26 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     prism(j,4) = coord(j,1);
     prism(j,5) = coord(j,1);
   }
-  
+
   // get first point on surface for node1 and node2
   for (int j=0;j<3;++j)
   {
     prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
     prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
   }
-  
+
   // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
   radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
-      
+
   // get second point on surface for node1 and node2
   for(int j=0;j<3;j++)
   {
     prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
     prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
   }
-  
+
   // now first prism is built -> put coordinates into filecontent-stream
-  // Syntax for gmsh input file  
+  // Syntax for gmsh input file
   // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
   // SI( coordinates of the six corners ){colors}
   gmshfilecontent << "SI("<< std::scientific;
@@ -2029,7 +2031,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
   gmshfilecontent << "){" << std::scientific;
   gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
-        
+
   // now the other prisms will be computed
   for (int sector=0;sector<n-1;++sector)
   {
@@ -2038,30 +2040,30 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     for (int j=0;j<3;++j)
     {
       prism(j,1)=prism(j,2);
-      prism(j,4)=prism(j,5);  
+      prism(j,4)=prism(j,5);
       prism(j,2)=prism(j,0);
       prism(j,5)=prism(j,3);
     }
-    
+
     // old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
     for (int j=0;j<3;++j)
     {
       radiusvec1[j] = radiusvec2[j];
       radiusvec2[j] = 0.0;
     }
-    
+
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
     radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
-  
+
     // get second point on surface for node1 and node2
     for (int j=0;j<3;++j)
     {
        prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
        prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
     }
-    
+
     // put coordinates into filecontent-stream
-    // Syntax for gmsh input file  
+    // Syntax for gmsh input file
     // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
     // SI( coordinates of the six corners ){colors}
     gmshfilecontent << "SI("<< std::scientific;
@@ -2099,7 +2101,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   // some local variables
   Epetra_SerialDenseMatrix prism(3,6);
   Epetra_SerialDenseVector axis(3);
-  Epetra_SerialDenseVector radiusvec1(3);  
+  Epetra_SerialDenseVector radiusvec1(3);
   Epetra_SerialDenseVector radiusvec2(3);
   Epetra_SerialDenseVector auxvec(3);
   Epetra_SerialDenseVector theta(3);
@@ -2109,18 +2111,18 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   double eleradius = CalcEleRadius(thisele);
 
   // declaring variable for color of elements
-  double color = 1.0;   
+  double color = 1.0;
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
     int id1 = (pairs_[i]->Element1())->Id();
     int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
-    
+
     // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0; 
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0;
   }
-  
+
   // computation of coordinates starts here
   // first, the prisms between node 1 and 3 will be computed.
   // afterwards the prisms between nodes 3 and 2 will follow
@@ -2135,7 +2137,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
         coord(j,1) = allcoord(j,2);
       }
     }
-    
+
     // prisms between node 3 and node 2
     else if (i==1)
     {
@@ -2145,31 +2147,31 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
         coord(j,1) = allcoord(j,1);
       }
     }
-       
+
     // compute three dimensional angle theta
     for (int j=0;j<theta.Length();++j)
       axis[j] = coord(j,1) - coord(j,0);
     double norm_axis = axis.Norm2();
     for (int j=0;j<axis.Length();++j)
-      theta[j] = axis[j] / norm_axis * 2 * M_PI / n; 
-    
+      theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+
     // Compute rotation matrix R
     TransformAngleToTriad(theta,R);
-    
+
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
     // for-loop, where the second node of the previous prism is used as the first node of the
     // next prism, whereas the central points (=nodes) stay  identic for each prism. The
-    // second node will be computed by a rotation matrix and a radiusvector. 
-          
+    // second node will be computed by a rotation matrix and a radiusvector.
+
     // compute radius vector for first surface node of first prims
     for (int j=0;j<3;++j) auxvec[j] = coord(j,0) + norm_axis;
-    
+
     // radiusvector for point on surface
     radiusvec1[0] = auxvec[1]*axis[2] - auxvec[2]*axis[1];
     radiusvec1[1] = auxvec[2]*axis[0] - auxvec[0]*axis[2];
     radiusvec1[2] = auxvec[0]*axis[1] - auxvec[1]*axis[0];
-    
+
     // initialize all prism points to nodes
     for (int j=0;j<3;++j)
     {
@@ -2180,26 +2182,26 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       prism(j,4) = coord(j,1);
       prism(j,5) = coord(j,1);
     }
-    
+
     // get first point on surface for node1 and node2
     for (int j=0;j<3;++j)
     {
       prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
       prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
     }
-    
+
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
     radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
-        
+
     // get second point on surface for node1 and node2
     for(int j=0;j<3;j++)
     {
       prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
       prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
     }
-    
+
     // now first prism is built -> put coordinates into filecontent-stream
-    // Syntax for gmsh input file  
+    // Syntax for gmsh input file
     // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
     // SI( coordinates of the six corners ){colors}
     gmshfilecontent << "SI("<< std::scientific;
@@ -2211,7 +2213,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
     gmshfilecontent << "){" << std::scientific;
     gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
-          
+
     // now the other prisms will be computed
     for (int sector=0;sector<n-1;++sector)
     {
@@ -2220,30 +2222,30 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       for (int j=0;j<3;++j)
       {
         prism(j,1)=prism(j,2);
-        prism(j,4)=prism(j,5);  
+        prism(j,4)=prism(j,5);
         prism(j,2)=prism(j,0);
         prism(j,5)=prism(j,3);
       }
-      
+
       // old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
       for (int j=0;j<3;++j)
       {
         radiusvec1[j] = radiusvec2[j];
         radiusvec2[j] = 0.0;
       }
-      
+
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
       radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
-    
+
       // get second point on surface for node1 and node2
       for (int j=0;j<3;++j)
       {
         prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
         prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
       }
-      
+
       // put coordinates into filecontent-stream
-      // Syntax for gmsh input file  
+      // Syntax for gmsh input file
       // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
       // SI( coordinates of the six corners ){colors}
       gmshfilecontent << "SI("<< std::scientific;
@@ -2256,8 +2258,8 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       gmshfilecontent << "){" << std::scientific;
       gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
     }
-  }   
-  
+  }
+
   return;
 }
 

@@ -4759,10 +4759,10 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
 
   // TODO: same procedure for discrete wear...
 
-  // only for Augmented strategy
+  // only for Uzawa Augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
   INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-  if (st == INPAR::CONTACT::solution_auglag)
+  if (st == INPAR::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(),"lagrmultold");

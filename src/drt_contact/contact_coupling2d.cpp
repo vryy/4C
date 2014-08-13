@@ -39,6 +39,7 @@
 
 #include "contact_coupling2d.H"
 #include "contact_integrator.H"
+#include "../drt_contact_aug/contact_augmented_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_node.H"
@@ -53,10 +54,13 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele) :
-    MORTAR::Coupling2d(idiscret, dim, quad, params, sele, mele)
+CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret,
+                                    int dim, bool quad,
+                                    Teuchos::ParameterList& params,
+                                    MORTAR::MortarElement& sele,
+                                    MORTAR::MortarElement& mele) :
+MORTAR::Coupling2d(idiscret,dim,quad,params,sele,mele),
+stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
 {
   // empty constructor
 
@@ -106,7 +110,11 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(imortar_, SlaveElement().Shape(), Comm());
+  Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
+  if (stype_==INPAR::CONTACT::solution_augmented)
+    integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,SlaveElement().Shape(),Comm(),Teuchos::null));
+  else
+    integrator=Teuchos::rcp(new CONTACT::CoIntegrator(imortar_,SlaveElement().Shape(),Comm()));
 
   // *******************************************************************
   // different options for mortar integration
@@ -127,8 +135,10 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     // ***********************************************************
     //                   Integrate stuff !!!                    //
     // ***********************************************************
-    integrator.IntegrateDerivSegment2D(SlaveElement(), sxia, sxib,
-        MasterElement(), mxia, mxib, Comm());
+    if (stype_==INPAR::CONTACT::solution_augmented)
+      Teuchos::rcp_static_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
+    else
+      integrator->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
     // ***********************************************************
     //                   END INTEGRATION !!!                    //
     // ***********************************************************
@@ -147,8 +157,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   // *******************************************************************
   else
   {
-    dserror(
-        "ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    dserror("ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
   }
 
   return true;
@@ -160,8 +169,13 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
 CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
     int dim, bool quad, Teuchos::ParameterList& params,
     MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele) :
-    idiscret_(idiscret), dim_(dim), quad_(quad), imortar_(params), sele_(sele), mele_(
-        mele)
+    idiscret_(idiscret),
+    dim_(dim),
+    quad_(quad),
+    imortar_(params),
+    sele_(sele),
+    mele_(mele),
+    stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
 {
   // evaluate coupling
   EvaluateCoupling();
@@ -256,7 +270,12 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       return false;
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(imortar_, SlaveElement().Shape(), Comm());
+    Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
+    if (stype_==INPAR::CONTACT::solution_augmented)
+      integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,SlaveElement().Shape(),
+          Comm(),Teuchos::null));
+    else
+      integrator=Teuchos::rcp(new CONTACT::CoIntegrator(imortar_,SlaveElement().Shape(),Comm()));
 
     // *******************************************************************
     // different options for mortar integration
@@ -294,8 +313,11 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       // ***********************************************************
       //                  START INTEGRATION !!!                   //
       // ***********************************************************
-      integrator.IntegrateDerivEle2D(SlaveElement(), MasterElements(),
-          &boundary_ele);
+      if (stype_==INPAR::CONTACT::solution_augmented)
+        Teuchos::rcp_static_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle2D(SlaveElement(),
+            MasterElements(),&boundary_ele);
+      else
+        integrator->IntegrateDerivEle2D(SlaveElement(), MasterElements(),&boundary_ele);
       // ***********************************************************
       //                   END INTEGRATION !!!                    //
       // ***********************************************************
@@ -312,10 +334,8 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
           for (int m = 0; m < (int) MasterElements().size(); ++m)
           {
             // create Coupling2d object and push back
-            Coupling().push_back(
-                Teuchos::rcp(
-                    new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
-                        SlaveElement(), MasterElement(m))));
+            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
+                SlaveElement(), MasterElement(m))));
 
             // project the element pair
             Coupling()[m]->Project();

@@ -63,10 +63,11 @@ DRT::ParObject* CONTACT::CoNodeType::Create( const std::vector<char> & data )
 CONTACT::CoNodeDataContainer::CoNodeDataContainer():
 grow_(1.0e12),
 activeold_(false),
-kappa_(1.0),
 derivn_(0,0),    //init deriv normal to length 0 with 0 entries per direction
 derivtxi_(0,0),  //init deriv txi    to length 0 with 0 entries per direction
-derivteta_(0,0)  //init deriv teta   to length 0 with 0 entries per direction
+derivteta_(0,0), //init deriv teta   to length 0 with 0 entries per direction
+varWGapSl_(0),
+kappa_(1.0)
 {
   // set all tangent entries to 0.0
   for (int i=0;i<3;++i)
@@ -131,6 +132,7 @@ CONTACT::CoNode::CoNode(int id, const double* coords, const int owner,
                         const bool initactive) :
 MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
 active_(false),
+augActive_(false),
 initactive_(initactive),
 involvedm_(false),
 linsize_(0)   // length of linearization
@@ -284,6 +286,85 @@ void CONTACT::CoNode::AddgValue(double& val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the weighted gap                      hiermeier 04/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddWGapValue(double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddWGapValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddWGapValue: function called for boundary node %i", Id());
+
+  // initialize if called for the first time
+  if (CoData().GetWGap()==1.0e12) CoData().GetWGap()=0;
+
+  // add given value to wGap_
+  CoData().GetWGap()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to scaling factor kappa                  hiermeier 04/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddKappaValue(double& val)
+{
+// check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddKappaValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddKappaValue: function called for boundary node %i", Id());
+
+  // initialize if called for the first time
+  if (CoData().GetKappa()==1.0e12) CoData().GetKappa()=0;
+
+  // add given value to kappa_
+  CoData().GetKappa()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the variation of the weighted gap     hiermeier 05/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddVarWGapSl(int& col, int& gid, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (!IsSlave())
+    dserror("ERROR: AddVarWGapSl: function called for master node %i", Id());
+  if (IsOnBound())
+    dserror("ERROR: AddVarWGapSl: function called for boundary node %i", Id());
+
+   // add the pair (col,val) to the given row
+  GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = CoData().GetVarWGapSl();
+  varWGapSlMap.resize(dentries_);
+  varWGapSlMap[col].first   = gid;
+  varWGapSlMap[col].second += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the variation of the weighted gap     hiermeier 05/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddVarWGapMa(int& col, int& gid, double &val)
+{
+  // check if this is a master node or slave boundary node
+  if (!IsSlave())
+    dserror("ERROR: AddVarWGapSl: function called for master node %i", Id());
+  if (IsOnBound())
+    dserror("ERROR: AddVarWGapSl: function called for boundary node %i", Id());
+
+   // add the pair (col,val) to the given column
+  std::map<int,std::pair<int,double> >& varWGapMaMap = CoData().GetVarWGapMa();
+  varWGapMaMap[col].first   = gid;
+  varWGapMaMap[col].second += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a value to the 'DerivZ' map                           popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
@@ -320,11 +401,19 @@ void CONTACT::CoNode::InitializeDataContainer()
     for(int j=0;j<Elements()[i]->NumNode();++j)
       linsize_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
 
-  // get maximum size of lin vectors
+  // get maximum size of nodal D-entries
   dentries_ = 0;
+  std::set<int> sIdCheck;
+  std::pair<std::set<int>::iterator,bool> check;
   for(int i=0;i<NumElement();++i)
+  {
+    const int* snodeIds = Elements()[i]->NodeIds();
     for(int j=0;j<Elements()[i]->NumNode();++j)
-      dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+    {
+      check = sIdCheck.insert(snodeIds[j]);
+      if (check.second) dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+    }
+  }
 
   // only initialize if not yet done
   if (modata_==Teuchos::null && codata_==Teuchos::null)

@@ -1686,6 +1686,13 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
 )
+set(OBJS_DRT_CONTACT_AUG
+  src/drt_contact_aug/contact_augmented_strategy.cpp
+  src/drt_contact_aug/contact_augmented_strategy_tools.cpp
+  src/drt_contact_aug/contact_augmented_interface.cpp
+  src/drt_contact_aug/contact_augmented_interface_tools.cpp
+  src/drt_contact_aug/contact_augmented_integrator.cpp
+)
 set(OBJS_DRT_CRACK
   src/drt_crack/InsertCohesiveElements.cpp
   src/drt_crack/dcohesive.cpp
@@ -2002,6 +2009,7 @@ add_library(alg_artnet ${OBJS_DRT_ARTNET})
 add_library(alg_combust ${OBJS_DRT_COMBUST})
 #add_library(alg_contact SHARED ${OBJS_DRT_CONTACT})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
+add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
 add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
@@ -2037,6 +2045,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_mlmc
   alg_thermo
   alg_contact
+  alg_contact_aug
   alg_fluid_adjoint
   alg_opti
   alg_particle

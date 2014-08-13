@@ -64,7 +64,7 @@ public:
 
   /*!
   \brief Standard constructor creating empty contact interface
- 
+
   This initializes the employed shape function set for lagrangian mutlipliers
   to a specific setting. Throughout the evaluation process, this set will be employed
   for the field of lagrangian multipliers.
@@ -75,12 +75,12 @@ public:
   \param icontact (in): Global contact parameter list
   \param selfcontact (in): Flag for self contact status
   \param redundant (in): type of redundancy in interface storage
- 
+
   */
   CoInterface(const int id, const Epetra_Comm& comm, const int dim,
               const Teuchos::ParameterList& icontact,
               bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
-    
+
   /*!
   \brief Destructor
 
@@ -100,7 +100,7 @@ public:
 
   */
   virtual const bool& SelfContact() { return selfcontact_;}
-  
+
   /*!
   \brief Get row map of active nodes (Filled()==true is prerequisite)
 
@@ -145,7 +145,7 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-  
+
   /*!
   \brief Get row map of slip nodes (Filled()==true is prerequisite)
 
@@ -178,19 +178,19 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-  
+
   /*!
   \brief Get number of slave / master pairs of this interface (proc local)
 
   */
   virtual const int& SlaveMasterPairs() { return smpairs_;}
-  
+
   /*!
   \brief Get number of slave / master integration pairs of this interface (proc local)
 
   */
   virtual const int& SlaveMasterIntPairs() { return smintpairs_;}
-  
+
   /*!
   \brief Get number of integration cells of this interface (proc local)
 
@@ -290,15 +290,15 @@ public:
 
   */
   void CreateSearchTree();
-  
+
   /*!
   \brief Initialize / reset interface for contact
-  
+
   Derived version!
 
   */
   void Initialize();
-  
+
   /*!
   \brief Set element areas
 
@@ -322,21 +322,21 @@ public:
   /*!
   \brief Binary tree search algorithm for potentially coupling slave /
   master pairs (element-based algorithm) including self-contact
-  
-  Derived version!       
+
+  Derived version!
 
   */
   bool EvaluateSearchBinarytree();
 
   /*!
   \brief Integrate Mortar matrix M and gap g on slave/master overlaps
-  
+
   Derived verision!
 
   */
   bool IntegrateCoupling(MORTAR::MortarElement* sele,
                          std::vector<MORTAR::MortarElement*> mele);
-    
+
   /*!
   \brief Integrate penalty sclaing factor kappa on slave element
 
@@ -345,7 +345,7 @@ public:
   penalty scaling factor kappa_j = int_{slave} (N_j) dslave. The
   correct interpolation N_j is chosen for any case (2D, 3D, linear
   quadratic, piecewise linear...)
-  
+
   TODO: maybe update kappa each time step?
 
   */
@@ -363,13 +363,13 @@ public:
   virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
                               const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
                               const Teuchos::RCP<LINALG::SparseMatrix> doldmod);
-  
+
   /*!
   \brief Assemble slave coordinates (xs)
 
   */
   virtual void AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod);
-  
+
   /*!
   \brief Evaluate L2 Norm of tangential contact conditions
 
@@ -405,9 +405,9 @@ public:
 
   /*!
   \brief Assemble geometry dependent, tangential lagrange multipliers
-  and their derivatives in the augmented lagrange case
+  and their derivatives in the Uzawa augmented lagrange case
   */
-  virtual void AssembleRegTangentForcesAugmented();
+  virtual void AssembleRegTangentForcesUzawa();
 
   /*
   \brief Assemble LM derivatives into global matrix (penalty strategy)
@@ -467,10 +467,10 @@ public:
   g a scalar quantity here. Compare also the different definitions of g_
   in CONTACT::MtAbstractStrategy::MortarCoupling() -> gsdofrowmap_ and
   in CONTACT::CoAbstractStrategy::InitMortar()/AssembleMortar() -> gsnoderowmap_!!!
-  
+
   */
   virtual void AssembleG(Epetra_Vector& gglobal);
-  
+
   /*!
   \brief Assemble inactive rhs (incremental delta_z_)
   */
@@ -480,7 +480,7 @@ public:
   \brief Assemble tangential rhs (incremental delta_z_)
   */
   virtual void AssembleTangrhs(Epetra_Vector& tangrhs);
- 
+
   /*!
   \brief Assemble matrix LinStick containing linearizations
 
@@ -520,9 +520,9 @@ public:
 
   */
   virtual bool SplitActiveDofs();
-  
+
   /*!
-  \brief Assemble matrix A 
+  \brief Assemble matrix A
 
   This method assembles the matrix A.
 
@@ -532,6 +532,14 @@ public:
   //@}
 
   //! @name Visualization and Debugging methods
+
+  /*!
+  \brief Calculate the resultant angular momentum
+  Necessary to check the angular momentum conservation
+
+  */
+  void EvalResultantMoment(const Epetra_Vector& fs,
+                           const Epetra_Vector& fm);
 
   /*!
   \brief Visualize contact stuff with gmsh
@@ -575,7 +583,7 @@ public:
 
   */
   void FDCheckTangLMDeriv();
-  
+
   /*!
   \brief Check stick condition derivatives with finite differences
 
@@ -589,19 +597,19 @@ public:
   */
   virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
                                 LINALG::SparseMatrix& linslipDISglobal);
-  
+
   /*!
   \brief Check penalty approach with finite differences
 
   */
-  void FDCheckPenaltyTracNor();  
+  void FDCheckPenaltyTracNor();
 
   /*!
   \brief Check frictional penalty traction with finite differences
 
   */
   virtual void FDCheckPenaltyTracFric();
-  
+
   //@}
 
 protected:
@@ -614,7 +622,7 @@ protected:
   bool                          friction_;       // flag for frictional contact
   bool                          wear_;           // flag for wear
   bool                          tsi_;            // flag for thermo structure interaction
-  
+
   Teuchos::RCP<Epetra_Map>      activenodes_;    // row map of all active slave nodes
   Teuchos::RCP<Epetra_Map>      activedofs_;     // row map of all active slave dofs
   Teuchos::RCP<Epetra_Map>      activen_;        // row map of global N-matrix
@@ -631,7 +639,7 @@ protected:
   int                           smpairs_;        // proc local number of slave/master pairs
   int                           smintpairs_;     // proc local number of slave/master integration pairs
   int                           intcells_;       // proc local number of integration cells
-  
+
 }; // class CoInterface
 } // namespace CONTACT
 

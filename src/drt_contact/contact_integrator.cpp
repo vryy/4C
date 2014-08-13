@@ -2547,7 +2547,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
         }
       }//End Loop over all Master Elements
     } // End Loop over all GP
-  }//boundary_ele abfrage
+  }//boundary_ele check
 
   return;
 }

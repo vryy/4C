@@ -59,7 +59,7 @@ MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
-STRATEGY                        Augmented
+STRATEGY                        Uzawa
 PENALTYPARAM                    1.0e6
 UZAWAMAXSTEPS                   10
 UZAWACONSTRTOL                  1.0e-8

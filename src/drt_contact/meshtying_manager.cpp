@@ -355,7 +355,7 @@ discret_(discret)
     strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
-  else if (stype == INPAR::CONTACT::solution_auglag)
+  else if (stype == INPAR::CONTACT::solution_uzawa)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
@@ -409,15 +409,15 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
                                                  meshtying.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_uzawa &&
                                                  meshtying.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_uzawa &&
                                                    meshtying.get<int>("UZAWAMAXSTEPS") <  2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_uzawa &&
                                                meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
@@ -433,7 +433,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
     dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
-  
+
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
                                                    mortar.get<int>("MIN_ELEPROC") <  0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
@@ -516,7 +516,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << std::endl;
-  
+
   // get parameter lists
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);

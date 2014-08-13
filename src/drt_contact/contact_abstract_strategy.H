@@ -43,18 +43,12 @@
 
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_contact.H"
 
 // forward declarations
-namespace DRT
-{
-class Discretization;
-}
+namespace DRT { class Discretization; }
 
-namespace LINALG
-{
-class MultiMapExtractor;
-class SparseMatrix;
-}
+namespace LINALG { class MultiMapExtractor; class SparseMatrix; }
 
 namespace CONTACT
 {
@@ -97,10 +91,7 @@ public:
    \brief Destructor
 
    */
-  virtual ~CoAbstractStrategy()
-  {
-  }
-  ;
+  virtual ~CoAbstractStrategy() {};
 
   //! @name Access methods
 
@@ -108,82 +99,55 @@ public:
    \brief Return global slave node row map
 
    */
-  const Teuchos::RCP<Epetra_Map> SlaveRowNodes()
-  {
-    return gsnoderowmap_;
-  }
+  const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
 
   /*!
    \brief Return global active node row map
 
    */
-  const Teuchos::RCP<Epetra_Map> ActiveRowNodes()
-  {
-    return gactivenodes_;
-  }
+  virtual const Teuchos::RCP<Epetra_Map> ActiveRowNodes() { return gactivenodes_; }
 
   /*!
    \brief Return global slip node row map
 
    */
-  const Teuchos::RCP<Epetra_Map> SlipRowNodes()
-  {
-    return gslipnodes_;
-  }
+  const Teuchos::RCP<Epetra_Map> SlipRowNodes() { return gslipnodes_; }
 
   /*!
    \brief Return global slave dof row map
 
    */
-  const Teuchos::RCP<Epetra_Map> SlaveRowDofs()
-  {
-    return gsdofrowmap_;
-  }
+  const Teuchos::RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
 
   /*!
    \brief Return global active dof row map
 
    */
-  const Teuchos::RCP<Epetra_Map> ActiveRowDofs()
-  {
-    return gactivedofs_;
-  }
+  virtual const Teuchos::RCP<Epetra_Map> ActiveRowDofs() { return gactivedofs_; }
 
   /*!
    \brief Return global master dof row map
 
    */
-  const Teuchos::RCP<Epetra_Map> MasterRowDofs()
-  {
-    return gmdofrowmap_;
-  }
+  const Teuchos::RCP<Epetra_Map> MasterRowDofs() { return gmdofrowmap_; }
 
   /*!
    \brief Return global slave dof row map
 
    */
-  const Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs()
-  {
-    return gsmdofrowmap_;
-  }
+  const Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return gsmdofrowmap_; }
 
   /*!
    \brief Return not redistributed global slave dof row map
 
    */
-  const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs()
-  {
-    return pgsdofrowmap_;
-  }
+  const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
 
   /*!
    \brief Return not redistributed global master dof row map
 
    */
-  const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs()
-  {
-    return pgmdofrowmap_;
-  }
+  const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
 
   /*!
    \brief provides maps needed for contact/meshtying specific multigrid preconditioners
@@ -198,165 +162,111 @@ public:
    \brief Return discrete wear vector (t_n+1)
 
    */
-  Teuchos::RCP<Epetra_Vector> WearVar()
-  {
-    return w_;
-  }
+  Teuchos::RCP<Epetra_Vector> WearVar() { return w_; }
 
   /*!
    \brief Return discrete wear vector (t_n+1) Master
 
    */
-  Teuchos::RCP<Epetra_Vector> WearVarM()
-  {
-    return wm_;
-  }
+  Teuchos::RCP<Epetra_Vector> WearVarM() { return wm_; }
 
   /*!
    \brief Return Lagrange multiplier vector (t_n+1)
 
    */
-  Teuchos::RCP<Epetra_Vector> LagrMult()
-  {
-    return z_;
-  }
+  Teuchos::RCP<Epetra_Vector> LagrMult() { return z_; }
 
   /*!
    \brief Return old Lagrange multiplier vector (t_n)
 
    */
-  Teuchos::RCP<Epetra_Vector> LagrMultOld()
-  {
-    return zold_;
-  }
+  Teuchos::RCP<Epetra_Vector> LagrMultOld() { return zold_; }
 
   /*!
    \brief Return Lagrange multiplier vector from last Uzawa step
 
    */
-  Teuchos::RCP<Epetra_Vector> LagrMultUzawa()
-  {
-    return zuzawa_;
-  }
+  Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
 
   /*!
    \brief Return constraint rhs vector (only in saddle-point formulation
 
    */
-  Teuchos::RCP<Epetra_Vector> ConstrRhs()
-  {
-    return constrrhs_;
-  }
+  Teuchos::RCP<Epetra_Vector> ConstrRhs() { return constrrhs_; }
 
   /*!
    \brief Return wear rhs vector (only in saddle-point formulation
 
    */
-  Teuchos::RCP<Epetra_Vector> WearRhs()
-  {
-    return wearrhs_;
-  }
+  Teuchos::RCP<Epetra_Vector> WearRhs() { return wearrhs_; }
 
   /*!
    \brief Return wear-master rhs vector (only in saddle-point formulation
 
    */
-  Teuchos::RCP<Epetra_Vector> WearMRhs()
-  {
-    return wearmrhs_;
-  }
+  Teuchos::RCP<Epetra_Vector> WearMRhs() { return wearmrhs_; }
 
   /*!
    \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
    */
-  Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr()
-  {
-    return zincr_;
-  }
+  Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return zincr_; }
 
   /*!
    \brief Returns increment of W solution vector in SaddlePointSolve routine
 
    */
-  Teuchos::RCP<Epetra_Vector> WSolveIncr()
-  {
-    return wincr_;
-  }
+  Teuchos::RCP<Epetra_Vector> WSolveIncr() { return wincr_; }
 
   /*!
    \brief Returns increment of W-master solution vector in SaddlePointSolve routine
 
    */
-  Teuchos::RCP<Epetra_Vector> WMSolveIncr()
-  {
-    return wmincr_;
-  }
+  Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return wmincr_; }
 
   /*!
    \brief Return mortar matrix D
 
    */
-  Teuchos::RCP<LINALG::SparseMatrix> DMatrix()
-  {
-    return dmatrix_;
-  }
+  Teuchos::RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
 
   /*!
    \brief Return mortar matrix M
 
    */
-  Teuchos::RCP<LINALG::SparseMatrix> MMatrix()
-  {
-    return mmatrix_;
-  }
+  Teuchos::RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
 
   /*!
    \brief Return vector of normal contact stresses (t_n+1)
 
    */
-  Teuchos::RCP<Epetra_Vector> ContactNorStress()
-  {
-    return stressnormal_;
-  }
+  Teuchos::RCP<Epetra_Vector> ContactNorStress() { return stressnormal_; }
 
   /*!
    \brief Return vector of tangential contact stresses (t_n+1)
 
    */
-  Teuchos::RCP<Epetra_Vector> ContactTanStress()
-  {
-    return stresstangential_;
-  }
+  Teuchos::RCP<Epetra_Vector> ContactTanStress() { return stresstangential_; }
 
   /*!
    \brief Return required Integration time
 
    */
-  double Inttime()
-  {
-    return inttime_;
-  }
+  double Inttime() { return inttime_; }
   ;
 
   /*!
    \brief Set integration time to zero
 
    */
-  void Inttime_init()
-  {
-    inttime_ = 0.0;
-  }
+  void Inttime_init() { inttime_ = 0.0; }
   ;
 
   /*!
    \brief Return current global contact status
 
    */
-  bool IsInContact()
-  {
-    return isincontact_;
-  }
+  bool IsInContact() { return isincontact_; }
 
   /*!
    \brief Return old global contact status (this time step)
@@ -364,10 +274,7 @@ public:
    True if there has been contact in any nonlinear iteration
    step of the current time step.
    */
-  bool WasInContact()
-  {
-    return wasincontact_;
-  }
+  bool WasInContact() { return wasincontact_; }
 
   /*!
    \brief Return old global contact status (last time step)
@@ -375,10 +282,7 @@ public:
    True if there has been contact at the end of the last
    time step (last converged state)
    */
-  bool WasInContactLastTimeStep()
-  {
-    return wasincontactlts_;
-  }
+  bool WasInContactLastTimeStep() { return wasincontactlts_; }
 
   /*!
    \brief Return global self contact status
@@ -390,46 +294,31 @@ public:
    TODO: automatically recognize ACTUAL self contact
 
    */
-  bool& IsSelfContact()
-  {
-    return isselfcontact_;
-  }
+  bool& IsSelfContact() { return isselfcontact_; }
 
   /*!
    \brief Return global frictional status
 
    */
-  bool Friction()
-  {
-    return friction_;
-  }
+  bool Friction() { return friction_; }
 
   /*!
    \brief Return global both sided wear status
 
    */
-  bool WearBothDiscrete()
-  {
-    return wbdiscr_;
-  }
+  bool WearBothDiscrete() { return wbdiscr_; }
 
   /*!
    \brief Return global wear status
 
    */
-  bool Wear()
-  {
-    return wear_;
-  }
+  bool Wear() { return wear_; }
 
   /*!
    \brief Return contact interfaces
 
    */
-  const std::vector<Teuchos::RCP<CONTACT::CoInterface> > ContactInterfaces()
-  {
-    return interface_;
-  }
+  const std::vector<Teuchos::RCP<CONTACT::CoInterface> > ContactInterfaces() { return interface_; }
 
   /*!
    \brief Get dual quadratic 3d slave element flag
@@ -438,16 +327,13 @@ public:
    dual Lagrange mutliplier shape functions in any interface.
 
    */
-  virtual const bool& Dualquadslave3d()
-  {
-    return dualquadslave3d_;
-  }
+  virtual const bool& Dualquadslave3d() { return dualquadslave3d_; }
   ;
 
   /*!
    \brief Return parallel redistribution status (yes or no)
 
-   */
+  */
   bool ParRedist()
   {
     INPAR::MORTAR::ParRedist partype = DRT::INPUT::IntegralValue<
@@ -457,6 +343,7 @@ public:
     else
       return false;
   }
+
 
   /*!
    \brief Return specific parallel redistribution status
@@ -472,19 +359,13 @@ public:
    \brief Return matrix A
 
    */
-  Teuchos::RCP<LINALG::SparseMatrix> AMatrix()
-  {
-    return amatrix_;
-  }
+  Teuchos::RCP<LINALG::SparseMatrix> AMatrix() { return amatrix_; }
 
   /*!
    \brief Return matrix T
 
    */
-  virtual Teuchos::RCP<LINALG::SparseMatrix> TMatrix()
-  {
-    return Teuchos::null;
-  }
+  virtual Teuchos::RCP<LINALG::SparseMatrix> TMatrix() { return Teuchos::null; }
 
   /*!
    \brief Return number of active nodes
@@ -669,7 +550,7 @@ public:
    option called only in Recover() after the update of the Lagr. multipliers.
    It basically does the same as "lmcurrent", but also checks for D.B.C.
    problems. Finally, "lmuzawa" addresses the LM update within an
-   augmented Lagrangian scheme.
+   Uzawa augmented Lagrangian scheme.
 
    \param type (in): enum defining which quantity to store into CoNodes
 
@@ -757,10 +638,19 @@ public:
   void DoReadRestart(IO::DiscretizationReader& reader,
       Teuchos::RCP<Epetra_Vector> dis);
 
-  //@}
+    //@}
+
+    //! @name Empty functions if no augmented Lagrange formulation is used
+    virtual void BuildGlobalAugActiveSet(const int it) {return;}
+    virtual void UpdateStructuralRHS(Teuchos::RCP<Epetra_Vector>& feff) {return;}
+    virtual void UpdateStructuralStiff(Teuchos::RCP<LINALG::SparseOperator>& kteff) {return;}
+    virtual void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g,
+                           Epetra_Vector& augfm_lm, Epetra_Vector& augfm_g) {return;}
+    //@}
+
+
 
   //! @name Debugging methods
-
   /*!
    \brief Compute interface forces and moments
 
@@ -809,31 +699,25 @@ public:
   // i.e CONTACT::CoLagrangeStrategy or CONTACT::CoPenaltyStrategy.
   // As the base class MORTAR::StrategyBase is always called from the control routine
   // (time integrator), these functions need to be defined purely virtual here.
-
   virtual bool ActiveSetSemiSmoothConverged() = 0;
   virtual bool ActiveSetConverged() = 0;
   virtual int ActiveSetSteps() = 0;
   virtual double ConstraintNorm() = 0;
-  virtual void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-      Teuchos::RCP<Epetra_Vector>& feff) = 0;
-  virtual void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-      Teuchos::RCP<Epetra_Vector>& feff) = 0;
+  virtual void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+  virtual void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
   virtual void EvaluateRelMovPredict() = 0;
   virtual double InitialPenalty() = 0;
   virtual void Initialize() = 0;
-  virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-      Teuchos::RCP<Epetra_Vector>& feff) = 0;
+  virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
   virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
   virtual void ResetActiveSet() = 0;
   virtual void ResetPenalty() = 0;
-  virtual void SaddlePointSolve(LINALG::Solver& solver,
-      LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd,
-      Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-      Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
+  virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
+  virtual void EvalConstrRHS() = 0;
   virtual void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) = 0;
   virtual void UpdateActiveSet() = 0;
   virtual void UpdateActiveSetSemiSmooth() = 0;
-  virtual void UpdateAugmentedLagrange() = 0;
+  virtual void UpdateUzawaAugmentedLagrange() = 0;
   virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 
   //@}
@@ -844,26 +728,12 @@ public:
   // are defined as empty here in the case of contact. They can be called from the
   // control routine (time integrator), whenever you like.
 
-  void RedistributeMeshtying()
-  {
-  }
-  void RestrictMeshtyingZone()
-  {
-  }
-  void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-      Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
-  {
-  }
-  void MeshInitialization()
-  {
-  }
-  void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
-  {
-  }
-  Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled()
-  {
-    return Teuchos::null;
-  }
+  void RedistributeMeshtying() {}
+  void RestrictMeshtyingZone() {}
+  void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) {}
+  void MeshInitialization() {}
+  void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
+  Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() {return Teuchos::null; }
 
   // wear stuff:
   virtual void OutputWear() = 0;
@@ -939,6 +809,7 @@ protected:
     // global storage fields
     int step_;                // time step index
     int iter_;                // nonlinear (Newton) iteration index
+    int iterls_;              // nonlinear (Line Search) iteration index
 
     bool isincontact_;        // flag indicating global contact status
     bool wasincontact_;       // flag indicating global contact status of this time step (history)
@@ -969,6 +840,8 @@ protected:
 
     double inttime_;                                      // integration time
     std::vector<double > ivel_;                           // mean interface velocity
+
+    INPAR::CONTACT::SolvingStrategy stype_;               // current used solving strategy
 }; // class CoAbstractStrategy
 } // namespace CONTACT
 

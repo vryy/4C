@@ -370,6 +370,17 @@ namespace STR
     //! \author mwgee (originally) \date 03/07
     void OutputStep(bool forced_writerestart = false);
 
+    //! Write output for every Newton or line search iteration
+    //! The step numbers are formated in the following manner:
+    //!  n    5               4 2                     1 0
+    //!  00..00               000                     00
+    //! |__ ___|             |_ _|                   |_ |
+    //!    V                   V                       V
+    //! digits n to 5       digits 4 to 2            digits 1 to 0
+    //! represent the       represent the            represent the
+    //! time steps          Newton steps             line search steps
+    void OutputEveryIter(bool nw = false, bool ls = false);
+
     //! write output of step to the Gmsh format
     void writeGmshStrucOutputStep();
 
@@ -990,21 +1001,21 @@ namespace STR
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
     //@}
-    
+
     //! @name Crack propagation methods
-		//! check for crack propagation and do preparations
+    //! check for crack propagation and do preparations
     void PrepareCrackSimulation();
-    
+
     //! After introducing new nodes in crack, this performs all related operations in discretization
     bool UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace );
 
-		//! update all Epectra_vectors related to the chosen time integration
+    //! update all Epectra_vectors related to the chosen time integration
     virtual void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) = 0;
 
     //! Get map of old and new crack tip nodes
     std::map<int,int> getOldNewCrackNodes();
 
-		//! Get the crack tip nodes
+    //! Get the crack tip nodes
     std::vector<int> GetCrackTipNodes();
     //@}
 
@@ -1036,6 +1047,9 @@ namespace STR
     FILE* errfile_;  //!< error file handle
     bool printerrfile_;  //!< print infos to error file #errfile_
     bool printiter_;  //!< print intermediate iterations during solution
+    bool outputeveryiter_; //!< switch
+    int oei_filecounter_; //!< filename counter
+    int outputcounter_; //!< output counter for OutputEveryIter
     int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written
     int writereducedrestart_; // Write reduced Restart Data i.e no mesh for mlmc purposes
@@ -1102,16 +1116,16 @@ namespace STR
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
-		//!  Holds class that propagates crack within the discretiztion
+    //!  Holds class that propagates crack within the discretiztion
     Teuchos::RCP<DRT::CRACK::PropagateCrack> propcrack_;
 
     //! elements with micro-materials
     bool havemicromat_;
 
-		//! Is this a crack propagation simulation?
+    //! Is this a crack propagation simulation?
     bool isCrack_;
 
-		//! Is GMSH output of displacements required?
+    //! Is GMSH output of displacements required?
     bool gmsh_out_;
 
     //@}

@@ -351,6 +351,11 @@ void STR::TimIntImpl::Predict()
   }
 
   // compute residual forces fres_ and stiffness stiff_
+  // If we use a tangential predictor, the contact status could have been changed in contrast
+  // to a constant predictor. Thus the contact status has to be reevaluated! (hiermeier 22.01.2014)
+  if (pred_ == INPAR::STR::pred_tangdis) params.set<bool>("predict", false);
+
+  // compute residual forces fres_ and stiffness stiff_
   EvaluateForceStiffResidual(params);
 
   // get residual of condensed variables (e.g. EAS) for NewtonLS
@@ -1074,14 +1079,15 @@ bool STR::TimIntImpl::Converged()
     bool semismooth = DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
-    if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
+    if (apptype == INPAR::CONTACT::app_mortarcontact &&
+        (stype == INPAR::CONTACT::solution_lagmult || stype == INPAR::CONTACT::solution_augmented) && semismooth)
       ccontact = cmtbridge_->GetStrategy().ActiveSetSemiSmoothConverged();
 
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
     // LM increments
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
-    if (stype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed) {
+    if ((stype==INPAR::CONTACT::solution_lagmult || stype==INPAR::CONTACT::solution_augmented) && systype!=INPAR::CONTACT::system_condensed) {
       bool convDispLagrIncr = false;
       bool convDispWIncr = false;
       bool convDispWMIncr = false;
@@ -1313,6 +1319,13 @@ int STR::TimIntImpl::NewtonFull()
     dserror("Effective stiffness matrix must be filled here");
   }
 
+  if (outputeveryiter_)
+  {
+    int restart = DRT::Problem::Instance()->Restart();
+    if (stepn_ == (restart + 1)) outputcounter_ = 0;
+    OutputEveryIter(true);
+  }
+
   // initialise equilibrium loop
   iter_ = 1;
   normfres_ = CalcRefNormForce();
@@ -1408,11 +1421,14 @@ int STR::TimIntImpl::NewtonFull()
     if (projector_!=Teuchos::null)
       projector_->ApplyPT(*fres_);
 
+    if (outputeveryiter_) OutputEveryIter(true);
+
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (HaveContactMeshtying() &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+        ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed) ||
+         (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_augmented)));
 
     if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
     if( bPressure == false && bContactSP == false)
@@ -1595,6 +1611,13 @@ int STR::TimIntImpl::NewtonLS()
   if (not stiff_->Filled())
     dserror("Effective stiffness matrix must be filled here");
 
+  if (outputeveryiter_)
+  {
+    int restart = DRT::Problem::Instance()->Restart();
+    if (stepn_ == (restart + 1)) outputcounter_ = 0;
+    OutputEveryIter(true);
+  }
+
   // initialize equilibrium loop (outer Full Newton loop)
   iter_ = 1;
   normfres_ = CalcRefNormForce();
@@ -1710,6 +1733,9 @@ int STR::TimIntImpl::NewtonLS()
     ***************************************************************/
     int err=LsEvalMeritFct(merit_fct[1]);
     eval_error = (eval_error || err);
+
+    if (outputeveryiter_) OutputEveryIter(true);
+
     /**************************************************************
     ***          1st inner LINE SEARCH loop                     ***
     ***************************************************************/
@@ -1751,6 +1777,7 @@ int STR::TimIntImpl::NewtonLS()
       ***************************************************************/
       LsPrintLineSearchIter(&merit_fct[0],iter_ls,step_red);
 
+      if (!(eval_error) && (outputeveryiter_)) OutputEveryIter(true, true);
     }
 
     if (iter_ls!=0)
@@ -2673,6 +2700,28 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       if(error) return error;
     }
   }
+  //********************************************************************
+  // 4) AUGMENTED SEMI-SMOOTH NEWTON FOR CONTACT
+  // The search for the correct active set (=contact nonlinearity) and
+  // the large deformation linearization (=geometrical nonlinearity) are
+  // merged into one semi-smooth Newton method and solved within ONE
+  // iteration loop (which is then basically a standard Newton).
+  // TODO EXTENSION TO A SMOOTH NEWTON APPROACH ARE UNDER CONSIDERATION
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_augmented)
+  {
+    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
+    {
+      int error = 0;
+      // nonlinear iteration
+      if (itertype_ == INPAR::STR::soltech_newtonfull)
+        error = NewtonFull();
+      else if (itertype_ == INPAR::STR::soltech_newtonls)
+        error = NewtonLS();
+
+      if(error) return error;
+    }
+  }
 
   //********************************************************************
   // Solving Strategy using Regularization Techniques (Penalty Method)
@@ -2688,9 +2737,9 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   }
 
   //********************************************************************
-  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
+  // Solving Strategy using Augmented Lagrange Techniques with Uzawa
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_auglag)
+  else if (soltype == INPAR::CONTACT::solution_uzawa)
   {
     // get tolerance and maximum Uzawa steps
     double eps = cmtbridge_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
@@ -2721,7 +2770,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       cmtbridge_->GetStrategy().UpdateConstraintNorm(uzawaiter);
 
       // store Lagrange multipliers for next Uzawa step
-      cmtbridge_->GetStrategy().UpdateAugmentedLagrange();
+      cmtbridge_->GetStrategy().UpdateUzawaAugmentedLagrange();
       cmtbridge_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
     } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
@@ -2821,7 +2870,8 @@ void STR::TimIntImpl::CmtLinearSolve()
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
   // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
   //**********************************************************************
-  if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+  if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
+      && systype!=INPAR::CONTACT::system_condensed)
   {
     // (iter_-1 to be consistent with old time integration)
     cmtbridge_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
@@ -2830,7 +2880,7 @@ void STR::TimIntImpl::CmtLinearSolve()
   //**********************************************************************
   // Solving a purely displacement based system
   // (1) Dual (not Standard) Lagrange multipliers -> Condensed
-  // (2) Penalty and Augmented Lagrange strategies
+  // (2) Penalty and Uzawa Augmented Lagrange strategies
   //**********************************************************************
   else
   {
@@ -2897,7 +2947,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   // solving strategy using regularization with augmented Lagrange method
   // (nonlinear solution approach: nested UZAWA NEWTON)
   //**********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_auglag)
+  else if (soltype == INPAR::CONTACT::solution_uzawa)
   {
     // get tolerance and maximum number of Uzawa steps from input file
     double eps = beamcman_->GeneralContactParameters().get<double>("UZAWACONSTRTOL");
@@ -3352,7 +3402,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
     INPAR::CONTACT::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
 
-    if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+    if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
+        && systype!=INPAR::CONTACT::system_condensed)
     {
       switch ( normtypecontconstr_ )
       {
@@ -3437,7 +3488,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
     if (apptype == INPAR::CONTACT::app_mortarcontact or apptype == INPAR::CONTACT::app_mortarcontandmt)
     {
-      oss << std::setw(10)<< "#active";
+      oss << std::setw(11)<< "#active";
       if (cmtbridge_->GetStrategy().Friction())
         oss << std::setw(10)<< "#slip";
     }
@@ -3542,7 +3593,8 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
     INPAR::CONTACT::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
 
-    if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+    if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
+        && systype!=INPAR::CONTACT::system_condensed)
     {
       // we only support abs norms
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normcontconstr_; // RHS for contact constraints
@@ -3602,9 +3654,20 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     // only print something for contact, not for meshtying
     INPAR::CONTACT::ApplicationType apptype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
+    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
+    bool semismooth =  DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
     if (apptype == INPAR::CONTACT::app_mortarcontact or INPAR::CONTACT::app_mortarcontandmt)
     {
-      oss << std::setw(10) << cmtbridge_->GetStrategy().NumberOfActiveNodes();
+      if (soltype==INPAR::CONTACT::solution_augmented && semismooth)
+      {
+        bool ccontact = cmtbridge_->GetStrategy().ActiveSetSemiSmoothConverged();
+        // active set changed
+        if (!ccontact) oss << std::setw(8) << cmtbridge_->GetStrategy().NumberOfActiveNodes() << "(c)";
+        // active set didnot change
+        else           oss << std::setw(8) << cmtbridge_->GetStrategy().NumberOfActiveNodes() << "(-)";
+      }
+      else
+        oss << std::setw(11) << cmtbridge_->GetStrategy().NumberOfActiveNodes();
       if (cmtbridge_->GetStrategy().Friction())
         oss << std::setw(10) << cmtbridge_->GetStrategy().NumberOfSlipNodes();
     }
@@ -4121,9 +4184,9 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
   }
 
   //********************************************************************
-  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
+  // Solving Strategy using Augmented Lagrange Techniques with Uzawa
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_auglag)
+  else if (soltype == INPAR::CONTACT::solution_uzawa)
   {
     // get tolerance and maximum Uzawa steps
     double eps = cmtbridge_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
@@ -4154,7 +4217,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
       cmtbridge_->GetStrategy().UpdateConstraintNorm(uzawaiter);
 
       // store Lagrange multipliers for next Uzawa step
-      cmtbridge_->GetStrategy().UpdateAugmentedLagrange();
+      cmtbridge_->GetStrategy().UpdateUzawaAugmentedLagrange();
       cmtbridge_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
     } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
@@ -4267,7 +4330,6 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  * update the field vectors to account for new node introduced      sudhakar 12/13

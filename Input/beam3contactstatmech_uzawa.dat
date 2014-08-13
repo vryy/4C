@@ -1,13 +1,14 @@
-// Maintainer: Christoph Meier
-// meier@lnm.mw.tum.de
+//
+// Maintainer: Kei W. Mueller
+// mueller@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15262
+// 089 - 289-15276
 //
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-First 3D beam contact example with beam3 elements and augmented Lagrange approach 
+First 3D beam contact example with beam3 elements and augmented Lagrange approach in statmech framework
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        38
 NODES                           40
@@ -36,39 +37,55 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      StatMech
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
+NLNSOL                          ptc                           // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.01
-NUMSTEP                         100
+NUMSTEP                         85
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
 PREDICT                         ConstDis
-TOLRES                          1.0E-8
-TOLDISP                         1.0E-8
-NORM_RESF                       Abs
 NORM_DISP                       Abs
+NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
+TOLDISP                         1.0E-10
+TOLRES                          1.0E-06
+TOLCONSTR                       1.0E-03
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
 MAXITER                         25
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.5
-ALPHA_F                         0.5
+//----------------------------------------------STRUCTURAL  DYNAMIC/GENALPHA
+//GENAVG                        TrLike
+//ALPHA_F                       0
+//ALPHA_M                       0
+//BETA                          0.5
+//GAMMA                         1
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
-STRATEGY                        Augmented
+STRATEGY                        Uzawa
 PENALTYPARAM                    1e+06
 UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   25
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
+-------------------------------------------------------STATISTICAL MECHANICS
+THERMALBATH                     uniform
+DBCTYPE                         std
+GMSHOUTPUT                      No
+FRICTION_MODEL                  anisotropicconsistent
+ETA                             1e-3
+KT                              0.0
+CTRANSPTC0                      0.0
+CROTPTC0                        0.145
+ALPHAPTC                        6.0
+OUTPUTINTERVALS                 1000
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
@@ -221,8 +238,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.34427675870979374e-01 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.07738590293773234e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.64699106809947815e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -1.4899266119783197e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 4.9984653332426632e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.3029714609338621e+00 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

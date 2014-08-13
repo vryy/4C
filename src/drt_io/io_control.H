@@ -80,6 +80,10 @@ namespace IO
     /// number of output steps per binary file
     int FileSteps() const { return filesteps_; }
 
+    // modify the number of output steps per binary file
+    // (necessary for the structural debugging option "OUTPUTEVERYITER")
+    void SetFileSteps(int filesteps) {filesteps_ = filesteps; }
+
     /// input filename
     std::string InputFileName() const { return inputfile_;}
 

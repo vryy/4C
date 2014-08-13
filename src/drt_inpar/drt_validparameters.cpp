@@ -780,6 +780,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("OUTPUT_BIN","yes","Do you want to have binary output?",yesnotuple,yesnovalue,&io);
 
+  // Output every iteration (for debugging purposes)
+  setStringToIntegralParameter<int>("OUTPUT_EVERY_ITER","no","Do you desire structural displ. output every Newton iteration",
+                                    yesnotuple,yesnovalue,&io);
+  IntParameter("OEI_FILE_COUNTER",0,
+                "Add an output name affix by introducing a additional number",
+                &io);
+
   // Structural output
   setStringToIntegralParameter<int>("STRUCT_DISP","Yes","Output of displacements",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_VEL_ACC","No","Output of velocity and acceleration",yesnotuple,yesnovalue,&io);
@@ -1740,11 +1747,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
                            "PenaltyMethod","penalty", "Penalty",
+                           "UzawaAugementedLagrange","uzawa","Uzawa",
                            "AugmentedLagrange","augmented", "Augmented"),
         tuple<int>(
                 INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult,
                 INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty,
-                INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag),
+                INPAR::CONTACT::solution_uzawa, INPAR::CONTACT::solution_uzawa, INPAR::CONTACT::solution_uzawa,
+                INPAR::CONTACT::solution_augmented, INPAR::CONTACT::solution_augmented, INPAR::CONTACT::solution_augmented),
         &scontact);
 
   setStringToIntegralParameter<int>("SYSTEM","Condensed","Type of linear system setup / solution",
@@ -1756,10 +1765,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::system_saddlepoint, INPAR::CONTACT::system_saddlepoint),
         &scontact);
 
-  DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
-  DoubleParameter("PENALTYPARAMTAN",0.0,"Tangential penalty parameter for penalty / augmented solution strategy",&scontact);
-  IntParameter("UZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for augmented / Uzawa solution strategy",&scontact);
-  DoubleParameter("UZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for augmented / Uzawa solution strategy",&scontact);
+  DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / Uzawa augmented solution strategy",&scontact);
+  DoubleParameter("PENALTYPARAMTAN",0.0,"Tangential penalty parameter for penalty / Uzawa augmented solution strategy",&scontact);
+  IntParameter("UZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for Uzawa solution strategy",&scontact);
+  DoubleParameter("UZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for Uzawa solution strategy",&scontact);
 
   setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON","Yes","If chosen semi-smooth Newton concept is applied",
                                yesnotuple,yesnovalue,&scontact);

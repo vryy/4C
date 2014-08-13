@@ -173,7 +173,7 @@ public:
   iterarion in order to create an of an out-of-balance force again. First,
   the contact force and stiffness terms are removed from stiff and fres.
   Then the new contact forces and contact stiffness terms for the updated LM
-  (AugmentedLagrange) are created by calling Evaluate().
+  (Uzawa AugmentedLagrange) are created by calling Evaluate().
 
   */
   void InitializeUzawa(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
@@ -324,7 +324,7 @@ private:
   Teuchos::RCP<Epetra_Map> elerowmap_;
   Teuchos::RCP<Epetra_Map> elecolmap_;
   Teuchos::RCP<Epetra_Map> elefullmap_;
-  
+
   //! occtree for contact search
   Teuchos::RCP<Beam3ContactOctTree> tree_;
 
