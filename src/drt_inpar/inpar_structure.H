@@ -10,7 +10,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 #ifndef INPAR_STRUCTURE_H
 #define INPAR_STRUCTURE_H
 
@@ -114,8 +114,8 @@ namespace INPAR
                        ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
                        ///<  (TR means trapezoidal rule.)
     };
-    
-    /// Map mid-averaging to std::string 
+
+    /// Map mid-averaging to std::string
     static inline const std::string MidAverageString
     (
       const enum MidAverageEnum name  ///< enum to convert
@@ -353,7 +353,7 @@ namespace INPAR
       stc_curr,   ///< Non-symmetric STC
       stc_currsym ///< Symmetric STC
     };
-    
+
     /// map convergence check to enum term
     static inline const std::string STCString
     (
@@ -376,7 +376,7 @@ namespace INPAR
         return "";
       }
     }
-    
+
     //@}
 
     /// @name Constraints (global, geometric)

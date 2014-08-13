@@ -1148,6 +1148,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // end time measurement for element
   dtele_=Teuchos::Time::wallTime()-tcpu;
 
+  return;
 } // FluidImplicitTimeInt::AssembleMatAndRHS
 
 /*----------------------------------------------------------------------------*

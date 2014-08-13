@@ -59,7 +59,6 @@ EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        DiffCond
 TEMPERATURE                     298.15                          // F/RT = 38.942
-NATURAL_CONVECTION              No
 GALVANOSTATIC                   No
 GSTATCONVTOL                    1e-7
 GSTATCURTOL                     1e-7

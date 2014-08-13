@@ -2,7 +2,7 @@
 // Maintainer: Anna Birzle
 // anna.birzle@tum.de
 // http://www.lnm.mw.tum.de
-// 
+//
 //
 ==================================================================
 General Data File CCARAT
@@ -299,11 +299,11 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_ViscoElastHyper
-MAT 1   MAT_ViscoElastHyper     NUMMAT 4 MATIDS 2 3 4 5 DENS 1.0e-03 GAMMA 0
-MAT 2	ELAST_VolOgden     KAPPA 2.06e+4 BETA -2.0
-MAT 3 	ELAST_Iso1Pow	  C 3.54e+3 D 1
-MAT 4   ELAST_IsoCub       C 3.4e+4
-MAT 5 	VISCO_IsoRateDep  N 30
+MAT 1   MAT_ViscoElastHyper NUMMAT 4 MATIDS 2 3 4 5 DENS 1.0e-03
+MAT 2   ELAST_VolOgden KAPPA 2.06e+4 BETA -2.0
+MAT 3   ELAST_Iso1Pow C 3.54e+3 D 1
+MAT 4   ELAST_IsoCub C 3.4e+4
+MAT 5   VISCO_IsoRateDep N 30
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC  500000*t*t t1 0.0 t2 0.01
 CURVE1 on EXPR FUNC 100000*t-500 t1 0.01 t2 0.25

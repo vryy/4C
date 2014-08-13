@@ -69,7 +69,6 @@ MAT::Ion::Ion(MAT::PAR::Ion* params)
 /*----------------------------------------------------------------------*/
 void MAT::Ion::Pack(DRT::PackBuffer& data) const
 {
-  {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
@@ -81,7 +80,6 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
-  }
 
   /*
   for (unsigned i=0;i<data().size();i++)
@@ -96,6 +94,8 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
   std::cout<<"ION Pack: Type will be "<<typio<<std::endl;
 */
  // std::cout<<"Ion Pack: "<<data().size()<<std::endl;
+
+  return;
 }
 
 
@@ -126,5 +126,7 @@ void MAT::Ion::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+
+  return;
 }
 

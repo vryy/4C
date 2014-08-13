@@ -16,12 +16,11 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_TIMINT_ELCH_SCHEME_H
 #define SCATRA_TIMINT_ELCH_SCHEME_H
 
-#include "scatra_timint_elch.H"
 #include "scatra_timint_ost.H"
 #include "scatra_timint_bdf2.H"
 #include "scatra_timint_genalpha.H"
 #include "scatra_timint_stat.H"
-
+#include "scatra_timint_elch.H"
 
 namespace SCATRA
 {
@@ -44,14 +43,11 @@ public:
   virtual ~ScaTraTimIntElchOST();
 
   //! initialize time integration scheme
-  virtual void Init();
+  void Init();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
-
-  //! update density field for ELCH natural convection
-  void UpdateDensityElch();
 
   //! read restart data
   void ReadRestart(int step);
@@ -90,14 +86,11 @@ public:
   virtual ~ScaTraTimIntElchBDF2();
 
   //! initialize time integration scheme
-  virtual void Init();
+  void Init();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
-
-  //! update density field for ELCH natural convection
-  void UpdateDensityElch();
 
   //! read restart data
   void ReadRestart(int step);
@@ -136,14 +129,11 @@ public:
   virtual ~ScaTraTimIntElchGenAlpha();
 
   //! initialize time integration scheme
-  virtual void Init();
+  void Init();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
-
-  //! update density field for ELCH natural convection
-  void UpdateDensityElch(){dserror("Fully-coupled system is not implemented for the generalized time-integration scheme"); return;};
 
   //! read restart data
   void ReadRestart(int step);
@@ -182,14 +172,11 @@ public:
   virtual ~ScaTraTimIntElchStationary();
 
   //! initialize time integration scheme
-  virtual void Init();
+  void Init();
 
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
-
-  //! update density field for ELCH natural convection
-  void UpdateDensityElch(){dserror("Fully-coupled system is not implemented for the generalized time-integration scheme"); return;};
 
   //! read restart data
   void ReadRestart(int step);

@@ -670,6 +670,66 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
   return;
 } // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve
 
+
+/*----------------------------------------------------------------------*
+ | compute density from concentration(s)                      gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeDensity()
+{
+  double newdensity(0.0);
+  int err(0);
+
+  // loop over all local nodes
+  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
+  {
+    // get the processor's local node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    // get the degrees of freedom associated with this node
+    std::vector<int> nodedofs;
+    nodedofs = discret_->Dof(lnode);
+    int numdof = nodedofs.size();
+
+    newdensity= 1.0;
+    // loop over all species
+    for(int k=0; k<numscal_; k++)
+    {
+      /*
+        //                  k=numscal_-1
+        //          /       ----                         \
+        //         |        \                            |
+        // rho_0 * | 1 +    /       alfa_k * (c_k - c_0) |
+        //         |        ----                         |
+        //          \       k=0                          /
+        //
+        // For use of molar mass M_k:  alfa_k = M_k/rho_0  !!
+       */
+
+      // global and processor's local DOF ID
+      const int globaldofid = nodedofs[k];
+      const int localdofid = phinp_->Map().LID(globaldofid);
+      if (localdofid < 0)
+        dserror("localdofid not found in map for given globaldofid");
+
+      // compute contribution to density due to ionic species k
+      newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
+    }
+
+    // insert the current density value for this node
+    // (has to be at position of el potential/ the position of the last dof!
+    const int globaldofid = nodedofs[numdof-1];
+    const int localdofid = phinp_->Map().LID(globaldofid);
+    if (localdofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    err = densnp_->ReplaceMyValue(localdofid,0,newdensity);
+
+    if (err != 0) dserror("error while inserting a value into densnp_");
+  } // loop over all local nodes
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeDensity
+
+
 /*----------------------------------------------------------------------*
  |  output of some mean values                               gjb   01/09|
  *----------------------------------------------------------------------*/

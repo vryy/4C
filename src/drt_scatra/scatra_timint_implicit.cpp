@@ -30,6 +30,9 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/scatra_mat.H"
+
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/fluid_meshtying.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
@@ -120,12 +123,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
+  densnm_(Teuchos::null),
+  densn_(Teuchos::null),
+  densnp_(Teuchos::null),
   vel_(Teuchos::null),
   convel_(Teuchos::null),
   fsvel_(Teuchos::null),
   accpre_(Teuchos::null),
   dispnp_(Teuchos::null),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  densific_(0,0.0),
+  c0_(0,0.0),
   discret_(actdis),
   output_ (output),
   convform_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
@@ -402,7 +410,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   SetInitialField(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
       params_->get<int>("INITFUNCNO"));
 
-
   return;
 } // ScaTraTimIntImpl::Init()
 
@@ -456,6 +463,87 @@ void SCATRA::ScaTraTimIntImpl::SetupMeshtying()
 
   return;
 } // ScaTraTimIntImpl::SetupMeshtying()
+
+
+/*----------------------------------------------------------------------*
+ | perform setup of natural convection                       fang 08/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupNatConv()
+{
+  // calculate the initial mean concentration value
+  if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
+  c0_.resize(numscal_);
+
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+
+  // set action for elements
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+  eleparams.set<int>("scatratype",scatratype_);
+  eleparams.set("inverting",false);
+
+  // provide displacement field in case of ALE
+  if (isale_)
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // evaluate integrals of concentrations and domain
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+  = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  // calculate mean concentration
+  const double domint = (*scalars)[numscal_];
+
+  if (std::abs(domint) < EPS15)
+    dserror("Division by zero!");
+
+  for(int k=0;k<numscal_;k++)
+    c0_[k] = (*scalars)[k]/domint;
+
+  // initialization of the densification coefficient vector
+  densific_.resize(numscal_);
+  DRT::Element*   element = discret_->lRowElement(0);
+  Teuchos::RCP<MAT::Material>  mat = element->Material();
+
+  if (mat->MaterialType() == INPAR::MAT::m_matlist)
+  {
+    Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
+
+    for (int k = 0;k<numscal_;++k)
+    {
+      const int matid = actmat->MatID(k);
+      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+      if (singlemat->MaterialType() == INPAR::MAT::m_scatra)
+      {
+        Teuchos::RCP<const MAT::ScatraMat> actsinglemat = Teuchos::rcp_static_cast<const MAT::ScatraMat>(singlemat);
+
+        densific_[k] = actsinglemat->Densification();
+
+        if (densific_[k] < 0.0) dserror("received negative densification value");
+      }
+      else
+        dserror("Material type is not allowed!");
+    }
+  }
+  // for a single species calculation
+  else if (mat->MaterialType() == INPAR::MAT::m_scatra)
+  {
+    Teuchos::RCP<const MAT::ScatraMat> actmat = Teuchos::rcp_static_cast<const MAT::ScatraMat>(mat);
+
+    densific_[0] = actmat->Densification();
+
+    if (densific_[0] < 0.0) dserror("received negative densification value");
+    if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+  }
+  else
+    dserror("Material type is not allowed!");
+
+  return;
+} // ScaTraTimIntImpl::SetupNatConv
+
 
 /*----------------------------------------------------------------------*
  | initialization of system matrix                           ehrl 05/14 |
@@ -2352,7 +2440,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if (msht_!=INPAR::FLUID::no_meshtying)
   {
     if (isale_)
-    {  
+    {
       dserror("ALE case for mesh tying not yet supported in SCATRA!");
       //meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,phinp_,dispnp_);
     }

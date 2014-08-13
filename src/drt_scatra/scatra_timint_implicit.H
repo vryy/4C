@@ -27,9 +27,6 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_TIMINT_IMPLICIT_H
 #define SCATRA_TIMINT_IMPLICIT_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
 
@@ -187,6 +184,9 @@ public:
   virtual void Update(
       const int            num=0 //!< field number
   ) = 0;
+
+  //! update density field for natural convection
+  virtual void UpdateDensity() = 0;
 
   //! apply moving mesh data
   void ApplyMeshMovement(
@@ -346,6 +346,9 @@ public:
   //generalized-alpha) ? rename?
   virtual void ComputeIntermediateValues() = 0;
 
+  //! compute density field from concentration(s) for natural convection
+  void ComputeDensity();
+
   //! iterative update of phinp
   void UpdateIter(
     const Teuchos::RCP<const Epetra_Vector> inc //!< increment vector for phi
@@ -394,6 +397,15 @@ public:
 
   //! output of reaction(s) integral
   void OutputIntegrReac(const int num=0);
+
+  //! return density field at time n+1 for natural convection
+  Teuchos::RCP<Epetra_Vector> DensNp() { return densnp_; }
+
+  //! return density field at time n for natural convection
+  Teuchos::RCP<Epetra_Vector> DensN() { return densn_; }
+
+  //! return density field at time n-1 for natural convection
+  Teuchos::RCP<Epetra_Vector> DensNm() { return densnm_; }
 
   /*========================================================================*/
   //! @name Elch methods
@@ -526,6 +538,9 @@ protected:
 
   //! Deactivate element parameter specific for turbulence
   void SetElementTurbulenceParameterDeactivated();
+
+  //! setup natural convection
+  virtual void SetupNatConv();
 
   /*========================================================================*/
   //! @name general framework
@@ -897,6 +912,13 @@ protected:
   //!                or phin, phidtn (One-Step-Theta)
   Teuchos::RCP<Epetra_Vector>    hist_;
 
+  //! density (nodebased!) at times n-1 for natural convection algorithm
+  Teuchos::RCP<Epetra_Vector> densnm_;
+  //! density (nodebased!) at times n for natural convection algorithm
+  Teuchos::RCP<Epetra_Vector> densn_;
+  //! density (nodebased!) at times n+1 for natural convection algorithm
+  Teuchos::RCP<Epetra_Vector> densnp_;
+
   /*========================================================================*/
   //! @name velocity, pressure, and related
   /*========================================================================*/
@@ -925,6 +947,12 @@ protected:
 
   //! subgrid-diffusivity(-scaling) vector
   Teuchos::RCP<Epetra_Vector> subgrdiff_;
+
+  //! densification coefficients for natural convection
+  std::vector<double> densific_;
+
+  //! initial concentrations for natural convection
+  std::vector<double> c0_;
 
   /*========================================================================*/
   //! @name Galerkin discretization, boundary conditions, and related

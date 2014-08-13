@@ -62,8 +62,8 @@ public:
   /// Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  /// update density field for ELCH natural convection
-  void UpdateDensityElch(){dserror("not implemented"); return;};
+  //! update density field for natural convection
+  void UpdateDensity(){dserror("Fully-coupled system is not implemented for the generalized-alpha time integration scheme"); return;};
 
   /// read restart data
   void ReadRestart(int step);

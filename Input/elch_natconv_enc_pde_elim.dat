@@ -92,6 +92,9 @@ UPRES                           1
 BLOCKPRECOND No //Yes
 MATID                           5
 SCATRATYPE                      Elch             // we eliminated the 2nd ion species!
+NATURAL_CONVECTION              Yes
+NATCONVITEMAX                   10
+NATCONVCONVTOL                  5e-6
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          15
@@ -104,7 +107,6 @@ DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
-NATURAL_CONVECTION              Yes
 EQUPOT                          ENC_PDE_ELIM
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

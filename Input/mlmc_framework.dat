@@ -103,17 +103,17 @@ DIFF_TO_LOWER_LEVEL             no
 INITRANDOMSEED                  1000
 ITENODEINELE                    20
 LEVELNUMBER                     0
-MLMC                           yes
+MLMC                            yes
 NUMRUNS                         10
 OUTPUT_FILE_OF_LOWER_LEVEL      level0
 PROLONGATERES                   no
 REDUCED_OUTPUT                  no
 START_RUN                       0
 WRITESTATS                      1000
-OUTPUT_ELEMENT_IDS 							1 2 
+OUTPUT_ELEMENT_IDS              1 2
 PARAMETERCONTINUATION           no
 NUMCONTSTEPS                    2
-PARAMLIST												1 BETA
+PARAMLIST                       1 BETA
 ------------------------------------------------------------RANDOM FIELD 1
 ACTIVE                          YES
 CORRLENGTH                      12.5
@@ -612,7 +612,7 @@ NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 // standard AAA material parametersa
-MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7 SIGMA 2.6 CORRLENGTH 25.0
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7
 MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 1.0e-7
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.3200072

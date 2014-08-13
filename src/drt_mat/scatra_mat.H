@@ -42,7 +42,7 @@ namespace MAT
 
       void OptParams(std::map<std::string, int>* pnames);
 
-      enum matparamnames_{diff, reac, first=diff, last=reac};
+      enum matparamnames_{diff, reac, densific, first=diff, last=densific};
 
     };  // class Scatra
 
@@ -125,6 +125,9 @@ private:
     /// reaction coefficient
     double ReaCoeff(int eleid=-1) const { return params_->GetParameter(params_->reac,eleid); }
 
+    /// densification coefficient
+    double Densification(int eleid=-1) const { return params_->GetParameter(params_->densific,eleid); }
+
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -138,4 +141,3 @@ private:
 }
 
 #endif
-

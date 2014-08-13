@@ -4882,6 +4882,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
 
+  // flag for natural convection effects
+  BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&scatradyn);
+  IntParameter("NATCONVITEMAX",10,"Maximum number of outer iterations for natural convection",&scatradyn);
+  DoubleParameter("NATCONVCONVTOL",1e-6,"Convergence check tolerance for outer loop for natural convection",&scatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
@@ -4896,7 +4901,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // convergence criteria adaptivity
   BoolParameter("ADAPTCONV","yes","Switch on adaptive control of linear solver tolerance for nonlinear solution",&scatra_nonlin);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
-
 
 /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
@@ -5156,7 +5160,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  &elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
   DoubleParameter("MOVBOUNDARYTHETA",0.0,"One-step-theta factor in electrode shape change computations",&elchcontrol);
-  BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
   setStringToIntegralParameter<int>("GSTAT_APPROX_ELECT_RESIST",
                                  "relation_pot_cur",

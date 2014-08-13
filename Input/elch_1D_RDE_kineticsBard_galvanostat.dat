@@ -45,7 +45,6 @@ GSTATITEMAX                     50
 GSTAT_LENGTH_CURRENTPATH        0.1
 MOLARVOLUME                     0
 MOVINGBOUNDARY                  No
-NATURAL_CONVECTION              No
 TEMPERATURE                     298
 EQUPOT                          ENC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

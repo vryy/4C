@@ -15,15 +15,13 @@ only one ion species (convection-diffusion), no electric potential
 //NODES                           1435
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Electrochemistry
+PROBLEMTYP                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -61,7 +59,6 @@ VSTAB                           no_vstab
 GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -83,6 +80,9 @@ BLOCKPRECOND                    No
 MATID                           2
 SCATRATYPE                      ConvectionDiffusion           // explicitly change to con-dif for one scalar!!!
 CONVFORM                        conservative                  // just to be tested
+NATURAL_CONVECTION              Yes
+NATCONVITEMAX                   10
+NATCONVCONVTOL                  5e-6
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          15
@@ -93,10 +93,6 @@ ADAPTCONV_BETTER                0.1
 DEFINITION_TAU                  Franca_Valentin
 EVALUATION_TAU                  integration_point             // just to be tested
 EVALUATION_MAT                  integration_point             // just to be tested
-----------------------------------------------------------------ELCH CONTROL
-ELCHTYPE                        Nernst_Planck
-TEMPERATURE                     1.0                           // dummy value
-NATURAL_CONVECTION              Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -168,7 +164,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_fluid DYNVISCOSITY 1e-2 DENSITY 1.0
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 10.0
-MAT 2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 0.0 DENSIFICATION 0.5
+MAT 2 MAT_scatra DIFFUSIVITY 5e-6 DENSIFICATION 0.5
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------CURVE1

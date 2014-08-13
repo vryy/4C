@@ -84,7 +84,6 @@ GSTATITEMAX                     10
 GSTAT_LENGTH_CURRENTPATH        0
 MOLARVOLUME                     0
 MOVINGBOUNDARY                  No
-NATURAL_CONVECTION              No
 TEMPERATURE                     293
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1

@@ -13,7 +13,7 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 
 #include "scatra_dyn.H"
-#include "passive_scatra_algorithm.H"
+#include "scatra_algorithm.H"
 #include "scatra_utils_clonestrategy.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -32,6 +32,8 @@ Maintainer: Volker Gravemeier
  *        o transport of passive scalar in velocity field given by spatial function
  *        o transport of passive scalar in velocity field given by Navier-Stokes
  *          (one-way coupling)
+ *        o scalar transport in velocity field given by Navier-Stokes with natural convection
+ *          (two-way coupling)
  *
  *----------------------------------------------------------------------*/
 void scatra_dyn(int restart)
@@ -103,19 +105,16 @@ void scatra_dyn(int restart)
       else
         dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
-      // we need a non-const list in order to be able to add sublists below!
-      Teuchos::ParameterList prbdyn(scatradyn);
       // support for turbulent flow statistics
       const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
-      prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == (-1))
         dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
-      // create an one-way coupling algorithm instance
-      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+      // create a scalar transport algorithm instance
+      Teuchos::RCP<SCATRA::ScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::ScaTraAlgorithm(comm,scatradyn,fdyn,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any
@@ -132,7 +131,7 @@ void scatra_dyn(int restart)
         if(DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
           dserror("Turbulent inflow generation for passive scalar transport should be performed as fluid problem!");
 
-      // solve the whole (one-way-coupled) problem
+      // solve the whole scalar transport problem
       algo->TimeLoop();
 
       // summarize the performance measurements

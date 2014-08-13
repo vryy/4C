@@ -1172,7 +1172,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   if(newgapfunction_) ShiftAllNormal();
 
   //store pairs_ in oldpairs_ to be available in next time step
-  //this is needed for the new gapfunction defintion and also for the output at the end of an time step
+  //this is needed for the new gapfunction definition and also for the output at the end of an time step
   oldpairs_.clear();
   oldpairs_.resize(0);
   oldpairs_ = pairs_;

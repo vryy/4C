@@ -13,7 +13,7 @@ Maintainer: Martin Kronbichler
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 
 #ifndef DRT_BOOLIFYPARAMETERS_H
 #define DRT_BOOLIFYPARAMETERS_H

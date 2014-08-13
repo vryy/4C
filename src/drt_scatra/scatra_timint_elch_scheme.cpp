@@ -13,12 +13,10 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_timint_elch_scheme.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
+#include "scatra_timint_elch_scheme.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
@@ -46,14 +44,6 @@ void SCATRA::ScaTraTimIntElchOST::Init()
   // call Init()-functions of base classes
   // note: this order is important
   TimIntOneStepTheta::Init();
-
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION") == true)
-  {
-    // density at time n
-    elchdensn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    elchdensn_->PutScalar(1.0);
-  }
-
   ScaTraTimIntElch::Init();
 
   return;
@@ -183,16 +173,6 @@ void SCATRA::ScaTraTimIntElchOST::Update(const int num)
 {
   TimIntOneStepTheta::Update(num);
   ScaTraTimIntElch::Update(num);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | update density at n for ELCH natural convection            gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::UpdateDensityElch()
-{
-  elchdensn_->Update(1.0,*elchdensnp_,0.0);
 
   return;
 }
@@ -330,21 +310,7 @@ void SCATRA::ScaTraTimIntElchBDF2::Init()
   // call Init()-functions of base classes
   // note: this order is important
   TimIntBDF2::Init();
-
-  // ELCH with natural convection
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION") == true)
-  {
-    // density at time n
-    elchdensn_  = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    elchdensn_->PutScalar(1.0);
-
-    // density at time n-1
-    elchdensnm_  = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    elchdensnm_->PutScalar(1.0);
-  }
-  std::cout << __FILE__ << "  " << __LINE__  << std::endl;
   ScaTraTimIntElch::Init();
-  std::cout << __FILE__ << "  " << __LINE__  << std::endl;
 
   return;
 }
@@ -466,17 +432,6 @@ void SCATRA::ScaTraTimIntElchBDF2::Update(const int num)
 {
   TimIntBDF2::Update(num);
   ScaTraTimIntElch::Update(num);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | update density at n-1 and n for ELCH natural convection    gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::UpdateDensityElch()
-{
-  elchdensnm_->Update(1.0,*elchdensn_ ,0.0);
-  elchdensn_->Update(1.0,*elchdensnp_,0.0);
 
   return;
 }
@@ -609,11 +564,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Init()
   // call Init()-functions of base classes
   // note: this order is important
   TimIntGenAlpha::Init();
-
-  // ELCH with natural convection
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION") == true)
-    dserror("Natural convection for generalized alpha time-integration scheme is not implemented");
-
   ScaTraTimIntElch::Init();
 
   return;
@@ -747,9 +697,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
       {
         double pot0np = cond[i]->GetDouble("pot");
         cond[i]->Add("pot0n",pot0np);
-
-        //double pot0dtnp = cond[i]->GetDouble("pot0dtnp");
-        //cond[i]->Add("pot0dtn",pot0dtnp);
       }
     }
   }
@@ -843,11 +790,6 @@ void SCATRA::ScaTraTimIntElchStationary::Init()
   // call Init()-functions of base classes
   // note: this order is important
   TimIntStationary::Init();
-
-  // ELCH with natural convection
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION") == true)
-    dserror("Natural convection for stationary time-integration scheme is not implemented");
-
   ScaTraTimIntElch::Init();
 
   return;
@@ -971,11 +913,11 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
     if (init)
     {
       if(dlcap!=0.0)
-        dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+        dserror("Double layer charging and galvanostatic mode are not implemented for stationary time integration scheme! You have to use one-step-theta time integration scheme!");
         //dlcapexists_=true;
 
       if(DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC")==true)
-          dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+          dserror("Double layer charging and galvanostatic mode are not implemented for stationary time integration scheme! You have to use one-step-theta time integration scheme!");
     }
   }
 

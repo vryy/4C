@@ -31,7 +31,11 @@ MAT::PAR::ScatraMat::ScatraMat(
   }
   matparams_.at(diff)->PutScalar(matdata->GetDouble("DIFFUSIVITY"));
   matparams_.at(reac)->PutScalar(matdata->GetDouble("REACOEFF"));
+  matparams_.at(densific)->PutScalar(matdata->GetDouble("DENSIFICATION"));
+
+  return;
 }
+
 
 Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 {
@@ -41,11 +45,13 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 
+
 void MAT::PAR::ScatraMat::OptParams(std::map<std::string,int>* pnames)
 {
   pnames->insert(std::pair<std::string,int>("DIFF", diff));
   pnames->insert(std::pair<std::string,int>("REAC", reac));
 }
+
 
 DRT::ParObject* MAT::ScatraMatType::Create( const std::vector<char> & data )
 {
@@ -97,7 +103,7 @@ void MAT::ScatraMat::Unpack(const std::vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if (type != UniqueParObjectId()) dserror("wrong instance type data. type = %d, UniqueParObjectId()=%d",type,UniqueParObjectId());
 
   // matid and recover params_
   int matid;
@@ -117,4 +123,3 @@ void MAT::ScatraMat::Unpack(const std::vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
-

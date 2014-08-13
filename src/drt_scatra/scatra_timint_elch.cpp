@@ -11,30 +11,21 @@ Maintainer: Andreas Ehrl
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include "scatra_timint_elch.H"
 #include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
-
-#include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/ion.H"
-
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-
 #include "../drt_fluid/fluid_utils.H" // for splitter
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
-#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
-
 #include "../drt_fluid/fluid_meshtying.H"
-
+#include "scatra_timint_elch.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              ehrl  01/14 |
@@ -51,14 +42,9 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     elchtype_       (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchType>(*elchparams_,"ELCHTYPE")),
     equpot_         (DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_,"EQUPOT")),
     frt_            (0.0),
-    elchdensnm_     (Teuchos::null),
-    elchdensn_      (Teuchos::null),
-    elchdensnp_     (Teuchos::null),
     gstatnumite_    (0),
     gstatincrement_ (0.0),
-    c0_             (0,0.0),
     sigma_          (Teuchos::null),
-    densific_       (0),
     dlcapexists_    (false),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null)
@@ -82,10 +68,6 @@ void SCATRA::ScaTraTimIntElch::Init()
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
   OutputElectrodeInfo(false,false);
-
-  // initializes variables for natural convection (ELCH) if necessary
-  densific_.resize(numscal_);
-  SetupElchNatConv();
 
   // initialize dirichlet toggle:
   // for certain ELCH problem formulations we have to provide
@@ -614,69 +596,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 } // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
 
-/*==========================================================================*/
-// ELCH
-/*==========================================================================*/
-
-/*----------------------------------------------------------------------*
- | compute density from ion concentrations                    gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::ComputeDensity()
-{
-  double newdensity(0.0);
-  int err(0);
-
-  // loop over all local nodes
-  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
-  {
-    // get the processor's local node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
-
-    // get the degrees of freedom associated with this node
-    std::vector<int> nodedofs;
-    nodedofs = discret_->Dof(lnode);
-    int numdof = nodedofs.size();
-
-    newdensity= 1.0;
-    // loop over all ionic species
-    for(int k=0; k<numscal_; k++)
-    {
-      /*
-        //                  k=numscal_-1
-        //          /       ----                         \
-        //         |        \                            |
-        // rho_0 * | 1 +    /       alfa_k * (c_k - c_0) |
-        //         |        ----                         |
-        //          \       k=0                          /
-        //
-        // For use of molar mass M_k:  alfa_k = M_k/rho_0  !!
-       */
-
-      // global and processor's local DOF ID
-      const int globaldofid = nodedofs[k];
-      const int localdofid = phinp_->Map().LID(globaldofid);
-      if (localdofid < 0)
-        dserror("localdofid not found in map for given globaldofid");
-
-      // compute contribution to density due to ionic species k
-      newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
-    }
-
-    // insert the current density value for this node
-    // (has to be at position of el potential/ the position of the last dof!
-    const int globaldofid = nodedofs[numdof-1];
-    const int localdofid = phinp_->Map().LID(globaldofid);
-    if (localdofid < 0)
-      dserror("localdofid not found in map for given globaldofid");
-
-    err = elchdensnp_->ReplaceMyValue(localdofid,0,newdensity);
-
-    if (err != 0) dserror("error while inserting a value into elchdensnp_");
-  } // loop over all local nodes
-  return;
-} // SCATRA::ScaTraTimIntImpl::ComputeDensity
-
-
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
@@ -953,91 +872,86 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
 } // SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo
 
 
+
 /*----------------------------------------------------------------------*
- | perform setup of natural convection applications (ELCH)    gjb 07/09 |
+ | perform setup of natural convection                       fang 08/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::SetupElchNatConv()
+void SCATRA::ScaTraTimIntElch::SetupNatConv()
 {
-  // loads densification coefficients and the initial mean concentration
+  // calculate the initial mean concentration value
+  if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
+  c0_.resize(numscal_);
 
-  // only required for ELCH with natural convection
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION") == true)
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+
+  // set action for elements
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+  eleparams.set<int>("scatratype",scatratype_);
+  eleparams.set("inverting",false);
+
+  // provide displacement field in case of ALE
+  if (isale_)
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // evaluate integrals of concentrations and domain
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+  = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  // calculate mean concentration
+  const double domint = (*scalars)[numscal_];
+
+  if (std::abs(domint) < EPS15)
+    dserror("Division by zero!");
+
+  for(int k=0;k<numscal_;k++)
+    c0_[k] = (*scalars)[k]/domint;
+
+  // initialization of the densification coefficient vector
+  densific_.resize(numscal_);
+  DRT::Element*   element = discret_->lRowElement(0);
+  Teuchos::RCP<MAT::Material>  mat = element->Material();
+
+  if (mat->MaterialType() == INPAR::MAT::m_matlist)
   {
-    // allocate denselch_ with *dofrowmap and initialize it
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
-    elchdensnp_->PutScalar(1.0);
+    Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 
-    // Calculate the initial mean concentration value
-    if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
-    c0_.resize(numscal_);
-
-    discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-    // set action for elements
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-    eleparams.set<int>("scatratype",scatratype_);
-    eleparams.set("inverting",false);
-
-    //provide displacement field in case of ALE
-    if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // evaluate integrals of concentrations and domain
-    Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-    discret_->EvaluateScalars(eleparams, scalars);
-    discret_->ClearState();   // clean up
-
-    // calculate mean_concentration
-    const double domint  = (*scalars)[numscal_];
-
-    if (std::abs(domint) < EPS15)
-      dserror("Division by zero!");
-
-    for(int k=0;k<numscal_;k++)
+    for (int k = 0;k<numscal_;++k)
     {
-      c0_[k] = (*scalars)[k]/domint;
-    }
+      const int matid = actmat->MatID(k);
+      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
 
-    //initialization of the densification coefficient vector
-    DRT::Element*   element = discret_->lRowElement(0);
-    Teuchos::RCP<MAT::Material>  mat = element->Material();
-
-    if (mat->MaterialType() == INPAR::MAT::m_matlist)
-    {
-      Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
-
-      for (int k = 0;k<numscal_;++k)
+      if (singlemat->MaterialType() == INPAR::MAT::m_ion)
       {
-        const int matid = actmat->MatID(k);
-        Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+        Teuchos::RCP<const MAT::Ion> actsinglemat = Teuchos::rcp_static_cast<const MAT::Ion>(singlemat);
 
-        if (singlemat->MaterialType() == INPAR::MAT::m_ion)
-        {
-          Teuchos::RCP<const MAT::Ion> actsinglemat = Teuchos::rcp_static_cast<const MAT::Ion>(singlemat);
+        densific_[k] = actsinglemat->Densification();
 
-          densific_[k] = actsinglemat->Densification();
-
-          if (densific_[k] < 0.0) dserror("received negative densification value");
-        }
-        else
-          dserror("material type is not allowed");
+        if (densific_[k] < 0.0) dserror("received negative densification value");
       }
-    }
-
-    if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
-    {
-      Teuchos::RCP<const MAT::Ion> actmat = Teuchos::rcp_static_cast<const MAT::Ion>(mat);
-      densific_[0] = actmat->Densification();
-      if (densific_[0] < 0.0) dserror("received negative densification value");
-      if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+      else
+        dserror("Material type is not allowed!");
     }
   }
 
+  // for a single species calculation
+  else if (mat->MaterialType() == INPAR::MAT::m_ion)
+  {
+    Teuchos::RCP<const MAT::Ion> actmat = Teuchos::rcp_static_cast<const MAT::Ion>(mat);
+
+    densific_[0] = actmat->Densification();
+
+    if (densific_[0] < 0.0) dserror("received negative densification value");
+    if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+  }
+  else
+    dserror("Material type is not allowed!");
+
   return;
-} // ScaTraTimIntImpl::SetupElchNatConv
+} // ScaTraTimIntElch::SetupNatConv()
 
 
 /*-------------------------------------------------------------------------*
@@ -1050,7 +964,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
     if(DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(*elchparams_,"MOVINGBOUNDARY")!=INPAR::ELCH::elch_mov_bndry_no)
       dserror("Moving boundaries are not supported in the ELCH diffusion-conduction framework!!");
 
-    if(DRT::INPUT::IntegralValue<int>(*elchparams_,"NATURAL_CONVECTION"))
+    if(DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION"))
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)

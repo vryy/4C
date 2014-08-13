@@ -124,6 +124,10 @@ void SCATRA::TimIntGenAlpha::Init()
     }
   }
 
+  // safety check
+  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
+    dserror("Natural convection for generalized-alpha time integration scheme is not implemented!");
+
   return;
 }
 

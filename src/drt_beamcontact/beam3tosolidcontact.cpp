@@ -1462,7 +1462,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
 //  // also set class variable
 //  gap_ = gap;
 //
-//  // for comparison reasons we calculate in each case additionally the original gap function defintion,
+//  // for comparison reasons we calculate in each case additionally the original gap function definition,
 //  // thus gap_original==gap_ for ngf_==false
 //  gap_original_ = norm_delta_r - radius1 - radius2;
 

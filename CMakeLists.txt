@@ -872,7 +872,7 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_table_iter.c
 )
 set(OBJS_DRT_SCATRA
-  src/drt_scatra/passive_scatra_algorithm.cpp
+  src/drt_scatra/scatra_algorithm.cpp
   src/drt_scatra/scatra_dyn.cpp
   src/drt_levelset/levelset_algorithm.cpp
   src/drt_levelset/levelset_algorithm_utils.cpp

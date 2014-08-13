@@ -1248,7 +1248,7 @@ const bool                      inverting
     }
   } // loop over integration points
 
-return;
+  return;
 } // ScaTraEleCalc::CalculateScalars
 
 

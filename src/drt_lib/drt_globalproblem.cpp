@@ -244,7 +244,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENT INFLOW", *list);
-  reader.ReadGidSection("--TWO PHASE FLOW", *list); 
+  reader.ReadGidSection("--TWO PHASE FLOW", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
@@ -481,6 +481,8 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
 
   // inform user
   //std::cout << "Number of successfully read materials is " << nummat << std::endl;
+
+  return;
 }
 
 
@@ -711,6 +713,8 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   {
     std::cout << time.ElapsedTime() << " secs\n";
   }
+
+  return;
 }
 
 
@@ -1471,8 +1475,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
     porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
-    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid", 	reader.Comm()));
-    aledis        = Teuchos::rcp(new DRT::Discretization("ale", 		reader.Comm()));
+    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid", reader.Comm()));
+    aledis        = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
@@ -1483,7 +1487,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("structure", structdis);
     AddDis("porofluid", porofluiddis);
     AddDis("fluid",     fluiddis);
-    AddDis("ale", 	  aledis);
+    AddDis("ale",   aledis);
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");

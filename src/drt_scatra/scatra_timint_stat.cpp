@@ -73,6 +73,10 @@ void SCATRA::TimIntStationary::Init()
   // setup krylov
   PrepareKrylovProjection();
 
+  // safety check
+  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
+    dserror("Natural convection for stationary time integration scheme is not implemented!");
+
   return;
 }
 

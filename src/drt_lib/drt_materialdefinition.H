@@ -11,7 +11,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 
 #ifndef DRT_MATERIALDEFINITION_H
 #define DRT_MATERIALDEFINITION_H
@@ -182,16 +182,9 @@ namespace DRT
     public:
 
       /// constuct a separator component that does read a string without setting a variable
-      /// here with description
       SeparatorMaterialComponent(
         std::string separator,
         std::string description,
-        bool optional=false
-        );
-
-      /// constuct a separator component that does read a string without setting a variable
-      SeparatorMaterialComponent(
-        std::string separator,
         bool optional=false
         );
 
@@ -441,7 +434,7 @@ namespace DRT
     {
     public:
 
-      /// constuct a material component that reads a int variable
+      /// construct a material component that reads an int variable
       ///
       ///  A int value is expected in the dat file.
       explicit BoolMaterialComponent(
@@ -492,7 +485,7 @@ namespace DRT
     /// Definition of a valid material in BACI input
     ///
     /// This is basically a clone of \see ConditionDefinition which
-    /// was adjusted to adhere the heterogeneous lines occuring
+    /// was adjusted to adhere the heterogeneous lines occurring
     /// in material descriptions in the DAT file.
     ///
     /// A MaterialDefinition is the definition of a --MATERIALS in DAT file
@@ -525,9 +518,7 @@ namespace DRT
 
       /// add a concrete component to the material line definition
       ///
-      /// Add new components to the input line. One at a time. Form left to
-      /// right. <b>The order is important!</b> On reading we try and read component
-      /// after component.
+      /// Add new components to the input line. One at a time.
       void AddComponent(Teuchos::RCP<MaterialComponent> c);
 
       /// read all materials from my input file section
@@ -574,7 +565,7 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the int value into MAT::PAR::Material.
     inline void AddNamedInt(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named integer is added
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
       const int defaultvalue=0,  ///< default value
@@ -589,11 +580,11 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the int value into MAT::PAR::Material.
     inline void AddNamedIntVector(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named integer is added
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
       const int size,  ///< number vector components
-      const double defaultvalue=0, ///< optional default value for initialization
+      const int defaultvalue=0, ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
@@ -605,11 +596,11 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the int value into MAT::PAR::Material.
     inline void AddNamedIntVector(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named integer is added
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
       const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector component
-      const double defaultvalue=0, ///< optional default value for initialization
+      const int defaultvalue=0, ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
@@ -621,21 +612,22 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
     inline void AddNamedReal(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named real is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named real is added
       const std::string name,  ///< name of real to add
       const std::string description,  ///< description about value
+      const double defaultvalue=0.0,  ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new RealMaterialComponent(name,optional)));
+      matdef->AddComponent(Teuchos::rcp(new RealMaterialComponent(name,defaultvalue,optional)));
     }
 
     /// add a separator followed by a number of real values
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.
     inline void AddNamedRealVector(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named vector of reals is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named vector of reals is added
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
       const int size,  ///< number vector components
@@ -651,7 +643,7 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.
     inline void AddNamedRealVector(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named vector of reals is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named vector of reals is added
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
       const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector component
@@ -667,7 +659,7 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
     inline void AddNamedString(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named real is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named string is added
       const std::string name,  ///< name of real to add
       const std::string description,  ///< description about value
       const std::string defaultvalue,  ///< default string
@@ -683,7 +675,7 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the bool value into MAT::PAR::Material.
     inline void AddNamedBool(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named Boolean is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named Boolean is added
       const std::string name,  ///< name of Boolean to add
       const std::string description,  ///< description about value
       const bool defaultvalue=false,  ///< default bool
@@ -700,7 +692,7 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the bool value into MAT::PAR::Material.
     inline void AddNamedSeparator(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named Boolean is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material definition to which named separator is added
       const std::string name,  ///< name of Boolean to add
       const std::string description,  ///< description about value
       const bool optional=false  ///< optional parameter if true

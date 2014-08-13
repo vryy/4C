@@ -100,21 +100,40 @@ void DRT::INPUT::StringMaterialComponent::Describe(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | Read string parameter value from material line of input file   fang 08/14 |
+ *---------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  std::string value;
-  (*condline) >> value;
-  
-  if ( (value=="") and (optional_) )
-    value = defaultvalue_;
+  // initialize string parameter value to be read
+  std::string str = defaultvalue_;
 
-  material->Add(Name(),value);
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
+
+  // only try to read string parameter value in case the associated parameter label appears in material line of input file
+  if((size_t)position != condline->str().size())
+  {
+    // extract string parameter value from stringstream "condline"
+    *condline >> str;
+
+    // return error in case the extraction was not successful
+    if(str.empty())
+      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
+
+    // remove string parameter value from stringstream "condline"
+    condline->str(condline->str().erase((size_t)condline->tellg()-str.size(),str.size()));
+
+    // reset current position in stringstream "condline"
+    condline->seekg(position);
+  }
+
+  // add double parameter value to material parameter list
+  material->Add(Name(),str);
 
   return condline;
 }
@@ -132,20 +151,6 @@ DRT::INPUT::SeparatorMaterialComponent::SeparatorMaterialComponent(
   description_(description)
 {
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::INPUT::SeparatorMaterialComponent::SeparatorMaterialComponent(
-  std::string separator,
-  bool optional
-  )
-: MaterialComponent("*SEPARATOR*",optional),
-  separator_(separator),
-  description_("")
-{
-}
-
 
 
 /*----------------------------------------------------------------------*
@@ -181,21 +186,41 @@ void DRT::INPUT::SeparatorMaterialComponent::Describe(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ | Find material parameter label in material line of input file     fang 08/14 |
+ *-----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  std::string sep;
-  (*condline) >> sep;
-  if ( (sep == "") and (optional_) )
-    ;
-  else if (sep != separator_)
-    dserror("word '%s' expected but found '%s' while reading '%s'",
-            separator_.c_str(),sep.c_str(),def->Name().c_str());
+  // try to find material parameter label "separator_" (with leading and trailing white spaces for uniqueness) in stringstream "condline"
+  size_t position = condline->str().find(" "+separator_+" ");
+
+  // case: material parameter label "separator_" not found
+  if(position == std::string::npos)
+  {
+    if(optional_)
+      // move stringstream position to end of "condline" in case of optional material parameter
+      condline->seekg(0,condline->end);
+    else
+      // return error in case a required material parameter is not specified
+      dserror("Required parameter '%s' for material '%s' not specified in input file!", separator_.c_str(), def->Name().c_str());
+  }
+  // case: found material parameter label "separator_"
+  else
+  {
+    // care for leading white space in search string ("position" should indicate position of first actual character of parameter label)
+    position++;
+
+    // remove material parameter label "separator_" from stringstream "condline"
+    condline->str(condline->str().erase(position,separator_.size()));
+
+    // set current position in stringstream "condline" in front of value associated with material parameter label "separator_"
+    condline->seekg((std::streampos)position);
+  }
+
   return condline;
 }
 
@@ -243,31 +268,46 @@ void DRT::INPUT::IntMaterialComponent::Describe(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ | Read integer parameter value from material line of input file   fang 08/14 |
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  std::string number;
-  (*condline) >> number;
+  // initialize integer parameter value to be read
+  int integer = defaultvalue_;
 
-  int n;
-  if ( (number=="") and (optional_) )
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
+
+  // only try to read integer parameter value in case the associated parameter label appears in material line of input file
+  if((size_t)position != condline->str().size())
   {
-    n = defaultvalue_;
+    // extract integer parameter value from stringstream "condline" as string
+    std::string sinteger;
+    *condline >> sinteger;
+
+    // try to convert to integer
+    char *check;
+    integer = strtol(sinteger.c_str(),&check,10);
+
+    // return error in case the conversion was not successful
+    if(sinteger == check)
+      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
+
+    // remove double parameter value from stringstream "condline"
+    condline->str(condline->str().erase((size_t)condline->tellg()-sinteger.size(),sinteger.size()));
+
+    // reset current position in stringstream "condline"
+    condline->seekg(position);
   }
-  else
-  {
-    char* ptr;
-    n = strtol(number.c_str(),&ptr,10);
-    if (ptr==number.c_str())
-      dserror("failed to read number '%s' while reading variable '%s' in '%s'",
-              number.c_str(),Name().c_str(),def->Name().c_str());
-  }
-  material->Add(Name(),n);
+
+  // add double parameter value to material parameter list
+  material->Add(Name(),integer);
+
   return condline;
 }
 
@@ -339,8 +379,9 @@ void DRT::INPUT::IntVectorMaterialComponent::Describe(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ | Read integer parameter vector from material line of input file   fang 08/14 |
+ *-----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
@@ -350,34 +391,46 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   if (lengthname_ != "*UNDEFINED*")
     length_ = material->GetInt(lengthname_);
   else
-    dserror("Trouble to get length of int vector material component.");
+    dserror("Trouble to get length of integer vector material component.");
 
-  std::vector<int> numbers(length_,defaultvalue_);
+  // initialize integer parameter vector to be read
+  std::vector<int> integers(length_,defaultvalue_);
 
-  for (int i=0; i<length_; ++i)
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
+
+  // only try to read integer parameter vector in case the associated parameter label appears in material line of input file
+  if((size_t)position != condline->str().size())
   {
-    std::string number;
-    (*condline) >> number;
-
-    int n;
+    // extract integer parameter vector from stringstream "condline"
+    for (int i=0; i<length_; ++i)
     {
-      char* ptr;
-      n = strtol(number.c_str(),&ptr,10);
-      if (ptr==number.c_str())
-      {
-        if (optional_ and i==0)
-        {
-          // failed to read the numbers, fall back to default values
-          condline = PushBack(number,condline);
-          break;
-        }
-        dserror("failed to read number '%s' while reading variable '%s' in '%s'",
-                number.c_str(),Name().c_str(),def->Name().c_str());
-      }
+      // extract integer vector component as string
+      std::string sinteger;
+      *condline >> sinteger;
+
+      // try to convert to double
+      char *check;
+      int integer = strtol(sinteger.c_str(),&check,10);
+
+      // return error in case the conversion was not successful
+      if(sinteger == check)
+        dserror("Values in parameter vector '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
+
+      // remove double parameter value from stringstream "condline"
+      condline->str(condline->str().erase((size_t)condline->tellg()-sinteger.size(),sinteger.size()));
+
+      // reset current position in stringstream "condline"
+      condline->seekg(position);
+
+      // insert double vector component into double parameter vector
+      integers[i] = integer;
     }
-    numbers[i] = n;
   }
-  material->Add(Name(),numbers);
+
+  // add double parameter vector to material parameter list
+  material->Add(Name(),integers);
+
   return condline;
 }
 
@@ -425,19 +478,46 @@ void DRT::INPUT::RealMaterialComponent::Describe(
 }
 
 
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | Read double parameter value from material line of input file   fang 08/14 |
+ *---------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  double number = 0;
-  (*condline) >> number;
+  // initialize double parameter value to be read
+  double number = defaultvalue_;
+
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
+
+  // only try to read double parameter value in case the associated parameter label appears in material line of input file
+  if((size_t)position != condline->str().size())
+  {
+    // extract double parameter value from stringstream "condline" as string
+    std::string snumber;
+    *condline >> snumber;
+
+    // try to convert to double
+    char *check;
+    number = strtod(snumber.c_str(),&check);
+
+    // return error in case the conversion was not successful
+    if(snumber == check)
+      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
+
+    // remove double parameter value from stringstream "condline"
+    condline->str(condline->str().erase((size_t)condline->tellg()-snumber.size(),snumber.size()));
+
+    // reset current position in stringstream "condline"
+    condline->seekg(position);
+  }
+
+  // add double parameter value to material parameter list
   material->Add(Name(),number);
+
   return condline;
 }
 
@@ -507,9 +587,9 @@ void DRT::INPUT::RealVectorMaterialComponent::Describe(
 }
 
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ | Read double parameter vector from material line of input file   fang 08/14 |
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
@@ -517,38 +597,48 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   )
 {
   if (lengthname_ != "*UNDEFINED*")
-  {
     length_ = material->GetInt(lengthname_);
-  }
   else
     dserror("Trouble to get length of real vector material component.");
 
+  // initialize double parameter vector to be read
   std::vector<double> numbers(length_,defaultvalue_);
 
-  for (int i=0; i<length_; ++i)
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
+
+  // only try to read double parameter vector in case the associated parameter label appears in material line of input file
+  if((size_t)position != condline->str().size())
   {
-    std::string number;
-    (*condline) >> number;
-    char* ptr;
-    double n = 0.0;
-    n = strtod(number.c_str(),&ptr);
-    if (ptr==number.c_str())
+    // extract double parameter vector from stringstream "condline"
+    for (int i=0; i<length_; ++i)
     {
-      if (optional_ and i==0)
-      {
-        // failed to read the numbers, fall back to default values
-        condline = PushBack(number,condline);
-        break;
-      }
-      dserror("Expected %i input parameters for variable '%s' in '%s'\n"
-              "or \n"
-              "Failed to read number '%s' while reading variable '%s' in '%s'",
-              length_,material->Name().c_str(),def->Name().c_str(),
-              number.c_str(),material->Name().c_str(),def->Name().c_str());
+      // extract double vector component as string
+      std::string snumber;
+      *condline >> snumber;
+
+      // try to convert to double
+      char *check;
+      double number = strtod(snumber.c_str(),&check);
+
+      // return error in case the conversion was not successful
+      if(snumber == check)
+        dserror("Values in parameter vector '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
+
+      // remove double parameter value from stringstream "condline"
+      condline->str(condline->str().erase((size_t)condline->tellg()-snumber.size(),snumber.size()));
+
+      // reset current position in stringstream "condline"
+      condline->seekg(position);
+
+      // insert double vector component into double parameter vector
+      numbers[i] = number;
     }
-    numbers[i] = n;
   }
+
+  // add double parameter vector to material parameter list
   material->Add(Name(),numbers);
+
   return condline;
 }
 
@@ -610,50 +700,47 @@ void DRT::INPUT::BoolMaterialComponent::Describe(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ | Read boolean parameter value from material line of input file   fang 08/14 |
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
   DRT::INPUT::MaterialDefinition* def,
   Teuchos::RCP<std::stringstream> condline,
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  std::string sval;
-  (*condline) >> sval;
+  // initialize boolean parameter value to be read
+  bool boolean = defaultvalue_;
 
-  int ival = -1;
+  // get current position in stringstream "condline"
+  std::streampos position = condline->tellg();
 
-  // added the treatment of the case, if the paramter is optional and therefore not existent in condline
-  // Furthermore expanded the existing case to allow the input Yes, YES, yes, TRUE, true, True etc ...
-  //																																														nagler 2012
+  // only try to read boolean parameter value in case the associated parameter label appears in material line of input file
+  if((size_t)position != condline->str().size())
+  {
+    // extract boolean parameter value from stringstream "condline" as string
+    std::string sboolean;
+    *condline >> sboolean;
 
-  // Setting ival for optional input
-  if (("" == sval) and (optional_))
-	{
-  	if (false == defaultvalue_)
-  	{
-  		ival = 0;;
-  	}
-  	else if (true == defaultvalue_)
-  	{
-  		ival = 1;
-  	}
-  	else
-  	{
-  		dserror("Failed to interpret given default value '%s'", defaultvalue_);
-  	}
-	}
+    // try to convert to bool
+    if(sboolean == "Yes" or sboolean == "YES" or sboolean == "yes" or sboolean == "True" or sboolean == "TRUE" or sboolean == "true")
+      boolean = true;
+    else if(sboolean == "No" or sboolean == "NO" or sboolean == "no" or sboolean == "False" or sboolean == "FALSE" or sboolean == "false")
+      boolean = false;
+    else
+      // return error in case the conversion was not successful
+      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
 
-  // setting ival according to given value
-  else if (("Yes" == sval) or ("YES" == sval) or ("yes" == sval) or ("True" == sval) or ("TRUE" == sval) or ("true" == sval))
-    ival = 1;
-  else if (("No" == sval) or ("NO" == sval) or ("no" == sval) or ("False" == sval) or ("FALSE" == sval) or ("false" == sval))
-    ival = 0;
-  else
-    dserror("Failed to read Boolean value '%s' while reading Boolean variable '%s' in '%s'",
-            sval.c_str(),Name().c_str(),def->Name().c_str());
+    // remove boolean parameter value from stringstream "condline"
+    condline->str(condline->str().erase((size_t)condline->tellg()-sboolean.size(),sboolean.size()));
 
-  material->Add(Name(),ival);
+    // reset current position in stringstream "condline"
+    condline->seekg(position);
+  }
+
+  // add boolean parameter value to material parameter list
+  material->Add(Name(),boolean);
+
   return condline;
 }
 
@@ -694,17 +781,23 @@ void DRT::INPUT::MaterialDefinition::Read(
 
   if (section.size() > 0)
   {
-
     for (std::vector<const char*>::const_iterator i=section.begin();
          i!=section.end();
          ++i)
     {
       Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
 
-      std::string mat;
-      std::string number;
-      std::string name;
-      (*condline) >> mat >> number >> name;
+      // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon reading the last entry inside
+      // This is required since the material parameters can be specified in an arbitrary order in the input file.
+      // So it might happen that the last entry is extracted before all of the previous ones are.
+      condline->seekp(0,condline->end);
+      *condline << " ";
+
+      // read header from stringstream and delete it afterwards
+      std::string mat, number, name;
+      *condline >> mat >> number >> name;
+      condline->str(condline->str().erase(0,(size_t)condline->tellg()));
+
       if (not (*condline) or mat!="MAT")
         dserror("invalid material line in '%s'",name.c_str());
 
@@ -738,16 +831,19 @@ void DRT::INPUT::MaterialDefinition::Read(
         // fill the latter
 
         for (unsigned j=0; j<inputline_.size(); ++j)
-        {
           condline = inputline_[j]->Read(this,condline,material);
-        }
+
+        // current material input line contains bad elements
+        if(condline->str().find_first_not_of(' ') != std::string::npos)
+          dserror("Specification of material '%s' contains the following unknown, redundant, or incorrect elements: '%s'", materialname_.c_str(), condline->str().c_str());
 
         // put material in map of materials
         mmap->Insert(matid,material);
-
       }
     }
   }
+
+  return;
 }
 
 

@@ -17,7 +17,7 @@ Maintainers: Volker Gravemeier & Lena Yoshihara
 
 #include "../drt_fsi/fsi_monolithic.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_scatra/passive_scatra_algorithm.H"
+#include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fluid/fluid_timint_loma.H"
@@ -287,7 +287,7 @@ bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
 
   // scatra convergence check
   scatrastopnonliniter = ScatraConvergenceCheck(itnum);
-  
+
   // warn if itemax is reached without convergence of FSI solver,
   // but proceed to next timestep
   if ((itnum == itmax_) and (fluidstopnonliniter == false))

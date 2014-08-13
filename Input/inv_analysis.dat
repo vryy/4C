@@ -69,7 +69,7 @@ ALPHA_F                         0.4117647
 ------------------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS                    lung
 
-MC_X_0                          -1082.598603 //displacment um 
+MC_X_0                          -1082.598603 //displacment um
 MC_X_1                          0.001565
 MC_X_2                          2.281617
 
@@ -84,11 +84,11 @@ INV_ANA_MAX_RUN                 1
 
 //INV_ANALYSIS                  lung
 ////Specimen                    8
-//MC_X_0                        -1083.380550 //displacment um 
+//MC_X_0                        -1083.380550 //displacment um
 //MC_X_1                        0.003131
 //MC_X_2                        2.284432
 //
-//MC_Y_0                        -179.586432 //displacment um 
+//MC_Y_0                        -179.586432 //displacment um
 //MC_Y_1                        0.003748
 //MC_Y_2                        1.260942
 
@@ -102,7 +102,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 // ug / um^3
-MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 32 DENS 0.194e-6 GAMMA 1
+MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 32 DENS 0.194e-6
 MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 10. C2 0.3
 MAT 3 ELAST_CoupBlatzKo MUE 8. NUE .3 F 0.8
 MAT 11 ELAST_Iso1Pow C 10. D 1.

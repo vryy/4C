@@ -86,26 +86,11 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- calculate and update -----------------------------------------------*/
 
-  //! compute density field from concentration(s) for ELCH natural convection
-  void ComputeDensity();
-
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  //! update density field for ELCH natural convection
-  virtual void UpdateDensityElch() = 0;
-
   /*--- query and output ---------------------------------------------------*/
-
-  //! return density field at time n+1 for ELCH natural convection
-  Teuchos::RCP<Epetra_Vector> DensElchNp() { return elchdensnp_; }
-
-  //! return density field at time n for ELCH natural convection
-  Teuchos::RCP<Epetra_Vector> DensElchN() { return elchdensn_; }
-
-  //! return density field at time n-1 for ELCH natural convection
-  Teuchos::RCP<Epetra_Vector> DensElchNm() { return elchdensnm_; }
 
   //! output of all electrode information to screen and/or file (default: 2x true)
   Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
@@ -167,8 +152,8 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
-  //! setup of natural convection
-  void SetupElchNatConv();
+  //! setup natural convection
+  void SetupNatConv();
 
   //! Parameter check for diffusion-conduction formulation
   void ValidParameterDiffCond();
@@ -222,27 +207,14 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! ELCH-specific parameter F/RT (default value for the temperature is 298K)
   double frt_;
 
-  //! density (nodebased!) at times n-1 for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensnm_;
-  //! density (nodebased!) at times n for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensn_;
-  //! density (nodebased!) at times n+1 for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensnp_;
-
   //! number of iterations in galvanostatic mode (ELCH)
   int gstatnumite_;
 
   //! value of electric potential increment in galvanostatic mode (ELCH)
   double gstatincrement_;
 
-  //! initial concentrations of the electrolyte solution (ELCH)
-  std::vector<double> c0_;
-
   //! conductivity of the single species and the whole electrolyte
   Teuchos::RCP<Epetra_SerialDenseVector> sigma_;
-
-  //! densification coefficients for ELCH natural convection
-  std::vector<double> densific_;
 
   //! flag for (de)activation of double layer capacity
   bool dlcapexists_;

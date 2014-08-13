@@ -53,8 +53,8 @@ public:
   /// Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  /// update density field for ELCH natural convection
-  void UpdateDensityElch(){return;};
+  //! update density field for natural convection
+  void UpdateDensity(){dserror("Fully-coupled system is not implemented for the stationary scheme"); return;};
 
   /// read restart data
   void ReadRestart(int step);
@@ -120,7 +120,7 @@ protected:
 
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};
-  
+
   /// dynamic Vreman model
   void DynamicComputationOfCv() {dserror("no turbulence in stationary flows!"); return;};
 

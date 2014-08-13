@@ -56,8 +56,8 @@ public:
   /// current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  /// update density field for ELCH natural convection
-  void UpdateDensityElch();
+  /// update density field for natural convection
+  void UpdateDensity();
 
   /// read restart data
   void ReadRestart(int step);

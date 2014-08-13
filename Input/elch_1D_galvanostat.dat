@@ -54,7 +54,6 @@ DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     298.15                          // F/RT = 38.942
-NATURAL_CONVECTION              No
 GALVANOSTATIC                   Yes
 GSTAT_APPROX_ELECT_RESIST       relation_pot_cur //relation_pot_cur effective_length_with_initial_cond
 GSTATCONVTOL                    1e-8

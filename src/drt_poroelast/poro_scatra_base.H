@@ -17,7 +17,7 @@
 #define PORO_SCATRA_BASE_H_
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_scatra/passive_scatra_algorithm.H"
+#include "../drt_scatra/scatra_algorithm.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |

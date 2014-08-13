@@ -70,8 +70,8 @@ void SCATRA::TimIntOneStepTheta::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for savety checks in SetElementGeneralScaTraParameter(),
-  //         we have to konw the time-integration parameters
+  //       - order is important here: for safety checks in SetElementGeneralScaTraParameter(),
+  //         we have to know the time-integration parameters
   SetElementTimeParameter();
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
@@ -92,6 +92,21 @@ void SCATRA::TimIntOneStepTheta::Init()
       // initialize forcing algorithm
       homisoturb_forcing_->SetInitialSpectrum(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"));
     }
+  }
+
+  // -------------------------------------------------------------------
+  // preparations for natural convection
+  // -------------------------------------------------------------------
+  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
+  {
+    // allocate densn_ and densnp_ with *dofrowmap and initialize
+    densn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    densn_->PutScalar(1.0);
+    densnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    densnp_->PutScalar(1.0);
+
+    // compute initial mean concentrations and load densification coefficients
+    SetupNatConv();
   }
 
   return;
@@ -324,6 +339,17 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update density at n for natural convection                 gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::UpdateDensity()
+{
+  densn_->Update(1.0,*densnp_,0.0);
 
   return;
 }

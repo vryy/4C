@@ -13,7 +13,7 @@ last Maintainer:  Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -512,7 +512,10 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     break;
 
     default:
+    {
       dserror("Unknown type of action for So_sh8p8");
+      break;
+    }
   }
   return 0;
 }
@@ -1933,7 +1936,10 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
   case INPAR::STR::stress_none:
     break;
   default:
+  {
     dserror("requested stress option not available");
+    break;
+  }
   }
 
   return;
@@ -1983,7 +1989,10 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
   case INPAR::STR::strain_none:
     break;
   default:
+  {
     dserror("requested strain option not available");
+    break;
+  }
   }
 
   // bye
@@ -2606,7 +2615,10 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
       case DRT::ELEMENTS::So_sh8::none:
         break;
       default:
+      {
         dserror("no thickness direction for So_sh8p8");
+        break;
+      }
       }
       //actele->sosh8p8_gmshplotlabeledelement(actele->NodeIds());
     }

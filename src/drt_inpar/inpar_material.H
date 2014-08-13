@@ -10,7 +10,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 #ifndef INPAR_MATERIAL_H
 #define INPAR_MATERIAL_H
 

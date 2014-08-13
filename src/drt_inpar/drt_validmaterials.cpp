@@ -88,7 +88,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
     AddNamedReal(m,"DENSITY","spatial mass density");
-    AddNamedReal(m,"GAMMA","surface tension coeficient",true);
+    AddNamedReal(m,"GAMMA","surface tension coefficient",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -192,9 +192,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_scatra));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-    AddNamedReal(m,"REACOEFF","reaction coefficient",true);
-    AddNamedReal(m,"SCNUM","schmidt number",true);
-    AddNamedReal(m,"FLDDENSITY","fluid density",true);
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
+    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
+    AddNamedReal(m,"FLDDENSITY","fluid density",0.0,true);
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -210,9 +211,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFF1","kinematic diffusivity component 1");
     AddNamedReal(m,"DIFF2","kinematic diffusivity component 2");
     AddNamedReal(m,"DIFF3","kinematic diffusivity component 3");
-    AddNamedReal(m,"REACOEFF","reaction coefficient",true);
-//    AddNamedReal(m,"SCNUM","schmidt number",true);
-//    AddNamedReal(m,"FLDDENSITY","fluid density",true);
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
+//    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
+//    AddNamedReal(m,"FLDDENSITY","fluid density",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -378,11 +379,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"VALENCE","valence (= charge number)");
-    AddNamedReal(m,"DENSIFICATION","densification coefficient",true);
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
     // via these two optional parameters we can bring the material parameters
     // of one eliminated ionic species into BACI if needed
-    AddNamedReal(m,"ELIM_DIFFUSIVITY","kinematic diffusivity of elim. species",true);
-    AddNamedReal(m,"ELIM_VALENCE","valence of elim. species",true);
+    AddNamedReal(m,"ELIM_DIFFUSIVITY","kinematic diffusivity of elim. species",0.0,true);
+    AddNamedReal(m,"ELIM_VALENCE","valence of elim. species",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -405,7 +406,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedRealVector(m,"DIFF_PARA","parameter for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
     AddNamedInt(m,"TRANS_PARA_NUM","number of parameter for the diffusion coefficient",0,true);
     AddNamedRealVector(m,"TRANS_PARA","parameter transference number","TRANS_PARA_NUM",0.0,true);
-    AddNamedInt(m,"THERM_PARA_NUM","number of parameter thermdoynamic factor",0,true);
+    AddNamedInt(m,"THERM_PARA_NUM","number of parameter thermodynamic factor",0,true);
     AddNamedRealVector(m,"THERM_PARA","parameter for thermodynamic factor","THERM_PARA_NUM",0.0,true);
     AddNamedInt(m,"COND_PARA_NUM","number of parameter conductivity",0,true);
     AddNamedRealVector(m,"COND_PARA","parameter for conductivity","COND_PARA_NUM",0.0,true);
@@ -476,7 +477,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion",true);
+    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -793,7 +794,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedString(m,"MICROFILE","inputfile for microstructure","filename.dat");
     AddNamedInt(m,"MICRODIS_NUM","Number of microscale discretization");
-    AddNamedReal(m,"INITVOL","Initial volume of RVE",true);
+    AddNamedReal(m,"INITVOL","Initial volume of RVE",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -846,15 +847,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"KINHARD","linear kinematic hardening modulus");
 
     // optional pastic spin parameter
-    AddNamedReal(m,"PL_SPIN_CHI","Plastic spin coupling parameter chi (often called eta)",true);
+    AddNamedReal(m,"PL_SPIN_CHI","Plastic spin coupling parameter chi (often called eta)",0.0,true);
 
     // optional Hill yield parameters
-    AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",true);
-    AddNamedReal(m,"rY_22","relative yield stress in fiber2-direction (Y_22/Y_0)",true);
-    AddNamedReal(m,"rY_33","relative yield stress in fiber2-direction (Y_33/Y_0)",true);
-    AddNamedReal(m,"rY_12","relative shear yield stress in 12-direction (Y_12/Y_0)",true);
-    AddNamedReal(m,"rY_23","relative shear yield stress in 23-direction (Y_23/Y_0)",true);
-    AddNamedReal(m,"rY_13","relative shear yield stress in 13-direction (Y_13/Y_0)",true);
+    AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_22","relative yield stress in fiber2-direction (Y_22/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_33","relative yield stress in fiber2-direction (Y_33/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_12","relative shear yield stress in 12-direction (Y_12/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_23","relative shear yield stress in 23-direction (Y_23/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_13","relative shear yield stress in 13-direction (Y_13/Y_0)",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -928,8 +929,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "compressible neo-Hooke material acc. to Holzapfel",
                                             INPAR::MAT::mes_coupneohooke));
 
-    AddNamedReal(m,"YOUNG","Young's modulus",true);
-    AddNamedReal(m,"NUE","Poisson's ratio",true);
+    AddNamedReal(m,"YOUNG","Young's modulus",0.0,true);
+    AddNamedReal(m,"NUE","Poisson's ratio",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -940,9 +941,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "Mooney - Rivlin material acc. to Holzapfel",
                                             INPAR::MAT::mes_coupmooneyrivlin));
 
-    AddNamedReal(m,"C1","material constant",true);
-    AddNamedReal(m,"C2","material constant",true);
-    AddNamedReal(m,"C3","material constant",true);
+    AddNamedReal(m,"C1","material constant",0.0,true);
+    AddNamedReal(m,"C2","material constant",0.0,true);
+    AddNamedReal(m,"C3","material constant",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1211,7 +1212,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"K","linear constant");
     AddNamedReal(m,"D1","exponential constant for fiber invariant");
     AddNamedReal(m,"D2","exponential constant for system");
-    AddNamedReal(m,"GAMMA","angle", true);
+    AddNamedReal(m,"GAMMA","angle",0.0,true);
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1270,8 +1271,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MIN_ACTIVATION","Minimal value for the rescaled activation");
     AddNamedInt(m,"SOURCE_ACTIVATION","Where the activation comes from: 0=scatra , >0 Id for FUNCT");
     AddNamedReal(m,"ACTIVATION_THRES","Threshold for activation (contraction starts when activation function is larger than this value, relaxes otherwise)");
-    AddNamedReal(m,"GAMMA","azimuth angle", true);
-    AddNamedReal(m,"THETA","polar angle", true);
+    AddNamedReal(m,"GAMMA","azimuth angle",0.0,true);
+    AddNamedReal(m,"THETA","polar angle",0.0,true);
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1289,8 +1290,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"C","linear constant");
     AddNamedInt(m,"SOURCE_ACTIVATION","Where the activation comes from: 0=scatra , >0 Id for FUNCT");
-    AddNamedReal(m,"GAMMA","azimuth angle", true);
-    AddNamedReal(m,"THETA","polar angle", true);
+    AddNamedReal(m,"GAMMA","azimuth angle",0.0,true);
+    AddNamedReal(m,"THETA","polar angle",0.0,true);
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1528,7 +1529,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"CURVE","number of timecurve for increase of prestretch in time",0);
     AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp, ExpVar)","Lin");
     AddNamedReal(m,"MAXMASSPRODFAC","maximal factor of mass production");
-    AddNamedReal(m,"ELASTINFAC","factor for elastin content",true);
+    AddNamedReal(m,"ELASTINFAC","factor for elastin content",0.0,true);
     AddNamedBool(m,"STOREHISTORY","store all history variables, not recommended for forward simulations",false,true);
 
     AppendMaterialDefinition(matlist,m);
@@ -1686,8 +1687,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENSITY","mass density");
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
-    AddNamedReal(m,"NUE","poisson ratio",true);
-    AddNamedReal(m,"YOUNG","youngs modulus",true);
+    AddNamedReal(m,"NUE","poisson ratio",0.0,true);
+    AddNamedReal(m,"YOUNG","youngs modulus",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

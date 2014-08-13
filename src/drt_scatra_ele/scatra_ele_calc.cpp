@@ -413,7 +413,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
-  DRT::Element*                         ele, ///< the element those matrix is calculated
+  DRT::Element*                         ele, ///< the element whose matrix is calculated
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
   Epetra_SerialDenseVector&             subgrdiff ///< subgrid-diff.-scaling vector

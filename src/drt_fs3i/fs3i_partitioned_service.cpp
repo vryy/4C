@@ -32,7 +32,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
-#include "../drt_scatra/passive_scatra_algorithm.H"
+#include "../drt_scatra/scatra_algorithm.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 

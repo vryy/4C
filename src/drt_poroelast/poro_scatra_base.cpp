@@ -15,7 +15,7 @@
 #include "poro_scatra_base.H"
 #include "poro_base.H"
 
-#include "../drt_scatra/passive_scatra_algorithm.H"
+#include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "poro_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"

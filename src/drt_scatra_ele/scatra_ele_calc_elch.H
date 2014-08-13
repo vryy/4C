@@ -155,7 +155,7 @@ protected:
   /*========================================================================*/
 
   //! Calculate quantities used for stabilization
-  virtual void PrepareStabilization(
+  void PrepareStabilization(
     std::vector<double>&                                                       tau,         //!< stabilization parameters (one per transported scalar)
     std::vector<LINALG::Matrix<my::nen_,1> >&                                  tauderpot,   //!< derivatives of stabilization parameters w.r.t. electric potential
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,          //!< internal variable manager

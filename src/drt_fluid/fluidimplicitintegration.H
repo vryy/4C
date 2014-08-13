@@ -868,7 +868,7 @@ protected:
   virtual void AssembleMatAndRHS();
 
   /*!
-  \brief calculate intermediate soution
+  \brief calculate intermediate solution
 
   */
   virtual void CalcIntermediateSolution();
