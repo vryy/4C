@@ -13,14 +13,22 @@
  *----------------------------------------------------------------------*/
 
 
-#include "scatra_ele_calc_poro.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/scatra_mat.H"
+
+//#include "scatra_ele_parameter.H"
+//
+//#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+//#include "../drt_geometry/position_array.H"
+//
+//#include "scatra_ele_action.H"
+//#include "scatra_ele.H"
+
+#include "scatra_ele_calc_poro.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -67,6 +75,77 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofper
 {
 
 }
+
+///*----------------------------------------------------------------------*
+// * Action type: Evaluate
+// *----------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
+//  DRT::ELEMENTS::Transport*  ele,
+//  Teuchos::ParameterList&    params,
+//  DRT::Discretization&       discretization,
+//  const std::vector<int>&    lm,
+//  Epetra_SerialDenseMatrix&  elemat1_epetra,
+//  Epetra_SerialDenseMatrix&  elemat2_epetra,
+//  Epetra_SerialDenseVector&  elevec1_epetra,
+//  Epetra_SerialDenseVector&  elevec2_epetra,
+//  Epetra_SerialDenseVector&  elevec3_epetra
+//  )
+//{
+//  // check for the action parameter
+//  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+//  switch(action)
+//  {
+//    case SCATRA::calc_scatra_mono_odblock_mesh:
+//    {
+//      return EvaluateODMesh(
+//          ele,
+//          params,
+//          discretization,
+//          lm,
+//          elemat1_epetra,
+//          elemat2_epetra,
+//          elevec1_epetra,
+//          elevec2_epetra,
+//          elevec3_epetra
+//          );
+//      break;
+//    }
+//    case SCATRA::calc_scatra_mono_odblock_fluid:
+//    {
+//      return EvaluateODFluid(
+//          ele,
+//          params,
+//          discretization,
+//          lm,
+//          elemat1_epetra,
+//          elemat2_epetra,
+//          elevec1_epetra,
+//          elevec2_epetra,
+//          elevec3_epetra
+//          );
+//      break;
+//    }
+//    default:
+//    {
+//      return my::Evaluate(
+//          ele,
+//          params,
+//          discretization,
+//          lm,
+//          elemat1_epetra,
+//          elemat2_epetra,
+//          elevec1_epetra,
+//          elevec2_epetra,
+//          elevec3_epetra
+//          );
+//      break;
+//    }
+//  }
+//
+//  //you should no turn up here -> return error code
+//  return -1;
+//}
 
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                           |

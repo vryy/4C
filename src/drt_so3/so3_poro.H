@@ -349,6 +349,7 @@ protected:
     calc_struct_nlnstiffmass,
     calc_struct_stress,
     calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
+    calc_struct_poroscatracoupling,
     postprocess_stress
   };
 

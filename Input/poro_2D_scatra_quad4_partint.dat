@@ -9,7 +9,10 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+Test 2D scalar transport within porous medium
+- standard poro elements (darcy)
+- quad4 elements
+- partial integration of continuity equation
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
 //NODES                         9
@@ -85,7 +88,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit 
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
 INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
@@ -112,7 +115,7 @@ TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         1000
-MAXTIME                         4.0 //hill reaches point of departure (x0=2/15) 
+MAXTIME                         4.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01
 THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
@@ -134,14 +137,14 @@ EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR //UMFPACK Aztec_MSR 
+SOLVER                          Aztec_MSR //UMFPACK Aztec_MSR
 AZTOL                           1.0E-9
 AZPREC                          BGS2x2
 --------------------------------------------------------------------SOLVER 2
-SOLVER Aztec_MSR //UMFPACK
+SOLVER                          Aztec_MSR //UMFPACK
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 3
-SOLVER Aztec_MSR //UMFPACK
+SOLVER                          Aztec_MSR //UMFPACK
 AZTOL                           1.0E-9
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
@@ -150,7 +153,7 @@ AZTOL                           1.0E-11                       // tolerance in (u
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Material
 DIVERCONT                       stop
@@ -162,7 +165,7 @@ MAXITER                         50
 MAXTIME                         8
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
+NLNSOL                          fullnewton //fullnewton newtonlinuzawa
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -255,7 +258,7 @@ E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
 DPOINT                          2
 // Point x+y+
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 3 none none FUNCT 0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 3 none none FUNCT 0 0 0
 // Point x-y+
 //E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Point x-y-

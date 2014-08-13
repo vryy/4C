@@ -17,7 +17,7 @@
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
-#include "poroelast_utils.H"
+#include "poro_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -224,6 +224,8 @@ void POROELAST::PORO_SCATRA_Base::AddDofSets(bool replace)
     // check if ScatraField has 2 discretizations, so that coupling is possible
     if (scatradis->AddDofSet(structdofset) != 1)
       dserror("unexpected dof sets in scatra field");
+    if (scatradis->AddDofSet(fluiddofset) != 2)
+      dserror("unexpected dof sets in scatra field");
     if (structdis->AddDofSet(scatradofset)!=2)
       dserror("unexpected dof sets in structure field");
     if (fluiddis->AddDofSet(scatradofset)!=2)
@@ -232,6 +234,7 @@ void POROELAST::PORO_SCATRA_Base::AddDofSets(bool replace)
   else
   {
     scatradis->ReplaceDofSet(1,structdofset);
+    scatradis->ReplaceDofSet(2,fluiddofset);
     structdis->ReplaceDofSet(2,scatradofset);
     fluiddis->ReplaceDofSet(2,scatradofset);
   }

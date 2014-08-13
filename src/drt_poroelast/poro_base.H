@@ -25,6 +25,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "poroelast_utils.H"
 
+#include "../linalg/linalg_mapextractor.H"
+
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |
  *----------------------------------------------------------------------*/
@@ -99,6 +101,10 @@ namespace POROELAST
       virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
          {dserror("dof maps only available for monolithic schemes!"); return Teuchos::null;};
 
+      //! extractor to communicate between full monolithic map and block maps
+      virtual const LINALG::MultiMapExtractor* ExtractorPointer() const
+         {dserror("ExtractorPointer only available for monolithic schemes!"); return NULL;};
+
       //! unique map of all dofs that should be constrained with DBC
       virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
           {dserror("combined DBC map only available for monolithic schemes!"); return Teuchos::null;};
@@ -123,7 +129,7 @@ namespace POROELAST
       virtual bool SetupSolver(){return false;};
 
       virtual void SetupRHS(bool firstcall=false)
-          {dserror("SetuoRHS only available for monolithic schemes!"); };
+          {dserror("SetupRHS only available for monolithic schemes!"); };
 
       //! @name Time loop building blocks
 

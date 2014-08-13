@@ -205,6 +205,8 @@ namespace POROELAST
 
     //@}
 
+    void FDCheck();
+
     //! @name Printing and output
     //@{
 
@@ -265,18 +267,22 @@ namespace POROELAST
     //! scatra-poro off diagonal coupling matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> k_sp_;
 
-    //! structure-fluid coupling matrix
-    //Teuchos::RCP<LINALG::SparseOperator> k_pss_;
+    //! structure-scatra coupling matrix
     Teuchos::RCP<LINALG::SparseMatrix> k_pss_;
-    //! fluid-structure coupling matrix
-    //Teuchos::RCP<LINALG::SparseOperator> k_pfs_;
+    //! fluid-scatra coupling matrix
     Teuchos::RCP<LINALG::SparseMatrix> k_pfs_;
+
+    //! scatra-structure coupling matrix
+    Teuchos::RCP<LINALG::SparseMatrix> k_sps_;
+    //! scatra-fluid coupling matrix
+    Teuchos::RCP<LINALG::SparseMatrix> k_spf_;
 
     //! dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor  blockrowdofmap_;
 
     //! scatra row map as map extractor (used to build coupling matrixes)
     LINALG::MultiMapExtractor  scatrarowdofmap_;
+    LINALG::MultiMapExtractor  pororowdofmap_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

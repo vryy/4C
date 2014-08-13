@@ -31,7 +31,7 @@
 
 //POROELAST includes
 #include "../drt_poroelast/poro_base.H"
-#include "../drt_poroelast/poroelast_utils.H"
+#include "../drt_poroelast/poro_utils_clonestrategy.H"
 
 //FSI includes
 #include "../drt_fsi/fsi_utils.H"

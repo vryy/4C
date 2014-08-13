@@ -21,6 +21,7 @@
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -222,6 +223,8 @@ void POROELAST::PORO_SCATRA_Mono::Solve()
     //cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
+    //FDCheck();
+
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
@@ -285,28 +288,25 @@ void POROELAST::PORO_SCATRA_Mono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   ScaTraField()->UpdateIter(scatrainc);
 
   // call all elements and assemble rhs and matrices
-  /// structural field
+  /// poro field
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  //Epetra_Time timerstructure(Comm());
+  Epetra_Time timerporo(Comm());
 
   // apply current velocity and pressures to structure
   SetScatraSolution();
 
-  // Monolithic Poroelasticity accesses the linearised structure problem:
+  // access poro problem to build poro-poro block
   PoroField()->Evaluate(poroinc);
-  //cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
-  /// fluid field
 
-  // fluid Evaluate
+  /// scatra field
+
+  // Scatra Evaluate
   // (builds tangent, residual and applies DBC and recent coupling values)
-  //Epetra_Time timerfluid(Comm());
+  SetPoroSolution();
 
-  SetScatraSolution();
-
-  // monolithic Poroelasticity accesses the linearised fluid problem
+  // access ScaTra problem to build scatra-scatra block
   ScaTraField()->PrepareLinearSolve();
-  //cout << "  fluid time for calling Evaluate: " << timerfluid.ElapsedTime() << "\n";
 
   // fill off diagonal blocks and build monolithic system matrix
   SetupSystemMatrix();
@@ -326,18 +326,15 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
   {
-    if(PoroField()->DofRowMap() == Teuchos::null)
-      dserror("could not access DofRowMap of poro field!");
-    // use its own DofRowMap, that is the 0th map of the discretization
     vecSpaces.push_back(PoroField()->DofRowMap());
     const Epetra_Map* dofrowmapscatra = (ScaTraField()->Discretization())->DofRowMap(0);
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
   }
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
+    dserror("No poro equation. Panic.");
   if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No fluid equation. Panic.");
+    dserror("No scatra equation. Panic.");
 
   // build dof row map of monolithic system
   SetDofRowMaps(vecSpaces);
@@ -356,7 +353,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
       dserror("Creation of Dirichlet map extractor failed.");
   }
 
-  // initialize Poroelasticity-systemmatrix_
+  // initialize Poroscatra-systemmatrix_
   systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
                                       Extractor(),
                                       Extractor(),
@@ -364,22 +361,22 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
                                       false,
                                       true));
 
-  std::vector<Teuchos::RCP<const Epetra_Map> > scatravecSpaces;
   {
+    std::vector<Teuchos::RCP<const Epetra_Map> > scatravecSpaces;
     const Epetra_Map* dofrowmapscatra = (ScaTraField()->Discretization())->DofRowMap(0);
     scatravecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
     scatrarowdofmap_.Setup(*dofrowmapscatra,scatravecSpaces);
   }
 
   k_sp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+            *PoroField()->ExtractorPointer(),
             scatrarowdofmap_,
-            Extractor(),
             81,
             false,
             true));
   k_ps_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
                               scatrarowdofmap_,
-                              Extractor(),
+                              *PoroField()->ExtractorPointer(),
                               81,
                               false,
                               true));
@@ -388,6 +385,13 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
                       *(PoroField()->StructureField()->DofRowMap()), 81, true, true));
   k_pfs_ = Teuchos::rcp(new LINALG::SparseMatrix(
                         *(PoroField()->FluidField()->Discretization()->DofRowMap(0)),
+                        //*(FluidField()->DofRowMap()),
+                        81, true, true));
+
+  k_sps_ = Teuchos::rcp(new LINALG::SparseMatrix(
+                      *(ScaTraField()->Discretization()->DofRowMap()), 81, true, true));
+  k_spf_ = Teuchos::rcp(new LINALG::SparseMatrix(
+                        *(ScaTraField()->Discretization()->DofRowMap()),
                         //*(FluidField()->DofRowMap()),
                         81, true, true));
 }
@@ -434,6 +438,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystemMatrix()
   // 1st diagonal block (upper left): poro weighting - poro solution
   //----------------------------------------------------------------------
   // get matrix block
+  Epetra_Time timerporomatrix(Comm());
   Teuchos::RCP<LINALG::SparseMatrix> mat_pp = PoroField()->SystemSparseMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
@@ -480,14 +485,17 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystemMatrix()
   //----------------------------------------------------------------------
 
   // evaluate off-diagonal matrix block in scatra
-  // (for present fixed-point-like iteration: no entries)
   EvaluateODBlockMatScatra();
 
+  k_sp_->Complete();
+
+  Teuchos::RCP<LINALG::SparseMatrix> k_sp_sparse = k_sp_->Merge();
+
   // uncomplete matrix block (appears to be required in certain cases)
- // k_sp_->UnComplete();
+  k_sp_sparse->UnComplete();
 
   // assign matrix block
- // systemmatrix_->Assign(1,0,View,*(k_sp_->Merge()));
+  systemmatrix_->Assign(1,0,View,*(k_sp_sparse));
 
   // complete block matrix
   systemmatrix_->Complete();
@@ -533,7 +541,7 @@ void POROELAST::PORO_SCATRA_Mono::LinearSolve()
                     );
     //  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
   }
-  else // use bgs2x2_operator
+  else
   {
     // in case of inclined boundary conditions
     // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
@@ -929,10 +937,10 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   fparams.set<int>("action", FLD::calc_poroscatra_mono_odblock);
   // physical type
   fparams.set<int>("physical type", PoroField()->FluidField()->PhysicalType());
+
   // other parameters that might be needed by the elements
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());
-  fparams.set<int>("physical type" , INPAR::FLUID::poro);
 
   const Teuchos::RCP<DRT::Discretization>& porofluiddis = PoroField()->FluidField()->Discretization();
   porofluiddis->ClearState();
@@ -945,12 +953,6 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   porofluiddis->SetState(0,"hist",PoroField()->FluidField()->Hist());
 
   PoroField()->FluidField()->Discretization()->SetState(0,"scaaf",PoroField()->FluidField()->Scaaf());
-
-  // set scheme-specific element parameters and vector values
-  //TODO
-  //if (is_genalpha_)
-  //    discret_->SetState("velaf",velaf_);
-  //else
 
   porofluiddis->SetState(0,"velaf",PoroField()->FluidField()->Velnp());
   porofluiddis->SetState(0,"velnp",PoroField()->FluidField()->Velnp());
@@ -972,7 +974,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   PoroField()->FluidField()->Discretization()->EvaluateCondition( fparams, fluidstrategy,"PoroCoupling" );
   //PoroField()->FluidField()->Discretization()->Evaluate( fparams, fluidstrategy );
 
-  porofluiddis->ClearState();
+  porofluiddis->ClearState(true);
 
   //************************************************************************************
   //************************************************************************************
@@ -982,41 +984,6 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
 
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
-
-  const Teuchos::ParameterList& sdynparams
-  = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  enum INPAR::STR::DynamicType strmethodname = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
-
-  switch (strmethodname)
-  {
-   case  INPAR::STR::dyna_statics :
-   {
-     sparams.set("theta", 1.0);
-   // continue
-   break;
-   }
-  case INPAR::STR::dyna_onesteptheta:
-  {
-    double theta = sdynparams.sublist("ONESTEPTHETA").get<double> ("THETA");
-    sparams.set("theta", theta);
-    break;
-  }
-    // TODO: time factor for genalpha
-    /*
-     case INPAR::STR::dyna_genalpha :
-     {
-     double alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-     // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
-     // Lin(dT_n+1-alphaf_/ dT_n+1) = (1-alphaf_)
-     k_st->Scale(1.0 - alphaf_);
-     }*/
-  default:
-  {
-    dserror("Don't know what to do... only one-step theta time integration implemented");
-    break;
-  }
-  } // end of switch(strmethodname_)
 
   const std::string action = "calc_struct_poroscatracoupling";
   sparams.set("action", action);
@@ -1044,7 +1011,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   // evaluate the mechancial-fluid system matrix on the structural element
   PoroField()->StructureField()->Discretization()->EvaluateCondition( sparams, structuralstrategy,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
-  PoroField()->StructureField()->Discretization()->ClearState();
+  PoroField()->StructureField()->Discretization()->ClearState(true);
 
   //************************************************************************************
   //************************************************************************************
@@ -1052,7 +1019,6 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   // assign matrix blocks
   k_ps_->Assign(0,0,View,*k_pss_);
   k_ps_->Assign(1,0,View,*k_pfs_);
-
   return;
 }
 
@@ -1061,5 +1027,373 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
  *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
 {
+  k_sp_->Zero();
 
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList sparams_struct;
+
+  k_sps_->Zero();
+
+  sparams_struct.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
+  // other parameters that might be needed by the elements
+  sparams_struct.set("delta time", Dt());
+  sparams_struct.set("total time", Time());
+  sparams_struct.set<int>("scatratype", ScaTraField()->ScaTraType());
+
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_struct,
+      "velocity field",
+      ScaTraField()->Vel());
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_struct,
+      "convective velocity field",
+      ScaTraField()->ConVel());
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_struct,
+      "dispnp",
+      ScaTraField()->Disp());
+
+  ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->SetState(0,"hist",ScaTraField()->Hist());
+  ScaTraField()->Discretization()->SetState(0,"phinp",ScaTraField()->Phinp());
+
+  // build specific assemble strategy for mechanical-fluid system matrix
+  // from the point of view of StructureField:
+  // structdofset = 0, fluiddofset = 1
+  DRT::AssembleStrategy scatrastrategy_struct(
+      0,               // scatradofset for row
+      1,               // structuredofset for column
+      k_sps_,          // scatra-structure coupling matrix
+      Teuchos::null ,
+      Teuchos::null ,
+      Teuchos::null,
+      Teuchos::null
+  );
+
+  // evaluate the mechancial-fluid system matrix on the structural element
+  ScaTraField()->Discretization()->EvaluateCondition( sparams_struct, scatrastrategy_struct,"PoroCoupling" );
+  //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
+
+  ScaTraField()->Discretization()->ClearState(true);
+//dserror("stop");
+  //************************************************************************************
+  //************************************************************************************
+
+  k_spf_->Zero();
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList sparams_fluid;
+
+  sparams_fluid.set<int>("action", SCATRA::calc_scatra_mono_odblock_fluid);
+  // other parameters that might be needed by the elements
+  sparams_fluid.set("delta time", Dt());
+  sparams_fluid.set("total time", Time());
+  sparams_fluid.set<int>("scatratype", ScaTraField()->ScaTraType());
+
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_fluid,
+      "velocity field",
+      ScaTraField()->Vel());
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_fluid,
+      "convective velocity field",
+      ScaTraField()->ConVel());
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_fluid,
+      "dispnp",
+      ScaTraField()->Disp());
+
+  ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->SetState(0,"hist",ScaTraField()->Hist());
+  ScaTraField()->Discretization()->SetState(0,"phinp",ScaTraField()->Phinp());
+
+  // build specific assemble strategy for mechanical-fluid system matrix
+  // from the point of view of StructureField:
+  // structdofset = 0, fluiddofset = 1
+  DRT::AssembleStrategy scatrastrategy_fluid(
+      0,               // scatradofset for row
+      2,               // fluiddofset for column
+      k_spf_,          // scatra-fluid coupling matrix
+      Teuchos::null ,
+      Teuchos::null ,
+      Teuchos::null,
+      Teuchos::null
+  );
+
+  // evaluate the mechancial-fluid system matrix on the structural element
+  ScaTraField()->Discretization()->EvaluateCondition( sparams_fluid, scatrastrategy_fluid,"PoroCoupling" );
+  //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
+  ScaTraField()->Discretization()->ClearState(true);
+
+  // assign matrix blocks
+  k_sp_->Assign(0,0,View,*k_sps_);
+  k_sp_->Assign(0,1,View,*k_spf_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  check tangent stiffness matrix vie finite differences               |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Mono::FDCheck()
+{
+  std::cout << "\n******************finite difference check***************" << std::endl;
+
+  int dof_struct = (PoroField()->StructureField()->Discretization()->NumGlobalNodes()) * 3;
+  int dof_fluid = (PoroField()->FluidField()->Discretization()->NumGlobalNodes()) * 4;
+  int dof_scatra = (ScaTraField()->Discretization()->NumGlobalNodes());
+
+  std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
+  std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
+  std::cout << "scatra field has " << dof_scatra << " DOFs" << std::endl;
+
+  Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
+  iterinc = LINALG::CreateVector(*DofRowMap(), true);
+
+  const int dofs = iterinc->GlobalLength();
+  std::cout << "in total " << dofs << " DOFs" << std::endl;
+  const double delta = 1e-8;
+
+  iterinc->PutScalar(0.0);
+
+  iterinc->ReplaceGlobalValue(0, 0, delta);
+
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
+  stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
+
+  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
+      true));
+  rhs_old->Update(1.0, *rhs_, 0.0);
+  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
+      true));
+
+  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(
+      new LINALG::SparseMatrix(*(sparse->EpetraMatrix())));
+
+  if (false)
+  {
+    std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
+    std::cout << "iterinc" << std::endl << *iterinc << std::endl;
+    std::cout << "meshdisp: " << std::endl << *(PoroField()->FluidField()->Dispnp());
+    std::cout << "disp: " << std::endl << *(PoroField()->StructureField()->Dispnp());
+    std::cout << "fluid vel" << std::endl << *(PoroField()->FluidField()->Velnp());
+    std::cout << "fluid acc" << std::endl << *(PoroField()->FluidField()->Accnp());
+    std::cout << "gridvel fluid" << std::endl << *(PoroField()->FluidField()->GridVel());
+    std::cout << "gridvel struct" << std::endl << *(PoroField()->StructureField()->Velnp());
+  }
+
+  const int zeilennr = -1;
+  const int spaltenr = -1;
+  for (int i = 0; i < dofs; ++i)
+  {
+    if (CombinedDBCMap()->MyGID(i))
+    {
+      iterinc->ReplaceGlobalValue(i, 0, 0.0);
+    }
+
+    if (i == spaltenr)
+      std::cout << "\n******************" << spaltenr + 1
+          << ". Spalte!!***************" << std::endl;
+
+    Evaluate(iterinc);
+    SetupRHS();
+
+    rhs_copy->Update(1.0, *rhs_, 0.0);
+
+    iterinc_->PutScalar(0.0); // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(sparse_copy, iterinc_, rhs_copy,
+        Teuchos::null, zeros_, *CombinedDBCMap());
+
+
+    if (i == spaltenr)
+    {
+
+      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << std::endl;
+      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << std::endl;
+    }
+
+    rhs_copy->Update(-1.0, *rhs_old, 1.0);
+    rhs_copy->Scale(-1.0 / delta);
+
+    int* index = &i;
+    for (int j = 0; j < dofs; ++j)
+    {
+      double value = (*rhs_copy)[j];
+      stiff_approx->InsertGlobalValues(j, 1, &value, index);
+
+      if ((j == zeilennr) and (i == spaltenr))
+      {
+        std::cout << "\n******************" << zeilennr + 1
+            << ". Zeile!!***************" << std::endl;
+        std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
+        std::cout << "iterinc" << std::endl << *iterinc << std::endl;
+        std::cout << "meshdisp: " << std::endl << *(PoroField()->FluidField()->Dispnp());
+        std::cout << "meshdisp scatra: " << std::endl << *(ScaTraField()->Disp());
+        std::cout << "disp: " << std::endl << *(PoroField()->StructureField()->Dispnp());
+        std::cout << "fluid vel" << std::endl << *(PoroField()->FluidField()->Velnp());
+        std::cout << "scatra vel" << std::endl << *(ScaTraField()->Vel());
+        std::cout << "fluid acc" << std::endl << *(PoroField()->FluidField()->Accnp());
+        std::cout << "gridvel fluid" << std::endl << *(PoroField()->FluidField()->GridVel());
+        std::cout << "gridvel struct" << std::endl << *(PoroField()->StructureField()->Velnp());
+
+        std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
+            << (*rhs_copy)[zeilennr] << std::endl;
+
+        std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value
+            << std::endl;
+        std::cout << "\n******************" << zeilennr + 1
+            << ". Zeile Ende!!***************" << std::endl;
+      }
+    }
+
+    if (not CombinedDBCMap()->MyGID(i))
+      iterinc->ReplaceGlobalValue(i, 0, -delta);
+
+    iterinc->ReplaceGlobalValue(i - 1, 0, 0.0);
+
+    if (i != dofs - 1)
+      iterinc->ReplaceGlobalValue(i + 1, 0, delta);
+
+    if (i == spaltenr)
+      std::cout << "\n******************" << spaltenr + 1
+          << ". Spalte Ende!!***************" << std::endl;
+
+  }
+
+  Evaluate(iterinc);
+  SetupRHS();
+
+  stiff_approx->FillComplete();
+
+  Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
+  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_approx));
+
+  stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
+
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy->EpetraMatrix();
+
+  Teuchos::RCP<Epetra_CrsMatrix> error_crs =
+      stiff_approx_sparse->EpetraMatrix();
+
+  error_crs->FillComplete();
+  sparse_crs->FillComplete();
+
+  bool success = true;
+  double error_max_rel = 0.0;
+  double error_max_abs = 0.0;
+  for (int i = 0; i < dofs; ++i)
+  {
+    if (not CombinedDBCMap()->MyGID(i))
+    {
+      for (int j = 0; j < dofs; ++j)
+      {
+        if (not CombinedDBCMap()->MyGID(j))
+        {
+
+          double stiff_approx_ij=0.0;
+          double sparse_ij=0.0;
+          double error_ij=0.0;
+
+          {
+            // get error_crs entry ij
+            int errornumentries;
+            int errorlength = error_crs->NumGlobalEntries(i);
+            std::vector<double> errorvalues(errorlength);
+            std::vector<int> errorindices(errorlength);
+            //int errorextractionstatus =
+            error_crs->ExtractGlobalRowCopy(i,errorlength,errornumentries,&errorvalues[0],&errorindices[0]);
+            for(int k = 0; k < errorlength; ++k)
+            {
+              if(errorindices[k] == j)
+              {
+                error_ij=errorvalues[k];
+                break;
+              }
+              else
+                error_ij = 0.0;
+            }
+          }
+
+          // get sparse_ij entry ij
+          {
+            int sparsenumentries;
+            int sparselength = sparse_crs->NumGlobalEntries(i);
+            std::vector<double> sparsevalues(sparselength);
+            std::vector<int> sparseindices(sparselength);
+           // int sparseextractionstatus =
+                sparse_crs->ExtractGlobalRowCopy(i,sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+            for(int k = 0; k < sparselength; ++k)
+            {
+              if(sparseindices[k] == j)
+              {
+                sparse_ij=sparsevalues[k];
+                break;
+              }
+              else
+                sparse_ij=0.0;
+            }
+          }
+
+          // get stiff_approx entry ij
+          {
+            int approxnumentries;
+            int approxlength = stiff_approx->NumGlobalEntries(i);
+            std::vector<double> approxvalues(approxlength);
+            std::vector<int> approxindices(approxlength);
+           // int approxextractionstatus =
+                stiff_approx->ExtractGlobalRowCopy(i,approxlength,approxnumentries,&approxvalues[0],&approxindices[0]);
+            for(int k = 0; k < approxlength; ++k)
+            {
+              if(approxindices[k] == j)
+              {
+                stiff_approx_ij=approxvalues[k];
+                break;
+              }
+              else
+                stiff_approx_ij=0.0;
+            }
+          }
+
+          double error = 0.0;
+          if (abs(stiff_approx_ij) > 1e-5)
+            error = error_ij / (stiff_approx_ij);
+          else if (abs(sparse_ij) > 1e-5)
+            error = error_ij / (sparse_ij);
+
+          if (abs(error) > abs(error_max_rel))
+            error_max_rel = abs(error);
+          if (abs(error_ij) > abs(error_max_abs))
+            error_max_abs = abs(error_ij);
+
+          if ((abs(error) > 1e-4))
+          {
+            if ((abs(error_ij) > 1e-5))
+            //  if( (sparse_ij>1e-1) or (stiff_approx_ij>1e-1) )
+            {
+              std::cout << "finite difference check failed entry (" << i << "," << j
+                  << ")! stiff: " << sparse_ij << ", approx: "
+                  << stiff_approx_ij << " ,abs. error: " << error_ij
+                  << " , rel. error: " << error << std::endl;
+
+              success = false;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if(success)
+  {
+    std::cout << "finite difference check successful, max. rel. error: "
+        << error_max_rel << " , max. abs. error: "<< error_max_abs<<std::endl;
+    std::cout << "******************finite difference check done***************\n\n"
+        << std::endl;
+  }
+  else
+    dserror("PoroFDCheck failed");
+
+  return;
 }

@@ -19,9 +19,9 @@
  |  headers                                                             |
  *----------------------------------------------------------------------*/
 #include "Epetra_Vector.h"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
  |  forward declaration                                                 |
@@ -56,56 +56,6 @@ namespace POROELAST
   /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
   namespace UTILS
   {
-    //! \brief implementation of special clone strategy for automatic generation
-    //!        of fluid discretization from a given structure discretization
-    class PoroelastCloneStrategy {
-    public:
-
-      /// constructor
-      explicit PoroelastCloneStrategy() {}
-      /// destructor
-      virtual ~PoroelastCloneStrategy() {}
-
-    protected:
-
-      /// determine element type string and whether element is copied or not
-      bool DetermineEleType(
-          DRT::Element*             actele,
-          const bool                ismyele,
-          std::vector<std::string>& eletype);
-      /// set element-specific data (material etc.)
-      void SetElementData(
-          Teuchos::RCP<DRT::Element> newele,
-          DRT::Element*              oldele,
-          const int                  matid,
-          const bool                 isnurbs);
-
-      /// returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy();
-
-      /// check for correct material
-      void CheckMaterialType(const int matid);
-
-    }; // class PoroelastCloneStrategy
-
-    //! \brief implementation of special clone strategy for automatic generation
-    //!        of scatra discretization from a given structure discretization for porous media
-    class PoroScatraCloneStrategy: public SCATRA::ScatraFluidCloneStrategy {
-    public:
-
-      /// constructor
-      explicit PoroScatraCloneStrategy() {}
-      /// destructor
-      virtual ~PoroScatraCloneStrategy() {}
-
-    protected:
-
-      /// determine element type string and whether element is copied or not
-      virtual bool DetermineEleType(
-          DRT::Element* actele,
-          const bool ismyele,
-          std::vector<std::string>& eletype);
-    }; // class PoroScatraCloneStrategy
 
     /// setup poro discretization,i.e. clone the structural discretization
     void SetupPoro();

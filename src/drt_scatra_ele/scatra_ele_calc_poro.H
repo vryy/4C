@@ -50,7 +50,55 @@ public:
   /// called upon destruction
   virtual void Done();
 
+  /// Evaluate the element
+   /*!
+     Generic virtual interface function. Called via base pointer.
+    */
+//   virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
+//                        Teuchos::ParameterList&       params,
+//                        DRT::Discretization &         discretization,
+//                        const std::vector<int> &      lm,
+//                        Epetra_SerialDenseMatrix&     elemat1_epetra,
+//                        Epetra_SerialDenseMatrix&     elemat2_epetra,
+//                        Epetra_SerialDenseVector&     elevec1_epetra,
+//                        Epetra_SerialDenseVector&     elevec2_epetra,
+//                        Epetra_SerialDenseVector&     elevec3_epetra);
+
 protected:
+
+//   int EvaluateODMesh(DRT::ELEMENTS::Transport*     ele,
+//                        Teuchos::ParameterList&       params,
+//                        DRT::Discretization &         discretization,
+//                        const std::vector<int> &      lm,
+//                        Epetra_SerialDenseMatrix&     elemat1_epetra,
+//                        Epetra_SerialDenseMatrix&     elemat2_epetra,
+//                        Epetra_SerialDenseVector&     elevec1_epetra,
+//                        Epetra_SerialDenseVector&     elevec2_epetra,
+//                        Epetra_SerialDenseVector&     elevec3_epetra);
+//
+//   int EvaluateODFluid(DRT::ELEMENTS::Transport*     ele,
+//                        Teuchos::ParameterList&       params,
+//                        DRT::Discretization &         discretization,
+//                        const std::vector<int> &      lm,
+//                        Epetra_SerialDenseMatrix&     elemat1_epetra,
+//                        Epetra_SerialDenseMatrix&     elemat2_epetra,
+//                        Epetra_SerialDenseVector&     elevec1_epetra,
+//                        Epetra_SerialDenseVector&     elevec2_epetra,
+//                        Epetra_SerialDenseVector&     elevec3_epetra);
+//
+//   //! calculate matrix and rhs. Here the whole thing is hidden.
+//   virtual void SysmatODMesh(
+//     DRT::Element*                         ele,       //!< the element we are dealing with
+//     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
+//     const int                     numdofpernode
+//   );
+//
+//   //! calculate matrix and rhs. Here the whole thing is hidden.
+//   virtual void SysmatODFluid(
+//     DRT::Element*                         ele,       //!< the element we are dealing with
+//     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
+//     const int                     numdofpernode
+//   );
 
   //! material ScaTra
   virtual void MatScaTra(

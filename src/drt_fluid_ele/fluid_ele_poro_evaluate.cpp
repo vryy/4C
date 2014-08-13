@@ -133,6 +133,12 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
     {
       switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
       {
+      case INPAR::FLUID::poro:
+      {
+        //no coupling -> return
+        return 0;
+      }
+      break;
       case INPAR::FLUID::poro_p2:
       {
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
@@ -150,7 +156,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
       }
       break;
       default:
-        dserror("Unknown physical type for poroelasticity\n");
+        dserror("Invalid physical type for monolithic poroelasticity with scalar transport\n");
       break;
       }
     }

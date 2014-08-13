@@ -64,7 +64,9 @@ enum Action {
   recon_gradients_at_nodes,        // reconstruct gradients at node points through L2-projection
   recon_curvature_at_nodes,        // reconstruct curvature at node points through L2-projection
   calc_mass_center_smoothingfunct, // calculate mass center of minus domain, using the smoothing function. (Interface thickness required)
-  calc_integr_pat_rhsvec           // integrate rhs vec for adjoint pat
+  calc_integr_pat_rhsvec,          // integrate rhs vec for adjoint pat
+  calc_scatra_mono_odblock_fluid,  // calculate off diagonal matrix block for coupling with fluid
+  calc_scatra_mono_odblock_mesh    // calculate off diagonal matrix block for coupling with mesh (shape derivatives)
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/

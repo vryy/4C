@@ -133,6 +133,7 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList&
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = So3_Poro::calc_struct_multidofsetcoupling;
+  else if (action=="calc_struct_poroscatracoupling")   act = So3_Poro::calc_struct_poroscatracoupling;
 
   // what should the element do
   switch(act)
@@ -150,6 +151,9 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList&
                       elevec2_epetra,
                       elevec3_epetra);
   }
+  break;
+  case So3_Poro::calc_struct_poroscatracoupling:
+    //no coupling-> return
   break;
   //==================================================================================
   default:

@@ -946,7 +946,7 @@ protected:
   double             porosity_;
   //! porosity gradient w.r.t. spatial coordinates at gauss point
   LINALG::Matrix<my::nsd_,1>             grad_porosity_;
-  //! porosity gradient w.r.t. spatial coordinates at gauss point
+  //! porosity gradient w.r.t. reference coordinates at gauss point
   LINALG::Matrix<my::nsd_,1>             refgrad_porosity_;
   //! grid (=structure) velocity at gauss point
   LINALG::Matrix<my::nsd_,1>             gridvelint_;

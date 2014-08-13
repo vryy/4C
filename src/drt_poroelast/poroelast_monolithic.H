@@ -90,6 +90,9 @@ namespace POROELAST
         return blockrowdofmap_;
       }
 
+      virtual const LINALG::MultiMapExtractor* ExtractorPointer() const
+         { return &blockrowdofmap_;};
+
       //@}
 
       //! @name Access methods
@@ -229,7 +232,7 @@ namespace POROELAST
           Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<
               const Epetra_Vector>& fx,
               bool firstcall=false);
-              
+
       //! @name General purpose algorithm members
       //@{
 

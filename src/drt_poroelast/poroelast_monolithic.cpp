@@ -271,10 +271,10 @@ void POROELAST::Monolithic::SetupSystem()
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces_fpsi;
 
-		//Split PoroField into: 
-		//                      --> Structure (inside + FSI-Interface)
-		//                      --> Structure FPSI-Interface 
-    //								      --> Fluid (inside + FSI-Interface)
+    //Split PoroField into:
+    //                      --> Structure (inside + FSI-Interface)
+    //                      --> Structure FPSI-Interface
+    //                      --> Fluid (inside + FSI-Interface)
     //                      --> Fluid FPSI-Interface
 
     Teuchos::RCP<const Epetra_Map> s_other_map = LINALG::MergeMap(StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_other),StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_fsi));

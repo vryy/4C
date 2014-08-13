@@ -10,10 +10,10 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 Test 2D scalar transport within porous medium with reaction
-- two way coupling (partitioned)
+- monolithic
 - standard poro elements (darcy)
 - quad4 elements
-should give same results as corresponding monolithic test
+should give same results as corresponding partitioned test
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      130
 //NODES                         154
@@ -109,7 +109,10 @@ RESTARTEVRY                     10
 NUMSTEP                         50
 MAXTIME                         4000.0
 TIMESTEP                        0.01
-COUPALGO                        two_way
+COUPALGO                        monolithic //two_way monolithic
+LINEAR_SOLVER                   1
+INCTOL                          1e-06
+RESTOL                          1e-07
 --------------------------------------------------------SOLVER 1 //poroelast
 SOLVER                          UMFPACK //UMFPACK Aztec_MSR
 AZTOL                           1.0E-9

@@ -251,6 +251,12 @@ public:
   //! return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
+  //! return scalar field velocity at time step n+1
+  Teuchos::RCP<Epetra_MultiVector> Vel() { return vel_; }
+
+  //! return scalar field displacement at time step n+1
+  Teuchos::RCP<Epetra_MultiVector> Disp() { return dispnp_; }
+
   //! return scalar field acceleration/history of convective velocity field at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConAccPre() { return accpre_; }
 

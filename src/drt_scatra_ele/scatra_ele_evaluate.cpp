@@ -181,6 +181,8 @@ int DRT::ELEMENTS::Transport::Evaluate(
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
+    case SCATRA::calc_scatra_mono_odblock_fluid:
+    case SCATRA::calc_scatra_mono_odblock_mesh:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype, numdofpernode, numscal)->Evaluate(
               this,

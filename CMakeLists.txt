@@ -1814,6 +1814,7 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_base.cpp
   src/drt_poroelast/poroelast_monolithic.cpp
   src/drt_poroelast/poroelast_utils.cpp
+  src/drt_poroelast/poro_utils_clonestrategy.cpp
   src/drt_poroelast/poro_partitioned.cpp
   src/drt_poroelast/poro_monolithicsplit.cpp
   src/drt_poroelast/poro_monolithicstructuresplit.cpp
