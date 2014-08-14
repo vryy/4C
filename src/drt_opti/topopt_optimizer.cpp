@@ -352,12 +352,15 @@ void TOPOPT::Optimizer::SetInitialDensityField(
         if ((coords[1]<0.4+1.0e-12) and (coords[0]>1.5-1.0e-12) and (coords[0]<1.9+1.0e-12))
           initialval = 0.0; // edge area with val 0
 
-        if ((coords[1]>0.4-1.0e-12) and (coords[1]<0.4+1.0e-12) and
-            (coords[0]>1.5-1.0e-12) and (coords[0]<1.5+1.0e-12) and
-            (coords[0]>1.9-1.0e-12) and (coords[0]<1.9+1.0e-12)) // boundary area
+        if (((coords[1]>0.4-1.0e-12) and (coords[1]<0.4+1.0e-12) and
+             (coords[0]>1.5-1.0e-12) and (coords[0]<1.9+1.0e-12)) or // upper boundary line of step
+            ((coords[0]>1.5-1.0e-12) and (coords[0]<1.5+1.0e-12) and
+             (coords[1]<0.4+1.0e-12)) or // left boundary line of step
+            ((coords[0]>1.9-1.0e-12) and (coords[0]<1.9+1.0e-12) and
+             (coords[1]<0.4+1.0e-12))) // right boundary line of step
         {
-          if (initfield==INPAR::TOPOPT::initdensfield_channelflow05) initialval = 0.5; // case with border value 0.5
-          if (initfield==INPAR::TOPOPT::initdensfield_channelflow1) initialval = 1.0; // case with border value 1.0
+          if (initfield==INPAR::TOPOPT::initdensfield_channelstepflow05) initialval = 0.5; // case with border value 0.5
+          if (initfield==INPAR::TOPOPT::initdensfield_channelstepflow1) initialval = 1.0; // case with border value 1.0
         }
 
         // evaluate component k of spatial function
@@ -445,12 +448,15 @@ void TOPOPT::Optimizer::SetInitialDensityField(
         if ((coords(1,0)<0.4+1.0e-12) and (coords(0,0)>1.5-1.0e-12) and (coords(0,0)<1.9+1.0e-12))
           initialval = 0.0; // edge area with val 0
 
-        if ((coords(1,0)>0.4-1.0e-12) and (coords(1,0)<0.4+1.0e-12) and
-            (coords(0,0)>1.5-1.0e-12) and (coords(0,0)<1.5+1.0e-12) and
-            (coords(0,0)>1.9-1.0e-12) and (coords(0,0)<1.9+1.0e-12)) // boundary area
+        if (((coords(1,0)>0.4-1.0e-12) and (coords(1,0)<0.4+1.0e-12) and
+             (coords(0,0)>1.5-1.0e-12) and (coords(0,0)<1.9+1.0e-12)) or // upper boundary line of step
+            ((coords(0,0)>1.5-1.0e-12) and (coords(0,0)<1.5+1.0e-12) and
+             (coords(1,0)<0.4+1.0e-12)) or // left boundary line of step
+            ((coords(0,0)>1.9-1.0e-12) and (coords(0,0)<1.9+1.0e-12) and
+             (coords(1,0)<0.4+1.0e-12))) // right boundary line of step
         {
-          if (initfield==INPAR::TOPOPT::initdensfield_channelflow05) initialval = 0.5; // case with border value 0.5
-          if (initfield==INPAR::TOPOPT::initdensfield_channelflow1) initialval = 1.0; // case with border value 1.0
+          if (initfield==INPAR::TOPOPT::initdensfield_channelstepflow05) initialval = 0.5; // case with border value 0.5
+          if (initfield==INPAR::TOPOPT::initdensfield_channelstepflow1) initialval = 1.0; // case with border value 1.0
         }
 
         // evaluate component k of spatial function
