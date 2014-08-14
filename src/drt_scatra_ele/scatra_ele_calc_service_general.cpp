@@ -45,8 +45,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
-  // get element coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  //get element coordinates
+  ReadElementCoordinatesAndProject(ele);
 
   if (scatrapara_->IsAle())
   {

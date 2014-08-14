@@ -44,7 +44,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::EvaluateService(
   )
 {
   // get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+  my::ReadElementCoordinatesAndProject(ele);
 
   // set element id
   my::eid_ = ele->Id();

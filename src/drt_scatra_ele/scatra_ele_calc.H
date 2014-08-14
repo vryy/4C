@@ -206,6 +206,11 @@ namespace ELEMENTS
       Teuchos::ParameterList&    params             //!< parameterlist
     );
 
+    //! read element coordinates, assuming they are all 3D and then project to the respective lower dimensional space
+    virtual void ReadElementCoordinatesAndProject(
+        const DRT::ELEMENTS::Transport*     ele
+    );
+
     //! evaluate shape functions and their derivatives at element center
     const double EvalShapeFuncAndDerivsAtEleCenter();
 

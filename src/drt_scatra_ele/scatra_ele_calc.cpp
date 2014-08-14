@@ -144,7 +144,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
     //--------------------------------------------------------------------------------
 
     //get element coordinates
-    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+    ReadElementCoordinatesAndProject(ele);
 
     // Now do the nurbs specific stuff (for isogeometric elements)
     if(DRT::NURBS::IsNurbs(distype))
@@ -965,6 +965,38 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::OtherNodeBasedSourceTerms(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | read element coordinates, assuming they are all 3D and then project to
+ | the respective lower dimensional space   bertoglio 08/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::ReadElementCoordinatesAndProject(
+    const DRT::ELEMENTS::Transport*  ele
+    )
+{
+  if(nsd_ == 1){
+    double lengthLine3D;
+    LINALG::Matrix<3,nen_> xyze3D;
+    GEO::fillInitialPositionArray<distype,3,LINALG::Matrix<3,nen_> >(ele,xyze3D);
+    xyze_(0,0)=0.0;
+    for(int i=1;i<nen_;i++){
+      lengthLine3D = sqrt( (xyze3D(0,i-1)-xyze3D(0,i))*(xyze3D(0,i-1)-xyze3D(0,i)) +
+                              (xyze3D(1,i-1)-xyze3D(1,i))*(xyze3D(1,i-1)-xyze3D(1,i)) +
+                              (xyze3D(2,i-1)-xyze3D(2,i))*(xyze3D(2,i-1)-xyze3D(2,i)));
+      xyze_(0,i)=xyze_(0,i-1)+lengthLine3D;
+    }
+  }
+ // else if(nsd_ == 2)
+ // {
+    // TO DO
+//  }
+  else
+  {
+    // Directly copy the coordinates since in 3D the transformation is just the identity
+    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  }
+  return;
+} //ScaTraEleCalc::ReadElementCoordinatesAndProject
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at ele. center   ehrl 12/13 |
