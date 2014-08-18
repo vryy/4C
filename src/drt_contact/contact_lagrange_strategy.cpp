@@ -2896,7 +2896,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0) // no averaging of Lagrange multipliers
         //if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
         {
-          std::cout << "CHANGE TO ACTIVE: " << cnode->Id() << " nz: " << nz << " gap: " << wgap << std::endl;
           cnode->Active() = true;
           activesetconv_ = false;
 
@@ -2924,7 +2923,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers
         //if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
         {
-          std::cout << "CHANGE TO INACTIVE: " << cnode->Id() << " nz: " << nz << " gap: " << wgap << std::endl;
           cnode->Active() = false;
           activesetconv_ = false;
 
