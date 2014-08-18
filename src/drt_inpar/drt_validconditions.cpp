@@ -1550,7 +1550,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
-  for (unsigned i=0; i<fsicomponents.size(); ++i)
+  for (unsigned i=0; i<fpsicomponents.size(); ++i)
   {
     linefpsi->AddComponent(fpsicomponents[i]);
     surffpsi->AddComponent(fpsicomponents[i]);

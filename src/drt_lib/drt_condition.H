@@ -464,7 +464,7 @@ protected:
   The geometry description consists of elements that are capable to
   perform the necessary operations on the condition (e.g. integrate a Neumann BC
   along a line). The matching nodes are taken from the
-  undelrying discretization itself. Also, it is actually the Discretization class
+  underlying discretization itself. Also, it is actually the Discretization class
   that drives this process, so do not add elements yourself to the condition, let
   the Discretization do it for you.
 

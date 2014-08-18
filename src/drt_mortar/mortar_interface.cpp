@@ -104,6 +104,7 @@ MORTAR::MortarInterface::MortarInterface(const int id, const Epetra_Comm& comm,
   else
     dserror("ERROR: Interface must either have dual or std. shape fct.");
 
+  poro_ = false;
   return;
 }
 
@@ -693,6 +694,26 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
 
     // initialize container if not yet initialized before
     mnode->InitializeDataContainer();
+    if (poro_) //initialize just for poro contact case!
+      mnode->InitializePoroDataContainer();
+  }
+  if (poro_) //as velocities of structure and fluid exist also on master nodes!!!
+  {
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
+    //initialize poro node data container for master nodes!!!
+    for (int i = 0; i < masternodes()->NumMyElements(); ++i)
+    {
+      int gid = masternodes()->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
+      MortarNode* mnode = static_cast<MortarNode*>(node);
+
+
+      //ATM just implemented for ContactNode ... otherwise error!!!
+
+      // initialize container if not yet initialized before
+      mnode->InitializePoroDataContainer();
+    }
   }
 
   // initialize element data container

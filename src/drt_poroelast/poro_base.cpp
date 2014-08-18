@@ -53,6 +53,9 @@
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_structure/stru_aux.H"
 
+#include "../drt_contact/contact_poro_lagrange_strategy.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 /*----------------------------------------------------------------------*
  | constructor (public)                                    vuong 01/12  |
  *----------------------------------------------------------------------*/
@@ -224,6 +227,9 @@ void POROELAST::PoroBase::Update()
 {
   StructureField()->Update();
   FluidField()->Update();
+  if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+     if (StructureField()->MeshtyingContactBridge()->HaveContact())
+       (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).UpdatePoroContact();
 }
 
 /*----------------------------------------------------------------------*

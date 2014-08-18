@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mortar_abstract_strategy.H
+\file mortar_strategy_base.H
 
 <pre>
 -------------------------------------------------------------------------
@@ -258,6 +258,8 @@ class StrategyBase
     virtual bool WearBothDiscrete() = 0;
     virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() = 0;
     virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() = 0;
+    //Flag for Poro No Penetration Condition (overloaded by PoroLagrangeStrategy)
+    virtual bool HasPoroNoPenetration(){return false;}
     //@}
 
   protected:

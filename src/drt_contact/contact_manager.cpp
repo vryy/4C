@@ -46,6 +46,7 @@
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "contact_wear_lagrange_strategy.H"
+#include "contact_poro_lagrange_strategy.H"
 #include "contact_wear_interface.H"
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
@@ -575,9 +576,14 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
         new WearLagrangeStrategy(Discret(), cparams, interfaces, dim, comm_,
             alphaf, maxdof));
   else if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = Teuchos::rcp(
-        new CoLagrangeStrategy(Discret(), cparams, interfaces, dim, comm_,
-            alphaf, maxdof));
+  {
+    if (cparams.get<int>("PROBTYPE")!=INPAR::CONTACT::poro)
+      strategy_ = Teuchos::rcp(new CoLagrangeStrategy(Discret(), cparams,
+      interfaces, dim, comm_, alphaf, maxdof));
+    else
+      strategy_ = Teuchos::rcp(new PoroLagrangeStrategy(Discret(), cparams,
+      interfaces, dim, comm_, alphaf, maxdof));
+  }
   else if (stype == INPAR::CONTACT::solution_penalty)
     strategy_ = Teuchos::rcp(
         new CoPenaltyStrategy(Discret(), cparams, interfaces, dim, comm_,
@@ -984,6 +990,41 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror(
         "Only quadratic/quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
 
+  // *********************************************************************
+  // poroelastic contact
+  // *********************************************************************
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+    dserror("POROCONTACT: Only dual shape functions implemented yet!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+    dserror("POROCONTACT: Parrallel Redistribution not implemented yet!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
+    dserror("POROCONTACT: Friction for poro contact not implemented!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+      DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
+    dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)
+    dserror("POROCONTACT: System has to be condensed for poro contact!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi) && dim != 3)
+  {
+    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
+      dserror("POROCONTACT: PoroContact with no penetration just tested for 3d!");
+  }
+
+
 #ifdef MORTARTRAFO
   dserror("MORTARTRAFO not yet implemented for contact, only for meshtying");
 #endif // #ifndef MORTARTRAFO
@@ -1050,6 +1091,13 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
   else if (problemtype == prb_struct_ale)
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
+  else if (problemtype==prb_poroelast or problemtype==prb_fpsi)
+  {
+    cparams.set<int> ("PROBTYPE",INPAR::CONTACT::poro);
+    //porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
+    double porotimefac = 1/(stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
+    cparams.set<double> ("porotimefac", porotimefac);
+  }
   else
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
@@ -1371,6 +1419,21 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
         new Epetra_Vector(*problemdofs));
     LINALG::Export(*wearoutput, *wearoutputexp);
     output.WriteVector("wear", wearoutputexp);
+  }
+
+  // *********************************************************************
+  // poro contact
+  // *********************************************************************
+  bool poro = GetStrategy().HasPoroNoPenetration();
+  if (poro)
+  {
+    //output of poro no penetration lagrange multiplier!
+
+    CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(GetStrategy());
+    Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.lambda_;
+    Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    LINALG::Export(*lambdaout, *lambdaoutexp);
+    output.WriteVector("poronopen_lambda",lambdaoutexp);
   }
   return;
 }

@@ -123,6 +123,56 @@ void CONTACT::CoNodeDataContainer::Unpack(std::vector<char>::size_type& position
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             ager 08/14|
+ *----------------------------------------------------------------------*/
+CONTACT::CoNodePoroDataContainer::CoNodePoroDataContainer()
+{
+  ncouprow_ = 0.0;
+  for (int i=0;i<3;++i)
+  {
+    fvel()[i] = 0.0;
+    svel()[i] = 0.0;
+    poroLM()[i] = 0.0;
+  }
+    return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            ager 08/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodePoroDataContainer::Pack(DRT::PackBuffer& data) const
+{
+  // add fvel
+  DRT::ParObject::AddtoPack(data,fvel_,3*sizeof(double));
+  // add svel
+  DRT::ParObject::AddtoPack(data,svel_,3*sizeof(double));
+  // add poroLM
+  DRT::ParObject::AddtoPack(data,porolm_,3*sizeof(double));
+  // add ncoup
+  DRT::ParObject::AddtoPack(data,ncouprow_);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            ager 08/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodePoroDataContainer::Unpack(std::vector<char>::size_type& position,
+                                          const std::vector<char>& data)
+{
+  // fvel
+  DRT::ParObject::ExtractfromPack(position,data,fvel_,3*sizeof(double));
+  // svel
+  DRT::ParObject::ExtractfromPack(position,data,svel_,3*sizeof(double));
+  // poroLM
+  DRT::ParObject::ExtractfromPack(position,data,porolm_,3*sizeof(double));
+  // ncoup
+  DRT::ParObject::ExtractfromPack(position,data,ncouprow_);
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -217,6 +267,11 @@ void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,hasdata);
   if (hasdata) codata_->Pack(data);
 
+  // add porodata_
+  bool hasdataporo = (coporodata_!=Teuchos::null);
+  AddtoPack(data,hasdataporo);
+  if (hasdataporo) coporodata_->Pack(data);
+
   return;
 }
 
@@ -258,6 +313,18 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   else
   {
     codata_ = Teuchos::null;
+  }
+
+  // porodata_
+  bool hasdataporo = ExtractInt(position,data);
+  if (hasdataporo)
+  {
+    coporodata_ = Teuchos::rcp(new CONTACT::CoNodePoroDataContainer());
+    coporodata_->Unpack(position,data);
+  }
+  else
+  {
+    coporodata_ = Teuchos::null;
   }
 
   if (position != data.size())
@@ -425,6 +492,21 @@ void CONTACT::CoNode::InitializeDataContainer()
   return;
 }
 
+/*-----------------------------------------------------------------------*
+ |  Initialize poro data container                             ager 07/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::InitializePoroDataContainer()
+{
+  // only initialize if not yet done
+
+  if (coporodata_ == Teuchos::null)
+  {
+    coporodata_ = Teuchos::rcp(new CONTACT::CoNodePoroDataContainer());
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  Reset data container                                      popp 09/10|
  *----------------------------------------------------------------------*/
@@ -433,6 +515,7 @@ void CONTACT::CoNode::ResetDataContainer()
   // reset to Teuchos::null
   codata_  = Teuchos::null;
   modata_  = Teuchos::null;
+  coporodata_ = Teuchos::null;
 
   return;
 }
@@ -830,3 +913,18 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Add a value to the NCoup of this node                      ager 06/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddNcoupValue(double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddNcoupValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddNcoupValue: function called for boundary node %i", Id());
+
+  // add given value to ncoup
+  CoPoroData().GetnCoup() += val;
+  return;
+}

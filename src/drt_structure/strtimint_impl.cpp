@@ -907,7 +907,17 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     // contact / meshtying modifications need -fres
     fresm->Scale(-1.0);
 
-    // make contact / meshtying modifications to lhs and rhs
+    if(cmtbridge_->HaveContact())
+    {
+      if (cmtbridge_->ContactManager()->GetStrategy().HasPoroNoPenetration())
+      {
+        // set structural velocity for poro normal no penetration
+        Teuchos::RCP<Epetra_Vector> svel = Teuchos::rcp(new Epetra_Vector(*Velnp()));
+        cmtbridge_->ContactManager()->GetStrategy().SetState("svelocity", svel);
+      }
+    }
+
+     // make contact / meshtying modifications to lhs and rhs
     // (depending on whether this is a predictor step or not)
     if(cmtbridge_->HaveMeshtying())
       cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
@@ -3241,8 +3251,8 @@ void STR::TimIntImpl::UpdateIterIncrementally
     disi_->PutScalar(0.0);
 
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
-  // not in the case of TSI with contact
-  if (DRT::Problem::Instance()->ProblemType()!=prb_tsi)
+  // not in the case of TSI with contact and poro with contact
+  if (DRT::Problem::Instance()->ProblemType()!=prb_tsi and DRT::Problem::Instance()->ProblemType()!=prb_poroelast and DRT::Problem::Instance()->ProblemType()!=prb_fpsi)
     if (HaveContactMeshtying() && disi != Teuchos::null)
       cmtbridge_->Recover(disi_);
 

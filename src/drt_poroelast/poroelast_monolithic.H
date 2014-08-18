@@ -193,6 +193,10 @@ namespace POROELAST
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
       virtual void RecoverLagrangeMultiplier(){return;};
 
+      /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
+      /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+      void RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x);
+
       //Setup solver for monolithic system
       virtual bool SetupSolver();
 
@@ -288,12 +292,22 @@ namespace POROELAST
       //! return fluid structure coupling block sparse matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
 
+      /// apply current velocity of fluid  to ContactMangager if contact problem
+      void SetPoroContactStates(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+
+      // assemble relevant matrixes for porocontact
+      void EvalPoroContact();
+
       //! @name coupling matrices
       //! structure-fluid coupling matrix
       Teuchos::RCP<LINALG::SparseOperator> k_sf_;
       //! fluid-structure coupling matrix
       Teuchos::RCP<LINALG::SparseOperator> k_fs_;
       //@}
+
+
+      // flag activation poro contact no penetration condition
+      bool no_penetration_;
 
     private:
 

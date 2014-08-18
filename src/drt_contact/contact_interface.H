@@ -440,8 +440,13 @@ public:
   this means assembling the linearization of the slave side
   nodal tangents and the current Lagrange multipliers.
 
+    usePoroLM: linearisation will be multiplied with ...
+   - true ->  poro no penetration lagrange multiplier!
+   - false -> standard contact lagrange multiplier!
+
   */
-  virtual void AssembleP(LINALG::SparseMatrix& pglobal);
+  virtual void AssembleP(LINALG::SparseMatrix& pglobal,
+                          bool usePoroLM = false);
 
   /*!
   \brief Assemble matrices LinD, LinM containing linearizations
@@ -451,9 +456,14 @@ public:
   the linearization of the Mortar matrices D and M and the
   current Lagrange multipliers.
 
+  usePoroLM: linearisation will be multiplied with ...
+   - true ->  poro no penetration lagrange multiplier!
+   - false -> standard contact lagrange multiplier!
+
   */
   virtual void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
-                             LINALG::SparseMatrix& linmglobal);
+                             LINALG::SparseMatrix& linmglobal,
+                             bool usePoroLM = false);
 
 
   /*!
@@ -528,6 +538,21 @@ public:
 
   */
   virtual void AssembleA(LINALG::SparseMatrix& aglobal);
+
+
+  /*!
+  \brief Assemble normal coupling weighted condition for poro contact
+
+  */
+  virtual void AssembleNCoup(Epetra_Vector& gglobal);
+
+  /*!
+  \brief Assemble linearisation of normal coupling weighted condition for poro contact
+
+  */
+  virtual void AssembleNCoupLin(LINALG::SparseMatrix& sglobal,
+      bool AssembleVelocityLin = false //if true velocity linearisation will be assembled into sglobal, otherwise lin. w.r.t. displacements!
+      );
 
   //@}
 

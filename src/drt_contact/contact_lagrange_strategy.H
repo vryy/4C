@@ -290,6 +290,12 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     CoLagrangeStrategy operator = (const CoLagrangeStrategy& old);
     CoLagrangeStrategy(const CoLagrangeStrategy& old);
 
+    //Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
+    virtual void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,
+                              Teuchos::RCP<LINALG::SparseMatrix> mhataam,
+                              Teuchos::RCP<LINALG::SparseMatrix> invda)
+    {return;}
+
     bool activesetssconv_;    // convergence flag for semi-smooth active set search
     bool activesetconv_;      // convergence flag for fixed-point active set search
     int  activesetsteps_;     // number of fixed-point active set steps in this time step

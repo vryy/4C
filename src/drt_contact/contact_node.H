@@ -406,6 +406,110 @@ protected:
 // class CoNodeDataContainer
 
 /*!
+\brief A class containing additional data from poro contact nodes
+
+This class contains additional information from poro contact nodes which are
+are not needed for normal contact nodes.
+CoNodePoroDataContainer must be declared before the CoNode itself.
+
+\author ager (ager@lnm.mw.tum.de)
+*/
+class CoNodePoroDataContainer
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  CoNodePoroDataContainer();
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CoNodePoroDataContainer() { return; }
+
+  /*!
+  \brief Pack this class so that it can be communicated
+
+  This function packs the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a vector into this class
+
+  This function unpacks the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+
+  //! @name Access methods
+
+  /*!
+  \brief Return the normal coupling condition (scalar) of this node
+  */
+  virtual double& GetnCoup() { return ncouprow_; }
+
+  /*!
+  \brief Return the 'DerivnCoup' map of this node
+
+  This map contains the directional derivatives of the node's
+  normal coupling condition with respect to the slave/master displacements.
+
+  */
+  virtual std::map<int,double>& GetDerivnCoup() { return derivncoup_; }
+
+  /*!
+  \brief Return the 'VelDerivnCoup' map of this node
+
+  This map contains the derivatives of the node's
+  normal coupling condition with respect to the velocities. (for one sided contact just slave!)
+
+  */
+  virtual std::map<int,double>& GetVelDerivnCoup() { return velderivncoup_; }
+
+  /*!
+  \brief Return current nodal fluid velocity (porous media!) (length 3)
+  */
+  virtual double* fvel() { return fvel_; }
+
+  /*!
+  \brief Return current nodal structural velocity (porous media!) (length 3)
+  */
+  virtual double* svel() { return svel_; }
+
+  /*!
+  \brief Return current nodal lagrangean multiplier (length 3)
+  */
+  virtual double* poroLM() { return porolm_; }
+
+protected:
+
+  // don't want = operator and cctor
+  CoNodePoroDataContainer operator = (const CoNodePoroDataContainer& old);
+  CoNodePoroDataContainer(const CoNodePoroDataContainer& old);
+
+
+  double          ncouprow_;           // nodal entry of n-coupling vector
+  std::map<int,double>                    derivncoup_;    // directional derivative of nodal weighted n-coupling vector
+  std::map<int,double>                    velderivncoup_; // velocity derivative of nodal weighted n-coupling vector
+
+  double           fvel_[3];        //fluid velocity for porous problem
+  double           svel_[3];        //structural velocity for porous problem
+  double           porolm_[3];      //lagrange multiplier from poro no penetration condition!
+}; //class CoNodePoroDataContainer
+
+
+/*!
  \brief A class for a contact node derived from MORTAR::MortarNode
 
  This class represents a finite element node capable of contact.
@@ -553,6 +657,8 @@ public:
    */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
 
+  inline CONTACT::CoNodePoroDataContainer& CoPoroData() { return *coporodata_; }
+
   //@}
 
   //! @name Evaluation methods
@@ -623,6 +729,14 @@ public:
   void AddDerivZValue(int& row, const int& col, double val);
 
   /*!
+  \brief Add a value to the NCoup of this node
+
+  \param val : value to be added
+
+  */
+  void AddNcoupValue(double& val);
+
+  /*!
    \brief Build nodal normal
    */
   void BuildAveragedNormal();
@@ -654,6 +768,16 @@ public:
 
    */
   virtual void InitializeDataContainer();
+
+  /*!
+  \brief Initializes the poro data container of the node
+
+  With this function, the container with contact specific quantities/information
+  is initialized. --- Used to initialize PoroDataContainer for master nodes!
+
+  */
+  virtual void InitializePoroDataContainer();
+
 
   /*!
    \brief Resets the data container of the node
@@ -696,6 +820,8 @@ protected:
   int  linsize_;     // number of lin entries per direction vector
 
   Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_; // additional information of proc's contact nodes
+
+  Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_;   // additional information of proc's poro contact nodes
 
 };
 // class CoNode

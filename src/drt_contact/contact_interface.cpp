@@ -86,6 +86,10 @@ tsi_(false)
   if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
     tsi_ = true;
 
+  // set poro contact
+  if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+    SetPoroFlag(true);
+
   // check for redundant slave storage
   // (needed for self contact but not wanted for general contact)
   if (selfcontact_ && redundant != INPAR::MORTAR::redundant_all)
@@ -1387,6 +1391,14 @@ void CONTACT::CoInterface::Initialize()
 
         (frinode->FriDataPlus().GetA()).resize(0);
       }
+    }
+
+    // just do poro contact relevant stuff!
+    if (poro_)
+    {
+      cnode->CoPoroData().GetnCoup() = 0.0;
+      cnode->CoPoroData().GetDerivnCoup().clear();
+      cnode->CoPoroData().GetVelDerivnCoup().clear();
     }
   }
 
@@ -3643,7 +3655,7 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix P containing tangent derivatives          popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
+void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal,bool usePoroLM)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -3691,7 +3703,11 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->MoData().lm()[j]*(colcurr->second);
+          double val;
+          if (!usePoroLM)
+            val= cnode->MoData().lm()[j]*(colcurr->second);
+          else
+            val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
           //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
           //std::cout << "Assemble P: " << row << " " << col << " " << val << std::endl;
           // do not assemble zeros into P matrix
@@ -3743,7 +3759,11 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->MoData().lm()[j]*(colcurr->second);
+          double val;
+          if (!usePoroLM)
+            val= cnode->MoData().lm()[j]*(colcurr->second);
+          else
+            val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
           //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
           //std::cout << "Assemble P: " << rowxi << " " << col << " " << val << std::endl;
           // do not assemble zeros into P matrix
@@ -3770,7 +3790,11 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->MoData().lm()[j]*(colcurr->second);
+          double val;
+          if (!usePoroLM)
+            val= cnode->MoData().lm()[j]*(colcurr->second);
+          else
+            val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
           //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
           //std::cout << "Assemble P: " << roweta << " " << col << " " << val << std::endl;
           // do not assemble zeros into P matrix
@@ -3800,7 +3824,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
  |  Assemble matrices LinDM containing fc derivatives         popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
-                                       LINALG::SparseMatrix& linmglobal)
+                                       LINALG::SparseMatrix& linmglobal,
+                                       bool usePoroLM)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -3836,7 +3861,11 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     std::map<int,std::map<int,double> >& mderiv = cnode->CoData().GetDerivM();
 
     // current Lagrange multipliers
-    double* lm = cnode->MoData().lm();
+    double* lm;
+    if (!usePoroLM)
+      lm = cnode->MoData().lm();
+    else
+      lm = cnode->CoPoroData().poroLM();
 
     // get sizes and iterator start
     int slavesize = (int)dderiv.size();
@@ -7635,5 +7664,94 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
       ", " << std::setw(14) << std::setprecision(5) << std::scientific << balMo[1] <<
       ", " << std::setw(14) << std::setprecision(5) << std::scientific << balMo[2] <<
       "]"  << std::endl;
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ |  Assemble normal coupling weighted condition for poro contact   ager 07/14|
+ *--------------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // loop over proc's slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<activenodes_->NumMyElements();++i)
+  {
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* mrtnode = static_cast<CoNode*>(node);
+
+    if (mrtnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
+
+    /**************************************************** nCoup-vector ******/
+    if (mrtnode->CoPoroData().GetnCoup()!=0.0)
+    {
+      double nCoup = mrtnode->CoPoroData().GetnCoup();
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+          mrtnode->MoData().GetScale() != 0.0)
+        nCoup /= mrtnode->MoData().GetScale();
+
+      Epetra_SerialDenseVector gnode(1);
+      std::vector<int> lm(1);
+      std::vector<int> lmowner(1);
+
+      gnode(0) = nCoup;
+      lm[0] =  activen_->GID(i);
+
+      lmowner[0] = mrtnode->Owner();
+
+      LINALG::Assemble(gglobal,gnode,lm,lmowner);
+    }
+  }
+
+  return;
+}
+
+/*---------------------------------------------------------------------*
+ |  Assemble linearisation of normal coupling                          |
+ |          weighted condition for poro contact              ager 07/14|
+ *--------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, bool AssembleVelocityLin)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no active nodes
+  if (activenodes_==Teuchos::null)
+    return;
+
+  for (int i=0;i<activenodes_->NumMyElements();++i)
+  {
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleS: Node ownership inconsistency!");
+
+    std::map<int,double>::iterator colcurr;
+    int row = activen_->GID(i);
+
+    std::map<int,double>& dgmap = cnode->CoPoroData().GetDerivnCoup();
+    if (AssembleVelocityLin)
+      dgmap = cnode->CoPoroData().GetVelDerivnCoup();
+
+    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+    {
+      int col = colcurr->first;
+      double val = colcurr->second;
+
+      // do not assemble zeros into s matrix
+      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+    }
+  }
+
   return;
 }

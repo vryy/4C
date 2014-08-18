@@ -91,7 +91,7 @@ CONTROLTYPE                     load
 CONTROLNODE                     -1 -1 -1
 LOADLIN                         no
 MASSLIN                         no
-PREDICT                         TangDis
+PREDICT                         ConstVel
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 UZAWAMAXITER                    50
@@ -116,7 +116,7 @@ LM_NODAL_SCALE                  No
 MESH_RELOCATION                 Initial
 REDUNDANT_STORAGE               Master
 PARALLEL_STRATEGY               redundant_ghosting
-PARALLEL_REDIST                 dynamic//Static
+PARALLEL_REDIST                 none//dynamic//Static
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
 INTTYPE                         Segments

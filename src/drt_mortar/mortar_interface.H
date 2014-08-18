@@ -85,7 +85,7 @@ public:
 
   /*!
   \brief Standard constructor creating empty mortar interface
- 
+
   This initializes the employed shape function set for lagrangian mutlipliers
   to a specific setting. Throughout the evaluation process, this set will be employed
   for the field of lagrangian multipliers.
@@ -95,12 +95,12 @@ public:
   \param dim (in): Global problem dimension
   \param imortar (in): Global contact parameter list
   \param redundant (in): type of redundancy in interface storage
- 
+
   */
   MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
                   const Teuchos::ParameterList& imortar,
                   INPAR::MORTAR::RedundantStorage redundant);
-    
+
   /*!
   \brief Destructor
 
@@ -203,7 +203,7 @@ public:
 
   */
   virtual const double SearchParam() { return searchparam_; };
-  
+
   /*!
   \brief bool whether auxiliary position is used when computing dops
 
@@ -220,7 +220,7 @@ public:
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-  
+
   /*!
   \brief Get column map of all interface elements (Filled()==true is prerequisite)
 
@@ -231,7 +231,7 @@ public:
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-      
+
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
 
@@ -418,7 +418,7 @@ public:
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-  
+
   /*!
   \brief Get maxmimum dof ID in global discretization
 
@@ -428,7 +428,7 @@ public:
     if (maxdofglobal_ < 0) dserror("MaxDofGlobal not yet initialized");
     return maxdofglobal_;
   }
-  
+
   //@}
 
   //! @name Evlauation methods
@@ -478,7 +478,7 @@ public:
   \return Filled()==true
   */
   virtual void FillComplete(int maxdof = 0, bool newghosting = true);
-  
+
   /*!
   \brief Redistribute interface among all procs
 
@@ -522,7 +522,7 @@ public:
 
   /*!
   \brief Update interface master and slave sets
-  
+
   This update is usually only done ONCE in the initialization phase
   and sets up the slave and master sets (elements, nodes, dofs) for
   the whole simulation. Yet, in the case of self contact the sets
@@ -531,8 +531,7 @@ public:
 
   */
   virtual void UpdateMasterSlaveSets();
-  
-  /*!
+/*!
   \brief Restrict slave sets to actual meshtying zone
 
   This update is done ONCE in the initialization phase, when the
@@ -630,7 +629,7 @@ public:
 
   /*!
   \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
-  
+
   */
   virtual bool IntegrateCoupling(MORTAR::MortarElement* sele,
                                  std::vector<MORTAR::MortarElement*> mele);
@@ -641,13 +640,13 @@ public:
   */
   virtual bool SplitIntElements(MORTAR::MortarElement& ele,
                                 std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
-  
+
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
-  
+
   */
   virtual void AssembleLM(Epetra_Vector& zglobal);
-  
+
   /*!
   \brief Assemble Mortar matrices D and M
 
@@ -704,7 +703,9 @@ public:
 
   */
   void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
-  
+
+  void SetPoroFlag(bool poro){poro_ = poro;}
+
   //@}
 
 protected:
@@ -725,10 +726,10 @@ protected:
   bool                               quadslave_;     // flag indicating quadratic 2d/3d slave elements
   bool                               lmnodalscale_;  // flag indicating scaling of lm
   INPAR::MORTAR::RedundantStorage    redundant_;     // employed type of redundancy in storage of interface
-  
+
   Teuchos::RCP<Epetra_Map>           oldnodecolmap_; // column map of all interface nodes (overlap=1)
   Teuchos::RCP<Epetra_Map>           oldelecolmap_;  // column map of all interface elements (overlap=1)
-    
+
   Teuchos::RCP<Epetra_Map>           snoderowmap_;   // row map of all slave nodes
   Teuchos::RCP<Epetra_Map>           snodecolmap_;   // column map of all slave nodes
   Teuchos::RCP<Epetra_Map>           mnoderowmap_;   // row map of all master nodes
@@ -751,7 +752,7 @@ protected:
 
   Teuchos::RCP<Epetra_Map>           lmdofmap_;      // row map of all Lagrange multiplier dofs
   int                                maxdofglobal_;  // maximum dof ID in global discretization
-  
+
   const INPAR::MORTAR::SearchAlgorithm searchalgo_;  // type of search algorithm
   Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;    // binary searchtree
   const double                       searchparam_;   // search parameter
@@ -761,6 +762,9 @@ protected:
 
 
   bool                               nurbs_;
+
+  bool                               poro_;// flag if poro contact problem!
+
 }; // class MortarInterface
 } // namespace MORTAR
 

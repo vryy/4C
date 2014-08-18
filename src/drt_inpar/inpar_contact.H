@@ -124,6 +124,7 @@ namespace INPAR
       structure,
       tsi,
       structalewear,
+      poro,
       other
     };
 

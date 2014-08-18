@@ -436,7 +436,7 @@ public:
    \param vec (in): current global state of the quantity defined by statename
 
    */
-  void SetState(const std::string& statename,
+  virtual void SetState(const std::string& statename,
       const Teuchos::RCP<Epetra_Vector> vec);
 
   /*!

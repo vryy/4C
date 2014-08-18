@@ -553,6 +553,46 @@ void ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::SlaveToMasterMap(Teuchos::RCP<Epetra_Map> slave)
+{
+  int nummyele = 0;
+  std::vector<int> globalelements;
+  const Teuchos::RCP<Epetra_Map> slavemap = LINALG::AllreduceEMap(*slave);
+  for (int i = 0; i < slavemap->NumMyElements(); ++i)
+  {
+    int lid = permslavedofmap_->LID(slavemap->GID(i));
+    if (lid != -1)
+    {
+      globalelements.push_back(masterdofmap_->GID(lid));
+      nummyele++;
+    }
+  }
+
+  return Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1,nummyele,&globalelements[0],0,slave->Comm()));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<Epetra_Map> master)
+{
+  int nummyele = 0;
+  std::vector<int> globalelements;
+  const Teuchos::RCP<Epetra_Map> mastermap = LINALG::AllreduceEMap(*master);
+  for (int i = 0; i < mastermap->NumMyElements(); ++i)
+  {
+    int lid = permmasterdofmap_->LID(mastermap->GID(i));
+    if (lid != -1)
+    {
+      globalelements.push_back(slavedofmap_->GID(lid));
+      nummyele++;
+    }
+  }
+
+  return Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1,nummyele,&globalelements[0],0,master->Comm()));
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

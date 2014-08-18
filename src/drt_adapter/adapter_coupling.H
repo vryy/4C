@@ -227,6 +227,12 @@ namespace ADAPTER
     /// fill rowmap with slave -> master pairs
     void FillSlaveToMasterMap(std::map<int,int>& rowmap) const;
 
+    /// fill partial mastermap with gid of partial slavemap
+    Teuchos::RCP<Epetra_Map> SlaveToMasterMap(Teuchos::RCP<Epetra_Map> slave);
+
+    /// fill partial slavemap with gid of partial mastermap
+    Teuchos::RCP<Epetra_Map> MasterToSlaveMap(Teuchos::RCP<Epetra_Map> master);
+
     /// redistribute crsmatrix from master row map to permuted master row map
     Teuchos::RCP<LINALG::SparseMatrix> MasterToPermMaster(const LINALG::SparseMatrix& sm) const;
 

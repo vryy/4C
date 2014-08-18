@@ -2915,6 +2915,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Partial integration of porosity gradient in continuity equation",
                                yesnotuple,yesnovalue,&poroelastdyn);
 
+  setStringToIntegralParameter<int>("CONTACTNOPEN","No",
+                               "No-Penetration Condition on active contact surface in case of poro contact problem!",
+                               yesnotuple,yesnovalue,&poroelastdyn);
+
+
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);
 

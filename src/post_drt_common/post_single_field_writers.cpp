@@ -73,6 +73,7 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("norslaveforceg",  "norslaveforceg",  dofbased, field->problem()->num_dim());
   writer_->WriteResult("normasterforcelm", "normasterforcelm", dofbased, field->problem()->num_dim());
   writer_->WriteResult("normasterforceg",  "normasterforceg",  dofbased, field->problem()->num_dim());
+  writer_->WriteResult("poronopen_lambda", "poronopen_lambda", dofbased, field->problem()->num_dim());
 
 
   // one-dimensional artery

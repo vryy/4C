@@ -48,6 +48,9 @@
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+#include "../drt_contact/contact_poro_lagrange_strategy.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
 /*----------------------------------------------------------------------*
  | monolithic                                              vuong 01/12  |
  *----------------------------------------------------------------------*/
@@ -74,7 +77,20 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
   solveradaptolbetter_ = (sdynparams.get<double> ("ADAPTCONV_BETTER"));
 
   strmethodname_ = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
-
+  no_penetration_ = false;
+  //if inpar is set to nopenetration for contact!!! to be done!
+  if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+  {
+    if (StructureField()->MeshtyingContactBridge()->HaveContact())
+    {
+      const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+      if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
+      {
+        no_penetration_ = true;
+        (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).SetupNoPenetrationCondition();
+      }
+    }
+  }
 }
 
 
@@ -141,10 +157,15 @@ void POROELAST::Monolithic::Solve()
 
     // create full monolithic rhs vector
     SetupRHS(iter_==1);
+
+    //Modify System for Contact!
+    EvalPoroContact();
+
     //std::cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
-    //PoroFDCheck();
+   // if (iter_>1 and Step()>2 )
+   //PoroFDCheck();
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
@@ -162,6 +183,10 @@ void POROELAST::Monolithic::Solve()
 
     //Aitken();
     // increment equilibrium loop index
+
+    //Recover Lagrangean Multiplier in Newton Iteration (for contact & contact no penetration!)
+    RecoverLagrangeMultiplier_iter(iterinc_);
+
     iter_ += 1;
   } // end equilibrium loop
 
@@ -218,6 +243,10 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   // apply current velocity and pressures to structure
   SetFluidSolution();
+
+  // apply current velocity of fluid to ContactMangager if contact problem
+  if (no_penetration_)
+    SetPoroContactStates(sx,fx); //ATM svel is set in structure evaluate as the vel of the structure is evaluated there ...
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   UpdaterIterIncrementally(sx),
@@ -1101,7 +1130,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 }    // ApplyFluidCouplMatrix()
 
 /*----------------------------------------------------------------------*
- |  check tangent stiffness matrix vie finite differences               |
+ |  check tangent stiffness matrix via finite differences               |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PoroFDCheck()
 {
@@ -1114,7 +1143,9 @@ void POROELAST::Monolithic::PoroFDCheck()
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> abs_iterinc = Teuchos::null;
   iterinc = LINALG::CreateVector(*DofRowMap(), true);
+  abs_iterinc = LINALG::CreateVector(*DofRowMap(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1123,6 +1154,8 @@ void POROELAST::Monolithic::PoroFDCheck()
   iterinc->PutScalar(0.0);
 
   iterinc->ReplaceGlobalValue(0, 0, delta);
+
+  abs_iterinc->Update(1.0,*iterinc_,0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
@@ -1157,6 +1190,7 @@ void POROELAST::Monolithic::PoroFDCheck()
     {
       iterinc->ReplaceGlobalValue(i, 0, 0.0);
     }
+    abs_iterinc->Update(1.0, *iterinc,1.0);
 
     if (i == spaltenr)
       std::cout << "\n******************" << spaltenr + 1
@@ -1245,6 +1279,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   bool success = true;
   double error_max = 0.0;
+  double abs_error_max = 0.0;
   for (int i = 0; i < dofs; ++i)
   {
     if (not CombinedDBCMap()->MyGID(i))
@@ -1326,6 +1361,8 @@ void POROELAST::Monolithic::PoroFDCheck()
 
           if (abs(error) > abs(error_max))
             error_max = abs(error);
+          if (abs(error_ij) > abs(abs_error_max))
+            abs_error_max = abs(error_ij);
 
           if ((abs(error) > 1e-4))
           {
@@ -1348,12 +1385,12 @@ void POROELAST::Monolithic::PoroFDCheck()
   if(success)
   {
     std::cout << "finite difference check successful, max. rel. error: "
-        << error_max << std::endl;
+        << error_max << "  (max. abs. error: " << abs_error_max << ")" << std::endl;
     std::cout << "******************finite difference check done***************\n\n"
         << std::endl;
   }
   else
-    dserror("PoroFDCheck failed");
+    dserror("PoroFDCheck failed in step: %d, iter: %d", Step(), iter_);
 
   return;
 }
@@ -1687,4 +1724,102 @@ const Epetra_Map& POROELAST::Monolithic::StructureRangeMap()
 const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
 {
   return StructureField()->DomainMap();
+}
+
+/*----------------------------------------------------------------------*
+| Recover the Lagrange multipliers for contact          ager 07/14      |
+*----------------------------------------------------------------------*/
+void POROELAST::Monolithic::RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x)
+{
+  if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+   {
+     if (StructureField()->MeshtyingContactBridge()->HaveContact())
+     {
+        //Recover structural contact lagrange multiplier !!! For Poro & FPSI Problems this is deactivated in the Structure!!!
+
+        CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+
+        // displacement and fluid velocity & pressure incremental vector
+        Teuchos::RCP<const Epetra_Vector> sx;
+        Teuchos::RCP<const Epetra_Vector> fx;
+        ExtractFieldVectors(x,sx,fx);
+
+        //RecoverStructuralLM
+        Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*sx));
+        Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
+
+        costrategy.Recover(tmpsx,tmpfx);
+        if (no_penetration_)
+          costrategy.RecoverPoroNoPen(tmpsx,tmpfx);
+        return;
+     }
+   }
+}
+
+/*-----------------------------------------------------------------------/
+|  Set Contact States                                    ager 07/14      |
+/-----------------------------------------------------------------------*/
+void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
+{
+  if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+   {
+     if (StructureField()->MeshtyingContactBridge()->HaveContact())
+     {
+      CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+      Teuchos::RCP<Epetra_Vector> fvel = Teuchos::rcp(new Epetra_Vector(*FluidField()->ExtractVelocityPart(FluidField()->Velnp())));
+      fvel = FluidStructureCoupling().SlaveToMaster(fvel);
+      costrategy.SetState("fvelocity",fvel);
+     }
+  }
+  return;
+}
+
+//
+/*-----------------------------------------------------------------------/
+|  assemble relevant matrixes for porocontact            ager 07/14      |
+/-----------------------------------------------------------------------*/
+void POROELAST::Monolithic::EvalPoroContact()
+{
+  if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+   {
+     if (StructureField()->MeshtyingContactBridge()->HaveContact())
+     {
+        CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+
+        ///---Initialize Poro Contact
+        costrategy.PoroInitialize(FluidStructureCoupling(), FluidField()->DofRowMap()); //true stands for the no_penetration condition !!!
+
+        ///---Modifiy coupling matrix k_sf
+
+        //Get matrix block!
+        Teuchos::RCP<LINALG::SparseMatrix> k_sf = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,1)));
+
+
+        //Evaluate Poro Contact Condensation for K_sf
+        costrategy.EvaluatePoroContact(k_sf);
+
+
+        //Assign modified matrixes & vectors
+        systemmatrix_->Assign(0,1,Copy,*k_sf);
+
+        ///---Modify fluid matrix, coupling matrix k_fs and rhs of fluid
+        if (no_penetration_)
+        {
+          //Get matrix blocks & rhs vector!
+          Teuchos::RCP<LINALG::SparseMatrix> f = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,1)));
+          Teuchos::RCP<LINALG::SparseMatrix> k_fs = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,0)));
+
+          Teuchos::RCP<Epetra_Vector> frhs = Extractor().ExtractVector(rhs_,1);
+
+          //Evaluate Poro No Penetration Contact Condensation
+          costrategy.EvaluatePoroNoPenContact(k_fs,f,frhs);
+
+          //Assign modified matrixes & vectors
+          systemmatrix_->Assign(1,1,Copy,*f);
+          systemmatrix_->Assign(1,0,Copy,*k_fs);
+
+          Extractor().InsertVector(*frhs, 1, *rhs_);
+        }
+     }
+  }
 }

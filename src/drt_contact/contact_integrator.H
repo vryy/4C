@@ -767,6 +767,51 @@ public:
       const std::vector<GEN::pairedvector<int, double> >& dsxigp,
       const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
 
+
+  /*!
+  \brief evaluate scalar normal coupling condition for poro no penetration entries at GP (poro-contact)
+
+  */
+  void inline GP_3D_NCOUP_DERIV(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       double* ncoup, double* gpn, double* lengthn,
+       double& jac,
+       double& wgt,
+       const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+       const std::vector<GEN::pairedvector<int,double> >& dmxigp,
+       std::map<int,double> & dncoupgp,
+       std::map<int,double> & dvelncoupgp,
+       std::vector<GEN::pairedvector<int,double> >& dnmap_unit, bool quadratic,
+       int nintrow=0);
+
+  /*!
+  \brief evaluate weighted normal coupling entries at GP
+
+  */
+  void inline GP_3D_NCOUP_LIN(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& gap, double *gpn,double& jac,
+       double& wgt, bool& duallin,
+       const std::map<int,double>& dncoupgp,
+       const std::map<int,double>& dvelncoupgp,
+       const GEN::pairedvector<int,double>& jacintcellmap,
+       const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+       const std::vector<GEN::pairedvector<int,double> >& dmxigp,
+       const std::vector<std::vector<GEN::pairedvector<int,double> > >& dualmap);
+
   /*!
    \brief Build all integrals and linearizations without segmentation -- 2D
    (i.e. M, g, LinM, Ling and possibly D, LinD)
