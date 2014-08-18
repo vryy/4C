@@ -355,3 +355,17 @@ dserror("Aitken Relaxation not yet implemented");
   // end Aitken relaxation
   // ------------------------------------------------------------
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapStructure()
+{
+  return StructureField()->DofRowMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapFluid()
+{
+  return FluidField()->DofRowMap();
+}

@@ -22,7 +22,7 @@
 namespace INPAR
 {
 
-/// Input parameters for poroelasticity
+/// Input parameters for poroelasticity with scalar transport
 namespace PORO_SCATRA
 {
 
@@ -35,23 +35,6 @@ namespace PORO_SCATRA
     Part_TwoWay
  //   Monolithic
   };
-
-  /// @name Solution technique and related
-
-  /// type of norm to check for convergence
-  enum ConvNorm
-  {
-    convnorm_abs  ///< absolute norm
-  };
-
-  /// type of norm to check for convergence
-  enum BinaryOp
-  {
-    bop_and,  ///<  and
-    bop_or    ///<  or
-  };
-
-  //@}
 
 }  // namespace PORO_SCATRA
 

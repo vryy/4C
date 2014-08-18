@@ -137,12 +137,17 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
       double theta_fluid  = fdyn.get<double>("THETA");
 
       if(theta_struct != theta_fluid)
-        dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible");
+        dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible. Fix your input file.");
     }
 
     std::string damping = sdyn.get<std::string>("DAMPING");
     if(damping != "Material")
       dserror("Material damping has to be used for porous media! Set DAMPING to 'Material' in the STRUCTURAL DYNAMIC section.");
+
+    INPAR::FLUID::PhysicalType physicaltype
+    = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
+    if(porositydof_ and physicaltype != INPAR::FLUID::poro_p1)
+      dserror("Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the FLUID DYNAMIC section!");
   }
 }
 

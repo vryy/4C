@@ -81,7 +81,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
     // full Poroelasticity-map
     fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
-    blockrowdofmap_.Setup(*fullmap_, vecSpaces);
+    blockrowdofmap_->Setup(*fullmap_, vecSpaces);
   }
 
   // Switch fluid to interface split block matrix
@@ -143,7 +143,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
 
     //rhs->Scale((1.0-stiparam)/(1.0-ftiparam));  // scale 'rhs' due to consistent time integration
 
-    Extractor().AddVector(*rhs,1,*rhs_); // add fluid contributions to 'f'
+    Extractor()->AddVector(*rhs,1,*rhs_); // add fluid contributions to 'f'
 
     rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
 
@@ -154,7 +154,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
     rhs = FluidToStructureAtInterface(rhs);
     rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
 
-    Extractor().AddVector(*rhs,0,*rhs_); // add structure contributions to 'f'
+    Extractor()->AddVector(*rhs,0,*rhs_); // add structure contributions to 'f'
 
     rhs = Teuchos::rcp(new Epetra_Vector(kig.RowMap()));
 
@@ -163,7 +163,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
 
     rhs = StructureField()->Interface()->InsertOtherVector(rhs);
 
-    Extractor().AddVector(*rhs,0,*rhs_); // add structure contributions to 'f'
+    Extractor()->AddVector(*rhs,0,*rhs_); // add structure contributions to 'f'
 
     rhs = Teuchos::rcp(new Epetra_Vector(kgg.RowMap()));
 
@@ -172,7 +172,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
 
     rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
 
-    Extractor().AddVector(*rhs,0,*rhs_); // add structure contributions to 'f'
+    Extractor()->AddVector(*rhs,0,*rhs_); // add structure contributions to 'f'
 
     // Reset quantities for previous iteration step since they still store values from the last time step
     //duiinc_ = LINALG::CreateVector(*FluidField()->Interface()->OtherMap(),true);
@@ -388,14 +388,14 @@ void POROELAST::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     if (lambda_ != Teuchos::null)
       modsv->Update(stiparam-(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStructureAtInterface(lambda_), 1.0);
 
-    Extractor().InsertVector(*modsv,0,f); // add structural contributions to 'f'
+    Extractor()->InsertVector(*modsv,0,f); // add structural contributions to 'f'
   }
   else
   {
-    Extractor().InsertVector(*sv,0,f);
+    Extractor()->InsertVector(*sv,0,f);
   }
 
-  Extractor().InsertVector(*fov,1,f); // add fluid contributions to 'f'
+  Extractor()->InsertVector(*fov,1,f); // add fluid contributions to 'f'
 }
 
 /*----------------------------------------------------------------------*
@@ -411,7 +411,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::ExtractFieldVectors");
 
   // process structure unknowns
-  sx = Extractor().ExtractVector(x, 0);
+  sx = Extractor()->ExtractVector(x, 0);
 
   // process fluid unknowns
   if (evaluateinterface_)
@@ -419,7 +419,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
     Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
     Teuchos::RCP<Epetra_Vector> fcx = StructureToFluidAtInterface(scx);
-    Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
+    Teuchos::RCP<const Epetra_Vector> fox = Extractor()->ExtractVector(x,1);
 #ifdef FLUIDSPLITAMG
     fox = FluidField()->Interface()->ExtractOtherVector(fox);
 #endif
@@ -466,7 +466,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
     solivelpre_ = fox;                                      // store current step increment
   }
   else
-    fx = Extractor().ExtractVector(x, 1);
+    fx = Extractor()->ExtractVector(x, 1);
 }
 
 /*----------------------------------------------------------------------*/

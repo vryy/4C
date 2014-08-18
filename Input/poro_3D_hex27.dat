@@ -9,13 +9,13 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+Test for hex 27 poro elements
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      27
 //NODES                         343
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelasticity //Poroelastic_scalar_transport Poroelasticity 
+PROBLEMTYP                      Poroelasticity //Poroelastic_scalar_transport Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION
@@ -26,37 +26,13 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CALCERROR                       no
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-INITSTATITEMAX                  5
-ITEMAX                          10
-LIFTDRAG                        No
-MAXTIME                         1000
-MESHTYING                       no
-NONLINEARBC                     no
-NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
-PREDICTOR                       steady_state
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -92,16 +68,24 @@ THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
-INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         4
+MAXTIME                         8
 NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
-NORM_RESF                       Abs
+NORM_INC                        AbsSingleFields
+NORM_RESF                       AbsSingleFields
 NUMSTEP                         5
-RESTARTEVRY                     100
-RESTOL                          1e-06
+RESTARTEVRY                     5
+TOLINC_DISP                     1e-08
+TOLINC_VEL                      1e-08
+TOLINC_PRES                     1e-08
+TOLINC_PORO                     1e-08
+TOLRES_DISP                     1e-08
+TOLRES_VEL                      1e-08
+TOLRES_PRES                     1e-08
+TOLRES_PORO                     1e-08
+VECTORNORM_RESF                 Rms
+VECTORNORM_INC                  L1
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
@@ -114,45 +98,10 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
-CONTROLTYPE                     load
 DAMPING                         Material
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
-MAXITER                         50
-MAXTIME                         5
-MINITER                         0
-M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         200
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
@@ -1390,9 +1339,5 @@ NODE 343 COORD 3.3333333333333326e+00 5.0000000000000000e+00 -3.3333333333333339
 25 SOLIDH27PORO HEX27 191 190 218 219 289 288 316 317 195 222 223 224 291 290 318 319 293 320 321 322 226 299 326 327 325 324 323 MAT 1 KINEM nonlinear
 26 SOLIDH27PORO HEX27 190 202 230 218 288 300 328 316 205 232 233 222 290 301 329 318 303 330 331 320 235 307 334 335 326 333 332 MAT 1 KINEM nonlinear
 27 SOLIDH27PORO HEX27 202 210 238 230 300 308 336 328 213 240 241 232 301 309 337 329 311 338 339 330 243 315 342 343 334 341 340 MAT 1 KINEM nonlinear
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

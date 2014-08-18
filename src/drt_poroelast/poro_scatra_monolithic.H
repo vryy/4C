@@ -130,7 +130,7 @@ namespace POROELAST
   protected:
 
     //! extractor to communicate between full monolithic map and block maps
-    const LINALG::MultiMapExtractor& Extractor() const
+    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
     {
       return blockrowdofmap_;
     }
@@ -165,8 +165,8 @@ namespace POROELAST
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv, //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
+        Teuchos::RCP<const Epetra_Vector> pv, //!< vector containing only structural dofs
+        Teuchos::RCP<const Epetra_Vector> sv //!< vector containing only fluid dofs
         );
 
     //! perform one time step (setup + solve + output)
@@ -226,23 +226,50 @@ namespace POROELAST
 
     //! @name Iterative solution technique
 
-    enum INPAR::PORO_SCATRA::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
-    enum INPAR::PORO_SCATRA::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    enum INPAR::PORO_SCATRA::BinaryOp combincfres_;   //!< binary operator to combine temperatures and forces
+    enum INPAR::POROELAST::ConvNorm normtypeinc_;   //!< convergence check for increments
+    enum INPAR::POROELAST::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum INPAR::POROELAST::BinaryOp combincfres_;   //!< binary operator to combine increments and residuals
+    enum INPAR::POROELAST::VectorNorm vectornormfres_;   //!< type of norm for residual
+    enum INPAR::POROELAST::VectorNorm vectornorminc_;   //!< type of norm for increments
 
     double tolinc_;     //!< tolerance residual increment
     double tolfres_;    //!< tolerance force residual
+
+    double tolinc_struct_;     //!< tolerance residual increment for structure displacements
+    double tolfres_struct_;    //!< tolerance force residual for structure displacements
+
+    double tolinc_velocity_;     //!< tolerance residual increment for fluid velocity field
+    double tolfres_velocity_;    //!< tolerance force residual for fluid velocity field
+
+    double tolinc_pressure_;     //!< tolerance residual increment for fluid pressure field
+    double tolfres_pressure_;    //!< tolerance force residual for fluid pressure field
+
+//    double tolinc_porosity_;     //!< tolerance residual increment for porosity field
+//    double tolfres_porosity_;    //!< tolerance force residual for porosity field
+
+    double tolinc_scalar_;     //!< tolerance residual increment for scalar field
+    double tolfres_scalar_;    //!< tolerance force residual for scalar field
 
     int itermax_;     //!< maximally permitted iterations
     int itermin_;     //!< minimally requested iteration
     double normrhs_;  //!< norm of residual forces
     double norminc_;  //!< norm of residual unknowns
 
-    double normrhsscatra_;    //!< norm of residual forces (structure)
-    double normincscatra_;    //!< norm of residual unknowns (structure)
+    double normrhsfluidvel_;  //!< norm of residual forces (fluid velocity)
+    double normincfluidvel_;  //!< norm of residual unknowns (fluid velocity)
+    double normrhsfluidpres_; //!< norm of residual forces (fluid pressure)
+    double normincfluidpres_; //!< norm of residual unknowns (fluid pressure)
+    double normrhsfluid_;     //!< norm of residual forces (fluid )
+    double normincfluid_;     //!< norm of residual unknowns (fluid )
 
-    double normrhsporo_;    //!< norm of residual forces (porosity)
-    double normincporo_;    //!< norm of residual unknowns (porosity)
+    double normrhsstruct_;    //!< norm of residual forces (structure)
+    double normincstruct_;    //!< norm of residual unknowns (structure)
+
+    double normrhsscalar_;    //!< norm of residual forces (scatra)
+    double normincscalar_;    //!< norm of residual unknowns (scatra)
+
+//    double normrhsporo_;    //!< norm of residual forces (porosity)
+//    double normincporo_;    //!< norm of residual unknowns (porosity)
 
     Epetra_Time timer_;       //!<timer for solution technique
 
@@ -262,11 +289,6 @@ namespace POROELAST
     //! rhs of monolithic system
     Teuchos::RCP<Epetra_Vector> rhs_;
 
-    //! poro-scatra off diagonal coupling matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> k_ps_;
-    //! scatra-poro off diagonal coupling matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> k_sp_;
-
     //! structure-scatra coupling matrix
     Teuchos::RCP<LINALG::SparseMatrix> k_pss_;
     //! fluid-scatra coupling matrix
@@ -278,7 +300,7 @@ namespace POROELAST
     Teuchos::RCP<LINALG::SparseMatrix> k_spf_;
 
     //! dof row map splitted in (field) blocks
-    LINALG::MultiMapExtractor  blockrowdofmap_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! scatra row map as map extractor (used to build coupling matrixes)
     LINALG::MultiMapExtractor  scatrarowdofmap_;

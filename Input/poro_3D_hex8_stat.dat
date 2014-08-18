@@ -9,7 +9,7 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+standard poro hex8 stationary
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                        1
 //NODES                           8
@@ -21,43 +21,15 @@ PROBLEMTYP                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CALCERROR                       no
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-INITSTATITEMAX                  5
-ITEMAX                          10
-LIFTDRAG                        No
-MAXTIME                         1000
-MESHTYING                       no
-NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
-PREDICTOR                       steady_state
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           0.66
-TIMEINTEGR                      Stationary //Stationary One_Step_Theta
-TIMESTEP                        0.01
+TIMEINTEGR                      Stationary
 UPRES                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -74,35 +46,20 @@ SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
-STRUCT_DISP                     Yes
-STRUCT_SE                       No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No                         
-STRUCT_COUPLING_STRESS          No                        
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic
-INCTOL                          1e-04
-ITEMAX                          200
+COUPALGO                        poro_monolithic
+ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         16
+MAXTIME                         8
 NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
-NORM_RESF                       Abs
+NORM_INC                        AbsGlobal
+NORM_RESF                       AbsGlobal
 NUMSTEP                         10
-RESTARTEVRY                     1
-RESTOL                          1e-05
+RESTARTEVRY                     5
+TOLRES_GLOBAL                   1e-05
+TOLINC_GLOBAL                   1e-04
+VECTORNORM_RESF                 L2
+VECTORNORM_INC                  L2
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
@@ -114,45 +71,10 @@ SOLVER                          UMFPACK                       // Amesos_KLU_sym,
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      Statics // Statics OneStepTheta
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
-MAXITER                         50
-MAXTIME                         5
-MINITER                         0
-M_DAMP                          0.5
-NLNSOL fullnewton //fullnewton newtonlinuzawa
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         200
+DYNAMICTYP                      Statics
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMESTEP                        0.05
-TOLCONSTR                       1e-06
-TOLDISP                         1e-6
-TOLINCO                         1e-06
-TOLPRE                          1e-06
-TOLRES                          1e-06
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
@@ -232,33 +154,33 @@ E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
 // Line x+z+
-////E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+////E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line y+z+
-////E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+////E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x-z+
-//E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+//E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line y-z+
-//E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+//E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x+z-
 E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line y-z-
 E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x-z-
-//E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+//E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line y+z-
-//E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+//E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x-y-
-//E 9 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+//E 9 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x+y-
-E 10 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+E 10 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x-y+
-//E 11 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+//E 11 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Line x+y+
-////E 12 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+////E 12 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // Surface z+
-////E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
+////E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface z-
 E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface y-

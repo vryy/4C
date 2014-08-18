@@ -37,7 +37,7 @@ POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
   // Get the parameters for the ConvergenceCheck
   itmax_ = params.get<int>("ITEMAX"); // default: =10
-  ittol_ = params.get<double>("INCTOL"); // default: =1e-6
+  ittol_ = params.get<double>("TOLINC_GLOBAL"); // default: =1e-6
 }
 
 /*----------------------------------------------------------------------*/

@@ -13,48 +13,22 @@ Test 2D scalar transport within porous medium
 - standard poro elements (darcy)
 - quad4 elements
 - partial integration of continuity equation
+- partitioned (solid to scatra)
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
 //NODES                         9
 DIM                             2
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
-CALCERROR                       no
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-INITSTATITEMAX                  5
-ITEMAX                          10
-LIFTDRAG                        No
-MAXTIME                         1000
-MESHTYING                       no
-NONLINEARBC                     no
-NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
+PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
+TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
 UPRES                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -71,35 +45,8 @@ SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
-STRUCT_DISP                     Yes
-STRUCT_SE                       No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
-INCTOL                          1e-06
-ITEMAX                          20
-ITEMIN                          1
-MAXTIME                         8
-NORMCOMBI_RESFINC               Or
-NORM_INC                        Abs
-NORM_RESF                       Abs
-NUMSTEP                         400
-RESTARTEVRY                     100
-RESTOL                          1e-08
-TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
@@ -112,19 +59,12 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   4
 SOLVERTYPE                      linear_incremental
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
-RESTARTEVRY                     10
-NUMSTEP                         1000
-MAXTIME                         4.0 //hill reaches point of departure (x0=2/15)
-TIMESTEP                        0.01
 THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 SCATRATYPE                      Poroscatra
 INITFUNCNO                      1
-FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           5
 SKIPINITDER                     yes
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -151,45 +91,9 @@ NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
 AZTOL                           1.0E-11                       // tolerance in (un)scaled residual
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         Material
-DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
-MAXITER                         50
-MAXTIME                         8
-MINITER                         0
-M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         100
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMESTEP                        0.01
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
@@ -199,6 +103,13 @@ RESTARTEVRY                     10
 NUMSTEP                         100
 MAXTIME                         8.0
 TIMESTEP                        0.01
+COUPALGO                        solid_to_scatra
+NORM_INC                        AbsGlobal
+NORM_RESF                       AbsGlobal
+TOLRES_GLOBAL                   1e-08
+TOLINC_GLOBAL                   1e-08
+VECTORNORM_RESF                 L2
+VECTORNORM_INC                  L2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5

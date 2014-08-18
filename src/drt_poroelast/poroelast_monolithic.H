@@ -23,7 +23,7 @@
 #include "poro_base.H"
 #include "poroelast_utils.H"
 
-#include "../linalg/linalg_mapextractor.H"
+//#include "../linalg/linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -85,32 +85,39 @@ namespace POROELAST
       //! @name Access methods for subclasses
 
       //! extractor to communicate between full monolithic map and block maps
-      const LINALG::MultiMapExtractor& Extractor() const
+      Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
       {
         return blockrowdofmap_;
       }
-
-      virtual const LINALG::MultiMapExtractor* ExtractorPointer() const
-         { return &blockrowdofmap_;};
 
       //@}
 
       //! @name Access methods
 
       //! composed system matrix
+      //Todo: remove this method!
+      //this method merges the block matrix when called.
+      //As this is very expensive this,this method is not meant to be used any more.
+      //Use SystemBlockMatrix() instead and assemble the blocks separately, if necessary.
       Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix();
 
       //! block system matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemBlockMatrix(){return systemmatrix_;};
 
       //! full monolithic dof row map
-      Teuchos::RCP<const Epetra_Map> DofRowMap() const {return blockrowdofmap_.FullMap();}
+      Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+
+      //! dof row map of Structure field
+      Teuchos::RCP<const Epetra_Map> DofRowMapStructure();
+
+      //! dof row map of Fluid field
+      Teuchos::RCP<const Epetra_Map> DofRowMapFluid();
 
       //! unique map of all dofs that should be constrained with DBC
       Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
 
       //! right hand side vector
-      Teuchos::RCP<Epetra_Vector> RHS()
+      Teuchos::RCP<const Epetra_Vector> RHS() const
           {return rhs_;};
 
       //! zero all entries in iterinc vector
@@ -143,7 +150,12 @@ namespace POROELAST
       void CreateLinearSolver();
 
       //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
+          );
+      //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+      void Evaluate(
+          Teuchos::RCP<const Epetra_Vector> sx,
+          Teuchos::RCP<const Epetra_Vector> fx
           );
 
       //! extract initial guess from fields
@@ -232,10 +244,12 @@ namespace POROELAST
        \param sx (o) structural vector (e.g. displacements)
        \param fx (o) fluid vector (e.g. velocities and pressure)
        */
-      virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-          Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<
-              const Epetra_Vector>& fx,
-              bool firstcall=false);
+      virtual void ExtractFieldVectors(
+          Teuchos::RCP<const Epetra_Vector> x,
+          Teuchos::RCP<const Epetra_Vector>& sx,
+          Teuchos::RCP<const Epetra_Vector>& fx,
+          bool firstcall=false);
+
 
       //! @name General purpose algorithm members
       //@{
@@ -258,20 +272,30 @@ namespace POROELAST
 
       //! @name Global vectors
       Teuchos::RCP<Epetra_Vector> zeros_; //!< a zero vector of full length
+
+      Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
+
       //@}
 
       enum INPAR::STR::DynamicType strmethodname_; //!< enum for STR time integration
 
+      //! @name Global matrixes
+
       //! block systemmatrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
-      Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
+      //! structure-fluid coupling matrix
+      Teuchos::RCP<LINALG::SparseOperator> k_sf_;
+      //! fluid-structure coupling matrix
+      Teuchos::RCP<LINALG::SparseOperator> k_fs_;
+
+      //@}
 
       //! dof row map (not splitted)
       Teuchos::RCP<Epetra_Map> fullmap_;
 
       //! dof row map splitted in (field) blocks
-      LINALG::MultiMapExtractor blockrowdofmap_;
+      Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
       //! dof row map splitted in inner structure (0), struct interface (1)
       //! inner porofluid (0) and porofluidinterface (1)
@@ -292,22 +316,19 @@ namespace POROELAST
       //! return fluid structure coupling block sparse matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
 
+
+      //! @name poro-contact
+
       /// apply current velocity of fluid  to ContactMangager if contact problem
       void SetPoroContactStates(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
 
       // assemble relevant matrixes for porocontact
       void EvalPoroContact();
 
-      //! @name coupling matrices
-      //! structure-fluid coupling matrix
-      Teuchos::RCP<LINALG::SparseOperator> k_sf_;
-      //! fluid-structure coupling matrix
-      Teuchos::RCP<LINALG::SparseOperator> k_fs_;
-      //@}
-
-
       // flag activation poro contact no penetration condition
       bool no_penetration_;
+
+      //@}
 
     private:
 
@@ -322,9 +343,23 @@ namespace POROELAST
       enum INPAR::POROELAST::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
       enum INPAR::POROELAST::ConvNorm normtypefres_;  //!< convergence check for residual forces
       enum INPAR::POROELAST::BinaryOp combincfres_;   //!< binary operator to combine temperatures and forces
+      enum INPAR::POROELAST::VectorNorm vectornormfres_;   //!< type of norm for residual
+      enum INPAR::POROELAST::VectorNorm vectornorminc_;   //!< type of norm for increments
 
       double tolinc_;     //!< tolerance residual increment
       double tolfres_;    //!< tolerance force residual
+
+      double tolinc_struct_;     //!< tolerance residual increment for structure displacements
+      double tolfres_struct_;    //!< tolerance force residual for structure displacements
+
+      double tolinc_velocity_;     //!< tolerance residual increment for fluid velocity field
+      double tolfres_velocity_;    //!< tolerance force residual for fluid velocity field
+
+      double tolinc_pressure_;     //!< tolerance residual increment for fluid pressure field
+      double tolfres_pressure_;    //!< tolerance force residual for fluid pressure field
+
+      double tolinc_porosity_;     //!< tolerance residual increment for porosity field
+      double tolfres_porosity_;    //!< tolerance force residual for porosity field
 
       int itermax_;     //!< maximally permitted iterations
       int itermin_;     //!< minimally requested iteration

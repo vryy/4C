@@ -9,7 +9,10 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+2D poro structure interaction problem testing
+- quad 9 elements
+- brinkman flow
+- fluid split
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      130
 //NODES                         567
@@ -19,38 +22,16 @@ PROBLEMTYP Poroelasticity //Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CALCERROR                       no
-CONVCHECK                       L_2_norm
-CONVFORM                        convective
-CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
-LIFTDRAG                        No
-MAXTIME                         1000
-MESHTYING                       no
-NONLINEARBC                     no
-NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
-UPRES                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
@@ -58,42 +39,28 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg            
+PSPG                            yes //yes no_pspg
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab 
-STABTYPE                        residual_based //residual_based no_stabilization 
+RSTAB                           rstab_gls //rstab_gls no_rstab
+STABTYPE                        residual_based //residual_based no_stabilization
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
-STRUCT_DISP                     Yes
-STRUCT_SE                       No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithicfluidsplit
-INCTOL                          1e-04
 ITEMAX                          50
 ITEMIN                          1
 MAXTIME                         2000
 NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
-NORM_RESF                       Abs
+NORM_INC                        AbsGlobal
+NORM_RESF                       AbsGlobal
 NUMSTEP                         10
 RESTARTEVRY                     100
-RESTOL                          1e-07
+TOLRES_GLOBAL                   1e-07
+TOLINC_GLOBAL                   1e-08
+VECTORNORM_RESF                 L2
+VECTORNORM_INC                  L2
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
@@ -101,52 +68,14 @@ SECONDORDER                     yes
 CONTIPARTINT                    no
 --------------------------------------------------------SOLVER 1 //poroelast
 SOLVER                          UMFPACK
-AZTOL                           1.0E-9
-AZPREC                          BGS2x2
 --------------------------------------------------------SOLVER 2 //structure
 SOLVER                          UMFPACK
 ------------------------------------------------------------SOLVER 3 //porofluid
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
-CONTROLTYPE                     load
 DAMPING                         Material
-DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
-MAXITER                         50
-MAXTIME                         8
-MINITER                         0
-M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         100
 PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMESTEP                        0.01
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
@@ -162,8 +91,8 @@ MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0 DENSITY 1.0 PERMEABILITY 1.0e1 TYPE Darcy-B
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5  t1 0.0 t2 1.0
 CURVE1 on EXPR FUNC 1.0                               t1 1.0 t2 10000.1
 ------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC  4.0*0.5*(1-cos(t*pi/2.0))+1.0    t1 0.0 t2 3.0 
-CURVE2 on EXPR FUNC  5.0                              t1 3.0 t2 8.0 
+CURVE2 on EXPR FUNC  4.0*0.5*(1-cos(t*pi/2.0))+1.0    t1 0.0 t2 3.0
+CURVE2 on EXPR FUNC  5.0                              t1 3.0 t2 8.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
@@ -2069,9 +1998,5 @@ NODE 567 COORD 4.5000000000000000e+00 6.0000000000000000e+00 0.0000000000000000e
 128 WALL QUAD9 510 514 556 552 516 557 558 553 559 MAT 2 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 129 WALL QUAD9 514 518 560 556 520 561 562 557 563 MAT 2 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 130 WALL QUAD9 518 522 564 560 524 565 566 561 567 MAT 2 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

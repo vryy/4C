@@ -284,6 +284,82 @@ void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
 void POROELAST::PrintLogo()
 {
   std::cout << "This is a Porous Media problem" << std::endl;
-
+ std::cout << "       .--..--..--..--..--..--. " << std::endl;
+ std::cout << "      .'  \\  (`._   (_)     _   \\ " << std::endl;
+ std::cout << "     .'    |  '._)         (_)  | " << std::endl;
+ std::cout << "     \\ _.')\\      .----..---.   / " << std::endl;
+ std::cout << "     |(_.'  |    /    .-\\-.  \\  | " << std::endl;
+ std::cout << "     \\     0|    |   ( O| O) | o| " << std::endl;
+ std::cout << "      |  _  |  .--.____.'._.-.  | " << std::endl;
+ std::cout << "      \\ (_) | o         -` .-`  | " << std::endl;
+ std::cout << "       |    \\   |`-._ _ _ _ _\\ / " << std::endl;
+ std::cout << "       \\    |   |  `. |_||_|   | " << std::endl;
+ std::cout << "       | o  |    \\_      \\     |     -.   .-. " << std::endl;
+ std::cout << "       |.-.  \\     `--..-'   O |     `.`-' .' " << std::endl;
+ std::cout << "     _.'  .' |     `-.-'      /-.__   ' .-' " << std::endl;
+ std::cout << "   .' `-.` '.|='=.='=.='=.='=|._/_ `-'.' " << std::endl;
+ std::cout << "   `-._  `.  |________/\\_____|    `-.' " << std::endl;
+ std::cout << "      .'   ).| '=' '='\\/ '=' | " << std::endl;
+ std::cout << "      `._.`  '---------------' " << std::endl;
+ std::cout << "            //___\\   //___\\ " << std::endl;
+ std::cout << "              ||       || " << std::endl;
+ std::cout << "              ||_.-.   ||_.-. " << std::endl;
+ std::cout << "             (_.--__) (_.--__) " << std::endl;
   return;
+
+
 }
+
+/*----------------------------------------------------------------------*
+ | calculate vector norm                                                 |
+ *----------------------------------------------------------------------*/
+double POROELAST::UTILS::CalculateVectorNorm(
+  const enum INPAR::POROELAST::VectorNorm norm,
+  const Teuchos::RCP<const Epetra_Vector> vect
+  )
+{
+  // L1 norm
+  // norm = sum_0^i vect[i]
+  if (norm == INPAR::POROELAST::norm_l1)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm;
+  }
+  // L2/Euclidian norm
+  // norm = sqrt{sum_0^i vect[i]^2 }
+  else if (norm == INPAR::POROELAST::norm_l2)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm;
+  }
+  // RMS norm
+  // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
+  else if (norm == INPAR::POROELAST::norm_rms)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm/sqrt((double) vect->GlobalLength());
+  }
+  // infinity/maximum norm
+  // norm = max( vect[i] )
+  else if (norm == INPAR::POROELAST::norm_inf)
+  {
+    double vectnorm;
+    vect->NormInf(&vectnorm);
+    return vectnorm;
+  }
+  // norm = sum_0^i vect[i]/length_vect
+  else if (norm == INPAR::POROELAST::norm_l1_scaled)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm/((double) vect->GlobalLength());
+  }
+  else
+  {
+    dserror("Cannot handle vector norm");
+    return 0;
+  }
+}  // CalculateVectorNorm()

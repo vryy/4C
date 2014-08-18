@@ -90,8 +90,8 @@ namespace POROELAST
       const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return fluid_;}
 
       //! composed system matrix
-      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
-          {dserror("SystemSparseMatrix() only available for monolithic schemes!"); return Teuchos::null;};
+//      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
+//          {dserror("SystemSparseMatrix() only available for monolithic schemes!"); return Teuchos::null;};
 
       //! block system matrix
       virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemBlockMatrix()
@@ -101,22 +101,30 @@ namespace POROELAST
       virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
          {dserror("dof maps only available for monolithic schemes!"); return Teuchos::null;};
 
+      //! dof row map of Structure field
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMapStructure()=0;
+
+      //! dof row map of Fluid field
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMapFluid()=0;
+
       //! extractor to communicate between full monolithic map and block maps
-      virtual const LINALG::MultiMapExtractor* ExtractorPointer() const
-         {dserror("ExtractorPointer only available for monolithic schemes!"); return NULL;};
+      virtual Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
+         {dserror("ExtractorPointer only available for monolithic schemes!"); return Teuchos::null;};
 
       //! unique map of all dofs that should be constrained with DBC
       virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
           {dserror("combined DBC map only available for monolithic schemes!"); return Teuchos::null;};
 
       //! unique map of all dofs that should be constrained with DBC
-      virtual Teuchos::RCP<Epetra_Vector> RHS()
+      virtual Teuchos::RCP<const Epetra_Vector> RHS() const
           {dserror("RHS only available for monolithic schemes!"); return Teuchos::null;};
 
       //@}
 
-      //! solve time step (depending on algorithm)
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+      //! evaluate system matrix
+      virtual void Evaluate(
+          Teuchos::RCP<const Epetra_Vector> sx,
+          Teuchos::RCP<const Epetra_Vector> fx)
           {dserror("Evaluate only available for monolithic schemes!");};
 
       //! solve time step (depending on algorithm)

@@ -2,7 +2,6 @@
 // Maintainer: Anh-Tu Vuong
 // vuong@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15251
 //
 //
 //
@@ -10,56 +9,28 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Test 3D scalar transport within porous medium
-- monolithic
-- standard poro elements (darcy)
-- hex8 elements
+Test for hex 8 poro p1 elements
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
 DIM                             3
-MATERIALS                       4
-//NUMDF                         6
+MATERIALS                       85
+NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Poroelastic_scalar_transport
+PROBLEMTYP                      Poroelasticity
 RESTART                         0
 //!RESTART                      5
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION
-NUMALEDIS                       0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CALCERROR                       no
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-INITSTATITEMAX                  5
-ITEMAX                          10
-LIFTDRAG                        No
-MAXTIME                         1000
-MESHTYING                       no
-NONLINEARBC                     no
-NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
-PHYSICAL_TYPE                   Poro
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
+PHYSICAL_TYPE                   Poro_P1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -87,276 +58,183 @@ OUTPUT_GID                      No
 STRUCT_DISP                     Yes
 STRUCT_SE                       No
 STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
+STRUCT_STRESS                   No                            // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          No                            // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
-INCTOL                          1e-02
 ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         0.1
+MAXTIME                         8
 NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
-NORM_RESF                       Abs
+NORM_INC                        AbsGlobal
+NORM_RESF                       AbsGlobal
 NUMSTEP                         10
-RESTARTEVRY                     100
-RESTOL                          1e-06
-TIMESTEP                        0.01
-UPRES                           1
-LINEAR_SOLVER                   1
-----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         Material
-DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
-MAXITER                         50
-MAXTIME                         5
-MINITER                         0
-M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         200
-PREDICT                         ConstDis
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
-LINEAR_SOLVER                   2
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.66
----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          10
-CONVTOL                         1e-10
-EXPLPREDICT                     no
-ABSTOLRES                       1e-12
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-LINEAR_SOLVER                   4
-SOLVERTYPE                      nonlinear
-TIMEINTEGR                      One_Step_Theta
-UPRES                           1
-RESTARTEVRY                     10
-NUMSTEP                         10
-MAXTIME                         4.0
-TIMESTEP                        0.01
-THETA                           0.66
-VELOCITYFIELD                   Navier_Stokes
-VELFUNCNO                       -1
-INITIALFIELD                    field_by_function
-SCATRATYPE                      Poroscatra //Poroscatra //Poro_Scatra_Reaction
-INITFUNCNO                      1
-FSSUGRDIFF                      No
-WRITEFLUX                       No
-MATID                           -1
-CONVFORM                        convective
-SKIPINITDER                     yes
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-ASSUGRDIFF                      no
-CONSISTENCY                     no
-DEFINITION_ASSGD                artificial_linear
-DEFINITION_TAU                  Zero
-EVALUATION_MAT                  integration_point
-EVALUATION_TAU                  integration_point
-STABTYPE                        no_stabilization
-SUGRVEL                         no
-----------------------------------------------------------POROSCATRA CONTROL
-UPRES                           1
 RESTARTEVRY                     5
-NUMSTEP                         10
-MAXTIME                         4.0
+TOLRES_GLOBAL                   1e-06
+TOLINC_GLOBAL                   1e-08
+VECTORNORM_RESF                 L2
+VECTORNORM_INC                  L2
 TIMESTEP                        0.01
-COUPALGO                        monolithic //two_way monolithic
+UPRES                           1
 LINEAR_SOLVER                   1
-INCTOL                          1e-02
-RESTOL                          1e-06
+CONTIPARTINT                    yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 4
-NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-AZSUB                           40                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+----------------------------------------------------------STRUCTURAL DYNAMIC
+DAMPING                         Material
+DIVERCONT                       stop
+DYNAMICTYP                      OneStepTheta
+PREDICT                         ConstDis
+LINEAR_SOLVER                   2
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.66
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 4
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.5 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
-MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 2.0
-MAT 3 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
-MAT 4 MAT_FluidPoro DYNVISCOSITY 0.05 DENSITY 1.0 PERMEABILITY 0.2e-1 TYPE Darcy
-MAT 5 MAT_matlist LOCAL No NUMMAT 7 MATIDS 6 7 8 9 10 11 12 END //collect Concentrations
-MAT 6 MAT_scatra DIFFUSIVITY 10.0
-MAT 7 MAT_scatra DIFFUSIVITY 1.0 //10.0 //REACOEFF 2.0
-MAT 8 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 9 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 10 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 11 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 12 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
+MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.2 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
+MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
+MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -6.0/6.0 t1 0.0 t2 60.0
-//CURVE1 on EXPR FUNC 0.0 t1 0.0 t2 60.0
+CURVE1 on EXPR FUNC -10.0e4*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0
+CURVE1 on EXPR FUNC -10.0e4 t1 2.0 t2 40000000.00
 ----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC -4.0*0.5*pi/1.0*(sin((t*pi/1.0))) t1 0.0 t2 2.0
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4.0/10*x+3.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 3.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 3.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 4.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 1.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 5 EXPR 0 0.0 0 FUNCTION 2.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 1.0*(4.0/10*x+3.0)
+FUNCT1 EXPR 0 0.0 0 FUNCTION 0.2
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.83446493289566881e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 1.42080655225260521e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 42 QUANTITY phi VALUE 1.83446490233753834e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 4 QUANTITY phi2 VALUE 3.29505981975062223e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi3 VALUE 3.11611935869449086e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi4 VALUE 4.15482581159264353e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi5 VALUE 1.03870645221786861e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi6 VALUE 2.07741290579632398e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi7 VALUE 1.03870645221787061e+00 TOLERANCE 1e-9
+FLUID DIS porofluid NODE 124 QUANTITY velx VALUE 1.77224074787690859e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 124 QUANTITY pressure VALUE 2.04856080540450902e+00 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE 1.38134378444252803e+00 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 143 QUANTITY pressure VALUE 2.04856080539879581e+00 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 119 QUANTITY pressure VALUE 2.04856080535748397e+00 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 181 QUANTITY pressure VALUE 6.16181533911963827e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -2.27325547201188407e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE -1.36216782923087956e-03 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           1
-E 6 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 5.0 15.0 15.0 20.0 5.0 10.0 5.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT                          0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
+DSURF                           1
+// Surface x+
+E 6 - 1 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL                            0
+----------------------------------------DESIGN POINT PORO NEUMANN CONDITIONS
+DPOINT                          0
+-----------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
+DLINE                           0
 -----------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           6
-// Surface x-
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface x+
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// Surface y+
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// Surface y-
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// Surface z+
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// Surface z-
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
------------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
+//E 6 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+------------------------------------------DESIGN VOL PORO NEUMANN CONDITIONS
+DVOL                            0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x-y+z+
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x-y+z-
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x+y+z-
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x+y-z-
-E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x+y-z+
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x-y-z+
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Node x-y-z-
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
-------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
 // Line x+z+
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line y+z+
 E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x-z+
-E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line y-z+
 E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x+z-
-E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line y-z-
 E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x-z-
-E 7 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line y+z-
 E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x-y-
-E 9 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x+y-
-E 10 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x-y+
-E 11 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 11 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Line x+y+
-E 12 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 12 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           5
+// Surface x-
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Surface x+
+//E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Surface y+
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Surface y-
+E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Surface z+
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Surface z-
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+DLINE                           4
+// Line x+z+
+//E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line y+z+
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x-z+
+//E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line y-z+
+E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x+z-
+//E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line y-z-
+E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x-z-
+//E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line y+z-
+E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x-y-
+//E 9 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x+y-
+//E 10 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x-y+
+//E 11 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// Line x+y+
+//E 12 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
-DSURF                           6
+DSURF                           4
 // Surface z+
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Surface z-
@@ -364,15 +242,27 @@ E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 // Surface y-
 E 3 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Surface x-
-E 4 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+//E 4 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Surface y+
 E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Surface x+
-E 6 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
--------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
+//E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+-------------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
+DSURF                           2
+// // Surface x+
+E 6 -
+// // Surface x-
+E 4 -
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DSURF                           0
+//E 6 - 1 fluid conforming fsi_real
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -
+-----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
+DVOL                            1
+//                              Volume
+E 1 - Porosity 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 212 DNODE 1
 NODE 62 DNODE 2
@@ -1111,135 +1001,134 @@ NODE 214 COORD 5.0000000000000000e+00 5.0000000000000000e+00 -1.0000000000000000
 NODE 215 COORD 5.0000000000000000e+00 5.0000000000000000e+00 -3.0000000000000000e+00
 NODE 216 COORD 5.0000000000000000e+00 5.0000000000000000e+00 -5.0000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8PORO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
-2 SOLIDH8PORO HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
-3 SOLIDH8PORO HEX8 9 13 14 10 11 15 16 12 MAT 1 KINEM nonlinear EAS none
-4 SOLIDH8PORO HEX8 13 17 18 14 15 19 20 16 MAT 1 KINEM nonlinear EAS none
-5 SOLIDH8PORO HEX8 17 21 22 18 19 23 24 20 MAT 1 KINEM nonlinear EAS none
-6 SOLIDH8PORO HEX8 4 3 25 26 8 7 27 28 MAT 1 KINEM nonlinear EAS none
-7 SOLIDH8PORO HEX8 3 10 29 25 7 12 30 27 MAT 1 KINEM nonlinear EAS none
-8 SOLIDH8PORO HEX8 10 14 31 29 12 16 32 30 MAT 1 KINEM nonlinear EAS none
-9 SOLIDH8PORO HEX8 14 18 33 31 16 20 34 32 MAT 1 KINEM nonlinear EAS none
-10 SOLIDH8PORO HEX8 18 22 35 33 20 24 36 34 MAT 1 KINEM nonlinear EAS none
-11 SOLIDH8PORO HEX8 26 25 37 38 28 27 39 40 MAT 1 KINEM nonlinear EAS none
-12 SOLIDH8PORO HEX8 25 29 41 37 27 30 42 39 MAT 1 KINEM nonlinear EAS none
-13 SOLIDH8PORO HEX8 29 31 43 41 30 32 44 42 MAT 1 KINEM nonlinear EAS none
-14 SOLIDH8PORO HEX8 31 33 45 43 32 34 46 44 MAT 1 KINEM nonlinear EAS none
-15 SOLIDH8PORO HEX8 33 35 47 45 34 36 48 46 MAT 1 KINEM nonlinear EAS none
-16 SOLIDH8PORO HEX8 38 37 49 50 40 39 51 52 MAT 1 KINEM nonlinear EAS none
-17 SOLIDH8PORO HEX8 37 41 53 49 39 42 54 51 MAT 1 KINEM nonlinear EAS none
-18 SOLIDH8PORO HEX8 41 43 55 53 42 44 56 54 MAT 1 KINEM nonlinear EAS none
-19 SOLIDH8PORO HEX8 43 45 57 55 44 46 58 56 MAT 1 KINEM nonlinear EAS none
-20 SOLIDH8PORO HEX8 45 47 59 57 46 48 60 58 MAT 1 KINEM nonlinear EAS none
-21 SOLIDH8PORO HEX8 50 49 61 62 52 51 63 64 MAT 1 KINEM nonlinear EAS none
-22 SOLIDH8PORO HEX8 49 53 65 61 51 54 66 63 MAT 1 KINEM nonlinear EAS none
-23 SOLIDH8PORO HEX8 53 55 67 65 54 56 68 66 MAT 1 KINEM nonlinear EAS none
-24 SOLIDH8PORO HEX8 55 57 69 67 56 58 70 68 MAT 1 KINEM nonlinear EAS none
-25 SOLIDH8PORO HEX8 57 59 71 69 58 60 72 70 MAT 1 KINEM nonlinear EAS none
-26 SOLIDH8PORO HEX8 5 6 7 8 73 74 75 76 MAT 1 KINEM nonlinear EAS none
-27 SOLIDH8PORO HEX8 6 11 12 7 74 77 78 75 MAT 1 KINEM nonlinear EAS none
-28 SOLIDH8PORO HEX8 11 15 16 12 77 79 80 78 MAT 1 KINEM nonlinear EAS none
-29 SOLIDH8PORO HEX8 15 19 20 16 79 81 82 80 MAT 1 KINEM nonlinear EAS none
-30 SOLIDH8PORO HEX8 19 23 24 20 81 83 84 82 MAT 1 KINEM nonlinear EAS none
-31 SOLIDH8PORO HEX8 8 7 27 28 76 75 85 86 MAT 1 KINEM nonlinear EAS none
-32 SOLIDH8PORO HEX8 7 12 30 27 75 78 87 85 MAT 1 KINEM nonlinear EAS none
-33 SOLIDH8PORO HEX8 12 16 32 30 78 80 88 87 MAT 1 KINEM nonlinear EAS none
-34 SOLIDH8PORO HEX8 16 20 34 32 80 82 89 88 MAT 1 KINEM nonlinear EAS none
-35 SOLIDH8PORO HEX8 20 24 36 34 82 84 90 89 MAT 1 KINEM nonlinear EAS none
-36 SOLIDH8PORO HEX8 28 27 39 40 86 85 91 92 MAT 1 KINEM nonlinear EAS none
-37 SOLIDH8PORO HEX8 27 30 42 39 85 87 93 91 MAT 1 KINEM nonlinear EAS none
-38 SOLIDH8PORO HEX8 30 32 44 42 87 88 94 93 MAT 1 KINEM nonlinear EAS none
-39 SOLIDH8PORO HEX8 32 34 46 44 88 89 95 94 MAT 1 KINEM nonlinear EAS none
-40 SOLIDH8PORO HEX8 34 36 48 46 89 90 96 95 MAT 1 KINEM nonlinear EAS none
-41 SOLIDH8PORO HEX8 40 39 51 52 92 91 97 98 MAT 1 KINEM nonlinear EAS none
-42 SOLIDH8PORO HEX8 39 42 54 51 91 93 99 97 MAT 1 KINEM nonlinear EAS none
-43 SOLIDH8PORO HEX8 42 44 56 54 93 94 100 99 MAT 1 KINEM nonlinear EAS none
-44 SOLIDH8PORO HEX8 44 46 58 56 94 95 101 100 MAT 1 KINEM nonlinear EAS none
-45 SOLIDH8PORO HEX8 46 48 60 58 95 96 102 101 MAT 1 KINEM nonlinear EAS none
-46 SOLIDH8PORO HEX8 52 51 63 64 98 97 103 104 MAT 1 KINEM nonlinear EAS none
-47 SOLIDH8PORO HEX8 51 54 66 63 97 99 105 103 MAT 1 KINEM nonlinear EAS none
-48 SOLIDH8PORO HEX8 54 56 68 66 99 100 106 105 MAT 1 KINEM nonlinear EAS none
-49 SOLIDH8PORO HEX8 56 58 70 68 100 101 107 106 MAT 1 KINEM nonlinear EAS none
-50 SOLIDH8PORO HEX8 58 60 72 70 101 102 108 107 MAT 1 KINEM nonlinear EAS none
-51 SOLIDH8PORO HEX8 73 74 75 76 109 110 111 112 MAT 1 KINEM nonlinear EAS none
-52 SOLIDH8PORO HEX8 74 77 78 75 110 113 114 111 MAT 1 KINEM nonlinear EAS none
-53 SOLIDH8PORO HEX8 77 79 80 78 113 115 116 114 MAT 1 KINEM nonlinear EAS none
-54 SOLIDH8PORO HEX8 79 81 82 80 115 117 118 116 MAT 1 KINEM nonlinear EAS none
-55 SOLIDH8PORO HEX8 81 83 84 82 117 119 120 118 MAT 1 KINEM nonlinear EAS none
-56 SOLIDH8PORO HEX8 76 75 85 86 112 111 121 122 MAT 1 KINEM nonlinear EAS none
-57 SOLIDH8PORO HEX8 75 78 87 85 111 114 123 121 MAT 1 KINEM nonlinear EAS none
-58 SOLIDH8PORO HEX8 78 80 88 87 114 116 124 123 MAT 1 KINEM nonlinear EAS none
-59 SOLIDH8PORO HEX8 80 82 89 88 116 118 125 124 MAT 1 KINEM nonlinear EAS none
-60 SOLIDH8PORO HEX8 82 84 90 89 118 120 126 125 MAT 1 KINEM nonlinear EAS none
-61 SOLIDH8PORO HEX8 86 85 91 92 122 121 127 128 MAT 1 KINEM nonlinear EAS none
-62 SOLIDH8PORO HEX8 85 87 93 91 121 123 129 127 MAT 1 KINEM nonlinear EAS none
-63 SOLIDH8PORO HEX8 87 88 94 93 123 124 130 129 MAT 1 KINEM nonlinear EAS none
-64 SOLIDH8PORO HEX8 88 89 95 94 124 125 131 130 MAT 1 KINEM nonlinear EAS none
-65 SOLIDH8PORO HEX8 89 90 96 95 125 126 132 131 MAT 1 KINEM nonlinear EAS none
-66 SOLIDH8PORO HEX8 92 91 97 98 128 127 133 134 MAT 1 KINEM nonlinear EAS none
-67 SOLIDH8PORO HEX8 91 93 99 97 127 129 135 133 MAT 1 KINEM nonlinear EAS none
-68 SOLIDH8PORO HEX8 93 94 100 99 129 130 136 135 MAT 1 KINEM nonlinear EAS none
-69 SOLIDH8PORO HEX8 94 95 101 100 130 131 137 136 MAT 1 KINEM nonlinear EAS none
-70 SOLIDH8PORO HEX8 95 96 102 101 131 132 138 137 MAT 1 KINEM nonlinear EAS none
-71 SOLIDH8PORO HEX8 98 97 103 104 134 133 139 140 MAT 1 KINEM nonlinear EAS none
-72 SOLIDH8PORO HEX8 97 99 105 103 133 135 141 139 MAT 1 KINEM nonlinear EAS none
-73 SOLIDH8PORO HEX8 99 100 106 105 135 136 142 141 MAT 1 KINEM nonlinear EAS none
-74 SOLIDH8PORO HEX8 100 101 107 106 136 137 143 142 MAT 1 KINEM nonlinear EAS none
-75 SOLIDH8PORO HEX8 101 102 108 107 137 138 144 143 MAT 1 KINEM nonlinear EAS none
-76 SOLIDH8PORO HEX8 109 110 111 112 145 146 147 148 MAT 1 KINEM nonlinear EAS none
-77 SOLIDH8PORO HEX8 110 113 114 111 146 149 150 147 MAT 1 KINEM nonlinear EAS none
-78 SOLIDH8PORO HEX8 113 115 116 114 149 151 152 150 MAT 1 KINEM nonlinear EAS none
-79 SOLIDH8PORO HEX8 115 117 118 116 151 153 154 152 MAT 1 KINEM nonlinear EAS none
-80 SOLIDH8PORO HEX8 117 119 120 118 153 155 156 154 MAT 1 KINEM nonlinear EAS none
-81 SOLIDH8PORO HEX8 112 111 121 122 148 147 157 158 MAT 1 KINEM nonlinear EAS none
-82 SOLIDH8PORO HEX8 111 114 123 121 147 150 159 157 MAT 1 KINEM nonlinear EAS none
-83 SOLIDH8PORO HEX8 114 116 124 123 150 152 160 159 MAT 1 KINEM nonlinear EAS none
-84 SOLIDH8PORO HEX8 116 118 125 124 152 154 161 160 MAT 1 KINEM nonlinear EAS none
-85 SOLIDH8PORO HEX8 118 120 126 125 154 156 162 161 MAT 1 KINEM nonlinear EAS none
-86 SOLIDH8PORO HEX8 122 121 127 128 158 157 163 164 MAT 1 KINEM nonlinear EAS none
-87 SOLIDH8PORO HEX8 121 123 129 127 157 159 165 163 MAT 1 KINEM nonlinear EAS none
-88 SOLIDH8PORO HEX8 123 124 130 129 159 160 166 165 MAT 1 KINEM nonlinear EAS none
-89 SOLIDH8PORO HEX8 124 125 131 130 160 161 167 166 MAT 1 KINEM nonlinear EAS none
-90 SOLIDH8PORO HEX8 125 126 132 131 161 162 168 167 MAT 1 KINEM nonlinear EAS none
-91 SOLIDH8PORO HEX8 128 127 133 134 164 163 169 170 MAT 1 KINEM nonlinear EAS none
-92 SOLIDH8PORO HEX8 127 129 135 133 163 165 171 169 MAT 1 KINEM nonlinear EAS none
-93 SOLIDH8PORO HEX8 129 130 136 135 165 166 172 171 MAT 1 KINEM nonlinear EAS none
-94 SOLIDH8PORO HEX8 130 131 137 136 166 167 173 172 MAT 1 KINEM nonlinear EAS none
-95 SOLIDH8PORO HEX8 131 132 138 137 167 168 174 173 MAT 1 KINEM nonlinear EAS none
-96 SOLIDH8PORO HEX8 134 133 139 140 170 169 175 176 MAT 1 KINEM nonlinear EAS none
-97 SOLIDH8PORO HEX8 133 135 141 139 169 171 177 175 MAT 1 KINEM nonlinear EAS none
-98 SOLIDH8PORO HEX8 135 136 142 141 171 172 178 177 MAT 1 KINEM nonlinear EAS none
-99 SOLIDH8PORO HEX8 136 137 143 142 172 173 179 178 MAT 1 KINEM nonlinear EAS none
-100 SOLIDH8PORO HEX8 137 138 144 143 173 174 180 179 MAT 1 KINEM nonlinear EAS none
-101 SOLIDH8PORO HEX8 145 146 147 148 181 182 183 184 MAT 1 KINEM nonlinear EAS none
-102 SOLIDH8PORO HEX8 146 149 150 147 182 185 186 183 MAT 1 KINEM nonlinear EAS none
-103 SOLIDH8PORO HEX8 149 151 152 150 185 187 188 186 MAT 1 KINEM nonlinear EAS none
-104 SOLIDH8PORO HEX8 151 153 154 152 187 189 190 188 MAT 1 KINEM nonlinear EAS none
-105 SOLIDH8PORO HEX8 153 155 156 154 189 191 192 190 MAT 1 KINEM nonlinear EAS none
-106 SOLIDH8PORO HEX8 148 147 157 158 184 183 193 194 MAT 1 KINEM nonlinear EAS none
-107 SOLIDH8PORO HEX8 147 150 159 157 183 186 195 193 MAT 1 KINEM nonlinear EAS none
-108 SOLIDH8PORO HEX8 150 152 160 159 186 188 196 195 MAT 1 KINEM nonlinear EAS none
-109 SOLIDH8PORO HEX8 152 154 161 160 188 190 197 196 MAT 1 KINEM nonlinear EAS none
-110 SOLIDH8PORO HEX8 154 156 162 161 190 192 198 197 MAT 1 KINEM nonlinear EAS none
-111 SOLIDH8PORO HEX8 158 157 163 164 194 193 199 200 MAT 1 KINEM nonlinear EAS none
-112 SOLIDH8PORO HEX8 157 159 165 163 193 195 201 199 MAT 1 KINEM nonlinear EAS none
-113 SOLIDH8PORO HEX8 159 160 166 165 195 196 202 201 MAT 1 KINEM nonlinear EAS none
-114 SOLIDH8PORO HEX8 160 161 167 166 196 197 203 202 MAT 1 KINEM nonlinear EAS none
-115 SOLIDH8PORO HEX8 161 162 168 167 197 198 204 203 MAT 1 KINEM nonlinear EAS none
-116 SOLIDH8PORO HEX8 164 163 169 170 200 199 205 206 MAT 1 KINEM nonlinear EAS none
-117 SOLIDH8PORO HEX8 163 165 171 169 199 201 207 205 MAT 1 KINEM nonlinear EAS none
-118 SOLIDH8PORO HEX8 165 166 172 171 201 202 208 207 MAT 1 KINEM nonlinear EAS none
-119 SOLIDH8PORO HEX8 166 167 173 172 202 203 209 208 MAT 1 KINEM nonlinear EAS none
-120 SOLIDH8PORO HEX8 167 168 174 173 203 204 210 209 MAT 1 KINEM nonlinear EAS none
-121 SOLIDH8PORO HEX8 170 169 175 176 206 205 211 212 MAT 1 KINEM nonlinear EAS none
-122 SOLIDH8PORO HEX8 169 171 177 175 205 207 213 211 MAT 1 KINEM nonlinear EAS none
-123 SOLIDH8PORO HEX8 171 172 178 177 207 208 214 213 MAT 1 KINEM nonlinear EAS none
-124 SOLIDH8PORO HEX8 172 173 179 178 208 209 215 214 MAT 1 KINEM nonlinear EAS none
-125 SOLIDH8PORO HEX8 173 174 180 179 209 210 216 215 MAT 1 KINEM nonlinear EAS none
+1 SOLIDH8POROP1 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+2 SOLIDH8POROP1 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
+3 SOLIDH8POROP1 HEX8 9 13 14 10 11 15 16 12 MAT 1 KINEM nonlinear EAS none
+4 SOLIDH8POROP1 HEX8 13 17 18 14 15 19 20 16 MAT 1 KINEM nonlinear EAS none
+5 SOLIDH8POROP1 HEX8 17 21 22 18 19 23 24 20 MAT 1 KINEM nonlinear EAS none
+6 SOLIDH8POROP1 HEX8 4 3 25 26 8 7 27 28 MAT 1 KINEM nonlinear EAS none
+7 SOLIDH8POROP1 HEX8 3 10 29 25 7 12 30 27 MAT 1 KINEM nonlinear EAS none
+8 SOLIDH8POROP1 HEX8 10 14 31 29 12 16 32 30 MAT 1 KINEM nonlinear EAS none
+9 SOLIDH8POROP1 HEX8 14 18 33 31 16 20 34 32 MAT 1 KINEM nonlinear EAS none
+10 SOLIDH8POROP1 HEX8 18 22 35 33 20 24 36 34 MAT 1 KINEM nonlinear EAS none
+11 SOLIDH8POROP1 HEX8 26 25 37 38 28 27 39 40 MAT 1 KINEM nonlinear EAS none
+12 SOLIDH8POROP1 HEX8 25 29 41 37 27 30 42 39 MAT 1 KINEM nonlinear EAS none
+13 SOLIDH8POROP1 HEX8 29 31 43 41 30 32 44 42 MAT 1 KINEM nonlinear EAS none
+14 SOLIDH8POROP1 HEX8 31 33 45 43 32 34 46 44 MAT 1 KINEM nonlinear EAS none
+15 SOLIDH8POROP1 HEX8 33 35 47 45 34 36 48 46 MAT 1 KINEM nonlinear EAS none
+16 SOLIDH8POROP1 HEX8 38 37 49 50 40 39 51 52 MAT 1 KINEM nonlinear EAS none
+17 SOLIDH8POROP1 HEX8 37 41 53 49 39 42 54 51 MAT 1 KINEM nonlinear EAS none
+18 SOLIDH8POROP1 HEX8 41 43 55 53 42 44 56 54 MAT 1 KINEM nonlinear EAS none
+19 SOLIDH8POROP1 HEX8 43 45 57 55 44 46 58 56 MAT 1 KINEM nonlinear EAS none
+20 SOLIDH8POROP1 HEX8 45 47 59 57 46 48 60 58 MAT 1 KINEM nonlinear EAS none
+21 SOLIDH8POROP1 HEX8 50 49 61 62 52 51 63 64 MAT 1 KINEM nonlinear EAS none
+22 SOLIDH8POROP1 HEX8 49 53 65 61 51 54 66 63 MAT 1 KINEM nonlinear EAS none
+23 SOLIDH8POROP1 HEX8 53 55 67 65 54 56 68 66 MAT 1 KINEM nonlinear EAS none
+24 SOLIDH8POROP1 HEX8 55 57 69 67 56 58 70 68 MAT 1 KINEM nonlinear EAS none
+25 SOLIDH8POROP1 HEX8 57 59 71 69 58 60 72 70 MAT 1 KINEM nonlinear EAS none
+26 SOLIDH8POROP1 HEX8 5 6 7 8 73 74 75 76 MAT 1 KINEM nonlinear EAS none
+27 SOLIDH8POROP1 HEX8 6 11 12 7 74 77 78 75 MAT 1 KINEM nonlinear EAS none
+28 SOLIDH8POROP1 HEX8 11 15 16 12 77 79 80 78 MAT 1 KINEM nonlinear EAS none
+29 SOLIDH8POROP1 HEX8 15 19 20 16 79 81 82 80 MAT 1 KINEM nonlinear EAS none
+30 SOLIDH8POROP1 HEX8 19 23 24 20 81 83 84 82 MAT 1 KINEM nonlinear EAS none
+31 SOLIDH8POROP1 HEX8 8 7 27 28 76 75 85 86 MAT 1 KINEM nonlinear EAS none
+32 SOLIDH8POROP1 HEX8 7 12 30 27 75 78 87 85 MAT 1 KINEM nonlinear EAS none
+33 SOLIDH8POROP1 HEX8 12 16 32 30 78 80 88 87 MAT 1 KINEM nonlinear EAS none
+34 SOLIDH8POROP1 HEX8 16 20 34 32 80 82 89 88 MAT 1 KINEM nonlinear EAS none
+35 SOLIDH8POROP1 HEX8 20 24 36 34 82 84 90 89 MAT 1 KINEM nonlinear EAS none
+36 SOLIDH8POROP1 HEX8 28 27 39 40 86 85 91 92 MAT 1 KINEM nonlinear EAS none
+37 SOLIDH8POROP1 HEX8 27 30 42 39 85 87 93 91 MAT 1 KINEM nonlinear EAS none
+38 SOLIDH8POROP1 HEX8 30 32 44 42 87 88 94 93 MAT 1 KINEM nonlinear EAS none
+39 SOLIDH8POROP1 HEX8 32 34 46 44 88 89 95 94 MAT 1 KINEM nonlinear EAS none
+40 SOLIDH8POROP1 HEX8 34 36 48 46 89 90 96 95 MAT 1 KINEM nonlinear EAS none
+41 SOLIDH8POROP1 HEX8 40 39 51 52 92 91 97 98 MAT 1 KINEM nonlinear EAS none
+42 SOLIDH8POROP1 HEX8 39 42 54 51 91 93 99 97 MAT 1 KINEM nonlinear EAS none
+43 SOLIDH8POROP1 HEX8 42 44 56 54 93 94 100 99 MAT 1 KINEM nonlinear EAS none
+44 SOLIDH8POROP1 HEX8 44 46 58 56 94 95 101 100 MAT 1 KINEM nonlinear EAS none
+45 SOLIDH8POROP1 HEX8 46 48 60 58 95 96 102 101 MAT 1 KINEM nonlinear EAS none
+46 SOLIDH8POROP1 HEX8 52 51 63 64 98 97 103 104 MAT 1 KINEM nonlinear EAS none
+47 SOLIDH8POROP1 HEX8 51 54 66 63 97 99 105 103 MAT 1 KINEM nonlinear EAS none
+48 SOLIDH8POROP1 HEX8 54 56 68 66 99 100 106 105 MAT 1 KINEM nonlinear EAS none
+49 SOLIDH8POROP1 HEX8 56 58 70 68 100 101 107 106 MAT 1 KINEM nonlinear EAS none
+50 SOLIDH8POROP1 HEX8 58 60 72 70 101 102 108 107 MAT 1 KINEM nonlinear EAS none
+51 SOLIDH8POROP1 HEX8 73 74 75 76 109 110 111 112 MAT 1 KINEM nonlinear EAS none
+52 SOLIDH8POROP1 HEX8 74 77 78 75 110 113 114 111 MAT 1 KINEM nonlinear EAS none
+53 SOLIDH8POROP1 HEX8 77 79 80 78 113 115 116 114 MAT 1 KINEM nonlinear EAS none
+54 SOLIDH8POROP1 HEX8 79 81 82 80 115 117 118 116 MAT 1 KINEM nonlinear EAS none
+55 SOLIDH8POROP1 HEX8 81 83 84 82 117 119 120 118 MAT 1 KINEM nonlinear EAS none
+56 SOLIDH8POROP1 HEX8 76 75 85 86 112 111 121 122 MAT 1 KINEM nonlinear EAS none
+57 SOLIDH8POROP1 HEX8 75 78 87 85 111 114 123 121 MAT 1 KINEM nonlinear EAS none
+58 SOLIDH8POROP1 HEX8 78 80 88 87 114 116 124 123 MAT 1 KINEM nonlinear EAS none
+59 SOLIDH8POROP1 HEX8 80 82 89 88 116 118 125 124 MAT 1 KINEM nonlinear EAS none
+60 SOLIDH8POROP1 HEX8 82 84 90 89 118 120 126 125 MAT 1 KINEM nonlinear EAS none
+61 SOLIDH8POROP1 HEX8 86 85 91 92 122 121 127 128 MAT 1 KINEM nonlinear EAS none
+62 SOLIDH8POROP1 HEX8 85 87 93 91 121 123 129 127 MAT 1 KINEM nonlinear EAS none
+63 SOLIDH8POROP1 HEX8 87 88 94 93 123 124 130 129 MAT 1 KINEM nonlinear EAS none
+64 SOLIDH8POROP1 HEX8 88 89 95 94 124 125 131 130 MAT 1 KINEM nonlinear EAS none
+65 SOLIDH8POROP1 HEX8 89 90 96 95 125 126 132 131 MAT 1 KINEM nonlinear EAS none
+66 SOLIDH8POROP1 HEX8 92 91 97 98 128 127 133 134 MAT 1 KINEM nonlinear EAS none
+67 SOLIDH8POROP1 HEX8 91 93 99 97 127 129 135 133 MAT 1 KINEM nonlinear EAS none
+68 SOLIDH8POROP1 HEX8 93 94 100 99 129 130 136 135 MAT 1 KINEM nonlinear EAS none
+69 SOLIDH8POROP1 HEX8 94 95 101 100 130 131 137 136 MAT 1 KINEM nonlinear EAS none
+70 SOLIDH8POROP1 HEX8 95 96 102 101 131 132 138 137 MAT 1 KINEM nonlinear EAS none
+71 SOLIDH8POROP1 HEX8 98 97 103 104 134 133 139 140 MAT 1 KINEM nonlinear EAS none
+72 SOLIDH8POROP1 HEX8 97 99 105 103 133 135 141 139 MAT 1 KINEM nonlinear EAS none
+73 SOLIDH8POROP1 HEX8 99 100 106 105 135 136 142 141 MAT 1 KINEM nonlinear EAS none
+74 SOLIDH8POROP1 HEX8 100 101 107 106 136 137 143 142 MAT 1 KINEM nonlinear EAS none
+75 SOLIDH8POROP1 HEX8 101 102 108 107 137 138 144 143 MAT 1 KINEM nonlinear EAS none
+76 SOLIDH8POROP1 HEX8 109 110 111 112 145 146 147 148 MAT 1 KINEM nonlinear EAS none
+77 SOLIDH8POROP1 HEX8 110 113 114 111 146 149 150 147 MAT 1 KINEM nonlinear EAS none
+78 SOLIDH8POROP1 HEX8 113 115 116 114 149 151 152 150 MAT 1 KINEM nonlinear EAS none
+79 SOLIDH8POROP1 HEX8 115 117 118 116 151 153 154 152 MAT 1 KINEM nonlinear EAS none
+80 SOLIDH8POROP1 HEX8 117 119 120 118 153 155 156 154 MAT 1 KINEM nonlinear EAS none
+81 SOLIDH8POROP1 HEX8 112 111 121 122 148 147 157 158 MAT 1 KINEM nonlinear EAS none
+82 SOLIDH8POROP1 HEX8 111 114 123 121 147 150 159 157 MAT 1 KINEM nonlinear EAS none
+83 SOLIDH8POROP1 HEX8 114 116 124 123 150 152 160 159 MAT 1 KINEM nonlinear EAS none
+84 SOLIDH8POROP1 HEX8 116 118 125 124 152 154 161 160 MAT 1 KINEM nonlinear EAS none
+85 SOLIDH8POROP1 HEX8 118 120 126 125 154 156 162 161 MAT 1 KINEM nonlinear EAS none
+86 SOLIDH8POROP1 HEX8 122 121 127 128 158 157 163 164 MAT 1 KINEM nonlinear EAS none
+87 SOLIDH8POROP1 HEX8 121 123 129 127 157 159 165 163 MAT 1 KINEM nonlinear EAS none
+88 SOLIDH8POROP1 HEX8 123 124 130 129 159 160 166 165 MAT 1 KINEM nonlinear EAS none
+89 SOLIDH8POROP1 HEX8 124 125 131 130 160 161 167 166 MAT 1 KINEM nonlinear EAS none
+90 SOLIDH8POROP1 HEX8 125 126 132 131 161 162 168 167 MAT 1 KINEM nonlinear EAS none
+91 SOLIDH8POROP1 HEX8 128 127 133 134 164 163 169 170 MAT 1 KINEM nonlinear EAS none
+92 SOLIDH8POROP1 HEX8 127 129 135 133 163 165 171 169 MAT 1 KINEM nonlinear EAS none
+93 SOLIDH8POROP1 HEX8 129 130 136 135 165 166 172 171 MAT 1 KINEM nonlinear EAS none
+94 SOLIDH8POROP1 HEX8 130 131 137 136 166 167 173 172 MAT 1 KINEM nonlinear EAS none
+95 SOLIDH8POROP1 HEX8 131 132 138 137 167 168 174 173 MAT 1 KINEM nonlinear EAS none
+96 SOLIDH8POROP1 HEX8 134 133 139 140 170 169 175 176 MAT 1 KINEM nonlinear EAS none
+97 SOLIDH8POROP1 HEX8 133 135 141 139 169 171 177 175 MAT 1 KINEM nonlinear EAS none
+98 SOLIDH8POROP1 HEX8 135 136 142 141 171 172 178 177 MAT 1 KINEM nonlinear EAS none
+99 SOLIDH8POROP1 HEX8 136 137 143 142 172 173 179 178 MAT 1 KINEM nonlinear EAS none
+100 SOLIDH8POROP1 HEX8 137 138 144 143 173 174 180 179 MAT 1 KINEM nonlinear EAS none
+101 SOLIDH8POROP1 HEX8 145 146 147 148 181 182 183 184 MAT 1 KINEM nonlinear EAS none
+102 SOLIDH8POROP1 HEX8 146 149 150 147 182 185 186 183 MAT 1 KINEM nonlinear EAS none
+103 SOLIDH8POROP1 HEX8 149 151 152 150 185 187 188 186 MAT 1 KINEM nonlinear EAS none
+104 SOLIDH8POROP1 HEX8 151 153 154 152 187 189 190 188 MAT 1 KINEM nonlinear EAS none
+105 SOLIDH8POROP1 HEX8 153 155 156 154 189 191 192 190 MAT 1 KINEM nonlinear EAS none
+106 SOLIDH8POROP1 HEX8 148 147 157 158 184 183 193 194 MAT 1 KINEM nonlinear EAS none
+107 SOLIDH8POROP1 HEX8 147 150 159 157 183 186 195 193 MAT 1 KINEM nonlinear EAS none
+108 SOLIDH8POROP1 HEX8 150 152 160 159 186 188 196 195 MAT 1 KINEM nonlinear EAS none
+109 SOLIDH8POROP1 HEX8 152 154 161 160 188 190 197 196 MAT 1 KINEM nonlinear EAS none
+110 SOLIDH8POROP1 HEX8 154 156 162 161 190 192 198 197 MAT 1 KINEM nonlinear EAS none
+111 SOLIDH8POROP1 HEX8 158 157 163 164 194 193 199 200 MAT 1 KINEM nonlinear EAS none
+112 SOLIDH8POROP1 HEX8 157 159 165 163 193 195 201 199 MAT 1 KINEM nonlinear EAS none
+113 SOLIDH8POROP1 HEX8 159 160 166 165 195 196 202 201 MAT 1 KINEM nonlinear EAS none
+114 SOLIDH8POROP1 HEX8 160 161 167 166 196 197 203 202 MAT 1 KINEM nonlinear EAS none
+115 SOLIDH8POROP1 HEX8 161 162 168 167 197 198 204 203 MAT 1 KINEM nonlinear EAS none
+116 SOLIDH8POROP1 HEX8 164 163 169 170 200 199 205 206 MAT 1 KINEM nonlinear EAS none
+117 SOLIDH8POROP1 HEX8 163 165 171 169 199 201 207 205 MAT 1 KINEM nonlinear EAS none
+118 SOLIDH8POROP1 HEX8 165 166 172 171 201 202 208 207 MAT 1 KINEM nonlinear EAS none
+119 SOLIDH8POROP1 HEX8 166 167 173 172 202 203 209 208 MAT 1 KINEM nonlinear EAS none
+120 SOLIDH8POROP1 HEX8 167 168 174 173 203 204 210 209 MAT 1 KINEM nonlinear EAS none
+121 SOLIDH8POROP1 HEX8 170 169 175 176 206 205 211 212 MAT 1 KINEM nonlinear EAS none
+122 SOLIDH8POROP1 HEX8 169 171 177 175 205 207 213 211 MAT 1 KINEM nonlinear EAS none
+123 SOLIDH8POROP1 HEX8 171 172 178 177 207 208 214 213 MAT 1 KINEM nonlinear EAS none
+124 SOLIDH8POROP1 HEX8 172 173 179 178 208 209 215 214 MAT 1 KINEM nonlinear EAS none
+125 SOLIDH8POROP1 HEX8 173 174 180 179 209 210 216 215 MAT 1 KINEM nonlinear EAS none
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END
-

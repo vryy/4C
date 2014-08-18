@@ -289,7 +289,10 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     // get single field block matrices
     Teuchos::RCP<LINALG::BlockSparseMatrixBase>       pbm    = PoroField() -> SystemBlockMatrix();
 
+    // Todo: use only blockmatrix pbm instead of sparse matrix
+    // vuong 08/14
     Teuchos::RCP<LINALG::SparseMatrix>                p      = PoroField() -> SystemSparseMatrix();
+
     const Teuchos::RCP<LINALG::SparseMatrix>          f      = FluidField()-> SystemSparseMatrix();
     const Teuchos::RCP<LINALG::BlockSparseMatrixBase> fbm    = FluidField()-> BlockSystemMatrix();
     const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a      = AleField()  -> BlockSystemMatrix();
@@ -683,7 +686,7 @@ void FPSI::Monolithic_Plain::SetupVector(Epetra_Vector &f,
   Teuchos::RCP<Epetra_Vector> fcvgfsi = FluidField()->Interface()->ExtractFSICondVector(fv);
 
   Teuchos::RCP<Epetra_Vector> modsv = PoroField()->StructureField()->Interface()->InsertFSICondVector(FluidToStruct_FSI(fcvgfsi)); //(fvg)fg -> (fvg)sg -> (fvg)s
-  Teuchos::RCP<Epetra_Vector> mmodsv = PoroField()->Extractor().InsertVector(modsv,0); //(fvg)s -> (fvg)p
+  Teuchos::RCP<Epetra_Vector> mmodsv = PoroField()->Extractor()->InsertVector(modsv,0); //(fvg)s -> (fvg)p
 
   mmodsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
 
@@ -711,7 +714,7 @@ void FPSI::Monolithic_Plain::SetupRHSLambda(Epetra_Vector& f)
 
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal scaling
     Teuchos::RCP<Epetra_Vector> lambdafull = PoroField()->StructureField()->Interface()->InsertFSICondVector(FluidToStruct_FSI(lambda_)); //(lambda)fg -> (lambda)sg -> (lambda)s
-    Teuchos::RCP<Epetra_Vector> lambdafull_p = PoroField()->Extractor().InsertVector(lambdafull,0); //(lambda)s -> (lambda)p
+    Teuchos::RCP<Epetra_Vector> lambdafull_p = PoroField()->Extractor()->InsertVector(lambdafull,0); //(lambda)s -> (lambda)p
     lambdafull_p->Scale(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam));
 
     // add Lagrange multiplier
@@ -785,7 +788,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
    rhs->Scale(scale * (1.-stiparam)/(1.-ftiparam) * Dt() * timescale);
    rhs = FluidToStruct_FSI(rhs);
    rhs = PoroField()->StructureField()->Interface()->InsertFSICondVector(rhs);
-   rhs = PoroField()->Extractor().InsertVector(rhs,0); //s->p
+   rhs = PoroField()->Extractor()->InsertVector(rhs,0); //s->p
 
    if (PoroField()->StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym) //??ChrAg
    {
@@ -932,7 +935,7 @@ void FPSI::Monolithic_Plain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
 
   // porous medium
   px = Extractor().ExtractVector(x,poro_block_);
-  Teuchos::RCP<Epetra_Vector> sx = PoroField()->Extractor().ExtractVector(px,0); //Extract structural dofs
+  Teuchos::RCP<Epetra_Vector> sx = PoroField()->Extractor()->ExtractVector(px,0); //Extract structural dofs
 
   // extract inner ALE solution increment
    Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,ale_i_block_);

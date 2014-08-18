@@ -200,9 +200,12 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
   }
 
   // initialize Poroelasticity-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
-      LINALG::DefaultBlockMatrixStrategy>(Extractor(), Extractor(), 81, false,
-      true));
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                              *Extractor(),
+                              *Extractor(),
+                              81,
+                              false,
+                              true));
 
   // initialize coupling matrixes
   k_fs_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<

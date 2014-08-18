@@ -8,7 +8,7 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus 
+created by pre_exodus
 // Small four element (1xstruct, 1xporo, 2xfluid) test case,
 // which tests overlapping FPSI/FSI- Interfaces for FPSI problems!
 ------------------------------------------------------PROBLEM SIZE
@@ -104,18 +104,9 @@ YOUNG_IS_TEMP_DEPENDENT         No
 THETA                           1.0
 ---------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
-RESTARTEVRY                     1
-NUMSTEP                         200
-MAXTIME                         5000
-TIMESTEP                        0.01
 ITEMAX                          1
 ITEMIN                          1
 UPRES                           1
-RESTOL                          1e-08
-INCTOL                          1e-08
-NORM_INC                        Abs
-NORM_RESF                       Abs
-NORMCOMBI_RESFINC               And
 SECONDORDER                     Yes
 CONTIPARTINT                    Yes
 LINEAR_SOLVER                   1
@@ -236,220 +227,16 @@ CONVTOL                         1e-06
 ALPHABJ                         1
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-AZSOLVE                         GMRES
-AZPREC                          ILU
-IFPACKOVERLAP                   0
-IFPACKGFILL                     0
-IFPACKFILL                      1
-IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
-AZSUB                           50
-AZCONV                          AZ_r0
-AZOUTPUT                        0
-AZREUSE                         0
-AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
-AZTOL                           1e-08
-AZOMEGA                         0
-DWINDTAU                        1.5
-AZSCAL                          none
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_AGG_SIZE                     27
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_DAMPCOARSE                   1
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOTIMES                     1 1 1 1 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
-SUB_SOLVER1                     -1
-SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-PERMUTE_SYSTEM                  none
-NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
 NAME                            PoroSolver
-SIMPLE_DAMPING                  1
 -----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
-AZSOLVE                         GMRES
-AZPREC                          ILU
-IFPACKOVERLAP                   0
-IFPACKGFILL                     0
-IFPACKFILL                      1
-IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
-AZSUB                           50
-AZCONV                          AZ_r0
-AZOUTPUT                        0
-AZREUSE                         0
-AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
-AZTOL                           1e-08
-AZOMEGA                         0
-DWINDTAU                        1.5
-AZSCAL                          none
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_AGG_SIZE                     27
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_DAMPCOARSE                   1
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOTIMES                     1 1 1 1 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
-SUB_SOLVER1                     -1
-SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-PERMUTE_SYSTEM                  none
-NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
 NAME                            Struct_Solver
-SIMPLE_DAMPING                  1
 -----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
-AZSOLVE                         GMRES
-AZPREC                          ILU
-IFPACKOVERLAP                   0
-IFPACKGFILL                     0
-IFPACKFILL                      1
-IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
-AZSUB                           50
-AZCONV                          AZ_r0
-AZOUTPUT                        0
-AZREUSE                         0
-AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
-AZTOL                           1e-08
-AZOMEGA                         0
-DWINDTAU                        1.5
-AZSCAL                          none
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_AGG_SIZE                     27
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_DAMPCOARSE                   1
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOTIMES                     1 1 1 1 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
-SUB_SOLVER1                     -1
-SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-PERMUTE_SYSTEM                  none
-NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
 NAME                            Fluid_Solver
-SIMPLE_DAMPING                  1
 -----------------------------------------------------------SOLVER 4
 SOLVER                          UMFPACK
-AZSOLVE                         GMRES
-AZPREC                          ILU
-IFPACKOVERLAP                   0
-IFPACKGFILL                     0
-IFPACKFILL                      1
-IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
-AZSUB                           50
-AZCONV                          AZ_r0
-AZOUTPUT                        0
-AZREUSE                         0
-AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
-AZTOL                           1e-08
-AZOMEGA                         0
-DWINDTAU                        1.5
-AZSCAL                          none
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_AGG_SIZE                     27
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_DAMPCOARSE                   1
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOTIMES                     1 1 1 1 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
-SUB_SOLVER1                     -1
-SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-PERMUTE_SYSTEM                  none
-NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
 NAME                            ALE_Solver
-SIMPLE_DAMPING                  1
 -----------------------------------------------------------SOLVER 5
 SOLVER                          UMFPACK
 AZSOLVE                         GMRES
@@ -543,7 +330,7 @@ E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0 0.0 0.0 CURVE none none none none FUNCT 0
 //DVOL   1
 //E 2 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ---------------------------------DESIGN SURF PORO DIRICH CONDITIONS
-DSURF 1 
+DSURF 1
 E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF  1
@@ -563,14 +350,14 @@ E 6 - 1
 --------------------------DESIGN SURFACE PORO PRESSURE INTEGRATION
 DSURF  2
 // structure_coupling_surface ... fpsi
-E 7 - 
+E 7 -
 // p s coupling surface
-E 10 - 
+E 10 -
 ------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL   1
 E 2 - 0
 ----------------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
-//DSURF				0
+//DSURF        0
 //E 7 -
 -----------------------------------------------DNODE-NODE TOPOLOGY
 //NODE    134 DNODE 1
@@ -651,30 +438,30 @@ NODE    22 DVOL 3
 NODE    23 DVOL 3
 NODE    24 DVOL 3
 -------------------------------------------------------NODE COORDS
-NODE 1  	COORD	-0.5	-0.5	0.5	
-NODE 2  	COORD	0.5	-0.5	0.5	
-NODE 3  	COORD	0.5	-0.5	-0.5	
-NODE 4  	COORD	-0.5	-0.5	-0.5	
-NODE 5  	COORD	-0.5	0.0	0.5	
-NODE 6  	COORD	0.5	0.0	0.5	
-NODE 7  	COORD	0.5	0.0	-0.5	
-NODE 8  	COORD	-0.5	0.0	-0.5	
-NODE 9  	COORD	-0.5	0.5	0.5	
-NODE 10  	COORD	0.5	0.5	0.5	
-NODE 11  	COORD	0.5	0.5	-0.5	
-NODE 12  	COORD	-0.5	0.5	-0.5	
-NODE 13  	COORD	-1.5	-0.5	0.5	
-NODE 14  	COORD	-0.5	-0.5	0.5	
-NODE 15  	COORD	-0.5	-0.5	-0.5	
-NODE 16  	COORD	-1.5	-0.5	-0.5	
-NODE 17 	COORD	-1.5	0.0	0.5	
-NODE 18  	COORD	-0.5	0.0	0.5	
-NODE 19  	COORD	-0.5	0.0	-0.5	
-NODE 20  	COORD	-1.5	0.0	-0.5	
-NODE 21  	COORD	-1.5	0.5	0.5	
-NODE 22  	COORD	-0.5	0.5	0.5	
-NODE 23  	COORD	-0.5	0.5	-0.5	
-NODE 24  	COORD	-1.5	0.5	-0.5	
+NODE 1    COORD  -0.5  -0.5  0.5
+NODE 2    COORD  0.5  -0.5  0.5
+NODE 3    COORD  0.5  -0.5  -0.5
+NODE 4    COORD  -0.5  -0.5  -0.5
+NODE 5    COORD  -0.5  0.0  0.5
+NODE 6    COORD  0.5  0.0  0.5
+NODE 7    COORD  0.5  0.0  -0.5
+NODE 8    COORD  -0.5  0.0  -0.5
+NODE 9    COORD  -0.5  0.5  0.5
+NODE 10    COORD  0.5  0.5  0.5
+NODE 11    COORD  0.5  0.5  -0.5
+NODE 12    COORD  -0.5  0.5  -0.5
+NODE 13    COORD  -1.5  -0.5  0.5
+NODE 14    COORD  -0.5  -0.5  0.5
+NODE 15    COORD  -0.5  -0.5  -0.5
+NODE 16    COORD  -1.5  -0.5  -0.5
+NODE 17   COORD  -1.5  0.0  0.5
+NODE 18    COORD  -0.5  0.0  0.5
+NODE 19    COORD  -0.5  0.0  -0.5
+NODE 20    COORD  -1.5  0.0  -0.5
+NODE 21    COORD  -1.5  0.5  0.5
+NODE 22    COORD  -0.5  0.5  0.5
+NODE 23    COORD  -0.5  0.5  -0.5
+NODE 24    COORD  -1.5  0.5  -0.5
 
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8PORO HEX8  5 6 7 8 9 10 11 12  MAT 1 KINEM nonlinear EAS none

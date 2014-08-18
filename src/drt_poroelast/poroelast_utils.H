@@ -21,6 +21,7 @@
 #include "Epetra_Vector.h"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include "../drt_inpar/inpar_poroelast.H"
 
 
 /*----------------------------------------------------------------------*
@@ -83,6 +84,12 @@ namespace POROELAST
     void SetMaterialPointersMatchingGrid(
         Teuchos::RCP<const DRT::Discretization> sourcedis,
         Teuchos::RCP<const DRT::Discretization> targetdis);
+
+    //! Determine norm of vector
+    double CalculateVectorNorm(
+      const enum INPAR::POROELAST::VectorNorm norm,  //!< norm to use
+      const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
+      );
 
   } // namespace UTILS
 

@@ -46,6 +46,12 @@ namespace POROELAST
       //! initialise system
       virtual void SetupSystem();
 
+      //! dof row map of Structure field
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMapStructure();
+
+      //! dof row map of Fluid field
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMapFluid();
+
     protected:
       //! prepare new time step
       void PrepareTimeStep();

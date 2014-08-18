@@ -95,7 +95,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
 
   // create instance of poroelast subproblem
-  poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, poroelastdynparams));
+  poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams));
   // ask base algorithm for the fluid time integrator
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
@@ -1558,8 +1558,8 @@ void FPSI::Monolithic::BuildConvergenceNorms()
 
 
   rhs_poro              = Extractor().ExtractVector(rhs_, poro_block_);
-  rhs_porostruct = PoroField()->Extractor().ExtractVector(rhs_poro, 0);
-  rhs_porofluid  = PoroField()->Extractor().ExtractVector(rhs_poro, 1);
+  rhs_porostruct = PoroField()->Extractor()->ExtractVector(rhs_poro, 0);
+  rhs_porofluid  = PoroField()->Extractor()->ExtractVector(rhs_poro, 1);
   rhs_porofluidvelocity = PoroField()->FluidField()->ExtractVelocityPart(rhs_porofluid);
   rhs_porofluidpressure = PoroField()->FluidField()->ExtractPressurePart(rhs_porofluid);
   rhs_porointerface     = PoroField()->FluidField()->FPSIInterface()->ExtractFPSICondVector(rhs_porofluid);
@@ -1620,8 +1620,8 @@ if (islinesearch_ == false)
   Teuchos::RCP<const Epetra_Vector> iterincfluidinterface;
 
   iterincporo              = Extractor().ExtractVector(iterinc_, poro_block_);
-  iterincporostruct        = PoroField()->Extractor().ExtractVector(iterincporo,0);
-  iterincporofluid         = PoroField()->Extractor().ExtractVector(iterincporo,1);
+  iterincporostruct        = PoroField()->Extractor()->ExtractVector(iterincporo,0);
+  iterincporofluid         = PoroField()->Extractor()->ExtractVector(iterincporo,1);
   iterincporofluidvelocity = PoroField() ->FluidField()->ExtractVelocityPart(iterincporofluid);
   iterincporofluidpressure = PoroField() ->FluidField()->ExtractPressurePart(iterincporofluid);
   iterincporointerface     = PoroField() ->Interface().ExtractVector(iterincporo,3);
