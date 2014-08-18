@@ -166,12 +166,11 @@ namespace ELEMENTS
         DRT::Discretization &                                               cutdis,            ///< cut discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
         Teuchos::ParameterList&                                             params,            ///< parameter list
         const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
     ) = 0;
 
-    virtual int ComputeErrorInterfacefluidfluidcoupling(
+    virtual int ComputeErrorInterfaceXFluidFluid(
         DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
@@ -181,7 +180,6 @@ namespace ELEMENTS
         DRT::Discretization &                                               embdis,            ///< embedded discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
         Teuchos::ParameterList&                                             params,            ///< parameter list
         const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
         std::map<int,int> &                                                 boundary_emb_gid_map

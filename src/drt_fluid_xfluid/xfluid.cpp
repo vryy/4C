@@ -2481,11 +2481,6 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
             // new Benedikt's transformation
             e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
-
-            // needed for fluid-fluid Coupling
-            std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
-            Epetra_SerialDenseMatrix  Cuiui(1,1);
-
             if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
                CouplingMethod() == INPAR::XFEM::Nitsche)
@@ -2499,7 +2494,6 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                   *boundarydis_,
                   bcells,
                   bintpoints,
-                  side_coupling,
                   *params_,
                   cells);
             }

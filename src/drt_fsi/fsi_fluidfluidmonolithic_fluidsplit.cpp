@@ -109,6 +109,8 @@ void FSI::FluidFluidMonolithicFluidSplit::PrepareTimeStep()
   if (Step() == 0 || !relaxing_ale_)
     return;
 
+  // rebuild maps and reset fluid matrix, if we relaxed the ALE-mesh in
+  // the previous step
   if (relaxing_ale_every_ < 1)
     dserror("You want to relax the ALE-mesh, but provide a relaxation interval of %d?!", relaxing_ale_every_);
 

@@ -103,7 +103,7 @@ VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           averaged //inflow
 VELGRAD_INTERFACE_STAB          yes
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

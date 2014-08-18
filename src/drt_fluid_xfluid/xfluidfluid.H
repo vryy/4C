@@ -646,7 +646,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    aleneumann_loads_;
 
     //! @name embedded fluid velocity and pressure at time n+1, n, n-1 and n+alpha_F
-    //{@
+    //@{
     /// \f$ \mathbf{u}^{e,n+1} \f$
     Teuchos::RCP<Epetra_Vector>    alevelnp_;
     /// \f$ \mathbf{u}^{e,n} \f$
@@ -663,7 +663,7 @@ namespace FLD
     //@}
 
     //! @name displacements at time n+1, n and n-1
-    //{@
+    //@{
     /// \f$ \mathbf{d}^{G,n+1} \f$
     Teuchos::RCP<Epetra_Vector>    aledispnp_;
     /// \f$ \mathbf{d}^{G,n} \f$
@@ -698,7 +698,7 @@ namespace FLD
     std::map<int, int> boundary_emb_gid_map_;
 
     //! @name state vectors for fluid-fluid interface discretization
-    //{@
+    //@{
     /// \f$ \mathbf{u}^{e,n+1}_{\Gamma} \f$, interface velocity at time n+1
     Teuchos::RCP<Epetra_Vector>    ivelnp_;
     /// \f$ \mathbf{u}^{e,n}_{\Gamma} \f$, interface velocity at time n

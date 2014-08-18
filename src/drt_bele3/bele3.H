@@ -18,7 +18,6 @@ Maintainer: Raffaela Kruse
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -357,9 +356,9 @@ private:
 
   //! compute infintesimal line element dr for integration along the line
   double  f2_substitution(
-		      const Epetra_SerialDenseMatrix  xyze,
-		      const Epetra_SerialDenseMatrix  deriv,
-		      const int iel);
+          const Epetra_SerialDenseMatrix  xyze,
+          const Epetra_SerialDenseMatrix  deriv,
+          const int iel);
 
   //! Get Rule for Gaussintegration according to DRT::UTIL
   DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);

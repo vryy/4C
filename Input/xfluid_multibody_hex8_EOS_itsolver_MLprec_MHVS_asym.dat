@@ -59,13 +59,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -87,7 +87,7 @@ XFLUID_BOUNDARY                 xfluid_stationary_boundary    // moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_zero
 //VEL_INIT_FUNCT_NO             2
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_viscous_stress       
+COUPLING_METHOD                 Hybrid_LM_viscous_stress
 HYBRID_LM_L2_PROJ               full_ele_proj //full_ele_proj  // part_ele_proj
 VISC_STAB_FAC                   4.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
@@ -95,7 +95,7 @@ VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf
 CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel  // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
-VISC_ADJOINT_SYMMETRY		no
+VISC_ADJOINT_SYMMETRY           no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -145,14 +145,14 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.85878032722323727e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.56416306135555745e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.85777972221276566e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.56412104944749879e-02 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.38513566987826042e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.31880884287436650e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.33269132794559553e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.38623652798299872e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.31859587186558813e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.33130267611230657e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.70402617942288757e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.70508137951697769e+01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         34
 NDLINE                          57

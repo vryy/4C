@@ -59,13 +59,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -144,14 +144,14 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.91718063680829554e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.59755282840023521e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.91540623348263939e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.59758281194291273e-02 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.39372734292513414e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.32445430901395977e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.38659701481416109e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.39597964516640083e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.32407247110311732e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.38427851781516520e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.71531461068545923e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.71748302886394733e+01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         34
 NDLINE                          57

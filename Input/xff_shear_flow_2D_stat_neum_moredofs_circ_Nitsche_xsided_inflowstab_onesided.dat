@@ -102,7 +102,7 @@ IS_PSEUDO_2D                    yes
 VISC_STAB_FAC                   20.0
 XFF_CONV_STAB_SCALING           inflow//averaged//none
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

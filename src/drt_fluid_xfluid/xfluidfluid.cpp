@@ -5053,62 +5053,11 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
             // new Benedikt's transformation
             e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
-            std::vector<int> patchelementslm;
-            std::vector<int> patchelementslmowner;
-
-            // initialize the coupling matrices for each side and the current element
-            // loop over side/boundary-cell map
-            for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-                  bc!=bcells.end(); ++bc )
-            {
-              const int sid = bc->first; // all boundary cells within the current iterator belong to the same side
-              DRT::Element * side = boundarydis_->gElement( sid );
-
-              std::vector<int> patchlm;
-              std::vector<int> patchlmowner;
-              std::vector<int> patchlmstride;
-
-              // for nitsche embedded and two-sided we couple with the whole embedded element not only with its side
-              if (coupling_approach_ == CouplingMHCS_XFluid or
-                  coupling_approach_ == CouplingNitsche_XFluid or
-                  coupling_approach_ == CouplingMHVS_XFluid)
-                side->LocationVector(*boundarydis_, patchlm, patchlmowner, patchlmstride);
-              else if (coupling_approach_ == CouplingNitsche_EmbFluid or coupling_approach_ == CouplingNitsche_TwoSided)
-              {
-                // get the corresponding embedded element for nitsche
-                // embedded and two-sided
-                const int emb_eid = boundary_emb_gid_map_.find(sid)->second;
-                DRT::Element * emb_ele = embdis_->gElement( emb_eid );
-                emb_ele->LocationVector(*embdis_, patchlm, patchlmowner, patchlmstride);
-              }
-
-              patchelementslm.reserve( patchelementslm.size() + patchlm.size());
-              patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
-
-              patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
-              patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
-
-              const size_t ndof_i = patchlm.size();     // sum over number of dofs of all sides
-              const size_t ndof   = la[0].lm_.size();   // number of dofs for background element
-
-              std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid];
-              if ( couplingmatrices.size() != 0 ) dserror("zero sized vector expected");
-              couplingmatrices.resize(3);
-
-              // no coupling for pressure in stress based method, but the coupling matrices include entries for pressure coupling
-              couplingmatrices[0].Shape(ndof_i,ndof);  //C_uiu
-              couplingmatrices[1].Shape(ndof,ndof_i);  //C_uui
-              couplingmatrices[2].Shape(ndof_i,1);     //rhC_ui
-            } // end of loop over sides
-
-            const size_t nui = patchelementslm.size();
-            Epetra_SerialDenseMatrix  Cuiui(nui,nui);
-
             if(coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress or
                coupling_method_ == INPAR::XFEM::Nitsche)
             {
-              impl->ComputeErrorInterfacefluidfluidcoupling(
+              impl->ComputeErrorInterfaceXFluidFluid(
                   ele,
                   *bgdis_,
                   la[0].lm_,
@@ -5118,7 +5067,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
                   *embdis_,
                   bcells,
                   bintpoints,
-                  side_coupling,
                   *params_,
                   cells,
                   boundary_emb_gid_map_);

@@ -2,11 +2,12 @@
 /*!
 \file fluid_ele_calc_xfem_coupling.H
 
-\brief Interface class for coupling of sides and elements from two different meshes
-
+\brief Factory class for providing an implementation for coupling with
+       Mixed/Stress/Hybrid methods or Nitsche's method to enforce
+       interface conditions in the XFEM weakly
 <pre>
-Maintainer: Shadan Shahmiri /Benedikt Schott
-            shahmiri@lnm.mw.tum.de
+Maintainer: Raffaela Kruse / Benedikt Schott
+            kruse@lnm.mw.tum.de
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
@@ -17,6 +18,18 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #ifndef FLUID_ELE_CALC_XFEM_COUPLING_H
 #define FLUID_ELE_CALC_XFEM_COUPLING_H
 
+/**
+ * When we enforce coupling conditions or dirichlet conditions on embedded interfaces in the XFEM weakly,
+ * we obtain contributions from coupling terms, that have to appear in the element matrix & rhs of the
+ * XFEM-element (further denoted as 'master') and the element we want to couple with (named 'slave', can be an XFEM-element itself!).
+ * We try to keep this interface as abstract as possible, such that we can use the same routines for
+ * xfluid WDBC-problems, xfluid-fluid coupling, XFSI and two-phase flow (and future applications).
+ * The classes in here provide an interface to evaluate the slave element
+ * and handle the coupling terms, especially all those, that are added to the slave element system.
+ * There are two coupling methods available, which are inherently similar:
+ * Nitsche's method and a mixed/hybrid stress-based Lagrange multiplier ("HybridLM") approach.
+ * kruse, 08/14
+ */
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -30,294 +43,293 @@ namespace DRT
   {
     namespace XFLUID
     {
-
-    /// Factory class that provides the creation of the Side implementation class (SideImpl) for XFEM interface coupling
-    /*!
-      This class is a factory class that creates templated Side implementation class (SideImpl).
-      Dependent on the template pairs between cut background element and cutting interface Side the SideImpl
-      is created, which provides the implementation of coupling matrices for different coupling strategies,
-      like Nitsche's method of Mixed/Stress/Hybrid method.
-
-      <h3>Usability</h3>
-
-      The calculations are done by the EvaluateXfemInterface...() methods that call this SideInterface factory class
-
-      \author schott
-      \date 04/12
-     */
+      /**
+       * Interface class for slave element (whole 3D element or just a 2D boundary element).
+       * Handles evaluation of slave element's shape functions, provides access to
+       * velocities, velocity gradients and pressure at the coupling interface, and more.
+       * This class includes all functionalities, that are related to the element to be coupled,
+       * not to the coupling method itself.
+       * It can be used as a factory for pure coupling slave element representations.
+       * These are useful, if you want to access the coupled element
+       * without assembling any coupling terms (e.g. in two-sided xfluid-fluid coupling
+       * for gauss-point projection or error calculation in case of a given analytical solution).
+       */
       template<DRT::Element::DiscretizationType distype>
-      class SideInterface
+      class SlaveElementInterface
       {
+
       public:
-        SideInterface(){};
 
-        static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-        static const int bg_numdof_ = nsd_ + 1;
-        static const int numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+        /// number of spatial dimensions
+        static const unsigned nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-        //! Mixed/Stress/Hybrid (MSH) stress-based LM coupling
-        static Teuchos::RCP<SideInterface<distype> > Impl(
-            DRT::Element *              side,            ///< side element
-            Epetra_SerialDenseMatrix &  C_uiu,           ///< C_uiu coupling matrix
-            Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
-            Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
-            Epetra_SerialDenseMatrix &  Gsui,            ///< interface sigma-u_interface coupling
-            Epetra_SerialDenseMatrix &  Guis,            ///< interface u_interface-sigma coupling
-            Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
-            bool isViscAdjointSymmetric = false          ///< symmetric or skew-symmetric formulation of MHVS adjoint viscous term
+        /// application context (to enable specific features)
+        enum ApplicationType
+        {
+          MonolithicXFSI,
+          XFluidWDBC,
+          XFluidFluid,
+          TwoPhaseFlow
+        };
+
+        //! create a pure coupling slave element representation
+        static Teuchos::RCP<SlaveElementInterface<distype> > CreateSlaveElementRepresentation(
+          DRT::Element *              slave_ele,     ///< coupling slave element
+          Epetra_SerialDenseMatrix &  slave_xyz      ///< global node coordinates of coupling slave element
         );
 
-        //! Nitsche (NIT) coupling between background element and side element
-        static Teuchos::RCP<SideInterface<distype> > Impl(
-            DRT::Element *              side,            ///< side element
-            Epetra_SerialDenseMatrix &  C_uiu,           ///< C_uiu coupling matrix
-            Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
-            Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
-            Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-            Epetra_SerialDenseMatrix &  side_xyze,       ///< global node coordinates
-            bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
-        );
+        //! dtor
+        virtual ~SlaveElementInterface(){};
 
-        //! simple side coupling together with embedded Nitsche coupling
-        static Teuchos::RCP<SideInterface<distype> > Impl(
-            DRT::Element *              side,            ///< side element
-            Epetra_SerialDenseMatrix &  side_xyze        ///< global node coordinates
-        );
-
-        virtual ~SideInterface(){}
-
-
-        //! add side's interface displacements and set current side node coordiantes
-        virtual void addeidisp(
-            const DRT::Discretization &  cutdis,       ///< cut discretization
-            const std::string            state,        ///< state
-            const std::vector<int>&      lm            ///< local map
-            ) = 0;
-
-        //! extract/set side's interface velocity
-        virtual void eivel(
-            const DRT::Discretization &  cutdis,       ///< cut discretization
-            const std::string            state,        ///< state
-            const std::vector<int>&      lm            ///< local map
-            ) = 0;
-
-        virtual void getivelint(
-            LINALG::Matrix<nsd_,1>& ivelint  ///< interface velocity at embedded side
-            ) = 0;
-
-        //! evaluate shape function, derivatives, normal and transformation w.r.t side element at gaussian point
-        virtual void Evaluate(
-            const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element
-            LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
-            LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
-            double                          & drs      ///< transformation factor
+        //! add slave element's displacements and set current element's nodal coordinates
+        virtual void AddSlaveEleDisp(
+          const DRT::Discretization &  slavedis,     ///< coupling slave discretization
+          const std::string            state,        ///< state
+          const std::vector<int>&      lm            ///< local map
         ) = 0;
 
-        //! set prescribed WDBC at Gaussian point
-        virtual void get_vel_WeakDBC( LINALG::Matrix<3,1> & ivelint ) = 0;
+        //! @name accessors
+        //@{
+
+        //! set slave element's nodal velocities
+        virtual void SetSlaveVel(
+           const DRT::Discretization &  slavedis,     ///< embedded discretization
+           const std::string            state,        ///< state
+           const std::vector<int>&      lm            ///< local map
+         ) = 0;
+
+        //! get interface velocity
+        virtual void GetInterfaceVel(
+          LINALG::Matrix<nsd_,1>& ivelint ) const = 0;  ///< interface velocity at coupling slave side
+
+        //! get interface pressure
+        virtual void GetInterfacePres(double & ipres) const = 0;  ///< interface pressure
+
+        //! get interface velocity gradient
+        virtual void GetInterfaceVelGrad(
+          LINALG::Matrix<nsd_,nsd_>& velgradint ) const = 0;  ///< interface velocity gradients at coupling slave side
+
+        //@}
+
+        //! evaluate shape function, derivatives, normal and transformation w.r.t side element at gaussian point
+        //! (old!)
+        virtual void Evaluate(
+           const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element
+           LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
+           LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
+           double                          & drs      ///< transformation factor
+           ) = 0;
+
+        //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
+        virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside ) = 0;
+
+        //! compute coupling slave element's characteristic element length (diameter for side element)
+        virtual void ComputeCharElementLength( double & h_k ) = 0;
 
         //! compute interface force for side nodes
-        virtual void InterfaceForce(
-            Epetra_SerialDenseVector &   iforce,     ///< interface force vector
-            LINALG::Matrix<nsd_,1> &     traction,   ///< traction vector at gaussian point
-            const double &               fac         ///< integration factor
+        virtual void ComputeInterfaceForce(
+           Epetra_SerialDenseVector &   iforce,     ///< interface force vector
+           LINALG::Matrix<nsd_,1> &     traction,   ///< traction vector at gaussian point
+           const double &               fac         ///< integration factor
         ) = 0;
 
         //! project gaussian point from linearized interface in normal direction onto corresponding side
+        //! (2D slave element)
         virtual void ProjectOnSide(
-            LINALG::Matrix<3,1> & x_gp_lin,            ///< global coordinates of gaussian point w.r.t linearized interface
-            LINALG::Matrix<3,1> & x_side,              ///< projected gaussian point on side
-            LINALG::Matrix<2,1> & xi_side              ///< local coordinates of projected gaussian point w.r.t side
+          LINALG::Matrix<nsd_,1> & x_gp_lin,         ///< global coordinates of gaussian point w.r.t linearized interface
+          LINALG::Matrix<nsd_,1> & x_side,           ///< projected gaussian point on side
+          LINALG::Matrix<nsd_-1,1> & xi_side         ///< local coordinates of projected gaussian point w.r.t side
         ) = 0;
-
-        //! evaluate interface coupling matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
-        virtual void MHCS_buildCouplingMatrices(
-            const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
-            const double &                                                fac,        ///< integration factor
-            const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
-            LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< block rhs vector \f$ rhs_{\sigma}\f$
-        ) = 0;
-
-        //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
-        //! \author kruse \date 06/14
-        virtual void MHVS_buildCouplingMatrices(
-            const LINALG::Matrix<nsd_,1> &                                    normal,     ///< normal vector
-            const double &                                                    fac,        ///< integration factor
-            const LINALG::Matrix<nen_,1> &                                    funct,      ///< background element shape functions
-            LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> &     rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
-            const double &                                                    press,      ///< background element pressure
-            LINALG::Matrix<nen_,1> &                                          rhs_pui     ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
-        ) = 0;
-
-        //! build the final coupling matrices for mixed/hybrid viscous stress-based (MHVS) coupling
-        //! \author kruse \date 06/14
-        virtual void HybridLM_buildFinalCouplingMatrices(
-            LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,numstressdof_> &     BinvK_ss,   ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
-            LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,bg_numdof_,numstressdof_> &        BKusInvKss, ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
-            LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,bg_numdof_> &        BK_su,      ///< block matrix \f$ K_{\sigma u} \f$
-            LINALG::BlockMatrix<LINALG::Matrix<nen_,1>, numstressdof_,1>      &              rhs_s       ///< block rhs vector \f$ rhs_{\sigma}\f$
-        ) = 0;
-
-        virtual void HybridLM_Stab_InflowCoercivity(
-            Epetra_SerialDenseMatrix &          C_uu_,                ///< standard bg-bg-matrix
-            Epetra_SerialDenseVector &          rhs_Cu_,              ///< standard bg-rhs
-            const bool &                        coupling,             ///< indicates the need to assemble coupling terms for the side (yes/no)
-            const bool &                        bg_mortaring,         ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-            const LINALG::Matrix<nsd_,1> &      normal,               ///< normal vector
-            const double &                      timefacfac,           ///< theta*dt
-            const double &                      visceff_1,            ///< viscosity in background fluid
-            const double &                      visceff_2,            ///< viscosity in embedded fluid
-            const double &                      kappa1,               ///< mortaring weighting
-            const double &                      kappa2,               ///< mortaring weighting
-            const double &                      stabfac,              ///< Nitsche penalty
-            const double &                      stabfac_avg,          ///< Nitsche convective non-dimensionless stabilization factor
-            const LINALG::Matrix<nen_,1> &      funct_,               ///< bg shape functions
-            const LINALG::Matrix<nsd_,nen_> &   derxy_,               ///< bg deriv
-            const LINALG::Matrix<nsd_,nsd_> &   vderxy_,              ///< bg deriv^n
-            const LINALG::Matrix<nsd_,1> &      velint,               ///< bg u^n
-            const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,    ///< Dirichlet velocity vector or prescribed jump vector
-            INPAR::XFEM::ConvStabScaling        conv_stab_scaling,    ///< Inflow term strategies xfluid
-            INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling ///< Inflow term strategies xfluidfluid
-          ) = 0;
-
-        //! build coupling matrices and assemble terms for Nitsche's (NIT) method
-        virtual void NIT_buildCouplingMatrices(
-            Epetra_SerialDenseMatrix &          C_uu_,                  ///< standard bg-bg-matrix
-            Epetra_SerialDenseVector &          rhs_Cu_,                ///< standard bg-rhs
-            const bool &                        coupling,               ///< assemble coupling terms (yes/no)
-            const bool &                        bg_mortaring,           ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring, two-sided impl)
-            const LINALG::Matrix<nsd_,1> &      normal,                 ///< normal vector
-            const double &                      timefacfac,             ///< theta*dt
-            const double &                      visceff_1,              ///< viscosity in background fluid
-            const double &                      visceff_2,              ///< viscosity in embedded fluid
-            const double &                      kappa1,                 ///< mortaring weighting
-            const double &                      kappa2,                 ///< mortaring weighting
-            const double &                      NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-            const double &                      avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
-            const LINALG::Matrix<nen_,1> &      funct_,                 ///< bg shape functions
-            const LINALG::Matrix<nsd_,nen_> &   derxy_,                 ///< bg deriv
-            const LINALG::Matrix<nsd_,nsd_> &   vderxy_,                ///< bg deriv^n
-            const double &                      press,                  ///< bg p^n
-            const LINALG::Matrix<nsd_,1> &      velint,                 ///< bg u^n
-            const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,      ///< Dirichlet velocity vector or prescribed jump vector
-            INPAR::XFEM::ConvStabScaling        conv_stab_scaling,      ///< Inflow term strategies xfluid
-            INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab_scaling   ///< Inflow term strategies xfluidfluid
-          ) = 0;
-
-      };
-
-
-      /// Factory class that provides the creation of the embedded element implementation class (EmbCoupling) for XFEM interface coupling
-      /*!
-        This class is a factory class that creates templated Element implementation class (EmbImpl).
-        Dependent on the template pairs between cut background element and cutting element the EmbImpl
-        is created, which provides the implementation of coupling matrices for different coupling strategies,
-        like Nitsche's method.
-
-        <h3>Usability</h3>
-
-        The calculations are done by the EvaluateXfemInterface...() methods that call this EmbCoupling factory class
-
-        \author schott
-        \date 04/12
-       */
-      template<DRT::Element::DiscretizationType distype>
-      class EmbCoupling
-      {
-      public:
-
-        static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-        //!  Nitsche (NIT) coupling between background element and embedded element
-        static Teuchos::RCP<EmbCoupling<distype> > TwoSidedImpl(
-            DRT::Element *              emb_ele,         ///< side element
-            Epetra_SerialDenseMatrix &  C_uiu,           ///< C_uiu coupling matrix
-            Epetra_SerialDenseMatrix &  C_uui,           ///< C_uui coupling matrix
-            Epetra_SerialDenseMatrix &  rhC_ui,          ///< C_ui coupling rhs
-            Epetra_SerialDenseMatrix &  C_uiui,          ///< Cuiui coupling matrix
-            Epetra_SerialDenseMatrix &  emb_xyze,        ///< global node coordinates
-            bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
-        );
-
-
-        virtual ~EmbCoupling() {}
-
-        //! add embedded element displacements and set current element node coordinates
-        virtual void addembdisp(
-            const DRT::Discretization &  embdis,       ///< embedded discretization
-            const std::string            state,        ///< state
-            const std::vector<int>&      lm            ///< local map
-        ) = 0;
-
-        //! extract/set embedded element velocity
-        virtual void emb_vel(
-            const DRT::Discretization &  embdis,       ///< embedded discretization
-            const std::string            state,        ///< state
-            const std::vector<int>&      lm            ///< local map
-        ) = 0;
-
-        virtual void getembpress(
-          //LINALG::Matrix<nsd_,1>& embpress  ///< embedded pressure
-          double&  press
-        ) = 0;
-
-       virtual void getembvelgradint(
-         LINALG::Matrix<nsd_,nsd_>& velgradint    ///< interface velocity gradients at embedded side
-         ) = 0;
-
-        //! compute embedded element's element length
-        virtual void element_length( double & hk_emb ) = 0;
-
-        //!  evaluate shape function, derivatives and transformation w.r.t embedded element at gaussian point
-        virtual void EvaluateEmb( LINALG::Matrix<nsd_,1> & xside ) = 0;
 
         //! evaluate shape functions and derivatives at element center
         virtual double EvalShapeFuncAndDerivsAtEleCenter() = 0;
 
-        //! evaluate shape functions and derivatives at integration point
-        virtual double EvalShapeFuncAndDerivsAtIntPoint(
-            const double* gpcoord,  // actual integration point (coords)
-            double gpweight// actual integration point (weight)
-            ) = 0;
+      };
 
-        //! build coupling matrices and assemble terms for two-sided mortaring Nitsche's (NIT2) method
-        virtual void NIT2_buildCouplingMatrices(
-            Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
-            Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
-            bool &                        coupling,       // assemble coupling terms (yes/no)
-            bool &                        bg_mortaring,   // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-            LINALG::Matrix<nsd_,1> &      normal,         // normal vector
-            const double                  timefacfac,     // theta*dt
-            const double                  visceff_1,      // viscosity in background fluid
-            const double                  visceff_2,      // viscosity in embedded fluid
-            double &                      kappa1,         // mortaring weighting
-            double &                      kappa2,         // mortaring weighting
-            const double &                NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-            const double &                avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
-            bool &                        velgrad_interface_stab,// penalty term for velocity gradients at the interface
-            double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
-            bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface
-            double &                      presscoupling_interface_fac,//stabilization fac for pressure coupling at the interfac
-            LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
-            LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
-            LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
-            double &                      press,          // bg p^n
-            LINALG::Matrix<nsd_,1> &      velint,          // bg u^n
-            LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP, // Dirichlet velocity vector or prescribed jump vector
-            INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab_scaling // Inflow term strategies
-          ) = 0;
+      //! factory class for coupling with Nitsche's method
+      template<DRT::Element::DiscretizationType distype>
+      class NitscheInterface : virtual public SlaveElementInterface<distype>
+      {
 
+      public:
+
+        /// number of nodes per master element
+        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        /// number of spatial dimensions
+        static const unsigned  nsd_ = SlaveElementInterface<distype>::nsd_;
+        /// number of nodal DOF for master element (always a xfem-fluid element)
+        static const unsigned  master_numdof_ = nsd_ + 1;
+
+        //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
+        static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
+          DRT::Element *              bele,           ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz        ///< global node coordinates of boundary element
+          );
+
+        //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
+        static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidSided(
+          DRT::Element *              bele,           ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
+          Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
+          Epetra_SerialDenseMatrix &  C_usus,         ///< C_usus coupling matrix
+          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          );
+
+        //! create a coupling interface for Nitsche's method for two-sided coupling strategy
+        //! (weighted or fully embedded-sided)
+        static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_TwoSided(
+          DRT::Element *              vele,           ///< volumetric element to couple with
+          Epetra_SerialDenseMatrix &  vele_xyz,       ///< global node coordinates of volumetric element
+          Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
+          Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
+          Epetra_SerialDenseMatrix &  C_usus,         ///< C_usus coupling matrix
+          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          );
+
+        //! dtor
+        virtual ~NitscheInterface(){};
+
+        //! add contributions from convective stabilization
+        //! this method can also be applied in a non-Nitsche context (e.g. MHVS) by
+        //! employing shape functions and velocities from another coupling object (HybridLMCoupling) slave_ele
+        virtual void ApplyConvStabTerms(
+          const Teuchos::RCP<SlaveElementInterface<distype> > & slave_ele,              ///< associated slave element coupling object
+          Epetra_SerialDenseMatrix &                            C_umum,                 ///< standard master-master-matrix
+          Epetra_SerialDenseVector &                            rhs_Cum,                ///< master rhs
+          const LINALG::Matrix<nen_,1> &                        funct_m,                ///< master shape functions
+          const LINALG::Matrix<nsd_,1> &                        normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+          const LINALG::Matrix<nsd_,1> &                        velint_m,               ///< vector of slave shape functions
+          const double &                                        NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+          const double &                                        avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
+          const double &                                        timefacfac,             ///< theta*dt
+          INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+        ) = 0;
+
+        //! build coupling matrices for Nitsche's method (NIT)
+        virtual void NIT_buildCouplingMatrices(
+          Epetra_SerialDenseMatrix &          C_uu,                  ///< standard master-master-matrix
+          Epetra_SerialDenseVector &          rhs_Cu,                ///< standard master-rhs
+          const LINALG::Matrix<nsd_,1> &      normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+          const double &                      timefacfac,             ///< theta*dt
+          const double &                      visceff_m,              ///< viscosity in coupling master fluid
+          const double &                      visceff_s,              ///< viscosity in coupling slave fluid
+          const double &                      kappa_m,                ///< mortaring weight for coupling master
+          const double &                      kappa_s,                ///< mortaring weight for coupling slave
+          const double &                      NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+          const double &                      avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
+          const LINALG::Matrix<nen_,1> &      funct_m,                ///< coupling master shape functions
+          const LINALG::Matrix<nsd_,nen_> &   derxy_m,                ///< spatial derivatives of coupling master shape functions
+          const LINALG::Matrix<nsd_,nsd_> &   vderxy_m,               ///< coupling master spatial velocity derivatives
+          const double &                      press_m,                ///< coupling master pressure
+          const LINALG::Matrix<nsd_,1> &      velint_m,               ///< coupling master interface velocity
+          INPAR::XFEM::XFF_ConvStabScaling    xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+        ) = 0;
+
+        //! apply additional penalty-like stabilizing terms for pressure & velocity at the interface (fluid-fluid coupling)
+        virtual void NIT_applyAdditionalInterfacePenaltyTerms(
+          Epetra_SerialDenseMatrix &          C_umum,                       ///< standard master-master couplingmatrix
+          Epetra_SerialDenseVector &          rhs_Cum,                      ///< standard master coupling rhs
+          const LINALG::Matrix<nsd_,1> &      normal,                       ///< normal vector
+          const double &                      timefacfac,                   ///< theta*dt
+          LINALG::Matrix<nen_,1> &            funct_m,                      ///< master shape function
+          LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master shape function derivatives
+          LINALG::Matrix<nsd_,nsd_> &         vderxy_m,                     ///< master spatial velocity derivatives
+          const double &                      press_m,                      ///< master pressure
+          bool &                              velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
+          double &                            velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
+          bool &                              presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
+          double &                            presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
+        ) = 0;
 
       };
 
-    } // XFLUID
-  } //ELEMENTS
-} //DRT
+      //! factory class for coupling with mixed/hybrid stress-based Lagrange multipliers
+      template<DRT::Element::DiscretizationType distype>
+      class HybridLMInterface : virtual public SlaveElementInterface<distype>
+      {
 
+      public:
 
+        /// number of nodes per master (xfluid) element
+        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        /// number of spatial dimensions of the master element (xfem-fluid)
+        static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
+        /// number of nodal dof for master element (coupling master is always a fluid element!)
+        static const unsigned master_numdof_ = nsd_ + 1;
+        /// number of independent stress-dof
+        static const unsigned numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
+        //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet problems
+        static Teuchos::RCP<HybridLMInterface<distype> > CreateHybridLMCoupling_XFluidWDBC(
+          DRT::Element *              bele,           ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz        ///< global node coordinates of boundary element
+          );
 
-#endif
+        //! create a coupling interface for mixed/hybrid LM approach for xfluid-sided coupling strategy
+        static Teuchos::RCP<HybridLMInterface<distype> > CreateHybridLMCoupling_XFluidSided(
+          DRT::Element *              bele,           ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
+          Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
+          Epetra_SerialDenseMatrix &  G_s_us,         ///< \f$G_{u^s \sigma}\f$ coupling matrix
+          Epetra_SerialDenseMatrix &  G_us_s,         ///< \f$G_{\sigma u^s}\f$ coupling matrix
+          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          );
 
+        //! create a coupling interface for mixed/hybrid LM approach for two-sided coupling strategy
+        //! (weighted or fully embedded-sided)
+        static Teuchos::RCP<HybridLMInterface<distype> > CreateHybridLMCoupling_TwoSided(
+          DRT::Element *              vele,           ///< volumetric element to couple with
+          Epetra_SerialDenseMatrix &  vele_xyz,       ///< global node coordinates of volumetric element
+          Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
+          Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
+          Epetra_SerialDenseMatrix &  G_s_us,         ///< \f$G_{u^s \sigma}\f$ coupling matrix
+          Epetra_SerialDenseMatrix &  G_us_s,         ///< \f$G_{\sigma u^s}\f$ coupling matrix
+          DRT::Element *              bele,           ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of slave element
+          bool                        is_viscAdjointSymmetric ///< flag, that indicates equal signs of Nitsche's standard & adjoint viscous term
+          )
+        {
+          dserror("Embedded-sided mixed/hybrid stress-based LM is not implemented yet!");
+          return Teuchos::null;
+        }
+
+        //! dtor
+        virtual ~HybridLMInterface(){};
+
+        //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
+        virtual void MHCS_buildCouplingMatrices(
+          const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
+          const double &                                                fac,        ///< integration factor
+          const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< block rhs vector \f$ rhs_{\sigma} \f$
+        ) = 0;
+
+        //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
+        virtual void MHVS_buildCouplingMatrices(
+          const LINALG::Matrix<nsd_,1> &                                  normal,     ///< normal vector
+          const double &                                                  fac,        ///< integration factor
+          const LINALG::Matrix<nen_,1> &                                  funct,      ///< background element shape functions
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> &   rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
+          const double &                                                  press,      ///< background element pressure
+          LINALG::Matrix<nen_,1> &                                        rhs_pmus    ///< contribution to block rhs vector \f$rhs_p\f$ (includes interface slave velocity terms)
+        ) = 0;
+
+        //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based coupling (MHCS or MHVS)
+        virtual void HybridLM_buildFinalCouplingMatrices(
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,numstressdof_> &     BinvK_ss,    ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,master_numdof_,numstressdof_> &    BKumsInvKss, ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,master_numdof_> &    BK_sum,      ///< block matrix \f$ K_{\sigma u} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>, numstressdof_,1>      &              rhs_s        ///< block rhs vector \f$ rhs_{\sigma}\f$
+        ) = 0;
+      };
+    }// end namespace XFLUID
+  }// end namespace ELEMENTS
+}// end namespace DRT
+
+#endif /* FLUID_ELE_CALC_XFEM_COUPLING_H_ */
