@@ -719,7 +719,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
   // interface velocity vector in gausspoint
   LINALG::Matrix<nsd_,1> velint_s;
-  GetInterfaceVel(velint_s);
+  this->GetInterfaceVel(velint_s);
 
   // funct_m * timefac * fac
   LINALG::Matrix<nen_,1> funct_m_timefacfac(funct_m);
@@ -727,7 +727,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
 
   // funct_s * timefac * fac
   LINALG::Matrix<slave_nen_,1> funct_s(true);
-  GetSlaveFunct(funct_s);
+  this->GetSlaveFunct(funct_s);
   LINALG::Matrix<slave_nen_,1> funct_s_timefacfac(funct_s);
   funct_s_timefacfac.Scale(timefacfac);
 
@@ -971,11 +971,11 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
 
   // Shape function derivatives for slave side
   LINALG::Matrix<nsd_,slave_nen_> derxy_s;
-  GetSlaveFunctDeriv(derxy_s);
+  this->GetSlaveFunctDeriv(derxy_s);
 
   // Spatial velocity gradient for slave side
   LINALG::Matrix<nsd_,nsd_> vderxy_s;
-  GetInterfaceVelGrad(vderxy_s);
+  this->GetInterfaceVelGrad(vderxy_s);
 
   NIT_visc_Consistency_SlaveTerms(
       rhs_Cum,
@@ -1028,7 +1028,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_applyAdditionalInt
 
     // get shape function gradient in normal direction
     LINALG::Matrix<nsd_,slave_nen_> deriv_s(true);
-    GetSlaveFunctDeriv(deriv_s);
+    this->GetSlaveFunctDeriv(deriv_s);
     LINALG::Matrix<slave_nen_,1> deriv_s_normal(true);
     deriv_s_normal.MultiplyTN(deriv_s,normal);
 
@@ -1036,7 +1036,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_applyAdditionalInt
     deriv_m_normal.MultiplyTN(derxy_m,normal);
 
     LINALG::Matrix<nsd_,nsd_> vderxy_s(true);
-    GetInterfaceVelGrad(vderxy_s);
+    this->GetInterfaceVelGrad(vderxy_s);
     LINALG::Matrix<nsd_,1> vderxy_s_normal(true);
     vderxy_s_normal.Multiply(vderxy_s,normal);
 
@@ -1095,7 +1095,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_applyAdditionalInt
     this->GetInterfacePres(press_s);
 
     LINALG::Matrix<slave_nen_,1> funct_s;
-    GetSlaveFunct(funct_s);
+    this->GetSlaveFunct(funct_s);
 
     const double tau_timefacfac_press = presscoupling_interface_fac * timefacfac;
 
@@ -1865,11 +1865,11 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHCS_buildCouplingMat
 
   // interface velocity at gauss-point (current gauss-point in calling method)
   LINALG::Matrix<nsd_,1> velint_s(true);
-  GetInterfaceVel(velint_s);
+  this->GetInterfaceVel(velint_s);
 
   // get nodal shape function vector
   LINALG::Matrix<slave_nen_,1> slave_funct(true);
-  GetSlaveFunct(slave_funct);
+  this->GetSlaveFunct(slave_funct);
 
   bK_ms.MultiplyNT(funct,slave_funct);
   bK_sm.UpdateT(bK_ms);
@@ -1903,14 +1903,14 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHVS_buildCouplingMat
 {
   // interface velocity at gauss-point (current gauss-point in calling method)
   LINALG::Matrix<nsd_,1> velint_s(true);
-  GetInterfaceVel(velint_s);
+  this->GetInterfaceVel(velint_s);
 
   // block submatrices for interface coupling; s: slave side, m: master side (always background here)
   LINALG::Matrix<nen_, slave_nen_> bG_ms(true);
   LINALG::Matrix<slave_nen_, nen_> bG_sm(true);
 
   LINALG::Matrix<slave_nen_,1> slave_funct;
-  GetSlaveFunct(slave_funct);
+  this->GetSlaveFunct(slave_funct);
 
   bG_ms.MultiplyNT(funct, slave_funct);
   bG_sm.MultiplyNT(slave_funct, funct);
