@@ -149,10 +149,10 @@ namespace ELEMENTS
       static const unsigned int nsd_    = AcouEleCalc<distype>::nsd_;
       static const unsigned int nfaces_ = AcouEleCalc<distype>::nfaces_;
 
-      LocalSolver (const DRT::ELEMENTS::Acou* ele,
-                   const DRT::UTILS::ShapeValues<distype> &shapeValues,
-                   DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace,
-                   bool completepoly);
+      LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues,
+                   DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace);
+      void ElementSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
+                                       bool completepoly);
 
       /// compute the residual
       void ComputeResidual(Epetra_SerialDenseVector          & eleVec,
@@ -235,6 +235,8 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix  Imat;     /// velocity trace
       Epetra_SerialDenseMatrix  Jmat;     /// pressure trace
 
+      // auxiliary stuff
+      Epetra_SerialDenseMatrix  massPart;
     };
 
     /// updates interior variables and calculates residual

@@ -264,21 +264,23 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::InitializeShapes(const DRT::ELEMENTS::Acou* ele)
 {
-  if (shapes_ == Teuchos::null )
-    shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(ele->Degree(),
-                                                                usescompletepoly_,
-                                                                2*ele->Degree()));
-  else if (shapes_->degree_ != unsigned(ele->Degree()) || shapes_->usescompletepoly_ != usescompletepoly_)
-    shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(ele->Degree(),
-                                                                    usescompletepoly_,
-                                                                    2*ele->Degree()));
+  // TODO: check distype
 
   if (shapesface_ == Teuchos::null)
     shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>());
-  // TODO: check distype
 
- localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
+  if (shapes_ == Teuchos::null )
+    shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(ele->Degree(),usescompletepoly_,2*ele->Degree()));
+  else if (shapes_->degree_ != unsigned(ele->Degree()) || shapes_->usescompletepoly_ != usescompletepoly_)
+    shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(ele->Degree(),usescompletepoly_,2*ele->Degree()));
 
+
+  if(localSolver_==Teuchos::null)
+    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_,*shapesface_));
+  else if(localSolver_->ndofs_ != shapes_->ndofs_)
+    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_,*shapesface_));
+
+  localSolver_->ElementSpecificConstruction(ele,usescompletepoly_);
 }
 
 /*----------------------------------------------------------------------*
@@ -791,8 +793,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
   // internal variables
   if (elevec2.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(shapes_->ndofs_,nsd_+1);
-    Epetra_SerialDenseMatrix massPart(shapes_->ndofs_,shapes_->nqpoints_);
+    Epetra_SerialDenseMatrix localMat(shapes_->ndofs_,1);
 
     for (unsigned int q=0; q<shapes_->nqpoints_; ++q )
     {
@@ -808,15 +809,15 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i=0; i<shapes_->ndofs_; ++i)
       {
-        massPart(i,q) = shapes_->shfunct(i,q) * sqrtfac;
-        localMat(i,nsd_) += shapes_->shfunct(i,q) * p * fac;
+        localSolver_->massPart(i,q) = shapes_->shfunct(i,q) * sqrtfac;
+        localMat(i,0) += shapes_->shfunct(i,q) * p * fac;
       }
     }
-    Epetra_SerialDenseMatrix massMat(shapes_->ndofs_,shapes_->ndofs_);
-    massMat.Multiply('N','T',1.,massPart,massPart,0.);
+
+    localSolver_->Mmat.Multiply('N','T',1.,localSolver_->massPart,localSolver_->massPart,0.);
     {
       Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(massMat);
+      inverseMass.SetMatrix(localSolver_->Mmat);
       inverseMass.SetVectors(localMat,localMat);
       inverseMass.Solve();
     }
@@ -824,12 +825,12 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
     for (unsigned int r=0; r<shapes_->ndofs_; ++r )
     {
       //elevec2[r*(nsd_+1)+nsd_] += localMat(r,nsd_); // pressure
-      ele->eleinteriorPressnp_(r) += localMat(r,nsd_); // pressure
-      for (unsigned int i=0;i<nsd_;++i)
+      ele->eleinteriorPressnp_(r) += localMat(r,0); // pressure
+      /*for (unsigned int i=0;i<nsd_;++i)
       {
         //elevec2[r*(nsd_+1)+i] += localMat(r,i); // velocity
         ele->eleinteriorVelnp_(r+i*shapes_->ndofs_) += localMat(r,i); // velocity
-      }
+      }*/
     }
   }
   switch(dyna_)
@@ -858,8 +859,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
 
     Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
     Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
-    zeroMatrix(mass);
-    zeroMatrix(trVec);
 
     for (unsigned int q=0; q<shapesface_->nqpoints_; ++q)
     {
@@ -969,7 +968,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
   if (elevec2.M() > 0)
   {
     Epetra_SerialDenseMatrix localMat(shapes_->ndofs_,1);
-    Epetra_SerialDenseMatrix massPart(shapes_->ndofs_,shapes_->nqpoints_);
 
     for (unsigned int q=0; q<shapes_->nqpoints_; ++q )
     {
@@ -983,20 +981,17 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
 
       for (unsigned int i=0; i<shapes_->ndofs_; ++i)
       {
-        massPart(i,q) = shapes_->shfunct(i,q) * sqrtfac;
+        localSolver_->massPart(i,q) = shapes_->shfunct(i,q) * sqrtfac;
         localMat(i,0) += shapes_->shfunct(i,q) * p * fac;
       }
     }
-    Epetra_SerialDenseMatrix massMat(shapes_->ndofs_,shapes_->ndofs_);
-    massMat.Multiply('N','T',1.,massPart,massPart,0.);
+
+    localSolver_->Mmat.Multiply('N','T',1.,localSolver_->massPart,localSolver_->massPart,0.);
     {
       Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(massMat);
+      inverseMass.SetMatrix(localSolver_->Mmat);
       inverseMass.SetVectors(localMat,localMat);
-      //int err =
       inverseMass.Solve();
-      //if(err != 0)
-      //  dserror("Inversion of matrix in optical field projection failed with errorcode %d",err);
     }
 
 
@@ -1345,10 +1340,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
-LocalSolver(const DRT::ELEMENTS::Acou* ele,
-            const DRT::UTILS::ShapeValues<distype> &shapeValues,
-            DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace,
-            bool completepoly)
+LocalSolver(const DRT::UTILS::ShapeValues<distype> &shapeValues,
+            DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace)
 :
 ndofs_ (shapeValues.ndofs_),
 shapes_(shapeValues),
@@ -1360,25 +1353,30 @@ shapesface_(shapeValuesFace)
   reshapeMatrixIfNecessary(Bmat,nsd_*ndofs_,ndofs_);
   reshapeMatrixIfNecessary(Mmat,ndofs_,ndofs_);
   reshapeMatrixIfNecessary(Dmat,ndofs_,ndofs_);
+  reshapeMatrixIfNecessary(Hmat,ndofs_,nsd_*ndofs_);
+  reshapeMatrixIfNecessary(massPart,ndofs_,shapeValues.nqpoints_);
+}
 
+/*----------------------------------------------------------------------*
+ * ElementSpecificConstruction
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
+ElementSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
+                            bool completepoly)
+{
   int onfdofs = 0;
+  int nfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
   {
-    // TODO ueber Degree gehen, so ist das ja viel zu viel um dofs zu zaehlen
-    shapesface_.EvaluateFace(ele->Faces()[i]->Degree(),
-                             completepoly,
-                             2*ele->Faces()[i]->Degree(),
-                             *ele,
-                             i,
-                             shapes_);
-    onfdofs += shapesface_.nfdofs_;
+    DRT::UTILS::PolynomialSpaceParams params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,ele->Faces()[i]->Degree(),completepoly);
+    nfdofs = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params)->Size();
+    onfdofs += nfdofs;
   }
 
   reshapeMatrixIfNecessary(Cmat,nsd_*ndofs_,onfdofs);
   reshapeMatrixIfNecessary(Emat,ndofs_,onfdofs);
   reshapeMatrixIfNecessary(Gmat,onfdofs,onfdofs);
-
-  reshapeMatrixIfNecessary(Hmat,ndofs_,nsd_*ndofs_);
   reshapeMatrixIfNecessary(Imat,onfdofs,nsd_*ndofs_);
   reshapeMatrixIfNecessary(Jmat,onfdofs,ndofs_);
 }
@@ -2306,7 +2304,6 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
   double rho = actmat->Density();
   double c = actmat->SpeedofSound();
 
-  Epetra_SerialDenseMatrix  massPart(ndofs_,shapes_.nqpoints_);
   Epetra_SerialDenseMatrix  gradPart(ndofs_*nsd_,shapes_.nqpoints_);
 
   // loop quadrature points
@@ -2327,42 +2324,31 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
   }
 
   // multiply matrices to perform summation over quadrature points
-  for (unsigned int i=0; i<ndofs_; ++i)
-    for (unsigned int j=0; j<ndofs_; ++j)
+  Mmat.Multiply('N','T',1.0 / c / c / dt,massPart,massPart,0.0);
+  Dmat.Multiply('N','T',rho / dt,massPart,massPart,0.0); // only temporary for smaller inversion
+  Bmat.Multiply('N','T',-1.0,gradPart,massPart,0.0);
+  for (unsigned int j=0; j<ndofs_; ++j)
+    for (unsigned int i=0; i<ndofs_; ++i)
     {
-      double sum = 0.0;
-      double sums[nsd_];
-      for (unsigned int d=0; d<nsd_; ++d)
-        sums[d] = 0.0;
-      for (unsigned int k=0; k<shapes_.nqpoints_; ++k)
-      {
-        sum += massPart(i,k) * massPart(j,k);
-        for (unsigned int d=0; d<nsd_; ++d)
-          sums[d] += gradPart(d*ndofs_+i,k) * massPart(j,k);
-      }
-      //Dmat(i,j) =
-      Mmat(i,j) = sum;
       for (unsigned int d=0; d<nsd_; ++d)
       {
-        Amat(d*ndofs_+i,d*ndofs_+j) = sum;
-        Bmat(d*ndofs_+i,j) = -sums[d];
-        Hmat(j,d*ndofs_+i) = sums[d];
+        Amat(d*ndofs_+i,d*ndofs_+j) = rho*c*c*Mmat(i,j);
+        Hmat(j,d*ndofs_+i) = -rho*Bmat(d*ndofs_+i,j);
       }
     }
-
-  Mmat.Scale( 1.0 / c / c / dt );
-  Amat.Scale(rho/dt);
-  Hmat.Scale(rho);
-  invAmat = Amat;
 
   // we will need the inverse of A
   {
     Epetra_SerialDenseSolver inverseAmat;
-    inverseAmat.SetMatrix(invAmat);
+    inverseAmat.SetMatrix(Dmat);
     int err = inverseAmat.Invert();
-    if(err != 0) dserror("Inversion of Amat failed with errorcode %d",err);
+    if(err != 0) dserror("Inversion for Amat failed with errorcode %d",err);
+    for (unsigned int j=0; j<ndofs_; ++j)
+      for (unsigned int i=0; i<ndofs_; ++i)
+        for (unsigned int d=0; d<nsd_; ++d)
+          invAmat(d*ndofs_+i,d*ndofs_+j) = Dmat(i,j);
   }
-
+  zeroMatrix(Dmat); // delete this, since we used Dmat only for the calculation of invAmat
   return;
 }
 
@@ -2632,13 +2618,6 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeMatrices(const Teuchos::RCP<MAT
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
   double c = actmat->SpeedofSound();
-
-  // init interior matrices
-  zeroMatrix(localSolver_->Amat);
-  zeroMatrix(localSolver_->Mmat);
-  zeroMatrix(localSolver_->Bmat);
-  zeroMatrix(localSolver_->Hmat);
-  zeroMatrix(localSolver_->Dmat);
 
   // init face matrices
   zeroMatrix(localSolver_->Cmat);
