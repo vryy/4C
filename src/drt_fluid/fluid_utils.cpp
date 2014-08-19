@@ -878,16 +878,41 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
   case INPAR::SOLVER::azprec_MLfluid:
   case INPAR::SOLVER::azprec_MLAPI:
   case INPAR::SOLVER::azprec_MLfluid2:
-  {
-    solver->Params().sublist("ML Parameters").set("PDE equations",1);
-    dis->ComputeNullSpaceIfNecessary(solver->Params());
-  }
-  break;
   case INPAR::SOLVER::azprec_MueLuAMG_sym:
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
   {
-    solver->Params().sublist("MueLu Parameters").set("PDE equations",1);
-    dis->ComputeNullSpaceIfNecessary(solver->Params());
+    Teuchos::ParameterList* preclist_ptr = NULL;
+    // switch here between ML and MueLu cases
+    if(prectyp == INPAR::SOLVER::azprec_ML
+        or prectyp == INPAR::SOLVER::azprec_MLfluid
+        or prectyp == INPAR::SOLVER::azprec_MLAPI
+        or prectyp == INPAR::SOLVER::azprec_MLfluid2)
+      preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
+    else if(prectyp == INPAR::SOLVER::azprec_MueLuAMG_sym
+        or prectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
+      preclist_ptr = &((solver->Params()).sublist("MueLu Parameters"));
+    else
+      dserror("please add correct parameter list");
+
+    Teuchos::ParameterList& preclist = *preclist_ptr;
+    preclist.set<Teuchos::RCP<std::vector<double> > > ("nullspace",Teuchos::null);
+    // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
+    preclist.set<bool>("ML validate parameter list",false);
+
+    preclist.set("PDE equations",1);
+    preclist.set("null space: dimension",1);
+    preclist.set("null space: type","pre-computed");
+    preclist.set("null space: add default vectors",false);
+
+    // allocate the local length of the rowmap
+    const int lrows = dis->DofRowMap()->NumMyElements();
+    Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(lrows));
+    double* nullsp = &((*ns)[0]);
+    preclist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
+    preclist.set("null space: vectors",nullsp);
+
+    // compute null space directly. that will call eletypes.
+    dis->ComputeNullSpace(ns, 1, 1);
   }
   break;
   case INPAR::SOLVER::azprec_ILU:
