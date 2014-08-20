@@ -300,7 +300,7 @@ private:
     virtual bool NeedsDefgrd() { return true; };
 
     /// get plastic algorithm parameters
-    virtual void GetParams(int s, int cpl){params_->stab_s_=s;params_->cpl_=cpl;};
+    virtual void GetParams(double s, double cpl){params_->stab_s_=s;params_->cpl_=cpl;};
 
     /// return accumulated plastic strain at GP
     virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_[gp];}
