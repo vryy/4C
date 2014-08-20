@@ -670,48 +670,51 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     rhs(0)      = -1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
     rhs(1)      =  1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
   }
+  /* Acinus Type "VolumetricOgden": continuum mechanics derivation of cauchy stress (=hydrostatic pressure)
+     for Ogden material for purely volumetric deformation                                  (croth 08/2014)*/
   else if (ele->Type() ==  "VolumetricOgden")
   {
+    //Variables for acinus
     const double Vo  = volAlvDuct;
     double vi_n  = (acin_vn/NumOfAcini);
     double qi_n  = (qn /NumOfAcini);
     double qi_np = (qnp/NumOfAcini);
-    //------------------------------------------------------------
-    // Kappa and Beta
-    //------------------------------------------------------------
-    double kappa = 0.0;//66.375;
-    double beta  = 0.0;//-3.885;
 
+    //Parameters kappa and beta
+    double kappa = 0.0;
+    double beta  = 0.0;
     ele->getParams("kappa",kappa);
     ele->getParams("beta",beta);
 
-    //------------------------------------------------------------
-    // P1  = Pc + Pd
-    //
-    // Pc = (kappa/beta)*(lambda^(-3))
-    // Pd =-(kappa/beta)*(lambda^(-3-3*beta))
-    // where lambda is the volumetric distention ratio
-    // i.e. lambda = (V/Vo)^(1/3)
-    //------------------------------------------------------------
+    //Linear branches of the Maxwell model (E2, B=R_t, B_a=R_a), notation according to interacinar dependency paper
+    double Kp_np  =  Rt/(E2*dt)+1.0;
+    double Kp_n   = -Rt/(E2*dt);
+    double Kq_np  =  Rt*Ra/(E2*dt)+Rt+Ra;
+    double Kq_n   = -Rt*Ra/(E2*dt);
+    double rhsLin = -Kp_n*(p1n-p2n) + Kq_n*qi_n;
 
-    // contribution of the Linear components in the  Maxwell Model
-    double kp_np  =  Rt/(E2*dt)+1.0;
-    double kp_n   = -Rt/(E2*dt);
-    double kq_np  =  Rt*Ra/(E2*dt)+(Rt+Ra);
-    double rhsLin = -Rt*Ra*(qi_n)/(E2*dt) - kp_n*(p1n-p2n);
+    //Branch E_1 of the Maxwell model: Hydrostatic pressure (=Cauchy stress) for Ogden material
+    // P_1  = P_c + P_d
+    // where P_c = (kappa/beta)*(lambda^(-3))
+    //       P_d =-(kappa/beta)*(lambda^(-3-3*beta))
+    //       \lambda is the volumetric strain ratio, \lambda = (V/Vo)^(1/3)
+    double vi_np = qi_np*dt+vi_n;
+    double Kq_npNL = (Rt/E2) * (-kappa*Vo/(pow(vi_np,2.0)*beta) +
+                                   (beta+1.0)*kappa*(pow(Vo/(vi_np),beta+1.0))/((vi_np)*beta));
+    double rhsNL   = (Vo/vi_n) * (kappa/beta) * (1-pow((Vo/vi_n),beta));
 
-    // contribution of the nonLinear components (E1) in the  Maxwell Model
-    double kq_npNL = (Rt/E2)*(-kappa*Vo/(pow(qi_np*dt+vi_n,2.0)*beta) +(beta+1.0)*kappa*(pow(Vo/(qi_np*dt+vi_n),beta+1.0))/((qi_np*dt+vi_n)*beta));
+    //To Do: FD-Check
 
-    double rhsNL   = -kappa*(pow(Vo/(qi_np*dt+vi_n),beta+1.0))/beta +kappa*Vo/(beta*(qi_np*dt+vi_n));
-    kq_np += kq_npNL;
+    //add linearisation part to system matrix
+    Kq_np += Kq_npNL;
 
-    sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini;
+    //Build the system matrix for \boldsymbol{K} * \boldsymbol{P} = \boldsymbol{Q}
+    sysmat(0,0) = -1.0*( Kp_np/Kq_np)*NumOfAcini;    sysmat(0,1) =  1.0*( Kp_np/Kq_np)*NumOfAcini;
+    sysmat(1,0) =  1.0*( Kp_np/Kq_np)*NumOfAcini;    sysmat(1,1) = -1.0*( Kp_np/Kq_np)*NumOfAcini;
 
-    rhs(0)      = -1.0*((rhsLin+rhsNL)*NumOfAcini/kq_np);
-    rhs(1)      =  1.0*((rhsLin+rhsNL)*NumOfAcini/kq_np);
-
+    //Build the corresponding right hand side
+    rhs(0)      = -1.0*((rhsLin+rhsNL)*NumOfAcini/Kq_np);
+    rhs(1)      =  1.0*((rhsLin+rhsNL)*NumOfAcini/Kq_np);
   }
   else
   {
