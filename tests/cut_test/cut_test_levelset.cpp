@@ -1673,7 +1673,9 @@ void test_ls_hex8_experiment()
 {
   GEO::CUT::LevelSetIntersection lsi;
 
-  lsi.CreateOptions().SetSimpleShapes( false );
+  GEO::CUT::Options options;
+  lsi.GetOptions(options);
+  options.SetSimpleShapes( false );
 
   // simple hex8 element
   std::vector<int> nids( 8 );
