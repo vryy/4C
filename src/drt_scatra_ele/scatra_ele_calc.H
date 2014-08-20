@@ -109,17 +109,7 @@ namespace ELEMENTS
                           Epetra_SerialDenseVector&     elevec2_epetra,
                           Epetra_SerialDenseVector&     elevec3_epetra);
 
-     int EvaluateODMesh(DRT::ELEMENTS::Transport*     ele,
-                          Teuchos::ParameterList&       params,
-                          DRT::Discretization &         discretization,
-                          const std::vector<int> &      lm,
-                          Epetra_SerialDenseMatrix&     elemat1_epetra,
-                          Epetra_SerialDenseMatrix&     elemat2_epetra,
-                          Epetra_SerialDenseVector&     elevec1_epetra,
-                          Epetra_SerialDenseVector&     elevec2_epetra,
-                          Epetra_SerialDenseVector&     elevec3_epetra);
-
-     int EvaluateODFluid(DRT::ELEMENTS::Transport*     ele,
+     virtual int EvaluateOD(DRT::ELEMENTS::Transport*     ele,
                           Teuchos::ParameterList&       params,
                           DRT::Discretization &         discretization,
                           const std::vector<int> &      lm,
@@ -882,6 +872,91 @@ namespace ELEMENTS
       const double                  phinp,       //!< scalar at time_(n+1)
       const double                  mfssgphi,    //!< multifractal fine-scale scalar
       const double                  mfsvdiv      //!< divergence of fine-scale velocity
+    );
+
+    //! calculation of convective element matrix in convective form (off diagonal term fluid)
+    void CalcMatConvODFluid(
+      Epetra_SerialDenseMatrix&     emat,             //!< element matrix to be filled
+      const int                     k,                //!< index of current scalar
+      const int                     ndofpernodefluid, //!< number of dofs per node of fluid element
+      const double                  timefacfac,       //!< domain-integration factor times time-integration factor
+      const double                  densnp,           //!< density at time_(n+1)
+      const LINALG::Matrix<nsd_,1>& gradphi           //!< scalar gradient
+    );
+
+    //! calculation of convective element matrix: add conservative contributions (off diagonal term fluid)
+    void CalcMatConvAddConsODFluid(
+      Epetra_SerialDenseMatrix&     emat,             //!< element matrix to be filled
+      const int                     k,                //!< index of current scalar
+      const int                     ndofpernodefluid, //!< number of dofs per node of fluid element
+      const double                  timefacfac,       //!< domain-integration factor times time-integration factor
+      const double                  densnp,           //!< density at time_(n+1)
+      const double                  phinp             //!< scalar at time_(n+1)
+    );
+
+    //! calculation of linearized mass (off diagonal/shapederivative term mesh)
+    void CalcLinMassODMesh(
+      Epetra_SerialDenseMatrix&          emat,              //!< element matrix to be filled
+      const int                          k,                 //!< index of current scalar
+      const int                          ndofpernodemesh,   //!< number of dofs per node of ale element
+      const double                       rhsfac,            //!< time-integration factor for rhs times domain-integration factor
+      const double                       fac,               //!< domain-integration factor
+      const double                       densam,            //!< density at time_(n+am)
+      const double                       densnp,            //!< density at time_(n+1)
+      const double                       phinp,             //!< scalar at time_(n+1)
+      const double                       hist,              //!< history of time integartion
+      const double                       J,                 //!< determinant of Jacobian det(dx/ds)
+      const LINALG::Matrix<1,nsd_*nen_>& dJ_dmesh           //!< derivative of det(dx/ds) w.r.t. mesh displacement
+    );
+
+    //! standard Galerkin transient, old part of rhs and source term (off diagonal/shapederivative term mesh)
+    void CalcHistAndSourceODMesh(
+      Epetra_SerialDenseMatrix&          emat,             //!< element current to be filled
+      const int                          k,                //!< index of current scalar
+      const int                          ndofpernodemesh,  //!< number of dofs per node of ale element
+      const double                       fac,              //!< domain-integration factor
+      const double                       rhsint,           //!< rhs at Gauss point
+      const double                       J,                //!< determinant of Jacobian det(dx/ds)
+      const LINALG::Matrix<1,nsd_*nen_>& dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
+    );
+
+    //! standard Galerkin convective term (off diagonal/shapederivative term mesh)
+    void CalcConvODMesh(
+        Epetra_SerialDenseMatrix&       emat,             //!< element current to be filled
+        const int                       k,                //!< index of current scalar
+        const int                       ndofpernodemesh,  //!< number of dofs per node of ale element
+        const double                    fac,              //!< domain-integration factor
+        const double                    rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+        const double                    densnp,           //!< density at time_(n+1)
+        const double                    J,                //!< determinant of Jacobian det(dx/ds)
+        const LINALG::Matrix<nsd_,1>&   gradphi,          //!< scalar gradient at Gauss point
+        const LINALG::Matrix<nsd_,1>&   convelint         //!< convective velocity
+    );
+
+    //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
+    void CalcDiffODMesh(
+        Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
+        const int                           k,                //!< index of current scalar
+        const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
+        const double                        fac,              //!< domain-integration factor
+        const double                        rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+        const double                        J,                //!< determinant of Jacobian det(dx/ds)
+        const LINALG::Matrix<nsd_,1>&       gradphi,          //!< scalar gradient at Gauss point
+        const LINALG::Matrix<nsd_,1>&       convelint,        //!< convective velocity
+        const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh,         //!< derivative of det(dx/ds) w.r.t. mesh displacement
+        Teuchos::RCP<ScaTraEleDiffManager>    diffmanager     //!< diffusion manager
+    );
+
+    //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
+    void CalcReactODMesh(
+        Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
+        const int                           k,                //!< index of current scalar
+        const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
+        const double                        rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+        const double                        rea_phi,          //!< reactive term
+        const double                        J,                //!< determinant of Jacobian det(dx/ds)
+        const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh,         //!< derivative of det(dx/ds) w.r.t. mesh displacement
+        Teuchos::RCP<ScaTraEleReaManager>   reamanager        //!< reaction manager
     );
 
     /*========================================================================*/

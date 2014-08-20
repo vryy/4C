@@ -1017,6 +1017,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_input.cpp
   src/drt_scatra_ele/scatra_ele_calc.cpp
+  src/drt_scatra_ele/scatra_ele_calc_OD.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_std.cpp
