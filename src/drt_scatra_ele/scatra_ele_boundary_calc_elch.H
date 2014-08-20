@@ -85,8 +85,7 @@ private:
      const std::vector<int>  stoich,                ///< stoichometry of the reaction
      const int             kinetics,                ///< desired electrode kinetics model
      const double              pot0,                ///< actual electrode potential on metal side
-     const double               frt,                ///< factor F/RT
-     const bool              iselch                 ///< problemtype elch or scatra
+     const double               frt                 ///< factor F/RT
   );
 
   //! evaluate elch electrode kinetics
@@ -111,7 +110,6 @@ private:
       const int                     nume,     ///<  number of transfered electrons
       const double                  pot0,     ///< actual electrode potential on metal side at t_{n+1}
       const double                  frt,      ///< factor F/RT
-      const bool                    iselch,   ///< problemtype elch or scatra
       const double                  timefac   ///< factor due to time discretization
   );
 

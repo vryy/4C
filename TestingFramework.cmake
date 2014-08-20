@@ -490,8 +490,8 @@ baci_test(elch_nurbs9_linear 2 9)
 baci_test(elch_nurbs9_tafel 2 9)
 baci_test(elch_pper_butlervolmer 1 "")
 baci_test(elch_pper_butlervolmer 2 "")
-#baci_test(elch_pper_secondary_current_distribution 1 "")             // Further restructuring required
-#baci_test(elch_pper_secondary_current_distribution 2 "")             // Further restructuring required
+baci_test(elch_pper_secondary_current_distribution 1 "")
+baci_test(elch_pper_secondary_current_distribution 2 "")
 baci_test(elch_pulseplating_hex27 1 6)
 baci_test(elch_pulseplating_hex27 2 6)
 baci_test(elch_pulseplating_hex27_moving_boundary 2 "34")

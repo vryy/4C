@@ -1112,7 +1112,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // have to be summed up here, and applied
     // as a current flux condition at the potential field!
 
-    // so far: fluxes resulting from Neuman and electrochemical boundary conditions are not considered in the framework!
+    // so far: fluxes resulting from Neumann and electrochemical boundary conditions are not considered in the framework!
 
     // Electrode kinetics:
     // If, e.g., the initial field does not match the applied boundary conditions
