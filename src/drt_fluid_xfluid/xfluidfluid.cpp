@@ -35,7 +35,7 @@ Maintainer:  Shadan Shahmiri
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_geometry/geo_intersection.H"
+#include "../drt_geometry/geo_meshintersection.H"
 
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
@@ -80,7 +80,7 @@ Maintainer:  Shadan Shahmiri
  *------------------------------------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol )
   : xfluid_( xfluid ),
-    wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.bgdis_, *xfluid.boundarydis_ )))
+    wizard_( Teuchos::rcp( new XFEM::FluidWizardMesh(*xfluid.bgdis_, *xfluid.boundarydis_ )))
 {
   // do the (parallel!) cut for the 0 timestep and find the fluid dofset
   wizard_->Cut( false,                                 // include_inner
@@ -638,7 +638,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
       // the volume-cell set at position i in cell_sets is associated with
       // the nodal dofset vector at position i in nds_sets
       // and with the set of gauss points at position i in intpoints_sets
-      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
+      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_, false); //(include_inner=false)
 
       if ( cell_sets.size() != intpoints_sets.size() )
         dserror("Non-matching number of volume-cell sets (%d) and integration point sets (%d).", cell_sets.size(), intpoints_sets.size());
@@ -1400,7 +1400,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
 
-      e->GetVolumeCellsDofSets( cell_sets, nds_sets );
+      e->GetVolumeCellsDofSets( cell_sets, nds_sets, false); //(include_inner=false)
 
       int set_counter = 0;
 
@@ -4984,7 +4984,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         std::vector< std::vector<int> > nds_sets;
         std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoint_sets;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoint_sets, VolumeCellGaussPointBy_ );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoint_sets, VolumeCellGaussPointBy_, false); //(include_inner=false)
 
         if(cell_sets.size() != intpoint_sets.size())
         dserror("Mismatch in the number of volume-cell sets (%d) and integration point sets (%d)", cell_sets.size(), intpoint_sets.size());

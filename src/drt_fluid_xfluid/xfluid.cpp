@@ -45,7 +45,7 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_xfem/xfluid_timeInt.H"
 
-#include "../drt_geometry/geo_intersection.H"
+#include "../drt_geometry/geo_meshintersection.H"
 
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
@@ -90,7 +90,7 @@ Maintainer:  Benedikt Schott
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol  )
   : xfluid_( xfluid ),
-    wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis_)) )
+    wizard_( Teuchos::rcp( new XFEM::FluidWizardMesh(*xfluid.discret_, *xfluid.boundarydis_)) )
 {
   // increase the state-class counter
   xfluid_.state_it_++;
@@ -102,8 +102,8 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   xfluid_.setTipNodesInCut_ = false;
 
   //--------------------------------------------------------------------------------------
-  // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
-  // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
+  // the XFEM::FluidWizardMesh is created based on the xfluid-discretization and the boundary discretization
+  // the FluidWizardMesh creates also a cut-object of type GEO::CutWizardMesh which performs the "CUT"
   wizard_->Cut( false,                                 // include_inner
                 idispcol,                              // interface displacements
                 xfluid_.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
@@ -415,7 +415,7 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
           std::vector< std::vector<int> > nds_sets;
           std::vector<std::vector< DRT::UTILS::GaussIntegration > > intpoints_sets;
 
-          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_, false); //(include_inner=false)
 
           if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
           if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -981,7 +981,7 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
       std::vector< std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > > intpoints_sets;
 
-      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
+      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_, false); //(include_inner=false)
 
       if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
       if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -1283,7 +1283,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
 
-        e->GetVolumeCellsDofSets( cell_sets, nds_sets );
+        e->GetVolumeCellsDofSets( cell_sets, nds_sets, false); //(include_inner=false)
 
         int set_counter = 0;
 
@@ -2423,7 +2423,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         std::vector< std::vector<int> > nds_sets;
         std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_ );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_, false); //(include_inner=false)
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -4046,7 +4046,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     *velnp_Intnpi = *state_->velnp_;
 
     // get the wizard w.r.t the last interface position (last XFSI iteration)
-    Teuchos::RCP<XFEM::FluidWizard> wizard_Intnpi = state_->Wizard();
+    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intnpi = state_->Wizard();
     Teuchos::RCP<XFEM::FluidDofSet> dofset_Intnpi = state_->Dofset();
 
     // get the dofmaps w.r.t the last interface position (last XFSI iteration)
@@ -4430,8 +4430,8 @@ void FLD::XFluid::TransferDofsBetweenSteps(
     const Epetra_Map&                       olddofcolmap,                      /// dof col map w.r.t old interface position
     std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,                /// row map based vectors w.r.t old interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,                /// row map based vectors w.r.t new interface position
-    const Teuchos::RCP<XFEM::FluidWizard>   wizard_old,                        /// fluid wizard w.r.t old interface position
-    const Teuchos::RCP<XFEM::FluidWizard>   wizard_new,                        /// fluid wizard w.r.t new interface position
+    const Teuchos::RCP<XFEM::FluidWizardMesh>   wizard_old,                        /// fluid wizard w.r.t old interface position
+    const Teuchos::RCP<XFEM::FluidWizardMesh>   wizard_new,                        /// fluid wizard w.r.t new interface position
     const Teuchos::RCP<XFEM::FluidDofSet>   dofset_old,                        /// dofset w.r.t old interface position
     const Teuchos::RCP<XFEM::FluidDofSet>   dofset_new,                        /// dofset w.r.t new interface position
     const Teuchos::ParameterList&           params,                            /// parameter list

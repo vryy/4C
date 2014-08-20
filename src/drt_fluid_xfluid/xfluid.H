@@ -57,7 +57,7 @@ namespace IO
 namespace XFEM
 {
   class XFEM_EdgeStab;
-  class FluidWizard;
+  class FluidWizardMesh;
   class FluidDofSet;
   class XFluidTimeInt;
 }
@@ -243,7 +243,7 @@ namespace FLD
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
       /// return the wizard
-      Teuchos::RCP<XFEM::FluidWizard> Wizard() { return wizard_; }
+      Teuchos::RCP<XFEM::FluidWizardMesh> Wizard() { return wizard_; }
 
       /// return edgestab object
       Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
@@ -254,8 +254,8 @@ namespace FLD
       /// XFluid object
       XFluid & xfluid_;
 
-      /// FluidWizard
-      Teuchos::RCP<XFEM::FluidWizard> wizard_;
+      /// FluidWizardMesh
+      Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
 
 
     private:
@@ -393,8 +393,8 @@ namespace FLD
         const Epetra_Map&                                olddofcolmap,             /// dof col map w.r.t old interface position
         std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
-        const Teuchos::RCP<XFEM::FluidWizard>            wizard_old,               /// fluid wizard w.r.t old interface position
-        const Teuchos::RCP<XFEM::FluidWizard>            wizard_new,               /// fluid wizard w.r.t new interface position
+        const Teuchos::RCP<XFEM::FluidWizardMesh>            wizard_old,               /// fluid wizard w.r.t old interface position
+        const Teuchos::RCP<XFEM::FluidWizardMesh>            wizard_new,               /// fluid wizard w.r.t new interface position
         const Teuchos::RCP<XFEM::FluidDofSet>            dofset_old,               /// dofset w.r.t old interface position
         const Teuchos::RCP<XFEM::FluidDofSet>            dofset_new,               /// dofset w.r.t new interface position
         const Teuchos::ParameterList&                    params,                   /// parameter list
@@ -843,7 +843,7 @@ namespace FLD
     //! @name old timestep state data used for xfem time-integration
     Teuchos::RCP<Epetra_Vector>    veln_Intn_;
     Teuchos::RCP<Epetra_Vector>    accn_Intn_;
-    Teuchos::RCP<XFEM::FluidWizard> wizard_Intn_;
+    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intn_;
     Teuchos::RCP<XFEM::FluidDofSet> dofset_Intn_;
 
     Teuchos::RCP<Epetra_Map> dofrowmap_Intn_;

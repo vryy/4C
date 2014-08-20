@@ -46,7 +46,7 @@ namespace Teuchos
 
 namespace XFEM
 {
-  class FluidWizard;
+  class FluidWizardMesh;
 
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
@@ -60,7 +60,7 @@ public:
   explicit XFluidFluidTimeIntegration(
     const Teuchos::RCP<DRT::Discretization> bgdis,
     const Teuchos::RCP<DRT::Discretization> embdis,
-    Teuchos::RCP<XFEM::FluidWizard>         wizard,
+    Teuchos::RCP<XFEM::FluidWizardMesh>         wizard,
     int                            step,
     enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach,
     const Teuchos::ParameterList&              params
@@ -75,25 +75,25 @@ public:
 
   /// Create maps of bgfluid's nodes needed for time integration
   void CreateBgNodeMaps(const Teuchos::RCP<DRT::Discretization> bgdis,
-                        Teuchos::RCP<XFEM::FluidWizard>         wizard);
+                        Teuchos::RCP<XFEM::FluidWizardMesh>         wizard);
 
   /// Save the old state
   void SaveBgNodeMaps();
 
   /// Save the old maps of bg nodes and create new map of bg nodes
   int SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DRT::Discretization> bgdis,
-                                 Teuchos::RCP<XFEM::FluidWizard>   wizard);
+                                 Teuchos::RCP<XFEM::FluidWizardMesh>   wizard);
 
   void CreateBgNodeMapsForRestart(Teuchos::RCP<DRT::Discretization> bgdis,
-                                  Teuchos::RCP<XFEM::FluidWizard>   wizard);
+                                  Teuchos::RCP<XFEM::FluidWizardMesh>   wizard);
 
   void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>   bgdis,
-		  	  	  	  	  	  	  	  	  	Teuchos::RCP<Epetra_Vector>               bgstatevn1,
+                                        Teuchos::RCP<Epetra_Vector>               bgstatevn1,
                                             Teuchos::RCP<Epetra_Vector>               bgstatevnp1,
                                             Teuchos::RCP<Epetra_Vector>               embstatevn1,
-                                            Teuchos::RCP<Epetra_Vector>           	  bgstatevn2,
-                                            Teuchos::RCP<Epetra_Vector>           	  bgstatevnp2,
-                                            Teuchos::RCP<Epetra_Vector>           	  embstatevn2,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevn2,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp2,
+                                            Teuchos::RCP<Epetra_Vector>               embstatevn2,
                                             Teuchos::RCP<Epetra_Vector>               bgstatevn3,
                                             Teuchos::RCP<Epetra_Vector>               bgstatevnp3,
                                             Teuchos::RCP<Epetra_Vector>               embstatevn3,
@@ -108,42 +108,42 @@ public:
   /// set values to background state vector. Do not do the projection if
   /// ghost-values are available.
   void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>     bgdis,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn1,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp1,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn1,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn2,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp2,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>           	  embstatevn2,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn3,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp3,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn3,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn4,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp4,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn4,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>     	          bgstatevn5,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp5,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn5,
-		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 aledispn);
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn1,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp1,
+                                      Teuchos::RCP<Epetra_Vector>                 embstatevn1,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn2,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp2,
+                                      Teuchos::RCP<Epetra_Vector>               embstatevn2,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn3,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp3,
+                                      Teuchos::RCP<Epetra_Vector>                 embstatevn3,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn4,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp4,
+                                      Teuchos::RCP<Epetra_Vector>                 embstatevn4,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn5,
+                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp5,
+                                      Teuchos::RCP<Epetra_Vector>                 embstatevn5,
+                                      Teuchos::RCP<Epetra_Vector>                 aledispn);
 
   /// set values to background state vector. Always project values from
   /// embedded discretization if no history values are available.
   void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>      bgdis,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn1,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp1,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn1,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn2,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp2,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn2,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn3,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp3,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn3,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn4,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp4,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn4,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn5,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp5,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn5,
-		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  aledispn);
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn1,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp1,
+                                     Teuchos::RCP<Epetra_Vector>                  embstatevn1,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn2,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp2,
+                                     Teuchos::RCP<Epetra_Vector>                  embstatevn2,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn3,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp3,
+                                     Teuchos::RCP<Epetra_Vector>                  embstatevn3,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn4,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp4,
+                                     Teuchos::RCP<Epetra_Vector>                  embstatevn4,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn5,
+                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp5,
+                                     Teuchos::RCP<Epetra_Vector>                  embstatevn5,
+                                     Teuchos::RCP<Epetra_Vector>                  aledispn);
 
   void SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization>  bgdis,
                             Teuchos::RCP<Epetra_Vector>              statevbg_n,
@@ -187,17 +187,17 @@ public:
                                    Teuchos::RCP<Epetra_Vector>                aledispnpoldstate);
 
   void PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                        Teuchos::RCP<XFEM::FluidWizard>          wizard_n,
-                                        Teuchos::RCP<XFEM::FluidWizard>          wizard_np,
+                                        Teuchos::RCP<XFEM::FluidWizardMesh>          wizard_n,
+                                        Teuchos::RCP<XFEM::FluidWizardMesh>          wizard_np,
                                         Teuchos::RCP<LINALG::MapExtractor>       dbcmaps);
 
   /// build an incompressibility discretization
   void PrepareIncompDiscret(const Teuchos::RCP<DRT::Discretization>     bgdis,
-                            Teuchos::RCP<XFEM::FluidWizard>             wizard_np);
+                            Teuchos::RCP<XFEM::FluidWizardMesh>             wizard_np);
 
 
   void EvaluateIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                 Teuchos::RCP<XFEM::FluidWizard>          wizard);
+                                 Teuchos::RCP<XFEM::FluidWizardMesh>          wizard);
 
   void SolveIncompOptProb(Teuchos::RCP<Epetra_Vector>     initialvel);
 
@@ -208,9 +208,9 @@ public:
                         std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
                         std::vector<int>                         & bgnodeidwithnohistory,
                         Teuchos::RCP<Epetra_Vector>                aledispn,
-                        Teuchos::RCP<Epetra_Vector>     	   embstatevn1,
-                        Teuchos::RCP<Epetra_Vector>         	   bgstatevnp1,
-                        Teuchos::RCP<Epetra_Vector>		   bgstatevn1,
+                        Teuchos::RCP<Epetra_Vector>          embstatevn1,
+                        Teuchos::RCP<Epetra_Vector>              bgstatevnp1,
+                        Teuchos::RCP<Epetra_Vector>      bgstatevn1,
                         Teuchos::RCP<Epetra_Vector>                embstatevn2,
                         Teuchos::RCP<Epetra_Vector>                bgstatevnp2,
                         Teuchos::RCP<Epetra_Vector>                bgstatevn2,
@@ -243,14 +243,14 @@ public:
 
 
   void FindEmbeleAndInterpolatevalues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
-		  	  	  	  	  	  	  	  std::vector<LINALG::Matrix<20,1> > & interpolated_vecs,
-		  	  	  	  	  	  	  	  std::vector<int>                  & NodeDone,
-		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         aledispn,
-		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn1,
-		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn2,
-		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn3,
-		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn4,
-		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn5);
+                                  std::vector<LINALG::Matrix<20,1> > & interpolated_vecs,
+                                  std::vector<int>                  & NodeDone,
+                                  Teuchos::RCP<Epetra_Vector>         aledispn,
+                                  Teuchos::RCP<Epetra_Vector>         embstatevn1,
+                                  Teuchos::RCP<Epetra_Vector>         embstatevn2,
+                                  Teuchos::RCP<Epetra_Vector>         embstatevn3,
+                                  Teuchos::RCP<Epetra_Vector>         embstatevn4,
+                                  Teuchos::RCP<Epetra_Vector>         embstatevn5);
 
   void SearchRadius();
 

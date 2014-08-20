@@ -681,6 +681,8 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xfluid_timeInt_base.cpp
   src/drt_xfem/xfluid_timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xfluid_timeInt.cpp
+  src/drt_geometry/geo_meshintersection.cpp
+  src/drt_geometry/geo_levelsetintersection.cpp
   src/drt_geometry/geo_intersection.cpp
   src/drt_combust/combust_interface.cpp
   src/drt_combust/combust_flamefront.cpp
@@ -1729,6 +1731,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_meshintersection.cpp
   src/drt_cut/cut_node.cpp
   src/drt_cut/cut_parallel.cpp
+  src/drt_cut/cut_parentintersection.cpp
   src/drt_cut/cut_point.cpp
   src/drt_cut/cut_pointgraph.cpp
   src/drt_cut/cut_pointpool.cpp

@@ -69,7 +69,7 @@ namespace XFEM
 {
   class XFluidFluidTimeIntegration;
   class XFEM_EdgeStab;
-  class FluidWizard;
+  class FluidWizardMesh;
   class FluidDofSet;
 }
 
@@ -232,7 +232,7 @@ namespace FLD
       XFluidFluid & xfluid_;
 
       /// provides access to the xfem-dofsets of the background fluid
-      Teuchos::RCP<XFEM::FluidWizard> wizard_;
+      Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
 
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();

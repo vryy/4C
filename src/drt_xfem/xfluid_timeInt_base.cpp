@@ -46,8 +46,8 @@ Maintainer: Benedikt Schott
 XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
     const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
     const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
-    Teuchos::RCP<XFEM::FluidWizard>         wizard_old,       /// fluid wizard w.r.t. old interface position
-    Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard w.r.t. new interface position
+    Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_old,       /// fluid wizard w.r.t. old interface position
+    Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_new,       /// fluid wizard w.r.t. new interface position
     Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
     Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
@@ -140,7 +140,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
 
-  Teuchos::RCP<XFEM::FluidWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = newTimeStep ? wizard_new_ : wizard_old_;
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
@@ -3290,8 +3290,8 @@ void XFEM::XFLUID_STD::exportFinalData()
   {
     // Initialization
     int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
-    if (source<0)				source+=numproc_;
-    else if (source>=numproc_)	source-=numproc_;
+    if (source<0)       source+=numproc_;
+    else if (source>=numproc_)  source-=numproc_;
 
     DRT::PackBuffer dataSend;
 

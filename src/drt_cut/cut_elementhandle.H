@@ -38,7 +38,8 @@ public:
   virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
                                        std::vector< std::vector< int > >   & nds_sets,
                                        std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                       INPAR::CUT::VCellGaussPts gausstype ) = 0;
+                                       INPAR::CUT::VCellGaussPts gausstype,
+                                       bool include_inner ) = 0;
 
 
   virtual void VolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & ele_vc_sets_inside, std::vector<plain_volumecell_set> & ele_vc_sets_outside) = 0;
@@ -87,7 +88,8 @@ public:
   std::vector<std::map<int,int> > & Get_NodeDofsetMap_VcSets_Outside_forCommunication() {return vcsets_nid_dofsetnumber_toComm_outside_; };
 
   void GetVolumeCellsDofSets( std::vector< plain_volumecell_set > & cellsets,
-                              std::vector< std::vector< int > >   & nds_sets  );
+                              std::vector< std::vector< int > >   & nds_sets,
+                              bool include_inner);
 
   /*!
   \brief  Collect the Gauss points of all the volumecells belong to this element in such a way that gaussian rule for every vol.cell can be separated
@@ -191,7 +193,8 @@ public:
   virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
                                        std::vector< std::vector< int > >   & nds_sets,
                                        std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                       INPAR::CUT::VCellGaussPts gausstype);
+                                       INPAR::CUT::VCellGaussPts gausstype,
+                                       bool include_inner);
 
   // collect the volume cells of all subelements
   virtual void CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside );
@@ -275,7 +278,8 @@ public:
   virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
                                        std::vector< std::vector< int > >   & nds_sets,
                                        std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                       INPAR::CUT::VCellGaussPts gausstype);
+                                       INPAR::CUT::VCellGaussPts gausstype,
+                                       bool include_inner);
 
   // collect the volume cells of all subelements
   virtual void CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside );

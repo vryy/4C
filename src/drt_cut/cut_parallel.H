@@ -35,7 +35,8 @@ namespace CUT
   class Element;
   class ElementHandle;
   class Mesh;
-  class MeshIntersection;
+  class ParentIntersection;
+//  class MeshIntersection;
 
 
   /*!
@@ -51,9 +52,9 @@ public:
   \brief Basic CUT parallel constructor
    */
   explicit Parallel(
-      DRT::Discretization & discret,
+      const DRT::Discretization & discret,
       GEO::CUT::Mesh & mesh,
-      GEO::CUT::MeshIntersection & meshintersection
+      GEO::CUT::ParentIntersection & parentintersection
   );
 
   /*!
@@ -64,7 +65,7 @@ public:
   /*!
   \brief Communicate the node dofset number for single volumecells
    */
-  void CommunicateNodeDofSetNumbers();
+  void CommunicateNodeDofSetNumbers(bool include_inner);
 
 
   protected:
@@ -95,7 +96,7 @@ public:
   /*!
   \brief Export dofset data for volumecells to neighbor proc and receive data from previous proc
    */
-  void exportDofSetData();
+  void exportDofSetData(bool include_inner);
 
   /*!
   \brief find the volumecell on myrank for which we received data stored in vc_data
@@ -159,7 +160,7 @@ public:
   // data accessing
 
   //! discretization
-  DRT::Discretization & discret_;
+  const DRT::Discretization & discret_;
 
   //! current processor id
   const int myrank_;
@@ -169,7 +170,7 @@ public:
 
   GEO::CUT::Mesh & mesh_; // mesh that carries the cut information of the mesh
 
-  GEO::CUT::MeshIntersection & meshintersection_;
+  GEO::CUT::ParentIntersection & parentintersection_;
 
   //! map of node-Id and current node-Pos index
   std::map<int,int> curr_undecidedNodePos_;

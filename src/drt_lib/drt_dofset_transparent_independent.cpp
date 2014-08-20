@@ -17,7 +17,7 @@ Maintainer: Shadan Shahmiri
 #include "../linalg/linalg_utils.H"
 #include "../drt_cut/cut_node.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
-#include "../drt_geometry/geo_intersection.H"
+#include "../drt_geometry/geo_meshintersection.H"
 
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
@@ -55,7 +55,7 @@ int DRT::TransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node ) c
 {
   if (wizard_ != Teuchos::null)
   {
-    GEO::CUT::Node *n = wizard_->CutWizard().GetNode( node.Id() );
+    GEO::CUT::Node *n = wizard_->GetNode( node.Id() );  //CutWizard().GetNode( node.Id() )
     if ( n!=NULL )
     {
       int numdofpernode = DRT::DofSet::NumDofPerNode( node );

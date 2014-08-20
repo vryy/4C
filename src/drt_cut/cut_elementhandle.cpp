@@ -186,29 +186,29 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
 
   /*if(IsCut())
   {
-	  static int eeno=0;
-	  eeno++;
-	  if(1)//eeno==1 || eeno==2 || eeno==3)
-	  {
+    static int eeno=0;
+    eeno++;
+    if(1)//eeno==1 || eeno==2 || eeno==3)
+    {
   for(std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin();i!=intpoints.end();i++)
   {
-	  DRT::UTILS::GaussIntegration ga = *i;
-	  static int sideno = 0;
+    DRT::UTILS::GaussIntegration ga = *i;
+    static int sideno = 0;
           sideno++;
-	  std::string filename="wrong";
-   	  std::ofstream file;
+    std::string filename="wrong";
+      std::ofstream file;
 
           std::stringstream out;
           out <<"gauss"<<sideno<<".dat";
           filename = out.str();
           file.open(filename.c_str());
-	  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
-	  {
-		  const double* gpp = iquad.Point();
-		  file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[2]<<"\t";
-		  file<<iquad.Weight()<<std::endl;
-	  }
-	  file.close();
+    for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
+    {
+      const double* gpp = iquad.Point();
+      file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[2]<<"\t";
+      file<<iquad.Weight()<<std::endl;
+    }
+    file.close();
   }
   }
   }*/
@@ -272,9 +272,10 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
 
 
 void GEO::CUT::ElementHandle::GetVolumeCellsDofSets ( std::vector<plain_volumecell_set > & cellsets ,
-                                                      std::vector< std::vector< int > >  & nds_sets )
+                                                      std::vector< std::vector< int > >  & nds_sets,
+                                                      bool include_inner)
 {
-  bool include_inner = false;
+  //bool include_inner = false;
 
   const std::vector<plain_volumecell_set> & ele_vc_sets_inside = GetVcSetsInside();
   const std::vector<plain_volumecell_set> & ele_vc_sets_outside = GetVcSetsOutside();
@@ -777,11 +778,12 @@ void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells
 void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
                                                                       std::vector< std::vector< int > >  & nds_sets,
                                                                       std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                                                      INPAR::CUT::VCellGaussPts gausstype)
+                                                                      INPAR::CUT::VCellGaussPts gausstype,
+                                                                      bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
 
-  GetVolumeCellsDofSets( cell_sets, nds_sets );
+  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner); //(include_inner=false)
 
   intpoints_sets.clear();
   //intpoints_sets.reserve( cell_sets.size() );
@@ -867,11 +869,11 @@ void GEO::CUT::LinearElementHandle::VolumeCellSets ( bool include_inner, std::ve
 
 //void GEO::CUT::LinearElementHandle::GetNodalDofSets ( bool include_inner, std::vector<std::vector<int> > & nodaldofset_vc_sets_inside, std::vector<std::vector<int> > & nodaldofset_vc_sets_outside)
 //{
-//	if(include_inner)
-//	{
-//		nodaldofset_vc_sets_inside = nodaldofset_vc_sets_inside_;
-//	}
-//	nodaldofset_vc_sets_outside = nodaldofset_vc_sets_outside_;
+//  if(include_inner)
+//  {
+//    nodaldofset_vc_sets_inside = nodaldofset_vc_sets_inside_;
+//  }
+//  nodaldofset_vc_sets_outside = nodaldofset_vc_sets_outside_;
 //}
 
 void GEO::CUT::QuadraticElementHandle::BuildCellSets ( plain_volumecell_set & cells_to_connect, std::vector<plain_volumecell_set> & connected_sets)
@@ -890,7 +892,7 @@ void GEO::CUT::QuadraticElementHandle::BuildCellSets ( plain_volumecell_set & ce
       // here we build cell sets within one global element with vcs of subelements
       // maybe the vcs of one subelement are not connected within one subelement, but within one global element,
       // therefore more than one vc of one subelements may be connected.
-      //	      cell->Neighbors( NULL, cells_to_connect, done, connected, elements );
+      //        cell->Neighbors( NULL, cells_to_connect, done, connected, elements );
       cell->Neighbors( NULL, cells_to_connect, done, connected);
 
       if ( connected.size()>0 )
@@ -959,9 +961,10 @@ void GEO::CUT::QuadraticElementHandle::VolumeCells( plain_volumecell_set & cells
 void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
                                                                std::vector< std::vector< int > >  & nds_sets,
                                                                std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                                               INPAR::CUT::VCellGaussPts gausstype)
+                                                               INPAR::CUT::VCellGaussPts gausstype,
+                                                               bool include_inner)
 {
-  GetVolumeCellsDofSets( cell_sets, nds_sets );
+  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner );
 
   intpoints_sets.clear();
   intpoints_sets.reserve( cell_sets.size() );

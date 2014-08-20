@@ -568,7 +568,7 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
   //
   // REMARK: if the brute force preselection is to slow, one could think about
   // an additional octtree for elements to get a logartithmic complexity
-  // 
+  //
 
   {
 
@@ -860,7 +860,8 @@ void GEO::CUT::Mesh::FindNodePositions()
 
 
 /*-------------------------------------------------------------------------------------*
- * ?
+ * Find node positions and propagate the positions to points.
+ * Might need modification for more difficult cut situations with shadow elements.
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::FindLSNodePositions()
 {
@@ -2012,33 +2013,33 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
   std::ofstream file( name.c_str() );
   file << "View \"VolumeCells\" {\n";
   for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-		  i!=elements_.end();i++)
+      i!=elements_.end();i++)
   {
-	  Element& ele = *i->second;
-	  const plain_volumecell_set cells = ele.VolumeCells();
-	  for(plain_volumecell_set::const_iterator j=cells.begin();j!=cells.end();j++)
-	  {
-		  VolumeCell *vcc = *j;
-		  vcc->DumpGmsh(file);
+    Element& ele = *i->second;
+    const plain_volumecell_set cells = ele.VolumeCells();
+    for(plain_volumecell_set::const_iterator j=cells.begin();j!=cells.end();j++)
+    {
+      VolumeCell *vcc = *j;
+      vcc->DumpGmsh(file);
 
-	  }
+    }
 #if 0
-	  if(cells.size()==1)
-	  {
-		  const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-		  for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
-		                i!=integrationcells.end();
-		                ++i )
-		          {
-		            IntegrationCell * ic = *i;
-		            ic->DumpGmsh( file, &count );
-		          }
+    if(cells.size()==1)
+    {
+      const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+      for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
+                    i!=integrationcells.end();
+                    ++i )
+              {
+                IntegrationCell * ic = *i;
+                ic->DumpGmsh( file, &count );
+              }
 
-	  }
-/*	  else
-	  {
+    }
+/*    else
+    {
 
-	  }*/
+    }*/
 #endif
   }
   file << "};\n";

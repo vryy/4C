@@ -2,7 +2,7 @@
 #include "xfem_fluiddofset.H"
 #include "xfem_fluidwizard.H"
 
-#include "../drt_geometry/geo_intersection.H"
+#include "../drt_geometry/geo_meshintersection.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_node.H"
 
@@ -29,7 +29,7 @@ void XFEM::FluidDofSet::Dof(std::vector<int>& dofs, const DRT::Node* node,unsign
 
 int XFEM::FluidDofSet::NumDofPerNode( const DRT::Node & node ) const
 {
-  GEO::CUT::Node * n = wizard_->CutWizard().GetNode( node.Id() );
+  GEO::CUT::Node * n = wizard_->GetNode( node.Id() );
   if ( n!=NULL )
   {
     int numdofpernode = DRT::DofSet::NumDofPerNode( node );

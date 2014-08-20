@@ -27,7 +27,7 @@ namespace GEO
 
 namespace XFEM
 {
-  class FluidWizard;
+  class FluidWizardMesh;
 
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
@@ -308,8 +308,8 @@ public:
   explicit XFLUID_TIMEINT_BASE(
       const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
       const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
-      Teuchos::RCP<XFEM::FluidWizard>         wizard_old,       /// fluid wizard w.r.t. old interface position
-      Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard w.r.t. new interface position
+      Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_old,       /// fluid wizard w.r.t. old interface position
+      Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_new,       /// fluid wizard w.r.t. new interface position
       Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
       Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
       std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
@@ -546,8 +546,8 @@ protected:
   Teuchos::RCP<DRT::Discretization> discret_;                  //! background discretization
   Teuchos::RCP<DRT::Discretization> boundarydis_;              //! cut discretization
 
-  Teuchos::RCP<XFEM::FluidWizard> wizard_old_;                 //! fluid wizard w.r.t. old interface position
-  Teuchos::RCP<XFEM::FluidWizard> wizard_new_;                 //! fluid wizard w.r.t. new interface position
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_old_;                 //! fluid wizard w.r.t. old interface position
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_new_;                 //! fluid wizard w.r.t. new interface position
 
   Teuchos::RCP<XFEM::FluidDofSet> dofset_old_;        //! fluid dofset w.r.t. old interface position
   Teuchos::RCP<XFEM::FluidDofSet> dofset_new_;        //! fluid dofset w.r.t. new interface position

@@ -54,7 +54,7 @@ namespace Teuchos
 
 namespace XFEM
 {
-  class FluidWizard;
+  class FluidWizardMesh;
 
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
@@ -67,8 +67,8 @@ public:
   //! constructor
   explicit XFluidTimeInt(
       const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-      const Teuchos::RCP<XFEM::FluidWizard>                          wizard_old,             /// fluid wizard at t^n
-      const Teuchos::RCP<XFEM::FluidWizard>                          wizard_new,             /// fluid wizard at t^(n+1)
+      const Teuchos::RCP<XFEM::FluidWizardMesh>                          wizard_old,             /// fluid wizard at t^n
+      const Teuchos::RCP<XFEM::FluidWizardMesh>                          wizard_new,             /// fluid wizard at t^(n+1)
       const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
       const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
       const Teuchos::ParameterList&                                  params,                 /// parameter list
@@ -113,7 +113,7 @@ public:
   );
 
   /// all surrounding elements uncut?
-  bool UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizard> wizard);
+  bool UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
 
   /// find all ghost dofsets around this node and its std-dofset
   void FindSurroundingGhostDofsets(
@@ -217,8 +217,8 @@ public:
 
   Teuchos::RCP<DRT::Discretization> dis_;         /// background  discretization
 
-  Teuchos::RCP<XFEM::FluidWizard> wizard_old_;    /// old fluid wizard w.r.t old interface position
-  Teuchos::RCP<XFEM::FluidWizard> wizard_new_;    /// new fluid wizard w.r.t new interface position
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_old_;    /// old fluid wizard w.r.t old interface position
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_new_;    /// new fluid wizard w.r.t new interface position
 
   Teuchos::RCP<XFEM::FluidDofSet> dofset_old_;    /// old dofset w.r.t old interface position
   Teuchos::RCP<XFEM::FluidDofSet> dofset_new_;    /// new dofset w.r.t new interface position

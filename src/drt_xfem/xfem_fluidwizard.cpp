@@ -4,8 +4,8 @@
 \brief class that provides the interface that bridges the cut libraries and fluid part of XFEM
 
 <pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
+Maintainer: Benedikt Schott and Magnus Winter
+            schott@lnm.mw.tum.de, winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
@@ -13,23 +13,72 @@ Maintainer: Benedikt Schott
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_utils.H"
+//#include "../drt_io/io_control.H"
+//#include "../drt_lib/drt_utils.H"
+//#include "../drt_geometry/integrationcell.H"
+//#include "../drt_geometry/geo_intersection.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/geo_intersection.H"
+#include "../drt_geometry/geo_meshintersection.H"
+#include "../drt_geometry/geo_levelsetintersection.H"
 
-#include "xfem_fluidwizard.H"
+#include "../drt_io/io_pstream.H"
+
 #include "xfem_fluiddofset.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
+#include "xfem_fluidwizard.H"
+
+
+/*-------------------------------------------------------------*
+* creates a new fluid dofset                                   *
+*--------------------------------------------------------------*/
+Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofs)
+{
+  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofs, backdis_ ) );
+}
+
+/*-------------------------------------------------------------*
+* get the elementhandle created within the cut                 *
+*--------------------------------------------------------------*/
+GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
+    DRT::Element * ele
+)
+{
+  return parentcut_->GetElement( ele );
+}
+
+/*-------------------------------------------------------------*
+* get the sidehandle created within the cut                 *
+*--------------------------------------------------------------*/
+GEO::CUT::SideHandle * XFEM::FluidWizard::GetSide( std::vector<int> & nodeids)
+{
+  return parentcut_->GetSide( nodeids );
+}
+
+/*-------------------------------------------------------------*
+* get the sidehandle created within the cut                 *
+*--------------------------------------------------------------*/
+GEO::CUT::SideHandle * XFEM::FluidWizard::GetSideHandle( int sid )
+{
+  return parentcut_->GetSide( sid );
+}
+
+/*-------------------------------------------------------------*
+* get the node created within the cut                          *
+*--------------------------------------------------------------*/
+GEO::CUT::Node * XFEM::FluidWizard::GetNode(
+    int nid
+)
+{
+  return parentcut_->GetNode( nid );
+}
 
 /*-------------------------------------------------------------*
 * Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)*
 *--------------------------------------------------------------*/
-void XFEM::FluidWizard::Cut(  bool include_inner,                         //!< perform cut within the structure
+void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //!< perform cut within the structure
                               const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
                               INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
                               INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
@@ -41,17 +90,18 @@ void XFEM::FluidWizard::Cut(  bool include_inner,                         //!< p
                               bool cutinrefconf                           //!< do not try to update node coordinates
                               )
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
+  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizardMesh::Cut" );
 
   if ( backdis_.Comm().MyPID() == 0 and screenoutput)
-    IO::cout << "\nXFEM::FluidWizard::Cut:" << IO::endl;
+    IO::cout << "\nXFEM::FluidWizardMesh::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
-  // set a new CutWizard based on the background discretization
-  cut_ = Teuchos::rcp( new GEO::CutWizard( backdis_, false, 1 ) );
+  // set a new CutWizardMesh based on the background discretization
+  cut_ = Teuchos::rcp( new GEO::CutWizardMesh( backdis_, 1 ) );
+  parentcut_ = cut_;
   cut_->SetFindPositions( positions );
-  GEO::CutWizard & cw = *cut_;
+  GEO::CutWizardMesh & cw = *cut_;
 
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -140,8 +190,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner,                         //!< p
     }
     std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
   }
-    
-		// add the side of the cutter-discretization to the FluidWizard
+
+    // add the side of the cutter-discretization to the FluidWizardMesh
     cw.AddCutSide( 0, element, xyze );
   }
 
@@ -187,61 +237,96 @@ void XFEM::FluidWizard::Cut(  bool include_inner,                         //!< p
 }
 
 /*-------------------------------------------------------------*
-* creates a new fluid dofset                                   *
+* get the cut wizard                                           *
 *--------------------------------------------------------------*/
-Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofs)
+GEO::CutWizardMesh & XFEM::FluidWizardMesh::CutWizard()
 {
-  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofs, backdis_ ) );
+  return *cut_;
+}
+
+GEO::CUT::SideHandle * XFEM::FluidWizardMesh::GetCutSide( int sid, int mi )
+{
+  return cut_->GetCutSide(sid, mi);
+}
+
+/*--------------------------------------------------------------------------*
+* Cut routine for the new XFEM framework (TPFX)* utilizing level set for cut.
+*---------------------------------------------------------------------------*/
+void XFEM::FluidWizardLevelSet::Cut(  bool include_inner,                         //!< perform cut within the structure
+                              Teuchos::RCP<const Epetra_Vector> phinpnode,            //!< node based values for the level set function
+                              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
+                              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
+                              bool parallel,                              //!< use parallel cut algorithms
+                              bool gmsh_output,                           //!< print write gmsh output for cut
+                              bool positions,                             //!< set inside and outside point, facet and volumecell positions
+                              bool tetcellsonly,                          //!< generate only tet cells
+                              bool screenoutput                          //!< print screen output
+                              )
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizardLevelSet::Cut" );
+
+  //fluiddis_ = backdis_
+
+  if ( backdis_.Comm().MyPID() == 0 and screenoutput)
+    IO::cout << "\nXFEM::FluidWizardLevelSet::Cut:" << IO::endl;
+
+  cut_ = Teuchos::rcp( new GEO::CutWizardLevelSet( backdis_ ) );
+  parentcut_ = cut_;
+  cut_->SetFindPositions( positions );
+
+  const double t_start = Teuchos::Time::wallTime();
+
+  // Loop over all Elements to find cut elements and add them to the LevelsetIntersection class
+  // Brute force method.
+  int numelements = backdis_.NumMyColElements();
+
+  std::vector<double> myphinp;
+
+  for ( int lid = 0; lid < numelements; ++lid )
+  {
+    myphinp.clear();
+
+    DRT::Element * element = backdis_.lColElement(lid);
+
+    DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, * phinpnode);
+    cut_->AddElement(element,myphinp);
+  }
+
+  // run the (parallel) Cut
+  if(parallel)
+  {
+    cut_->CutParallel( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
+  }
+  else
+  {
+//    dserror("the non-parallel cutwizard does not support the DofsetNEW framework");
+    cut_->Cut( include_inner, VCellgausstype, BCellgausstype );
+  }
+
+  const double t_end = Teuchos::Time::wallTime()-t_start;
+  if ( backdis_.Comm().MyPID() == 0  and screenoutput)
+  {
+    IO::cout << "\n\t ... Success (" << t_end  <<  " secs)\n" << IO::endl;
+  }
+
+  if(gmsh_output) cut_->DumpGmshNumDOFSets(include_inner);
+
+#ifdef DEBUG
+  cut_->PrintCellStats();
+#endif
+
+  if(gmsh_output)
+  {
+    cut_->DumpGmshIntegrationCells();
+    cut_->DumpGmshVolumeCells( include_inner );
+  }
+
 }
 
 /*-------------------------------------------------------------*
 * get the cut wizard                                           *
 *--------------------------------------------------------------*/
-GEO::CutWizard & XFEM::FluidWizard::CutWizard()
+GEO::CutWizardLevelSet & XFEM::FluidWizardLevelSet::CutWizard()
 {
   return *cut_;
 }
-
-
-/*-------------------------------------------------------------*
-* get the elementhandle created within the cut                 *
-*--------------------------------------------------------------*/
-GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
-    DRT::Element * ele
-)
-{
-  return cut_->GetElement( ele );
-}
-
-/*-------------------------------------------------------------*
-* get the sidehandle created within the cut                 *
-*--------------------------------------------------------------*/
-GEO::CUT::SideHandle * XFEM::FluidWizard::GetSide( std::vector<int> & nodeids)
-{
-  return cut_->GetSide( nodeids );
-}
-
-/*-------------------------------------------------------------*
-* get the sidehandle created within the cut                 *
-*--------------------------------------------------------------*/
-GEO::CUT::SideHandle * XFEM::FluidWizard::GetSideHandle( int sid )
-{
-  return cut_->GetSide( sid );
-}
-
-GEO::CUT::SideHandle * XFEM::FluidWizard::GetCutSide( int sid, int mi )
-{
-  return cut_->GetCutSide(sid, mi);
-}
-
-
-/*-------------------------------------------------------------*
-* get the node created within the cut                          *
-*--------------------------------------------------------------*/
-GEO::CUT::Node * XFEM::FluidWizard::GetNode(
-    int nid
-)
-{
-  return cut_->GetNode( nid );
-}
-

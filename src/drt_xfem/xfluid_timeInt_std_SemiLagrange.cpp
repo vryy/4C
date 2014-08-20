@@ -222,7 +222,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
             DRT::Element * initial_ele = NULL;
 
             if( !discret_->HaveGlobalElement(data->initial_eid_))
-            { 
+            {
               // ChangedSide check for intersections with all sides in the boundary-dis
               // this is not so efficient but should not be called so often
               // the check itself does not need information about the background elements
@@ -1504,7 +1504,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 #endif
 
 
-  Teuchos::RCP<XFEM::FluidWizard> wizard = step_np ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = step_np ? wizard_new_ : wizard_old_;
 
   GEO::CUT::ElementHandle* e = wizard->GetElement(ele);
 

@@ -789,7 +789,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     parpts[1] = par_nodes[1]->point();
     parpts[2] = par_nodes[2]->point();
 
-		std::vector<double> eqnpar(4),eqnfac(4);
+    std::vector<double> eqnpar(4),eqnfac(4);
     // equation of plane denotes normal direction
     eqnpar = KERNEL::EqnPlane( parpts[0], parpts[1], parpts[2] );
 
@@ -799,7 +799,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     // when finding eqn of plane for the facet, inline points should not be taken
    CUT::KERNEL::DeleteInlinePts( cornersTemp );
 
-	 bool rever = false;
+   bool rever = false;
    if( cornersTemp.size()!=0 )
    {
      eqnfac = KERNEL::EqnPlanePolygon( cornersTemp );
@@ -809,7 +809,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
    if(rever)                                       // normal from facet is in wrong direction
    {
      std::reverse(corners.begin(),corners.end());  // change ordering to correct this
-		 std::reverse(cornersTemp.begin(),cornersTemp.end());
+     std::reverse(cornersTemp.begin(),cornersTemp.end());
    }
 
    //if no of corners are 3 or 4, just add them as boundary integrationcells directly
@@ -1022,7 +1022,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
   if( posi==0 )
     dserror( "undefined position for the volumecell" );
 
-  //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
+  //if the volumecell is inside and include_inner is false, no need to compute the Gaussian points
   //as this vc will never be computed in xfem algorithm
   if(posi==-2 && include_inner==false)
     return;

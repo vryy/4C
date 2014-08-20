@@ -30,15 +30,15 @@ Maintainer: Benedikt Schott
  * basic CUT parallel constructor                                                    schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 GEO::CUT::Parallel::Parallel(
-    DRT::Discretization & discret,
+    const DRT::Discretization & discret,
     GEO::CUT::Mesh & mesh,
-    GEO::CUT::MeshIntersection & meshintersection
+    GEO::CUT::ParentIntersection & parentintersection
 ) :
 discret_(discret),
 myrank_(discret_.Comm().MyPID()),
 numproc_(discret_.Comm().NumProc()),
 mesh_(mesh),
-meshintersection_(meshintersection)
+parentintersection_(parentintersection)
 {
   return;
 } // end constructor
@@ -445,7 +445,7 @@ void GEO::CUT::Parallel::setPositionForNode(const Node* n, const Point::PointPos
 /*------------------------------------------------------------------------------------------------*
  * communicate the node dofset number for single volumecells                         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
+void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers(bool include_inner)
 {
 
   // wait for all processors before the Communication starts
@@ -462,13 +462,13 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
   dofSetData_ = Teuchos::rcp(new std::vector<MeshIntersection::DofSetData>);
 
   // check if there are missing dofset for volumecells on this proc
-  meshintersection_.FillParallelDofSetData(dofSetData_, discret_);
+  parentintersection_.FillParallelDofSetData(dofSetData_, discret_, include_inner);
 
 
   // perform just one Robin round to gather data from other procs
   // (send from current proc to next proc and receive info from proc before)
   // fill the current maps with information (dofset number for vc and the current row node) from myproc
-  exportDofSetData();
+  exportDofSetData(include_inner);
 
   //-----------------------------------------------------------------------
   // ... now (back to the original proc) all the ordered data should have been obtained from other procs
@@ -491,9 +491,9 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
 /*------------------------------------------------------------------------------------------------*
  * export dofset data to neighbor proc and receive data from previous proc           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Parallel::exportDofSetData()
+void GEO::CUT::Parallel::exportDofSetData(bool include_inner)
 {
-  bool include_inner = false;
+  //  bool include_inner = false;
 
   // destination proc (the "next" one)
   int dest = myrank_+1;
@@ -728,7 +728,7 @@ void GEO::CUT::Parallel::distributeDofSetData()
 
     int peid = data->peid_ ;
 
-    GEO::CUT::ElementHandle * e = meshintersection_.GetElement( peid );
+    GEO::CUT::ElementHandle * e = parentintersection_.GetElement( peid );
 
     std::vector<int> nds;
 
@@ -789,7 +789,7 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
 
   VolumeCell* my_vc = NULL;
 
-  ElementHandle* pele = meshintersection_.GetElement(vc_data.peid_);
+  ElementHandle* pele = parentintersection_.GetElement(vc_data.peid_);
 
   if(pele == NULL) dserror("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
 

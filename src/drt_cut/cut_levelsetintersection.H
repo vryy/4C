@@ -1,14 +1,22 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file cut_levelsetintersection.H
+
+\brief provides the basic functionality for cutting a mesh with a level set function
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef CUT_LEVELSETINTERSECTION_H
 #define CUT_LEVELSETINTERSECTION_H
 
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "../drt_lib/drt_element.H"
-
-#include "cut_meshhandle.H"
-#include "cut_pointpool.H"
-#include "cut_levelsetside.H"
-#include "cut_options.H"
+#include "cut_parentintersection.H"
 
 namespace GEO
 {
@@ -18,45 +26,56 @@ namespace CUT
   class Edge;
   class Side;
   class Element;
+  class LevelSetSide;
 
   /*!
-  \brief Interface class for the levelset cut.
+  \brief Interface class for the level set cut.
   */
-class LevelSetIntersection
+class LevelSetIntersection : public ParentIntersection
 {
 public:
 
-  LevelSetIntersection()
-    : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( options_, 1, pp_, false ),
-      side_( 1 )
-  {
-  }
+  /// constructur for LevelSetIntersecton class
+  LevelSetIntersection(int myrank =-1);
 
+  /*========================================================================*/
+  //! @name Cut functionality, routines
+  /*========================================================================*/
+  /*!
+  \brief Performs all the level set cut operations.(Used for the test cases)
+   */
+  void Cut( bool include_inner=true, bool screenoutput = false );
+
+  /*!
+  \brief Performs the cut of the mesh with the level set
+  */
+  void Cut_Mesh( bool include_inner, bool screenoutput = false );
+
+  /*========================================================================*/
+  //! @name Add functionality for elements
+  /*========================================================================*/
+
+  /// add this background element if it is cut (determined by level set)
   void AddElement( int eid,
                    const std::vector<int> & nids,
                    const Epetra_SerialDenseMatrix & xyz,
                    const double * lsv,
                    DRT::Element::DiscretizationType distype );
 
-  /*!
-  \brief Performs all the levelset cut operations.
-   */
-  void Cut( bool include_inner=true );
+  /*========================================================================*/
+  //! @name statistics, output
+  /*========================================================================*/
 
-  ElementHandle * GetElement( int eid );
-
-  Mesh & NormalMesh() { return mesh_.LinearMesh(); }
-
-  Options & CreateOptions() { return options_; }
+  /// status
+  void Status(INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
 
 private:
 
-  Teuchos::RCP<PointPool> pp_;
+  /*========================================================================*/
+  //! @name private class variables
+  /*========================================================================*/
 
-  Options options_;
-  MeshHandle mesh_;
-  LevelSetSide side_;
+  Teuchos::RCP<LevelSetSide> side_;
 };
 
 }

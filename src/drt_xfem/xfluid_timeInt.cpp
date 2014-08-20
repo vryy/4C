@@ -56,8 +56,8 @@ Maintainer: Benedikt Schott
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
     const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-    const Teuchos::RCP<XFEM::FluidWizard>                          wizard_old,             /// fluid wizard at t^n
-    const Teuchos::RCP<XFEM::FluidWizard>                          wizard_new,             /// fluid wizard at t^(n+1)
+    const Teuchos::RCP<XFEM::FluidWizardMesh>                      wizard_old,             /// fluid wizard at t^n
+    const Teuchos::RCP<XFEM::FluidWizardMesh>                      wizard_new,             /// fluid wizard at t^(n+1)
     const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
     const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
     const Teuchos::ParameterList&                                  params,                 /// parameter list
@@ -729,7 +729,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 // -------------------------------------------------------------------
 // all surrounding elements uncut ?
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizard> wizard)
+bool XFEM::XFluidTimeInt::UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard)
 {
   // surrounding elements
   const GEO::CUT::plain_element_set& adj_eles = n->Elements();
