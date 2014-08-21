@@ -336,9 +336,6 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
   //********************************************************************
   //  Boundary_segmentation test -- HasProj() check
   //  if a slave-node has no projection onto each master element

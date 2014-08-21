@@ -80,9 +80,6 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
-
     if ((int) cnode->CoData().GetKappaLin().size()==0)
       continue;
 
@@ -145,8 +142,6 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
 
       if ((int) kcnode->CoData().GetKappaLin().size()==0)
         continue;
-
-      typedef std::map<int,double>::const_iterator CI;
 
       newKappa = kcnode->CoData().GetKappa();
 
@@ -257,8 +252,6 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
       if ((int) kcnode->CoData().GetKappaLin().size()==0)
               continue;
 
-      typedef std::map<int,double>::const_iterator CI;
-
       newKappa = kcnode->CoData().GetKappa();
 
       // print results (derivatives) to screen
@@ -361,9 +354,6 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
-
     if ((int) cnode->CoData().GetAWGapLin().size()==0)
       dserror("Linearization map shouldn't be empty for active nodes!");
 
@@ -435,8 +425,6 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
 
       if ((int) kcnode->CoData().GetAWGapLin().size()==0)
         dserror("Linearization map shouldn't be empty for active nodes!");
-
-      typedef std::map<int,double>::const_iterator CI;
 
       double wg = kcnode->CoData().GetWGap();
       double kappa = kcnode->CoData().GetKappa();
@@ -555,8 +543,6 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
 
       if ((int) kcnode->CoData().GetAWGapLin().size()==0)
         dserror("Linearization map shouldn't be empty for active nodes!");
-
-      typedef std::map<int,double>::const_iterator CI;
 
       double wg = kcnode->CoData().GetWGap();
       double kappa = kcnode->CoData().GetKappa();
@@ -957,9 +943,6 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
-
     if ((int) cnode->CoData().GetVarWGapSl().size()==0)
       continue;
 
@@ -1247,9 +1230,6 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
-
     if ((int) cnode->CoData().GetAugALin().size()==0)
       continue;
 
@@ -1312,8 +1292,6 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
 
       if ((int) kcnode->CoData().GetAugALin().size()==0)
         continue;
-
-      typedef std::map<int,double>::const_iterator CI;
 
       newAugA = kcnode->CoData().GetAugA();
 
@@ -1423,8 +1401,6 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
 
       if ((int) kcnode->CoData().GetAugALin().size()==0)
               continue;
-
-      typedef std::map<int,double>::const_iterator CI;
 
       newAugA = kcnode->CoData().GetAugA();
 

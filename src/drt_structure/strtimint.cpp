@@ -1846,7 +1846,8 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
 
     output_->Output()->SetFileSteps(newFileSteps);
 
-    output_->NewResultFile("EveryIter",oei_filecounter_);
+    std::string resultname = output_->Output()->FileName() + "_EveryIter";
+    output_->NewResultFile(resultname,oei_filecounter_);
     output_->WriteMesh(0, 0.0);
   }
 
