@@ -905,7 +905,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
     preclist.set("null space: add default vectors",false);
 
     // allocate the local length of the rowmap
-    const int lrows = dis->DofRowMap()->NumMyElements();
+    const int lrows = dis->NodeRowMap()->NumMyElements();
     Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(lrows));
     double* nullsp = &((*ns)[0]);
     preclist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
