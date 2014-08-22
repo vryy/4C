@@ -158,7 +158,7 @@ public:
     FSICouplingNoSlide,
     FSICouplingCenterDisp,
     FREESURFCoupling,
-    LOCALLAGRANGECoupling,
+    ALEUPDATECoupling,
     SurfaceTension,
     Surfactant,
     MicroBoundary,

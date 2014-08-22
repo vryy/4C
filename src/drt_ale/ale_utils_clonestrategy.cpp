@@ -38,7 +38,7 @@ std::map<std::string,std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy
   conditions_to_copy.insert(std::pair<std::string,std::string>("FSICoupling","FSICoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("FPSICoupling","FPSICoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("FREESURFCoupling","FREESURFCoupling"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("LOCALLAGRANGECoupling","LOCALLAGRANGECoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ALEUPDATECoupling","ALEUPDATECoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("StructAleCoupling","StructAleCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));

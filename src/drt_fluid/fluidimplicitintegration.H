@@ -910,16 +910,16 @@ protected:
   virtual void FreeSurfaceFlowSurfaceTensionUpdate();
 
   /*!
-  \brief update free surface flow
+  \brief Update of an Ale field based on the fluid state
 
   */
-  virtual void FreeSurfaceFlowUpdate();
+  virtual void AleUpdate(std::string condName);
 
   /*!
-  \brief update local lagrange
+  \brief For a given node, obtain local indices of dofs in a vector (like e.g. velnp)
 
   */
-  virtual void LocalLagrangeUpdate();
+  void GetDofsVectorLocalIndicesforNode(int nodeGid, Teuchos::RCP<Epetra_Vector> vec, bool withPressure, std::vector< int >* dofsLocalInd);
 
   /*!
   \brief add mat and rhs of edge-based stabilization

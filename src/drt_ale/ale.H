@@ -98,8 +98,8 @@ public:
   /// displacements at the free surface are prescribed
   virtual void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
 
-  /// displacements at the local lagrange condition nodes are prescribed
-  virtual void ApplyLocalLagrangeDisplacements(Teuchos::RCP<Epetra_Vector> lldisp);
+  /// displacements at the ale update condition nodes are prescribed
+  virtual void ApplyAleUpdateDisplacements(Teuchos::RCP<Epetra_Vector> audisp);
 
   //@}
 

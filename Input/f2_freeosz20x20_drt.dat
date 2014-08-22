@@ -130,8 +130,8 @@ DVOL                            0
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           2
-E 3 - fluid lagrange
-E 7 - ale lagrange
+E 3 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
+E 7 - FIELD ale COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2 DNODE 1
 NODE 663 DNODE 2

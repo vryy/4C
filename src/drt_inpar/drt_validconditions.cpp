@@ -1577,6 +1577,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > freesurfcomponents;
 
+  freesurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELD")));
   freesurfcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
@@ -1584,13 +1585,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("fluid","ale"),
         Teuchos::tuple<std::string>("fluid","ale"))));
 
+  freesurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLING")));
   freesurfcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
         "coupling","lagrange",
-        Teuchos::tuple<std::string>("lagrange","heightfunction"),
-        Teuchos::tuple<std::string>("lagrange","heightfunction"),
+        Teuchos::tuple<std::string>("lagrange","heightfunction","sphereHeightFunction","meantangentialvelocity","meantangentialvelocityscaled"),
+        Teuchos::tuple<std::string>("lagrange","heightfunction","sphereHeightFunction","meantangentialvelocity","meantangentialvelocityscaled"),
         true)));
+
+  freesurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  freesurfcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+
+  freesurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NODENORMALFUNCT")));
+  freesurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("nodenormalfunct")));
 
   Teuchos::RCP<ConditionDefinition> linefreesurf =
     Teuchos::rcp(new ConditionDefinition("DESIGN FLUID FREE SURFACE LINE CONDITIONS",
@@ -1617,25 +1625,48 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffreesurf);
 
   /*--------------------------------------------------------------------*/
-  // Local Lagrange boundary condition
+  // Ale update boundary condition
 
-  Teuchos::RCP<ConditionDefinition> linelocallagrange =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LOCAL LAGRANGE LINE CONDITIONS",
-                                         "LOCALLAGRANGECoupling",
-                                         "LOCALLAGRANGE Coupling",
-                                         DRT::Condition::LOCALLAGRANGECoupling,
+  std::vector<Teuchos::RCP<ConditionComponent> > aleupdatecomponents;
+
+  aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLING")));
+  aleupdatecomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "coupling","lagrange",
+        Teuchos::tuple<std::string>("lagrange","heightfunction","sphereHeightFunction","meantangentialvelocity","meantangentialvelocityscaled"),
+        Teuchos::tuple<std::string>("lagrange","heightfunction","sphereHeightFunction","meantangentialvelocity","meantangentialvelocityscaled"),
+        true)));
+
+  aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+
+  aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NODENORMALFUNCT")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new IntConditionComponent("nodenormalfunct")));
+
+  Teuchos::RCP<ConditionDefinition> linealeupdate =
+    Teuchos::rcp(new ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS",
+                                         "ALEUPDATECoupling",
+                                         "ALEUPDATE Coupling",
+                                         DRT::Condition::ALEUPDATECoupling,
                                          true,
                                          DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surflocallagrange =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LOCAL LAGRANGE SURF CONDITIONS",
-                                         "LOCALLAGRANGECoupling",
-                                         "LOCALLAGRANGE Coupling",
-                                         DRT::Condition::LOCALLAGRANGECoupling,
+  Teuchos::RCP<ConditionDefinition> surfaleupdate =
+    Teuchos::rcp(new ConditionDefinition("DESIGN ALE UPDATE SURF CONDITIONS",
+                                         "ALEUPDATECoupling",
+                                         "ALEUPDATE Coupling",
+                                         DRT::Condition::ALEUPDATECoupling,
                                          true,
                                          DRT::Condition::Surface));
 
-  condlist.push_back(linelocallagrange);
-  condlist.push_back(surflocallagrange);
+  for (unsigned i=0; i<aleupdatecomponents.size(); ++i)
+  {
+    linealeupdate->AddComponent(aleupdatecomponents[i]);
+    surfaleupdate->AddComponent(aleupdatecomponents[i]);
+  }
+
+  condlist.push_back(linealeupdate);
+  condlist.push_back(surfaleupdate);
 
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and ale fields (for lung fsi)

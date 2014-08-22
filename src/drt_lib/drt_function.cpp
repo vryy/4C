@@ -3764,9 +3764,6 @@ double DRT::UTILS::RampToValueFunction::Evaluate(int index, const double* xp, do
       }
     }
 
-    // Output info about current value
-    printf("Current ramping value: %e\n", valueCurrent_);
-
     // Update info about last time step
     timeOld_ = t;
   }

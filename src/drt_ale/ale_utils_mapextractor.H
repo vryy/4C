@@ -25,7 +25,7 @@ namespace UTILS
       cond_lung_asi  = 3,
       cond_ale_wear  = 4,
       cond_bio_gr    = 5,
-      cond_ll        = 6,
+      cond_au        = 6,
       cond_fpsi      = 7
     };
 
@@ -41,7 +41,7 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
     MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond,cond_ale_wear)
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
-    MAP_EXTRACTOR_VECTOR_METHODS(LLCond, cond_ll)
+    MAP_EXTRACTOR_VECTOR_METHODS(AUCond, cond_au)
     MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
   };
 

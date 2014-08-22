@@ -200,10 +200,10 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           4
-E 1 - fluid
-E 2 - fluid
-E 3 - fluid
-E 4 - fluid
+E 1 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
+E 2 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
+E 3 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
+E 4 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
 ------------------------------------------------------------FILAMENT NUMBERS
 DLINE                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D

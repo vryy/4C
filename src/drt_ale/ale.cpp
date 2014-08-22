@@ -281,17 +281,17 @@ void ALE::Ale::SetupDBCMapEx(bool dirichletcond)
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
-  if (dirichletcond and (interface_->FSCondRelevant() or interface_->LLCondRelevant()))
+  if (dirichletcond and (interface_->FSCondRelevant() or interface_->AUCondRelevant()))
   {
-    // for partitioned solves, the free surface and/or the nodes of the local lagrange
+    // for partitioned solves, the free surface and/or the nodes of the ale update
     // conditions become a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
 
     if (interface_->FSCondRelevant()) {
       condmaps.push_back(interface_->FSCondMap());
     }
-    if (interface_->LLCondRelevant()) {
-      condmaps.push_back(interface_->LLCondMap());
+    if (interface_->AUCondRelevant()) {
+      condmaps.push_back(interface_->AUCondMap());
     }
 
     condmaps.push_back(dbcmaps_->CondMap());
@@ -318,9 +318,9 @@ void ALE::Ale::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ALE::Ale::ApplyLocalLagrangeDisplacements(Teuchos::RCP<Epetra_Vector> lldisp)
+void ALE::Ale::ApplyAleUpdateDisplacements(Teuchos::RCP<Epetra_Vector> audisp)
 {
-  interface_->InsertLLCondVector(lldisp,dispnp_);
+  interface_->InsertAUCondVector(audisp,dispnp_);
 }
 
 

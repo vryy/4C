@@ -46,12 +46,12 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                     "FREESURFCoupling",
                                     ndim);
 
-  llcoupfa_ = Teuchos::rcp(new Coupling());
-  llcoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                     FluidField().Interface()->LLCondMap(),
+  aucoupfa_ = Teuchos::rcp(new Coupling());
+  aucoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                     FluidField().Interface()->AUCondMap(),
                                     *AleField().Discretization(),
-                                     AleField().Interface()->LLCondMap(),
-                                    "LOCALLAGRANGECoupling",
+                                     AleField().Interface()->AUCondMap(),
+                                    "ALEUPDATECoupling",
                                     ndim);
 
   // the fluid-ale coupling always matches
@@ -142,12 +142,12 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
     }
   }
 
-  // Update the local lagrange part
-  if (FluidField().Interface()->LLCondRelevant())
+  // Update the ale update part
+  if (FluidField().Interface()->AUCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> lldispnp = FluidField().Interface()->ExtractLLCondVector(dispnp);
-    AleField().ApplyLocalLagrangeDisplacements(llcoupfa_->MasterToSlave(lldispnp));
+    Teuchos::RCP<Epetra_Vector> audispnp = FluidField().Interface()->ExtractAUCondVector(dispnp);
+    AleField().ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part

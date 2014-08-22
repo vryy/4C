@@ -157,7 +157,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==LineLIFTDRAG)                  os << "Line LIFTDRAG condition: ";
   else if (Type()==SurfLIFTDRAG)                  os << "Surf LIFTDRAG condition: ";
   else if (Type()==FREESURFCoupling)              os << "Free surface condition: ";
-  else if (Type()==LOCALLAGRANGECoupling)         os << "Local Lagrange condition: ";
+  else if (Type()==ALEUPDATECoupling)             os << "Ale update condition: ";
   else if (Type()==SurfaceTension)                os << "Surface tension condition: ";
   else if (Type()==Surfactant)                    os << "Surfactant condition: ";
   else if (Type()==MicroBoundary)                 os << "Microscale boundary condition: ";
@@ -226,7 +226,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ThermoConvections)             os << "ThermoConvections boundary condition: ";
   else if (Type()==FSICouplingCenterDisp)         os << "Sliding ALE Center Disp condition";
   else if (Type()==FSICouplingNoSlide)            os << "Do not consider these nodes for sliding ALE";
-  else if (Type()==SpringDashpot)               	os << "Spring Dashpot Condition";
+  else if (Type()==SpringDashpot)                 os << "Spring Dashpot Condition";
   else if (Type()==TotalTractionCorrectionCond)   os << "Total traction correct condition";
   else if (Type()==NoPenetration)                 os << "No Penetration Condition";
   else if (Type()==TotalTractionCorrectionBorderNodes)  os << "Total traction correction border nodes condition";

@@ -48,6 +48,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_function.cpp"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_locsys.H"
@@ -952,14 +953,14 @@ void FLD::FluidImplicitTimeInt::Solve()
     stopnonliniter = ConvergenceCheck(itnum,itmax,ittol);
 
     // -------------------------------------------------------------------
-    // free surface flow update
+    // Do the free surface flow Ale update
     // -------------------------------------------------------------------
-    FreeSurfaceFlowUpdate();
+    AleUpdate("FREESURFCoupling");
 
     // -------------------------------------------------------------------
-    // local lagrange conditions update
+    // Do the Ale update conditions update
     // -------------------------------------------------------------------
-    LocalLagrangeUpdate();
+    AleUpdate("ALEUPDATECoupling");
   }
 
   // -------------------------------------------------------------------
@@ -2287,152 +2288,533 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 
 } // FluidImplicitTimeInt::ConvergenceCheck
 
-
 /*----------------------------------------------------------------------*
- | free surface flow update                             rasthofer 06/13 |
+ | Update of an Ale field based on the fluid state           hahn 08/14 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::FreeSurfaceFlowUpdate()
+void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
 {
-  if (alefluid_ and surfacesplitter_->FSCondRelevant())
+  // Preparation: Check, if an Ale update needs to be done
+  if (condName == "FREESURFCoupling")
   {
-    Teuchos::RCP<Epetra_Vector> fsvelnp = surfacesplitter_->ExtractFSCondVector(velnp_);
-    Teuchos::RCP<Epetra_Vector> fsdisp = surfacesplitter_->ExtractFSCondVector(dispn_);
-    Teuchos::RCP<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+    if (not (alefluid_ and surfacesplitter_->FSCondRelevant()))
+      return;
+  } else if (condName == "ALEUPDATECoupling")
+  {
+    if (not (alefluid_ and surfacesplitter_->AUCondRelevant()))
+      return;
+  } else
+  {
+    dserror("AleUpdate: So far, only FREESURFCoupling and ALEUPDATECoupling are supported.");
+  }
 
-    // select free surface elements
-    std::string condname = "FREESURFCoupling";
+  // Sort Ale update conditons, such that line conditions overwrite surface
+  // conditions overwrite volume conditions
+  // **************************************************************************
+  // Get (unsorted) Ale update conditions
+  std::vector<DRT::Condition*> unsortedConds;
+  discret_->GetCondition(condName, unsortedConds);
 
-    std::vector<DRT::Condition*> conds;
-    discret_->GetCondition(condname, conds);
+  // Sort Ale update conditions
+  std::vector<DRT::Condition*> conds;
+  conds.clear();
 
-    // select only heightfunction conditions here
-    std::vector<DRT::Condition*> hfconds;
-    for (unsigned i=0; i<conds.size(); ++i)
+  // - first volume conditions
+  for (unsigned i=0; i<unsortedConds.size(); ++i)
+  {
+    if (unsortedConds[i]->GType() == DRT::Condition::Volume)
+      conds.push_back(unsortedConds[i]);
+  }
+
+  // - then surface conditions
+  for (unsigned i=0; i<unsortedConds.size(); ++i)
+  {
+    if (unsortedConds[i]->GType() == DRT::Condition::Surface)
+      conds.push_back(unsortedConds[i]);
+  }
+
+  // - and finally line conditions
+  for (unsigned i=0; i<unsortedConds.size(); ++i)
+  {
+    if (unsortedConds[i]->GType() == DRT::Condition::Line)
+      conds.push_back(unsortedConds[i]);
+  }
+
+  // Loop through all conditions and do the Ale update according to the coupling type
+  // ********************************************************************************
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    // Initialize some variables:
+    // Select the i-th condition in the vector
+    std::vector<DRT::Condition*> selectedCond;
+    selectedCond.clear();
+    selectedCond.push_back(conds[i]);
+
+    // Get condition name
+    std::string condName;
+    if (selectedCond[0]->Type() == DRT::Condition::FREESURFCoupling)
     {
-      if (*conds[i]->Get<std::string>("coupling")=="heightfunction")
-        hfconds.push_back(conds[i]);
+      condName = "FREESURFCoupling";
+    }
+    else if (selectedCond[0]->Type() == DRT::Condition::ALEUPDATECoupling)
+    {
+      condName = "ALEUPDATECoupling";
     }
 
-    conds.clear();
+    // Get coupling type
+    std::string coupling = *(selectedCond[0]->Get<std::string>("coupling"));
 
-    // ================ HEIGHTFUNCTION =======================================
-    // This is the heightfunction implementation for the partitioned algorithm
-    // as it is. This is a very basic implementation - and it is not
-    // mass-consistent! We need another evaluate call here to find a
-    // mass-consistent heightfunction manipulation matrix.
-    //
-    // local lagrange is mass-consistent of course.
+    // Get scaling value
+    const std::vector<double>* scalingValues   = selectedCond[0]->Get<std::vector<double> >("val");
+    const double scalingValue = (*scalingValues)[0];
 
-    if (hfconds.size()>0)
+    // Get function for node normal calculation
+    const std::vector<int>* nodeNormalFuncts = selectedCond[0]->Get<std::vector<int> >("nodenormalfunct");
+    const int nodeNormalFunct = (*nodeNormalFuncts)[0];
+
+    // Get a vector layout from the discretization to construct matching
+    // vectors and matrices
+    //                 local <-> global dof numbering
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // Obtain the global IDs of the condition's nodes for the current processor
+    std::vector< int > gIdNodes;
+    DRT::UTILS::FindConditionedNodes(*discret_,selectedCond,gIdNodes);
+
+    // Obtain fluid and ale state variables for nodes in the condition
+    // **************************************************************************
+    // Velocities at n+1 for nodes in the condition
+    Teuchos::RCP<Epetra_Vector> velnp;
+
+    // Grid velocities at n+1 for nodes in the condition
+    Teuchos::RCP<Epetra_Vector> gridv;
+
+    // Displacements at n for nodes in the condition
+    Teuchos::RCP<Epetra_Vector> disp;
+
+    // Create container for new displacements at n+1 for nodes in the condition
+    Teuchos::RCP<Epetra_Vector> dispnp;
+
+    // Set variables depending on condition
+    if (condName=="FREESURFCoupling")
     {
-      Teuchos::ParameterList eleparams;
-      // set action for elements
-      eleparams.set<int>("action",FLD::ba_calc_node_normal);
+      velnp = surfacesplitter_->ExtractFSCondVector(velnp_);
+      gridv = surfacesplitter_->ExtractFSCondVector(gridv_);
+      disp = surfacesplitter_->ExtractFSCondVector(dispn_);
+      dispnp = surfacesplitter_->ExtractFSCondVector(dispnp_);
+    } else if (condName=="ALEUPDATECoupling")
+    {
+      velnp = surfacesplitter_->ExtractAUCondVector(velnp_);
+      gridv = surfacesplitter_->ExtractAUCondVector(gridv_);
+      disp = surfacesplitter_->ExtractAUCondVector(dispn_);
+      dispnp = surfacesplitter_->ExtractAUCondVector(dispnp_);;
+    }
 
-      // get a vector layout from the discretization to construct matching
-      // vectors and matrices
-      //                 local <-> global dof numbering
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-      //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
-      Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
-
-      //call loop over elements, note: normal vectors do not yet have length = 1.0
-      discret_->ClearState();
-      discret_->SetState("dispnp", dispnp_);
-      discret_->EvaluateCondition(eleparams,ndnorm0,condname);
-      discret_->ClearState();
-
-      //ndnorm contains fsnodes' normal vectors (with arbitrary length). no pressure-entries
-      Teuchos::RCP<Epetra_Vector> ndnorm = surfacesplitter_->ExtractFSCondVector(ndnorm0);
-
-      std::vector< int > GIDfsnodes;  //GIDs of free surface nodes
-      std::vector< int > GIDdof;      //GIDs of current fsnode's dofs
-      std::vector< int > rfs;         //local indices for ndnorm and fsvelnp for current node
-
-      //get GIDs of free surface nodes for this processor
-      DRT::UTILS::FindConditionedNodes(*discret_,hfconds,GIDfsnodes);
-
-      for (unsigned int node=0; node<(GIDfsnodes.size()); node++)
+    // Do the local lagrangian coupling
+    // **************************************************************************
+    if (coupling == "lagrange")
+    {
+      // Loop through all nodes in the condition
+      for (unsigned int node=0; node<(gIdNodes.size()); node++)
       {
-        //get LID for this node
-        int ndLID = (discret_->NodeRowMap())->LID(GIDfsnodes[node]);
-        if (ndLID == -1) dserror("No LID for free surface node");
+        // Obtain local degree of freedom indices
+        std::vector< int > dofsLocalInd;
+        GetDofsVectorLocalIndicesforNode(gIdNodes[node], gridv, false, &dofsLocalInd);
 
-        //get vector of this node's dof GIDs
-        GIDdof.clear();
-        discret_->Dof(discret_->lRowNode(ndLID), GIDdof);
-        GIDdof.pop_back();  //free surface nodes: pop pressure dof
-
-        //numdof = dim, no pressure
-        int numdof = GIDdof.size();
-        rfs.clear();
-        rfs.resize(numdof);
-
-        //get local indices for dofs in ndnorm and fsvelnp
-        for (int i=0; i<numdof; i++)
+        // Calculate new ale velocities
+        for (int i=0; i<numdim_; i++)
         {
-          int rgid = GIDdof[i];
-          if (!ndnorm->Map().MyGID(rgid) or !fsvelnp->Map().MyGID(rgid)
-              or ndnorm->Map().MyGID(rgid) != fsvelnp->Map().MyGID(rgid))
-            dserror("Sparse vector does not have global row  %d or vectors don't match",rgid);
-          rfs[i] = ndnorm->Map().LID(rgid);
+          (*gridv)[dofsLocalInd[i]]  = (*velnp)[dofsLocalInd[i]];
+        }
+      }
+    }
+    // For all other couplings, do the following common calculations
+    // ************************************************************************
+    else
+    {
+      // Calculate normalized node normals and tangents for current condition
+      Teuchos::RCP<Epetra_Vector> nodeNormals;
+      Teuchos::RCP<Epetra_Vector> nodeTangents;
+
+      if (nodeNormalFunct == 0)
+      { // Obtain node normals from element (mass-consistent node normal)
+        // Define corresponding parameter list
+        Teuchos::ParameterList eleparams;
+        eleparams.set<int>("action",FLD::ba_calc_node_normal);
+
+        // Initialize global node normals vector
+        Teuchos::RCP<Epetra_Vector> globalNodeNormals = LINALG::CreateVector(*dofrowmap,true);
+
+        // Evaluate condition to calculate the node normals
+        // Note: the normal vectors do not yet have length 1.0
+        discret_->ClearState();
+        discret_->SetState("dispnp", dispnp_);
+        discret_->EvaluateCondition(eleparams,globalNodeNormals,condName);
+        discret_->ClearState();
+
+        // Obtain node normals and initialize node tangents for current condition
+        // (vector only contain the nodes in the condition).
+        if (condName=="FREESURFCoupling")
+        {
+          nodeNormals = surfacesplitter_->ExtractFSCondVector(globalNodeNormals);
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+        } else if (condName=="ALEUPDATECoupling")
+        {
+          nodeNormals = surfacesplitter_->ExtractAUCondVector(globalNodeNormals);
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->AUCondMap()));
+        }
+      } else
+      { // Obtain node normals from function
+        if (condName=="FREESURFCoupling")
+        {
+          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+        } else if (condName=="ALEUPDATECoupling")
+        {
+          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->AUCondMap()));
+          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->AUCondMap()));
         }
 
-        double length = 0.0;
-        for (int i=0; i<numdof; i++)
-          length += (*ndnorm)[rfs[i]] * (*ndnorm)[rfs[i]];
-        length = sqrt(length);
-
-        double pointproduct = 0.0;
-        for (int i=0; i<numdof; i++)
+        // Loop through all nodes and obtain node normal from function
+        for (unsigned int node=0; node<(gIdNodes.size()); node++)
         {
-          (*ndnorm)[rfs[i]] = (1.0/length) * (*ndnorm)[rfs[i]];
-          //height function approach: left hand side of eq. 15
-          pointproduct += (*ndnorm)[rfs[i]] * (*fsvelnp)[rfs[i]];
+          // Make sure, that the current processor shall calculate this node
+          if (not ((discret_->HaveGlobalNode(gIdNodes[node])) && (discret_->gNode(gIdNodes[node])->Owner()==myrank_ )))
+            continue;
+
+          // Obtain local degree of freedom indices
+          std::vector< int > dofsLocalInd;
+          GetDofsVectorLocalIndicesforNode(gIdNodes[node], nodeNormals, false, &dofsLocalInd);
+
+          // Calculate current position for node
+          DRT::Node* currNode = discret_->gNode(gIdNodes[node]);
+          double currPos[numdim_];
+
+          const double* refPos = currNode->X();
+
+          for (int i=0; i<numdim_; ++i) {
+            currPos[i] = refPos[i] + (*dispnp)[dofsLocalInd[i]];
+          }
+
+          // Calculate node normal components
+          for (int i=0; i<numdim_; i++)
+          {
+            (*nodeNormals)[dofsLocalInd[i]] = (DRT::Problem::Instance()->Funct(nodeNormalFunct-1)).Evaluate(i, &currPos[0], 0.0, &(*discret_));
+          }
+        }
+      }
+
+      // Normalize node normal vectors and calculate node tangent vectors, which are
+      // orthogonal to the normal vector and for 3D to e_y and for 2D to e_z!
+      for (unsigned int node=0; node<(gIdNodes.size()); node++)
+      {
+        // Make sure, that the current processor shall calculate this node
+        if (not ((discret_->HaveGlobalNode(gIdNodes[node])) && (discret_->gNode(gIdNodes[node])->Owner()==myrank_ )))
+          continue;
+
+        // Obtain local degree of freedom indices
+        std::vector< int > dofsLocalInd;
+        GetDofsVectorLocalIndicesforNode(gIdNodes[node], nodeNormals, false, &dofsLocalInd);
+
+        // Calculate length of node normal
+        double lengthNodeNormal = 0.0;
+        for (int i=0; i<numdim_; i++)
+          lengthNodeNormal += (*nodeNormals)[dofsLocalInd[i]] * (*nodeNormals)[dofsLocalInd[i]];
+        lengthNodeNormal = sqrt(lengthNodeNormal);
+
+        // Normalize vector
+        for (int i=0; i<numdim_; i++)
+        {
+          (*nodeNormals)[dofsLocalInd[i]] = (1.0/lengthNodeNormal) * (*nodeNormals)[dofsLocalInd[i]];
         }
 
-        for (int i=0; i<numdof; i++)
+        // Calculate normalized tangent vectors, which are orthogonal to
+        // the normal vector and to e_y (3D) or to e_z (2D)! For 3D, in
+        // case that the normal vector and e_y are parallel, the tangent
+        // vector is constructed to  be orthogonal to the normal vector
+        // and to e_z.
+        if (numdim_==3) {
+          double lengthNodeTangent = sqrt((*nodeNormals)[dofsLocalInd[0]]*(*nodeNormals)[dofsLocalInd[0]]+(*nodeNormals)[dofsLocalInd[2]]*(*nodeNormals)[dofsLocalInd[2]]);
+          if (lengthNodeTangent > 0.1)
+          { // Tangent vector orthogonal to normal and e_y
+            (*nodeTangents)[dofsLocalInd[0]] = -(*nodeNormals)[dofsLocalInd[2]] / lengthNodeTangent;
+            (*nodeTangents)[dofsLocalInd[1]] = 0.0;
+            (*nodeTangents)[dofsLocalInd[2]] = (*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
+          } else
+          { // Tangent vector orthogonal to normal and e_z
+            lengthNodeTangent = sqrt((*nodeNormals)[dofsLocalInd[0]]*(*nodeNormals)[dofsLocalInd[0]]+(*nodeNormals)[dofsLocalInd[1]]*(*nodeNormals)[dofsLocalInd[1]]);
+            (*nodeTangents)[dofsLocalInd[0]] = -(*nodeNormals)[dofsLocalInd[1]] / lengthNodeTangent;
+            (*nodeTangents)[dofsLocalInd[1]] = (*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
+            (*nodeTangents)[dofsLocalInd[2]] = 0.0;
+          }
+        } else if (numdim_==2)
         {
-          //height function approach: last entry of u_G is delta_phi/delta_t,
-          //the other entries are zero
-          if (i == numdof-1)
-            (*fsvelnp)[rfs[i]]  = pointproduct / (*ndnorm)[rfs[i]];
-           else
-            (*fsvelnp)[rfs[i]] = 0.0;
-         }
+          double lengthNodeTangent = sqrt((*nodeNormals)[dofsLocalInd[0]]*(*nodeNormals)[dofsLocalInd[0]]+(*nodeNormals)[dofsLocalInd[1]]*(*nodeNormals)[dofsLocalInd[1]]);
+          (*nodeTangents)[dofsLocalInd[0]] = (*nodeNormals)[dofsLocalInd[1]] / lengthNodeTangent;
+          (*nodeTangents)[dofsLocalInd[1]] = -(*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
+          (*nodeTangents)[dofsLocalInd[2]] = 0.0;
+        } else
+        {
+          dserror("Spatial dimension needs to be 2 or 3!");
+        }
+      }
+
+      // Do the height function coupling
+      // ************************************************************************
+      if (coupling == "heightfunction")
+      {
+        // Loop through all nodes in the condition
+        for (unsigned int node=0; node<(gIdNodes.size()); node++)
+        {
+          // Obtain local degree of freedom indices
+          std::vector< int > dofsLocalInd;
+          GetDofsVectorLocalIndicesforNode(gIdNodes[node], nodeNormals, false, &dofsLocalInd);
+
+          // Calculate dot product between velnp and nodeNormals
+          double velnpDotNodeNormal = 0.0;
+          for (int i=0; i<numdim_; i++)
+          {
+            velnpDotNodeNormal += (*nodeNormals)[dofsLocalInd[i]] * (*velnp)[dofsLocalInd[i]];
+          }
+
+          // Calculate ale velocities
+          for (int i=0; i<numdim_; i++)
+          {
+            // Height function approach: last entry of u_G is
+            // (velnp*nodeNormals / nodeNormals_z), the other entries are zero
+            if (i == numdim_-1)
+              (*gridv)[dofsLocalInd[i]]  = velnpDotNodeNormal / (*nodeNormals)[dofsLocalInd[i]];
+             else
+              (*gridv)[dofsLocalInd[i]] = 0.0;
+          }
+        }
+      // Do the coupling based on a mean tangential velocity
+      // ************************************************************************
+      } else if ((coupling == "meantangentialvelocity") or (coupling == "meantangentialvelocityscaled"))
+      {
+        // Only implemented for 3D
+        if (not (numdim_==3))
+          dserror("AleUpdate: meantangentialvelocity(scaled) only implemented for 3D.");
+
+        // Determine the mean tangent velocity of the current condition's nodes
+        double localSumVelnpDotNodeTangent = 0.0;
+        int localNumOfCondNodes = 0;
+
+        // Loop through all nodes in the condition
+        for (unsigned int node=0; node<(gIdNodes.size()); node++)
+        {
+          // Obtain local degree of freedom indices
+          std::vector< int > dofsLocalInd;
+          GetDofsVectorLocalIndicesforNode(gIdNodes[node], nodeNormals, false, &dofsLocalInd);
+
+          // Calculate dot product between velnp and the node tangent vector
+          double velnpDotNodeTangent = 0.0;
+          for (int i=0; i<numdim_; i++)
+          {
+            velnpDotNodeTangent += (*nodeTangents)[dofsLocalInd[i]] * (*velnp)[dofsLocalInd[i]];
+          }
+
+          localSumVelnpDotNodeTangent += velnpDotNodeTangent;
+          localNumOfCondNodes += 1;
+        }
+
+        // Sum variables over all processors to obtain global value
+        double globalSumVelnpDotNodeTangent = 0.0;
+        dofrowmap->Comm().SumAll(&localSumVelnpDotNodeTangent,&globalSumVelnpDotNodeTangent,1);
+
+        int globalNumOfCondNodes = 0;
+        dofrowmap->Comm().SumAll(&localNumOfCondNodes,&globalNumOfCondNodes,1);
+
+        // Finalize calculation of mean tangent velocity
+        double lambda = 0.0;
+        lambda = globalSumVelnpDotNodeTangent / globalNumOfCondNodes;
+
+        // Loop through all nodes in the condition
+        for (unsigned int node=0; node<(gIdNodes.size()); node++)
+        {
+          // Obtain local degree of freedom indices
+          std::vector< int > dofsLocalInd;
+          GetDofsVectorLocalIndicesforNode(gIdNodes[node], nodeNormals, false, &dofsLocalInd);
+
+          // Calculate dot product between velnp and nodeNormals
+          double velnpDotNodeNormal = 0.0;
+          for (int i=0; i<numdim_; i++)
+          {
+            velnpDotNodeNormal += (*nodeNormals)[dofsLocalInd[i]] * (*velnp)[dofsLocalInd[i]];
+          }
+
+          // Setup matrix A and vector b for grid velocity calculation.
+          // The following two equations are used:
+          // 1) u_g * n = u_f * n
+          // 2) u_g * t = lambda * scalingValue (* scalingFactor)
+          // with u_g and u_f being the grid and fluid velocity, resp.,
+          // n the normal and t the tangent vector.
+          LINALG::Matrix<2,3> A(true);
+          A(0,0) = (*nodeNormals)[dofsLocalInd[0]];
+          A(0,1) = (*nodeNormals)[dofsLocalInd[1]];
+          A(0,2) = (*nodeNormals)[dofsLocalInd[2]];
+          A(1,0) = (*nodeTangents)[dofsLocalInd[0]];
+          A(1,1) = (*nodeTangents)[dofsLocalInd[1]];
+          A(1,2) = (*nodeTangents)[dofsLocalInd[2]];
+
+          LINALG::Matrix<2,1> b(true);
+          b(0,0) = velnpDotNodeNormal;
+          if (coupling == "meantangentialvelocity")
+          {
+            b(1,0) = lambda * scalingValue;
+          } else if (coupling == "meantangentialvelocityscaled")
+          {
+            double scalingFactor = sqrt((*nodeNormals)[dofsLocalInd[0]]*(*nodeNormals)[dofsLocalInd[0]]);
+            b(1,0) = lambda * scalingValue * scalingFactor;
+          }
+
+          // Calculate pseudo inverse of A (always possible due to linear independent rows [n and t])
+          LINALG::Matrix<2,2> matTimesMatTransposed(true);
+          matTimesMatTransposed.MultiplyNT(A, A);
+
+          LINALG::Matrix<2,2> inverseOfMatTimesmatTransposed(true);
+          inverseOfMatTimesmatTransposed.Invert(matTimesMatTransposed);
+
+          LINALG::Matrix<3,2> pInvA(true);
+          pInvA.MultiplyTN(A, inverseOfMatTimesmatTransposed);
+
+          // Solve for grid velocities
+          LINALG::Matrix<3,1> sol(true);
+          sol.Multiply(pInvA, b);
+
+          // Calculate ale velocities
+          for (int i=0; i<numdim_; i++)
+          {
+            (*gridv)[dofsLocalInd[i]] = sol(i,0);
+          }
+        }
+      // Do the coupling based on a spherical height function
+      // ************************************************************************
+      } else if (coupling == "sphereHeightFunction")
+      {
+        // Only implemented for 3D
+        if (not (numdim_==3))
+          dserror("AleUpdate: sphericalHeightFunction only implemented for 3D.");
+
+        // Loop through all nodes and determine grid velocity
+        for (unsigned int node=0; node<(gIdNodes.size()); node++)
+        {
+          // Obtain local degree of freedom indices
+          std::vector< int > dofsLocalInd;
+          GetDofsVectorLocalIndicesforNode(gIdNodes[node], nodeNormals, false, &dofsLocalInd);
+
+          // Calculate current position for node and its vector length
+          DRT::Node* currNode = discret_->gNode(gIdNodes[node]);
+          double currPos[numdim_];
+
+          const double* refPos = currNode->X();
+
+          double lengthCurrPos = 0.0;
+          for (int i=0; i<numdim_; ++i) {
+            currPos[i] = refPos[i] + (*dispnp)[dofsLocalInd[i]];
+            lengthCurrPos += currPos[i]*currPos[i];
+          }
+          lengthCurrPos = sqrt(lengthCurrPos);
+
+          // Obtain angles phi and theta for spherical coordinate system representation
+          double phi = atan2(currPos[1], currPos[0]);
+          if (phi < 0) phi = phi + 2*PI;
+          const double theta = acos(currPos[2]/lengthCurrPos);
+
+          // Precalculate some sin and cos
+          const double sinTheta = sin(theta);
+          const double cosTheta = cos(theta);
+          const double sinPhi = sin(phi);
+          const double cosPhi = cos(phi);
+
+          // Calculate dot product between velnp and e_theta
+          double velnpDotETheta = cosTheta*cosPhi * (*velnp)[dofsLocalInd[0]] +
+                                  cosTheta*sinPhi * (*velnp)[dofsLocalInd[1]] +
+                                  -sinTheta * (*velnp)[dofsLocalInd[2]];
+
+          // Setup matrix A and vector b for grid velocity calculation.
+          // The following three equations are used:
+          // 1) u_g * e_r = 0
+          // 2) u_g * e_phi = 0
+          // 3) u_g * e_theta = u_f * e_theta
+          // with u_g and u_f being the grid and fluid velocity, resp.
+          // and e_r, e_phi and e_theta the basis vectors of a spherical
+          // coordinate system, expressed in Cartesian coordinates.
+          LINALG::Matrix<3,3> A(true);
+          A(0,0) = sinTheta*cosPhi;  A(0,1) = sinTheta*sinPhi;  A(0,2) = cosTheta;
+          A(1,0) = -sinPhi;          A(1,1) = cosPhi;           A(1,2) = 0.0;
+          A(2,0) = cosTheta*cosPhi;  A(2,1) = cosTheta*sinPhi;  A(2,2) = -sinTheta;
+
+          LINALG::Matrix<3,1> b(true);
+          b(0,0) = 0.0;
+          b(1,0) = 0.0;
+          b(2,0) = velnpDotETheta;
+
+          // Calculate inverse of A (always possible due to linear independent rows)
+          LINALG::Matrix<3,3> invA(true);
+          invA.Invert(A);
+
+          // Solve for grid velocities
+          LINALG::Matrix<3,1> sol(true);
+          sol.Multiply(invA, b);
+
+          // Calculate ale velocities
+          for (int i=0; i<numdim_; i++)
+          {
+            (*gridv)[dofsLocalInd[i]] = sol(i,0);
+          }
+        }
       }
     }
 
-    fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
+    // Update Ale variables
+    // ************************************************************************
+    // Update the displacements at n+1
+    dispnp->Update(1.0,*disp,dta_,*gridv,0.0);
 
-    surfacesplitter_->InsertFSCondVector(fsdispnp,dispnp_);
-    surfacesplitter_->InsertFSCondVector(fsvelnp,gridv_);
+    // Insert calculated displacements and velocities at n+1 into global Ale variables
+    if (condName=="FREESURFCoupling")
+    {
+      surfacesplitter_->InsertFSCondVector(dispnp,dispnp_);
+      surfacesplitter_->InsertFSCondVector(gridv,gridv_);
+    } else if (condName=="ALEUPDATECoupling")
+    {
+      surfacesplitter_->InsertAUCondVector(dispnp,dispnp_);
+      surfacesplitter_->InsertAUCondVector(gridv,gridv_);
+    }
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*
- | local lagrange update                                     hahn 03/14 |
- *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::LocalLagrangeUpdate()
+/*-------------------------------------------------------------------------------------------------*
+ | For a given node, obtain local indices of dofs in a vector (like e.g. velnp)         hahn 08/14 |
+ *-------------------------------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::GetDofsVectorLocalIndicesforNode(int nodeGid, Teuchos::RCP<Epetra_Vector> vec, bool withPressure, std::vector< int >* dofsLocalInd)
 {
-  if (alefluid_ and surfacesplitter_->LLCondRelevant())
+  // Determine dimensions to be taken care of
+  int dim = numdim_;
+  if (withPressure == true)
+    dim += 1;
+
+  // Get local id for this node
+  int nodeLid = (discret_->NodeRowMap())->LID(nodeGid);
+  if (nodeLid == -1) dserror("No LID for node!");
+
+  // Get vector of global ids for this node's degrees of freedom
+  std::vector< int > dofsGid;
+  dofsGid.clear();
+  discret_->Dof(discret_->lRowNode(nodeLid), dofsGid);
+
+  // Get local indices for dofs in vector (like e.g. velnp) for given node
+  (*dofsLocalInd).clear();
+  (*dofsLocalInd).resize(dim);
+
+  for (int i=0; i<dim; i++)
   {
-    Teuchos::RCP<Epetra_Vector> llvelnp = surfacesplitter_->ExtractLLCondVector(velnp_);
-    Teuchos::RCP<Epetra_Vector> lldisp = surfacesplitter_->ExtractLLCondVector(dispn_);
-    Teuchos::RCP<Epetra_Vector> lldispnp = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->LLCondMap()));
-
-    lldispnp->Update(1.0,*lldisp,dta_,*llvelnp,0.0);
-
-    surfacesplitter_->InsertLLCondVector(lldispnp,dispnp_);
-    surfacesplitter_->InsertLLCondVector(llvelnp,gridv_);
+    int dofGid = dofsGid[i];
+    if (!vec->Map().MyGID(dofGid))
+      dserror("Sparse vector does not have global row  %d or vectors don't match",dofGid);
+    (*dofsLocalInd)[i] = vec->Map().LID(dofGid);
   }
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  | Assemble Mat and RHS and apply Dirichlet Conditions          bk 12/13|
@@ -3370,9 +3752,9 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
     break;
   }
 
-  // Set proper grid velocities at the free-surface and for the local lagrange conditions
-  Teuchos::RCP<Epetra_Vector> llveln = surfacesplitter_->ExtractLLCondVector(veln_);
-  surfacesplitter_->InsertLLCondVector(llveln,gridv_);
+  // Set proper grid velocities at the free-surface and for the ale update conditions
+  Teuchos::RCP<Epetra_Vector> auveln = surfacesplitter_->ExtractAUCondVector(veln_);
+  surfacesplitter_->InsertAUCondVector(auveln,gridv_);
 
   Teuchos::RCP<Epetra_Vector> fsveln = surfacesplitter_->ExtractFSCondVector(veln_);
   surfacesplitter_->InsertFSCondVector(fsveln,gridv_);
