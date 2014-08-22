@@ -1467,16 +1467,22 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
 
   Epetra_SerialDenseVector tempVec1(shapes_->ndofs_*nsd_);
   tempVec1.Multiply('N','N',1.0,localSolver_->Amat,interiorVeln_,0.0);
-  tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Bmat,interiorPressn_,1.0);
-  tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Cmat,traceVal_SDV_m,1.0);
+  if(theta != 1.0)
+  {
+    tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Bmat,interiorPressn_,1.0);
+    tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Cmat,traceVal_SDV_m,1.0);
+  }
   tempVec1.Multiply('N','N',-theta,localSolver_->Cmat,traceVal_SDV,1.0);
 
   Epetra_SerialDenseVector tempVec2(shapes_->ndofs_);
 
   tempVec2.Multiply('N','N',1.0,localSolver_->Mmat,interiorPressn_,0.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_->Hmat,interiorVeln_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_->Dmat,interiorPressn_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_->Emat,traceVal_SDV_m,1.0);
+  if(theta != 1.0)
+  {
+    tempVec2.Multiply('N','N',-(1.0-theta),localSolver_->Hmat,interiorVeln_,1.0);
+    tempVec2.Multiply('N','N',-(1.0-theta),localSolver_->Dmat,interiorPressn_,1.0);
+    tempVec2.Multiply('N','N',-(1.0-theta),localSolver_->Emat,traceVal_SDV_m,1.0);
+  }
   tempVec2.Multiply('N','N',-(theta),localSolver_->Emat,traceVal_SDV,1.0);
 
   // now, we have to do the Schur complement thing, just as in "CondenseLocalPart" but without C and E
@@ -1645,15 +1651,20 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
 
   tempVec1.Resize(shapes_->ndofs_);
   tempVec1.Multiply('N','N',1.0,localSolver_->Mmat,interiorPressnp_,0.0);
-  tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Hmat,interiorVelnp_,1.0);
-  tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Dmat,interiorPressnp_,1.0);
-  tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Emat,traceVal_SDV,1.0);
+  if(theta != 1.0)
+  {
+    tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Hmat,interiorVelnp_,1.0);
+    tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Dmat,interiorPressnp_,1.0);
+    tempVec1.Multiply('N','N',-(1.0-theta),localSolver_->Emat,traceVal_SDV,1.0);
+  }
 
   Epetra_SerialDenseVector f(shapes_->ndofs_*nsd_);
   f.Multiply('N','N',1.0,localSolver_->Amat,interiorVelnp_,0.0);
-  f.Multiply('N','N',-(1.0-theta),localSolver_->Bmat,interiorPressnp_,1.0);
-  f.Multiply('N','N',-(1.0-theta),localSolver_->Cmat,traceVal_SDV,1.0);
-
+  if(theta != 1.0)
+  {
+    f.Multiply('N','N',-(1.0-theta),localSolver_->Bmat,interiorPressnp_,1.0);
+    f.Multiply('N','N',-(1.0-theta),localSolver_->Cmat,traceVal_SDV,1.0);
+  }
   tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0);
 
   tempVec2.Resize(shapes_->ndofs_);
