@@ -116,7 +116,6 @@ public:
 
   virtual void Integrate() = 0;
   virtual void PrepareTimeStep()     { dserror("Not implemented in the base class, may be overridden by a subclass."); }
-  virtual void PrepareTimeandStep()  { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void PrepareSolve()        { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel)               { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol)    { dserror("Not implemented in the base class, may be overridden by a subclass."); return false; }
@@ -369,7 +368,7 @@ protected:
 
   double  time_;      /// physical time
   int     step_;      /// timestep number
-  double  dta_;		    /// time step size of current time step
+  double  dta_;       /// time step size of current time step
 
   int     stepmax_;   ///< maximal number of timesteps
   double  maxtime_;   ///< maximal physical computation time

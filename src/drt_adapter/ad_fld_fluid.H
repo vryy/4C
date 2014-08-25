@@ -269,7 +269,9 @@ namespace ADAPTER {
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
-    virtual void PrepareTimeandStep() = 0;
+
+    /// increment the time and the step
+    virtual void IncrementTimeAndStep() = 0;
 
     /// preparatives for solve
     virtual void PrepareSolve() = 0;

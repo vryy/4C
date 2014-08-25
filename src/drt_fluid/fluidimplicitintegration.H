@@ -695,15 +695,6 @@ public:
 //  int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
   virtual void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
-  virtual void PrepareTimeandStep() { UpdateStepandTime(); }
-
-  virtual void UpdateStepandTime()
-  {
-    step_ += 1;
-    time_ += dta_;
-
-    return;
-  }
 
   /*!
   \brief set scalar fields within outer iteration loop

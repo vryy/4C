@@ -109,7 +109,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     TransferInflowVelocity();
 
     // increase time and step only
-    fluidalgo_->FluidField().PrepareTimeandStep();
+    fluidalgo_->FluidField().IncrementTimeAndStep();
     // velnp is set manually instead of being computed in Solve()
     // replaces Solve
     fluidalgo_->FluidField().SetVelocityField(velnp_);
