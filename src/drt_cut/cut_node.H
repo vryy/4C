@@ -9,36 +9,36 @@ namespace GEO
 {
 namespace CUT
 {
-  class VolumeCell;
+class VolumeCell;
 
-  /*!
+/*!
   \brief internal comparator class used for sorting sets of plain_volumecell_sets and plain_volumecell_sets.
          This sorting is necessary to get the
-         same order of sets, important for restarts, but also for debugging
-   */
-  class Cmp
-  {
-  public:
-    /// compare operator for plain_volumecell_sets
-    bool operator()( plain_volumecell_set s1, plain_volumecell_set s2 );
+         same order of sets, important for restarts, restarts of Newton schemes in monolithic solves but also for debugging
+ */
+class Cmp
+{
+public:
+  /// compare operator for plain_volumecell_sets
+  bool operator()( plain_volumecell_set s1, plain_volumecell_set s2 );
 
-    /// compare operator for sets of plain_volumecell_sets
-    bool operator()( const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2);
-
-
-  private:
-
-    /// compare routine for sets of plain_volumecell_set
-    bool Compare(const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2 );
-
-    /// compare routine for plain_volumecell_sets
-    bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2 );
-
-    /// compare routine for volumecells based on point ids
-    bool Compare( VolumeCell* vc1, VolumeCell* vc2 );
+  /// compare operator for sets of plain_volumecell_sets
+  bool operator()( const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2);
 
 
-  };
+private:
+
+  /// compare routine for sets of plain_volumecell_set
+  bool Compare(const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2 );
+
+  /// compare routine for plain_volumecell_sets
+  bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2 );
+
+  /// compare routine for volumecells based on point ids
+  bool Compare( VolumeCell* vc1, VolumeCell* vc2 );
+
+
+};
 
 /// One node in a cut mesh
 /*!
@@ -53,7 +53,7 @@ class Node
 public:
 
   /// constructor
-  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ), first_set_is_std_set_(true) { selfcutposition_ = Point::undecided; }
+  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ), first_set_is_std_set_(false) { selfcutposition_ = Point::undecided; }
 
   /// get node's node Id
   int Id() const { return nid_; }
@@ -114,7 +114,7 @@ public:
 
   /// Assign the vc_sets to the node if possible
   void AssignNodalCellSet( std::vector<plain_volumecell_set> & ele_vc_sets,
-                           std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets);
+      std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets);
 
   /// Find the dofsets required at this node. (old unused version)
   void FindDOFSets( bool include_inner );
@@ -162,17 +162,17 @@ private:
 
   /// build sets of connected volumecells in a 1-ring around the node
   void BuildDOFCellSets( Point * p,
-                         const std::vector<plain_volumecell_set> & cell_sets,
-                         const plain_volumecell_set & cells,
-                         const std::vector<plain_volumecell_set> & nodal_cells,
-                         plain_volumecell_set & done,
-                         bool isnodalcellset = false);
+      const std::vector<plain_volumecell_set> & cell_sets,
+      const plain_volumecell_set & cells,
+      const std::vector<plain_volumecell_set> & nodal_cells,
+      plain_volumecell_set & done,
+      bool isnodalcellset = false);
 
   /// build sets of connected volumecells in a 1-ring around the node (old unused version)
   void BuildDOFCellSets( Point * p,
-                         const plain_volumecell_set & cells,
-                         const plain_volumecell_set & nodal_cells,
-                         plain_volumecell_set & done );
+      const plain_volumecell_set & cells,
+      const plain_volumecell_set & nodal_cells,
+      plain_volumecell_set & done );
 
 
   /*========================================================================*/
@@ -194,7 +194,9 @@ private:
   \brief boolian if the first set in dof_cellsets_ is a std set or not.
          If it is, then the first set must not be changed during sorting
          elements without elementhandle assume the first set as std set!
-  */
+         Initialized to false and set to true in case that there is a standard dofset around this node
+         REMARK: don't change the initialization to true!
+   */
   bool first_set_is_std_set_;
 
   /// every cutsidenode knows its selfcutposition
