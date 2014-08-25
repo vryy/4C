@@ -481,8 +481,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
         coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox or
-        coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox or
-        coupling == fsi_iter_xfem_monolithic)
+        coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox
+    )
     {
       // No explicit predictor for these monolithic FSI schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
