@@ -3,6 +3,7 @@
 
 
 #include "../drt_lib/drt_dofset_fixed_size.H"
+#include "../drt_lib/drt_discret.H"
 
 
 namespace XFEM
@@ -20,6 +21,27 @@ namespace XFEM
     }
 
     void Dof( const DRT::Node * node, int nodaldofset, std::vector<int> & dofs ) const;
+
+    /// equality relational operator for two XFEM::FluidDofSets based on the number of nodal dofsets for all nodes
+    bool operator==(FluidDofSet const& other)
+    {
+      const int numnode = dis_.NumMyRowNodes();
+      for(int lid=0; lid<numnode; lid++)
+      {
+        int gid = dis_.NodeRowMap()->GID(lid);
+        DRT::Node* node = dis_.gNode(gid);
+        if(NumDofPerNode( *node ) != other.NumDofPerNode( *node ))
+            return false; // dofsets not equal if at least one node has a different number of nodal dofsets
+      }
+
+      return true;
+    }
+
+    /// equality relational operator for two XFEM::FluidDofSets based on the number of dofsets for all nodes
+    bool operator!=(FluidDofSet const& other)
+    {
+      return !(*this==other);
+    }
 
     /*!
     \brief Get the gid of all dofs of a node.

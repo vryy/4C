@@ -14,33 +14,19 @@ Maintainer: Benedikt Schott
 */
 
 
-/*----------------------------------------------------------------------*
- | definitions                                             schott 08/13 |
- *----------------------------------------------------------------------*/
 #ifndef FSI_ALGORITHMXFEM_H
 #define FSI_ALGORITHMXFEM_H
 
 
-/*----------------------------------------------------------------------*
- | headers                                                 schott 08/13 |
- *----------------------------------------------------------------------*/
-#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-
-
 #include <Epetra_Vector.h>
 
 
-/*----------------------------------------------------------------------*
- | forward declarations                                    schott 08/13 |
- *----------------------------------------------------------------------*/
+
 namespace DRT
 {
   class Discretization;
 }
-
-
 
 namespace ADAPTER
 {
@@ -50,28 +36,17 @@ namespace ADAPTER
 
 
 /*----------------------------------------------------------------------*
- |                                                         schott 08/13 |
+ |                                                         schott 08/14 |
  *----------------------------------------------------------------------*/
-//! TSI: Thermo-Structure Interaction
+//! FSI: Fluid-Structure Interaction
 namespace FSI
 {
-  //! TSI algorithm base
+  //! XFSI algorithm base
   //!
+  //!  Base class of XFSI algorithms. Derives from AlgorithmBase.
   //!
-  //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
-  //!  ThermoBaseAlgorithm with temperature field.
-  //!  There can (and will) be different subclasses that implement different
-  //!  coupling schemes.
-  //!
-  //!  \warning The order of calling the two BaseAlgorithm-constructors (that
-  //!  is the order in which we list the base classes) is important here! In the
-  //!  constructors control file entries are written. And these entries define
-  //!  the order in which the filters handle the Discretizations, which in turn
-  //!  defines the dof number ordering of the Discretizations... Don't get
-  //!  confused. Just always list structure, thermo. In that order.
-  //!
-  //!  \author u.kue
-  //!  \date 02/08
+  //!  \author schott
+  //!  \date 08/14
   class AlgorithmXFEM : public ADAPTER::AlgorithmBase
   {
 
@@ -86,7 +61,7 @@ namespace FSI
     //! outer level time loop (to be implemented by deriving classes)
     virtual void Timeloop() = 0;
 
-    /// initialise TSI system
+    /// initialise XFSI system
     virtual void SetupSystem() = 0;
 
     //! read restart data
@@ -94,54 +69,38 @@ namespace FSI
       int step  //!< step number where the calculation is continued
       ) = 0;
 
+    //--------------------------------------------------------------------------//
+    //! @name Access to single fields
+
     //! access to structural field
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
     //! access to fluid field
     const Teuchos::RCP< ::ADAPTER::Fluid>& FluidField(){return fluid_;}
 
+    //@}
+
   protected:
 
+    //--------------------------------------------------------------------------//
     //! @name Time loop building blocks
 
     //! start a new time step
     virtual void PrepareTimeStep() = 0;
 
     //! calculate stresses, strains, energies
-//    void PrepareOutput()
-//    {
-//      StructureField()->PrepareOutput();
-//    }
+    virtual void PrepareOutput();
 
     //! take current results for converged and save for next time step
     virtual void Update();
 
     //! write output
-    virtual void Output();
-
-    //! communicate displacement vector to thermal field to enable their
-    //! visualisation on the deformed body
-    void OutputDeformationInThr(
-      Teuchos::RCP<const Epetra_Vector> dispnp,
-      Teuchos::RCP<DRT::Discretization> structdis
-      );
+    virtual void Output() = 0;
 
     //@}
 
 
-    //! @name Access methods
-
-    //! velocity calculation given the displacements (like in FSI)
-    Teuchos::RCP<Epetra_Vector> CalcVelocity(
-      Teuchos::RCP<const Epetra_Vector> dispnp
-      );
-
-    //! displacements at time n+1 for thermal output
-    Teuchos::RCP<Epetra_MultiVector> dispnp_;
-
-    //@}
-
-
+    //--------------------------------------------------------------------------//
     //! @name Underlying fields
 
     //! underlying structure of the FSI problem

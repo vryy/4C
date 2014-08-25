@@ -71,7 +71,6 @@ public:
       const Teuchos::RCP<XFEM::FluidWizardMesh>                          wizard_new,             /// fluid wizard at t^(n+1)
       const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
       const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
-      const Teuchos::ParameterList&                                  params,                 /// parameter list
       const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
       const int                                                      step                    /// global time step
@@ -89,8 +88,6 @@ public:
 
   /// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction
   void TransferDofsToNewMap(
-      const Epetra_Map&                                        olddofrowmap,        /// dof row map w.r.t old interface position
-      const Epetra_Map&                                        olddofcolmap,        /// dof col map w.r.t old interface position
       const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
       const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,     /// reconstruction map for nodes and its dofsets
@@ -100,6 +97,9 @@ public:
 
   /// get for each type of reconstruction method the number of nodes for that this method has to be applied on this proc
   std::map<INPAR::XFEM::XFluidTimeInt,int>& Get_Reconstr_Counts(){return reconstr_counts_;};
+
+  /// get permutation map for ghost dofs
+  Teuchos::RCP<std::map<int, int> > GetPermutationMap(){return permutation_map_;};
 
   /// timint output for reconstruction methods
   void Output();
@@ -223,7 +223,7 @@ public:
   Teuchos::RCP<XFEM::FluidDofSet> dofset_old_;    /// old dofset w.r.t old interface position
   Teuchos::RCP<XFEM::FluidDofSet> dofset_new_;    /// new dofset w.r.t new interface position
 
-  Teuchos::ParameterList params_;                 /// parameter list
+  //Teuchos::ParameterList params_;                 /// parameter list
 
   // current processor id and number of procs
   int myrank_;
@@ -239,6 +239,8 @@ public:
 
   // global timestep
   int step_;
+
+  Teuchos::RCP<std::map<int, int> > permutation_map_;
 
 };
 

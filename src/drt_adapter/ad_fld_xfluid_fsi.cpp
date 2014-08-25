@@ -112,29 +112,32 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
 
 
 /*----------------------------------------------------------------------*/
+// apply the interface velocities to the fluid
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  //cout << "ApplyInterfaceVelocities" << endl;
-
   interface_->InsertFSICondVector(ivel,xfluid_->IVelnp());
 }
 
 
 /*----------------------------------------------------------------------*/
+//  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
 {
-  //cout << "ApplyMeshDisplacement" << endl;
-
-  interface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
-
+   interface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+/*----------------------------------------------------------------------*
+ * convert increment of displacement to increment in velocity
+ * Delta d = d^(n+1,i+1)-d^n is converted to the interface velocity increment
+ * Delta u = u^(n+1,i+1)-u^n
+ * via first order or second order OST-discretization of d/dt d(t) = u(t)
+ *----------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::DisplacementToVelocity(
+    Teuchos::RCP<Epetra_Vector> fcx         /// Delta d = d^(n+1,i+1)-d^n
+)
 {
 
   // get interface velocity at t(n)
@@ -146,7 +149,7 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 #endif
 
   /*
-   * Delta u(n+1,i+1) = fac * Delta d(n+1,i+1) - dt * u(n)
+   * Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))
    *
    *             / = 2 / dt   if interface time integration is second order
    * with fac = |
@@ -176,7 +179,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Struct_Matrix()
 }
 
 /// return xfluid coupling matrix between structure and structure as sparse matrices
-Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
 {
   return xfluid_->RHS_Struct_Vec();
 }
@@ -192,4 +195,14 @@ void ADAPTER::XFluidFSI::RebuildFSIInterface()
   Interface()->Setup(*boundary_dis);
 }
 
-
+/// GmshOutput for background mesh and cut mesh
+void ADAPTER::XFluidFSI::GmshOutput(
+    const std::string & name,            ///< name for output file
+    const int step,                      ///< step number
+    const int count,                     ///< counter for iterations within a global time step
+    Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<Epetra_Vector> acc      ///< vector holding accelerations
+)
+{
+  xfluid_->GmshOutput(name, step, count, vel, acc);
+}

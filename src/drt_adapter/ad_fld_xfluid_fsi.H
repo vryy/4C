@@ -23,6 +23,7 @@ Maintainer:  Benedikt Schott
 #include <Epetra_Map.h>
 
 #include "ad_fld_wrapper.H"
+#include "../drt_fluid_xfluid/xfluid.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
@@ -111,9 +112,22 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix();
     Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix();
 
-    Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec();
+    Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
 
     Teuchos::RCP<FLD::XFluid> MyFluid() {return xfluid_; }
+
+    bool NewtonRestartMonolithic(){ return xfluid_->NewtonRestartMonolithic(); }
+
+    Teuchos::RCP<std::map<int, int> > GetPermutationMap(){ return xfluid_->GetPermutationMap(); }
+
+    /// GmshOutput for background mesh and cut mesh
+    void GmshOutput(
+        const std::string & name,                       ///< name for output file
+        const int step,                                 ///< step number
+        const int count,                                ///< counter for iterations within a global time step
+        Teuchos::RCP<Epetra_Vector> vel,                ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
+    );
 
   protected:
     /// A casted pointer to the fluid itself

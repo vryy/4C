@@ -133,11 +133,9 @@ namespace FLD
           );
 
       /// GmshOutput for background mesh and cut mesh
-      void GmshOutput( DRT::Discretization & discret,       ///< background fluid discretization
-                       DRT::Discretization & cutdiscret,    ///< cutter surface discretization
-                       const std::string & name,            ///< name for output file
-                       int step,                            ///< step number
-                       int count,                           ///< counter for iterations within a global time step
+      void GmshOutput( const std::string & name,            ///< name for output file
+                       const int step,                      ///< step number
+                       const int count,                     ///< counter for iterations within a global time step
                        Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
                        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
                        );
@@ -341,12 +339,6 @@ namespace FLD
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void Solve();
 
-    /// reconstruct ghost values using ghost penalty approach
-    void ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-                                Teuchos::RCP<Epetra_Vector> vec,
-                                const bool screen_out
-                                );
-
     /// compute lift and drag values by integrating the true residuals
     void LiftDrag() const;
 
@@ -360,9 +352,6 @@ namespace FLD
 
     /// update interface fields
     void UpdateInterfaceFields();
-
-    /// predictor
-    void Predictor();
 
     /// return Teuchos::rcp to linear solver
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
@@ -385,22 +374,13 @@ namespace FLD
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
-    void CutAndSetStateVectors( bool isnewNewtonIncrement=false ); /// standard is timeintegration for new timestep, otherwise for new newton increment
+    void CutAndSetStateVectors();
 
-    void TransferDofsBetweenSteps(
-        const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
-        const Epetra_Map&                                olddofrowmap,             /// dof row map w.r.t old interface position
-        const Epetra_Map&                                olddofcolmap,             /// dof col map w.r.t old interface position
-        std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
-        std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
-        const Teuchos::RCP<XFEM::FluidWizardMesh>            wizard_old,               /// fluid wizard w.r.t old interface position
-        const Teuchos::RCP<XFEM::FluidWizardMesh>            wizard_new,               /// fluid wizard w.r.t new interface position
-        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_old,               /// dofset w.r.t old interface position
-        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_new,               /// dofset w.r.t new interface position
-        const Teuchos::ParameterList&                    params,                   /// parameter list
-        std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
-        Teuchos::RCP<std::set<int> >                     dbcgids                   /// set of dof gids that must not be changed by ghost penalty reconstruction
-    );
+    /// is a restart of the monolithic Newton necessary caused by changing dofsets?
+    bool NewtonRestartMonolithic(){ return newton_restart_monolithic_; }
+
+    /// ...
+    Teuchos::RCP<std::map<int, int> > GetPermutationMap(){ return permutation_map_; }
 
     /// lift'n'drag forces, statistics time sample and output of solution and
     /// statistics
@@ -411,6 +391,17 @@ namespace FLD
 
     /// update configuration and output to file/screen
     void Output();
+
+    /// GmshOutput for background mesh and cut mesh
+    void GmshOutput( const std::string & name,            ///< name for output file
+                     const int step,                      ///< step number
+                     const int count,                     ///< counter for iterations within a global time step
+                     Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
+                     Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
+                     )
+    {
+      state_->GmshOutput(name, step, count, vel, acc);
+    }
 
     /// set an initial flow field
     void SetInitialFlowField(
@@ -441,12 +432,12 @@ namespace FLD
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { std::cout << "Xfluid_TrueResidual" << std::endl; return state_->trueresidual_; }
-    Teuchos::RCP<const Epetra_Vector> Velnp()        { std::cout << "Velnp" << std::endl;        return state_->velnp_; }
-    Teuchos::RCP<const Epetra_Vector> Velaf()        { std::cout << "Velaf" << std::endl;        return state_->velaf_; }
-    Teuchos::RCP<const Epetra_Vector> Veln()         { std::cout << "Veln() in!!! " <<  std::endl; return state_->veln_; } //return state_->fluidfluidveln_ ;}//
+    Teuchos::RCP<const Epetra_Vector> Velnp()        { return state_->velnp_; }
+    Teuchos::RCP<const Epetra_Vector> Velaf()        { return state_->velaf_; }
+    Teuchos::RCP<const Epetra_Vector> Veln()         { return state_->veln_;  }
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp() { std::cout << "Dispnp " << std::endl; return state_->dispnp_; }
-    Teuchos::RCP<const Epetra_Vector> Dispn()  { std::cout << "Dispn" << std::endl;   return state_->dispn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() { return state_->dispnp_; }
+    Teuchos::RCP<const Epetra_Vector> Dispn()  { return state_->dispn_; }
 
     //! get the interface forces acting on the structural surface
     Teuchos::RCP<const Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
@@ -568,6 +559,94 @@ namespace FLD
 
   private:
 
+    //-----------------------------XFEM time-integration specific function------------------
+
+    //! @name XFEM time-integration specific function
+
+    /// store state data from old time-step t^n
+    void XTimint_StoreOldStateData(const bool firstcall_in_timestep);
+
+    /// is a restart of the global monolithic system necessary?
+    bool XTimint_CheckForMonolithicNewtonRestart(
+        const bool                        timint_ghost_penalty,    ///< dofs have to be reconstructed via ghost penalty reconstruction techniques
+        const bool                        timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean reconstruction techniques
+        Teuchos::RCP<DRT::Discretization> dis,                     ///< discretization
+        Teuchos::RCP<XFEM::FluidDofSet>   dofset_i,                ///< dofset last iteration
+        Teuchos::RCP<XFEM::FluidDofSet>   dofset_ip,               ///< dofset current iteration
+        const bool                        screen_out               ///< screen output?
+    );
+
+    /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
+    /// from t^n to vectors w.r.t current dofset and interface position
+    void XTimint_DoTimeStepTransfer(const bool screen_out);
+
+    /// Transfer vectors at current time-step t^(n+1) w.r.t dofset and interface position
+    /// from last iteration i to vectors w.r.t current dofset and interface position (i+1)
+    ///
+    /// return, if increment step transfer was successful!
+    bool XTimint_DoIncrementStepTransfer(const bool screen_out);
+
+    /// did the dofsets change?
+    bool XTimint_ChangedDofsets(
+        Teuchos::RCP<DRT::Discretization> dis,                       ///< discretization
+        Teuchos::RCP<XFEM::FluidDofSet>   dofset,                    ///< first dofset
+        Teuchos::RCP<XFEM::FluidDofSet>   dofset_other               ///< other dofset
+    );
+
+    /// transfer vectors between two time-steps or Newton steps
+    void XTimint_TransferVectorsBetweenSteps(
+        const Teuchos::RCP<DRT::Discretization>          dis,                      ///< discretization
+        std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
+        std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       ///< row map based vectors w.r.t new interface position
+        const Teuchos::RCP<XFEM::FluidWizardMesh>        wizard_old,               ///< fluid wizard w.r.t old interface position
+        const Teuchos::RCP<XFEM::FluidWizardMesh>        wizard_new,               ///< fluid wizard w.r.t new interface position
+        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_old,               ///< dofset w.r.t old interface position
+        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_new,               ///< dofset w.r.t new interface position
+        std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  ///< reconstruction map for nodes and its dofsets
+        Teuchos::RCP<std::set<int> >                     dbcgids,                  ///< set of dof gids that must not be changed by ghost penalty reconstruction
+        bool                                             fill_permutation_map      ///< do we have to fill the permutation map?
+    );
+
+    /// decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor
+    void XTimint_GetReconstructStatus(
+        bool & timint_ghost_penalty,         ///< do we have to perform ghost penalty reconstruction of ghost values?
+        bool & timint_semi_lagrangean        ///< do we have to perform semi-Lagrangean reconstruction of standard values?
+    );
+
+    /// create DBC and free map and return their common extractor
+    Teuchos::RCP<LINALG::MapExtractor> CreateDBCMapExtractor(
+        const Teuchos::RCP<const std::set<int> >   dbcgids,                    ///< dbc global dof ids
+        const Epetra_Map*                          dofrowmap                   ///< dofrowmap
+    );
+
+    /// create new dbc maps for ghost penalty reconstruction and reconstruct value which are not fixed by DBCs
+    void XTimint_GhostPenalty(
+        std::vector<Teuchos::RCP<Epetra_Vector> >& rowVectors,                 ///< vectors to be reconstructed
+        const Epetra_Map*                          dofrowmap,                  ///< dofrowmap
+        const Teuchos::RCP<const std::set<int> >   dbcgids,                    ///< dbc global ids
+        const bool                                 screen_out                  ///< screen output?
+    );
+
+    /// reconstruct ghost values using ghost penalty approach
+    void XTimint_ReconstructGhostValues(
+        Teuchos::RCP<Epetra_Vector>                vec,                        ///< vector to be reconstructed
+        Teuchos::RCP<LINALG::MapExtractor>         ghost_penaly_dbcmaps,       ///< which dofs are fixed during the ghost-penalty reconstruction?
+        const bool                                 screen_out                  ///< screen output?
+    );
+
+    /// reconstruct standard values using semi-Lagrangean method
+    void XTimint_SemiLagrangean(
+        std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
+        const Epetra_Map*                                        newdofrowmap,         ///< dofrowmap at current interface position
+        std::vector<Teuchos::RCP<const Epetra_Vector> >&         oldRowStateVectors,   ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+        const Epetra_Map*                                        olddofcolmap,         ///< dofcolmap at time and interface position t^n
+        std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,      ///< reconstruction map for nodes and its dofsets
+        const bool                                               screen_out            ///< screen output?
+    );
+
+    //@}
+
+
     /// set xfluid input parameters (read from list)
     void SetXFluidParams();
 
@@ -605,6 +684,14 @@ namespace FLD
 
     */
     void SetFaceGeneralFluidXFEMParameter();
+
+    void ExplicitPredictor();
+
+    void PredictTangVelConsistAcc();
+
+    void UpdateIterIncrementally(
+      Teuchos::RCP<const Epetra_Vector> vel
+      );
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
@@ -793,6 +880,9 @@ namespace FLD
     //! use (or not) linearisation of reactive terms on the element
     INPAR::FLUID::LinearisationAction newton_;
 
+    //! kind of predictor used in nonlinear iteration
+    std::string  predictor_;
+
     /// form of convective term
     std::string convform_;
 
@@ -806,7 +896,7 @@ namespace FLD
     /// state object at current new time step
     Teuchos::RCP<XFluidState> state_;
 
-    /// counter how often an state class has been created during one timestep
+    /// counter how often a state class has been created during one time-step
     int state_it_;
 
 
@@ -840,17 +930,32 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    soliddispnp_;
     //@}
 
-    //! @name old timestep state data used for xfem time-integration
-    Teuchos::RCP<Epetra_Vector>    veln_Intn_;
-    Teuchos::RCP<Epetra_Vector>    accn_Intn_;
-    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intn_;
-    Teuchos::RCP<XFEM::FluidDofSet> dofset_Intn_;
+    //-----------------------------XFEM time-integration specific data ----------------
 
-    Teuchos::RCP<Epetra_Map> dofrowmap_Intn_;
+    //! @name old time-step state data w.r.t old interface position and dofsets from t^n used for XFEM time-integration
+    Teuchos::RCP<Epetra_Vector>         veln_Intn_;      //!< velocity solution from last time-step t^n
+    Teuchos::RCP<Epetra_Vector>         accn_Intn_;      //!< acceleration from last time-step t^n
+    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intn_;    //!< fluid wizard from last time-step t^n
+    Teuchos::RCP<XFEM::FluidDofSet>     dofset_Intn_;    //!< dofset from last time-step t^n
+
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
     //@}
 
+
+    //! @name last iteration step state data from t^(n+1) used for pseudo XFEM time-integration during monolithic Newton or partitioned schemes
+    Teuchos::RCP<Epetra_Vector>         velnp_Intnpi_;   //!< velocity solution from last iteration w.r.t last dofset and interface position
+    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intnpi_;  //!< fluid wizard from last iteration-step t^(n+1)
+    Teuchos::RCP<XFEM::FluidDofSet>     dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
+
+    //! is a restart of the monolithic Newton necessary caused by changing dofsets?
+    bool newton_restart_monolithic_;
+
+    //! how did std/ghost dofs of nodes permute between the last two iterations
+    Teuchos::RCP<std::map<int,int> > permutation_map_;
+    //@}
+
     //-----------------------------FSI with cracking structure ------------------------
+    //! @name crack specific data
 
     /// nodes of the crack tip when simulating FSI with crack
     std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
@@ -862,6 +967,7 @@ namespace FLD
 /*    /// crack tip elements in case of FSI with cracking structure
     std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;*/
 
+    //@}
 
   };
 }

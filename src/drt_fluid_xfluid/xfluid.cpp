@@ -1167,17 +1167,15 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
 /*----------------------------------------------------------------------*
  |  calls the Gmsh output for elements, volumecells...     schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
-                                           DRT::Discretization & cutdiscret,
-                                           const std::string & filename_base,
-                                           int step,
-                                           int count,                           // counter for DEBUG
+void FLD::XFluid::XFluidState::GmshOutput( const std::string & filename_base,
+                                           const int step,
+                                           const int count,                           // counter for DEBUG
                                            Teuchos::RCP<Epetra_Vector> vel,
                                            Teuchos::RCP<Epetra_Vector> acc)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::GmshOutput" );
 
-  int myrank = discret.Comm().MyPID();
+  int myrank = xfluid_.discret_->Comm().MyPID();
 
   if(myrank==0) std::cout << "\n\t ... writing Gmsh output...\n" << std::flush;
 
@@ -1188,8 +1186,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_vel;
    if(count > -1) filename_base_vel << filename_base << "_" << count << "_vel";
    else           filename_base_vel << filename_base << "_vel";
-   const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_vel(filename_vel.c_str());
    gmshfilecontent_vel.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_vel.precision(16);
@@ -1197,8 +1195,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_press;
    if(count > -1) filename_base_press << filename_base << "_" << count << "_press";
    else           filename_base_press << filename_base << "_press";
-   const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_press(filename_press.c_str());
    gmshfilecontent_press.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_press.precision(16);
@@ -1206,8 +1204,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_acc;
    if(count > -1) filename_base_acc << filename_base << "_" << count << "_acc";
    else           filename_base_acc << filename_base << "_acc";
-   const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_acc(filename_acc.c_str());
    gmshfilecontent_acc.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_acc.precision(16);
@@ -1215,8 +1213,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_bound;
    if(count > -1) filename_base_bound << filename_base << "_" << count << "_bound";
    else           filename_base_bound << filename_base << "_bound";
-   const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_bound.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_bound.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_bound(filename_bound.c_str());
    gmshfilecontent_bound.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_bound.precision(16);
@@ -1226,8 +1224,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_vel_ghost;
    if(count > -1) filename_base_vel_ghost << filename_base << "_" << count << "_vel_ghost";
    else           filename_base_vel_ghost << filename_base << "_vel_ghost";
-   const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel_ghost.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
    gmshfilecontent_vel_ghost.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_vel_ghost.precision(16);
@@ -1235,8 +1233,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_press_ghost;
    if(count > -1) filename_base_press_ghost << filename_base << "_" << count << "_press_ghost";
    else           filename_base_press_ghost << filename_base << "_press_ghost";
-   const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press_ghost.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
    gmshfilecontent_press_ghost.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_press_ghost.precision(16);
@@ -1244,8 +1242,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    std::ostringstream filename_base_acc_ghost;
    if(count > -1) filename_base_acc_ghost << filename_base << "_" << count << "_acc_ghost";
    else           filename_base_acc_ghost << filename_base << "_acc_ghost";
-   const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc_ghost.str(), step, step_diff, screen_out, myrank);
+   if (xfluid_.gmsh_debug_out_screen_) std::cout << std::endl;
    std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
    gmshfilecontent_acc_ghost.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_acc_ghost.precision(16);
@@ -1270,10 +1268,10 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
        gmshfilecontent_acc_ghost   << "View \"" << "SOL " << "acc_ghost   " << "\" {\n";
    }
 
-  const int numrowele = discret.NumMyRowElements();
+  const int numrowele = (xfluid_.discret_)->NumMyRowElements();
   for (int i=0; i<numrowele; ++i)
   {
-    DRT::Element* actele = discret.lRowElement(i);
+    DRT::Element* actele = (xfluid_.discret_)->lRowElement(i);
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
@@ -1303,14 +1301,14 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                 {
                     if ( e->IsCut() )
                     {
-                        GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
-                        GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
+                        GmshOutputVolumeCell( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
+                        GmshOutputBoundaryCell( *xfluid_.discret_, *xfluid_.boundarydis_, gmshfilecontent_bound, actele, e, vc );
                     }
                     else
                     {
-                      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+                      GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
                     }
-                    GmshOutputElement( discret, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+                    GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
 
                 }
             }
@@ -1337,15 +1335,15 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
 
           if ( e->IsCut() )
           {
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, ndstest, vel, acc );
-            GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
+            GmshOutputVolumeCell( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, ndstest, vel, acc );
+            GmshOutputBoundaryCell( *xfluid_.discret_, *xfluid_.boundarydis_, gmshfilecontent_bound, actele, e, vc );
           }
           else
           {
             std::vector<int> nsd; // empty vector
-            GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nsd, vel, acc );
+            GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nsd, vel, acc );
           }
-          GmshOutputElement( discret, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, ndstest, vel, acc );
+          GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, ndstest, vel, acc );
 
         }
       }
@@ -1357,8 +1355,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
     else
     {
       std::vector<int> nds; // empty vector
-      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
-      GmshOutputElement( discret, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+      GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+      GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
 
     }
   }
@@ -2306,7 +2304,9 @@ void FLD::XFluid::Init()
   //         based on idispn (step n) (=data written after updating the interface fields in last time step n)
   LINALG::Export(*idispn_,idispcol);
 
-  // initialize the state class iterator
+  // initialize the state class iterator with -1
+  // the XFluidState class called from the constructor is then indexed with 0
+  // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
   state_it_=-1;
   state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
 
@@ -3138,11 +3138,10 @@ void FLD::XFluid::PrepareTimeStep()
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
-  step_ += 1;
-  time_ += dta_;
+  IncrementTimeAndStep();
 
-  // reset the state-class iterator for the new timestep
-  state_it_ = -1;
+  // reset the state-class iterator for the new time step
+  state_it_ = 0;
 
   if(myrank_ == 0) printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
 
@@ -3176,6 +3175,25 @@ void FLD::XFluid::PrepareTimeStep()
     }
     else dserror("number of time step is wrong");
   }
+
+
+  // -------------------------------------------------------------------
+  //                     do explicit predictor step
+  // -------------------------------------------------------------------
+
+  // no predictor in first time step
+  if (step_>1)
+  {
+    if (predictor_ != "TangVel")
+    {
+      ExplicitPredictor();
+    }
+    else
+    {
+      PredictTangVelConsistAcc();
+    }
+  }
+
 
   // -------------------------------------------------------------------
   //               set time parameter for element call
@@ -3305,7 +3323,7 @@ void FLD::XFluid::Solve()
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
       LINALG::Export(*state_->residual_,*output_col_residual);
-      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+      state_->GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
     }
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
@@ -3317,7 +3335,7 @@ void FLD::XFluid::Solve()
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
       LINALG::Export(*state_->residual_,*output_col_residual);
-      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, output_col_residual );
+      state_->GmshOutput( "DEBUG_residual", step_, itnum, output_col_residual );
     }
 
     if (updateprojection_)
@@ -3542,7 +3560,7 @@ void FLD::XFluid::Solve()
 
       LINALG::Export(*state_->incvel_,*output_col_incvel);
 
-      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_icnr", step_, itnum, output_col_incvel );
+      state_->GmshOutput( "DEBUG_icnr", step_, itnum, output_col_incvel );
     }
 
     // -------------------------------------------------------------------
@@ -3578,7 +3596,7 @@ void FLD::XFluid::Solve()
 
   LINALG::Export(*state_->velnp_,*output_col_velnp);
 
-  state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_SOL_", step_, state_it_, output_col_velnp );
+  state_->GmshOutput( "DEBUG_SOL_", step_, state_it_, output_col_velnp );
 
   //--------------------------------------------------------------------
 
@@ -3838,40 +3856,85 @@ void FLD::XFluid::UpdateInterfaceFields()
 }
 
 
-void FLD::XFluid::Predictor()
-{
- std::cout << "IMPLEMENT explicit predictor!!!" << std::endl;
-}
 
-
+/*--------------------------------------------------------------------------*
+ | update the veln-vector with the stepinc to obtain new iteration velnp,   |
+ | cut and set new state-vectors, perform time-integration, apply bcs       |
+ | evaluate the fluid at the new interface position            schott 08/14 |
+ *--------------------------------------------------------------------------*/
 void FLD::XFluid::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
+  Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1, stepinc has to match the current xfluid dofmaps
   )
 {
+  //--------------------------------------------------------------------------------------------
+  // FIRST: update the current velnp vector with the increment from the monolithic solve
+  //--------------------------------------------------------------------------------------------
 
-  //TODO: update the itnum!
-  int itnum = 0;
-
-  // set the new solution we just got. Note: the solution we got here
-  // is the time step increment which means the sum of all iteration
-  // increments of the time step.
-  if (stepinc!=Teuchos::null)
+  if (stepinc!=Teuchos::null) // non-first call, when a step increment is already available (also when restarting the global monolithic Newto)
   {
-    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
-    // values.
+    //-----------------------------
+    // update the velnp vector such that the new iteration is stored in velnp
+    //-----------------------------
+    // set the new solution we just got. Note: the solution we got here
+    // is the time step increment which means the sum of all iteration
+    // increments of the time step.
+
+    // Take Dirichlet values from last velnp and add stepinc to veln for non-Dirichlet values.
+    // * the stepinc should contain the Dirichlet values, however, when using an iterative solver the Dirichlet values
+    //   of Newton increment might just be approximately zero. In order to strictly set the Dirichlet values to zero
+    //   we set them here again.
+    // * for each call of PrepareNonlinearSolve (see below) the velnp-vector obtains accurate Dirichlet values
+    // * therefore we directly can copy the Dirichlet values from the last iteration
+    // * further, in the next PrepareNonlinearSolve()-call, after performing time-integration,
+    //   the DBCs are set again in velnp
+
     Teuchos::RCP<Epetra_Vector> velnp_tmp = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
 
+    // update the current u^(n+1,i+1) = u^n + (u^(n+1,i+1)-u^n) = veln_ + stepinc
     velnp_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc, 0.0);
 
+    // take the Dirichlet values from velnp and insert them in velnp_tmp
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), velnp_tmp );
 
+    // set the whole vector with u^(n+1,i+1) including the Dirichlet values to velnp_
     state_->velnp_->Update(1.0, *velnp_tmp, 0.0);
   }
-  else
+  else // the first call in a new time-step
   {
-    // reference of current Newton iteration is the veln_ state resulting from the fluid time integration w.r.t the current dofsets
-    state_->velnp_->Update(1.0, *state_->veln_, 0.0);
+    // for the first call in a new time-step the initialization of velnp_ is not allowed as
+    // velnp_ includes a predicted solution (set in PrepareTimeStep).
+    // This predicted solution does not include the DBCs yet, however, in the following PrepareNonlinearSolve()-call
+    // veln_ and the predicted solution velnp_ will be mapped to the new interface position and afterwards
+    // DBCs will be set in velnp_.
   }
+
+
+  //--------------------------------------------------------------------------------------------
+  // SECOND:
+  // - cut at the new interface position
+  // - create new state vectors
+  // - did the dofsets change between last Newton iteration and current Newton iteration?
+  // - perform time-integration between t^n and t^(n+1) at current interface position (which updates veln) and
+  // - transform current iteration velnp_ip to new interface position by a simple copy when dofsets did not change
+  //   or via a pseudo-time-integration as a kind of predictor in case that restart of the Newton is necessary
+  //   (this includes an update of the permutation map necessary in the monolithic approach for updating the stepinc)
+  // TODO: - apply a fluid predictor based on the new interface position
+  // - set history values
+  // - apply Dirichlet and Neumann boundary conditions
+  //--------------------------------------------------------------------------------------------
+
+  PrepareNonlinearSolve();
+
+
+  //--------------------------------------------------------------------------------------------
+  // THIRD: evaluate systemmatrix and rhs
+  //--------------------------------------------------------------------------------------------
+
+  // TODO:maybe we can choose a more intelligent update such that we can reuse graphs of the matrix during the monolithic
+  // xfsi solve...
+  // currently we use fixed itnum = 1, it is okay as a new graph of the systemmatrix is created in the state-class evaluate routine
+  int itnum = 1;
+
   // -------------------------------------------------------------------
   // call elements to calculate system matrix and RHS
   // -------------------------------------------------------------------
@@ -3885,22 +3948,22 @@ void FLD::XFluid::Evaluate(
     dtele_=Teuchos::Time::wallTime()-tcpu;
   }
 
-  // blank residual DOFs which are on Dirichlet BC
-  // We can do this because the values at the dirichlet positions
-  // are not used anyway.
-  // We could avoid this though, if velrowmap_ and prerowmap_ would
-  // not include the dirichlet values as well. But it is expensive
-  // to avoid that.
+
+  // -------------------------------------------------------------------
+  // write gmsh debug output for fluid residual directly after the fluid is evaluated
+  // -------------------------------------------------------------------
   if(gmsh_debug_out_)
   {
     const Epetra_Map* colmap = discret_->DofColMap();
     Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
     LINALG::Export(*state_->residual_,*output_col_residual);
-    state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+    state_->GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
   }
 
+  return;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -3998,9 +4061,10 @@ void FLD::XFluid::TimeUpdate()
 
 
 /*----------------------------------------------------------------------*
- |  cut at interface positions and set new state vectors   schott 03/12 |
+ |  cut at interface positions, transform vectors, perform              |
+ | time integration and set new vectors                    schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
+void FLD::XFluid::CutAndSetStateVectors()
 {
   if(myrank_==0)
   {
@@ -4011,432 +4075,562 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     IO::cout << "======================================================\n";
   }
 
+
+  if(step_ <= 0) return; // do not perform XFEM-time-integration for step 0
+
+
+  const bool screen_out = false;
+  const bool gmsh_ref_sol_out_ = false;
+  //------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------
   //                             XFEM TIME-INTEGRATION
   //------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------
 
-  if(step_ > 0)
+
+  // TODO: ADAPT for partitioned fsi
+
+  bool firstcall_in_timestep = false;
+
+  if(state_it_ == 0) firstcall_in_timestep=true;
+
+  //----------------------------------------------------------------
+  //---------------- STORE OLD STATE DATA --------------------------
+  //----------------------------------------------------------------
+
+  // save state data from the last time-step before the first iteration in a new time step is done and
+  // save state data from the last (Newton, partitioned) iteration-step
+  XTimint_StoreOldStateData(firstcall_in_timestep);
+
+  //----------------------------------------------------------------
+  //------------  NEW STATE CLASS including CUT  -------------------
+  //----------------------------------------------------------------
+
+  // new cut at time step t(n+1) at current interface position (partitioned or monolithic XFSI iteration)
+  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+  idispcol.PutScalar( 0. );
+
+  LINALG::Export(*idispnp_,idispcol);
+
+  // create new state class object
+  // performs cut at current interface position and creates new vectors and a new system-matrix
+  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+
+
+  //----------------------------------------------------------------
+  //-------- TRANSFER veln_Int_n -> veln_Int_n+1_i+1  --------------
+  //----------------------------------------------------------------
+
+  // Transfer vectors from old time-step t^n w.r.t dofset and interface position from t^n
+  // to vectors w.r.t current dofset and interface position
+  XTimint_DoTimeStepTransfer(screen_out);
+
+
+
+  //----------------------------------------------------------------
+  //-------- TRANSFER velnp_Int_n+1_i -> velnp_Int_n+1_i+1  --------
+  //----------------------------------------------------------------
+
+  // Transfer vectors from old time-step t^n w.r.t dofset and interface position from t^n
+  // to vectors w.r.t current dofset and interface position
+  //
+  // NOTE:
+  // fluid predictor has been called in PrepareTimeStep, therefore veln_ != velnp_, so we have to map both vectors,
+  // also in the first call of a new time-step.
+  // When SL is necessary to map velnp_, it might worsen the quality of the predicted solution:
+  // * for partitioned FSI:
+  //   it is possible to start the Fluid-Newton from veln_ (use a steady-state predictor afterwards),
+  //   this usually yields more iterations however it does not influence the Convergence-behaviour of the staggered scheme
+  // * for monolithic FSI:
+  //   remark that in case that SL has to be used for mapping velnp_ it is NOT reasonable to restart the Newton from veln_
+  //   since then we loose the whole information of the fluid-increments and convergence is not guaranteed at all!
+  //TODO: what to do then?
+
+  bool increment_tranfer_success = XTimint_DoIncrementStepTransfer(screen_out);
+
+
+#if(1) // just possible for partitioned FSI, the usage for pure fluids overwrites the fluid-predictor
+  //------------------------------------------------------------------------------------
+  //      set initial start vectors for new time step (steady-state predictor)
+  //------------------------------------------------------------------------------------
+
+  if(!increment_tranfer_success)
   {
-    bool screen_out = true;
-    bool gmsh_ref_sol_out_ = false;
-
-    //---------------------------------------------------------------
-    // save state data from the last XFSI iteration or timestep
-
-    if(state_it_ == -1)
-    {
-      // before the first iteration in a new timestep store the solution of the old timestep w.r.t the old interface position
-      veln_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-      *veln_Intn_  = *(state_->veln_);
-      accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-      *accn_Intn_  = *(state_->accn_);
-
-      // safe the old wizard w.r.t the old interface position
-      wizard_Intn_ = state_->Wizard();
-      dofset_Intn_ = state_->Dofset();
-
-      // get old dofmaps
-      dofrowmap_Intn_ = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
-      dofcolmap_Intn_ = Teuchos::rcp(new Epetra_Map(*discret_->DofColMap()));
-    }
-
-    // get the velnp vector w.r.t the last interface position (last XFSI iteration)
-    // to get mapped as fluid predictor for next XFSI iteration
-    Teuchos::RCP<Epetra_Vector> velnp_Intnpi = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-    *velnp_Intnpi = *state_->velnp_;
-
-    // get the wizard w.r.t the last interface position (last XFSI iteration)
-    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intnpi = state_->Wizard();
-    Teuchos::RCP<XFEM::FluidDofSet> dofset_Intnpi = state_->Dofset();
-
-    // get the dofmaps w.r.t the last interface position (last XFSI iteration)
-//    const Epetra_Map* dofrowmap_Intnpi = discret_->DofRowMap();
-//    const Epetra_Map* dofcolmap_Intnpi = discret_->DofColMap();
-
-    // copy the information from the last newton increment that is not set or computed newly for the current Newton increment
-
-    Teuchos::RCP<Epetra_Vector> hist_tmp;
-    Teuchos::RCP<Epetra_Vector> neumann_loads_tmp;
-
-    if(isnewNewtonIncrement)
-    {
-      hist_tmp          = state_->hist_;
-      neumann_loads_tmp = state_->neumann_loads_;
-    }
-
-
-    //------------  NEW STATE CLASS including CUT  ------------------
-
-    // new cut at current time step at current partitioned XFSI iteration
-    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-    idispcol.PutScalar( 0. );
-
-    LINALG::Export(*idispnp_,idispcol);
-
-    state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
-
-    //---------------------------------------------------------------
-
-    // TODO: check if the dofmaps changed?! else STOP
-
-    //
-
-    // copy vector data from the old state-class
-    // update some vectors if CutAndSetStateVectors has been called within a Newton scheme and not only for a new timestep
-    if(isnewNewtonIncrement)
-    {
-      *state_->hist_          = *hist_tmp;
-      *state_->neumann_loads_ = *neumann_loads_tmp;
-    }
-
-    //---------------------------------------------------------------
-
-    if(myrank_==0) IO::cout << "XFEM::TIMEINTEGRATION: ..." << IO::endl;
-
-    const Epetra_Map* newdofrowmap = discret_->DofRowMap();
-
-
-    //---------------------------------------------------------------
-    // staff for ghost penalty reconstruction
-    // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-    Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps = Teuchos::rcp(new LINALG::MapExtractor());
-
-
-    // vector of DOF-IDs which are Dirichlet BCs for ghost penalty approach
-    Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
-    if (ghost_penaly_dbcmaps != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
-
-
-    //---------------------------------------------------------------
-
-    // reconstruction map for nodes and its dofsets
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
-
-
-    //---------------------------------------------------------------
-    // set old row state vectors at timestep t^n that have to be updated to new interface position
-    //---------------------------------------------------------------
-
-    if(myrank_==0) IO::cout << "\t ...TransferDofsToNewMap...";
-
-
-    if(timealgo_ !=  INPAR::FLUID::timeint_one_step_theta) dserror("check which vectors have to be reconstructed for non-OST scheme");
-
-
-    std::vector<Teuchos::RCP<const Epetra_Vector> > oldRowStateVectors;
-    std::vector<Teuchos::RCP<Epetra_Vector> > newRowStateVectors;
-
-    //------------------------------------------------------------------------------------
-    //                            TransferDofsToNewMap
-    //            and determine reconstruction method for missing values
-    // REMARK:
-    // * do this for row nodes only
-    // * the cut information around the node should be available, since the cut is performed for col elements
-    // * after transferring data from old interface position to new interface position the col vectors have to get
-    //   exported from row vectors
-    //------------------------------------------------------------------------------------
-
-    {
-
-
-      {
-        // --------------------------------------------
-        // transfer for the solution of the old timestep between old interface position at t_n
-        // and the current interface position at t_(n+1,i+1)
-        //
-        // vec_n(Gamma_n) -> vec_n(Gamma_n+1,i+1)
-
-        oldRowStateVectors.clear();
-        newRowStateVectors.clear();
-
-        oldRowStateVectors.push_back(veln_Intn_);
-        newRowStateVectors.push_back(state_->veln_);
-
-        oldRowStateVectors.push_back(accn_Intn_);
-        newRowStateVectors.push_back(state_->accn_);
-
-        TransferDofsBetweenSteps(
-            discret_,
-            *dofrowmap_Intn_,
-            *newdofrowmap, //*dofcolmap_Intn_, //
-            oldRowStateVectors,
-            newRowStateVectors,
-            wizard_Intn_,
-            state_->Wizard(),
-            dofset_Intn_,
-            state_->Dofset(),
-            *params_,
-            reconstr_method,
-            dbcgids);
-      }
-    } // TransferDofsToNewMap
-
-
-    //------------------------------------------------------------------------------------
-
-    // decide if semi-lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor
-    // if at least one proc has to do any reconstruction all procs has to call the routine
-
-    int proc_timint_ghost_penalty   = 0;
-    int proc_timint_semi_lagrangean = 0;
-
-    if(xfluid_timeint_ == Teuchos::null) dserror("xfluid_timint_ - class not available here!");
-
-    std::map<INPAR::XFEM::XFluidTimeInt, int>& reconstr_count =  xfluid_timeint_->Get_Reconstr_Counts();
-
-    std::map<INPAR::XFEM::XFluidTimeInt, int>::iterator it;
-
-    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_GHOST_by_GP)) != reconstr_count.end())
-      proc_timint_ghost_penalty = it->second;
-    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_STD_by_SL)) != reconstr_count.end())
-      proc_timint_semi_lagrangean = it->second;
-
-    // parallel communication if at least one node has to do a semilagrangean backtracking or ghost penalty reconstruction
-    int glob_timint_ghost_penalty   = 0;
-    int glob_timint_semi_lagrangean = 0;
-
-    discret_->Comm().SumAll(&proc_timint_ghost_penalty, &glob_timint_ghost_penalty, 1);
-    discret_->Comm().SumAll(&proc_timint_semi_lagrangean, &glob_timint_semi_lagrangean, 1);
-
-    bool timint_ghost_penalty = (glob_timint_ghost_penalty>0);
-    bool timint_semi_lagrangean = (glob_timint_semi_lagrangean>0);
-
-    //------------------------------------------------------------------------------------
-
-
-    //------------------------------------------------------------------------------------
-
-    //------------------------------------------------------------------------------------
-    //                      SEMILAGRANGE RECONSTRUCTION of std values
-    //------------------------------------------------------------------------------------
-    //if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-    //  return;  // Do nothing in time integration----> active for crack-fsi problem ???
-
-    if(timint_semi_lagrangean)
-    {
-
-      if(myrank_==0) std::cout << "\t ...SemiLagrangean...";
-
-      boundarydis_->ClearState();
-
-      boundarydis_->SetState("idispnp",idispnp_);
-      boundarydis_->SetState("idispn",idispn_);
-
-      Teuchos::RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
-      LINALG::Export(*veln_Intn_,*veln_col);
-
-      // Important: export the vectors used for Semi-Lagrangean method after transfer between interface processors above
-      std::vector<Teuchos::RCP<Epetra_Vector> > oldColStateVectorsn;
-      {
-        oldColStateVectorsn.push_back(veln_col);
-
-        Teuchos::RCP<Epetra_Vector> accn_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
-        LINALG::Export(*accn_Intn_,*accn_col);
-        oldColStateVectorsn.push_back(accn_col);
-      }
-
-
-      // TODO: set this param
-      int totalitnumFRS_ = 0;
-      int itemaxFRS_ = 5;
-      Teuchos::RCP<XFEM::XFLUID_STD> timeIntStd_ = Teuchos::null;
-
-      INPAR::XFEM::XFluidTimeInt xfemtimeint_ = INPAR::XFEM::Xf_TimeInt_STD_by_SL;
-
-      if (totalitnumFRS_==0) // construct time int classes once every time step
-      {
-        // basic time integration data
-        Teuchos::RCP<XFEM::XFLUID_TIMEINT_BASE> timeIntData = Teuchos::null;
-
-        timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
-            discret_,
-            boundarydis_,
-            wizard_Intn_,
-            state_->Wizard(),
-            dofset_Intn_,
-            state_->Dofset(),
-            oldColStateVectorsn,
-            *dofcolmap_Intn_,
-            *newdofrowmap,
-            Teuchos::null));
-
-        switch (xfemtimeint_)
-        {
-        case INPAR::XFEM::Xf_TimeInt_STD_by_SL:
-        {
-          // time integration data for standard dofs, semi-lagrangean approach
-          timeIntStd_ = Teuchos::rcp(new XFEM::XFLUID_SemiLagrange(
-              *timeIntData,
-              reconstr_method,
-              xfemtimeint_,
-              veln_col,
-              dta_,
-              theta_,
-              true));
-          break;
-        }
-        default:
-        {
-          dserror("unknown recomputation approach in XFEM time integration not implemented");
-          break;
-        }
-        }
-
-        totalitnumFRS_++;
-
-        timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
-        timeIntStd_->compute(newRowStateVectors);     // call computation
-
-      } //totalit
-
-      if(myrank_==0) std::cout << " done\n" << std::flush;
-
-    } //SEMILAGRANGE RECONSTRUCTION of std values
-
-
-
-
-    //------------------------------------------------------------------------------------
-    //                      GHOST PENALTY RECONSTRUCTION of ghost values
-    //------------------------------------------------------------------------------------
-    if(timint_ghost_penalty)
-    {
-
-      if(myrank_==0) std::cout << "\t ...Ghost Penalty Reconstruction..." << endl;
-
-      // create DBC map
-      {
-        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = ghost_penaly_dbcmaps;
-
-        // create DBC and free map and build their common extractor
-        if (dbcmapextractor != Teuchos::null)
-        {
-          // build map of Dirichlet DOFs
-          int nummyelements = 0;
-          int* myglobalelements = NULL;
-          std::vector<int> dbcgidsv;
-          if (dbcgids->size() > 0)
-          {
-            dbcgidsv.reserve(dbcgids->size());
-            dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
-            nummyelements = dbcgidsv.size();
-            myglobalelements = &(dbcgidsv[0]);
-          }
-          Teuchos::RCP<Epetra_Map> dbcmap
-          = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, newdofrowmap->IndexBase(), newdofrowmap->Comm()));
-          // build the map extractor of Dirichlet-conditioned and free DOFs
-          *dbcmapextractor = LINALG::MapExtractor(*newdofrowmap, dbcmap);
-        }
-      }
-
-      // ghost-penalty reconstruction for all vectors
-      for(std::vector<Teuchos::RCP<Epetra_Vector> >::iterator vecs = newRowStateVectors.begin();
-          vecs != newRowStateVectors.end();
-          vecs++)
-      {
-        // reconstruct values using ghost penalty approach
-        ReconstructGhostValues(ghost_penaly_dbcmaps, *vecs, screen_out);
-      }
-
-
-
-      if(myrank_==0) std::cout << " done\n" << std::flush;
-
-    } // GHOST PENALTY
-
-    //------------------------------------------------------------------------------------
-    //                      set initial start vectors for new timestep (predictor)
-    //------------------------------------------------------------------------------------
-    // REMARK: in case of monolithic fluid-structure interaction here we ensure that velnp obtains always
-    // the same initial state as long as the dofsets do not change
-    // therefore within the NewtonFull() this predictor + stepinc leads to the current Newton iteration
-    {
-
-      //velocity as start value for first Newton step
-      state_->velnp_->Update(1.0,*state_->veln_,0.0);  // use old velocity as start value
-      state_->accnp_->Update(1.0,*state_->accn_,0.0);  // use old velocity as start value
-    }
-
-
-    //---------------------------------- GMSH SOLUTION OUTPUT (reference solution fields for pressure, velocity) ------------------------
-    {
-      // write gmsh-output for reference solution fields
-      // reference solution output
-      if(gmsh_ref_sol_out_)
-      {
-        int count = -1; // no counter for standard solution output
-
-        const Epetra_Map* colmap = discret_->DofColMap();
-        Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
-        Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
-
-        LINALG::Export(*state_->veln_,*output_col_vel);
-        LINALG::Export(*state_->accn_,*output_col_acc);
-
-        state_->GmshOutput( *discret_, *boundarydis_, "TIMINT", step_, count , output_col_vel, output_col_acc );
-      }
-
-      if(myrank_==0) std::cout << "finished CutAndSetStateVectors()" << endl;
-
-
-    } // GMSH OUTPUT
-
-
-#if(0)
-      {
-        // TODO new dbcgids, reconstr_method
-
-
-        // --------------------------------------------
-        // transfer for the solution of the old timestep between old interface position at t_n
-        // and the current interface position at t_(n+1,i+1)
-        //
-        // vec_np(Gamma_n+1,i) -> vec_np(Gamma_n+1,i+1)
-
-        oldRowStateVectors.clear();
-        newRowStateVectors.clear();
-
-        oldRowStateVectors.push_back(velnp_Intnpi);
-        newRowStateVectors.push_back(state_->velnp_);
-
-        TransferDofsBetweenSteps(
-            discret_,
-            *dofrowmap_Intnpi,
-            *newdofrowmap,
-            oldRowStateVectors,
-            newRowStateVectors,
-            wizard_Intnpi,
-            state_->Wizard(),
-            dofset_Intnpi,
-            state_->Dofset(),
-            *params_,
-            reconstr_method,
-            dbcgids);
-      }
-
+    //velocity as start value for first Newton step
+    state_->velnp_->Update(1.0,*state_->veln_,0.0);  // use old velocity as start value
+    state_->accnp_->Update(1.0,*state_->accn_,0.0);  // use old velocity as start value
+  }
 #endif
 
+  //---------------------------------- GMSH SOLUTION OUTPUT (reference/predicted solution fields for pressure, velocity, acc) ------------------------
 
-  } // TIME-INTEGRATION
+  // write gmsh-output for reference solution fields
+  // reference solution output
+  if(gmsh_ref_sol_out_)
+  {
+    const Epetra_Map* colmap = discret_->DofColMap();
+
+    //-------------
+    // output for the reference solution veln
+    Teuchos::RCP<Epetra_Vector> output_col_veln = LINALG::CreateVector(*colmap,false);
+    Teuchos::RCP<Epetra_Vector> output_col_accn = LINALG::CreateVector(*colmap,false);
+
+    LINALG::Export(*state_->veln_,*output_col_veln);
+    LINALG::Export(*state_->accn_,*output_col_accn);
+
+    state_->GmshOutput( "TIMINT_N_", step_, state_it_ , output_col_veln, output_col_accn );
+
+    //-------------
+    // output for the predicted iteration velnp
+    Teuchos::RCP<Epetra_Vector> output_col_velnp = LINALG::CreateVector(*colmap,false);
+
+    LINALG::Export(*state_->velnp_,*output_col_velnp);
+
+    state_->GmshOutput( "TIMINT_NP_", step_, state_it_ , output_col_velnp );
+  }  // GMSH OUTPUT
+
+
+
+  if(myrank_==0 and screen_out) std::cout << "finished CutAndSetStateVectors()" << std::endl;
 
 
   return;
 }
 
 
-void FLD::XFluid::TransferDofsBetweenSteps(
-    const Teuchos::RCP<DRT::Discretization> dis,                               /// discretization
-    const Epetra_Map&                       olddofrowmap,                      /// dof row map w.r.t old interface position
-    const Epetra_Map&                       olddofcolmap,                      /// dof col map w.r.t old interface position
-    std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,                /// row map based vectors w.r.t old interface position
-    std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,                /// row map based vectors w.r.t new interface position
-    const Teuchos::RCP<XFEM::FluidWizardMesh>   wizard_old,                        /// fluid wizard w.r.t old interface position
-    const Teuchos::RCP<XFEM::FluidWizardMesh>   wizard_new,                        /// fluid wizard w.r.t new interface position
-    const Teuchos::RCP<XFEM::FluidDofSet>   dofset_old,                        /// dofset w.r.t old interface position
-    const Teuchos::RCP<XFEM::FluidDofSet>   dofset_new,                        /// dofset w.r.t new interface position
-    const Teuchos::ParameterList&           params,                            /// parameter list
+
+/*----------------------------------------------------------------------*
+ |  store state data from old time-step t^n                schott 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_StoreOldStateData(const bool firstcall_in_timestep)
+{
+
+  if(firstcall_in_timestep)
+  {
+    // store the solution of the old time step t^n w.r.t the old interface position
+    veln_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    *veln_Intn_  = *(state_->veln_);
+    accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    *accn_Intn_  = *(state_->accn_);
+
+    // safe the old wizard and dofset w.r.t the interface position of the last time-step
+    wizard_Intn_ = state_->Wizard();
+    dofset_Intn_ = state_->Dofset();
+
+    // safe the old dofmap
+    dofcolmap_Intn_ = Teuchos::rcp(new Epetra_Map(*discret_->DofColMap()));
+  }
+
+  //------------------------------------------
+  // store the last velocity solution w.r.t the last interface position (last XFSI iteration or last time-step solution for first-call)
+  // to get mapped as fluid predictor for next XFSI iteration
+  velnp_Intnpi_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+  *velnp_Intnpi_ = *state_->velnp_;
+
+  // get the wizard w.r.t the last interface position (last XFSI iteration)
+  wizard_Intnpi_ = state_->Wizard();
+  dofset_Intnpi_ = state_->Dofset();
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  is a restart of the global monolithic system necessary?             |
+ |                                                         schott 08/14 |
+ *----------------------------------------------------------------------*/
+bool FLD::XFluid::XTimint_CheckForMonolithicNewtonRestart(
+    const bool                        timint_ghost_penalty,    ///< dofs have to be reconstructed via ghost penalty reconstruction techniques
+    const bool                        timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean reconstruction techniques
+    Teuchos::RCP<DRT::Discretization> dis,                     ///< discretization
+    Teuchos::RCP<XFEM::FluidDofSet>   dofset_i,                ///< dofset last iteration
+    Teuchos::RCP<XFEM::FluidDofSet>   dofset_ip,               ///< dofset current iteration
+    const bool                        screen_out               ///< screen output?
+)
+{
+
+  // is a Newton restart necessary? initialize
+  bool restart_necessary = false;
+
+
+  // Restart the global monolithic system in the case that for at least one node the number of dofsets has changed
+  // or for at least one node Semi-Lagrangean (SL) or Ghost-Penalty (GP) techniques have to be used
+  // to transfer data between the current and last Newton iteration
+  // Remark
+  // * that pure copying is also possible when the global system changes (e.g. copy 1 ghost set -to-> 2 ghost sets)
+  // * that SL or GP usually changes the increment/residual very much, such that the convergence seems to
+  //   stagnate or diverge. Therefore we perform a restart to indicate the larger manipulation of the system
+
+  //---------------
+  // check if the dofsets changed
+  const bool dofsets_changed = XTimint_ChangedDofsets( dis, dofset_i, dofset_ip);
+
+  if(myrank_ == 0 and screen_out)
+  {
+    if(dofsets_changed) IO::cout << " CHANGING DOFSETS in the last two iterations " << IO::endl;
+    else                IO::cout << " NON-CHANGING DOFSETS in the last two iterations " << IO::endl;
+  }
+
+  //---------------
+  // restart of global monolithic Newton necessary?
+  const bool pure_copying_possible = (!timint_ghost_penalty and !timint_semi_lagrangean);
+
+  if( !pure_copying_possible or dofsets_changed )
+  {
+    restart_necessary = true;
+  }
+  else
+  {
+    restart_necessary = false;
+  }
+
+  if(myrank_ == 0 and screen_out)
+  {
+    if(restart_necessary) IO::cout << " RESTART of NEWTON necessary "     << IO::endl;
+    else                  IO::cout << " RESTART of NEWTON not necessary " << IO::endl;
+  }
+
+  return restart_necessary;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  did the dofsets change?                                schott 08/14 |
+ *----------------------------------------------------------------------*/
+bool FLD::XFluid::XTimint_ChangedDofsets(
+    Teuchos::RCP<DRT::Discretization> dis,                       ///< discretization
+    Teuchos::RCP<XFEM::FluidDofSet>   dofset,                    ///< first dofset
+    Teuchos::RCP<XFEM::FluidDofSet>   dofset_other               ///< other dofset
+)
+{
+  //---------------
+  // changed dofsets on this proc?
+  // Use overloaded == operator for XFEM::FluidDofset, comparison based on number of dofsets per node
+  int changed_dofsets_proc_count = (int)(*dofset != *dofset_other);
+
+  // assume changed dofsets
+  int changed_dofsets_glob_max = 0;
+
+  // check if at least one proc has changed dofsets? (maximum or sum of counts > 0)
+  dis->Comm().MaxAll(&changed_dofsets_proc_count, &changed_dofsets_glob_max, 1);
+  const bool changed_dofsets_glob = (changed_dofsets_glob_max > 0);
+
+  return changed_dofsets_glob;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | Transfer vectors from old time-step t^n w.r.t dofset and             |
+ | interface position from t^n to vectors w.r.t current dofset and      |
+ | interface position                                      schott 08/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
+{
+  //---------------------------------------------------------------
+  if(myrank_==0 and screen_out) IO::cout << "XFEM::TIMEINTEGRATION: ..." << IO::endl;
+
+  //---------------------------------------------------------------
+  if(timealgo_ !=  INPAR::FLUID::timeint_one_step_theta) dserror("check which vectors have to be reconstructed for non-OST scheme");
+
+  //---------------------------------------------------------------
+  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+
+  // all vectors that have to be transferred from old dofset at t^n to new dofset at t^(n+1=
+  std::vector<Teuchos::RCP<const Epetra_Vector> > oldRowStateVectors;
+  std::vector<Teuchos::RCP<Epetra_Vector> >       newRowStateVectors;
+
+  // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
+
+  // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
+  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
+
+
+
+
+  //------------------------------------------------------------------------------------
+  // STEP 1: CopyDofsToNewMap and determine RECONSTRUCTION METHOD for missing values
+  //------------------------------------------------------------------------------------
+  //
+  // REMARK:
+  // * do this for row nodes only
+  // * the cut information around the node should be available, since the cut is performed for col elements
+  // * after transferring data from old interface position to new interface position the col vectors have to get
+  //   exported from row vectors
+  //------------------------------------------------------------------------------------
+
+  {
+    if(myrank_==0 and screen_out) IO::cout << "\t ...TransferVectorsToNewMap...";
+
+    // --------------------------------------------
+    // transfer of vectors from the old time step at the old interface position/dofset from t_n
+    // to the current interface position/dofset at t_(n+1,i+1)
+    //
+    // vec_n(Gamma_n) -> vec_n(Gamma_n+1,i+1)
+
+    //---------------------------------------------------------------
+    // set old row state vectors at time step t^n that have to be updated to new interface position
+
+    oldRowStateVectors.clear();
+    newRowStateVectors.clear();
+
+    oldRowStateVectors.push_back(veln_Intn_);
+    newRowStateVectors.push_back(state_->veln_);
+
+    oldRowStateVectors.push_back(accn_Intn_);
+    newRowStateVectors.push_back(state_->accn_);
+
+    XTimint_TransferVectorsBetweenSteps(
+        discret_,
+        oldRowStateVectors,
+        newRowStateVectors,
+        wizard_Intn_,
+        state_->Wizard(),
+        dofset_Intn_,
+        state_->Dofset(),
+        reconstr_method,
+        dbcgids,
+        false);
+
+  } // TransferDofsToNewMap
+
+
+  //------------------------------------------------------------------------------------
+  //    GHOST PENALTY RECONSTRUCTION and/or SEMILAGRANGE RECONSTRUCTION necessary?
+  //------------------------------------------------------------------------------------
+  // decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor
+
+  bool timint_ghost_penalty   = false;
+  bool timint_semi_lagrangean = false;
+
+  XTimint_GetReconstructStatus(timint_ghost_penalty, timint_semi_lagrangean);
+
+
+
+  //------------------------------------------------------------------------------------
+  // STEP 2:               SEMILAGRANGE RECONSTRUCTION of std values
+  //------------------------------------------------------------------------------------
+  //if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  //  return;  // Do nothing in time integration----> active for crack-fsi problem ???
+
+  if(timint_semi_lagrangean)
+  {
+
+    XTimint_SemiLagrangean(
+        newRowStateVectors,             ///< vectors to be reconstructed
+        newdofrowmap,                   ///< dofrowmap at current interface position
+        oldRowStateVectors,             ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+        &*dofcolmap_Intn_,              ///< dofcolmap at time and interface position t^n
+        reconstr_method,                ///< reconstruction map for nodes and its dofsets
+        screen_out                      ///< screen output?
+        );
+
+  } //SEMILAGRANGE RECONSTRUCTION of std values
+
+
+
+  //------------------------------------------------------------------------------------
+  // STEP 3:            GHOST PENALTY RECONSTRUCTION of ghost values
+  //------------------------------------------------------------------------------------
+  if(timint_ghost_penalty)
+  {
+
+    XTimint_GhostPenalty(
+        newRowStateVectors,         ///< vectors to be reconstructed
+        newdofrowmap,               ///< dofrowmap
+        dbcgids,                    ///< dbc global ids
+        screen_out                  ///< screen output?
+        );
+
+  }
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | Transfer vectors at current time-step t^(n+1) w.r.t dofset and       |
+ | interface position from last iteration i to vectors w.r.t            |
+ | current dofset and interface position (i+1)                          |
+ | return, if increment step tranfer was successful!       schott 08/14 |
+ *----------------------------------------------------------------------*/
+bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
+{
+
+  const bool check_for_newton_restart =true;
+
+  //------ CHANGING DOFSETS COMPARED TO LAST ITERATION? -----------
+
+  // check for changing dofsets.
+  // This is just required for new Newton increments to decide if a restart of the Newton has to be performed,
+  // however, not for the first solve where the new interface position is given by the structural predictor and
+  // at least one monolithic solve has to be performed before we can
+  // decide if the Newton has to be restarted
+
+
+  // MONOLITHIC XFSI
+  // check if the dofmaps between last monolithic Newton iteration i and new Newton iteration i+1 changed in the fluid
+  // dofmaps did not change when:
+  //        1. the number of nodal dofsets for each node is the same for both iterations
+  //        2. the time-integration identified respective nodal dofsets between Newton iterations,
+  //           such that values of the nodal dofsets could be simply copied between the two iterations
+  //           (note: between two Newton iterations with non-changing dofsets the ordering of respective ghost-dofsets can change
+  //                  (as the cut cannot guarantee for the same order of ghost sets for slightly different interface positions).
+  //                  Further a copy between a std dofset at one iteration and ghost dofsets at the other iteration can be reasonable,
+  //                  in that case the dofsets did not change their meaning, however PERMUTATIONS of dofsets of single nodes
+  //                  have to be taken into account, see PERMUTATIONS in fsi_xfem_monolithic)
+
+  //---------------------------------------------------------------
+
+
+
+  //---------------------------------------------------------------
+  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+
+  // all vectors that have to be transferred from old dofset to new dofset
+  // vec_n+1(Gamma_n+1,i) -> vec_n+1(Gamma_n+1,i+1)
+  std::vector<Teuchos::RCP<const Epetra_Vector> > rowStateVectors_npi;
+  std::vector<Teuchos::RCP<Epetra_Vector> >       rowStateVectors_npip;
+
+  // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
+
+  // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
+  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
+
+
+  //------------------------------------------------------------------------------------
+  // STEP 1: CopyDofsToNewMap and determine RECONSTRUCTION METHOD for missing values
+  //------------------------------------------------------------------------------------
+  //
+  // REMARK:
+  // * do this for row nodes only
+  // * the cut information around the node should be available, since the cut is performed for col elements
+  // * after transferring data from old interface position to new interface position the col vectors have to get
+  //   exported from row vectors
+  //------------------------------------------------------------------------------------
+
+  {
+
+    // reconstruction map for nodes and its dofsets - how do we have to reconstruct the single dofs
+    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
+
+    // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
+    Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
+
+
+    // --------------------------------------------
+    // transfer for the current iteration solution between last interface position of iteration i
+    // and the current interface position at iteration i+1
+
+    rowStateVectors_npi.clear();
+    rowStateVectors_npip.clear();
+
+    // transform the last Newton iteration
+    rowStateVectors_npi.push_back(velnp_Intnpi_);
+    rowStateVectors_npip.push_back(state_->velnp_);
+
+    XTimint_TransferVectorsBetweenSteps(
+        discret_,
+        rowStateVectors_npi,
+        rowStateVectors_npip,
+        wizard_Intnpi_,
+        state_->Wizard(),
+        dofset_Intnpi_,
+        state_->Dofset(),
+        reconstr_method,
+        dbcgids,
+        true);
+
+  }
+
+  //------------------------------------------------------------------------------------
+  //    GHOST PENALTY RECONSTRUCTION and/or SEMILAGRANGE RECONSTRUCTION necessary?
+  //------------------------------------------------------------------------------------
+  // decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor
+
+  bool timint_ghost_penalty   = false;
+  bool timint_semi_lagrangean = false;
+
+  XTimint_GetReconstructStatus(timint_ghost_penalty, timint_semi_lagrangean);
+
+
+  // TODO: STEP 2: Semi-Lagrangean algo reasonable here?
+
+  //TODO: perform a good prediction as startvalue when restarting the monolithic Newton is required
+  // and simple copying is not possible
+  if( timint_semi_lagrangean )
+  {
+    IO::cout << "check, how we can get the best predicted velnpip when simple copying + ghost penalty is not sufficient! "
+             << " --> use steady state predictor! (NOT useful for monolithic solve!!!)" << IO::endl;
+    // TODO: in this case SEMILAGRANGE is probably not reasonable as it is a mapping within the same timestep
+    // reconstruct the missing values purely via Ghost-Penalty? GP-Faces sufficient?
+
+    return false;
+  }
+
+  //------------------------------------------------------------------------------------
+  // STEP 3:            GHOST PENALTY RECONSTRUCTION of ghost values
+  //------------------------------------------------------------------------------------
+  if(timint_ghost_penalty)
+  {
+
+    XTimint_GhostPenalty(
+        rowStateVectors_npip,       ///< vectors to be reconstructed
+        newdofrowmap,               ///< dofrowmap
+        dbcgids,                    ///< dbc global ids
+        screen_out                  ///< screen output?
+    );
+
+  }
+
+
+
+
+  //------------------------------------------------------------------------------------
+  // decide if the monolithic Newton has to be restarted
+  //------------------------------------------------------------------------------------
+
+
+  newton_restart_monolithic_ = false;
+
+  if(check_for_newton_restart)
+  {
+    newton_restart_monolithic_ = XTimint_CheckForMonolithicNewtonRestart(
+        timint_ghost_penalty,    ///< dofs have to be reconstructed via ghost-penalty reconstruction techniques
+        timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean reconstruction techniques
+        discret_,                ///< discretization
+        dofset_Intnpi_,          ///< dofset last iteration
+        state_->Dofset(),        ///< dofset current iteration
+        screen_out               ///< screen output?
+    );
+  }
+
+  return true;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  transfer vectors between two time-steps or Newton steps             |
+ |                                                         schott 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
+    const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
+    std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
+    std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
+    const Teuchos::RCP<XFEM::FluidWizardMesh>        wizard_old,               /// fluid wizard w.r.t old interface position
+    const Teuchos::RCP<XFEM::FluidWizardMesh>        wizard_new,               /// fluid wizard w.r.t new interface position
+    const Teuchos::RCP<XFEM::FluidDofSet>            dofset_old,               /// dofset w.r.t old interface position
+    const Teuchos::RCP<XFEM::FluidDofSet>            dofset_new,               /// dofset w.r.t new interface position
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
-    Teuchos::RCP<std::set<int> >            dbcgids                            /// set of dof gids that must not be changed by ghost penalty reconstruction
+    Teuchos::RCP<std::set<int> >                     dbcgids,                  /// set of dof gids that must not be changed by ghost penalty reconstruction
+    bool                                             fill_permutation_map
 )
 {
   const bool print_status = true;
@@ -4447,12 +4641,13 @@ void FLD::XFluid::TransferDofsBetweenSteps(
       wizard_new,
       dofset_old,
       dofset_new,
-      params,
       xfluid_timintapproach_,
       reconstr_method,
       step_));
 
-  xfluid_timeint_->TransferDofsToNewMap(olddofrowmap, olddofcolmap, oldRowStateVectors, newRowStateVectors, reconstr_method, dbcgids);
+  xfluid_timeint_->TransferDofsToNewMap(oldRowStateVectors, newRowStateVectors, reconstr_method, dbcgids);
+
+  if(fill_permutation_map) permutation_map_ = xfluid_timeint_->GetPermutationMap();
 
   if(myrank_==0) std::cout << " done\n" << std::flush;
 
@@ -4462,12 +4657,129 @@ void FLD::XFluid::TransferDofsBetweenSteps(
 }
 
 
+
 /*----------------------------------------------------------------------*
- |  reconstruct ghost values via ghost penalty             schott 03/12 |
+ | decide if semi-Lagrangean back-tracking or ghost-penalty            |
+ | reconstruction has to be performed on any processor    schott 08/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-                                         Teuchos::RCP<Epetra_Vector> vec,
-                                         const bool screen_out)
+void FLD::XFluid::XTimint_GetReconstructStatus(
+    bool & timint_ghost_penalty,         ///< do we have to perform ghost penalty reconstruction of ghost values?
+    bool & timint_semi_lagrangean        ///< do we have to perform semi-Lagrangean reconstruction of standard values?
+    )
+{
+  //------------------------------------------------------------------------------------
+  // decide if semi-lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor
+  // if at least one proc has to do any reconstruction all procs has to call the routine
+
+  int proc_timint_ghost_penalty   = 0;
+  int proc_timint_semi_lagrangean = 0;
+
+  if(xfluid_timeint_ == Teuchos::null) dserror("xfluid_timint_ - class not available here!");
+
+  std::map<INPAR::XFEM::XFluidTimeInt, int>& reconstr_count =  xfluid_timeint_->Get_Reconstr_Counts();
+
+  std::map<INPAR::XFEM::XFluidTimeInt, int>::iterator it;
+
+  if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_GHOST_by_GP)) != reconstr_count.end())
+    proc_timint_ghost_penalty = it->second;
+  if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_STD_by_SL)) != reconstr_count.end())
+    proc_timint_semi_lagrangean = it->second;
+
+  // parallel communication if at least one node has to do a semilagrangean backtracking or ghost penalty reconstruction
+  int glob_timint_ghost_penalty   = 0;
+  int glob_timint_semi_lagrangean = 0;
+
+  discret_->Comm().SumAll(&proc_timint_ghost_penalty, &glob_timint_ghost_penalty, 1);
+  discret_->Comm().SumAll(&proc_timint_semi_lagrangean, &glob_timint_semi_lagrangean, 1);
+
+
+  //------------------------------------------------------------------------------------
+
+  timint_ghost_penalty = (glob_timint_ghost_penalty>0);
+  timint_semi_lagrangean = (glob_timint_semi_lagrangean>0);
+
+  //------------------------------------------------------------------------------------
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | create DBC and free map and return their common extractor            |
+ |                                                         schott 08/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::MapExtractor> FLD::XFluid::CreateDBCMapExtractor(
+    const Teuchos::RCP< const std::set<int> >  dbcgids,                    ///< dbc global dof ids
+    const Epetra_Map*                          dofrowmap                   ///< dofrowmap
+)
+{
+  // create DBC and free map and build their common extractor
+
+  // build map of Dirichlet DOFs
+  int nummyelements = 0;
+  int* myglobalelements = NULL;
+  std::vector<int> dbcgidsv;
+  if (dbcgids->size() > 0)
+  {
+    dbcgidsv.reserve(dbcgids->size());
+    dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
+    nummyelements = dbcgidsv.size();
+    myglobalelements = &(dbcgidsv[0]);
+  }
+  Teuchos::RCP<Epetra_Map> dbcmap
+  = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, dofrowmap->IndexBase(), dofrowmap->Comm()));
+
+  // build the map extractor of Dirichlet-conditioned and free DOFs
+  return Teuchos::rcp(new LINALG::MapExtractor(*dofrowmap, dbcmap));
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | create new dbc maps for ghost penalty reconstruction and             |
+ | reconstruct value which are not fixed by DBCs           schott 08/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_GhostPenalty(
+    std::vector<Teuchos::RCP<Epetra_Vector> >& rowVectors,                 ///< vectors to be reconstructed
+    const Epetra_Map*                          dofrowmap,                  ///< dofrowmap
+    const Teuchos::RCP<const std::set<int> >   dbcgids,                    ///< dbc global ids
+    const bool                                 screen_out                  ///< screen output?
+)
+{
+  if(myrank_==0 and screen_out) std::cout << "\t ...Ghost Penalty Reconstruction..." << std::endl;
+
+
+  //----------------------------------------
+  // object holds maps/subsets for DOFs subjected to Dirichlet BCs
+  // which will not be modified by the ghost-penalty reconstruction
+  Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps = CreateDBCMapExtractor(dbcgids, dofrowmap);
+
+  //----------------------------------------
+  // perform ghost-penalty reconstruction for all vectors
+  for(std::vector<Teuchos::RCP<Epetra_Vector> >::iterator vecs_it = rowVectors.begin();
+      vecs_it != rowVectors.end();
+      vecs_it++)
+  {
+    // reconstruct values using ghost penalty approach
+    XTimint_ReconstructGhostValues(*vecs_it, ghost_penaly_dbcmaps, screen_out);
+  }
+
+
+  if(myrank_==0 and screen_out) std::cout << " done\n" << std::flush;
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  reconstruct ghost values via ghost penalties           schott 03/12 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_ReconstructGhostValues(
+    Teuchos::RCP<Epetra_Vector>                vec,                        ///< vector to be reconstructed
+    Teuchos::RCP<LINALG::MapExtractor>         ghost_penaly_dbcmaps,       ///< which dofs are fixed during the ghost-penalty reconstruction?
+    const bool                                 screen_out                  ///< screen output?
+)
 {
   state_->residual_->PutScalar(0.0);
   state_->incvel_->PutScalar(0.0);
@@ -4680,9 +4992,110 @@ void FLD::XFluid::ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghos
 
 
   }
+
+  return;
 } // ReconstructGhostValues
 
 
+
+/*----------------------------------------------------------------------*
+ |  reconstruct standard values via semi-Lagrangean method schott 08/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_SemiLagrangean(
+    std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
+    const Epetra_Map*                                        newdofrowmap,         ///< dofrowmap at current interface position
+    std::vector<Teuchos::RCP<const Epetra_Vector> >&         oldRowStateVectors,   ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+    const Epetra_Map*                                        olddofcolmap,         ///< dofcolmap at time and interface position t^n
+    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,      ///< reconstruction map for nodes and its dofsets
+    const bool                                               screen_out            ///< screen output?
+)
+{
+
+  if(myrank_==0 and screen_out) std::cout << "\t ...SemiLagrangean Reconstruction...";
+
+  boundarydis_->ClearState();
+
+  boundarydis_->SetState("idispnp",idispnp_);
+  boundarydis_->SetState("idispn",idispn_);
+
+  //--------------------------------------------------------
+  // export veln row vector from t^n to a col vector
+
+  Teuchos::RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*olddofcolmap,true));
+  LINALG::Export(*veln_Intn_,*veln_col);
+
+  //--------------------------------------------------------
+  // export row vectors from t^n to col vectors
+  // Important: export the vectors used for Semi-Lagrangean method after transfer between interface processors above
+  std::vector<Teuchos::RCP<Epetra_Vector> > oldColStateVectorsn;
+
+  for(std::vector<Teuchos::RCP<const Epetra_Vector> >::iterator vec_it = oldRowStateVectors.begin();
+      vec_it != oldRowStateVectors.end();
+      vec_it++)
+  {
+    Teuchos::RCP<Epetra_Vector> vec_col = Teuchos::rcp(new Epetra_Vector(*olddofcolmap,true));
+    LINALG::Export(**vec_it,*vec_col);
+    oldColStateVectorsn.push_back(vec_col);
+  }
+
+
+  // TODO: set this param
+  int totalitnumFRS_ = 0;
+  int itemaxFRS_ = 5;
+  Teuchos::RCP<XFEM::XFLUID_STD> timeIntStd_ = Teuchos::null;
+
+  INPAR::XFEM::XFluidTimeInt xfemtimeint_ = INPAR::XFEM::Xf_TimeInt_STD_by_SL;
+
+  if (totalitnumFRS_==0) // construct time int classes once every time step
+  {
+    // basic time integration data
+    Teuchos::RCP<XFEM::XFLUID_TIMEINT_BASE> timeIntData = Teuchos::null;
+
+    timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
+        discret_,
+        boundarydis_,
+        wizard_Intn_,
+        state_->Wizard(),
+        dofset_Intn_,
+        state_->Dofset(),
+        oldColStateVectorsn,
+        *dofcolmap_Intn_,
+        *newdofrowmap,
+        Teuchos::null));
+
+    switch (xfemtimeint_)
+    {
+    case INPAR::XFEM::Xf_TimeInt_STD_by_SL:
+    {
+      // time integration data for standard dofs, semi-lagrangean approach
+      timeIntStd_ = Teuchos::rcp(new XFEM::XFLUID_SemiLagrange(
+          *timeIntData,
+          reconstr_method,
+          xfemtimeint_,
+          veln_col,
+          dta_,
+          theta_,
+          true));
+      break;
+    }
+    default:
+    {
+      dserror("unknown recomputation approach in XFEM time integration not implemented");
+      break;
+    }
+    }
+
+    totalitnumFRS_++;
+
+    timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
+    timeIntStd_->compute(newRowStateVectors);     // call computation
+
+  } //totalit
+
+  if(myrank_==0) std::cout << " done\n" << std::flush;
+
+  return;
+}
 
 
 
@@ -4904,7 +5317,7 @@ void FLD::XFluid::Output()
     Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
     LINALG::Export(*state_->accnp_,*output_col_acc);
 
-    state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel, output_col_acc );
+    state_->GmshOutput( "SOL", step_, count , output_col_vel, output_col_acc );
 
 
     //--------------------------------------------------------------------
@@ -5503,7 +5916,7 @@ void FLD::XFluid::SetInitialFlowField(
       LINALG::Export(*state_->veln_,*output_col_vel);
       LINALG::Export(*state_->accn_,*output_col_acc);
 
-      state_->GmshOutput( *discret_, *boundarydis_, "START", step_, count , output_col_vel, output_col_acc );
+      state_->GmshOutput( "START", step_, count , output_col_vel, output_col_acc );
 
   }
 
@@ -6011,6 +6424,257 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
   state_->GenAlphaUpdateAcceleration();
 }
 
+
+/*----------------------------------------------------------------------*
+ * Explicit predictor                                   rasthofer 12/13 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::ExplicitPredictor()
+{
+
+  if(discret_->Comm().MyPID()==0)
+  {
+    printf("fluid: using explicit predictor %s",predictor_.c_str());
+  }
+
+  if (predictor_=="steady_state")
+  {
+    // steady state predictor
+    //
+    //       n+1    n
+    //      u    = u
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+
+    // this has already been done in TimeUpdate()
+  }
+  else if(predictor_=="zero_acceleration")
+  {
+    // zero acceleration predictor
+    //
+    //       n+1    n                   n
+    //      u    = u  + (1-gamma)*dt*acc
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    //
+    state_->velnp_->Update(1.0,*state_->veln_,0.0);
+
+    // split between acceleration and pressure
+    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+    inc->Scale((1.0-theta_)*dta_);
+
+    state_->velpressplitter_->AddOtherVector(inc,state_->velnp_);
+  }
+  else if(predictor_=="constant_acceleration")
+  {
+    // constant acceleration predictor
+    //
+    //       n+1    n         n
+    //      u    = u  + dt*acc
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    //
+    state_->velnp_->Update(1.0,*state_->veln_,0.0);
+
+    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->ExtractOtherVector(state_->accn_);
+    inc->Scale(dta_);
+
+    state_->velpressplitter_->AddOtherVector(inc,state_->velnp_);
+  }
+  else if(predictor_=="constant_increment")
+  {
+    dserror("not supported for XFEM as we need to transform also velnm? Maybe it is possible! Check this!");
+
+    // constant increment predictor
+    //
+    //       n+1      n    n-1
+    //      u    = 2*u  - u
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    //
+    state_->velnp_->Update(1.0,*state_->veln_,0.0);
+
+    Teuchos::RCP<Epetra_Vector> un  = state_->velpressplitter_->ExtractOtherVector(state_->veln_ );
+    Teuchos::RCP<Epetra_Vector> unm = state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
+    unm->Scale(-1.0);
+
+    state_->velpressplitter_->AddOtherVector(un ,state_->velnp_);
+    state_->velpressplitter_->AddOtherVector(unm,state_->velnp_);
+  }
+  else if(predictor_=="explicit_second_order_midpoint")
+  {
+    // the conventional explicit second order predictor (assuming constant dt)
+    // also known as leapfrog integration
+    /*
+    //                        /          n    n-1 \
+    //       n+1    n        |      n   u  - u     |
+    //      u    = u  + dt * | 2*acc  - ---------  |
+    //       (0)             |             dt      |
+    //                        \                   /
+    // respectively
+    //
+    //       n+1    n-1               n
+    //      u    = u    + 2 * dt * acc
+    //       (0)
+    //
+    //  and
+    //
+    //       n+1    n
+    //      p    = p
+    //       (0)
+    */
+    state_->velnp_->Update(1.0,*state_->veln_,0.0);
+
+    // split between acceleration and pressure
+    Teuchos::RCP<Epetra_Vector> unm = state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
+    Teuchos::RCP<Epetra_Vector> an  = state_->velpressplitter_->ExtractOtherVector(state_->accn_ );
+
+    unm->Update(2.0*dta_,*an,1.0);
+
+    state_->velpressplitter_->InsertOtherVector(unm,state_->velnp_);
+  }
+  else
+    dserror("Unknown fluid predictor %s", predictor_.c_str());
+
+  if(discret_->Comm().MyPID()==0)
+  {
+    printf("\n");
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::XFluid::PredictTangVelConsistAcc()
+{
+  // message to screen
+  if(discret_->Comm().MyPID()==0)
+  {
+    std::cout << "fluid: doing TangVel predictor" << std::endl;
+  }
+
+  // total time required for evaluation of Dirichlet conditions
+  Teuchos::ParameterList eleparams;
+  eleparams.set("total time",time_);
+
+  // initialize
+  state_->velnp_->Update(1.0, *state_->veln_, 0.0);
+  state_->accnp_->Update(1.0, *state_->accn_, 0.0);
+  state_->incvel_->PutScalar(0.0);
+
+  // for solution increments on Dirichlet boundary
+  Teuchos::RCP<Epetra_Vector> dbcinc
+    = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+
+  // copy last converged solution
+  dbcinc->Update(1.0, *state_->veln_, 0.0);
+
+  // get Dirichlet values at t_{n+1}
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",state_->velnp_);
+
+  // predicted Dirichlet values
+  // velnp_ then also holds prescribed new dirichlet values
+  discret_->EvaluateDirichlet(eleparams,state_->velnp_,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // subtract the displacements of the last converged step
+  // DBC-DOFs hold increments of current step
+  // free-DOFs hold zeros
+  dbcinc->Update(-1.0, *state_->veln_, 1.0);
+
+  // compute residual forces residual_ and stiffness sysmat_
+  // at velnp_, etc which are unchanged
+  Evaluate(Teuchos::null);
+
+  // add linear reaction forces to residual
+  // linear reactions
+  Teuchos::RCP<Epetra_Vector> freact
+    = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  state_->sysmat_->Multiply(false, *dbcinc, *freact);
+
+  // add linear reaction forces due to prescribed Dirichlet BCs
+  state_->residual_->Update(1.0, *freact, 1.0);
+
+  // extract reaction forces
+  freact->Update(1.0, *state_->residual_, 0.0);
+  state_->dbcmaps_->InsertOtherVector(state_->dbcmaps_->ExtractOtherVector(state_->zeros_), freact);
+
+  // blank residual at DOFs on Dirichlet BC
+  state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
+
+  // apply Dirichlet BCs to system of equations
+  state_->incvel_->PutScalar(0.0);
+  state_->sysmat_->Complete();
+  LINALG::ApplyDirichlettoSystem(state_->sysmat_, state_->incvel_, state_->residual_,
+                                 Teuchos::null, state_->zeros_, *(state_->dbcmaps_->CondMap()));
+
+  // solve for incvel_
+  solver_->Solve(state_->sysmat_->EpetraOperator(), state_->incvel_, state_->residual_, true, true);
+
+  // set Dirichlet increments in solution increments
+  state_->incvel_->Update(1.0, *dbcinc, 1.0);
+
+  // update end-point velocities and pressure
+  UpdateIterIncrementally(state_->incvel_);
+
+  // keep pressure values from previous time step
+  state_->velpressplitter_->InsertCondVector(state_->velpressplitter_->ExtractCondVector(state_->veln_),state_->velnp_);
+
+  // Note: accelerations on Dirichlet DOFs are not set.
+
+  // reset to zero
+  state_->incvel_->PutScalar(0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+//Overloaded in TimIntPoro and TimIntRedModels bk 12/13
+void FLD::XFluid::UpdateIterIncrementally(
+  Teuchos::RCP<const Epetra_Vector> vel
+  )
+{
+  // set the new solution we just got
+  if (vel != Teuchos::null)
+  {
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // values.
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(
+        *(discret_->DofRowMap(0)), true);
+    aux->Update(1.0, *state_->velnp_, 1.0, *vel, 0.0);
+    //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
+    state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), aux);
+
+    *state_->velnp_ = *aux;
+  }
+
+  return;
+}
+
 // -------------------------------------------------------------------
 // Read Restart data
 // -------------------------------------------------------------------
@@ -6067,7 +6731,7 @@ void FLD::XFluid::ReadRestart(int step)
     LINALG::Export(*state_->veln_,*output_col_vel);
     LINALG::Export(*state_->accn_,*output_col_acc);
 
-    state_->GmshOutput( *discret_, *boundarydis_, "RESTART", step_, count , output_col_vel, output_col_acc );
+    state_->GmshOutput( "RESTART", step_, count , output_col_vel, output_col_acc );
 
   }
 
@@ -6484,6 +7148,7 @@ void FLD::XFluid::SetXFluidParams()
 
   theta_        = params_->get<double>("theta");
   newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
+  predictor_    = params_->get<std::string>("predictor","steady_state_predictor");
   convform_     = params_->get<string>("form of convective term","convective");
 
   numdim_       = DRT::Problem::Instance()->NDim();

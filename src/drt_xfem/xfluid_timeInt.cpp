@@ -60,7 +60,6 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
     const Teuchos::RCP<XFEM::FluidWizardMesh>                      wizard_new,             /// fluid wizard at t^(n+1)
     const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
     const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
-    const Teuchos::ParameterList&                                  params,                 /// parameter list
     const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
     const int                                                      step                    /// global time step
@@ -70,7 +69,6 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
   wizard_new_(wizard_new),
   dofset_old_(dofset_old),
   dofset_new_(dofset_new),
-  params_ (params),
   timeint_scheme_ (xfluid_timintapproach),
   reconstr_method_(reconstr_method),
   step_(step)
@@ -78,6 +76,8 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
 
     myrank_  = dis->Comm().MyPID();
     numproc_ = dis->Comm().NumProc();
+
+    permutation_map_ = Teuchos::rcp(new std::map<int,int>);
 
     return;
   } // end constructor
@@ -196,8 +196,6 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString
 // transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::TransferDofsToNewMap(
-    const Epetra_Map&                                        olddofrowmap,        /// dof row map w.r.t old interface position
-    const Epetra_Map&                                        olddofcolmap,        /// dof col map w.r.t old interface position
     const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
     const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,     /// reconstruction map for nodes and its dofsets
@@ -895,6 +893,25 @@ void XFEM::XFluidTimeInt::CopyDofs(
     vec_count++;
   }
 
+  // create permutation cycles
+  if( ( method == INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_GHOST
+     or method == INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_STD
+     or method == INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST
+     or method == INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD // no permutation for std-to-std as std is always the first, nevertheless std-to-std reasonable for some cases?
+     )
+     and nds_new != nds_old)
+  {
+    //std::cout << "copying from ghost to ghost for node " << node->Id() << " set old: " << nds_old << " set new: " << nds_new << std::endl;
+
+    // copy values from old vector to new vector
+    for(size_t i=0; i<dofs_new.size(); i++)
+    {
+      int dof_gid_new = dofs_new[i];
+      int dof_gid_old = dofs_old[i];
+
+      permutation_map_->insert(std::pair<int,int>(dof_gid_old, dof_gid_new));
+    }
+  }
   return;
 }
 
