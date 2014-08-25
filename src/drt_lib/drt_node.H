@@ -54,7 +54,7 @@ namespace DRT
 
 // forward declarations
 class Element;
-class Discretisation;
+class Discretization;
 namespace MESHFREE
 {
   class MeshfreeDiscretization;
