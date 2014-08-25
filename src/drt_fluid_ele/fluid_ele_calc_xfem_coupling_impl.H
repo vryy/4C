@@ -196,7 +196,7 @@ namespace DRT
           Epetra_SerialDenseMatrix &  rhC_us,          ///< C_us coupling rhs
           Epetra_SerialDenseMatrix &  C_usus,          ///< C_usus coupling matrix
           typename SlaveElementInterface<distype>::ApplicationType applicationType = SlaveElementInterface<distype>::XFluidFluid, ///< application type
-          bool isViscAdjointSymmetric = false          ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
+          bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
           C_usum_(C_usum.A(), true),
@@ -216,7 +216,6 @@ namespace DRT
           Epetra_SerialDenseMatrix &                            C_umum,                 ///< standard master-master-matrix
           Epetra_SerialDenseVector &                            rhs_Cum,                ///< master rhs
           const LINALG::Matrix<nen_,1> &                        funct_m,                ///< master shape functions
-          const LINALG::Matrix<nsd_,1> &                        normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const LINALG::Matrix<nsd_,1> &                        velint_m,               ///< vector of slave shape functions
           const double &                                        NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
@@ -254,10 +253,10 @@ namespace DRT
           LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master shape function derivatives
           LINALG::Matrix<nsd_,nsd_> &         vderxy_m,                     ///< master spatial velocity derivatives
           const double &                      press_m,                      ///< master pressure
-          bool &                              velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
-          double &                            velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
-          bool &                              presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
-          double &                            presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
+          const bool &                        velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
+          const double &                      velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
+          const bool &                        presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
+          const double &                      presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
         );
 
       private:
@@ -340,7 +339,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           normal                             ///< normal vector
         );
 
-        //! evaluate viscous-adjoint-consistency term for Nitsche's method
+        //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_AdjointConsistency_SlaveTerms(
           const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
           const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
@@ -361,8 +360,18 @@ namespace DRT
           const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
           const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
           const LINALG::Matrix<slave_nen_,slave_nen_>&  funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
-          const double &                                stabfac,                      ///< stabilization factor
-          const LINALG::Matrix<nsd_,1> &                normal                        ///< normal vector
+          const double &                                stabfac                       ///< stabilization factor
+        );
+
+        //!  evaluate only the master side's part of Nitsche's penalty term
+        void NIT_Stab_Penalty_MasterTerms(
+          Epetra_SerialDenseMatrix &                    C_umum,                       ///< standard master-master-matrix
+          Epetra_SerialDenseVector &                    rhs_Cum,                      ///< standard master-rhs
+          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
+          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
+          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
+          const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
+          const double &                                stabfac
         );
 
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only)
@@ -376,8 +385,7 @@ namespace DRT
           const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
           const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
           const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
-          const double &                                stabfac_avg,                  ///< stabilization factor
-          const LINALG::Matrix<nsd_,1> &                normal                        ///< normal vector
+          const double &                                stabfac_avg                   ///< stabilization factor
         );
 
       private:
@@ -393,44 +401,45 @@ namespace DRT
         /// get global master row/col-index of element coupling matrix for a given node index and dof-index
         static unsigned mIndex(unsigned inod, unsigned idof)
         {
-          if (idof >= master_numdof_)
-            dserror("Coupling master element has only %d dof!", master_numdof_);
-          if (inod >= nen_)
-            dserror("Coupling master element has only %d nodes!", nen_);
+//          if (idof >= master_numdof_)
+//            dserror("Coupling master element has only %d dof!", master_numdof_);
+//          if (inod >= nen_)
+//            dserror("Coupling master element has only %d nodes!", nen_);
           return inod*master_numdof_ + idof;
         }
 
         /// get global slave row/col-index of element coupling matrix for a given node index and dof-index
         static unsigned sIndex(unsigned inod, unsigned idof)
         {
-          if (idof >= slave_numdof)
-            dserror("Coupling slave element has only %d dof!", slave_numdof);
-          if (inod >= slave_nen_)
-            dserror("Coupling slave element has only %d nodes!", slave_nen_);
+//          if (idof >= slave_numdof)
+//            dserror("Coupling slave element has only %d dof!", slave_numdof);
+//          if (inod >= slave_nen_)
+//            dserror("Coupling slave element has only %d nodes!", slave_nen_);
           return inod*slave_numdof + idof;
         }
 
         //! @name get global master row/col-index of element coupling matrix for a given node index
         //@{
-        unsigned mVelx(unsigned inod){ return inod*master_numdof_ + Velx; }
-        unsigned mVely(unsigned inod){ return inod*master_numdof_ + Vely; }
-        unsigned mVelz(unsigned inod){ return inod*master_numdof_ + Velz; }
-        unsigned mPres(unsigned inod){ return inod*master_numdof_ + Pres; }
+        static unsigned mVelx(unsigned inod){ return inod*master_numdof_ + Velx; }
+        static unsigned mVely(unsigned inod){ return inod*master_numdof_ + Vely; }
+        static unsigned mVelz(unsigned inod){ return inod*master_numdof_ + Velz; }
+        static unsigned mPres(unsigned inod){ return inod*master_numdof_ + Pres; }
         //@}
 
         /// @name get global slave row/col-index of element coupling matrix for a given node index
         //@{
-        unsigned sVelx(unsigned inod){ return inod*slave_numdof + Velx; }
-        unsigned sVely(unsigned inod){ return inod*slave_numdof + Vely; }
-        unsigned sVelz(unsigned inod){ return inod*slave_numdof + Velz; }
-        unsigned sPres(unsigned inod){ return inod*slave_numdof + Pres; }
+        static unsigned sVelx(unsigned inod){ return inod*slave_numdof + Velx; }
+        static unsigned sVely(unsigned inod){ return inod*slave_numdof + Vely; }
+        static unsigned sVelz(unsigned inod){ return inod*slave_numdof + Velz; }
+        static unsigned sPres(unsigned inod){ return inod*slave_numdof + Pres; }
         //@}
 
-        LINALG::Matrix<slave_numdof*slave_nen_,master_numdof_*nen_>     C_usum_;       ///< coupling matrix C_usum
-        LINALG::Matrix<master_numdof_*nen_,slave_numdof*slave_nen_>     C_umus_;       ///< coupling matrix C_umus
-        LINALG::Matrix<slave_numdof*slave_nen_,1>                       rhC_us_;       ///< coupling rhs rhC_us
-        LINALG::Matrix<slave_numdof*slave_nen_,slave_numdof*slave_nen_> C_usus_;       ///< coupling matrix C_usus
-        typename SlaveElementInterface<distype>::ApplicationType applicationType_;     ///< application context
+        LINALG::Matrix<slave_numdof*slave_nen_,master_numdof_*nen_>     C_usum_;          ///< coupling matrix C_usum
+        LINALG::Matrix<master_numdof_*nen_,slave_numdof*slave_nen_>     C_umus_;          ///< coupling matrix C_umus
+        LINALG::Matrix<slave_numdof*slave_nen_,1>                       rhC_us_;          ///< coupling rhs rhC_us
+        LINALG::Matrix<slave_numdof*slave_nen_,slave_numdof*slave_nen_> C_usus_;          ///< coupling matrix C_usus
+
+        typename SlaveElementInterface<distype>::ApplicationType        applicationType_; ///< application context
 
         /// scaling of Nitsche's adjoint viscous term
         const double adj_visc_scale_;
@@ -534,20 +543,20 @@ namespace DRT
         /// get global master row/col-index of element coupling matrix for a given node index and dof-index
         static unsigned mIndex(unsigned inod, unsigned idof)
         {
-          if (idof >= master_numdof_)
-            dserror("Coupling master element has only %d dof!", master_numdof_);
-          if (inod >= nen_)
-            dserror("Coupling master element has only %d nodes!", nen_);
+//          if (idof >= master_numdof_)
+//            dserror("Coupling master element has only %d dof!", master_numdof_);
+//          if (inod >= nen_)
+//            dserror("Coupling master element has only %d nodes!", nen_);
           return inod*master_numdof_ + idof;
         }
 
         /// get global slave row/col-index of element coupling matrix for a given node index and dof-index
         static unsigned sIndex(unsigned inod,unsigned idof)
         {
-          if (idof >= slave_numdof)
-            dserror("Coupling slave element has only %d dof!", slave_numdof);
-          if (inod >= slave_nen_)
-            dserror("Coupling slave element has only %d nodes!", slave_nen_);
+//          if (idof >= slave_numdof)
+//            dserror("Coupling slave element has only %d dof!", slave_numdof);
+//          if (inod >= slave_nen_)
+//            dserror("Coupling slave element has only %d nodes!", slave_nen_);
           return inod*slave_numdof + idof;
         }
 

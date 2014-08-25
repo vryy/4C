@@ -200,7 +200,6 @@ namespace DRT
           Epetra_SerialDenseMatrix &                            C_umum,                 ///< standard master-master-matrix
           Epetra_SerialDenseVector &                            rhs_Cum,                ///< master rhs
           const LINALG::Matrix<nen_,1> &                        funct_m,                ///< master shape functions
-          const LINALG::Matrix<nsd_,1> &                        normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const LINALG::Matrix<nsd_,1> &                        velint_m,               ///< vector of slave shape functions
           const double &                                        NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
@@ -238,10 +237,10 @@ namespace DRT
           LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master shape function derivatives
           LINALG::Matrix<nsd_,nsd_> &         vderxy_m,                     ///< master spatial velocity derivatives
           const double &                      press_m,                      ///< master pressure
-          bool &                              velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
-          double &                            velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
-          bool &                              presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
-          double &                            presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
+          const bool &                        velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
+          const double &                      velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
+          const bool &                        presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
+          const double &                      presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
         ) = 0;
 
       };

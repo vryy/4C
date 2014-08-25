@@ -1895,7 +1895,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                  elemat1_epetra,
                  elevec1_epetra,
                  my::funct_,
-                 normal,
                  my::velint_,
                  NIT_full_stab_fac,
                  avg_conv_stab_fac,
@@ -1917,7 +1916,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                 elemat1_epetra,
                 elevec1_epetra,
                 my::funct_,
-                normal,
                 my::velint_,
                 NIT_full_stab_fac,
                 avg_conv_stab_fac,
@@ -3048,25 +3046,27 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype> > si;
 
-  // find all the intersecting elements of actele
-  std::set<int> begids;
-  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-       bc!=bcells.end(); ++bc )
-  {
-    int sid = bc->first;
-    begids.insert(sid);
-  }
-
   // map of boundary element gids and coupling matrices, [0]: Cuiui matrix
   std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+  // we don't have Cuiui for standard Dirichlet problems...
+  if (eval_side_coupling)
+  {
+    // find all the intersecting elements of actele
+    std::set<int> begids;
+    for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+         bc!=bcells.end(); ++bc )
+    {
+      int sid = bc->first;
+      begids.insert(sid);
+    }
 
-  // lm vector of all intersecting boundary elements that intersect the current background element
-  std::vector<int> patchelementslmv;
-  std::vector<int> patchelementslmowner;
+    // lm vector of all intersecting boundary elements that intersect the current background element
+    std::vector<int> patchelementslmv;
+    std::vector<int> patchelementslmowner;
 
-  // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
-
+    // create location vectors for intersecting boundary elements and reshape coupling matrices
+    PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
+  }
 
   //-----------------------------------------------------------------------------------
   //         evaluate element length, stabilization factors and average weights
@@ -3081,15 +3081,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   // compute viscous part of Nitsche's penalty term scaling for Nitsche's method (dimensionless)
   //--------------------------------------------
   const double NIT_visc_stab_fac = NIT_ComputeNitscheStabfac( ele->Shape(), h_k, -1 );
-
-  //--------------------------------------------
-  // define average weights -
-  // this is the routine for xfluid-sided
-  // Nitsche, so kappa_s is set to 0
-  //--------------------------------------------
-
-  const double kappa1 = 1.0;
-  const double kappa2 = 0.0;
 
   //--------------------------------------------
   // loop intersecting sides
@@ -3291,6 +3282,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::velint_.Dot(normal)
           );
         }
+
+        //--------------------------------------------
+        // define average weights -
+        // this is the routine for xfluid-sided
+        // Nitsche, so kappa_s is set to 0
+        //--------------------------------------------
+
+        const double kappa1 = 1.0;
+        const double kappa2 = 0.0;
 
         si->NIT_buildCouplingMatrices(
           elemat1_epetra,          // standard bg-bg-matrix
