@@ -36,7 +36,7 @@ ACOU::TimIntImplDIRK::TimIntImplDIRK(
   // fill the scheme specific coefficients
   FillDIRKValues(dyna_,dirk_a_,dirk_b_,dirk_q_);
   t_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
-
+  resonly_ = false;
   // that's it. the standard constructor did everything else
 } // TimIntImplDIRK
 
@@ -50,6 +50,12 @@ void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, T
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
   Output(history,splitter);
+
+  // call elements to calculate system matrix/rhs and assemble
+  AssembleMatAndRHS(0);
+
+  // apply Dirichlet boundary conditions to system of equations
+  ApplyDirichletToSystem(0);
 
   // time loop
   while (step_<stepmax_ and time_<maxtime_)
@@ -96,12 +102,12 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
   // evaluate elements
   //----------------------------------------------------------------------
 
-  bool resonly = !(!bool(step_-1) || !bool(step_-restart_-1));
-  if(padaptivity_) resonly = false; // TODO: nur fuer erste stage, bzw. update step
-  if(!resonly)
+
+  if(padaptivity_) resonly_ = false; // TODO: nur fuer erste stage, bzw. update step
+  if(!resonly_)
     sysmat_->Zero();
 
-  eleparams.set<bool>("resonly",resonly);
+  eleparams.set<bool>("resonly",resonly_);
   eleparams.set<int>("stage",stage);
   eleparams.set<bool>("padaptivity",padaptivity_);
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
@@ -115,7 +121,7 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
-  if(!resonly)
+  if(!resonly_)
   {
     // absorbing boundary conditions
     std::string condname = "Absorbing";
@@ -142,8 +148,11 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
   }
 
   // finalize the complete matrix
-  if(!resonly)
+  if(!resonly_)
+  {
     sysmat_->Complete();
+    resonly_ = true;
+  }
 
   return;
 } // AssembleMatAndRHS
@@ -151,11 +160,9 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
 /*----------------------------------------------------------------------*
  | Update interior field (public)                        schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
+void ACOU::TimIntImplDIRK::UpdateInteriorVariablesAndAssemebleRHS(int stage)
 {
   Teuchos::ParameterList eleparams;
-
-
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
 
   eleparams.set<bool>("adjoint",adjoint_);
@@ -168,7 +175,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
     elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
   eleparams.set<Teuchos::RCP<std::vector<double> > >("elevals",elevals);
 
-  eleparams.set<int>("action",ACOU::update_secondary_solution);
+  eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
@@ -177,10 +184,10 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
   residual_->Scale(0.0);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<int>("step",step_);
-  bool resonly = true;
-  eleparams.set<bool>("resonly",resonly);
+  bool resonly_ = true;
+  eleparams.set<bool>("resonly",resonly_);
 
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
   // update the error vector
   if(errormaps_)
@@ -211,23 +218,14 @@ void ACOU::TimIntImplDIRK::Solve()
   {
     if(!padaptivity_) discret_->SetState("trace",veln_);
 
-    // call elements to calculate system matrix/rhs and assemble
-    double tcpuele = Teuchos::Time::wallTime();
-    AssembleMatAndRHS(i);
-    dtele_ += Teuchos::Time::wallTime()-tcpuele;
-
-    // apply Dirichlet boundary conditions to system of equations
-    ApplyDirichletToSystem(i);
-
     // solve the linear equation
     const double tcpusolve = Teuchos::Time::wallTime();
     solver_->Solve(sysmat_->EpetraOperator(),t_,residual_,true,false,Teuchos::null);
-
     dtsolve_ += Teuchos::Time::wallTime()-tcpusolve;
 
     // update interior variables
-    tcpuele = Teuchos::Time::wallTime();
-    UpdateInteriorVariables(i);
+    double tcpuele = Teuchos::Time::wallTime();
+    UpdateInteriorVariablesAndAssemebleRHS(i);
     dtele_ += Teuchos::Time::wallTime()-tcpuele;
 
   } // for(unsigned int i=0; i<dirk_q_; ++i)

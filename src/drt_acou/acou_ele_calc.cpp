@@ -1614,8 +1614,58 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   // *****************************************************
   // compute residual second (reuse intermediate matrices)
   // *****************************************************
+  if( dyna_ == INPAR::ACOU::acou_dirk23 ||
+      dyna_ == INPAR::ACOU::acou_dirk33 ||
+      dyna_ == INPAR::ACOU::acou_dirk34 ||
+      dyna_ == INPAR::ACOU::acou_dirk54 )
+  {
+    double dirk_a[6][6];
+    double dirk_b[6];
+    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_q);
 
-  if(dyna_ == INPAR::ACOU::acou_bdf2)
+    stage++;
+    if(stage == dirk_q)
+    {
+      stage = 0;
+      ele.eleinteriorPressnp_ = ele.eleinteriorPressn_;
+      ele.eleinteriorVelnp_   = ele.eleinteriorVeln_;
+    }
+
+    Epetra_SerialDenseVector tempVecp1(shapes_->ndofs_);
+    Epetra_SerialDenseVector tempVecp2(shapes_->ndofs_);
+    Epetra_SerialDenseVector tempVecv1(shapes_->ndofs_*nsd_);
+    Epetra_SerialDenseVector tempVecv2(shapes_->ndofs_*nsd_);
+
+    ele.elesp_[stage] = ele.eleinteriorPressn_;
+    ele.elesp_[stage].Scale(1.0/dt); // dt includes a_ii
+    ele.elesv_[stage] = ele.eleinteriorVeln_;
+    ele.elesv_[stage].Scale(1.0/dt); // dt includes a_ii
+
+    for(int i=0; i<stage; ++i)
+    {
+      tempVecp1 = ele.elesp_[i];
+      tempVecp1.Scale(-1.0);
+      tempVecp2 = ele.eleyp_[i];
+      tempVecp2.Scale(1.0/dt);
+      tempVecp1 += tempVecp2;
+      tempVecp1.Scale(dirk_a[stage][i]/dirk_a[stage][stage]);
+      ele.elesp_[stage] += tempVecp1;
+      tempVecv1 = ele.elesv_[i];
+      tempVecv1.Scale(-1.0);
+      tempVecv2 = ele.eleyv_[i];
+      tempVecv2.Scale(1.0/dt);
+      tempVecv1 += tempVecv2;
+      tempVecv1.Scale(dirk_a[stage][i]/dirk_a[stage][stage]);
+      ele.elesv_[stage] += tempVecv1;
+    }
+
+    // these vectors s are used for the calculation of the residual -> write them to used local solver variable
+    interiorPressnp_ = ele.elesp_[stage];
+    interiorVelnp_   = ele.elesv_[stage];
+    interiorPressnp_.Scale(dt);
+    interiorVelnp_.Scale(dt);
+  }
+  else if(dyna_ == INPAR::ACOU::acou_bdf2)
   {
     for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
       interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * tempVelnp[i];

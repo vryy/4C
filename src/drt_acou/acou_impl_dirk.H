@@ -41,7 +41,7 @@ public:
   virtual void UpdatePolyAndState();
 
   /// Call elements to update interior variabels and to calculate the RHS vector (in this way, we can save some computing time)
-  void UpdateInteriorVariables(int stage);
+  void UpdateInteriorVariablesAndAssemebleRHS(int stage);
 
   /// Routine to loop over all stages in one time step
   virtual void Solve();
@@ -58,6 +58,9 @@ private:
   double dirk_a_[6][6];
   double dirk_b_[6];
   int dirk_q_;
+
+  // for dirk as class variable
+  bool resonly_;
 
   /// vectors needed for interstage states, nomenclatur is in correspondence with Nguyen, 2011, "High-order implicit hybridizable
   /// discontinuous Galerkin methods for acoustics and elastodynamics".
