@@ -143,8 +143,6 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     case DRT::Element::quad4:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
     {
        if ( (ngp[0]==2) && (ngp[1]==2) )
        {
@@ -156,6 +154,33 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
        }
        else
          dserror("Unknown number of Gauss points for quad element");
+       break;
+    }
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
+    {
+       if ( (ngp[0]==2) && (ngp[1]==2) )
+       {
+         rule = DRT::UTILS::intrule_quad_4point;
+       }
+       else if ( (ngp[0]==3) && (ngp[1]==3) )
+       {
+         rule = DRT::UTILS::intrule_quad_9point;
+       }
+       else if ( (ngp[0]==4) && (ngp[1]==4) )
+       {
+         rule = DRT::UTILS::intrule_quad_16point;
+       }
+       else if ( (ngp[0]==5) && (ngp[1]==5) )
+       {
+         rule = DRT::UTILS::intrule_quad_25point;
+       }
+       else if ( (ngp[0]==10) && (ngp[1]==10) )
+       {
+         rule = DRT::UTILS::intrule_quad_100point;
+       }
+       else
+         dserror("Unknown number of Gauss points for nurbs element");
        break;
     }
     case DRT::Element::tri3:

@@ -441,6 +441,7 @@ public:
     case DRT::Element::nurbs3:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
+    case DRT::Element::nurbs9:
     case DRT::Element::tri6:
     {
       isquad = true;

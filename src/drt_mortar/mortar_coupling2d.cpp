@@ -577,8 +577,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
 {
   // explicitely defined shapefunction type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror(
-        "ERROR: IntegrateOverlap called without specific shape function defined!");
+    dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
 
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -637,8 +636,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   // *******************************************************************
   else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
   {
-    dserror(
-        "ERROR: Piecewise linear LM interpolation not (yet?) implemented in 2D");
+    dserror("ERROR: Piecewise linear LM interpolation not (yet?) implemented in 2D");
   }
 
   // *******************************************************************
@@ -646,8 +644,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   // *******************************************************************
   else
   {
-    dserror(
-        "ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    dserror("ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
   }
 
   /*----------------------------------------------------------------------

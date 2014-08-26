@@ -94,15 +94,26 @@ DRT::Element* DRT::ELEMENTS::StructuralSurface::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::StructuralSurface::Shape() const
 {
-  switch (NumNode())
+  // if NURBS elements:
+  if(ParentMasterElement()->Shape() == nurbs8)
+    return nurbs4;
+  else if (ParentMasterElement()->Shape() == nurbs27)
+    return nurbs9;
+  // Lagrange elements:
+  else
   {
-  case 3: return tri3;
-  case 6: return tri6;
-  case 4: return quad4;
-  case 8: return quad8;
-  case 9: return quad9;
-  default: dserror("Unknown shape of surface element (unknown number of nodes)");
+    switch (NumNode())
+    {
+    case 3: return tri3;
+    case 6: return tri6;
+    case 4: return quad4;
+    case 8: return quad8;
+    case 9: return quad9;
+    default: dserror("Unknown shape of surface element (unknown number of nodes)");
+    break;
+    }
   }
+
   return dis_none;
 }
 

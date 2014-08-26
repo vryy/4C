@@ -4099,19 +4099,22 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       // consistent again! (08/2013)
       //******************************************************************
 
-      bool node_has_quad_element = false;
-      for (int i=0; i<cnode->NumElement(); i++)
+      if(!nurbs_) // only for Lagrange elements
       {
-        if (static_cast<MORTAR::MortarElement*>(cnode->Elements()[i])->IsQuad()==true)
+        bool node_has_quad_element = false;
+        for (int i=0; i<cnode->NumElement(); i++)
         {
-          node_has_quad_element=true;
-          break;
+          if (static_cast<MORTAR::MortarElement*>(cnode->Elements()[i])->IsQuad()==true)
+          {
+            node_has_quad_element=true;
+            break;
+          }
         }
-      }
-      if (!cnode->HasProj() && !cnode->Active() && node_has_quad_element)
-      {
-        gap = 1.0e12;
-        cnode->CoData().Getg()=gap;
+        if (!cnode->HasProj() && !cnode->Active() && node_has_quad_element)
+        {
+          gap = 1.0e12;
+          cnode->CoData().Getg()=gap;
+        }
       }
 
       // apply scaling of cn

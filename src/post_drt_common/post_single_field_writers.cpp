@@ -75,6 +75,10 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("normasterforceg",  "normasterforceg",  dofbased, field->problem()->num_dim());
   writer_->WriteResult("poronopen_lambda", "poronopen_lambda", dofbased, field->problem()->num_dim());
 
+  // error norms
+  writer_->WriteResult("L2_norm", "L2_norm", elementbased, 1);
+  writer_->WriteResult("H1_norm", "H1_norm", elementbased, 1);
+  writer_->WriteResult("Energy_norm", "Energy_norm", elementbased, 1);
 
   // one-dimensional artery
   writer_->WriteResult("one_d_artery_pressure", "pressure", nodebased, 1);

@@ -466,6 +466,59 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int& lid, double* xi)
     // we are in the 2D case here!
     xi[1]=0.0;
   }
+  else if (Shape()==nurbs9)
+  {
+    switch(lid)
+    {
+    case 0:
+    {
+      xi[0]=-1.0; xi[1]=-1.0;
+      break;
+    }
+    case 1:
+    {
+      xi[0]=0.0; xi[1]=-1.0;
+      break;
+    }
+    case 2:
+    {
+      xi[0]=1.0; xi[1]=-1.0;
+      break;
+    }
+    case 3:
+    {
+      xi[0]=-1.0; xi[1]=0.0;
+      break;
+    }
+    case 4:
+    {
+      xi[0]=0.0; xi[1]=0.0;
+      break;
+    }
+    case 5:
+    {
+      xi[0]=1.0; xi[1]=0.0;
+      break;
+    }
+    case 6:
+    {
+      xi[0]=-1.0; xi[1]=1.0;
+      break;
+    }
+    case 7:
+    {
+      xi[0]=0.0; xi[1]=1.0;
+      break;
+    }
+    case 8:
+    {
+      xi[0]=1.0; xi[1]=1.0;
+      break;
+    }
+    default:
+      dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
+    }
+  }
 
   // unknown case
   else
@@ -1120,6 +1173,7 @@ double MORTAR::MortarElement::MinEdgeSize()
 
   //==================================================
   //                     NURBS
+  //==================================================
   else if (dt==nurbs3)
   {
     double sxi0[2]={-1.0 , 0.0};
@@ -1148,7 +1202,59 @@ double MORTAR::MortarElement::MinEdgeSize()
       diff[k] = gpx1[k]-gpx0[k];
     minedgesize = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
   }
+  else if (dt==nurbs9)
+  {
+    int nrow = NumNode();
 
+    // get real point data
+    LINALG::SerialDenseMatrix coordnurbs(3,nrow,true);
+
+    // parameter space coordinates
+    double sxi0[2]={-1.0 ,-1.0};
+    double sxi1[2]={ 1.0 ,-1.0};
+    double sxi2[2]={ 1.0 , 1.0};
+    double sxi3[2]={-1.0 , 1.0};
+
+    // evaluate shape functions at these coordinates
+    LINALG::SerialDenseVector sval0(nrow);
+    LINALG::SerialDenseVector sval1(nrow);
+    LINALG::SerialDenseVector sval2(nrow);
+    LINALG::SerialDenseVector sval3(nrow);
+    LINALG::SerialDenseMatrix sderiv(nrow,2);
+    EvaluateShape(sxi0,sval0,sderiv,nrow);
+    EvaluateShape(sxi1,sval1,sderiv,nrow);
+    EvaluateShape(sxi2,sval2,sderiv,nrow);
+    EvaluateShape(sxi3,sval3,sderiv,nrow);
+
+    double gpx0[3] = {0.0, 0.0, 0.0};
+    double gpx1[3] = {0.0, 0.0, 0.0};
+
+    for (int j=0;j<nrow;++j)
+    {
+      for(int i=0;i<3;++i)
+      {
+        gpx0[i] +=sval0(j)*coord(i,j);
+        gpx1[i] +=sval1(j)*coord(i,j);
+      }
+    }
+
+    // there are four edges
+    // (we approximate the quadratic case as linear)
+    for (int edge=0;edge<4;++edge)
+    {
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        if      (edge==0) diff[k] = coord(k,0)-coord(k,2);
+        else if (edge==1) diff[k] = coord(k,2)-coord(k,8);
+        else if (edge==2) diff[k] = coord(k,8)-coord(k,6);
+        else if (edge==3) diff[k] = coord(k,6)-coord(k,0);
+        else dserror("Wrong edge size!");
+      }
+      double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+      if (dist<minedgesize) minedgesize = dist;
+    }
+  }
   // invalid case
   else
     dserror("ERROR: MinEdgeSize not implemented for this type of MortarElement");

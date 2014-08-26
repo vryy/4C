@@ -861,19 +861,22 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
 
       // strong discontinuity --> Boundary Segmentation
       if(is_on_mele==false)
-      *boundary_ele=true;
+      {
+        *boundary_ele=true;
+        std::cout << "WARNING: strong disc. occurs !!!"<< std::endl;
+      }
 
     } //loop-end over all gp
 
     return;
   }
 
-    /*----------------------------------------------------------------------*
-     |  Integrate and linearize a 1D slave / master overlap (2D)  popp 02/09|
-     |  This method integrates the overlap D/M matrix and weighted gap g~   |
-     |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
-     |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
-     *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  Integrate and linearize a 1D slave / master overlap (2D)  popp 02/09|
+ |  This method integrates the overlap D/M matrix and weighted gap g~   |
+ |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
+ |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
+ *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,
     DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(

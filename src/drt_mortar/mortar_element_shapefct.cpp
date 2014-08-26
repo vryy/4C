@@ -1949,33 +1949,6 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     break;
   }
 
-    // 2D -- nurbs8
-  case DRT::Element::nurbs8:
-  {
-    if (valdim != 8)
-      dserror("ERROR: Inconsistency in EvluateShape");
-
-    Epetra_SerialDenseVector weights(NumNode());
-    for (int inode = 0; inode < NumNode(); ++inode)
-      weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
-
-    LINALG::SerialDenseVector uv(2);
-    uv(0) = xi[0];
-    uv(1) = xi[1];
-
-    LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val, auxderiv, uv, Knots(),
-        weights, nurbs8);
-
-    // copy entries for to be conform with the mortar code!
-    for (int d = 0; d < 2; ++d)
-      for (int i = 0; i < NumNode(); ++i)
-        deriv(i, d) = auxderiv(d, i);
-
-    break;
-  }
-
     // 2D -- nurbs9
   case DRT::Element::nurbs9:
   {
@@ -1984,21 +1957,23 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
 
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
-      weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+      weights(inode) = static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector uv(2);
     uv(0) = xi[0];
     uv(1) = xi[1];
 
+
     LINALG::SerialDenseMatrix auxderiv(2, NumNode());
     DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val, auxderiv, uv, Knots(),
         weights, nurbs9);
+
 
     // copy entries for to be conform with the mortar code!
     for (int d = 0; d < 2; ++d)
       for (int i = 0; i < NumNode(); ++i)
         deriv(i, d) = auxderiv(d, i);
+
 
     break;
   }
@@ -2291,7 +2266,59 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
   case DRT::Element::nurbs9:
   {
     if (dual)
-      dserror("no dual shape functions provided for nurbs!");
+    {
+      // establish fundamental data
+      double detg = 0.0;
+      const int nnodes = 9;
+
+      // compute entries to bi-ortho matrices me/de with Gauss quadrature
+      MORTAR::ElementIntegrator integrator(Shape());
+
+      LINALG::Matrix<nnodes, nnodes> me(true);
+      LINALG::Matrix<nnodes, nnodes> de(true);
+      LINALG::Matrix<nnodes, nnodes> ae;
+
+      for (int i = 0; i < integrator.nGP(); ++i)
+      {
+        double gpc[2] =
+        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
+        EvaluateShape(gpc, val, deriv, nnodes);
+        detg = Jacobian(gpc);
+
+        for (int j = 0; j < nnodes; ++j)
+        {
+          for (int k = 0; k < nnodes; ++k)
+          {
+            me(j, k) += integrator.Weight(i) * val[j] * val[k] * detg;
+            de(j, k) += (j == k) * integrator.Weight(i) * val[j] * detg;
+          }
+        }
+      }
+
+      // get solution matrix with dual parameters
+      LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+
+      // evaluate dual shape functions at loc. coord. xi
+      // need standard shape functions at xi first
+      EvaluateShape(xi, val, deriv, nnodes);
+
+      // check whether this is a 1D or 2D mortar element
+      const int dim = 2;
+      // evaluate dual shape functions
+      LINALG::SerialDenseVector valtemp(nnodes, true);
+      LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
+      for (int i = 0; i < nnodes; ++i)
+      {
+        for (int j = 0; j < nnodes; ++j)
+        {
+          valtemp[i] += ae(i, j) * val[j];
+          derivtemp(i, 0) += ae(i, j) * deriv(j, 0);
+        }
+      }
+
+      val = valtemp;
+      deriv = derivtemp;
+    }
     else
       EvaluateShape(xi, val, deriv, valdim);
 
@@ -2555,7 +2582,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
     break;
   }
     // *********************************************************************
-    // 1D dual quadratic shape functions (line3)
+    // 1D dual quadratic shape functions (line3/nurbs3)
     // (used for interpolation of Lagrange multiplier field)
     // (linearization necessary due to adaption for distorted elements !!!)
     // *********************************************************************
@@ -4166,7 +4193,19 @@ bool MORTAR::MortarElement::DerivShapeDual(
 
     break;
   }
-
+  //==================================================
+  //                     NURBS
+  //==================================================
+  case DRT::Element::nurbs3:
+  {
+    ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
+    break;
+  }
+  case DRT::Element::nurbs9:
+  {
+    ShapeFunctionLinearizations(MORTAR::MortarElement::biquaddual2D, derivdual);
+    break;
+  }
     // unknown case
   default:
     dserror("ERROR: DerivShapeDual called for unknown element type");

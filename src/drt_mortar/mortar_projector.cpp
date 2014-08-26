@@ -570,7 +570,11 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(
         break;
       df = EvaluateGradFNodalNormal(node, ele, eta);
       if (abs(df) < 1.0e-12)
+      {
+        xi[0] = 1.0e12;
+        return false;
         dserror("ERROR: Singular Jacobian for projection");
+      }
       eta[0] += (-f) / df;
     }
 
@@ -630,7 +634,12 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(
         break;
       df = EvaluateGradFElementNormal(node, ele, eta);
       if (abs(df) < 1.0e-12)
+      {
+        ok = false;
+        xi[0] = 1.0e12;
+        return ok;
         dserror("ERROR: Singular Jacobian for projection");
+      }
       eta[0] += (-f) / df;
     }
 
@@ -748,8 +757,10 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
       ok = false;
       xi[0] = 1.0e12;
 
-      dserror("ERROR: ProjectGaussPoint: Newton unconverged for GP at xi=%d"
-          " from MortarElementID %i", gpeta[0], gpele.Id());
+      return ok;
+
+//      dserror("ERROR: ProjectGaussPoint: Newton unconverged for GP at xi=%d"
+//          " from MortarElementID %i", gpeta[0], gpele.Id());
     }
   }
 
@@ -948,10 +959,10 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     // get shape function values and derivatives at gpeta
     if(distypeS==DRT::Element::nurbs4 || distypeS==DRT::Element::nurbs8 ||
-        distypeS==DRT::Element::nurbs9)
+       distypeS==DRT::Element::nurbs9)
     {
       LINALG::SerialDenseVector auxval(ns_);
-      LINALG::SerialDenseMatrix deriv(ns_,1);
+      LINALG::SerialDenseMatrix deriv(ns_,2);
       gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
       for(int i=0;i<ns_;++i)

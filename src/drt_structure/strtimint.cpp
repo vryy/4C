@@ -2663,12 +2663,16 @@ void STR::TimInt::OutputErrorNorms()
   Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
   norms->Scale(0.0);
 
+  // vector for output
+  Teuchos::RCP<Epetra_MultiVector> normvec = Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(),3));
+
   // call discretization to evaluate error norms
   Teuchos::ParameterList p;
   p.set("action", "calc_struct_errornorms");
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
   discret_->EvaluateScalars(p, norms);
+  discret_->EvaluateScalars(p, normvec);
   discret_->ClearState();
 
   // proc 0 writes output to screen
@@ -2682,6 +2686,26 @@ void STR::TimInt::OutputErrorNorms()
     printf("\n**********************************\n\n");
     fflush(stdout);
   }
+
+  Teuchos::RCP<Epetra_MultiVector> L2_norm = Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(),1));
+  Teuchos::RCP<Epetra_MultiVector> H1_norm = Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(),1));
+  Teuchos::RCP<Epetra_MultiVector> Energy_norm = Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(),1));
+  Epetra_MultiVector& sca   = *(normvec.get());
+  Epetra_MultiVector& scaL2 = *(L2_norm.get());
+  Epetra_MultiVector& scaH1 = *(H1_norm.get());
+  Epetra_MultiVector& scaEn = *(Energy_norm.get());
+
+  for(int i=0;i<discret_->NumMyRowElements();++i)
+  {
+    (*scaL2(0))[i] = (*sca(0))[i];
+    (*scaH1(0))[i] = (*sca(1))[i];
+    (*scaEn(0))[i] = (*sca(2))[i];
+  }
+
+  // output to file
+  output_->WriteVector("L2_norm", L2_norm);
+  output_->WriteVector("H1_norm", H1_norm);
+  output_->WriteVector("Energy_norm", Energy_norm);
 
   return;
 }

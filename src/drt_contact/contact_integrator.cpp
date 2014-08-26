@@ -1386,7 +1386,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
   //************************************************************************
   //Boundary Segmentation check -- HasProj()-check
   //************************************************************************
-  *boundary_ele=BoundarySegmCheck3D(sele,meles);
+  if(sele.Shape() != DRT::Element::nurbs4 and sele.Shape()!=DRT::Element::nurbs9)
+    *boundary_ele=BoundarySegmCheck3D(sele,meles);
 
   int linsize = 0;
   for (int i=0;i<nrow;++i)
@@ -1433,7 +1434,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 
       // evaluate linearizations *******************************************
       // evaluate the slave Jacobian derivative
-      GEN::pairedvector<int,double> jacslavemap(nrow*ndof);
+      GEN::pairedvector<int,double> jacslavemap(nrow*ndof+linsize);
       sele.DerivJacobian(sxi,jacslavemap);
 
       //**********************************************************************
@@ -1475,7 +1476,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 
         // check GP projection
         const double tol = 0.00;
-        if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+        if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9 ||
+            dt==DRT::Element::nurbs9)
         {
           if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
           {
@@ -1501,7 +1503,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 
           // evaluate the GP slave coordinate derivatives
           std::vector<GEN::pairedvector<int,double> > dsxigp(2,0);
-          std::vector<GEN::pairedvector<int,double> > dmxigp(2,linsize+nmnode*ndof);
+          std::vector<GEN::pairedvector<int,double> > dmxigp(2,4*linsize+nmnode*ndof);
           DerivXiGP3D(sele,*meles[nummaster],sxi,mxi,dsxigp,dmxigp,projalpha);
 
           //**********************************************************************
@@ -2428,7 +2430,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   //bool duallin = false; // --> coming soon
   std::vector<std::vector<GEN::pairedvector<int,double> > > dualmap(nrow,std::vector<GEN::pairedvector<int,double> >(nrow,ndof*nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() ==INPAR::MORTAR::shape_petrovgalerkin)
-      && (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null))
+      && (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null ||
+          sele.Shape()==MORTAR::MortarElement::nurbs3))
   {
     //duallin=true;
     sele.DerivShapeDual(dualmap);

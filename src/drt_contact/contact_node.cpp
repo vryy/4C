@@ -760,9 +760,9 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    std::map<int,double>& derivtxix = CoData().GetDerivTxi()[0];
-    std::map<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
-    std::map<int,double>& derivtxiz = CoData().GetDerivTxi()[2];
+    GEN::pairedvector<int,double>& derivtxix = CoData().GetDerivTxi()[0];
+    GEN::pairedvector<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
+    GEN::pairedvector<int,double>& derivtxiz = CoData().GetDerivTxi()[2];
 
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {

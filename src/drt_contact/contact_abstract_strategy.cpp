@@ -1814,7 +1814,6 @@ void CONTACT::CoAbstractStrategy::OutputStresses()
         else
           (*stressnormal_)[locindex[dof]] = -lmn * nn[dof]
               / cnode->MoData().GetScale();
-
       }
 
       // tangential stress components
@@ -1828,7 +1827,6 @@ void CONTACT::CoAbstractStrategy::OutputStresses()
         else
           (*stresstangential_)[locindex[dof]] = -lmt1 * nt1[dof]
               - lmt2 * nt2[dof] / cnode->MoData().GetScale();
-
       }
     }
   }
