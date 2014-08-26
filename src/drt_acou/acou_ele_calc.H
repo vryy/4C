@@ -151,8 +151,8 @@ namespace ELEMENTS
 
       LocalSolver (const DRT::UTILS::ShapeValues<distype> &shapeValues,
                    DRT::UTILS::ShapeValuesFace<distype> &shapeValuesFace);
-      void ElementSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
-                                       bool completepoly);
+      void FaceSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
+                                    bool completepoly);
 
       /// compute the residual
       void ComputeResidual(Epetra_SerialDenseVector          & eleVec,

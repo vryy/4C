@@ -280,7 +280,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::InitializeShapes(const DRT::ELEMENTS::
   else if(localSolver_->ndofs_ != shapes_->ndofs_)
     localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_,*shapesface_));
 
-  localSolver_->ElementSpecificConstruction(ele,usescompletepoly_);
+  localSolver_->FaceSpecificConstruction(ele,usescompletepoly_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1358,12 +1358,12 @@ shapesface_(shapeValuesFace)
 }
 
 /*----------------------------------------------------------------------*
- * ElementSpecificConstruction
+ * FaceSpecificConstruction
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
-ElementSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
-                            bool completepoly)
+FaceSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
+                         bool completepoly)
 {
   int onfdofs = 0;
   int nfdofs = 0;
