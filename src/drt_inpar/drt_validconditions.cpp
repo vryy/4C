@@ -480,6 +480,34 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Volume));
 
+  Teuchos::RCP<ConditionDefinition> pointnurbslsdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT NURBS LS DIRICH CONDITIONS",
+                                         "NurbsLSDirichlet",
+                                         "Point Dirichlet",
+                                         DRT::Condition::PointDirichlet,
+                                         true,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linenurbslsdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE NURBS LS DIRICH CONDITIONS",
+                                         "NurbsLSDirichlet",
+                                         "Line Dirichlet",
+                                         DRT::Condition::LineDirichlet,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfnurbslsdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF NURBS LS DIRICH CONDITIONS",
+                                         "NurbsLSDirichlet",
+                                         "Surface Dirichlet",
+                                         DRT::Condition::SurfaceDirichlet,
+                                         true,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volnurbslsdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL NURBS LS DIRICH CONDITIONS",
+                                         "NurbsLSDirichlet",
+                                         "Volume Dirichlet",
+                                         DRT::Condition::VolumeDirichlet,
+                                         true,
+                                         DRT::Condition::Volume));
 
   for (unsigned i=0; i<dirichletbundcomponents.size(); ++i)
   {
@@ -509,6 +537,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     lineporodirichlet->AddComponent(dirichletbundcomponents[i]);
     surfporodirichlet->AddComponent(dirichletbundcomponents[i]);
     volporodirichlet->AddComponent(dirichletbundcomponents[i]);
+
+    pointnurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
+    linenurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
+    surfnurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
+    volnurbslsdirichlet->AddComponent(dirichletbundcomponents[i]);
   }
 
   condlist.push_back(pointdirichlet);
@@ -537,6 +570,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(lineporodirichlet);
   condlist.push_back(surfporodirichlet);
   condlist.push_back(volporodirichlet);
+
+  condlist.push_back(pointnurbslsdirichlet);
+  condlist.push_back(linenurbslsdirichlet);
+  condlist.push_back(surfnurbslsdirichlet);
+  condlist.push_back(volnurbslsdirichlet);
 
 
   /*--------------------------------------------------------------------*/

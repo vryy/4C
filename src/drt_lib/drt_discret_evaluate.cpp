@@ -52,8 +52,6 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
-#include "../drt_combust/combust_defines.H"
-
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*

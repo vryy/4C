@@ -8,7 +8,7 @@
 General Data File C_CARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Test wall nurbs 9 with periodic boundary conditions 
+Test wall nurbs 9 with periodic boundary conditions with non constant DBC
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        100
 NODES                           144
@@ -23,7 +23,7 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         no
 DIVERCONT                       stop
@@ -35,7 +35,7 @@ MAXITER                         50
 MAXTIME                         8
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
+NLNSOL                          fullnewton //fullnewton newtonlinuzawa
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -66,14 +66,22 @@ THETA                           0.66
 --------------------------------------------------------------------SOLVER 1
 NAME                            Struct_Solver
 SOLVER                          UMFPACK
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0
+-------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0+0.5*0.5*(1-cos((y*2.0*pi)))
+//FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           2
-E 3 - NUMDOF 2 ONOFF 1 0 VAL -1.0 0.0 CURVE 1 none FUNCT 0 0
+DLINE                           1
 E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+//E 3 - NUMDOF 2 ONOFF 1 0 VAL -1.0 0.0 CURVE 1 none FUNCT 1 0
+-----------------------------------------------DESIGN LINE NURBS LS DIRICH CONDITIONS
+DLINE                           1
+E 3 - NUMDOF 2 ONOFF 1 0 VAL -1.0 0.0 CURVE 1 none FUNCT 1 0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
 DLINE                           2
@@ -567,16 +575,10 @@ NODE 144 DSURF 1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.5
 MAT 2 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 79 QUANTITY dispx VALUE 1.10110461688991048e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 139 QUANTITY dispx VALUE 1.10110461688991083e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 79 QUANTITY dispx VALUE 1.44476887634050564e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 139 QUANTITY dispx VALUE 1.30770838823779881e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 139 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.10110461688991083e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.30770838823779881e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-13
 -------------------------------------------------------------------------END

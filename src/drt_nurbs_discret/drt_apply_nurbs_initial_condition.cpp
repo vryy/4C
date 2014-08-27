@@ -212,6 +212,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
         }
         default:
           dserror("this method is designed for usage with NurbsDiscretization only");
+          break;
         }
 
         // set element data
@@ -362,9 +363,9 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
 
 
             // check for degenerated elements
-            if (det < 0.0)
+            if (det < 1E-16)
             {
-              dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", actele->Id(), det);
+              dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", actele->Id(), det);
             }
 
             // set total integration factor
@@ -524,6 +525,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
         }
         default:
           dserror("expecting two or three-dimensional problems to set the initial conditions\n");
+          break;
         }
       }
 

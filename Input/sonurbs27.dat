@@ -20,35 +20,13 @@ PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Nurbs
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
-STRUCT_DISP                     Yes
-STRUCT_SE                       No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          No                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         no
 DIVERCONT                       stop
@@ -60,7 +38,7 @@ MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -92,7 +70,7 @@ THETA                           0.66
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 2.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 
+CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4433 QUANTITY dispz VALUE -1.35222711423511527e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 3876 QUANTITY dispz VALUE -2.44717418524232344e-01 TOLERANCE 1e-8
@@ -103,8 +81,8 @@ NDLINE                          40
 NDSURF                          32
 NDVOL                           5
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           8
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+DSURF                           7
+//E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 21 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 29 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
@@ -112,6 +90,9 @@ E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
 E 14 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
 E 22 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
 E 30 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
+-----------------------------------------------DESIGN SURF NURBS LS DIRICH CONDITIONS
+DSURF                           1
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------------------------NODE COORDS
 CP 1 COORD +2.000000e+00 +0.000000e+00 -1.046667e-01 +1.000000e+00
 CP 2 COORD +2.000000e+00 +3.004422e-01 -1.046667e-01 +9.414214e-01
