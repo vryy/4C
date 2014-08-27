@@ -66,7 +66,7 @@ useinitdbcset_(false)
   Teuchos::ParameterList parameters = DRT::Problem::Instance()->StructuralDynamicParams();
 
   //initialize random generators
-  SeedRandomGenerators(0);
+  SeedRandomGenerators(0,-1);
 
   // retrieve output root path
   BuildStatMechRootPath();
@@ -2194,9 +2194,9 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         newcrosslinker->SetMaterial(2);
         // set interpolated position to mid positions -> xi = 0.0
         if(linkermodel_==statmech_linker_myosinthick)
-        	newcrosslinker->SetBindingPosition(0.0,0.0);
+          newcrosslinker->SetBindingPosition(0.0,0.0);
         else
-        	newcrosslinker->SetBindingPosition((double)(*bspotxi_)[bspotgid[0]],(double)(*bspotxi_)[bspotgid[1]]);
+          newcrosslinker->SetBindingPosition((double)(*bspotxi_)[bspotgid[0]],(double)(*bspotxi_)[bspotgid[1]]);
 
         //set up reference configuration of crosslinker
         newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
@@ -3850,7 +3850,10 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
   //multivector for stochastic forces evaluated by each element based on row map
   Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()), randomnumbers->NumVectors()));
 
-  if(statmechparams_.get<double>("MAXRANDFORCE",-1.0)==-1.0)
+  //MAXRANDFORCE is a multiple of the standard deviation
+  double maxrandforcefac = statmechparams_.get<double>("MAXRANDFORCE",-1.0);
+
+  if(maxrandforcefac==-1.0)
   {
     for (int i=0; i<randomnumbersrow->MyLength(); i++)
       for (int j=0; j<randomnumbersrow->NumVectors(); j++)
@@ -3861,10 +3864,15 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
     for (int i=0; i<randomnumbersrow->MyLength(); i++)
       for (int j=0; j<randomnumbersrow->NumVectors(); j++)
       {
-        double randforce_dof = 2.0*statmechparams_.get<double>("MAXRANDFORCE",0.0);
-        while(fabs(randforce_dof)>statmechparams_.get<double>("MAXRANDFORCE",0.0))
-          randforce_dof = standarddeviation*(*normalgen_)() + meanvalue;
-        (*randomnumbersrow)[j][i] = randforce_dof;
+        (*randomnumbersrow)[j][i] = standarddeviation*(*normalgen_)() + meanvalue;
+        if((*randomnumbersrow)[j][i]>maxrandforcefac*standarddeviation)
+        {
+          (*randomnumbersrow)[j][i]=maxrandforcefac*standarddeviation;
+        }
+        else if((*randomnumbersrow)[j][i]<-maxrandforcefac*standarddeviation)
+        {
+          (*randomnumbersrow)[j][i]=-maxrandforcefac*standarddeviation;
+        }
       }
   }
 

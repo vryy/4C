@@ -49,6 +49,8 @@ basisnodes_(discret.NumGlobalNodes())
 {
   // octree specs
   // extrusion factor
+  addextrusionvalue_ = params.get<double>("BEAMS_ADDEXTVAL", 0.0);
+  // extrusion factor
   extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
   // extrusion factor
   radialextrusion_ = params.get<double>("BEAMS_RADFAC", 1.05);
@@ -416,7 +418,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
 }
 
 /*----------------------------------------------------------------------*
- |  Bounding Box creation function (private)                 meier 01/11|
+ |  Bounding Box creation function (private)               mueller 01/11|
  |  generates bounding boxes extended with factor 1.05                  |
  *----------------------------------------------------------------------*/
 void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions)
@@ -626,24 +628,51 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
         if (edgelength(i)<bboxdiameter)
           edgelength(i) = bboxdiameter;
 
-      // Calculate limits of AABB with extrusion around midpoint
-      if(bboxlimits!=Teuchos::null)
+      //Select between multiplicative and additive extrusion of bounding box
+      if(addextrusionvalue_ > 0.0)
       {
-        for(int i=0; i<6; i++)
-          if(i%2==0)
-            (*bboxlimits)(i,0) = midpoint(i/2) - 0.5*edgelength(i/2)*extrusionfactor;
-          else if(i%2==1)
-            (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+        // Calculate limits of AABB with additive extrusion
+        if(bboxlimits!=Teuchos::null)
+        {
+          for(int i=0; i<6; i++)
+            if(i%2==0)
+              (*bboxlimits)(i,0) = midpoint(i/2) - (0.5*edgelength(i/2)+addextrusionvalue_);
+            else if(i%2==1)
+              (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) + (0.5*edgelength((int)floor((double)i/2.0))+addextrusionvalue_);
+        }
+        else
+        {
+          for(int i=0; i<6; i++)
+          {
+            if(i%2==0)
+              (*allbboxes_)[i][elecolid] = midpoint(i/2) - (0.5*edgelength(i/2)+addextrusionvalue_);
+            else if(i%2==1)
+              (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) + (0.5*edgelength((int)floor((double)i/2.0))+addextrusionvalue_);
+
+          }
+        }
       }
       else
       {
-        for(int i=0; i<6; i++)
+        // Calculate limits of AABB with multiplicative extrusion around midpoint
+        if(bboxlimits!=Teuchos::null)
         {
-          if(i%2==0)
-            (*allbboxes_)[i][elecolid] = midpoint(i/2) - 0.5*edgelength(i/2)*extrusionfactor;
-          else if(i%2==1)
-            (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          for(int i=0; i<6; i++)
+            if(i%2==0)
+              (*bboxlimits)(i,0) = midpoint(i/2) - 0.5*edgelength(i/2)*extrusionfactor;
+            else if(i%2==1)
+              (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+        }
+        else
+        {
+          for(int i=0; i<6; i++)
+          {
+            if(i%2==0)
+              (*allbboxes_)[i][elecolid] = midpoint(i/2) - 0.5*edgelength(i/2)*extrusionfactor;
+            else if(i%2==1)
+              (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
 
+          }
         }
       }
     }

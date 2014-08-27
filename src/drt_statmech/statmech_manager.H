@@ -201,7 +201,7 @@ public:
   void SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   //! \brief seed all random generators of this object properly
-  void SeedRandomGenerators(const int seedparameter);
+  void SeedRandomGenerators(const int seedparameter, const int seedparameter2);
 
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector&                 disrow,
@@ -511,7 +511,7 @@ protected:
                                Teuchos::RCP<Epetra_MultiVector> bspotquaternions,
                                Teuchos::RCP<Epetra_MultiVector> nodalquaternions);
 
-  
+
   //! polarity check for active linkers upon bond breaking
   bool LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
                                  Epetra_SerialDenseMatrix&        LID,
@@ -521,10 +521,10 @@ protected:
   int LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
                                  const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                  const Teuchos::RCP<Epetra_MultiVector> bspottriadscol);
-  
+
   LINALG::Matrix<3,3> ExtractTriadFromGlobalQuaternionVector(const int&                       lid,
                                                              Teuchos::RCP<Epetra_MultiVector> quaternionvec);
-  
+
   //! Decompose vector vec into its parallel and orthogonal contribution with respect to some vector refvec
   void DoVectorDecomposition(LINALG::Matrix<3,1>& vec,
                              LINALG::Matrix<3,1>& parvec,

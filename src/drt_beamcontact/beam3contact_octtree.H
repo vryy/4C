@@ -68,7 +68,7 @@ class Beam3ContactOctTree
     // ! \brief Bounding Box Types available for this search routine
     enum BboxType
     {
-    	none,
+      none,
       axisaligned,
       cyloriented,
       spherical
@@ -133,7 +133,7 @@ class Beam3ContactOctTree
      *  \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
      *  \param bboxlimits (in) limits of the bounding box */
     bool IntersectionSPBB(const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    
+
     /*! \brief comunicate Vector to all participating processors
      *  \param InVec    (in) Source/Input vector
      *  \param OutVec   (in) Target/Output vector
@@ -166,10 +166,10 @@ class Beam3ContactOctTree
 
     //!\brief problem discretization
     DRT::Discretization& discret_;
-    
+
     //!\brief contact discretization
     DRT::Discretization& searchdis_;
-    
+
     //!\brief number of initial nodes
     int basisnodes_;
 
@@ -178,6 +178,9 @@ class Beam3ContactOctTree
 
     //!\brief minimum number of BBs per octant
     int minbboxesinoctant_;
+
+    //!\brief scalar additive extrusion value for bounding boxes (alternative to multiplicative extrusionfactor_)
+    double addextrusionvalue_;
 
     //!\brief scalar factor for diameters
     double extrusionfactor_;

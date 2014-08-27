@@ -1997,6 +1997,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::BEAMCONTACT::boct_aabb,INPAR::BEAMCONTACT::boct_cobb,INPAR::BEAMCONTACT::boct_spbb),
        &beamcontact);
 
+  DoubleParameter("BEAMS_ADDEXTVAL",0.0,"additive extrusion value of the bounding box",&beamcontact);
   DoubleParameter("BEAMS_EXTFAC",1.05,"extrusion factor of the bounding box",&beamcontact);
   DoubleParameter("BEAMS_RADFAC",1.05,"radius extrusion factor of the bounding box",&beamcontact);
   IntParameter("BEAMS_TREEDEPTH",6,"max, tree depth of the octree",&beamcontact);
@@ -2407,8 +2408,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMRASTERPOINTS",3,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied", yesnotuple,yesnovalue,&statmech);
-  // cutoff for random forces, which determines the maximal value
-  DoubleParameter("MAXRANDFORCE",-1.0,"Any (absolute) random force beyond this value will not be used. A new random number will be pulled instead. -1.0 means no bounds.'",&statmech);
+  //time interval in which random numbers are constant
+  DoubleParameter("RANDNUMTIMEINT",-1.0,"Within this time interval the random numbers remain constant. -1.0 means no prescribed time interval.'",&statmech);
+  //cutoff for random forces, which determines the maximal value
+  DoubleParameter("MAXRANDFORCE",-1.0,"Any (absolute) random force beyond this value will not be used. The maximum value will be used. -1.0 means no bounds.'",&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

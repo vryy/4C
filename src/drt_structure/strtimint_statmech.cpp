@@ -319,6 +319,8 @@ int STR::TimIntStatMech::Integrate()
           PTC();
         else if(itertype_==INPAR::STR::soltech_newtonfull)
           NewtonFull();
+        else if(itertype_==INPAR::STR::soltech_newtonls)
+          NewtonLS();
         else
           dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
       }
@@ -1602,6 +1604,11 @@ void STR::TimIntStatMech::BeamContactPenalty()
     PTC();
   else if(itertype_==INPAR::STR::soltech_newtonfull)
     NewtonFull();
+  else if(itertype_==INPAR::STR::soltech_newtonls)
+  {
+    NewtonLS();
+    ConvergenceStatusUpdate(Converged());
+  }
   else
     dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
 
@@ -1641,6 +1648,8 @@ void STR::TimIntStatMech::BeamContactAugLag()
       PTC();
     else if(itertype_==INPAR::STR::soltech_newtonfull)
       NewtonFull();
+    else if(itertype_==INPAR::STR::soltech_newtonls)
+      NewtonLS();
     else
       dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
 
@@ -1717,8 +1726,11 @@ void STR::TimIntStatMech::StatMechPrepareStep()
     //save relevant class variables at the beginning of this time step
     statmechman_->WriteConv(beamcman_);
 
+    double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
+    int randnumupdatestep = static_cast<int>( (timen_-(*dt_)[0]) / randnumtimeinc + 1.0e-8);
+
     //seed random generators of statmechman_ to generate the same random numbers even if the simulation was interrupted by a restart
-    statmechman_->SeedRandomGenerators(step_);
+    statmechman_->SeedRandomGenerators(step_, randnumupdatestep);
 
     if(!discret_->Comm().MyPID() && printscreen_)
     {
@@ -1753,7 +1765,15 @@ void STR::TimIntStatMech::StatMechUpdate()
     randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_,true) );
     /*pay attention: for a constant predictor an incremental velocity update is necessary, which has been deleted out of the code in oder to simplify it*/
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
-    statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
+    double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
+    if(randnumtimeinc==-1.0)
+    {
+      statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
+    }
+    else
+    {
+      statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / randnumtimeinc ,0.5));
+    }
   }
 
   return;

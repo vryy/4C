@@ -40,17 +40,25 @@ Maintainer: Kei Müller
  | method at a certain point in the program always the same number       |
  | whenever the program is used                               cyron 11/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
+void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter, const int seedparameter2)
 {
   //integer for seeding all random generators
   int seedvariable = 0;
+
+  Teuchos::ParameterList statmechparams = GetStatMechParams();
+  double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
 
   /*if input flag FIXEDSEED == YES: use same random numbers in each program start;
    *to this end compute seedvariable from given parameter FIXEDSEED and some other
    *deterministic parameter seedparameter given to this method at runtime*/
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FIXEDSEED"))
   {
-    seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_->Comm().MyPID() + 1);
+    //Decide if random numbers should change in every time step...
+    if(randnumtimeinc==-1.0)
+      seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_->Comm().MyPID() + 1);
+    //...or not before a prescribed interval RANDNUMTIMEINT
+    else
+      seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter2)*(discret_->Comm().MyPID() + 1);
 
     randomnumbergen_.seed((unsigned int)seedvariable);
   }
