@@ -64,8 +64,6 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
         DRT::Node* fluidnode = sourcedis->lRowNode(i);
         targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
       }
-      else
-        dserror("Source node should be available in target rownodeset\n");
     }
   }
   else
