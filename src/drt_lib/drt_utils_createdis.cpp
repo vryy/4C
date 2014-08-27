@@ -64,6 +64,8 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
         DRT::Node* fluidnode = sourcedis->lRowNode(i);
         targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
       }
+      else
+        dserror("Source node should be available in target rownodeset\n");
     }
   }
   else
@@ -207,8 +209,8 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
       dserror("NodeColMaps of source and target discretization are different!");
     if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
       dserror("ElementRowMaps of source and target discretization are different!");
-    if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
-      dserror("ElementRowMaps of source and target discretization are different!");
+    if (not sourcedis->ElementColMap()->SameAs(*(targetdis->ElementColMap())))
+      dserror("ElementColMaps of source and target discretization are different!");
   }
 
   // all done ;-)

@@ -28,6 +28,7 @@ Maintainer: Sudhakar
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
@@ -185,8 +186,8 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
   std::vector<DRT::Condition*> linecond;
   discret_->GetCondition( "ALEDirichlet", linecond );
 
-  /*if( linecond.size() == 0 )
-    dserror("No Dirichlet condition found for this discretization\n");*/
+  if( linecond.size() == 0 )
+    dserror("No Dirichlet condition found for this discretization\n");
 
   for(unsigned i=0;i<linecond.size();i++)
   {
@@ -779,8 +780,8 @@ DRT::Node * DRT::CRACK::PropagateCrack::findAttachedNode( DRT::Node * neigh, DRT
   DRT::Element** ElementsPtr = neigh->Elements();
   int NumElement = neigh->NumElement();
 
-  /*if( NumElement > 4 )
-    dserror( "For Hex8 elements, the crack point should have max four elements attached to it\n" );*/
+  if( NumElement > 4 )
+    dserror( "For Hex8 elements, the crack point should have max four elements attached to it\n" );
 
   bool foundele = false;
 
@@ -2248,6 +2249,11 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
   return newTip;
 }
 
+/*---------------------------------------------------------------------------------------------------*
+ * Procedure to find new crack tip nodes. In addition, this also decides
+ * whether to split the HEX into two, and whether ALE step is                               sudhakar 08/14
+ * mandatory
+ *---------------------------------------------------------------------------------------------------*/
 std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
 {
   moveNodes_ = true;
@@ -2262,6 +2268,10 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
   {
     int tipid = tipnodes_[tip];
     int gnewtip = 0, lnewtip = 0;
+
+    int lis_split=0, gis_split=0;       // is any hex is split at this crack tip
+    int lspl_node_id=0, gspl_node_id=0; // node other than the tip at which it splits
+    int lspl_ele_id=0, gspl_ele_id=0;   // Id of HEX element that is split
 
     if( discret_->HaveGlobalNode( tipid ) )
     {
@@ -2416,7 +2426,10 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
                 lnewtip = node1->Id();
 
                 DoHexSplit_ = true;
-                SplitEleData( Element->Id(), node1->Id() );
+                lis_split = 1;
+                lspl_node_id = node1->Id();
+                lspl_ele_id = Element->Id();
+                //SplitEleData( Element->Id(), node1->Id() );
 
                 double tot_ang = fabs( angle1 - angle2 );
                 std::vector<double> disp_bc(3);
@@ -2425,11 +2438,13 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
                   disp_bc[dim] = ( ratio * disp2[dim] + (1.0-ratio) * disp1[dim]) - node1_cord[dim];
                 tip_bc_disp_[node1->Id()] = disp_bc;
 
+                //all_split_ele_ids_.insert( Element->Id() );
+
                 break;
               }
             }
 
-            else if( fabs( angle2 ) < TOL_DIAG_NODE and ( node2->Id() != possible1->Id() and node2->Id() != possible2->Id() ))
+            if( fabs( angle2 ) < TOL_DIAG_NODE and ( node2->Id() != possible1->Id() and node2->Id() != possible2->Id() ))
             {
               if( (angle1 < 0.0 and angle2 > 0.0 ) or
                 (angle1 > 0.0 and angle2 < 0.0 ) )
@@ -2438,7 +2453,10 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
                 lnewtip = node2->Id();
 
                 DoHexSplit_ = true;
-                SplitEleData( Element->Id(), node2->Id() );
+                lis_split = 1;
+                lspl_node_id = node2->Id();
+                lspl_ele_id = Element->Id();
+                //SplitEleData( Element->Id(), node2->Id() );
 
                 double tot_ang = fabs( angle1 - angle2 );
                 std::vector<double> disp_bc(3);
@@ -2447,12 +2465,14 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
                   disp_bc[dim] = ( ratio * disp1[dim] + (1.0-ratio) * disp2[dim] ) - node2_cord[dim];
                 tip_bc_disp_[node2->Id()] = disp_bc;
 
+                //all_split_ele_ids_.insert( Element->Id() );
+
                 break;
               }
             }
 
-            else if( (angle1 < 0.0 and angle2 > 0.0 ) or
-                   (angle1 > 0.0 and angle2 < 0.0 ) )
+            if( (angle1 < 0.0 and angle2 > 0.0 ) or
+                (angle1 > 0.0 and angle2 < 0.0 ) )
             {
               std::string whichnode = "";
 
@@ -2528,6 +2548,18 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
 
     comm_.SumAll( &lnewtip, &gnewtip, 1 );
     oldnew_tip[tipid] = gnewtip;
+
+    // Generate data for HEX elements that has to be split
+    // It is mandatory to have this data redundant on all processors to make
+    // sure that new elements get identical Ids on all proc.
+    // Also make sure all proc that has this element perform the splitting
+    comm_.SumAll( &lis_split, &gis_split, 1 );
+    if( gis_split > 0 )
+    {
+      comm_.SumAll( &lspl_ele_id, &gspl_ele_id, 1 );
+      comm_.SumAll( &lspl_node_id, &gspl_node_id, 1 );
+      SplitEleData( gspl_ele_id, gspl_node_id );
+    }
   }
 
 
@@ -2852,8 +2884,8 @@ void DRT::CRACK::PropagateCrack::Perform_ALE_Step()
 
 
     ALE_line_nodes_ = ale.getLineDirichNodes();
-    /*if( ( step_ == 1 ) and ALE_line_nodes_.size() == 0 )
-      dserror( "No Line Dirichlet found on ALE discretization\n" );*/
+    if( ( step_ == 1 ) and ALE_line_nodes_.size() == 0 )
+      dserror( "No Line Dirichlet found on ALE discretization\n" );
 
     ale.clearALE_discret();
   }
@@ -2989,6 +3021,9 @@ void DRT::CRACK::PropagateCrack::analyzeAndCleanDiscretization()
   step_++;
 }
 
+/*-------------------------------------------------------------------------------------------------*
+ * Write discretization with nodal Ids for debugging reasons                               sudhakar 06/14
+ *-------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::PropagateCrack::WriteNodesDebug()
 {
   std::ofstream f;
@@ -3037,6 +3072,9 @@ void DRT::CRACK::PropagateCrack::WriteNodesDebug()
   dserror("done");
 }
 
+/*---------------------------------------------------------------------------------------------------------*
+ * Store all data that is necessary to split a HEX into WEDGE elements                           sudhakar 07/14
+ *---------------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::PropagateCrack::SplitEleData( std::map<int,Teuchos::RCP<DRT::Element> >& zele,
                                                int add_id )
 {
@@ -3061,23 +3099,22 @@ void DRT::CRACK::PropagateCrack::SplitEleData( std::map<int,Teuchos::RCP<DRT::El
   SplitEleData( ori_ele_id, add_id );
 }
 
+/*---------------------------------------------------------------------------------------------------------*
+ * Store all data that is necessary to split a HEX into WEDGE elements                           sudhakar 07/14
+ *---------------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::PropagateCrack::SplitEleData( int ele_id, int node_id )
 {
   bool add_data = false;
 
   // check if already a structure created for this element
   // if so, just add this node id to it
-  if( all_split_ele_.size() > 0 )
+  if( all_split_ele_.find( ele_id ) != all_split_ele_.end() )
   {
-    for( unsigned i=0; i<all_split_ele_.size(); i++ )
+    splitThisEle_& spl = all_split_ele_[ele_id];
+    if( spl.element_id_ == ele_id )
     {
-      splitThisEle_& spl = all_split_ele_[i];
-      if( spl.element_id_ == ele_id )
-      {
-        (spl.node_ids_ele_).push_back( node_id );
-        add_data = true;
-        break;
-      }
+      (spl.node_ids_ele_).push_back( node_id );
+      add_data = true;
     }
   }
 
@@ -3087,10 +3124,31 @@ void DRT::CRACK::PropagateCrack::SplitEleData( int ele_id, int node_id )
     splitThisEle_ spl;
     spl.element_id_ = ele_id;
     (spl.node_ids_ele_).push_back( node_id );
-    all_split_ele_.push_back( spl );
+    all_split_ele_[ele_id] = spl;
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------*
+ * Loop over all HEX elements to be split, perform splitting operations                          sudhakar 08/14
+ * and add them to discretization
+ *
+ *                   ---------------*
+ *                 /|              / |                     o tip nodes
+ *                / |             /  |                     * split_nodes
+ *               |---------------*   |                   === crack surface
+ *               |  |            |   |
+ *               |  |            |   |
+ *               |  |            |   |
+ *               |  o------------|--/
+ *               | /             | /
+ *               |/              |/
+ *      =========o---------------
+ *
+ *  only split_nodes are stored into all_split_ele_ data structure
+ *  we can get tip nodes from the element details itself
+ *
+ *  HEX is split into two WEDGEs by cutting along the diagonal given by these nodes
+ *---------------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::PropagateCrack::split_All_HEX_Elements()
 {
   if( all_split_ele_.size() == 0 )
@@ -3098,21 +3156,23 @@ void DRT::CRACK::PropagateCrack::split_All_HEX_Elements()
 
   SplitHexIntoTwoWedges split( discret_ );
 
-  for( unsigned eleno = 0; eleno < all_split_ele_.size(); eleno++ )
+  for( std::map<int,splitThisEle_>::iterator it = all_split_ele_.begin(); it != all_split_ele_.end(); it++ )
   {
-    splitThisEle_ spl = all_split_ele_[eleno];
+    splitThisEle_ spl = it->second;
     int eleid = spl.element_id_;
     std::vector<int> split_nodes = spl.node_ids_ele_;
+
+    // There should be exactly 2 nodes along which to split this ele
     if( split_nodes.size() != 2 )
       dserror( "There should only be two split nodes for HEX elements" );
 
-    std::map<int,int> startnewid_map;
 
     if( discret_->HaveGlobalElement( eleid ) )
     {
       DRT::Element* ele = discret_->gElement( eleid );
       const int* elenodes = ele->NodeIds();
 
+      // get tip nodes from element details
       std::vector<int> tip_ids;
       for( int i=0; i<ele->NumNode(); i++ )
       {
@@ -3123,27 +3183,37 @@ void DRT::CRACK::PropagateCrack::split_All_HEX_Elements()
       if( tip_ids.size() != 2 )
         dserror( "Assuming HEX element, there should be only 2 tip nodes\n" );
 
-      split.DoAllSplittingOperations( ele, tip_ids, split_nodes, ele->Id(), startNewEleId_++ );
-
-      startnewid_map[myrank_] = startNewEleId_;
+      split.DoAllSplittingOperations( ele, tip_ids, split_nodes, ele->Id(), startNewEleId_ );
     }
 
-    // the following procedure make sure that an element created on different processor gets same id
-    // We get new element id created on each processor, and the maximum value among all
-    // processors are stored as the new startNewEleId_
-    /*startNewEleId_ = 0;
-    LINALG::GatherAll( startnewid_map, comm_ );
-    std::cout<<"---gathered all-----\n";
-    for( std::map<int,int>::iterator startit = startnewid_map.begin(); startit != startnewid_map.end(); startit++ )
-    {
-      int val = startit->second;
-      std::cout<<"val = "<<val<<"\n";
-      if( val > startNewEleId_ )
-        startNewEleId_ = val;
-    }*/
+    // it is necessary to have same value on all proc to have idential Ids of same element
+    // on all proc
+    startNewEleId_++;
 
     discret_->FillComplete( false, true, false );
   }
+
+
+  // elerowmap, elecolmap, noderowmap and nodecolmap are in some kind of relation in BACI
+  // After adding a new element, this is disturbed
+  // To restore them, the following operations are performed.
+  // Othewise, we get problems when creating ALE discretization, where this
+  // compatible check is performed
+  const Epetra_Map * noderowmap = discret_->NodeRowMap();
+  const Epetra_Map * nodecolmap = discret_->NodeColMap();
+
+  Teuchos::RCP< Epetra_Map > elerowmap;
+  Teuchos::RCP< Epetra_Map > elecolmap;
+
+  // now we have all elements in a linear map roweles
+  // build resonable maps for elements from the
+  // already valid and final node maps
+  discret_->BuildElementRowColumn(*noderowmap, *nodecolmap, elerowmap, elecolmap);
+  // we can now export elements to resonable row element distribution
+  discret_->ExportRowElements(*elerowmap);
+  // export to the column map / create ghosting of elements
+  discret_->ExportColumnElements(*elecolmap);
+  discret_->FillComplete();
 }
 
 

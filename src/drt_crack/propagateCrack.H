@@ -198,11 +198,8 @@ private:
   };
 
   //! Collection of all HEX elements that must be split
-  std::vector<splitThisEle_> all_split_ele_;
-
-  //! Ids of all HEX elements that should be split into WEDGEs
-  // Necessary to maintain unique element id for new elements across all processors
-  std::set<int> all_split_ele_ids_;
+  //std::map<int,splitThisEle_> all_split_ele_;
+  std::map<int,splitThisEle_> all_split_ele_;
 
   //! underlying structural discretization
   Teuchos::RCP<DRT::Discretization> discret_;

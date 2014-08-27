@@ -38,8 +38,19 @@ DRT::CRACK::aleCrack::aleCrack( Teuchos::RCP<DRT::Discretization> dis )
   if( aledis->NumGlobalElements() == 0 )
     dserror( "No elements found in ALE discretization" );
 
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale
-        = Teuchos::rcp(new ALE::AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), DRT::Problem::Instance()->GetDis("ale")));
+  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::null;
+
+  if( DRT::Problem::Instance()->ProblemType() == prb_crack )
+  {
+    ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(),
+        DRT::Problem::Instance()->GetDis("ale")));
+  }
+  else if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),
+        DRT::Problem::Instance()->GetDis("ale")));
+  }
+
   ale_ = ale->AleFieldrcp();
 
   myrank_ = structdis_->Comm().MyPID();
