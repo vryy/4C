@@ -172,6 +172,9 @@ private:
 
   /// protocol of known and unknown section names
   std::map<std::string,bool> knownsections_;
+
+  /// a cache of the bounding boxes of each discretization
+  std::map<std::string,std::vector<double> > cached_bounding_boxes_;
 };
 
 

@@ -5,6 +5,8 @@
 
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
+#include "drt_domainreader.H"
+#include "../drt_inpar/inpar.H"
 
 namespace DRT
 {
@@ -35,6 +37,41 @@ public:
     \param er (i) a reader of one discretization that uses (a fraction of) our nodes
    */
   void AddElementReader(Teuchos::RCP<ElementReader> er) { ereader_.push_back(er); }
+
+  /*!
+   * \brief Adds the selected element/domain/file reader to this nodereader
+   *
+   * \param dir            [in] This discretization will be passed on
+   * \param reader         [in] This reader will be passed on
+   * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
+   * \param elementtypes   [in] This set of types will be passed on
+   * \param geometrysource [in] selects which reader will be created
+   * \param geofilepath    [in] path to the file for the file reader (not used for the others)
+   */
+  void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
+      const DRT::INPUT::DatFileReader& reader,
+      const std::string&               sectionname,
+      const std::set<std::string>&     elementtypes,
+      const INPAR::GeometryType        geometrysource,
+      const std::string*               geofilepath);
+
+  /*!
+   * \brief Adds the selected element/domain/file reader to this nodereader
+   *
+   * This is a version without specific elementtypes. It just calls the full
+   * version with a dummy set.
+   *
+   * \param dir            [in] This discretization will be passed on
+   * \param reader         [in] This reader will be passed on
+   * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
+   * \param geometrysource [in] selects which reader will be created
+   * \param geofilepath    [in] path to the file for the file reader (not used for the others)
+   */
+  void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
+      const DRT::INPUT::DatFileReader& reader,
+      const std::string&               sectionname,
+      const INPAR::GeometryType        geometrysource,
+      const std::string*               geofilepath);
 
   /// do the actual reading
   /*!
@@ -73,6 +110,9 @@ private:
 
   /// my element readers
   std::vector<Teuchos::RCP<ElementReader> > ereader_;
+
+  /// my domain readers
+  std::vector<Teuchos::RCP<DomainReader> > dreader_;
 };
 
 }

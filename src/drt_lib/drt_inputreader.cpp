@@ -22,6 +22,7 @@ Maintainer: Martin Kronbichler
 #include "standardtypes_cpp.H"
 #include "drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
 
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
@@ -38,6 +39,10 @@ Maintainer: Martin Kronbichler
 #include <fenv.h>
 #endif /* TRAP_FE */
 
+#ifdef TOL_N
+#undef TOL_N
+#endif
+#define TOL_N 1.0e-14
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -281,15 +286,137 @@ void DatFileReader::ReadDesign(
       int nodeid;
       std::string nname;
       std::string dname;
+      std::string disname;
+      int dir[] = {0, 0, 0};
 
       std::istringstream stream(l);
-      stream >> nname >> nodeid >> dname >> dobj;
-      if (not stream or nname!="NODE" or dname.substr(0,name.length())!=name)
+      stream >> nname;
+      if (not stream)
         dserror("Illegal line in section '%s': '%s'",marker.c_str(),l);
 
-      topology[dobj-1].insert(nodeid-1);
-    }
+      if (nname == "NODE") // plain old reading of the design nodes from the .dat-file
+      {
+        stream >> nodeid >> dname >> dobj;
+        topology[dobj-1].insert(nodeid-1);
+      }
+      else // fancy specification of the design nodes by specifying min or max of the domain
+      {    // works best on rectangular domains ;)
+        if (nname == "CORNER" && name == "DNODE")
+        {
+          std::string  tmp;
+          stream >> disname;
+          for (int i = 0; i < 3; ++i)
+          {
+            stream >> tmp;
+            if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
+              dserror("Illegal design node definition.");
+            dir[tmp[0]-'x'] = (tmp[1] == '+')?1:-1;
+          }
+          stream >> dname >> dobj;
+        }
+        else if (nname == "EDGE" && name == "DLINE")
+        {
+          std::string  tmp;
+          stream >> disname;
+          for (int i = 0; i < 2; ++i)
+          {
+            stream >> tmp;
+            if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
+              dserror("Illegal design node definition.");
+            dir[tmp[0]-'x'] = (tmp[1] == '+')?1:-1;
+          }
+          stream >> dname >> dobj;
+        }
+        else if (nname == "SIDE" && name == "DSURF")
+        {
+          std::string  tmp;
+          stream >> disname;
+          stream >> tmp;
+          if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
+            dserror("Illegal design node definition.");
+          dir[tmp[0]-'x'] = (tmp[1] == '+')?1:-1;
+          stream >> dname >> dobj;
+        }
+        else if (nname == "VOLUME" && name == "DVOL")
+        {
+          stream >> disname;
+          stream >> dname >> dobj;
+        }
+        else
+        {
+          dserror("Illegal line in section '%s': '%s'", marker.c_str(), l);
+        }
 
+        Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis(disname);
+
+        // determine the active discretizations bounding box
+        double bbox[6];
+        std::map<std::string,std::vector<double> >::const_iterator foundit = cached_bounding_boxes_.find(disname);
+        if (foundit != cached_bounding_boxes_.end())
+        {
+          for (size_t i = 0; i < sizeof(bbox)/sizeof(bbox[0]); ++i)
+            bbox[i] = foundit->second[i];
+        }
+        else
+        {
+          double lbbox[] = { std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),
+                             std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
+                            -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+          for (int lid = 0; lid < actdis->NumMyRowNodes(); ++lid)
+          {
+            const Node*   node  = actdis->lRowNode(lid);
+            const double* coord = node->X();
+            for (size_t i = 0; i < 3; ++i)
+            {
+              lbbox[i+0] = std::min(lbbox[i+0], coord[i]);
+              lbbox[i+3] = std::max(lbbox[i+3], coord[i]);
+            }
+          }
+          comm_->MinAll(lbbox, bbox, 3);
+          comm_->MaxAll(&(lbbox[3]), &(bbox[3]), 3);
+          cached_bounding_boxes_[disname].assign(bbox,bbox+6);
+        }
+
+        // manipulate the bounding box according to the specified condition
+        for (size_t i = 0; i < 3; ++i)
+        {
+          switch (dir[i])
+          {
+          case 0:
+            bbox[i+0] =  std::numeric_limits<double>::max();
+            bbox[i+3] = -std::numeric_limits<double>::max();
+            break;
+          case -1:
+            bbox[i]  += TOL_N;
+            bbox[i+3] = std::numeric_limits<double>::max();
+            break;
+          case 1:
+            bbox[i]    = -std::numeric_limits<double>::max();
+            bbox[i+3] -= TOL_N;
+            break;
+          default:
+            dserror("Invalid BC specification");
+          }
+        }
+
+        // collect all nodes which are outside the adapted bounding box
+        std::set<int> dnodes;
+        for (int lid = 0; lid < actdis->NumMyRowNodes(); ++lid)
+        {
+          const Node*   node  = actdis->lRowNode(lid);
+          const double* coord = node->X();
+          if (!((coord[0] > bbox[0] && coord[0] < bbox[3]) ||
+                (coord[1] > bbox[1] && coord[1] < bbox[4]) ||
+                (coord[2] > bbox[2] && coord[2] < bbox[5])))
+            dnodes.insert(node->Id());
+        }
+        LINALG::GatherAll(dnodes, *comm_);
+        topology[dobj-1].insert(dnodes.begin(), dnodes.end());
+      }
+
+      if (dname.substr(0,name.length())!=name)
+        dserror("Illegal line in section '%s': '%s'\n%s found, where %s was expected",marker.c_str(),l,dname.substr(0,name.length()).c_str(),name.c_str());
+    }
     // copy all design object entries
     for (std::map<int,std::set<int> >::iterator i=topology.begin();
          i!=topology.end();
@@ -358,7 +485,7 @@ void DatFileReader::ReadKnots(
   {
     if (!MyOutputFlag())
     {
-      std::cout << "Reading knot vectors for " << name << " discretization :\n";
+      IO::cout << "Reading knot vectors for " << name << " discretization :\n";
       fflush(stdout);
     }
   }
@@ -717,7 +844,7 @@ void DatFileReader::ReadKnots(
   {
     if (!MyOutputFlag())
     {
-      std::cout << " in...." << time.ElapsedTime() << " secs\n";
+      IO::cout << " in...." << time.ElapsedTime() << " secs\n";
 
       time.ResetStartTime();
       fflush(stdout);
@@ -819,13 +946,20 @@ void DatFileReader::ReadDat()
 
   exclude.push_back("--NODE COORDS");
   exclude.push_back("--STRUCTURE ELEMENTS");
+  exclude.push_back("--STRUCTURE DOMAIN");
   exclude.push_back("--FLUID ELEMENTS");
+  exclude.push_back("--FLUID DOMAIN");
   exclude.push_back("--ALE ELEMENTS");
+  exclude.push_back("--ALE DOMAIN");
   exclude.push_back("--ARTERY ELEMENTS");
   exclude.push_back("--REDUCED D AIRWAYS ELEMENTS");
   exclude.push_back("--TRANSPORT ELEMENTS");
+  exclude.push_back("--TRANSPORT DOMAIN");
   exclude.push_back("--THERMO ELEMENTS");
+  exclude.push_back("--THERMO DOMAIN");
   exclude.push_back("--ACOUSTIC ELEMENTS");
+  exclude.push_back("--ACOUSTIC DOMAIN");
+
 
   int arraysize = 0;
 
@@ -947,17 +1081,12 @@ void DatFileReader::ReadDat()
       lines_.reserve(numrows_+1);
     }
 
-#ifdef PARALLEL
-
     // There are no char based functions available! Do it by hand!
     //comm_->Broadcast(&inputfile_[0],arraysize,0);
 
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm_);
 
     MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
-#else
-    dserror("How did you get here? Go away!");
-#endif
 
     /* We have not yet set the row pointers on procs > 0. So do it now. */
     if (comm_->MyPID()>0)
@@ -976,7 +1105,6 @@ void DatFileReader::ReadDat()
                 numrows_+1, lines_.size());
     }
 
-#ifdef PARALLEL
     // distribute excluded section positions
     for (std::vector<int>::size_type i=0; i<exclude.size(); ++i)
     {
@@ -992,7 +1120,6 @@ void DatFileReader::ReadDat()
       //comm_->Broadcast(&p.second,1,0);
       MPI_Bcast(&p.second,1,MPI_INT,0,mpicomm.GetMpiComm());
     }
-#endif
   }
 
   // Now finally find the section names. We have to do this on all
@@ -1104,17 +1231,15 @@ bool DatFileReader::PrintUnknownSections()
     // now it's time to create noise on the screen
     if ((printout == true) and (Comm()->MyPID()==0))
     {
-      std::cout<<"\nERROR!"<<"\n--------"<<
+      IO::cout<<"\nERROR!"<<"\n--------"<<
           "\nThe following input file sections remained unused (obsolete or typo?):"
-          <<std::endl;
+          << IO::endl;
       for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
       {
         if (iter->second == false)
-          std::cout<<iter->first<<std::endl;
+          IO::cout << iter->first << IO::endl;
       }
-      std::cout<<std::endl;
-      // empty stream buffer: print everything to cout NOW!
-      std::cout.flush();
+      IO::cout << IO::endl;
     }
 
   // we wait till all procs are here. Otherwise a hang up might occur where

@@ -550,17 +550,26 @@ void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::LineDefinition::Read(std::istream& stream)
 {
+  return Read(stream, 0);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::INPUT::LineDefinition::Read(std::istream& stream, const std::string* skipname)
+{
   readtailcomponents_.clear();
   for (unsigned i=0; i<components_.size(); ++i)
   {
-    if (not components_[i]->Read(*this,stream))
+    if ( !skipname || !components_[i]->IsNamed(*skipname))
     {
-      return false;
+      if (not components_[i]->Read(*this,stream))
+      {
+        return false;
+      }
     }
   }
 

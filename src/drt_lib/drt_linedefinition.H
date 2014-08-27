@@ -159,6 +159,15 @@ namespace INPUT
      */
     bool Read(std::istream& stream);
 
+    /// try to read this line from the stream, but skip the component named name
+    /*!
+      If reading succeeds, the LineDefinition contains the values of the
+      line. Otherwise, the values are undefined and should not be used.
+
+      @return true on success
+     */
+    bool Read(std::istream& stream, const std::string* name);
+
     /// tell if there is a named component with the given name
     bool HaveNamed(std::string name);
 

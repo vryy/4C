@@ -20,43 +20,44 @@ Maintainer: Martin Kronbichler
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem_enums.H"
-#include "../drt_inpar/inpar_meshfree.H"
-#include "../drt_inpar/inpar_ale.H"
-#include "../drt_inpar/inpar_artnet.H"
-#include "../drt_inpar/inpar_solver.H"
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_cut.H"
-#include "../drt_inpar/inpar_combust.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_statmech.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_topopt.H"
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_potential.H"
-#include "../drt_inpar/inpar_problemtype.H"
-#include "../drt_inpar/inpar_thermo.H"
-#include "../drt_inpar/inpar_tsi.H"
-#include "../drt_inpar/inpar_turbulence.H"
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_inpar/inpar_invanalysis.H"
-#include "../drt_inpar/inpar_statinvanalysis.H"
-#include "../drt_inpar/inpar_searchtree.H"
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_mlmc.H"
-#include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_inpar/inpar_poroscatra.H"
-#include "../drt_inpar/inpar_immersed.H"
-#include "../drt_inpar/inpar_fpsi.H"
-#include "../drt_inpar/inpar_ssi.H"
-#include "../drt_inpar/inpar_cavitation.H"
-#include "../drt_inpar/inpar_crack.H"
-#include "../drt_inpar/inpar_levelset.H"
-#include "../drt_inpar/inpar_wear.H"
-#include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_acou.H"
-#include "../drt_inpar/inpar_volmortar.H"
+#include "inpar.H"
+#include "inpar_meshfree.H"
+#include "inpar_ale.H"
+#include "inpar_artnet.H"
+#include "inpar_solver.H"
+#include "inpar_fluid.H"
+#include "inpar_cut.H"
+#include "inpar_combust.H"
+#include "inpar_mortar.H"
+#include "inpar_contact.H"
+#include "inpar_statmech.H"
+#include "inpar_fsi.H"
+#include "inpar_topopt.H"
+#include "inpar_scatra.H"
+#include "inpar_structure.H"
+#include "inpar_potential.H"
+#include "inpar_problemtype.H"
+#include "inpar_thermo.H"
+#include "inpar_tsi.H"
+#include "inpar_turbulence.H"
+#include "inpar_elch.H"
+#include "inpar_invanalysis.H"
+#include "inpar_statinvanalysis.H"
+#include "inpar_searchtree.H"
+#include "inpar_xfem.H"
+#include "inpar_mlmc.H"
+#include "inpar_poroelast.H"
+#include "inpar_poroscatra.H"
+#include "inpar_immersed.H"
+#include "inpar_fpsi.H"
+#include "inpar_ssi.H"
+#include "inpar_cavitation.H"
+#include "inpar_crack.H"
+#include "inpar_levelset.H"
+#include "inpar_wear.H"
+#include "inpar_beamcontact.H"
+#include "inpar_acou.H"
+#include "inpar_volmortar.H"
 
 #include <AztecOO.h>
 
@@ -86,60 +87,60 @@ void PrintHelpMessage()
   char baci_build[] = "baci-release";
 #endif
 
-  std::cout << "NAME" << std::endl
-            << "\t" << baci_build << " - simulate just about anything" << std::endl
-            << std::endl
-            << "SYNOPSIS" << std::endl
-            << "\t" << baci_build << " [-h] [--help] [-p] [--parameters] [-d] [--datfile] [-ngroup=x] [-glayout=a,b,c,...] [-nptype=parallelism_type]" << std::endl
-            << "\t\tdat_name output_name [restart=y] [restartfrom=restart_file_name] [ dat_name0 output_name0 [restart=y] [restartfrom=restart_file_name] ... ] [--interactive]" << std::endl
-            << std::endl
-            << "DESCRIPTION" << std::endl
-            << "\tThe am besten simulation tool in the world." << std::endl
-            << std::endl
-            << "OPTIONS" << std::endl
-            << "\t--help or -h" << std::endl
-            << "\t\tPrint this message." << std::endl
-            << std::endl
-            << "\t--parameters or -p" << std::endl
-            << "\t\tPrint a list of all available parameters for use in a dat_file." << std::endl
-            << std::endl
-            << "\t--datfile or -d" << std::endl
-            << "\t\tPrint example dat_file with all available parameters." << std::endl
-            << std::endl
-            << "\t-ngroup=x" << std::endl
-            << "\t\tSpecify the number of groups for nested parallelism. (default: 1)" << std::endl
-            << std::endl
-            << "\t-glayout=a,b,c,..." << std::endl
-            << "\t\tSpecify the number of processors per group. Argument \"-ngroup\" is mandatory and must be preceding. (default: equal distribution)" << std::endl
-            << std::endl
-            << "\t-nptype=parallelism_type" << std::endl
-            << "\t\tAvailable options: \"separateDatFiles\", \"everyGroupReadDatFile\" and \"copyDatFile\"; Must be set if \"-ngroup\" > 1." << std::endl
-            << std::endl
-            << "\tdat_name" << std::endl
-            << "\t\tName of the input file (Usually *.dat)" << std::endl
-            << std::endl
-            << "\toutput_name" << std::endl
-            << "\t\tPrefix of your output files." << std::endl
-            << std::endl
-            << "\trestart=y" << std::endl
-            << "\t\tRestart the simulation from step y. It always refers to the previously defined dat_name and output_name. (default: 0 or from dat_name)" << std::endl
-            << std::endl
-            << "\trestartfrom=restart_file_name" << std::endl
-            << "\t\tRestart the simulation from the files prefixed with restart_file_name. (default: output_name)" << std::endl
-            << std::endl
-            << "\t--interactive" << std::endl
-            << "\t\tBaci waits at the beginning for keyboard input. Helpful for parallel debugging when attaching to a single job. Must be specified at the end in the command line." << std::endl
-            << std::endl
-            << "SEE ALSO" << std::endl
-            << "\tguides/reports/global_report.pdf" << std::endl
-            << std::endl
-            << "BUGS" << std::endl
-            << "\t100% bug free since 1964." << std::endl
-            << std::endl
-            << "TIPS" << std::endl
-            << "\tCan be obtain from a friendly colleague." << std::endl
-            << std::endl
-            << "\tAlso, espresso may be donated to room MW1236." << std::endl;
+  std::cout << "NAME\n"
+            << "\t" << baci_build << " - simulate just about anything\n"
+            << "\n"
+            << "SYNOPSIS\n"
+            << "\t" << baci_build << " [-h] [--help] [-p] [--parameters] [-d] [--datfile] [-ngroup=x] [-glayout=a,b,c,...] [-nptype=parallelism_type]\n"
+            << "\t\tdat_name output_name [restart=y] [restartfrom=restart_file_name] [ dat_name0 output_name0 [restart=y] [restartfrom=restart_file_name] ... ] [--interactive]\n"
+            << "\n"
+            << "DESCRIPTION\n"
+            << "\tThe am besten simulation tool in the world.\n"
+            << "\n"
+            << "OPTIONS\n"
+            << "\t--help or -h\n"
+            << "\t\tPrint this message.\n"
+            << "\n"
+            << "\t--parameters or -p\n"
+            << "\t\tPrint a list of all available parameters for use in a dat_file.\n"
+            << "\n"
+            << "\t--datfile or -d\n"
+            << "\t\tPrint example dat_file with all available parameters.\n"
+            << "\n"
+            << "\t-ngroup=x\n"
+            << "\t\tSpecify the number of groups for nested parallelism. (default: 1)\n"
+            << "\n"
+            << "\t-glayout=a,b,c,...\n"
+            << "\t\tSpecify the number of processors per group. Argument \"-ngroup\" is mandatory and must be preceding. (default: equal distribution)\n"
+            << "\n"
+            << "\t-nptype=parallelism_type\n"
+            << "\t\tAvailable options: \"separateDatFiles\", \"everyGroupReadDatFile\" and \"copyDatFile\"; Must be set if \"-ngroup\" > 1.\n"
+            << "\n"
+            << "\tdat_name\n"
+            << "\t\tName of the input file (Usually *.dat)\n"
+            << "\n"
+            << "\toutput_name\n"
+            << "\t\tPrefix of your output files.\n"
+            << "\n"
+            << "\trestart=y\n"
+            << "\t\tRestart the simulation from step y. It always refers to the previously defined dat_name and output_name. (default: 0 or from dat_name)\n"
+            << "\n"
+            << "\trestartfrom=restart_file_name\n"
+            << "\t\tRestart the simulation from the files prefixed with restart_file_name. (default: output_name)\n"
+            << "\n"
+            << "\t--interactive\n"
+            << "\t\tBaci waits at the beginning for keyboard input. Helpful for parallel debugging when attaching to a single job. Must be specified at the end in the command line.\n"
+            << "\n"
+            << "SEE ALSO\n"
+            << "\tguides/reports/global_report.pdf\n"
+            << "\n"
+            << "BUGS\n"
+            << "\t100% bug free since 1964.\n"
+            << "\n"
+            << "TIPS\n"
+            << "\tCan be obtain from a friendly colleague.\n"
+            << "\n"
+            << "\tAlso, espresso may be donated to room MW1236.\n";
 
   return;
 }
@@ -1422,6 +1423,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // scale of the kernel functions used in surface currents
   DoubleParameter("KERNELSCALE", -1.0, "scale of the kernel function", &statinvp);
+
+  // where the geometry comes from
+  setStringToIntegralParameter<int>(
+    "GEOMETRY","full",
+    "How the geometry is specified",
+    tuple<std::string>(
+      "full",
+      "box",
+      "file"),
+    tuple<int>(
+      INPAR::geometry_full,
+      INPAR::geometry_box,
+      INPAR::geometry_file),
+    &sdyn);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
@@ -3184,6 +3200,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::FLUID::timeint_afgenalpha,
       INPAR::FLUID::timeint_one_step_theta,
       INPAR::FLUID::timeint_bdf2),
+    &fdyn);
+
+  setStringToIntegralParameter<int>(
+    "GEOMETRY","full",
+    "How the geometry is specified",
+    tuple<std::string>(
+      "full",
+      "box",
+      "file"),
+    tuple<int>(
+      INPAR::geometry_full,
+      INPAR::geometry_box,
+      INPAR::geometry_file),
     &fdyn);
 
   setStringToIntegralParameter<int>(

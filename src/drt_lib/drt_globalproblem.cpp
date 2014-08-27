@@ -27,6 +27,7 @@ Maintainer: Martin Kronbichler
 #include "drt_singletondestruction.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
+#include "drt_domainreader.H"
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
 #include "drt_timecurve.H"
@@ -42,6 +43,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
+#include "../drt_inpar/inpar.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -51,7 +53,6 @@ Maintainer: Martin Kronbichler
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
-//#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 // the instances
@@ -537,7 +538,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   Epetra_Time time(*reader.Comm());
   if (reader.Comm()->MyPID()==0)
   {
-    IO::cout << "Read conditions                          in....";
+    IO::cout << "Read/generate conditions                          in....";
     IO::cout.flush();
   }
 
@@ -1149,7 +1150,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("MEFLUID");
     fluidelementtypes.insert("FLUIDHDG");
 
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddAdvancedReader(fluiddis, reader, "FLUID", fluidelementtypes,
+        DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
 
     break;
   }
@@ -1282,7 +1284,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     AddDis("structure", structdis);
 
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
+        DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
+
 
     break;
   }

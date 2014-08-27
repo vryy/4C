@@ -40,7 +40,7 @@ IF(Subversion_SVN_EXECUTABLE)
   # this test seems to be missing in the subversion package
   EXECUTE_PROCESS(COMMAND ${Subversion_SVN_EXECUTABLE} info ${PROJECT_SOURCE_DIR}
     OUTPUT_VARIABLE DUMMY_WC_INFO
-    ERROR_VARIABLE Subversion_svn_info_error  
+    ERROR_VARIABLE Subversion_svn_info_error
     RESULT_VARIABLE Subversion_svn_info_result
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -281,19 +281,19 @@ FIND_PROGRAM(Git_EXECUTABLE git
 MARK_AS_ADVANCED(Git_EXECUTABLE)
 
 IF(Git_EXECUTABLE)
-	EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
-	#MESSAGE(${Trilinos_GIT_VERSION})
-	ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
-	
-	EXEC_PROGRAM(${Git_EXECUTABLE} ${PROJECT_SOURCE_DIR} ARGS "rev-parse HEAD" OUTPUT_VARIABLE Baci_GIT_VERSION )
-	string (REGEX REPLACE "fatal.*$" "" Baci_GIT_VERSION "${Baci_GIT_VERSION}")
-	IF ("${Baci_GIT_VERSION}" STREQUAL "")
-	  ADD_DEFINITIONS( -DBaci_SHA1="Think about using git")
-	ELSE()
-	  ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
-	ENDIF()
+  EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
+  #MESSAGE(${Trilinos_GIT_VERSION})
+  ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
 
-#	ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
+  EXEC_PROGRAM(${Git_EXECUTABLE} ${PROJECT_SOURCE_DIR} ARGS "rev-parse HEAD" OUTPUT_VARIABLE Baci_GIT_VERSION )
+  string (REGEX REPLACE "fatal.*$" "" Baci_GIT_VERSION "${Baci_GIT_VERSION}")
+  IF ("${Baci_GIT_VERSION}" STREQUAL "")
+    ADD_DEFINITIONS( -DBaci_SHA1="Think about using git")
+  ELSE()
+    ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
+  ENDIF()
+
+#  ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
 ENDIF(Git_EXECUTABLE)
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
@@ -313,7 +313,7 @@ if (Boost_FOUND)
   message("Boost libraries: ${Boost_LIBRARIES}")
   message("Boost libraries: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS}) 
+  link_directories(${Boost_LIBRARY_DIRS})
   set(LIBRARIES
     ${Boost_LIBRARIES}
     ${LIBRARIES}
@@ -321,7 +321,7 @@ if (Boost_FOUND)
   # Pass the version to baci
   add_definitions("-DBOOST_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
   add_definitions("-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}")
-  
+
   # check Boost_LIBRARY_DIRS against Boost_INCLUDE_DIRS
   GET_FILENAME_COMPONENT(MYLIBPATH ${Boost_LIBRARY_DIRS} PATH)
   GET_FILENAME_COMPONENT(MYINCLUDEPATH ${Boost_INCLUDE_DIRS} PATH)
@@ -332,8 +332,8 @@ if (Boost_FOUND)
     message("WW Warning: Please consult the CMakeLists.txt maintainer.")
     message("WW ***********************************************************************")
   endif()
-  
-  
+
+
 else()
  message(FATAL_ERROR ${Boost_ERROR_REASON})
 endif()
@@ -350,9 +350,9 @@ if (Trilinos_FOUND)
     ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
-    
+
 # define of which library we are using - for compatibility checks
-#if (Trilinos_VERSION STREQUAL "10.1d") 
+#if (Trilinos_VERSION STREQUAL "10.1d")
 #add_definitions("-DTRILINOS_10_1d")
 #else ()
 #endif ()
@@ -948,7 +948,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_monolithicstructuresplit.cpp
   src/drt_fsi/fsi_fluidfluidmonolithic_structuresplit_nonox.cpp
   src/drt_fsi/fsi_fluidfluidmonolithic_structuresplit.cpp
-  src/drt_fsi/fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp  
+  src/drt_fsi/fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp
   src/drt_fsi/fsi_fluidfluidmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_mortarmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_mortarmonolithic_fluidsplit.cpp
@@ -1265,7 +1265,7 @@ set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/gen_inv_analysis.cpp
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
-)  
+)
 set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/stat_inv_analysis.cpp
   src/drt_structure/str_statinvanalysis.cpp
@@ -1280,16 +1280,16 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/stat_inv_ana_lbfgs.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
   src/drt_inv_analysis/invana_utils.cpp
-)  
+)
 set(OBJS_STATINV_ANALYSIS_LIB
-	src/drt_inv_analysis/smc_particle.cpp
+  src/drt_inv_analysis/smc_particle.cpp
 )
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp
-  src/drt_mlmc/mc_utils.cpp 
+  src/drt_mlmc/mc_utils.cpp
   src/drt_mlmc/mc_mat_par_manager.cpp
   src/drt_mlmc/mc_var_thickness_manager.cpp
-  src/drt_structure/str_mlmc.cpp 
+  src/drt_structure/str_mlmc.cpp
   src/drt_mlmc/randomfield.cpp
   src/drt_mlmc/randomfield_fourier.cpp
   src/drt_mlmc/randomfield_spectral.cpp
@@ -1464,7 +1464,7 @@ set(OBJS_SOLVER
   src/solver/solver_cheapsimplepreconditioner.cpp
   src/solver/solver_preconditionertype.cpp
   src/solver/solver_directsolver.cpp
-  src/solver/solver_krylovsolver.cpp  
+  src/solver/solver_krylovsolver.cpp
   src/solver/solver_pointpreconditioner.cpp
   src/solver/solver_blockpreconditioners.cpp
   src/solver/solver_krylovprojectionpreconditioner.cpp
@@ -1485,7 +1485,7 @@ set(OBJS_SOLVER
   src/solver/muelu/muelu_ContactAFilterFactory.cpp
   src/solver/muelu/muelu_ContactTransferFactory.cpp
   src/solver/muelu/muelu_ContactInfoFactory.cpp
-  src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp 
+  src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp
   src/solver/muelu/muelu_ContactSPAggregationFactory.cpp
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
   src/solver/muelu/MueLu_IterationAFactory.cpp
@@ -1536,6 +1536,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io_control.cpp
   src/drt_io/io_hdf.cpp
   src/drt_io/io_pstream.cpp
+  src/drt_lib/drt_domainreader.cpp
   src/drt_lib/drt_elementreader.cpp
   src/drt_lib/drt_inputreader.cpp
   src/drt_lib/drt_linedefinition.cpp
@@ -1620,8 +1621,8 @@ set(OBJS_DRT_MESHFREE_FLUID_CELL_LIB
   src/drt_meshfree_discret/meshfree_fluid_cell_calc.cpp
   src/drt_meshfree_discret/meshfree_fluid_cell_calc_general_service.cpp
   src/drt_meshfree_discret/meshfree_fluid_cell_calc_std.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary.cpp 
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_evaluate.cpp 
+  src/drt_meshfree_discret/meshfree_fluid_cell_boundary.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_evaluate.cpp
   src/drt_meshfree_discret/meshfree_fluid_cell_boundary_calc.cpp
   src/drt_meshfree_discret/meshfree_fluid_cell_boundary_calc_std.cpp
 )
@@ -1792,7 +1793,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_axel_8.cpp
   tests/cut_test/cut_test_axel_9.cpp
   tests/cut_test/cut_test_axel_10.cpp
-  tests/cut_test/cut_test_benedikt_1.cpp 
+  tests/cut_test/cut_test_benedikt_1.cpp
   tests/cut_test/cut_test_hex8_twintri.cpp
   tests/cut_test/cut_test_shadan_6.cpp
   tests/cut_test/cut_test_volume.cpp
@@ -1812,8 +1813,8 @@ set(OBJS_GRAPH_TEST
 set(OBJS_DRT_WEAR
   src/drt_wear/wear_algorithm.cpp
   src/drt_wear/wear_dyn.cpp
-  src/drt_wear/wear_partitioned.cpp  
-)  
+  src/drt_wear/wear_partitioned.cpp
+)
 set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_dyn.cpp
   src/drt_poroelast/poro_base.cpp
@@ -1945,13 +1946,13 @@ add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
 add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
 
-set(ELEMENT_LIBRARIES 
+set(ELEMENT_LIBRARIES
   ele_ale
   ele_b2
   ele_b2r
   ele_b3
   ele_b3ii
-  ele_b3eb  
+  ele_b3eb
   ele_b3ebtor
   ele_b3ebanisotrop
   ele_rigidsphere
@@ -2095,7 +2096,7 @@ add_library(drt_lib_statinv_anal ${OBJS_STATINV_ANALYSIS_LIB})
 
 set(SUPPORT_LIBRARIES
   drt_lib
-  drt_lib_artnet 
+  drt_lib_artnet
   drt_lib_redairways
   drt_lib_mortar
   drt_lib_constraint
@@ -2108,7 +2109,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_crack
   drt_lib_inpar
   drt_lib_io
-  drt_lib_nurbs 
+  drt_lib_nurbs
   drt_lib_meshfree
   drt_lib_statinv_anal
   )
@@ -2142,18 +2143,18 @@ add_executable (pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
 add_executable (pre_curve EXCLUDE_FROM_ALL ${OBJS_PRE_CURVE})
 add_executable (pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
 
-target_link_libraries (${baciname} 
-  ${MULTIFIELD_LIBRARIES} 
-  drt_adapter 
+target_link_libraries (${baciname}
+  ${MULTIFIELD_LIBRARIES}
+  drt_adapter
   ${SINGLEFIELD_LIBRARIES}
   drt_nurbs
-  drt_mortar 
-  drt_volmortar 
+  drt_mortar
+  drt_volmortar
   drt_constraint
   drt_lib_register
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}
-  drt_micromat 
+  drt_micromat
   drt_mat
   drt_lib_utils
   nlnsolver
@@ -2162,7 +2163,7 @@ target_link_libraries (${baciname}
   drt_comm
   ${LIBRARIES})
 
-set(FILTER_LIBRARIES 
+set(FILTER_LIBRARIES
   post_drt_common
   drt_lib_register
   ${ELEMENT_LIBRARIES}
@@ -2183,13 +2184,13 @@ target_link_libraries (pre_locsys ${FILTER_LIBRARIES})
 target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 
 
-ADD_CUSTOM_TARGET(baci DEPENDS ${baciname}) 
-ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor) 
+ADD_CUSTOM_TARGET(baci DEPENDS ${baciname})
+ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor)
 ADD_CUSTOM_TARGET(post_drt_ensight DEPENDS post_processor)
 ADD_CUSTOM_TARGET(post_drt_vtu DEPENDS post_processor)
 ADD_CUSTOM_TARGET(post_drt_gid DEPENDS post_processor)
-ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post) 
-ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test) 
+ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post)
+ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test)
 
 # various post-processing tools
 ADD_CUSTOM_COMMAND(TARGET post_processor
