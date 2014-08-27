@@ -49,9 +49,17 @@ namespace LINALG
 
 /*!
 \brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
-       in the constructor
+       in the constructor and a modified memory management
 
-\author frenzel (frenzel@lnm.mw.tum.de)
+Epetra_SerialDenseMatrix always allocates new memory upon call of Shape() or
+Reshape(). This class re-uses previously allocated memory as much as possible,
+similar to the implementation in std::vector. If the matrix size is reduced
+or if the allocated memory is sufficient for the new matrix sizes, the old
+data array is re-used. Re-allocation only happens in case more memory is
+necessary. This way, some memory might be wasted but it results in code that
+is generally considerably faster and avoids memory fragmentation. To force a
+new allocation with the correct amount of memory, call Shape(0,0) first.
+
 */
 class SerialDenseMatrix : public Epetra_SerialDenseMatrix
 {
@@ -121,6 +129,15 @@ public:
   */
   SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source);
 
+  /*!
+  \brief Shape dimensions of this matrix as in Epetra_SerialDenseMatrix::Shape
+         (but only allocate new memory if necessary)
+
+  If the number of rows or columns is zero, the memory will be freed. Otherwise,
+  the algorithm keeps the old memory if it is sufficient and only sets the
+  matrix bounds differently.
+  */
+  int Shape(int NumRows, int NumCols);
 
   /*!
   \brief Shape dimensions of this matrix but do NOT initialize to zero
@@ -129,11 +146,23 @@ public:
   int LightShape(int NumRows, int NumCols);
 
   /*!
+  \brief Reshape dimensions of this matrix and zero out excess space
+
+  Existing values are kept as far as they fit into the new shape and
+  potential excess space in the matrix is zeroed out
+
+  If the number of rows or columns is zero, the memory will be freed. Otherwise,
+  the algorithm keeps the old memory if it is sufficient and only sets the
+  matrix bounds differently.
+  */
+  int Reshape(int NumRows, int NumCols);
+
+  /*!
   \brief Reshape dimensions of this matrix but do NOT initialize to zero
          (as opposed to Epetra_SerialDenseMatrix::Reshape(...))
 
-  Existing values are kept as far as they fir into the new shape but
-  potentially excess space in the matrix is NOT zeroed out
+  Existing values are kept as far as they fit into the new shape but
+  potential excess space in the matrix is NOT zeroed out
 
   */
   int LightReshape(int NumRows, int NumCols);
@@ -181,7 +210,12 @@ public:
   //@}
 
 protected:
+  /*!
+   * \brief Internal reshape function
+   */
+  int DoReshape(const int NumRows, const int NumCols, const bool light);
 
+  std::size_t allocatedSize_; /// Remembers the amount of bytes allocated when changing layout
 
 }; // class SerialDenseMatrix
 } // namespace LINALG

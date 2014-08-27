@@ -52,7 +52,14 @@ namespace LINALG
 \brief A class that wraps Epetra_SerialDenseVector with minor modifications
        in the constructor
 
-\author frenzel (frenzel@lnm.mw.tum.de)
+Epetra_SerialDenseVector always allocates new memory upon call of Size() or
+Resize(). This class re-uses previously allocated memory as much as possible,
+similar to the implementation in std::vector. If the vector size is reduced
+or if the allocated memory is sufficient for the new vector size, the old
+data array is re-used. Re-allocation only happens in case more memory is
+necessary. This way, some memory might be wasted but it results in code that
+is generally considerably faster and avoids memory fragmentation. To force a
+new allocation with the correct amount of memory, call Size(0) first.
 */
 class SerialDenseVector : public Epetra_SerialDenseVector
 {
@@ -111,11 +118,29 @@ public:
   SerialDenseVector(const Epetra_SerialDenseVector& Source);
 
   /*!
+  \brief Set the length of this vector and initialize to zero
+
+  If the given size is zero, the memory will be freed. Otherwise,
+  the algorithm keeps the old memory if it is sufficient and only sets the
+  size bound differently.
+  */
+  int Size(int Length);
+
+  /*!
   \brief Set length of this vector but do NOT initialize to zero
          (as opposed to Epetra_SerialDenseVector::Shape(...))
 
   */
   int LightSize(int Length);
+
+  /*!
+  \brief Resize length of this vector, keep old values, set excess memory to zero
+
+  If the given size is zero, the memory will be freed. Otherwise,
+  the algorithm keeps the old memory if it is sufficient and only sets the
+  size bound differently.
+  */
+  int Resize(int Length);
 
   /*!
   \brief Resize length of this vector but do NOT initialize to zero
@@ -160,6 +185,7 @@ public:
 
 protected:
 
+  int allocatedSize_; /// Remembers the amount of bytes allocated when changing vector length
 
 }; // class SerialDenseVector
 } // namespace LINALG

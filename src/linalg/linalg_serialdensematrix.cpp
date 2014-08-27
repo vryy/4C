@@ -47,7 +47,8 @@ Maintainer: Michael Gee
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(bool set_object_label) :
-Epetra_SerialDenseMatrix(false)
+Epetra_SerialDenseMatrix(false),
+allocatedSize_(0)
 {
   if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
 }
@@ -58,13 +59,14 @@ Epetra_SerialDenseMatrix(false)
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(int NumRows, int NumCols,
                                              bool init, bool set_object_label) :
-Epetra_SerialDenseMatrix(false)
+Epetra_SerialDenseMatrix(false),
+allocatedSize_(0)
 {
   if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
   if(NumRows < 0)
-	throw ReportError("NumRows = " + toString(NumRows) + ". Should be >= 0", -1);
+  throw ReportError("NumRows = " + toString(NumRows) + ". Should be >= 0", -1);
   if(NumCols < 0)
-	throw ReportError("NumCols = " + toString(NumCols) + ". Should be >= 0", -1);
+  throw ReportError("NumCols = " + toString(NumCols) + ". Should be >= 0", -1);
 
   int errorcode = 0;
   if (init==true)
@@ -81,11 +83,14 @@ Epetra_SerialDenseMatrix(false)
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA,
-                                                   int NumRows, int NumCols,
-                                                   bool set_object_label) :
-Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,false)
+                                             int NumRows, int NumCols,
+                                             bool set_object_label) :
+Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,false),
+allocatedSize_(0)
 {
   if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+  if (CV_ == Copy)
+    allocatedSize_ = LDA_ * N_;
 }
 
 
@@ -96,9 +101,12 @@ Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,false)
 LINALG::SerialDenseMatrix::SerialDenseMatrix(Epetra_SerialDenseMatrix& Source,
                                              Epetra_DataAccess CV,
                                              bool set_object_label) :
-Epetra_SerialDenseMatrix(CV, Source.A(), Source.LDA(), Source.M(), Source.N(), false)
+Epetra_SerialDenseMatrix(CV, Source.A(), Source.LDA(), Source.M(), Source.N(), false),
+allocatedSize_(0)
 {
   if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+  if (CV_ == Copy)
+    allocatedSize_ = LDA_ * N_;
 }
 
 
@@ -106,8 +114,11 @@ Epetra_SerialDenseMatrix(CV, Source.A(), Source.LDA(), Source.M(), Source.N(), f
  | copy-ctor (public)                                        mwgee 05/07|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(const SerialDenseMatrix& Source) :
-Epetra_SerialDenseMatrix(Source)
+Epetra_SerialDenseMatrix(Source),
+allocatedSize_(Source.allocatedSize_)
 {
+  if (CV_ == Copy)
+    allocatedSize_ = LDA_ * N_;
 }
 
 
@@ -115,11 +126,14 @@ Epetra_SerialDenseMatrix(Source)
  | copy-ctor (public)                                         nis Jan13 |
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source) :
-Epetra_SerialDenseMatrix(Source)
+Epetra_SerialDenseMatrix(Source),
+allocatedSize_(0)
 {
   if (Source.Label()) {
     SetLabel("LINALG::SerialDenseMatrix");
   }
+  if (CV_ == Copy)
+    allocatedSize_ = LDA_ * N_;
 }
 
 
@@ -133,7 +147,7 @@ LINALG::SerialDenseMatrix::~SerialDenseMatrix()
 /*----------------------------------------------------------------------*
  |                                                         vlf 06/07    |
  | recursive computation of determinant of a  matrix using Sarrus rule  |
- | (uses long double to boost accuracy                                  |
+ | (uses long double to boost accuracy). Do not use for n > 4.          |
  *----------------------------------------------------------------------*/
 long double LINALG::SerialDenseMatrix::Det_long(void )
 {
@@ -176,54 +190,151 @@ long double LINALG::SerialDenseMatrix::Det_long(void )
 }
 
 
+
+/*----------------------------------------------------------------------*
+ |  shape the matrix (reuse old memory) (public)       kronbichler 08/14|
+ *----------------------------------------------------------------------*/
+int LINALG::SerialDenseMatrix::Shape(int NumRows, int NumCols)
+{
+  int err = LightShape(NumRows, NumCols);
+  Zero();
+  return err;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  shape the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/
 int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
 {
+  // check if nothing to do
+  if (NumRows == M_ && NumCols == N_) return 0;
+
   if(NumRows < 0 || NumCols < 0) return(-1);
 
-  CleanupData(); // Get rid of anything that might be already allocated
   M_ = NumRows;
   N_ = NumCols;
   LDA_ = M_;
-	const int newsize = LDA_ * N_;
-	if(newsize > 0) {
-		A_ = new double[newsize];
-		A_Copied_ = true;
-	}
+  const std::size_t newsize = static_cast<std::size_t>(LDA_) * N_;
+  if(newsize > allocatedSize_)
+  {
+    CleanupData();
+    A_ = new double[newsize];
+    A_Copied_ = true;
+    allocatedSize_ = newsize;
+    M_ = NumRows;
+    N_ = NumCols;
+    LDA_ = M_;
+  }
+  else if (newsize == 0)
+  {
+    CleanupData();
+    allocatedSize_ = 0;
+  }
 
   return(0);
 }
 
 
+
 /*----------------------------------------------------------------------*
- |  reshape the matrix but do not init excess space to zero  mwgee 05/07|
+ |  reshape the matrix but do not init to zero  (public)     mwgee 05/07|
  *----------------------------------------------------------------------*/
 int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 {
-	if(NumRows < 0 || NumCols < 0)
-		return(-1);
+  return DoReshape(NumRows, NumCols, true);
+}
 
-	double* A_tmp = 0;
-	const int newsize = NumRows * NumCols;
 
-	if(newsize > 0) {
-		// Allocate space for new matrix
-		A_tmp = new double[newsize];
-		int M_tmp = EPETRA_MIN(M_, NumRows);
-		int N_tmp = EPETRA_MIN(N_, NumCols);
-		if (A_ != 0)
-			CopyMat(A_, LDA_, M_tmp, N_tmp, A_tmp, NumRows); // Copy principal submatrix of A to new A
+
+/*----------------------------------------------------------------------*
+ |  reshape the matrix   (public)                      kronbichler 08/14|
+ *----------------------------------------------------------------------*/
+int LINALG::SerialDenseMatrix::Reshape(int NumRows, int NumCols)
+{
+  return DoReshape(NumRows, NumCols, false);
+}
+
+
+/*----------------------------------------------------------------------*
+ |  internal reshape function of matrix (protected)    kronbichler 08/14|
+ *----------------------------------------------------------------------*/
+int LINALG::SerialDenseMatrix::DoReshape(const int NumRows, const int NumCols,
+                                         const bool light)
+{
+  if(NumRows < 0 || NumCols < 0)
+    return(-1);
+
+  double* A_tmp = 0;
+  const std::size_t newsize = static_cast<std::size_t>(NumRows) * NumCols;
+
+  if (newsize == 0)
+  {
+    CleanupData();
+    allocatedSize_ = 0;
+    return 0;
   }
-  CleanupData(); // Get rid of anything that might be already allocated
+
+  bool morememory = newsize > allocatedSize_;
+  if(morememory) {
+    // Allocate space for new matrix
+    A_tmp = new double[newsize];
+    allocatedSize_ = newsize;
+  }
+  else
+    A_tmp = A_;
+
+  int N_tmp = EPETRA_MIN(N_, NumCols);
+  if (A_ != 0 && NumRows < LDA_)
+  {
+    // forward copy of matrix columns
+    double * tptr = A_tmp;
+    const double * sptr = A_;
+    for(int j=0; j<N_tmp; ++j)
+    {
+      for(int i=0; i<NumRows; ++i)
+        tptr[i] = sptr[i];
+
+      tptr += NumRows;
+      sptr += LDA_;
+    }
+  }
+  else if (A_ != 0 && NumRows > LDA_)
+  {
+    // backward copy of matrix columns
+    double * tptr = A_tmp + NumRows * (N_tmp - 1);
+    const double * sptr = A_ + LDA_ * (N_tmp - 1);
+    for(int j=0; j<N_tmp; ++j)
+    {
+      for(int i=M_-1; i>=0; --i)
+        tptr[i] = sptr[i];
+
+      tptr -= NumRows;
+      sptr -= LDA_;
+    }
+  }
+
+  // zero out remaining blocks of matrix
+  if (!light)
+  {
+    if (M_ < NumRows)
+      for (int i=0; i<N_; ++i)
+        memset(A_tmp + NumRows * i + M_, 0, (NumRows-M_)*sizeof(double));
+    if (N_ < NumCols)
+      memset(A_tmp + NumRows * N_, 0, (NumCols-N_)*NumRows*sizeof(double));
+  }
+
+  if (morememory)
+  {
+    CleanupData(); // Get rid of anything that might be already allocated
+    A_ = A_tmp; // Set pointer to new A
+    A_Copied_ = true;
+  }
+
   M_ = NumRows;
   N_ = NumCols;
   LDA_ = M_;
-	if(newsize > 0) {
-		A_ = A_tmp; // Set pointer to new A
-		A_Copied_ = true;
-	}
 
   return(0);
 }
@@ -248,6 +359,8 @@ void LINALG::SerialDenseMatrix::Update(
  *----------------------------------------------------------------------*/
 void LINALG::SerialDenseMatrix::Zero()
 {
-  memset(A(), 0, M()*N()*sizeof(double));
+  const std::size_t size = M_ * N_ * sizeof(double);
+  if (size > 0)
+    memset(A_, 0, size);
 }
 

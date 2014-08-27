@@ -564,7 +564,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
   LINALG::Matrix<my::nsd_,my::nsd_>  derivtrafo(true);
 
   DRT::UTILS::BoundaryGPToParentGP<my::nsd_>( pqxg      ,
@@ -1785,7 +1785,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   ComputeNodalPorosity(ele,mydispnp,eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
   LINALG::Matrix<my::nsd_,my::nsd_>  derivtrafo(true);
 
   DRT::UTILS::BoundaryGPToParentGP<my::nsd_>( pqxg     ,
@@ -2520,7 +2520,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   const bool porositydof = ComputeNodalPorosity(ele,mydispnp,eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
   LINALG::Matrix<my::nsd_,my::nsd_>  derivtrafo(true);
 
   DRT::UTILS::BoundaryGPToParentGP<my::nsd_>( pqxg     ,

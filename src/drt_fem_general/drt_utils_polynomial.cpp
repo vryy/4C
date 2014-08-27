@@ -268,9 +268,9 @@ PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(const LINALG::Matrix<nsd_,1> 
  */
 template <int nsd_,class POLY>
 void
-PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const
 {
-  matrix.Shape(nsd_, Size());
+  matrix.LightShape(nsd_, Size());
 
   const unsigned int size = polySpace1d_.size();
   switch (nsd_)
@@ -481,9 +481,9 @@ PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv2(const LINALG::Matrix<nsd_,1
  */
 template <int nsd_,class POLY>
 void
-PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const
 {
-  matrix.Shape(nsd_, Size());
+  matrix.LightShape(nsd_, Size());
 
   const unsigned int size = polySpace1d_.size();
   unsigned int c=0;
@@ -1140,6 +1140,18 @@ DRT::UTILS::LagrangeBasisTet<nsd_>::ComputeVandermondeMatrices(const unsigned in
     dserror("Lagrange polynomial seems to not be nodal, p_i(xi_i) = %lf!", values(i));
   }
 #endif
+}
+
+
+
+template <int nsd_>
+void
+DRT::UTILS::LagrangeBasisTet<nsd_>::FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const
+{
+  matrix.LightShape(feketePoints_.M(), feketePoints_.N());
+  for (int i=0; i<feketePoints_.N(); ++i)
+    for (int j=0; j<feketePoints_.M(); ++j)
+      matrix(j,i) = feketePoints_(j,i);
 }
 
 

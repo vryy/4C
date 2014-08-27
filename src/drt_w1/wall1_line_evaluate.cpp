@@ -719,7 +719,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       (mypres)(inode, 0) = myvelpres[numdim + (inode * numdofpernode)];
     }
 
-    Epetra_SerialDenseMatrix pqxg;
+    LINALG::SerialDenseMatrix pqxg;
     Epetra_SerialDenseMatrix derivtrafo;
 
     DRT::UTILS::BoundaryGPToParentGP<2>(pqxg, derivtrafo, intpoints,

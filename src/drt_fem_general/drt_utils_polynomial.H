@@ -313,7 +313,7 @@ namespace UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const = 0;
+    virtual void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const = 0;
   };
 
 
@@ -426,7 +426,7 @@ namespace UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const;
+    virtual void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const;
 
   private:
     std::vector<POLY> polySpace1d_;
@@ -505,7 +505,7 @@ namespace UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const;
 
   private:
     std::vector<POLY> polySpace1d_;
@@ -630,10 +630,7 @@ namespace UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
-    {
-      matrix = feketePoints_;
-    }
+    virtual void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const;
 
   private:
     void FillFeketePoints(const unsigned int degree);
@@ -730,7 +727,7 @@ namespace UTILS
 
    The output matrix is resized to the correct dimension.
      */
-    void FillUnitNodePoints(Epetra_SerialDenseMatrix &matrix) const
+    void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const
     {
       polyspace_->FillUnitNodePoints(matrix);
     }

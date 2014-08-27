@@ -484,7 +484,7 @@ void DRT::UTILS::LineGPToParentGP(
 //! specialization for 3D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<3>(
-Epetra_SerialDenseMatrix                                                    & pqxg     ,
+LINALG::SerialDenseMatrix                                                   & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
 const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
@@ -492,8 +492,9 @@ const DRT::Element::DiscretizationType                                        di
 const int                                                                     surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.IP().nquad,3);
-  derivtrafo.Shape(3,3);
+  pqxg.LightShape(intpoints.IP().nquad,3);
+  if (derivtrafo.M() != 3 || derivtrafo.N() != 3)
+    derivtrafo.Shape(3,3);
 
   DRT::UTILS::SurfaceGPToParentGP(
     pqxg     ,
@@ -508,7 +509,7 @@ const int                                                                     su
 //! specialization for 2D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<2>(
-Epetra_SerialDenseMatrix                                                    & pqxg     ,
+LINALG::SerialDenseMatrix                                                   & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
 const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
@@ -516,8 +517,9 @@ const DRT::Element::DiscretizationType                                        di
 const int                                                                     surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.IP().nquad,2);
-  derivtrafo.Shape(2,2);
+  pqxg.LightShape(intpoints.IP().nquad,2);
+  if (derivtrafo.M() != 2 || derivtrafo.N() != 2)
+    derivtrafo.Shape(2,2);
 
   DRT::UTILS::LineGPToParentGP(
     pqxg     ,
@@ -532,15 +534,15 @@ const int                                                                     su
 //! specialization for 3D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<3>(
-    Epetra_SerialDenseMatrix                                                & pqxg     ,
-    LINALG::Matrix<3,3>                                                     & derivtrafo,
-const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
-const DRT::Element::DiscretizationType                                        pdistype ,
-const DRT::Element::DiscretizationType                                        distype  ,
-const int                                                                     surfaceid)
+  LINALG::SerialDenseMatrix                                               & pqxg     ,
+  LINALG::Matrix<3,3>                                                     & derivtrafo,
+  const DRT::UTILS::IntPointsAndWeights<2> &                                intpoints,
+  const DRT::Element::DiscretizationType                                    pdistype ,
+  const DRT::Element::DiscretizationType                                    distype  ,
+  const int                                                                 surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.IP().nquad,3);
+  pqxg.LightShape(intpoints.IP().nquad,3);
   derivtrafo.Clear();
 
   DRT::UTILS::SurfaceGPToParentGP(
@@ -556,15 +558,15 @@ const int                                                                     su
 //! specialization for 2D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<2>(
-    Epetra_SerialDenseMatrix                                                & pqxg     ,
-    LINALG::Matrix<2,2>                                                     & derivtrafo,
-const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
-const DRT::Element::DiscretizationType                                        pdistype ,
-const DRT::Element::DiscretizationType                                        distype  ,
-const int                                                                     surfaceid)
+  LINALG::SerialDenseMatrix                                               & pqxg     ,
+  LINALG::Matrix<2,2>                                                     & derivtrafo,
+  const DRT::UTILS::IntPointsAndWeights<1> &                                intpoints,
+  const DRT::Element::DiscretizationType                                    pdistype ,
+  const DRT::Element::DiscretizationType                                    distype  ,
+  const int                                                                 surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.IP().nquad,2);
+  pqxg.LightShape(intpoints.IP().nquad,2);
   derivtrafo.Clear();
 
   DRT::UTILS::LineGPToParentGP(
@@ -581,7 +583,7 @@ const int                                                                     su
 //! specialization for 3D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<3>(
-Epetra_SerialDenseMatrix                                                    & pqxg     ,
+LINALG::SerialDenseMatrix                                                   & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
 const DRT::UTILS::GaussPoints            &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
@@ -589,8 +591,9 @@ const DRT::Element::DiscretizationType                                        di
 const int                                                                     surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.NumPoints(),3);
-  derivtrafo.Shape(3,3);
+  pqxg.LightShape(intpoints.NumPoints(),3);
+  if (derivtrafo.M() != 3 || derivtrafo.N() != 3)
+    derivtrafo.Shape(3,3);
 
   DRT::UTILS::SurfaceGPToParentGP(
     pqxg     ,
@@ -605,7 +608,7 @@ const int                                                                     su
 //! specialization for 2D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<2>(
-Epetra_SerialDenseMatrix                                                    & pqxg     ,
+LINALG::SerialDenseMatrix                                                   & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
 const DRT::UTILS::GaussPoints            &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
@@ -613,8 +616,9 @@ const DRT::Element::DiscretizationType                                        di
 const int                                                                     surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.NumPoints(),2);
-  derivtrafo.Shape(2,2);
+  pqxg.LightShape(intpoints.NumPoints(),2);
+  if (derivtrafo.M() != 2 || derivtrafo.N() != 2)
+    derivtrafo.Shape(2,2);
 
   DRT::UTILS::LineGPToParentGP(
     pqxg     ,
@@ -629,15 +633,15 @@ const int                                                                     su
 //! specialization for 3D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<3>(
-    Epetra_SerialDenseMatrix                                                & pqxg     ,
-    LINALG::Matrix<3,3>                                                     & derivtrafo,
-const DRT::UTILS::GaussPoints            &                                    intpoints,
-const DRT::Element::DiscretizationType                                        pdistype ,
-const DRT::Element::DiscretizationType                                        distype  ,
-const int                                                                     surfaceid)
+  LINALG::SerialDenseMatrix                                               & pqxg     ,
+  LINALG::Matrix<3,3>                                                     & derivtrafo,
+  const DRT::UTILS::GaussPoints            &                                intpoints,
+  const DRT::Element::DiscretizationType                                    pdistype ,
+  const DRT::Element::DiscretizationType                                    distype  ,
+  const int                                                                 surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.NumPoints(),3);
+  pqxg.LightShape(intpoints.NumPoints(),3);
   derivtrafo.Clear();
 
   DRT::UTILS::SurfaceGPToParentGP(
@@ -653,15 +657,15 @@ const int                                                                     su
 //! specialization for 2D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<2>(
-    Epetra_SerialDenseMatrix                                                & pqxg     ,
-    LINALG::Matrix<2,2>                                                     & derivtrafo,
-const DRT::UTILS::GaussPoints &                                               intpoints,
-const DRT::Element::DiscretizationType                                        pdistype ,
-const DRT::Element::DiscretizationType                                        distype  ,
-const int                                                                     surfaceid)
+  LINALG::SerialDenseMatrix                                               & pqxg     ,
+  LINALG::Matrix<2,2>                                                     & derivtrafo,
+  const DRT::UTILS::GaussPoints &                                           intpoints,
+  const DRT::Element::DiscretizationType                                    pdistype ,
+  const DRT::Element::DiscretizationType                                    distype  ,
+  const int                                                                 surfaceid)
 {
   // resize output array
-  pqxg.Shape(intpoints.NumPoints(),2);
+  pqxg.LightShape(intpoints.NumPoints(),2);
   derivtrafo.Clear();
 
   DRT::UTILS::LineGPToParentGP(

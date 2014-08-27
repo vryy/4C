@@ -17,6 +17,9 @@ Maintainer: Martin Kronbichler
 #include "drt_utils_polynomial.H"
 #include "drt_utils_gausspoints.H"
 
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+
 namespace DRT
 {
   namespace UTILS
@@ -29,8 +32,9 @@ namespace DRT
       \date 05/14
     */
     template <DRT::Element::DiscretizationType distype>
-    struct ShapeValues
+    class ShapeValues
     {
+    public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const unsigned int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -77,23 +81,22 @@ namespace DRT
       /// number of integration points
       unsigned int nqpoints_;
 
-      Epetra_SerialDenseMatrix      funct;   /// values of mapping shape functions on all quadrature points
+      LINALG::SerialDenseMatrix     funct;   /// values of mapping shape functions on all quadrature points
       LINALG::Matrix<nsd_,nen_>     deriv;   /// gradients of mapping shape functions
-      Epetra_SerialDenseMatrix      xyzreal; /// coordinates of all quadrature points in real space
-      Epetra_SerialDenseMatrix      nodexyzunit; /// coordinates of all node (support) points of Lagrange basis functions in unit coordinates (all points at cell center for Legendre-type polynomials)
-      Epetra_SerialDenseMatrix      nodexyzreal; /// coordinates of all node (support) points of Lagrange basis functions in real space (all points at cell center for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix     xyzreal; /// coordinates of all quadrature points in real space
+      LINALG::SerialDenseMatrix     nodexyzunit; /// coordinates of all node (support) points of Lagrange basis functions in unit coordinates (all points at cell center for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix     nodexyzreal; /// coordinates of all node (support) points of Lagrange basis functions in real space (all points at cell center for Legendre-type polynomials)
 
-      Epetra_SerialDenseMatrix      shfunct; /// evaluated HDG shape functions on all quadrature points
-      Epetra_SerialDenseVector      shfunctAvg;/// average of shfunctF on cell
-      Epetra_SerialDenseMatrix      shderiv; /// evaluated HDG shape function gradients in unit coordinates
-      Epetra_SerialDenseMatrix      shderxy; /// evaluated HDG shape function gradients in real coordinates
+      LINALG::SerialDenseMatrix     shfunct; /// evaluated HDG shape functions on all quadrature points
+      LINALG::SerialDenseVector     shfunctAvg;/// average of shfunctF on cell
+      LINALG::SerialDenseMatrix     shderiv; /// evaluated HDG shape function gradients in unit coordinates
+      LINALG::SerialDenseMatrix     shderxy; /// evaluated HDG shape function gradients in real coordinates
 
       LINALG::Matrix<nsd_,1>        xsi;     /// quadrature points
       LINALG::Matrix<nsd_,nsd_>     xjm;     /// Jacobi matrix of transformation
       LINALG::Matrix<nsd_,nsd_>     xji;     /// inverse of Jacobi matrix of transformation
       LINALG::Matrix<nsd_,nen_>     xyze;    /// element nodes
-      Epetra_SerialDenseVector      jfac;    /// Jacobian determinant times quadrature weight
-
+      LINALG::SerialDenseVector     jfac;    /// Jacobian determinant times quadrature weight
     };
 
     /// Helper class for evaluating HDG polynomials, geometry, etc.
@@ -103,8 +106,9 @@ namespace DRT
       \date 06/14
     */
     template <DRT::Element::DiscretizationType distype>
-    struct ShapeValuesFace
+    class ShapeValuesFace
     {
+    public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const unsigned int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -153,25 +157,29 @@ namespace DRT
       /// number of integration points on face
       unsigned int nqpoints_;
 
-      Epetra_SerialDenseMatrix      funct;  /// values of mapping shape functions on all face quadrature points
+      LINALG::SerialDenseMatrix     funct;  /// values of mapping shape functions on all face quadrature points
       LINALG::Matrix<nsd_-1,nfn_>   deriv;  /// gradients of mapping shape functions on face
       LINALG::Matrix<nsd_-1,nsd_-1> metricTensor; /// metric tensor on face
       LINALG::Matrix<nsd_,1>        normal;  /// normal vector
 
-      Epetra_SerialDenseMatrix      xyzreal;/// coordinates of face quadrature points in real space
-      Epetra_SerialDenseMatrix      nodexyzunit; /// coordinates of all node (support) points of face Lagrange basis functions in unit coordinates (invalid for Legendre-type polynomials)
-      Epetra_SerialDenseMatrix      nodexyzreal; /// coordinates of all node (support) points of face Lagrange basis functions in real space (invalid for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix     xyzreal;/// coordinates of face quadrature points in real space
+      LINALG::SerialDenseMatrix     nodexyzunit; /// coordinates of all node (support) points of face Lagrange basis functions in unit coordinates (invalid for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix     nodexyzreal; /// coordinates of all node (support) points of face Lagrange basis functions in real space (invalid for Legendre-type polynomials)
 
-      Epetra_SerialDenseMatrix      shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
-      Epetra_SerialDenseMatrix      shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
-      std::vector<Epetra_SerialDenseMatrix> shfunctI;/// evaluated shape functions on face for interior HDG polynomials
-      Epetra_SerialDenseMatrix      normals; /// normal vectors on a single face for all quadrature points
+      LINALG::SerialDenseMatrix     shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
+      LINALG::SerialDenseMatrix     shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
+      std::vector<LINALG::SerialDenseMatrix> shfunctI;/// evaluated shape functions on face for interior HDG polynomials
+      LINALG::SerialDenseMatrix     normals; /// normal vectors on a single face for all quadrature points
 
       LINALG::Matrix<nsd_-1,1>      xsi;    /// face quadrature points
       LINALG::Matrix<nsd_,nfn_>     xyze;   /// face nodes
-      Epetra_SerialDenseVector      jfac;   /// face Jacobian determinant times quadrature weight
+      LINALG::SerialDenseVector     jfac;   /// face Jacobian determinant times quadrature weight
 
       std::vector<std::vector<int> > faceNodeOrder; /// numbering of nodes belonging to faces
+
+    private:
+      LINALG::SerialDenseMatrix     faceQPoints; /// Quadrature points projected onto face
+      LINALG::SerialDenseVector     faceValues; /// Evaluated basis functions on face
     };
   }
 }

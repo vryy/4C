@@ -179,17 +179,17 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
     quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
     nqpoints_ = quadrature_->NumPoints();
 
-    Epetra_SerialDenseVector faceValues(nfdofs_);
-    xyzreal.Shape(nsd_, nqpoints_);
-    funct.Shape(nfn_, nqpoints_);
+    faceValues.LightSize(nfdofs_);
+    xyzreal.LightShape(nsd_, nqpoints_);
+    funct.LightShape(nfn_, nqpoints_);
 
-    shfunctNoPermute.Shape(nfdofs_, nqpoints_);
-    shfunct.Shape(nfdofs_, nqpoints_);
+    shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
+    shfunct.LightShape(nfdofs_, nqpoints_);
     shfunctI.resize(nfaces_);
     for (unsigned int f=0;f<nfaces_; ++f)
-      shfunctI[f].Shape(shapes.ndofs_, nqpoints_);
-    normals.Shape(nsd_, nqpoints_);
-    jfac.Resize(nqpoints_);
+      shfunctI[f].LightShape(shapes.ndofs_, nqpoints_);
+    normals.LightShape(nsd_, nqpoints_);
+    jfac.LightResize(nqpoints_);
 
     for (unsigned int q=0; q<nqpoints_; ++q )
     {
@@ -208,7 +208,7 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
     }
 
     // Fill face support points
-    nodexyzreal.Shape(nsd_, nfdofs_);
+    nodexyzreal.LightShape(nsd_, nfdofs_);
     polySpace_->FillUnitNodePoints(nodexyzunit);
     dsassert(nodexyzreal.M() == nodexyzunit.M()+1 &&
              nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
@@ -256,21 +256,20 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
 
   AdjustFaceOrientation(ele, face);
 
-  Epetra_SerialDenseMatrix quadrature(nqpoints_,nsd_,false);
-  Epetra_SerialDenseMatrix trafo(nsd_,nsd_,false);
-  Epetra_SerialDenseVector values(shapes.ndofs_);
+  LINALG::Matrix<nsd_,nsd_> trafo;
+  faceValues.LightSize(shapes.ndofs_);
   LINALG::Matrix<nsd_,1> xsi;
   for (unsigned int f=0; f<nfaces_; ++f)
   {
-    DRT::UTILS::BoundaryGPToParentGP<nsd_>(quadrature,trafo,*quadrature_,distype,
+    DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints,trafo,*quadrature_,distype,
                                            DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, f);
     for (unsigned int q=0; q<nqpoints_; ++q)
     {
       for (unsigned int d=0; d<nsd_; ++d)
-        xsi(d) = quadrature(q,d);
-      shapes.polySpace_->Evaluate(xsi,values);
+        xsi(d) = faceQPoints(q,d);
+      shapes.polySpace_->Evaluate(xsi,faceValues);
       for (unsigned int i=0; i<shapes.ndofs_; ++i)
-        shfunctI[f](i,q) = values(i);
+        shfunctI[f](i,q) = faceValues(i);
     }
   }
 }
