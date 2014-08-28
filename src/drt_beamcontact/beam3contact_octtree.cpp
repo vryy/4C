@@ -1098,8 +1098,8 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
 }
 
 /*-----------------------------------------------------------------------------------------*
- |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 1/12|
- *----------------------------------------------------------------------------------------*/
+ |  Create Spherical Bounding Box   (private)                                  mueller 1/12|
+ *-----------------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   if(bboxlimits!=Teuchos::null)
@@ -1367,7 +1367,8 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
 
                   double boxradius = 0.5*extrusionfactor*(*diameter_)[searchdis_.ElementColMap()->LID((int)allbboxesstdvec[i][(int)allbboxesstdvec[i].size()-1])];
 
-                  if(d<=(0.5*newedgelength(kmax)*sqrt(3.0))+boxradius)
+                  double tol = periodlength_->at(kmax)/pow(2.0,(double)maxtreedepth_)*1e-6;
+                  if(d<=(0.5*newedgelength(kmax)*sqrt(3.0))+boxradius && d>tol)
                   {
                     // unit vector component
                     vmax /= d;
@@ -1388,6 +1389,13 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
                       break; //j-loop
                     }
                   }
+                  else if(d<=tol) // distance smaller than tolerance, i.e. endpoint definitely lies within the octant
+                  {
+                    inoctant = true;
+                    bboxsubset.push_back(allbboxesstdvec[i]);
+                    // Since we found a bounding box end point to lie in the octant, we do not need to investigate further
+                    break; //j-loop
+                  }
                 }
               }
               break;
@@ -1407,9 +1415,9 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
     {
       for( int i=0; i<(int)allbboxesstdvec.size(); i++)
       {
-        // Processes colums indices 1 to 6
+        // Processes columns indices 1 to 6
         // 2)loop over the limits of the current octant and check if the current bounding box lies within this octant.
-        // 3)Then, check componentwise and leave after first "hit"
+        // 3)Then, check component-wise and leave after first "hit"
         switch(boundingbox_)
         {
           case Beam3ContactOctTree::axisaligned:
@@ -1437,7 +1445,8 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
               d = sqrt(d);
 
               double boxradius = 0.5*extrusionfactor*(*diameter_)[searchdis_.ElementColMap()->LID((int)allbboxesstdvec[i][(int)allbboxesstdvec[i].size()-1])];
-              if(d<=newedgelength(kmax)/2.0*sqrt(3.0)+boxradius)
+              double tol = 1e-8;
+              if(d<=newedgelength(kmax)/2.0*sqrt(3.0)+boxradius && d>tol)
               {
                 double normal = -1.0;
                 if(vmax<0)
@@ -1451,6 +1460,11 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
                   bboxsubset.push_back(allbboxesstdvec[i]);
                   break;
                 }
+              }
+              else if(d<=tol)
+              {
+                bboxsubset.push_back(allbboxesstdvec[i]);
+                break;
               }
             }
           }
@@ -1926,7 +1940,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, Teuc
           }
           index1 = (index0+1)%3;
 
-          // 1. distance criterium
+          // 1. distance criterion
           double d = yminusx.Dot(n);
 
           if (fabs(d)<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
@@ -1940,6 +1954,10 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, Teuc
             for(int k=0; k<(int)y.M(); k++)
               y(k) = y(k) - d * n(k);
             // line-wise check of the segment lengths
+//            std::cout<<"d = "<<d<<"index0 = "<<index0<<", index1 = "<<index1<<std::endl;
+//            std::cout<<"v: "<<v(0)<<" "<<v(1)<<" "<<v(2)<<std::endl;
+//            std::cout<<"w: "<<w(0)<<" "<<w(1)<<" "<<w(2)<<std::endl;
+
             double mu = (v(index1)*(y(index0)-x(index0))-v(index0)*(y(index1)-x(index1)))/(v(index0)*w(index1)-v(index1)*w(index0));
             if(mu>=0 && mu<=lbb0)
             {
