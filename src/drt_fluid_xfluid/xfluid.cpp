@@ -410,7 +410,6 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
       if ( e!=NULL )
       {
 
-#ifdef DOFSETS_NEW
           std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
           std::vector< std::vector<int> > nds_sets;
           std::vector<std::vector< DRT::UTILS::GaussIntegration > > intpoints_sets;
@@ -654,128 +653,6 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
             set_counter += 1;
 
           } // end of loop over cellsets // end of assembly for each set of cells
-#else
-
-        GEO::CUT::plain_volumecell_set cells;
-        std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        std::vector<std::vector<double> > refEqns;
-
-        e->VolumeCellGaussPoints( cells, intpoints, refEqns, xfluid_.VolumeCellGaussPointBy_);
-
-        int count = 0;
-        for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-        {
-          GEO::CUT::VolumeCell * vc = *i;
-          if ( vc->Position()==GEO::CUT::Point::outside )
-          {
-            const std::vector<int> & nds = vc->NodalDofSet();
-
-            // one set of dofs
-            std::vector<int>  ndstest;
-            for (int t=0;t<8; ++t)
-            ndstest.push_back(0);
-
-            // get element location vector, dirichlet flags and ownerships
-            actele->LocationVector(discret,ndstest,la,false);
-
-            // get dimension of element matrices and vectors
-            // Reshape element matrices and vectors and init to zero
-            strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
-
-            {
-              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
-
-              // call the element evaluate method
-              int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
-                                        strategy.Elematrix1(),
-                                        strategy.Elematrix2(),
-                                        strategy.Elevector1(),
-                                        strategy.Elevector2(),
-                                        strategy.Elevector3(),
-                                        intpoints[count] );
-
-              if (err)
-                dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
-            }
-
-            // do cut interface condition
-
-            std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
-            vc->GetBoundaryCells( bcells );
-//            std::cout<<"boundary cell size = "<<bcells.size()<<std::endl;
-
-            if ( bcells.size() > 0 )
-            {
-              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate boundary" );
-
-              std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
-
-              // new Benedikt's transformation
-              e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-
-              // needed for fluid-fluid Coupling
-              std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
-              Epetra_SerialDenseMatrix  Cuiui(1,1);
-
-              if(xfluid_.CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-                 xfluid_.CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress)
-                 impl->ElementXfemInterfaceHybridLM(
-                                                ele,
-                                                discret,
-                                                la[0].lm_,
-                                                intpoints[count],
-                                                cutdiscret,
-                                                bcells,
-                                                bintpoints,
-                                                side_coupling,
-                                                eleparams,
-                                                strategy.Elematrix1(),
-                                                strategy.Elevector1(),
-                                                Cuiui,
-                                                cells,
-                                                false);
-
-
-              if(xfluid_.CouplingMethod() == INPAR::XFEM::Nitsche)
-                  impl->ElementXfemInterfaceNIT( ele,
-                                                 discret,
-                                                 la[0].lm_,
-                                                 cutdiscret,
-                                                 bcells,
-                                                 bintpoints,
-                                                 side_coupling,
-                                                 eleparams,
-                                                 strategy.Elematrix1(),
-                                                 strategy.Elevector1(),
-                                                 Cuiui,
-                                                 cells,
-                                                 false);
-            }
-
-            int eid = actele->Id();
-
-            // introduce an vector containing the rows for that values have to be communicated
-            // REMARK: when assembling row elements also non-row rows have to be communicated
-            std::vector<int> myowner;
-            for(size_t index=0; index<la[0].lmowner_.size(); index++)
-            {
-              myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
-            }
-
-            // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-            sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
-
-            // REMARK:: call Assemble without lmowner
-            // to assemble the residual_col vector on only row elements also column nodes have to be assembled
-            // do not exclude non-row nodes (modify the real owner to myowner)
-            // after assembly the col vector it has to be exported to the row residual_ vector
-            // using the 'Add' flag to get the right value for shared nodes
-            LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
-
-          }
-          count += 1;
-        }
-#endif
       } // end of if(e!=NULL) // assembly for cut elements
       else
       {
@@ -963,7 +840,6 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
     if ( e!=NULL )
     {
 
-#ifdef DOFSETS_NEW
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > > intpoints_sets;
@@ -1032,69 +908,6 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
         set_counter += 1;
 
       } // end of loop over cellsets // end of assembly for each set of cells
-#else
-
-      GEO::CUT::plain_volumecell_set cells;
-      std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      std::vector<std::vector<double> > refEqns;
-
-      e->VolumeCellGaussPoints( cells, intpoints, refEqns, xfluid_.VolumeCellGaussPointBy_);
-
-      int count = 0;
-      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::VolumeCell * vc = *i;
-        if ( vc->Position()==GEO::CUT::Point::outside )
-        {
-          const std::vector<int> & nds = vc->NodalDofSet();
-
-          // one set of dofs
-          std::vector<int>  ndstest;
-          for (int t=0;t<8; ++t)
-            ndstest.push_back(0);
-
-          // get element location vector, dirichlet flags and ownerships
-          actele->LocationVector(discret,ndstest,la,false);
-
-          // get dimension of element matrices and vectors
-          // Reshape element matrices and vectors and init to zero
-          strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
-
-          {
-            TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
-
-            // call the element evaluate method
-            int err = impl->IntegrateShapeFunctionXFEM( ele, discret, la[0].lm_, strategy.Elevector1(),
-                intpoints_sets[set_counter],
-                cells
-            );
-
-            if (err)
-              dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
-          }
-
-          int eid = actele->Id();
-
-          // introduce an vector containing the rows for that values have to be communicated
-          // REMARK: when assembling row elements also non-row rows have to be communicated
-          std::vector<int> myowner;
-          for(size_t index=0; index<la[0].lmowner_.size(); index++)
-          {
-            myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
-          }
-
-
-          // REMARK:: call Assemble without lmowner
-          // to assemble the residual_col vector on only row elements also column nodes have to be assembled
-          // do not exclude non-row nodes (modify the real owner to myowner)
-          // after assembly the col vector it has to be exported to the row residual_ vector
-          // using the 'Add' flag to get the right value for shared nodes
-          LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
-
-        }
-        count += 1;
-      }
-#endif
     } // end of if(e!=NULL) // assembly for cut elements
     else
     {
@@ -1263,7 +1076,6 @@ void FLD::XFluid::XFluidState::GmshOutput( const std::string & filename_base,
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
     {
-#ifdef DOFSETS_NEW
 
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
@@ -1301,43 +1113,6 @@ void FLD::XFluid::XFluidState::GmshOutput( const std::string & filename_base,
             }
             set_counter += 1;
         }
-
-
-#else
-      GEO::CUT::plain_volumecell_set cells;
-      std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCells( cells );
-
-      int count = 0;
-      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::VolumeCell * vc = *i;
-        if ( vc->Position()==GEO::CUT::Point::outside )
-        {
-          const std::vector<int> & nds = vc->NodalDofSet();
-
-          std::vector<int>  ndstest;
-          for (int t=0;t<8; ++t)
-          ndstest.push_back(0);
-
-          if ( e->IsCut() )
-          {
-            GmshOutputVolumeCell( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, ndstest, vel, acc );
-            GmshOutputBoundaryCell( *xfluid_.discret_, *xfluid_.boundarydis_, gmshfilecontent_bound, actele, e, vc );
-          }
-          else
-          {
-            std::vector<int> nsd; // empty vector
-            GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nsd, vel, acc );
-          }
-          GmshOutputElement( *xfluid_.discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, ndstest, vel, acc );
-
-        }
-      }
-      count += 1;
-
-#endif
-
     }
     else
     {
@@ -2404,7 +2179,6 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
       // xfem element
       if ( e!=NULL )
       {
-#ifdef DOFSETS_NEW
 
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
@@ -2481,43 +2255,6 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
             }
           } // bcells
         } // end of loop over volume-cell sets
-
-#else
-        GEO::CUT::plain_volumecell_set cells;
-        std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        std::vector<std::vector<double> > refEqns;
-        e->VolumeCellGaussPoints( cells, intpoints ,refEqns, VolumeCellGaussPointBy_);//modify gauss type
-
-        int count = 0;
-        for ( GEO::CUT::plain_volumecell_set::iterator s=cells.begin(); s!=cells.end(); ++s )
-        {
-          GEO::CUT::VolumeCell * vc = *s;
-          if ( vc->Position()==GEO::CUT::Point::outside )
-          {
-            //             // one set of dofs
-            //             std::vector<int>  ndstest;
-            //             for (int t=0;t<8; ++t)
-            //               ndstest.push_back(0);
-
-            const std::vector<int> & nds = vc->NodalDofSet();
-            actele->LocationVector(*discret_,nds,la,false);
-            //actele->LocationVector(*discret_,ndstest,la,false);
-
-            impl->ComputeError(ele,
-                *params_,
-                mat,
-                *discret_,
-                la[0].lm_,
-                ele_dom_norms,
-                intpoints[count]
-            );
-
-          }
-          count += 1;
-        }
-
-#endif
-
       }
       // standard (no xfem) element
       else

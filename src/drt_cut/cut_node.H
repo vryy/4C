@@ -138,11 +138,10 @@ public:
   void SortDOFCellSets();
 
   /// get the number of dofsets at this node
-#ifdef DOFSETS_NEW
   int NumDofSets() const { return DofCellSets().size(); }
-#else
-  int NumDofSets() const { return DofSets().size();}
-#endif
+
+  /// old variant, unused: get the number of dofsets at this node
+  // int NumDofSets() const { return DofSets().size();}
 
   /// Returns the selfcutposition of this node
   Point::PointPosition SelfCutPosition(){ return selfcutposition_; }

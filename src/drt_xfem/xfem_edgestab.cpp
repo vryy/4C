@@ -41,11 +41,13 @@ Maintainer: Benedikt Schott
  |  Constructor for XFEM_EdgeStab                          schott 03/12 |
  *----------------------------------------------------------------------*/
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
-  Teuchos::RCP<XFEM::FluidWizard>              wizard,  ///< fluid wizard
-  Teuchos::RCP<DRT::Discretization>            discret  ///< discretization
+  Teuchos::RCP<XFEM::FluidWizard>              wizard,                ///< fluid wizard
+  Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
+  bool                                         include_inner          ///< stabilize also facets with inside position
   ) :
   wizard_(wizard),
-  discret_(discret)
+  discret_(discret),
+  include_inner_(include_inner)
 {
   ghost_penalty_stab_.clear();
   edge_based_stab_.clear();
@@ -77,8 +79,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   // * ghost penalty has to be integrated if there is at least one cut element
   //   (because all faces between two elements for that at least one element is cut by the interface has to be stabilized)
   //   NOTE: the limit case that a cut side just touches a node or if the cut side touches an element side completely, the check
-  //         e->IsCut() returns true and we stabilize the face. This might lead to a slightly over-stabilization as it e.g. does not
-  //         switch of the ghost-penalties for standard FEM. In case that this is necessary it would possible to replace the IsCut-check
+  //         e->IsIntersected() returns false and we do not stabilize the face.
+  //         This avoids over-stabilization as it e.g. does not switch on the ghost-penalties for standard FEM situations.
   //         by a more appropriate check which tells you if the neighboring volumecell is equal to the element itself.
   //   NOTE: it might be helpful and might lead to better results when weighting ghost-penalties by e.g. volume-fractions.
   //         In that case it still has to be guaranteed not to loose coercivity. To guarantee weak consistency the scalings have to be bounded by h.
@@ -189,7 +191,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin();
           f != facets.end(); f++)
       {
-        if ((*f)->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+        if (     (*f)->Position() == GEO::CUT::Point::outside
+            or ( (*f)->Position() == GEO::CUT::Point::inside and include_inner_)
+        )
         {
 
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
@@ -204,7 +208,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               GEO::CUT::VolumeCell* vc1 = vcs[0];
               GEO::CUT::VolumeCell* vc2 = vcs[1];
 
-#ifdef DOFSETS_NEW
 
               // get the parent element
               int vc_ele1_id = vc1->ParentElement()->Id();
@@ -224,11 +227,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               else
                 dserror(
                     "no element (ele1 and ele2) is the parent element!!! WHY?");
-#else
-              for(size_t i=0; i< p_master_numnode; i++) nds_master.push_back(0);
 
-              for(size_t i=0; i< p_slave_numnode; i++) nds_slave.push_back(0);
-#endif
 
             }
             //------------------------
@@ -236,7 +235,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             num_edgestab++;
 
             // at least one element has to be cut
-            if (p_master_handle->IsCut() or p_slave_handle->IsCut())
+            if (p_master_handle->IsIntersected() or p_slave_handle->IsIntersected())
             {
               num_ghostpenalty++;
 
@@ -258,7 +257,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           {
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
-        } // facet outside
+        } // facet outside or (inside and include_inner_)
         else if ((*f)->Position() == GEO::CUT::Point::undecided)
         {
           dserror("the position of this facet is undecided, how to stabilize???");
@@ -298,7 +297,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin();
           f != facets.end(); f++)
       {
-        if ((*f)->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+        if (     (*f)->Position() == GEO::CUT::Point::outside
+            or ( (*f)->Position() == GEO::CUT::Point::inside and include_inner_)
+        )
         {
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
           // how many volumecells found?
@@ -309,7 +310,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds");
               GEO::CUT::VolumeCell* vc1 = vcs[0];
               GEO::CUT::VolumeCell* vc2 = vcs[1];
-#ifdef DOFSETS_NEW
+
               // get the parent element
               int vc_ele1_id = vc1->ParentElement()->GetParentId();
               int vc_ele2_id = vc2->ParentElement()->GetParentId();
@@ -330,11 +331,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
                 dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
               }
 
-#else
-              for(size_t i=0; i< p_master_numnode; i++) nds_master.push_back(0);
-
-              for(size_t i=0; i< p_slave_numnode; i++) nds_slave.push_back(0);
-#endif
             }
             bool new_nds_master = true;
             bool new_nds_slave = true;
@@ -369,7 +365,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             //------------------------
             num_edgestab++;
             // at least one element has to be cut
-            if (p_master_handle->IsCut() or p_slave_handle->IsCut())
+            if (p_master_handle->IsIntersected() or p_slave_handle->IsIntersected())
             {
               num_ghostpenalty++;
 
@@ -387,7 +383,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           {
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
-        } // facet outside
+        } // facet outside or (inside and include_inner_)
         else if ((*f)->Position() == GEO::CUT::Point::undecided)
         {
           dserror(
@@ -446,7 +442,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
       // get the unique single facet
       GEO::CUT::Facet* f = facets[0];
-      if(f->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+      if(      f->Position() == GEO::CUT::Point::outside
+          or ( f->Position() == GEO::CUT::Point::inside and include_inner_)
+      )
       {
 
           GEO::CUT::plain_volumecell_set vcs = f->Cells();
@@ -467,7 +465,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
                 vc_ele_id = vc->ParentElement()->GetParentId();
               }
 
-#ifdef DOFSETS_NEW
+
               // which element is the parent element
               if(p_master_handle != NULL)
               {
@@ -482,11 +480,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
                 nds_slave  = vc->NodalDofSet();
               }
               else dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
-#else
-              for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
 
-              for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
-#endif
 
             }
             //------------------------
@@ -496,7 +490,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             // at most one element can be a cut one
             if(p_master_handle != NULL)
             {
-              if(p_master_handle->IsCut())
+              if(p_master_handle->IsIntersected())
               {
                 num_ghostpenalty++;
                 face_type = INPAR::XFEM::face_type_ghost_penalty;
@@ -505,7 +499,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             }
             else if(p_slave_handle != NULL)
             {
-              if(p_slave_handle->IsCut())
+              if(p_slave_handle->IsIntersected())
               {
                 num_ghostpenalty++;
                 face_type = INPAR::XFEM::face_type_ghost_penalty;
@@ -530,7 +524,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
           }
 
-      } // if outside
+      } // if outside or (inside and include_inner)
     }
   } // end last case
 

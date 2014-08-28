@@ -918,7 +918,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
     else if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end()) or
              (iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end()))
     {
-#ifdef DOFSETS_NEW
       int numsets = bgdis->NumDof(bgnode)/4;
       if (numsets > 1)
         IO::cout << "ghost-fluid-approach just available for one dofset!" << IO::endl;
@@ -930,11 +929,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp4,bgstatevn4);
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp5,bgstatevn5);
 
-#else
-      std::vector<int> gdofsn = iteren->second;
-      WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
-
-#endif
     }
     //do nothing:
     //n: void->n+1: void, n:std->n+1:void, n:enriched->n+1:void
@@ -1962,7 +1956,6 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const Teuchos::
     // xfem element
     if ( e!=NULL )
     {
-#ifdef DOFSETS_NEW
 
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
@@ -2012,9 +2005,6 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const Teuchos::
         set_counter += 1;
       }
 
-#else
-      dserror("Just Dofset new implemented!!");
-#endif
     }
     else
     {

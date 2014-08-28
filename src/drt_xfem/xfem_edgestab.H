@@ -64,9 +64,11 @@ class XFEM_EdgeStab
 public:
 
   //! constructor
-  explicit XFEM_EdgeStab(Teuchos::RCP<XFEM::FluidWizard>              wizard, ///< fluid wizard
-                         Teuchos::RCP<DRT::Discretization>            discret ///< discretization
-                         );
+  explicit XFEM_EdgeStab(
+      Teuchos::RCP<XFEM::FluidWizard>              wizard,                ///< fluid wizard
+      Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
+      bool                                         include_inner = false  ///< stabilize also facets with inside position
+  );
 
   //! destructor
   ~XFEM_EdgeStab()
@@ -119,8 +121,10 @@ public:
   Teuchos::RCP<XFEM::FluidWizard> wizard_;    ///< fluid wizard
   Teuchos::RCP<DRT::Discretization> discret_; ///< discretization
 
-  std::map<int, int> ghost_penalty_stab_;    /// map of face elements stabilized with ghost penalty
-  std::map<int, int> edge_based_stab_;       /// map of face elements stabilized with edge based fluid stabilization
+  bool include_inner_; ///< do we have to stabilize facets with inside position?
+
+  std::map<int, int> ghost_penalty_stab_;    ///< map of face elements stabilized with ghost penalty
+  std::map<int, int> edge_based_stab_;       ///< map of face elements stabilized with edge based fluid stabilization
 
 
 };

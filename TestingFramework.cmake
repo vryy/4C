@@ -1521,6 +1521,7 @@ baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20_EOS_GP_2ndGP_Div 1 ""
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20_EOS_GP_2ndGP_Div 2 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 2 "")
+baci_test(xfluid_comp_struct_EOS_touched_cut 4 "")
 baci_test(xfluid_fluid_pusher 1 "")
 baci_test(xfluid_kimmoin_instat_16x16x1_dens5 2 "")
 baci_test(xfluid_kimmoin_instat_16x16x1 2 "")

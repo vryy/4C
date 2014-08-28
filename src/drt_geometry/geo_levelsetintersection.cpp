@@ -155,11 +155,7 @@ void GEO::CutWizardLevelSet::CutParallel_FindPositionDofSets(bool include_inner,
     m.FindFacetPositions();
 
     // find number and connection of dofsets at nodes from cut volumes
-    #ifdef DOFSETS_NEW
-      mesh_->CreateNodalDofSetNEW( include_inner, dis_);
-    #else
-      m.FindNodalDOFSets( include_inner );
-    #endif
+    mesh_->CreateNodalDofSetNEW( include_inner, dis_);
 
     if(communicate) cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
 

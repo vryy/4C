@@ -627,7 +627,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
     if ( e!=NULL )
     {
 
-#ifdef DOFSETS_NEW
       // sets of volume-cells associated with current element
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       // sets of nodal dofsets associated with current element
@@ -884,187 +883,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
         LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
 
       } // end of loop over cellsets // end of assembly for each set of cells
-#else
-      GEO::CUT::plain_volumecell_set cells;
-      std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      std::vector<std::vector<double> > refEqns;
-      e->VolumeCellGaussPoints( cells, intpoints, refEqns, xfluid_.VolumeCellGaussPointBy_);//modify gauss type
-
-      int count = 0;
-      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::VolumeCell * vc = *i;
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
-        if ( vc->Position()==GEO::CUT::Point::outside )
-        {
-          //const std::vector<int> & nds = vc->NodalDofSet();
-
-          // one set of dofsets
-          std::vector<int>  ndstest;
-          for (int t=0;t<8; ++t)
-            ndstest.push_back(0);
-
-          // actele->LocationVector(discret,nds,la,false);
-          actele->LocationVector(discret,ndstest,la,false);
-
-          // get dimension of element matrices and vectors
-          // Reshape element matrices and vectors and init to zero
-          strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
-
-          {
-            TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate cut domain" );
-
-            // call the element evaluate methods
-            int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
-                                      strategy.Elematrix1(),
-                                      strategy.Elematrix2(),
-                                      strategy.Elevector1(),
-                                      strategy.Elevector2(),
-                                      strategy.Elevector3(),
-                                      intpoints[count] );
-            if (err)
-              dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
-          }
-
-          // do cut interface condition
-
-          std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
-          vc->GetBoundaryCells( bcells );
-
-          if ( bcells.size() > 0 )
-          {
-            TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate boundary" );
-
-            std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
-
-            // get boundary cell integration points
-            e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-
-            //std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
-
-            std::set<int> begids;
-            for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-                     bc!=bcells.end(); ++bc )
-            {
-              int sid = bc->first;
-              begids.insert(sid);
-            }
-
-
-            std::vector<int> patchelementslm;
-            std::vector<int> patchelementslmowner;
-            for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-                  bc!=bcells.end(); ++bc )
-            {
-              int sid = bc->first;
-              DRT::Element * side = cutdiscret.gElement( sid );
-
-              std::vector<int> patchlm;
-              std::vector<int> patchlmowner;
-              std::vector<int> patchlmstride;
-              side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
-
-              patchelementslm.reserve( patchelementslm.size() + patchlm.size());
-              patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
-
-              patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
-              patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
-
-              const size_t ndof_i = patchlm.size();
-              const size_t ndof   = la[0].lm_.size();
-
-              std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid];
-              if ( couplingmatrices.size()!=0 )
-                dserror("zero sized vector expected");
-
-              couplingmatrices.resize(3);
-              couplingmatrices[0].Reshape(ndof_i,ndof);  //C_uiu
-              couplingmatrices[1].Reshape(ndof,ndof_i);  //C_uui
-              couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
-            }
-
-            const size_t nui = patchelementslm.size();
-            Epetra_SerialDenseMatrix  Cuiui(nui,nui);
-
-            // all boundary cells that belong to one cut element
-            impl->ElementXfemInterfaceMHCS(    ele,
-                                              discret,
-                                              la[0].lm_,
-                                              intpoints[count],
-                                              cutdiscret,
-                                              bcells,
-                                              bintpoints,
-                                              side_coupling,
-                                              eleparams,
-                                              strategy.Elematrix1(),
-                                              strategy.Elevector1(),
-                                              Cuiui,
-                                              cells,
-                                              true);
-
-            for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
-                  sc!=side_coupling.end(); ++sc )
-            {
-              std::vector<Epetra_SerialDenseMatrix>  couplingmatrices = sc->second;
-
-              int sid = sc->first;
-
-              if ( cutdiscret.HaveGlobalElement(sid) )
-              {
-                DRT::Element * side = cutdiscret.gElement( sid );
-                std::vector<int> patchlm;
-                std::vector<int> patchlmowner;
-                std::vector<int> patchlmstride;
-                side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
-
-                // assemble Cuiu
-                //create a dummy mypatchlmowner that assembles also non-local rows and communicates the required data
-                std::vector<int> mypatchlmowner;
-                for(size_t index=0; index<patchlmowner.size(); index++) mypatchlmowner.push_back(xfluid_.myrank_);
-
-                Cuiu_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
-
-                // assemble Cuui
-                std::vector<int> mylmowner;
-                for(size_t index=0; index<la[0].lmowner_.size(); index++) mylmowner.push_back(xfluid_.myrank_);
-
-                Cuui_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
-
-
-                // assemble rhC_ui_col
-                Epetra_SerialDenseVector rhC_ui_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
-                LINALG::Assemble(*rhC_ui_col, rhC_ui_eptvec, patchlm, mypatchlmowner);
-              }
-            }
-
-            // assemble Cuiui
-            std::vector<int> mypatchelementslmowner;
-            for(size_t index=0; index<patchelementslm.size(); index++) mypatchelementslmowner.push_back(xfluid_.myrank_);
-
-            Cuiui_->FEAssemble(-1,Cuiui, patchelementslm, mypatchelementslmowner, patchelementslm );
-          }
-
-          int eid = actele->Id();
-
-          // introduce an vector containing the rows for that values have to be communicated
-          // REMARK: when assembling row elements also non-row rows have to be communicated
-          std::vector<int> myowner;
-          for(size_t index=0; index<la[0].lmowner_.size(); index++) myowner.push_back(xfluid_.myrank_);
-
-          // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-          sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
-
-          // REMARK:: call Assemble without lmowner
-          // to assemble the residual_col vector on only row elements also column nodes have to be assembled
-          // do not exclude non-row nodes (modify the real owner to myowner)
-          // after assembly the col vector it has to be exported to the row residual_ vector
-          // using the 'Add' flag to get the right value for shared nodes
-          LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
-
-        }
-        count += 1;
-      }
-#endif
     }
     else // evaluation of a non-intersected background element
     {
@@ -1384,7 +1202,6 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
     {
-#ifdef DOFSETS_NEW
 
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
@@ -1418,36 +1235,6 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
         }
         set_counter += 1;
       }
-
-#else
-      GEO::CUT::plain_volumecell_set cells;
-      std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
-      int count = 0;
-      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::VolumeCell * vc = *i;
-        if ( vc->Position()==GEO::CUT::Point::outside )
-        {
-#ifdef DOFSETS_NEW
-          const std::vector<int> & nds = vc->NodalDofSet();
-          if ( e->IsCut() )
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, nds );
-#else
-          std::vector<int>  ndstest;
-          for (int t=0;t<8; ++t)
-            ndstest.push_back(0);
-          if ( e->IsCut() )
-             GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, ndstest );
-#endif
-          else
-          {
-            GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, col_vel );
-          }
-        }
-      }
-      count += 1;
-#endif
     }
     else
     {
@@ -4967,7 +4754,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
       // xfem element
       if ( e!=NULL )
       {
-#ifdef DOFSETS_NEW
 
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
@@ -5057,43 +4843,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
             }
           } // bcells.size() > 0
         } // end loop over volume-cell sets
-
-#else
-        GEO::CUT::plain_volumecell_set cells;
-        std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        std::vector<std::vector<double> > refEqns;
-        e->VolumeCellGaussPoints( cells, intpoints ,refEqns, VolumeCellGaussPointBy_);//modify gauss type
-
-        int count = 0;
-        for ( GEO::CUT::plain_volumecell_set::iterator s=cells.begin(); s!=cells.end(); ++s )
-        {
-          GEO::CUT::VolumeCell * vc = *s;
-          if ( vc->Position()==GEO::CUT::Point::outside )
-          {
-            //             // one set of dofs
-            //             std::vector<int>  ndstest;
-            //             for (int t=0;t<8; ++t)
-            //               ndstest.push_back(0);
-
-            const std::vector<int> & nds = vc->NodalDofSet();
-            actele->LocationVector(*bgdis_,nds,la,false);
-
-            impl->ComputeError(ele,
-                               *params_,
-                               mat,
-                               *bgdis_
-                               la[0].lm_,
-                               ele_dom_norms_bg,
-                               intpoints[count]
-            );
-
-            // sum up (on each processor)
-            cpu_dom_norms_bg += ele_dom_norms_bg;
-          }
-          count += 1;
-        }
-
-#endif
 
         // add element domain norm (on each processor)
         cpu_dom_norms_bg += ele_dom_norms_bg;
