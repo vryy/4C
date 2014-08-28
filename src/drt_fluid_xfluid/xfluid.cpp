@@ -4007,7 +4007,7 @@ bool FLD::XFluid::XTimint_CheckForMonolithicNewtonRestart(
 
   if(myrank_ == 0 and screen_out)
   {
-    if(restart_necessary) IO::cout << " RESTART of NEWTON necessary "     << IO::endl;
+    if(restart_necessary) IO::cout << " RESTART of NEWTON necessary if not the first run after restarting/starting a timestep "     << IO::endl;
     else                  IO::cout << " RESTART of NEWTON not necessary " << IO::endl;
   }
 
@@ -4157,7 +4157,6 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
   if(timint_ghost_penalty)
   {
-    if(dbcgids->size() == 0) dserror("no Dirichlet boundary conditions for ghost-penalty reconstruction -> no solvable system!");
 
     XTimint_GhostPenalty(
         newRowStateVectors,         ///< vectors to be reconstructed
@@ -4293,7 +4292,6 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
   if(timint_ghost_penalty)
   {
-    if(dbcgids->size() == 0) dserror("no Dirichlet boundary conditions for ghost-penalty reconstruction -> no solvable system!");
 
     XTimint_GhostPenalty(
         rowStateVectors_npip,       ///< vectors to be reconstructed
@@ -4308,7 +4306,8 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
 
 
   //------------------------------------------------------------------------------------
-  // decide if the monolithic Newton has to be restarted
+  // decide if the monolithic Newton has to be restarted, in case of the first iteration after a restart this information is
+  // not used in the Newton loop
   //------------------------------------------------------------------------------------
 
 

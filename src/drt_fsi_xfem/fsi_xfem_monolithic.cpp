@@ -1259,21 +1259,10 @@ bool FSI::MonolithicXFEM::Evaluate()
 
 
   //--------------------------------------------------------
-  // update permutation cycles how to permute fluid dofs during the Newton
-  //--------------------------------------------------------
-
-  // update the permutation map used for permuting fluid-dofs between Dofset after restarting the Newton and current Dofset
-  // and build a vector of cycles how to permute dofs between the reference dofset from restarting the Newton and current dofset
-  // note: No permutation for the first call since restarting the Newton - this is the reference dofset
-  if(iter_ > 1)
-  {
-    Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-    UpdatePermutationMap(*xfluid->GetPermutationMap());
-  }
-
-
-  //--------------------------------------------------------
   // permute the fluid step-inc (ordered w.r.t. restart state) to current dofset-state
+  // nothing has to be permuted for the first run as the following first evaluate call will fix the reference dofset for this Newton loop
+  // nothing has to be permuted before we call the fluid-evaluate the second time, since the second call we determine if dofsets have permuted
+  // the first potentially valid permutation is set and available after the second fluid-evaluate call
   //--------------------------------------------------------
 
   Teuchos::RCP<Epetra_Vector> fx_permuted = Teuchos::null;
@@ -1315,6 +1304,20 @@ bool FSI::MonolithicXFEM::Evaluate()
     FluidField()->Evaluate(fx_permuted);
 
     IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+  }
+
+  //--------------------------------------------------------
+  // update permutation cycles how to permute fluid dofs during the Newton
+  //--------------------------------------------------------
+
+  // update the permutation map used for permuting fluid-dofs between Dofset after restarting the Newton.
+  // Build a vector of cycles how to permute dofs between the reference dofset from restarting the Newton and current dofset
+  // note: No permutation for the first call since restarting the Newton - this is the reference dofset
+  //       the first potentially valid permutation is set and available after the second fluid-evaluate call
+  if(iter_ > 1)
+  {
+    Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
+    UpdatePermutationMap(*xfluid->GetPermutationMap());
   }
 
   //-------------------
