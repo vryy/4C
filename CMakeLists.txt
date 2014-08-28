@@ -455,11 +455,9 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_parobject.cpp
   src/drt_lib/drt_parobjectfactory.cpp
   src/drt_lib/drt_timecurve.cpp
-  src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_createdis.cpp
   src/drt_lib/drt_utils_factory.cpp
   src/drt_lib/drt_utils_nullspace.cpp
-  src/drt_lib/drt_utils_parallel.cpp
 )
 set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaagasser.cpp
@@ -834,8 +832,8 @@ set(OBJS_DRT_BELE3_LIB
 set(OBJS_DRT_COMM
   src/drt_comm/comm_utils.cpp
 )
-set(OBJS_DRT_UTILS
 
+set(OBJS_DRT_UTILS
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
@@ -856,7 +854,6 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/searchtree_geometry_service.cpp
   src/drt_geometry/searchtree_nearestobject.cpp
   src/drt_geometry/tetrahedradecomposition.cpp
-  src/drt_io/io_gmsh.cpp
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
   src/drt_lib/drt_dirichletextractor.cpp
@@ -867,7 +864,9 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_nodematchingoctree.cpp
   src/drt_lib/drt_parser.cpp
   src/drt_lib/drt_resulttest.cpp
+  src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_metis.cpp
+  src/drt_lib/drt_utils_parallel.cpp
   src/drt_lib/drt_utils_parmetis.cpp
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c
@@ -1535,6 +1534,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp
   src/drt_io/io_control.cpp
   src/drt_io/io_hdf.cpp
+  src/drt_io/io_gmsh.cpp
   src/drt_io/io_pstream.cpp
   src/drt_lib/drt_domainreader.cpp
   src/drt_lib/drt_elementreader.cpp
@@ -2209,7 +2209,9 @@ message("Trilinos_DEV not set ")
   if (NOT ACML_FOUND )  ## cut_test not available on kaiser
     add_executable(cut_test  EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
     target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES}
+    drt_lib_utils
     drt_lib_io
+    linalg
     ${LIBRARIES}
     )
     add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
@@ -2219,7 +2221,9 @@ else()
   #if (NOT ACML_FOUND )  ## cut_test not available on kaiser
     add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
     target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
+    drt_lib_utils
     drt_lib_io
+    linalg
     ${LIBRARIES}
     )
     add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)

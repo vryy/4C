@@ -4,8 +4,8 @@
 \brief simple element print library for Gmsh
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -23,59 +23,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/position_array.H"
 
-
-std::string IO::GMSH::distypeToGmshElementHeader(
-    const DRT::Element::DiscretizationType distype)
-{
-  switch (distype)
-  {
-    case DRT::Element::hex8:    return "H";  break;
-    case DRT::Element::hex20:   return "H";  break;
-    case DRT::Element::hex27:   return "H";  break;
-    case DRT::Element::tet4:    return "S";  break;
-    case DRT::Element::tet10:   return "S";  break;
-    case DRT::Element::point1:  return "P";  break;
-    case DRT::Element::quad4:   return "Q";  break;
-    case DRT::Element::quad8:   return "Q";  break;
-    case DRT::Element::quad9:   return "Q";  break;
-    case DRT::Element::tri3:    return "T";  break;
-    case DRT::Element::tri6:    return "T";  break;
-    case DRT::Element::line2:   return "L";  break;
-    case DRT::Element::line3:   return "L2"; break;
-    case DRT::Element::wedge6:  return "I";  break;
-    case DRT::Element::wedge15: return "I";  break;
-    default:
-      dserror("distypeToGmshElementHeader: distype not supported for printout!");
-  }
-  return "xxx";
-}
-
-int IO::GMSH::distypeToGmshNumNode(
-    const DRT::Element::DiscretizationType distype   ///< element shape
-)
-{
-  switch (distype)
-  {
-    case DRT::Element::hex8:    return 8;  break;
-    case DRT::Element::hex20:   return 8;  break;
-    case DRT::Element::hex27:   return 8;  break;
-    case DRT::Element::tet4:    return 4;  break;
-    case DRT::Element::tet10:   return 4;  break;
-    case DRT::Element::point1:  return 1;  break;
-    case DRT::Element::quad4:   return 4;  break;
-    case DRT::Element::quad8:   return 4;  break;
-    case DRT::Element::quad9:   return 4;  break;
-    case DRT::Element::tri3:    return 3;  break;
-    case DRT::Element::tri6:    return 3;  break;
-    case DRT::Element::line2:   return 2;  break;
-    case DRT::Element::line3:   return 3;  break;
-    case DRT::Element::wedge6:  return 6;  break;
-    case DRT::Element::wedge15: return 6;  break;
-    default:
-      dserror("distypeToGmshNumNode: distype not supported for printout!");
-  }
-  return -1;
-}
 
 /*------------------------------------------------------------------------------------------------*
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
@@ -481,31 +428,6 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(
   }
 }
 
-
-void IO::GMSH::ScalarToStream(
-    const double                           scalar,
-    const DRT::Element::DiscretizationType distype,
-    std::ostream&                          s
-    )
-{
-  s.setf(std::ios::scientific,std::ios::floatfield);
-  s.precision(12);
-
-  const int numnode = distypeToGmshNumNode(distype);
-
-  // values
-  s << "{";
-  for (int i = 0; i<numnode; ++i)
-  {
-    s << scalar;
-    if (i < numnode-1)
-    {
-      s << ",";
-    }
-  };
-  s << "};";
-}
-
 void IO::GMSH::ScalarToStream(
     const LINALG::Matrix<3,1>& pointXYZ,    ///< coordinates of point
     const double               scalarvalue, ///< scalar value at this point
@@ -740,4 +662,3 @@ std::string IO::GMSH::GetFileName(
 
   return filename.str();
 }
-

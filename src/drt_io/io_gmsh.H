@@ -11,10 +11,10 @@
  * and should be much faster when large discretizations are piped into a file.
  *
  * <pre>
- * Maintainer: Axel Gerstenberger
- *             gerstenberger@lnm.mw.tum.de
+ * Maintainer: Martin Kronbichler
+ *             kronbichler@lnm.mw.tum.de
  *             http://www.lnm.mw.tum.de
- *             089 - 289-15236
+ *             089 - 289-15235
  * </pre>
  *
  */
@@ -30,14 +30,62 @@ namespace IO
   namespace GMSH
   {
     //! for each DRT::Element::DiscretizationType find the appropriate Gmsh file type
+    inline
     std::string distypeToGmshElementHeader(
         const DRT::Element::DiscretizationType distype   ///< element shape
-        );
+        )
+    {
+      switch (distype)
+      {
+        case DRT::Element::hex8:    return "H";  break;
+        case DRT::Element::hex20:   return "H";  break;
+        case DRT::Element::hex27:   return "H";  break;
+        case DRT::Element::tet4:    return "S";  break;
+        case DRT::Element::tet10:   return "S";  break;
+        case DRT::Element::point1:  return "P";  break;
+        case DRT::Element::quad4:   return "Q";  break;
+        case DRT::Element::quad8:   return "Q";  break;
+        case DRT::Element::quad9:   return "Q";  break;
+        case DRT::Element::tri3:    return "T";  break;
+        case DRT::Element::tri6:    return "T";  break;
+        case DRT::Element::line2:   return "L";  break;
+        case DRT::Element::line3:   return "L2"; break;
+        case DRT::Element::wedge6:  return "I";  break;
+        case DRT::Element::wedge15: return "I";  break;
+        default:
+          dserror("distypeToGmshElementHeader: distype not supported for printout!");
+      }
+      return "xxx";
+    }
 
     //! for each DRT::Element::DiscretizationType find the appropriate number of element nodes for Gmsh output
+    inline
     int distypeToGmshNumNode(
         const DRT::Element::DiscretizationType distype   ///< element shape
-      );
+      )
+    {
+      switch (distype)
+      {
+        case DRT::Element::hex8:    return 8;  break;
+        case DRT::Element::hex20:   return 8;  break;
+        case DRT::Element::hex27:   return 8;  break;
+        case DRT::Element::tet4:    return 4;  break;
+        case DRT::Element::tet10:   return 4;  break;
+        case DRT::Element::point1:  return 1;  break;
+        case DRT::Element::quad4:   return 4;  break;
+        case DRT::Element::quad8:   return 4;  break;
+        case DRT::Element::quad9:   return 4;  break;
+        case DRT::Element::tri3:    return 3;  break;
+        case DRT::Element::tri6:    return 3;  break;
+        case DRT::Element::line2:   return 2;  break;
+        case DRT::Element::line3:   return 3;  break;
+        case DRT::Element::wedge6:  return 6;  break;
+        case DRT::Element::wedge15: return 6;  break;
+        default:
+          dserror("distypeToGmshNumNode: distype not supported for printout!");
+      }
+      return -1;
+    }
 
     //! write scalar field to Gmsh postprocessing file
     void ScalarFieldToGmsh(
@@ -90,7 +138,9 @@ namespace IO
         );
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
-    template<class M> void CoordinatesToStream(
+    template<class M>
+    inline
+    void CoordinatesToStream(
         const M&                               coord,     ///< position array (3, numnode)
         const DRT::Element::DiscretizationType distype,   ///< element shape
         std::ostream&                          s
@@ -119,7 +169,9 @@ namespace IO
     }
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
-    template<class M> void CoordinatesToStream2D(
+    template<class M>
+    inline
+    void CoordinatesToStream2D(
         const M&                               coord,     ///< position array (3, numnode)
         const DRT::Element::DiscretizationType distype,   ///< element shape
         std::ostream&                          s
@@ -149,11 +201,30 @@ namespace IO
 
     //! take a double value and translate it to the value section of an Gmsh element entry
     //! -> gives a constant value over the element; used to plot the mesh without any physical field
+    inline
     void ScalarToStream(
         const double                           scalar,      ///< constant (arbitrary) value assigned to elements
         const DRT::Element::DiscretizationType distype,     ///< element shape
         std::ostream&                          s
-    );
+    )
+    {
+      s.setf(std::ios::scientific,std::ios::floatfield);
+      s.precision(12);
+
+      const int numnode = distypeToGmshNumNode(distype);
+
+      // values
+      s << "{";
+      for (int i = 0; i<numnode; ++i)
+      {
+        s << scalar;
+        if (i < numnode-1)
+        {
+          s << ",";
+        }
+      };
+      s << "};";
+    }
 
     //! take a scalar value at a point and translate it into Gmsh postprocessing format
     void ScalarToStream(
@@ -170,7 +241,9 @@ namespace IO
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
-    template<class V> void ScalarFieldToStream(
+    template<class V>
+    inline
+    void ScalarFieldToStream(
         const V&                               scalarfield,
         const DRT::Element::DiscretizationType distype,      ///< element shape
         std::ostream&                          s
@@ -195,7 +268,9 @@ namespace IO
     }
 
     //! take an array (3,numnode) and translate it to the vector value section of an Gmsh element entry
-    template<class M> void VectorFieldToStream(
+    template<class M>
+    inline
+    void VectorFieldToStream(
         const M&                               vectorfield,  ///< vector value array (3, numnode)
         const DRT::Element::DiscretizationType distype,      ///< element shape
         std::ostream&                          s
@@ -227,7 +302,9 @@ namespace IO
 
 
     //! take an array (3,numnode) and translate it to the vector value section of an Gmsh element entry
-    template<class M> void VectorFieldToStream2D(
+    template<class M>
+    inline
+    void VectorFieldToStream2D(
         const M&                               vectorfield,  ///< vector value array (3, numnode)
         const DRT::Element::DiscretizationType distype,      ///< element shape
         std::ostream&                          s
@@ -255,7 +332,9 @@ namespace IO
     }
 
     //! take an array (9,numnode) and translate it to the tensor value section of an Gmsh element entry
-    template<class M> void TensorFieldToStream(
+    template<class M>
+    inline
+    void TensorFieldToStream(
         const M&                               tensorfield,
         const DRT::Element::DiscretizationType distype,      ///< element shape
         std::ostream&                          s
@@ -326,7 +405,7 @@ namespace IO
       ScalarToStream(scalar, distype, s);
       s << "\n";
     }
-    
+
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
     template<class M> std::string cellWithScalarToString(
         const DRT::Element::DiscretizationType distype,   ///< element shape
@@ -340,7 +419,9 @@ namespace IO
     }
 
     //! take an value array (numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
-    template<class V, class M> void cellWithScalarFieldToStream(
+    template<class V, class M>
+    inline
+    void cellWithScalarFieldToStream(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const V&                                scalarfield,    ///< scalar field in the element
         const M&                                xyze,           ///< position array (3, numnode)
@@ -355,7 +436,9 @@ namespace IO
     }
 
     //! take an value array (numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
-    template<class V, class M> std::string cellWithScalarFieldToString(
+    template<class V, class M>
+    inline
+    std::string cellWithScalarFieldToString(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const V&                                scalarfield,    ///< scalar field in the element
         const M&                                xyze            ///< position array (3, numnode)
@@ -367,7 +450,9 @@ namespace IO
     }
 
     //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
-    template<class M1, class M2> void cellWithVectorFieldToStream(
+    template<class M1, class M2>
+    inline
+    void cellWithVectorFieldToStream(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const M1&                               vectorfield,    ///< vector field in the element (3, numnode)
         const M2&                               xyze,           ///< position array (3, numnode)
@@ -382,7 +467,9 @@ namespace IO
     }
 
     //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
-    template<class M1, class M2> std::string cellWithVectorFieldToString(
+    template<class M1, class M2>
+    inline
+    std::string cellWithVectorFieldToString(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const M1&                               vectorfield,    ///< vector field in the element (3, numnode)
         const M2&                               xyze            ///< position array (3, numnode)
@@ -394,7 +481,9 @@ namespace IO
     }
 
     //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
-    template<class M1, class M2> void cellWithTensorFieldToStream(
+    template<class M1, class M2>
+    inline
+    void cellWithTensorFieldToStream(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const M1&                               tensorfield,    ///< tensor field in the element (9,numnode)
         const M2&                               xyze,           ///< position array (3, numnode)
@@ -409,7 +498,9 @@ namespace IO
     }
 
     //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file
-    template<class M1, class M2> std::string cellWithTensorFieldToString(
+    template<class M1, class M2>
+    inline
+    std::string cellWithTensorFieldToString(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const M1&                               tensorfield,    ///< tensor field in the element (9,numnode)
         const M2&                               xyze            ///< position array (3, numnode)
