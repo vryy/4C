@@ -4083,7 +4083,7 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
 
   {
-    if(myrank_==0 and screen_out) IO::cout << "\t ...TransferVectorsToNewMap...";
+    if(myrank_==0 and screen_out) IO::cout << "\t ...TransferVectorsToNewMap - TimeStepTransfer...";
 
     // --------------------------------------------
     // transfer of vectors from the old time step at the old interface position/dofset from t_n
@@ -4157,6 +4157,7 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
   if(timint_ghost_penalty)
   {
+    if(dbcgids->size() == 0) dserror("no Dirichlet boundary conditions for ghost-penalty reconstruction -> no solvable system!");
 
     XTimint_GhostPenalty(
         newRowStateVectors,         ///< vectors to be reconstructed
@@ -4235,13 +4236,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
 
   {
-
-    // reconstruction map for nodes and its dofsets - how do we have to reconstruct the single dofs
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
-
-    // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
-    Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
-
+    if(myrank_==0 and screen_out) IO::cout << "\t ...TransferVectorsToNewMap - IncrementStepTransfer...";
 
     // --------------------------------------------
     // transfer for the current iteration solution between last interface position of iteration i
@@ -4298,6 +4293,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
   //------------------------------------------------------------------------------------
   if(timint_ghost_penalty)
   {
+    if(dbcgids->size() == 0) dserror("no Dirichlet boundary conditions for ghost-penalty reconstruction -> no solvable system!");
 
     XTimint_GhostPenalty(
         rowStateVectors_npip,       ///< vectors to be reconstructed
