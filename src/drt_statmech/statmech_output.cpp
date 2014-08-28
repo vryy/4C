@@ -23,7 +23,7 @@ Maintainer: Kei Müller
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_octtree.H"
- 
+
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
@@ -877,7 +877,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         std::ostringstream matforcefilename;
         matforcefilename << outputrootpath_ << "/StatMechOutput/IntMatForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         OutputElementMaterialInternalForces(dis,matforcefilename);
-  
+
         if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0 && (linkermodel_==statmech_linker_bellseq || linkermodel_==statmech_linker_bellseqintpol))
         {
           std::ostringstream forcedepfilename;
@@ -898,7 +898,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         std::ostringstream filename;
         filename << outputrootpath_ << "/StatMechOutput/CreepForces.dat";
         ViscoelasticityOutput(time, dis, fint, filename);
-          
+
         std::ostringstream filename2;
         filename2 << outputrootpath_ << "/StatMechOutput/StructCOGInertia.dat";
         StructureCOGInertiaTensorOutput(istep, time, dis, filename2);
@@ -1044,7 +1044,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
   return;
 } // STATMECH::StatMechManager::Output()
 
-/*------------------------------------------------------------------------------*                                                 |
+/*------------------------------------------------------------------------------*
  | Output of distances between doubly bound linkers of the horizontal filament  |
  | in a loom type network                                                       |
  |                                                       (private) mueller 2/12 |
@@ -1429,8 +1429,8 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
   }
   return;
 }
-/*------------------------------------------------------------------------------*                                                 |
- | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
+/*------------------------------------------------------------------------------*
+ | output of elastic internal energy (special version for Loom setups           |
  |                                                        (public) mueller 4/11 |
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&                 disrow,

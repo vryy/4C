@@ -1094,12 +1094,13 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
 
   discret_->ClearState();
   discret_->SetState("displacement", dis);
-  Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+  Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(6));
   energies->Scale(0.0);
   //filaments
   p.set("energyoftype", "beam3ii");
   discret_->EvaluateScalars(p, energies);
-  energy.push_back((*energies)(0));
+  for(int i=0; i<energies->M(); i++)
+    energy.push_back((*energies)(i));
   //crosslinkers
   energies->Scale(0.0);
   p.remove("energyoftype", true);
@@ -1111,7 +1112,8 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
   else
     p.set("energyoftype", "beam3");
   discret_->EvaluateScalars(p, energies);
-  energy.push_back((*energies)(0));
+  for(int i=0; i<energies->M(); i++)
+    energy.push_back((*energies)(i));
   discret_->ClearState();
 
   if(!discret_->Comm().MyPID() && writefile)

@@ -4184,9 +4184,3 @@ void STATMECH::StatMechManager::CrosslinkerIntermediateUpdate(const Epetra_Multi
   }
   return;
 }// StatMechManager::CrosslinkerIntermediateUpdate
-
-
-void STATMECH::StatMechManager::PreventTransPBCCrosslinks()
-{
-  return;
-}

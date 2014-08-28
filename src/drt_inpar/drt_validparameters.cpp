@@ -2427,7 +2427,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //time interval in which random numbers are constant
   DoubleParameter("RANDNUMTIMEINT",-1.0,"Within this time interval the random numbers remain constant. -1.0 means no prescribed time interval.'",&statmech);
   //cutoff for random forces, which determines the maximal value
-  DoubleParameter("MAXRANDFORCE",-1.0,"Any (absolute) random force beyond this value will not be used. The maximum value will be used. -1.0 means no bounds.'",&statmech);
+  DoubleParameter("MAXRANDFORCE",-1.0,"Any random force beyond MAXRANDFORCE*(standard dev.) will be omitted and redrawn. -1.0 means no bounds.'",&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

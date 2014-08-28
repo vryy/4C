@@ -96,7 +96,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector&      disrow,
   if(!discret_->Comm().MyPID())
     std::cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<std::endl;
 
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2) || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -152,7 +152,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector&      disrow,
   double t4 = Teuchos::Time::wallTime();
 #endif
 
-  // write the numbers of free, one-bonded, and two-bonded crosslink molecules
+  // Orientation correlation function of filaments
   OrientationCorrelation(disrow, istep);
 
 #ifdef MEASURETIME
@@ -279,7 +279,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector&      disrow,
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2) || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   double periodlength = periodlength_->at(0);
@@ -364,7 +364,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
                                              const std::ostringstream& filename,
                                              bool filorientoutput)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   double periodlength = periodlength_->at(0);
@@ -1246,7 +1246,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   // get filament number conditions
@@ -1324,7 +1324,7 @@ void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol,
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Epetra_MultiVector& crosslinksperbinrotrow, LINALG::Matrix<3,1>* centershift)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -1626,7 +1626,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
    */
   if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
   {
-    if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
       dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
     Epetra_Vector discol(*discret_->DofColMap(), true);
@@ -1820,7 +1820,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   double periodlength = periodlength_->at(0);
@@ -2153,7 +2153,7 @@ void STATMECH::StatMechManager::SphericalCoordsDistribution(const Epetra_Vector&
                                                   Epetra_Vector& thetabinsrow,
                                                   Epetra_Vector& costhetabinsrow)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -2225,7 +2225,7 @@ void STATMECH::StatMechManager::SphericalCoordsDistribution(const Epetra_Vector&
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift)
 {
-  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   // simpler version taking into account only the original boundary volume
@@ -2292,7 +2292,7 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
 
   if(discret_->Comm().MyPID()==0)
   {
-    if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2)  || periodlength_->at(0) <= 0.0)
       dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
     double periodlength = periodlength_->at(0);

@@ -918,7 +918,7 @@ protected:
                                   Teuchos::RCP<Epetra_Vector>   vel,
                                   Teuchos::RCP<std::set<int> >  dbcgids);
 
-  /* \brief set Dirichlet values according to given Dirichlet map)
+  /*! \brief set Dirichlet values according to given Dirichlet map)
    *  \param disn            (in)     displacement vector
    *  \param deltadbc        (in)     Dirichlet increments for DOFs
    *  \param  dbcgids        (in/out)  set holding dbc DOF GIDs (new method)*/
@@ -931,8 +931,6 @@ protected:
    *  \param dbcmapextractor       (in)      vector containing onoff values for free DOFs */
   void DBCCreateMap(Teuchos::RCP<std::set<int> >       dbcgids,
                     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor);
-
-  void PreventTransPBCCrosslinks();
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
