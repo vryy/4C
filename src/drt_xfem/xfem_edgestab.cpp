@@ -76,6 +76,13 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   // * fluid stabilization has to be integrated for all internal faces
   // * ghost penalty has to be integrated if there is at least one cut element
   //   (because all faces between two elements for that at least one element is cut by the interface has to be stabilized)
+  //   NOTE: the limit case that a cut side just touches a node or if the cut side touches an element side completely, the check
+  //         e->IsCut() returns true and we stabilize the face. This might lead to a slightly over-stabilization as it e.g. does not
+  //         switch of the ghost-penalties for standard FEM. In case that this is necessary it would possible to replace the IsCut-check
+  //         by a more appropriate check which tells you if the neighboring volumecell is equal to the element itself.
+  //   NOTE: it might be helpful and might lead to better results when weighting ghost-penalties by e.g. volume-fractions.
+  //         In that case it still has to be guaranteed not to loose coercivity. To guarantee weak consistency the scalings have to be bounded by h.
+  //         Such scalings are not available yet.
   //
   // we distinguish different stabilization cases
   //  1. the master element and slave element (connected via current side)
@@ -162,7 +169,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   else if (p_master_handle != NULL and p_slave_handle != NULL)
   {
     // linear elements
-    if (p_master->Shape() == DRT::Element::hex8
+    if (   p_master->Shape() == DRT::Element::hex8
         or p_master->Shape() == DRT::Element::tet4
         or p_master->Shape() == DRT::Element::wedge6
         or p_master->Shape() == DRT::Element::pyramid5)
@@ -182,8 +189,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin();
           f != facets.end(); f++)
       {
-        if ((*f)->Position()
-            == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+        if ((*f)->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
         {
 
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
@@ -255,8 +261,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         } // facet outside
         else if ((*f)->Position() == GEO::CUT::Point::undecided)
         {
-          dserror(
-              "the position of this facet is undecided, how to stabilize???");
+          dserror("the position of this facet is undecided, how to stabilize???");
         }
         else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
         {
@@ -293,8 +298,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin();
           f != facets.end(); f++)
       {
-        if ((*f)->Position()
-            == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+        if ((*f)->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
         {
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
           // how many volumecells found?
@@ -323,8 +327,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               }
               else
               {
-                dserror(
-                    "no element (ele1 and ele2) is the parent element!!! WHY?");
+                dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
               }
 
 #else
@@ -393,8 +396,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
         {
 #ifdef DEBUG
-          std::cout << "the position of this facet of face " << faceele->Id() 
-										<< " is oncutsurface, we do not stabilize	it!!! " << std::endl;
+          std::cout << "the position of this facet of face " << faceele->Id()
+                    << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif
           // if a facet lies oncutsurface, then there is only one neighbor, we do not stabilize this facet
           // REMARK: in case of one part of the facet is physical and the other part lies on cutsurface,

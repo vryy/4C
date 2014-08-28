@@ -1513,7 +1513,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
   if ( e!=NULL ) // element in cut involved
   {
     GEO::CUT::plain_volumecell_set cells;
-    e->VolumeCells(cells);
+    e->GetVolumeCells(cells);
 
     if(cells.size() == 0) dserror("GEO::CUT::Element %d does not contain any volume cell", ele->Id());
 
@@ -1569,7 +1569,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
     if(!inside_structure and (int)(nds.size()) !=ele->NumNode())
     {
       GEO::CUT::plain_volumecell_set cells;
-      e->VolumeCells(cells);
+      e->GetVolumeCells(cells);
 
       IO::cout << "point: " << x << IO::endl;
       for(GEO::CUT::plain_volumecell_set::iterator cell_it=cells.begin(); cell_it!=cells.end(); cell_it++)

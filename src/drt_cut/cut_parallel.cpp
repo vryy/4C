@@ -795,7 +795,7 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
 
   plain_volumecell_set my_vcs;
 
-  pele->VolumeCells(my_vcs);
+  pele->GetVolumeCells(my_vcs);
 
   // find all the received volumecell's points
   for(plain_volumecell_set::iterator c = my_vcs.begin(); c!=my_vcs.end(); c++)

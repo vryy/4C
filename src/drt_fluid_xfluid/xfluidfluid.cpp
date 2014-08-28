@@ -705,14 +705,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
         {
           TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate boundary" );
 
-          // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-          // original Axel's transformation
-          e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#else
-          // new Benedikt's transformation
+          // get boundary cell integration points
           e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#endif
+
           std::vector<int> patchelementslm;
           std::vector<int> patchelementslmowner;
 
@@ -942,14 +937,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
 
             std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
 
-            // Attention: switch also the flag in fluid3_impl.cpp
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-            // original Axel's transformation
-            e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#else
-            // new Benedikt's transformation
+            // get boundary cell integration points
             e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#endif
 
             //std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
 
@@ -5045,14 +5034,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           {
             TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
 
-            // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-            // original Axel's transformation
-            e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#else
-            // new Benedikt's transformation
+            // get boundary cell integration points
             e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#endif
+
             if(coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress or
                coupling_method_ == INPAR::XFEM::Nitsche)

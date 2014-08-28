@@ -112,8 +112,8 @@ public:
      const enum INPAR::XFEM::XFluidTimeInt term
   );
 
-  /// all surrounding elements uncut?
-  bool UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+  /// all surrounding elements non-intersected?
+  bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
 
   /// find all ghost dofsets around this node and its std-dofset
   void FindSurroundingGhostDofsets(

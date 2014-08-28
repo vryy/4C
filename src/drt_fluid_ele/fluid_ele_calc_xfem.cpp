@@ -991,16 +991,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
         LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
 
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-
-        si->Evaluate(eta,x_side,normal,drs);
-
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
-
-#else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
@@ -1027,7 +1017,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
- #endif
 
         const double surf_fac = drs*iquad.Weight();
 
@@ -1306,16 +1295,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
 
         LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
 
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-
-        si->Evaluate(eta,x_side,normal,drs);
-
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
-
-#else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
@@ -1342,7 +1321,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
         // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
- #endif
+
 
         const double surf_fac = drs*iquad.Weight();
 
@@ -1772,17 +1751,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
         LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
 
-
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-
-        si->Evaluate(eta,x_side,normal,drs);
-
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
-
-#else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
@@ -1809,7 +1777,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
- #endif
 
         const double surf_fac = drs*iquad.Weight();
 
@@ -3182,16 +3149,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
 
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-
-        si->Evaluate(eta,x_side,normal,drs);
-
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
-
-#else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
@@ -3218,7 +3175,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
- #endif
 
         const double surf_fac = drs*iquad.Weight();
         const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
@@ -3597,16 +3553,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
         LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
 
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-
-        si->Evaluate(eta,x_side,normal,drs);
-
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
-
-#else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
@@ -3633,7 +3579,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
- #endif
 
         const double surf_fac = drs*iquad.Weight();
 
@@ -4812,11 +4757,6 @@ double FluidEleCalcXFEM<distype>::ComputeMeasCutSurf(
 
         LINALG::Matrix<3,1> normal(true);
 
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-        dserror("at the moment not available -> fix it");
-//        si->Evaluate(eta,x_side,normal,drs);
-
-#else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
@@ -4835,7 +4775,6 @@ double FluidEleCalcXFEM<distype>::ComputeMeasCutSurf(
           }
         }
 
- #endif
         const double surf_fac = drs*iquad.Weight();
 
         surf += surf_fac;

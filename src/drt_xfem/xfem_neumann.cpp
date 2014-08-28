@@ -3,13 +3,13 @@
 
 \brief base xfem Neumann boundary conditions
 
-	detailed description in header file xfem_neumann.H
+  detailed description in header file xfem_neumann.H
 
 <pre>
 Maintainer: Dipl.-Math. Benedikt Schott
-			schott@lnm.mw.tum.de
-			http://www.lnm.mw.tum.de
-			089 - 289-15241
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -365,7 +365,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
               //                                 => all volume cells inside    -> no assembly(structure)
 
               GEO::CUT::plain_volumecell_set cells;
-              e->VolumeCells( cells );
+              e->GetVolumeCells( cells );
 
               int count = 0;
               for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -417,7 +417,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
           // xfem Neumann assembly
           if(eval_Neumann && xfem_eval_Neumann)
           {
-        	  std::cout << "/!\\ WARNING: XFEM_evaluate not implemented yet-> integrate integration cells" << std::endl;
+            std::cout << "/!\\ WARNING: XFEM_evaluate not implemented yet-> integrate integration cells" << std::endl;
           }
 
           // Print overview
@@ -637,68 +637,68 @@ void XFEM::CutNeumannSurf(Teuchos::RCP<DRT::Element> neumann_surface, DRT::Eleme
     count_collectElements++;
   }
 
-  //			{
-  //
-  //				  GEO::CUT::plain_volumecell_set cells;
-  //				  parentele_handle->VolumeCells(cells);
-  //
-  //				  for(GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end();i++)
-  //				  {
-  //						GEO::CUT::VolumeCell * vc = *i;
-  //						if(vc->Position() == GEO::CUT::Point::outside)
-  //						{
-  //							GEO::CUT::plain_integrationcell_set int_cells;
-  //							  vc->GetIntegrationCells(int_cells);
-  //
-  //							for(GEO::CUT::plain_integrationcell_set::iterator j=int_cells.begin(); j!=int_cells.end(); j++)
-  //							{
-  //								GEO::CUT::IntegrationCell* intcell = *j;
-  //
-  //								if(intcell->Shape() == DRT::Element::tet4) std::cout << "tet4 integration cell" << std::endl;
-  //
-  //								if(intcell->Shape() == DRT::Element::hex8) std::cout << "hex8 integration cell" << std::endl;
-  //
-  //								std::vector<GEO::CUT::Point*> points = intcell->Points();
-  ////								for(int i=0; i<points.size(); i++)
-  ////								{
-  ////									GEO::CUT::Point* point = points[i];
-  ////
-  ////								}
-  //								GEO::CUT::Facet* facet;
-  //
-  //								const std::vector<GEO::CUT::Facet*> & facets = sides[side_id]->Facets();
-  //
-  //								for(int f_index=0; f_index< (int)facets.size(); f_index++)
-  //								{
-  //									GEO::CUT::Facet* f = facets[f_index];
-  //
-  //									if(f->Position()==GEO::CUT::Point::outside) facet = f;
-  //								}
-  //
-  //								if(intcell->Shape() == DRT::Element::tet4)
-  //								{
-  ////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tri3, facet, points );
-  ////												vc->NewTri3Cell(wizard_.CutWizard().Mesh().NormalMesh(), facet, points );
-  //									std::cout << "new tri3 cell created" << std::endl;
-  //									vc->NewIntegrationCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tet4, points );
-  //
-  //								}
-  //								if(intcell->Shape() == DRT::Element::hex8)
-  //								{
-  ////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::quad4, facet, points);
-  //									std::cout << "new quad4 cell created" << std::endl;
-  //								}
-  //							}
-  //
-  //
-  //
-  //
-  //						}
-  //
-  //				  }
-  //
-  //
-  //			}
+//  {
+//
+//    GEO::CUT::plain_volumecell_set cells;
+//    parentele_handle->VolumeCells(cells);
+//
+//    for(GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end();i++)
+//    {
+//      GEO::CUT::VolumeCell * vc = *i;
+//      if(vc->Position() == GEO::CUT::Point::outside)
+//      {
+//        GEO::CUT::plain_integrationcell_set int_cells;
+//        vc->GetIntegrationCells(int_cells);
+//
+//        for(GEO::CUT::plain_integrationcell_set::iterator j=int_cells.begin(); j!=int_cells.end(); j++)
+//        {
+//          GEO::CUT::IntegrationCell* intcell = *j;
+//
+//          if(intcell->Shape() == DRT::Element::tet4) std::cout << "tet4 integration cell" << std::endl;
+//
+//          if(intcell->Shape() == DRT::Element::hex8) std::cout << "hex8 integration cell" << std::endl;
+//
+//          std::vector<GEO::CUT::Point*> points = intcell->Points();
+//          //  for(int i=0; i<points.size(); i++)
+//          //  {
+//          //    GEO::CUT::Point* point = points[i];
+//          //
+//          //  }
+//          GEO::CUT::Facet* facet;
+//
+//          const std::vector<GEO::CUT::Facet*> & facets = sides[side_id]->Facets();
+//
+//          for(int f_index=0; f_index< (int)facets.size(); f_index++)
+//          {
+//            GEO::CUT::Facet* f = facets[f_index];
+//
+//            if(f->Position()==GEO::CUT::Point::outside) facet = f;
+//          }
+//
+//          if(intcell->Shape() == DRT::Element::tet4)
+//          {
+//            //  vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tri3, facet, points );
+//            //  vc->NewTri3Cell(wizard_.CutWizard().Mesh().NormalMesh(), facet, points );
+//            std::cout << "new tri3 cell created" << std::endl;
+//            vc->NewIntegrationCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tet4, points );
+//
+//          }
+//          if(intcell->Shape() == DRT::Element::hex8)
+//          {
+//            //  vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::quad4, facet, points);
+//            std::cout << "new quad4 cell created" << std::endl;
+//          }
+//        }
+//
+//
+//
+//
+//      }
+//
+//    }
+//
+//
+//  }
 
   return;
 }

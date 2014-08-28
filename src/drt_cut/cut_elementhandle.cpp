@@ -1,9 +1,24 @@
+/*!----------------------------------------------------------------------
+\file cut_elementhandle.cpp
+\brief Outside world interface to element. Converts quadratic to linear element. This provides the
+  Gaussian rules generated from the cut
+
+<pre>
+Maintainer:  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+
+*----------------------------------------------------------------------*/
+
 
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "cut_integrationcell.H"
 #include "cut_meshintersection.H"
 #include "cut_position.H"
+#include "cut_point.H"
 #include "cut_volumecell.H"
 
 #include "../drt_inpar/inpar_xfem.H"
@@ -11,13 +26,15 @@
 #include<fstream>
 
 
-/*-------------------------------------------------------------------------------------------------------------*
-          Project the integration rule available in the local coordinates of the integationcells to the
-          local coordinates of background element
- *-------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+// Project the integration rule available in the local coordinates of the
+// integation-cells to the local coordinates of background element
+/*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( const std::vector<GEO::CUT::Point*> & cpoints,
-                                                                                Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic )
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected(
+    const std::vector<GEO::CUT::Point*> & cpoints,
+    Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic
+)
 {
   const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -41,13 +58,17 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
   return cgp;
 }
 
-/*----------------------------------------------------------------------------------------------------------*
-                  Collect the Gauss points of all the volumecells belong to this element
-                  in such a way that gaussian rule for every vol.cell can be separated
- *-----------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cells,
-                                                     std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                                     INPAR::CUT::VCellGaussPts gausstype )
+
+
+/*----------------------------------------------------------------------*/
+// Collect the Gaussian points of all volume-cells belonging to this element in such a way
+// that Gaussian rule for every volume-cell can be separated
+/*----------------------------------------------------------------------*/
+void GEO::CUT::ElementHandle::VolumeCellGaussPoints(
+    plain_volumecell_set &                      cells,
+    std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+    INPAR::CUT::VCellGaussPts                   gausstype
+)
 {
   /*cells.clear(); //check whether any problems with gmsh output
   GetVolumeCells( cells );*/
@@ -271,35 +292,10 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
 }
 
 
-void GEO::CUT::ElementHandle::GetVolumeCellsDofSets ( std::vector<plain_volumecell_set > & cellsets ,
-                                                      std::vector< std::vector< int > >  & nds_sets,
-                                                      bool include_inner)
-{
-  //bool include_inner = false;
-
-  const std::vector<plain_volumecell_set> & ele_vc_sets_inside = GetVcSetsInside();
-  const std::vector<plain_volumecell_set> & ele_vc_sets_outside = GetVcSetsOutside();
-
-  std::vector<std::vector<int> > & nodaldofset_vc_sets_inside = GetNodalDofSet_VcSets_Inside();
-  std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = GetNodalDofSet_VcSets_Outside();
-
-  if(include_inner)
-  {
-    std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter(cellsets,cellsets.end()) );
-    std::copy( nodaldofset_vc_sets_inside.begin(), nodaldofset_vc_sets_inside.end(), std::inserter(nds_sets,nds_sets.end()) );
-  }
-
-  std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter(cellsets,cellsets.end()) );
-  std::copy( nodaldofset_vc_sets_outside.begin(), nodaldofset_vc_sets_outside.end(), std::inserter(nds_sets,nds_sets.end()) );
-
-
-}
-
-/*---------------------------------------------------------------------------------------------------------------------------*
-                        Collect the Gauss points of all the volumecells belong to this element
-                        The integration rule over all the volumecells are connected.
-                        Cannot identify the integration rules separately for each cell
- *---------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+// Collect the Gaussian points of all the volume-cells belonging to this element.
+// The integration rules over all the volume-cells are connected.
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPointsConnected(
     plain_volumecell_set & cells,
     INPAR::CUT::VCellGaussPts gausstype )
@@ -366,212 +362,14 @@ Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPoi
   return gpc;
 }
 
-
-#if 0
-template <DRT::Element::DiscretizationType distype>
-Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::TransformVolumeCellGaussPoints( GEO::CUT::IntegrationCell * ic )
-{
-
-  const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
-  const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-  int degree = ic->CubatureDegree( Shape() );
-
-  Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( distype, degree );
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( gp->NumPoints() ) );
-
-  LINALG::Matrix<nen,1> funct;
-  LINALG::Matrix<nsd,nen> deriv;
-
-  LINALG::Matrix<nsd,nsd> xjm;
-//  LINALG::Matrix<nsd,1> xi;
-
-  DRT::UTILS::GaussIntegration intpoints( gp );
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
-        iquad!=intpoints.end();
-        ++iquad )
-  {
-    LINALG::Matrix<nsd,1> eta( iquad.Point() );
-
-    // cell shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(eta,funct);
-    DRT::UTILS::shape_function_deriv1<distype>(eta,deriv);
-
-    // local coordinates of gauss point
-//    xi.Multiply( xie, funct );
-
-    // get transposed of the jacobian matrix d x / d \xi
-    // xjm(i,j) = deriv(i,k)*xyze(j,k)
-//    const Epetra_SerialDenseMatrix & xyz_cell = ic->Coordinates();
-
-
-    LINALG::Matrix<3, nen> xyz (true);
-
-    const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
-    if ( (int)cpoints.size() != nen )
-      throw std::runtime_error( "non-matching number of points" );
-
-    for ( int i=0; i<nen; ++i )
-    {
-      GEO::CUT::Point * p = cpoints[i];
-      LINALG::Matrix<3,1> xyz_p (true);
-      p->Coordinates(xyz_p.A());
-
-      //        std::cout << "coordinates of p: " << xyz_p << std::endl;
-
-      for(int r=0; r<3; r++)
-      {
-        xyz(r,i) = xyz_p(r);
-      }
-    }
-
-//      std::cout << "xyz " << xyz << std::endl;
-
-//    LINALG::Matrix<nsd,nen> xyz( xyz_cell );
-
-//    LINALG::Matrix<nsd,nen> xyz_cell( ic->Coordinates() );
-
-    xjm.MultiplyNT( deriv, xyz );
-//    xjm.MultiplyNT( deriv, xie );
-
-    // global coordinates of Gaussian point
-    LINALG::Matrix<3,1> xyz_gp (true);
-    xyz_gp.Multiply( xyz , funct );
-
-    LINALG::Matrix<3,1> xi (true); // (true);
-    LocalCoordinates( xyz_gp, xi );
-
-//    std::cout << "xi: " << xi << std::endl;
-
-    double det = xjm.Determinant();
-    if (det < 0.0 ) dserror( "det is negative");
-
-    double det_ele =0.0;
-    // additional transformation for element
-    {
-
-      //! node coordinates
-      LINALG::Matrix<3,20> xyze_;
-      //! array for shape functions
-      LINALG::Matrix<20,1> funct_;
-      //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<3,20> deriv_;
-      //! array for second derivatives of shape function w.r.t r,s,t
-      LINALG::Matrix<6,20> deriv2_;
-      //! transposed jacobian "dx/ds"
-      LINALG::Matrix<3,3> xjm_;
-      //! inverse of transposed jacobian "ds/dx"
-      LINALG::Matrix<3,3> xji_;
-      //! global velocity derivatives in gausspoint w.r.t x,y,z
-
-      std::vector<Node* > nodes = Nodes();
-      if(nodes.size() != 20) dserror("not 20 nodes!!!");
-
-      for(int i=0; i< (int)nodes.size(); i++)
-      {
-        LINALG::Matrix<3,1> n_coord;
-        nodes[i]->Coordinates(n_coord.A());
-
-        for(int r=0; r< 3; r++) xyze_(r,i) = n_coord(r);
-      }
-
-      // shape functions and their first derivatives
-      DRT::UTILS::shape_function<DRT::Element::hex20>(xi,funct_);
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex20>(xi,deriv_);
-
-      if (true)
-      {
-        // get the second derivatives of standard element at current GP
-        DRT::UTILS::shape_function_deriv2<DRT::Element::hex20>(xi,deriv2_);
-      }
-
-      xjm_.MultiplyNT(deriv_,xyze_);
-      det_ele = xji_.Invert(xjm_);
-
-      //  if (det_ < 1E-16)
-      //    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
-      //
-      //  // compute integration factor
-      //  fac_ = iquad.Weight()*det_;
-      //
-      //  // compute global first derivates
-      //  derxy_.Multiply(xji_,deriv_);
-
-    }
-    cgp->Append( xi , iquad.Weight()*det / det_ele);
-  }
-  return cgp;
-
-
-
-}
-
-
-
-void GEO::CUT::ElementHandle::VolumeCellGaussPointsLin( plain_volumecell_set & cells,
-                                                        std::vector<DRT::UTILS::GaussIntegration> & intpoints )
-{
-  GetVolumeCells( cells );
-
-  intpoints.clear();
-  intpoints.reserve( cells.size() );
-
-  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-  {
-    GEO::CUT::VolumeCell * vc = *i;
-
-
-//    if(vc->Position() == GEO::CUT::Point::outside) std::cout << "outside vc" << std::endl;
-//    else std::cout << "inside vc" << std::endl;
-
-    Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-      Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
-
-    const plain_integrationcell_set & cells = vc->IntegrationCells();
-    for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-    {
-      GEO::CUT::IntegrationCell * ic = *i;
-      switch ( ic->Shape() )
-      {
-      case DRT::Element::hex8:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = TransformVolumeCellGaussPoints<DRT::Element::hex8>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::tet4:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = TransformVolumeCellGaussPoints<DRT::Element::tet4>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::wedge6:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = TransformVolumeCellGaussPoints<DRT::Element::wedge6>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::pyramid5:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = TransformVolumeCellGaussPoints<DRT::Element::pyramid5>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      default:
-        throw std::runtime_error( "unsupported integration cell type" );
-      }
-    }
-
-    intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
-  }
-
-
-}
-
-#endif
-
-void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-                                                       std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
+#if(0)
+/*----------------------------------------------------------------------*/
+// Unused
+/*----------------------------------------------------------------------*/
+void GEO::CUT::ElementHandle::BoundaryCellGaussPoints(
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+    std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
+)
 {
   for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
   {
@@ -607,10 +405,16 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( const std::map<int, std::
   }
 }
 
-void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( MeshIntersection & mesh,
-                                                       int mi,
-                                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-                                                       std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
+
+/*----------------------------------------------------------------------*/
+// unused: Old implementation of boundarycell Gauss points collection
+/*----------------------------------------------------------------------*/
+void GEO::CUT::ElementHandle::BoundaryCellGaussPoints(
+    MeshIntersection & mesh,
+    int mi,
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+    std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
+)
 {
   for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
   {
@@ -651,12 +455,18 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( MeshIntersection & mesh,
     }
   }
 }
+#endif
 
-
-void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( MeshIntersection & mesh,
-                                                       int mi,
-                                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-                                                       std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
+/*----------------------------------------------------------------------*/
+// Collect the Gauss points of all the boundary-cells belong to this element.
+// This is the method used now in the new implementation
+/*----------------------------------------------------------------------*/
+void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
+    MeshIntersection & mesh,
+    int mi,
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+    std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
+    )
 {
   for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
   {
@@ -720,6 +530,11 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( MeshIntersection & mes
   }*/
 }
 
+
+#if(0)
+/*----------------------------------------------------------------------*/
+// unused
+/*----------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersection & mesh,
                                                                const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
@@ -767,7 +582,44 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersect
   }
 #endif
 }
+#endif
 
+
+
+/*----------------------------------------------------------------------*/
+// get all the element' sets of volume-cells and nds-vectors
+/*----------------------------------------------------------------------*/
+void GEO::CUT::ElementHandle::GetVolumeCellsDofSets (
+    std::vector<plain_volumecell_set > & cellsets ,
+    std::vector< std::vector< int > >  & nds_sets,
+    bool include_inner
+)
+{
+
+  const std::vector<plain_volumecell_set> & ele_vc_sets_inside = GetVcSetsInside();
+  const std::vector<plain_volumecell_set> & ele_vc_sets_outside = GetVcSetsOutside();
+
+  std::vector<std::vector<int> > & nodaldofset_vc_sets_inside = GetNodalDofSet_VcSets_Inside();
+  std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = GetNodalDofSet_VcSets_Outside();
+
+  if(include_inner)
+  {
+    std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter(cellsets,cellsets.end()) );
+    std::copy( nodaldofset_vc_sets_inside.begin(), nodaldofset_vc_sets_inside.end(), std::inserter(nds_sets,nds_sets.end()) );
+  }
+
+  std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter(cellsets,cellsets.end()) );
+  std::copy( nodaldofset_vc_sets_outside.begin(), nodaldofset_vc_sets_outside.end(), std::inserter(nds_sets,nds_sets.end()) );
+
+}
+
+
+
+
+
+/*----------------------------------------------------------------------*/
+//! Collect all volume-cells belonging to this elements
+/*----------------------------------------------------------------------*/
 void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells )
 {
   const plain_volumecell_set & cs = element_->VolumeCells();
@@ -775,34 +627,14 @@ void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells
 }
 
 
-void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
-                                                                      std::vector< std::vector< int > >  & nds_sets,
-                                                                      std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                                                      INPAR::CUT::VCellGaussPts gausstype,
-                                                                      bool include_inner)
-{
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
-
-  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner); //(include_inner=false)
-
-  intpoints_sets.clear();
-  //intpoints_sets.reserve( cell_sets.size() );
-
-  for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
-  {
-    plain_volumecell_set & cells = *i;
-
-    if(cells.size() != 1) dserror("number of volumecells in set not equal 1, this should not be for linear elements!");
-
-    std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
-    VolumeCellGaussPoints( cells, gaussCellsets, gausstype );
-
-    intpoints_sets.push_back( gaussCellsets );
-  }
-}
-
-
-void GEO::CUT::LinearElementHandle::CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside )
+/*----------------------------------------------------------------------*/
+//! Collect all volume-cells belonging to this element ordered by position
+/*----------------------------------------------------------------------*/
+void GEO::CUT::LinearElementHandle::CollectVolumeCells (
+    bool include_inner,
+    plain_volumecell_set & cells_inside,
+    plain_volumecell_set & cells_outside
+)
 {
 
   const plain_volumecell_set & ecells = element_->VolumeCells();
@@ -826,7 +658,45 @@ void GEO::CUT::LinearElementHandle::CollectVolumeCells ( bool include_inner, pla
 }
 
 
-void GEO::CUT::LinearElementHandle::VolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & ele_vc_sets_inside, std::vector<plain_volumecell_set> & ele_vc_sets_outside)
+/*----------------------------------------------------------------------*/
+// get all the element' sets of volume-cells, nds-vectors and integration points
+/*----------------------------------------------------------------------*/
+void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints (
+    std::vector< plain_volumecell_set >                        & cell_sets ,
+    std::vector< std::vector< int > >                          & nds_sets,
+    std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
+    INPAR::CUT::VCellGaussPts                                    gausstype,
+    bool                                                         include_inner
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
+
+  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner);
+
+  intpoints_sets.clear();
+
+  for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
+  {
+    plain_volumecell_set & cells = *i;
+
+    if(cells.size() != 1) dserror("number of volumecells in set not equal 1, this should not be for linear elements!");
+
+    std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
+    VolumeCellGaussPoints( cells, gaussCellsets, gausstype );
+
+    intpoints_sets.push_back( gaussCellsets );
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+// get the element's sets of volume-cells ordered by inside/outside position
+/*----------------------------------------------------------------------*/
+void GEO::CUT::LinearElementHandle::VolumeCellSets (
+    bool include_inner,
+    std::vector<plain_volumecell_set> & ele_vc_sets_inside,
+    std::vector<plain_volumecell_set> & ele_vc_sets_outside
+)
 {
 
   if(!cells_set_)
@@ -867,16 +737,226 @@ void GEO::CUT::LinearElementHandle::VolumeCellSets ( bool include_inner, std::ve
 
 }
 
-//void GEO::CUT::LinearElementHandle::GetNodalDofSets ( bool include_inner, std::vector<std::vector<int> > & nodaldofset_vc_sets_inside, std::vector<std::vector<int> > & nodaldofset_vc_sets_outside)
-//{
-//  if(include_inner)
-//  {
-//    nodaldofset_vc_sets_inside = nodaldofset_vc_sets_inside_;
-//  }
-//  nodaldofset_vc_sets_outside = nodaldofset_vc_sets_outside_;
-//}
 
-void GEO::CUT::QuadraticElementHandle::BuildCellSets ( plain_volumecell_set & cells_to_connect, std::vector<plain_volumecell_set> & connected_sets)
+
+/*----------------------------------------------------------------------*/
+// returns true in case that any cut-side cut with the element produces cut points,
+// i.e. also for touched cases (at points, edges or sides),
+// or when an element side has more than one facet or is touched by fully/partially by the cut side
+/*----------------------------------------------------------------------*/
+bool GEO::CUT::QuadraticElementHandle::IsCut()
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    if ( e->IsCut() )
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+/*----------------------------------------------------------------------*/
+// return true if one of the sub-elements is intersected or the sub-elements
+// have different positions and therefore the global element is intersected by a cut-side
+/*----------------------------------------------------------------------*/
+bool GEO::CUT::QuadraticElementHandle::IsIntersected()
+{
+  GEO::CUT::Point::PointPosition unique_pos = GEO::CUT::Point::undecided;
+
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    if ( e->IsIntersected() )
+    {
+      return true;
+    }
+
+    // do the sub-elements have different positions ? (e.g. when the cut side directly cuts between sub-elements)
+    if(     (unique_pos != GEO::CUT::Point::undecided)
+        and (e->VolumeCells()[0]->Position() != unique_pos) )
+      return true;
+  }
+  return false;
+}
+
+
+/*----------------------------------------------------------------------*/
+// Collect all volume-cells belonging to this elements
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::GetVolumeCells( plain_volumecell_set & cells )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    const plain_volumecell_set & cs = e->VolumeCells();
+    std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+// Collect all volume-cells belonging to this element ordered by position
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::CollectVolumeCells (
+    bool include_inner,
+    plain_volumecell_set & cells_inside,
+    plain_volumecell_set & cells_outside
+)
+{
+  for ( std::vector<Element*>::const_iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    const plain_volumecell_set & ecells = e->VolumeCells();
+
+    // sort for inside and outside volume-cells
+    for (plain_volumecell_set::const_iterator i = ecells.begin(); i!=ecells.end(); i++)
+    {
+      if( (*i)->Position() == GEO::CUT::Point::outside )
+      {
+        cells_outside.insert( *i );
+      }
+      else // inside vc
+      {
+        if( include_inner)
+        {
+          cells_inside.insert( *i );
+        }
+      }
+    } // volume-cells
+  } // sub-elements
+}
+
+
+/*----------------------------------------------------------------------*/
+//  get the quadratic element's volumetric integration cells (just for Tessellation)
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( plain_integrationcell_set & cells )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    e->GetIntegrationCells( cells );
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+//  get all the quadratic element's boundary integration cells
+// TODO: this has to be corrected such that just the bcs which belong the outside vcs will be returned
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( plain_boundarycell_set & bcells )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    e->GetBoundaryCells( bcells );
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+// get all the element' sets of volume-cells, nds-vectors and integration points
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints (
+    std::vector< plain_volumecell_set >                        & cell_sets ,
+    std::vector< std::vector< int > >                          & nds_sets,
+    std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
+    INPAR::CUT::VCellGaussPts                                    gausstype,
+    bool                                                         include_inner
+    )
+{
+  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner );
+
+  intpoints_sets.clear();
+  intpoints_sets.reserve( cell_sets.size() );
+
+  for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
+  {
+    plain_volumecell_set & cells = *i;
+
+    std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
+    VolumeCellGaussPoints( cells, gaussCellsets, gausstype );
+
+    intpoints_sets.push_back( gaussCellsets );
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*/
+//! get the element's sets of volume-cells ordered by inside/outside position
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::VolumeCellSets (
+    bool include_inner,
+    std::vector<plain_volumecell_set> & ele_vc_sets_inside,
+    std::vector<plain_volumecell_set> & ele_vc_set_ouside
+)
+{
+
+  // connect volumecells of subelements
+  ConnectVolumeCells( include_inner );
+
+  // get inside and outside connected volumecellsets for the current element
+  GetConnectedVolumeCellSets( include_inner, ele_vc_sets_inside, ele_vc_set_ouside );
+
+}
+
+
+/*----------------------------------------------------------------------*/
+//! connect volume-cells to sets of volume-cells
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ( bool include_inner )
+{
+  // find the connection between volumecells of all subelements for the current element (hex8, hex20, tet4, tet10 etc.)
+  // remark: this function determines not the connection outside this element
+
+  // get the volumecells of all subelements stored in two plainvolume_sets (inside and outside)
+  if( !cells_connected_ )
+  {
+
+    plain_volumecell_set e_vcs_inside;
+    plain_volumecell_set e_vcs_outside;
+
+    CollectVolumeCells(include_inner, e_vcs_inside, e_vcs_outside);
+
+    if( include_inner )
+    {
+      BuildCellSets(e_vcs_inside , connected_vc_sets_inside_);
+    }
+    BuildCellSets(e_vcs_outside , connected_vc_sets_outside_);
+
+    cells_connected_ = true;
+
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*/
+//! get connections/sets of volume-cells between sub-elements
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::GetConnectedVolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & connected_vc_sets_inside, std::vector<plain_volumecell_set> & connected_vc_sets_outside)
+{
+
+  if(include_inner)
+  {
+    std::copy(connected_vc_sets_inside_.begin(), connected_vc_sets_inside_.end(), std::inserter(connected_vc_sets_inside, connected_vc_sets_inside.end()));
+  }
+
+  std::copy(connected_vc_sets_outside_.begin(), connected_vc_sets_outside_.end(), std::inserter(connected_vc_sets_outside, connected_vc_sets_outside.end()));
+}
+
+
+/*----------------------------------------------------------------------*/
+//! build sets
+/*----------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::BuildCellSets (
+    plain_volumecell_set & cells_to_connect,
+    std::vector<plain_volumecell_set> & connected_sets
+)
 {
   plain_volumecell_set done;
 
@@ -905,165 +985,9 @@ void GEO::CUT::QuadraticElementHandle::BuildCellSets ( plain_volumecell_set & ce
 }
 
 
-
-bool GEO::CUT::QuadraticElementHandle::IsCut()
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    if ( e->IsCut() )
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
-void GEO::CUT::QuadraticElementHandle::GetVolumeCells( plain_volumecell_set & cells )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    const plain_volumecell_set & cs = e->VolumeCells();
-    std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
-  }
-}
-
-void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( plain_integrationcell_set & cells )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->GetIntegrationCells( cells );
-  }
-}
-
-void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( plain_boundarycell_set & bcells )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->GetBoundaryCells( bcells );
-  }
-}
-
-void GEO::CUT::QuadraticElementHandle::VolumeCells( plain_volumecell_set & cells ) const
-{
-  for ( std::vector<Element*>::const_iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    const plain_volumecell_set & ecells = e->VolumeCells();
-    std::copy( ecells.begin(), ecells.end(), std::inserter( cells, cells.begin() ) );
-  }
-}
-
-
-void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
-                                                               std::vector< std::vector< int > >  & nds_sets,
-                                                               std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-                                                               INPAR::CUT::VCellGaussPts gausstype,
-                                                               bool include_inner)
-{
-  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner );
-
-  intpoints_sets.clear();
-  intpoints_sets.reserve( cell_sets.size() );
-
-  for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
-  {
-    plain_volumecell_set & cells = *i;
-
-    std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
-    VolumeCellGaussPoints( cells, gaussCellsets, gausstype );
-
-    intpoints_sets.push_back( gaussCellsets );
-  }
-
-}
-
-
-
-void GEO::CUT::QuadraticElementHandle::CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside )
-{
-
-  for ( std::vector<Element*>::const_iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    const plain_volumecell_set & ecells = e->VolumeCells();
-
-    // sort for inside and outside volume cells
-    for (plain_volumecell_set::const_iterator i = ecells.begin(); i!=ecells.end(); i++)
-    {
-      if( (*i)->Position() == GEO::CUT::Point::outside )
-      {
-        cells_outside.insert( *i );
-      }
-      else // inside vc
-      {
-        if( include_inner)
-        {
-          cells_inside.insert( *i );
-        }
-      }
-    }
-
-  }
-}
-
-
-void GEO::CUT::QuadraticElementHandle::VolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & ele_vc_sets_inside, std::vector<plain_volumecell_set> & ele_vc_set_ouside)
-{
-
-  // connect volumecells of subelements
-  ConnectVolumeCells( include_inner );
-
-  // get inside and outside connected volumecellsets for the current element
-  GetConnectedVolumeCellSets( include_inner, ele_vc_sets_inside, ele_vc_set_ouside );
-
-}
-
-
-
-
-void GEO::CUT::QuadraticElementHandle::GetConnectedVolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & connected_vc_sets_inside, std::vector<plain_volumecell_set> & connected_vc_sets_outside)
-{
-
-  if(include_inner)
-  {
-    std::copy(connected_vc_sets_inside_.begin(), connected_vc_sets_inside_.end(), std::inserter(connected_vc_sets_inside, connected_vc_sets_inside.end()));
-  }
-
-  std::copy(connected_vc_sets_outside_.begin(), connected_vc_sets_outside_.end(), std::inserter(connected_vc_sets_outside, connected_vc_sets_outside.end()));
-}
-
-
-
-void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ( bool include_inner )
-{
-  // find the connection between volumecells of all subelements for the current element (hex8, hex20, tet4, tet10 etc.)
-  // remark: this function determines not the connection outside this element
-
-  // get the volumecells of all subelements stored in two plainvolume_sets (inside and outside)
-  if( !cells_connected_ )
-  {
-
-    plain_volumecell_set e_vcs_inside;
-    plain_volumecell_set e_vcs_outside;
-
-    CollectVolumeCells(include_inner, e_vcs_inside, e_vcs_outside);
-
-    if( include_inner )
-    {
-      BuildCellSets(e_vcs_inside , connected_vc_sets_inside_);
-    }
-    BuildCellSets(e_vcs_outside , connected_vc_sets_outside_);
-
-    cells_connected_ = true;
-
-  }
-
-}
-
+/*----------------------------------------------------------------------*/
+// constructor
+/*----------------------------------------------------------------------*/
 GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nodes )
 : QuadraticElementHandle()
 {
@@ -1282,6 +1206,10 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
 
 }
 
+
+/*----------------------------------------------------------------------*/
+// constructor
+/*----------------------------------------------------------------------*/
 GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nodes )
 : QuadraticElementHandle()
 {
@@ -1421,6 +1349,10 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
 
 }
 
+
+/*----------------------------------------------------------------------*/
+// constructor
+/*----------------------------------------------------------------------*/
 GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nids )
   : QuadraticElementHandle()
 {
@@ -1520,6 +1452,10 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
   subelements_.push_back( sub8 );
 }
 
+
+/*----------------------------------------------------------------------*/
+// compute local coordinates of the element for given global coordinates
+/*----------------------------------------------------------------------*/
 void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::hex20> pos( nodes_, xyz );
@@ -1541,6 +1477,10 @@ void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
   rst = pos.LocalCoordinates();
 }
 
+
+/*----------------------------------------------------------------------*/
+// compute local coordinates of the element for given global coordinates
+/*----------------------------------------------------------------------*/
 void GEO::CUT::Hex27ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::hex27> pos( nodes_, xyz );
@@ -1551,6 +1491,10 @@ void GEO::CUT::Hex27ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
   rst = pos.LocalCoordinates();
 }
 
+
+/*----------------------------------------------------------------------*/
+// compute local coordinates of the element for given global coordinates
+/*----------------------------------------------------------------------*/
 void GEO::CUT::Tet10ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::tet10> pos( nodes_, xyz );

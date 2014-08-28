@@ -236,9 +236,9 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
     //     case D: surrounding elements cut at old and new timestep t^n and t^(n+1)
     //---------------------------------------------------------------------------------
 
-
-    bool unique_std_uncut_np = false;
-    bool unique_std_uncut_n = false;
+    // initialize to true, as in case that no cut information we have standard FE and the dofsets are unique standard dofsets
+    bool unique_std_uncut_np = true;
+    bool unique_std_uncut_n = true;
 
     // check for unique std dofset and surrounding uncut elements at t^(n+1)
     if(n_new != NULL)
@@ -246,7 +246,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
 
       // just one dofset at new timestep t^(n+1)
-      if(numDofSets_new == 1) unique_std_uncut_np = UncutEles(n_new, wizard_new_);
+      if(numDofSets_new == 1) unique_std_uncut_np = NonIntersectedElements(node, wizard_new_);
       else                    unique_std_uncut_np = false;
     }
 
@@ -256,7 +256,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
 
       // just one dofset at new timestep t^n
-      if(numDofSets_old == 1) unique_std_uncut_n = UncutEles(n_old, wizard_old_);
+      if(numDofSets_old == 1) unique_std_uncut_n = NonIntersectedElements(node, wizard_old_);
       else                    unique_std_uncut_n = false;
     }
 
@@ -723,39 +723,38 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
   return;
 }
 
-
 // -------------------------------------------------------------------
-// all surrounding elements uncut ?
+// all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::UncutEles(const GEO::CUT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard)
+bool XFEM::XFluidTimeInt::NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard)
 {
-  // surrounding elements
-  const GEO::CUT::plain_element_set& adj_eles = n->Elements();
+  const int numele = n->NumElement();
 
-  // REMARK: Elements which are not included in the cut are always uncut and do not change the status here
+  DRT::Element** elements= n->Elements();
 
-  // assume all elements are uncut
-  bool all_eles_uncut = true;
-
-  // loop surrounding (sub-)elements
-  for(GEO::CUT::plain_element_set::const_iterator eles = adj_eles.begin(); eles!=adj_eles.end(); eles++)
+  // loop surrounding elements
+  for(int i=0; i< numele; i++)
   {
-    // sub-element in case of quadratic elements
-    GEO::CUT::Element* e = *eles;
+    DRT::Element * e = elements[i];
 
-    // get the parent linear or quadratic element
-    int gid = e->GetParentId();
-    DRT::Element* ele = dis_->gElement(gid);
-    GEO::CUT::ElementHandle * ehandle = wizard->GetElement(ele);
+    // we have to check elements and its sub-elements in case of quadratic elements
+    GEO::CUT::ElementHandle* ehandle = wizard->GetElement(e);
 
-    if(ehandle->IsCut())
+    // elements which do not have an element-handle are non-intersected anyway
+    if(ehandle == NULL) continue;
+
+    // check if the element is intersected or not.
+    // If the element is not intersected or is just fully or partially touched at a facet
+    // a unique volume-cell for the element (each sub-element for quadratic elementhandles holding the same position info)
+    // has been produced
+    if(ehandle->IsIntersected())
     {
-      all_eles_uncut = false;
-      return all_eles_uncut; // at least one element is cut
+      return false; // at least one element is intersected by a cut-side
     }
+
   }
 
-  return all_eles_uncut;
+  return true; //all surrounding elements uncut
 }
 
 
@@ -1113,7 +1112,11 @@ int XFEM::XFluidTimeInt::FindStdDofSet(
       it!= dof_cell_sets.end();
       it++)
   {
-    if(Is_Std_CellSet(node,*it)) return count;
+    if(Is_Std_CellSet(node,*it))
+    {
+      if(count != 0) dserror("the found standard dofset is not the first dofset! did the cut sorting of dofsets not work?");
+      return count;
+    }
 
     count ++;
   }

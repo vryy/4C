@@ -156,7 +156,16 @@ public:
    */
   bool PositionByAngle(Point* p, Point* cutpoint, Side* s );
 
+  /*
+  \brief returns true in case that any cut-side cut with the element produces cut points, i.e. also for touched cases (at points, edges or sides),
+         or when an element side has more than one facet or is touched by fully/partially by the cut side
+   */
   bool IsCut();
+
+  /*
+  \brief return true if the element has more than one volume-cell and therefore is intersected by a cut-side
+   */
+  bool IsIntersected(){ return (this->NumVolumeCells() > 1); }
 
   bool OnSide( Facet * f );
 
@@ -219,8 +228,8 @@ public:
   const std::vector<Node*> & Nodes() { return nodes_; }
 
 
-	/*!
-  \brief Points that are associated with nodes of this shadow element 
+  /*!
+  \brief Points that are associated with nodes of this shadow element
   */
   const std::vector<Point*> & Points() const { return points_; }
 
@@ -238,6 +247,11 @@ public:
   \brief Get the volumecells of this element
    */
   const plain_volumecell_set & VolumeCells() const { return cells_; }
+
+  /*!
+  \brief Get the number of volume-cells
+   */
+  int NumVolumeCells() const { return cells_.size(); }
 
   /*!
   \brief Get the facets of this element
@@ -285,7 +299,7 @@ public:
     LINALG::Matrix<3,1> xei;
     xei = 0.1; //the determinant of the Jacobian is independent of the considered point (true only for linear elements???)
 
-		// get coordiantes of parent Quad element
+    // get coordiantes of parent Quad element
     if( shadow )
       CoordinatesQuad( xyze.A() );
     // get coordinates of linear shadow element
@@ -350,9 +364,9 @@ public:
    */
   std::vector<Node*> getQuadCorners();
 
-	/*!
-	\brief Set the discretization type of parent quad element
-	 */
+  /*!
+  \brief Set the discretization type of parent quad element
+   */
   void setQuadShape( DRT::Element::DiscretizationType dis ){ quadshape_ = dis; }
 
   /*!
@@ -396,7 +410,8 @@ private:
 
   std::vector<Point*> points_;
 
-  /// sides that cut this element
+  /// (sub-)sides that cut this element, also sides that just touch the element at a single point, edge or the whole side
+  /// all sides for that the intersection with the element finds points
   plain_side_set cut_faces_;
 
   plain_facet_set facets_;
@@ -410,7 +425,7 @@ private:
   /// True if this is a linear (shadow) element derived from  a Quadratic element
   bool isShadow_;
 
-	/// Discretization shape of the parent quad element
+  /// Discretization shape of the parent quad element
   DRT::Element::DiscretizationType quadshape_;
 };
 

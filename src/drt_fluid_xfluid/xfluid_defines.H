@@ -14,6 +14,5 @@ Maintainer: Benedikt Schott
 #define XFLUID_DEFINES_H_
 
 #define DOFSETS_NEW
-//#define BOUNDARYCELL_TRANSFORMATION_OLD
 
 #endif /* XFLUID_DEFINES_H_ */
