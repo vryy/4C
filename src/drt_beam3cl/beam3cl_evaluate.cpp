@@ -69,7 +69,7 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
       if(nnode==4)
           EvaluatePTC<2>(params, elemat1);
       else
-    	  dserror("Only 4-noded Crosslinker beam element implemented");
+        dserror("Only 4-noded Crosslinker beam element implemented");
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
@@ -752,12 +752,24 @@ void DRT::ELEMENTS::BeamCL::b3_energy(Teuchos::ParameterList&   params,
       strainstress(gamma,kappa,stressN,CN,stressM,CM);
 
       //adding elastic energy at this Gauss point
-      for(int i=0; i<3; i++)
+      if(intenergy->M()==1)
       {
-        (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
-        (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+        for(int i=0; i<3; i++)
+        {
+          (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+          (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+        }
       }
-
+      else if(intenergy->M()==6)
+      {
+        for(int i=0; i<3; i++)
+        {
+          (*intenergy)(i) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+          (*intenergy)(i+3) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+        }
+      }
+      else
+        dserror("energy vector of invalid size %i!", intenergy->M());
     }
   }
   return;
@@ -913,7 +925,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
     strainstress(gamma,kappa,stressN,CN,stressM,CM);
     /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);    
+    pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);
 
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
     *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
@@ -990,7 +1002,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
           LARGEROTATIONS::computespin(auxmatrix2,stressm);
           auxmatrix1.Multiply(auxmatrix2,Itilde[numgp][nodej]);
           auxmatrix1.Scale(Iprime[numgp](nodei));
-          for (int i=0; i<3; ++i)                
+          for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               fstiffmatrix(6*nodei+3+i,6*nodej+3+j) -= auxmatrix1(i,j)*wgt;
 
@@ -1421,26 +1433,26 @@ inline void DRT::ELEMENTS::BeamCL::MyTranslationalDamping(Teuchos::ParameterList
   LINALG::Matrix<1,fnnode> deriv;
 
  //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialized
-	std::vector<double> rxstart;
-	std::vector<double> xstart;
-	rxstart.resize(12);
-	xstart.resize(6);
-	for(int i=0;i<6;i++)
-	xstart[i]=0;
+  std::vector<double> rxstart;
+  std::vector<double> xstart;
+  rxstart.resize(12);
+  xstart.resize(6);
+  for(int i=0;i<6;i++)
+  xstart[i]=0;
 
-	for (int node=0; node<4; node++)
-	for(int d= 0; d < 3; d++)
-	rxstart[node*3 + d] = Nodes()[node]->X()[d];
+  for (int node=0; node<4; node++)
+  for(int d= 0; d < 3; d++)
+  rxstart[node*3 + d] = Nodes()[node]->X()[d];
 
-	std::vector<LINALG::Matrix<1,2> > Ibp(2);
-	const DiscretizationType dtype = this->Shape();
-	for(int filament=0; filament<2; filament++)
-	 DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],dtype);
+  std::vector<LINALG::Matrix<1,2> > Ibp(2);
+  const DiscretizationType dtype = this->Shape();
+  for(int filament=0; filament<2; filament++)
+   DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],dtype);
 
-	for(int filament=0;filament<2;filament++)
-		for(int k=0;k<2;k++)
-		 for(int i=0;i<3;i++)
-			 xstart[i+3*filament]+= Ibp[filament](k)*rxstart[i+3*k+6*filament];
+  for(int filament=0;filament<2;filament++)
+    for(int k=0;k<2;k++)
+     for(int i=0;i<3;i++)
+       xstart[i+3*filament]+= Ibp[filament](k)*rxstart[i+3*k+6*filament];
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
@@ -1554,26 +1566,26 @@ inline void DRT::ELEMENTS::BeamCL::MyStochasticForces(Teuchos::ParameterList&   
    Teuchos::RCP<Epetra_MultiVector> randomnumbers = params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
 
    //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialize!
-	 std::vector<double> rxstart;
-	 std::vector<double> xstart;
-	 rxstart.resize(12);
-	 xstart.resize(6);
-	 for(int i=0;i<6;i++)
-		 xstart[i]=0;
+   std::vector<double> rxstart;
+   std::vector<double> xstart;
+   rxstart.resize(12);
+   xstart.resize(6);
+   for(int i=0;i<6;i++)
+     xstart[i]=0;
 
-	 for (int node=0; node<4; node++)
-		 for(int d= 0; d < 3; d++)
-			 rxstart[node*3 + d] = Nodes()[node]->X()[d];
+   for (int node=0; node<4; node++)
+     for(int d= 0; d < 3; d++)
+       rxstart[node*3 + d] = Nodes()[node]->X()[d];
 
-	 std::vector<LINALG::Matrix<1,2> > Ibp(2);
-	 const DiscretizationType dtype = this->Shape();
-	 for(int filament=0; filament<2; filament++)
-		DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],dtype);
+   std::vector<LINALG::Matrix<1,2> > Ibp(2);
+   const DiscretizationType dtype = this->Shape();
+   for(int filament=0; filament<2; filament++)
+    DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],dtype);
 
-		 for(int filament=0;filament<2;filament++)
-			 for(int k=0;k<2;k++)
-				for(int i=0;i<3;i++)
-					xstart[i+3*filament]+= Ibp[filament](k)*rxstart[i+3*k+6*filament];
+     for(int filament=0;filament<2;filament++)
+       for(int k=0;k<2;k++)
+        for(int i=0;i<3;i++)
+          xstart[i+3*filament]+= Ibp[filament](k)*rxstart[i+3*k+6*filament];
 
 
 

@@ -69,14 +69,14 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     {
       const int nnode = NumNode();
 
-    	switch(nnode)
-   	  {
-   	  		case 2:EvaluatePTC<2>(params, elemat1); break;
-   	  		case 3:EvaluatePTC<3>(params, elemat1); break;
-   	  		case 4:EvaluatePTC<4>(params, elemat1); break;
-   	  		case 5:EvaluatePTC<5>(params, elemat1); break;
-   	  		default:dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-   	  }
+      switch(nnode)
+       {
+           case 2:EvaluatePTC<2>(params, elemat1); break;
+           case 3:EvaluatePTC<3>(params, elemat1); break;
+           case 4:EvaluatePTC<4>(params, elemat1); break;
+           case 5:EvaluatePTC<5>(params, elemat1); break;
+           default:dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+       }
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
@@ -158,57 +158,57 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
 
       if (act == Beam3ii::calc_struct_nlnstiffmass)
       {
-    	  switch(nnode)
-    	  {
-  	  		case 2:
-  	  		{
-  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
-  	  			break;
-  	  		}
-  	  		default:
-  	  		  dserror("Only Line2 Elements implemented.");
-    	  }
+        switch(nnode)
+        {
+          case 2:
+          {
+            b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            break;
+          }
+          default:
+            dserror("Only Line2 Elements implemented.");
+        }
       }
       else if (act == Beam3ii::calc_struct_nlnstifflmass)
       {
-    	  switch(nnode)
-    	  {
-  	  		case 2:
-  	  		{
-  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
-  	  			lumpmass<2>(&elemat2);
-  	  			break;
-  	  		}
-  	  		default:
-  	  		  dserror("Only Line2 Elements implemented.");
-    	  }
+        switch(nnode)
+        {
+          case 2:
+          {
+            b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            lumpmass<2>(&elemat2);
+            break;
+          }
+          default:
+            dserror("Only Line2 Elements implemented.");
+        }
       }
       else if (act == Beam3ii::calc_struct_nlnstiff)
       {
-    	  switch(nnode)
-    	  {
-  	  		case 2:
-  	  		{
-  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
-  	  			break;
-  	  		}
-  	  		default:
-  	  		  dserror("Only Line2 Elements implemented.");
-    	  }
+        switch(nnode)
+        {
+          case 2:
+          {
+            b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            break;
+          }
+          default:
+            dserror("Only Line2 Elements implemented.");
+        }
       }
 
       else if (act == Beam3ii::calc_struct_internalforce)
       {
-    	  switch(nnode)
-    	  {
-  	  		case 2:
-  	  		{
-  	  			b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
-  	  			break;
-  	  		}
-  	  		default:
-  	  			dserror("Only Line2 Elements implemented.");
-    	  }
+        switch(nnode)
+        {
+          case 2:
+          {
+            b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+            break;
+          }
+          default:
+            dserror("Only Line2 Elements implemented.");
+        }
       }
 
     /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
@@ -241,69 +241,69 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
       //calculating strains in new configuration
       for(int i=0; i<6; i++) //for all dof
       {
-      	for(int k=0; k<nnode; k++)//for all nodes
-      	{
+        for(int k=0; k<nnode; k++)//for all nodes
+        {
 
-      		Epetra_SerialDenseVector force_aux;
-      		force_aux.Size(6*nnode);
+          Epetra_SerialDenseVector force_aux;
+          force_aux.Size(6*nnode);
 
-      		//create new displacement and velocity vectors in order to store artificially modified displacements
-      		vector<double> vel_aux(myvel);
-      		vector<double> disp_aux(mydisp);
+          //create new displacement and velocity vectors in order to store artificially modified displacements
+          vector<double> vel_aux(myvel);
+          vector<double> disp_aux(mydisp);
 
-      		//modifying displacement artificially (for numerical derivative of internal forces):
-      		disp_aux[6*k + i] += h_rel;
-      		vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
+          //modifying displacement artificially (for numerical derivative of internal forces):
+          disp_aux[6*k + i] += h_rel;
+          vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
 
-      		//b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
-      	  switch(nnode)
-      	  {
-      	  		case 2:
-      	  		{
-      	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-      	  			break;
-      	  		}
-      	  		case 3:
-      	  		{
-      	  			b3_nlnstiffmass<3>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-      	  			break;
-      	  		}
-      	  		case 4:
-      	  		{
-      	  			b3_nlnstiffmass<4>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-      	  			break;
-      	  		}
-      	  		case 5:
-      	  		{
-      	  			b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-      	  			break;
-      	  		}
-      	  		default:
-      	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-      	  }
+          //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
+          switch(nnode)
+          {
+              case 2:
+              {
+                b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+                break;
+              }
+              case 3:
+              {
+                b3_nlnstiffmass<3>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+                break;
+              }
+              case 4:
+              {
+                b3_nlnstiffmass<4>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+                break;
+              }
+              case 5:
+              {
+                b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+                break;
+              }
+              default:
+                dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+          }
 
-        	//computing derivative d(fint)/du numerically by finite difference
-      		for(int u = 0 ; u < 6*nnode ; u++ )
-      			stiff_approx(u,k*6+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+          //computing derivative d(fint)/du numerically by finite difference
+          for(int u = 0 ; u < 6*nnode ; u++ )
+            stiff_approx(u,k*6+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
 
-      	} //for(int k=0; k<nnode; k++)//for all nodes
+        } //for(int k=0; k<nnode; k++)//for all nodes
 
       } //for(int i=0; i<3; i++) //for all dof
 
 
       for(int line=0; line<6*nnode; line++)
       {
-      	for(int col=0; col<6*nnode; col++)
-      	{
-      		stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
+        for(int col=0; col<6*nnode; col++)
+        {
+          stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
 
-      		//suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-      		if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
-      			stiff_relerr(line,col) = 0;
+          //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+          if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
+            stiff_relerr(line,col) = 0;
 
-      		//if ( stiff_relerr(line,col) > 0)
-      			outputflag = 1;
-      	} //for(int col=0; col<3*nnode; col++)
+          //if ( stiff_relerr(line,col) > 0)
+            outputflag = 1;
+        } //for(int col=0; col<3*nnode; col++)
 
       } //for(int line=0; line<3*nnode; line++)
 
@@ -646,7 +646,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
                                         Epetra_SerialDenseVector* intenergy)
 {
   //initialize energies (only one kind of energy computed here
-  (*intenergy)(0) = 0.0;
+  intenergy->Scale(0.0);
   Eint_=0.0;
 
   bool calcenergy = false;
@@ -700,12 +700,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
     /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
      *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
     if(params.isParameter("PERIODLENGTH"))
-    {
-      std::cout<<"=========================StatMech"<<std::endl;
       NodeShift<nnode,3>(params,disp);
-    }
-    else
-      std::cout<<"=========================No StatMech"<<std::endl;
 
     //integration points for elasticity (underintegration) and mass matrix (exact integration)
     DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
@@ -730,12 +725,24 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
       strainstress(gamma,kappa,stressN,CN,stressM,CM);
 
       //adding elastic energy at this Gauss point
-      for(int i=0; i<3; i++)
+      if(intenergy->M()==1)
       {
-        (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
-        (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+        for(int i=0; i<3; i++)
+        {
+          (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+          (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+        }
       }
-
+      else if(intenergy->M()==6)
+      {
+        for(int i=0; i<3; i++)
+        {
+          (*intenergy)(i) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+          (*intenergy)(i+3) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+        }
+      }
+      else
+        dserror("energy vector of invalid size %i!", intenergy->M());
     }
   }
   return;
@@ -1327,7 +1334,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     Ngp_ = stressN;
   }
 
-  	/*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
+    /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
@@ -1583,7 +1590,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnmass_fdcheck(Teuchos::ParameterList& params,
 } // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
 
 /*------------------------------------------------------------------------------------------------------------*
- | lump mass matrix					   (private)                                                   cyron 01/08|
+ | lump mass matrix             (private)                                                   cyron 01/08|
  *------------------------------------------------------------------------------------------------------------*/
 template<int nnode>
 void DRT::ELEMENTS::Beam3ii::lumpmass(Epetra_SerialDenseMatrix* emass)
@@ -1591,18 +1598,18 @@ void DRT::ELEMENTS::Beam3ii::lumpmass(Epetra_SerialDenseMatrix* emass)
   // lump mass matrix
   if (emass != NULL)
   {
-	  // we assume #elemat2 is a square matrix
-	  for (int c=0; c<(*emass).N(); ++c) // parse columns
-	  {
-		  double d = 0.0;
-		  for (int r=0; r<(*emass).M(); ++r) // parse rows
-		  {
-			  d += (*emass)(r,c); // accumulate row entries
-			  (*emass)(r,c) = 0.0;
-		  }
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c) // parse columns
+    {
+      double d = 0.0;
+      for (int r=0; r<(*emass).M(); ++r) // parse rows
+      {
+        d += (*emass)(r,c); // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
 
-		  (*emass)(c,c) = d; // apply sum of row entries on diagonal
-	  }
+      (*emass)(c,c) = d; // apply sum of row entries on diagonal
+    }
   }
 }
 
@@ -1963,12 +1970,12 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterLis
             }
         }
     /*if(force->Norm2()>100)
-  	{
-  		cout<<"post RotDamp: "<<Id()<<endl;
-  		for(int i=0; i<3; i++)
-  			cout<<velgp(i)<<"/"<<velbackground(i)<<" ";
-  		cout<<"\n\n"<<endl;
-  	}*/
+    {
+      cout<<"post RotDamp: "<<Id()<<endl;
+      for(int i=0; i<3; i++)
+        cout<<velgp(i)<<"/"<<velbackground(i)<<" ";
+      cout<<"\n\n"<<endl;
+    }*/
   }
 
   return;
@@ -2188,39 +2195,39 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList& params,
 
   /*if(force->Norm2()>100)
   {
-  	cout<<"pre: "<<Id()<<endl;
-  	for(int i=0; i<force->M(); i++)
-  		cout<<(*force)[i]<<" ";
-  	cout<<endl;
+    cout<<"pre: "<<Id()<<endl;
+    for(int i=0; i<force->M(); i++)
+      cout<<(*force)[i]<<" ";
+    cout<<endl;
   }*/
   //add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
   /*if(force->Norm2()>100)
   {
-  	cout<<"post TransDamp: "<<Id()<<endl;
-  	for(int i=0; i<force->M(); i++)
-  		cout<<(*force)[i]<<" ";
-  	cout<<endl;
+    cout<<"post TransDamp: "<<Id()<<endl;
+    for(int i=0; i<force->M(); i++)
+      cout<<(*force)[i]<<" ";
+    cout<<endl;
   }*/
   //add stiffness and forces (i.e. moments) due to rotational damping effects
   MyRotationalDamping<nnode>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
 
   /*if(force->Norm2()>100)
   {
-  	cout<<"post RotDamp: "<<Id()<<endl;
-  	for(int i=0; i<force->M(); i++)
-  		cout<<(*force)[i]<<" ";
-  	cout<<endl;
+    cout<<"post RotDamp: "<<Id()<<endl;
+    for(int i=0; i<force->M(); i++)
+      cout<<(*force)[i]<<" ";
+    cout<<endl;
   }*/
   //add stochastic forces and (if required) resulting stiffness
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
 
   /*if(force->Norm2()>100)
   {
-  	cout<<"post Stoch: "<<Id()<<endl;
-  	for(int i=0; i<force->M(); i++)
-  		cout<<(*force)[i]<<" ";
-  	cout<<"\n\n"<<endl;
+    cout<<"post Stoch: "<<Id()<<endl;
+    for(int i=0; i<force->M(); i++)
+      cout<<(*force)[i]<<" ";
+    cout<<"\n\n"<<endl;
   }*/
   //add stochastic moments and resulting stiffness
   //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
