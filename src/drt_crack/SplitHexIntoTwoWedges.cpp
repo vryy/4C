@@ -24,7 +24,12 @@ Maintainer: Sudhakar
 #include <iostream>
 #include <sstream>
 
-//REMEMBER: It has already been checked both tipnodes and splitnodes have only 2 values
+/*---------------------------------------------------------------------------------------------*
+ * Do all operations on splitting HEX into WEDGE two WEDGE elements
+ * First two Quad elements that are on z-plane are identified and split into Tri           sudhakar 08/14
+ * Then these Tri are joined approp. to generate WEDGE
+ * REMEMBER: It has already been checked both tipnodes and splitnodes have only 2 values
+ *---------------------------------------------------------------------------------------------*/
 void DRT::CRACK::SplitHexIntoTwoWedges::DoAllSplittingOperations( DRT::Element * ele,
                                                                   std::vector<int> tipnodes,
                                                                   std::vector<int> splitnodes,
@@ -60,35 +65,9 @@ void DRT::CRACK::SplitHexIntoTwoWedges::DoAllSplittingOperations( DRT::Element *
 
 
   int owner = ele->Owner();
-  Teuchos::RCP<MAT::Material> mat = ele->Material();
-  int material_id = ele->Material()->Parameter()->Id();
 
-  DRT::INPUT::LineDefinition ld;
-  ld
-    .AddInt("MAT")
-    .AddNamedString("KINEM")
-    ;
-
-  //char ss[] = "MAT "<<material_id<<" KINEM nonlinear";
-  //std::stringstream ss1 = "MAT "<<material_id;<<" KINEM nonlinear";
-  //const std::string s1 = "MAT ";
-  std::stringstream ss;
-  ss<<"MAT "<<material_id<<" KINEM nonlinear";
-  const std::string str = ss.str();
-  const char * ch = str.c_str();
-  std::cout<<"char = "<<ch<<"\n";
-  //std::ostream ss2;
-  //ss2<<"MAT "<<material_id<<" KINEM nonlinear";
-  //std::string ss3;
-  //ss3<<"MAT "<<material_id<<" KINEM nonlinear";
-  //std::ostream os = "MAT ";
-  Teuchos::RCP<std::stringstream> lin = Teuchos::rcp(new std::stringstream(ch));
-  //Teuchos::RCP<std::stringstream> lin = Teuchos::rcp(ss3.c_str());
-  ld.Read( *lin );
-
-
-  AddThisWedge( owner, neweleid1, wedge1_nodes, mat );
-  AddThisWedge( owner, neweleid2, wedge2_nodes, mat );
+  AddThisWedge( owner, neweleid1, wedge1_nodes );
+  AddThisWedge( owner, neweleid2, wedge2_nodes );
 
 #if 0
   // We should not get surfaces from element and proceed with it
@@ -125,6 +104,20 @@ void DRT::CRACK::SplitHexIntoTwoWedges::DoAllSplittingOperations( DRT::Element *
 #endif
 }
 
+/*-------------------------------------------------------------------------------------------*
+ * Give Quad element is split into two Tri elements with a diagonal                sudhakar 08/14
+ * which has one tip node and one split node at its ends
+ *
+ *
+ *      -------*                 * splitnode
+ *      |     /|                 o tip node
+ *      |    / |
+ *      |   /  |
+ *      |  /   |
+ *      | /    |
+ *      |/     |
+ *      o------
+ *-------------------------------------------------------------------------------------------*/
 void DRT::CRACK::SplitHexIntoTwoWedges::SplitThisQuad( std::vector<int> & face,
                                                        std::vector<int> & tipnodes,
                                                        std::vector<int> & splitnodes,
@@ -155,21 +148,18 @@ void DRT::CRACK::SplitHexIntoTwoWedges::SplitThisQuad( std::vector<int> & face,
   tri2.push_back( face[tip_index] );
 }
 
+/*--------------------------------------------------------------------------------------------*
+ * Add the generated wedge element into discretization                                sudhakar 08/14
+ * It is mandatory to set the material here as this element is evaluated as well
+ *--------------------------------------------------------------------------------------------*/
 void DRT::CRACK::SplitHexIntoTwoWedges::AddThisWedge( int owner,
                                                       int eleid,
-                                                      std::vector<int> elenodes,
-                                                      Teuchos::RCP<MAT::Material> material )
+                                                      std::vector<int> elenodes )
 {
   Teuchos::RCP<DRT::Element> wedge = DRT::UTILS::Factory("SOLIDW6","Polynomial", eleid, owner );
   wedge->SetNodeIds( 6, &elenodes[0] );
 
-  int mat = wedge->AddMaterial( material );
-  if( mat == 0 )
-    dserror("Not able to add material for this element\n");
-
-  /*std::string eletype = "SOLIDW6";
-  std::string distype = "WEDGE6";
-  wedge->ReadElement( eletype, distype, &linedef );*/
+  wedge->SetMaterial( material_id_ );
 
   discret_->AddElement( wedge );
 }

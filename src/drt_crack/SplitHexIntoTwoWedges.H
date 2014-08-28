@@ -31,8 +31,9 @@ public:
   /*!
   \brief Constructor
    */
-  SplitHexIntoTwoWedges( Teuchos::RCP<DRT::Discretization> dis )
-    :discret_(dis)
+  SplitHexIntoTwoWedges( Teuchos::RCP<DRT::Discretization> dis, int material_id )
+    :discret_(dis),
+     material_id_( material_id )
   {
   }
 
@@ -60,10 +61,13 @@ private:
   /*!
   \brief Add a WEDGE element with given nodal data into the discretization
    */
-  void AddThisWedge( int owner, int eleid, std::vector<int> elenodes, Teuchos::RCP<MAT::Material> material );
+  void AddThisWedge( int owner, int eleid, std::vector<int> elenodes );
 
   //! underlying discretization
   Teuchos::RCP<DRT::Discretization> discret_;
+
+  //! material id of elements that are in structural discretization
+  int material_id_;
 };
 
 } /* namespace CRACK */

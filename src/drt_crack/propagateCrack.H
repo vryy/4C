@@ -142,6 +142,8 @@ private:
   Teuchos::RCP<DRT::Element> getSurfaceSameZplane( std::vector< Teuchos::RCP< DRT::Element > >& Surfaces,
                                                    const double * coord );
 
+  Teuchos::RCP<DRT::Element> getSurfaceThisPlane( std::vector< Teuchos::RCP< DRT::Element > >& Surfaces, int tipid );
+
   /*!
   \brief Check whether the crack has completely split the structure into two, and do the operations necessary to stop the crack
   propagation after this point
@@ -304,6 +306,9 @@ private:
 
   //! Whether HEX elements need to be split into two WEDGE in this time step
   bool DoHexSplit_;
+
+  //! material id in the input file
+  int material_id_;
 };
 
 } /* namespace CRACK */

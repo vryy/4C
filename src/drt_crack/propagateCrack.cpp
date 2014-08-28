@@ -120,6 +120,21 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
 
   Teuchos::RCP<MAT::Material> actmat = tempele->Material();
 
+  // get material id from element materials
+  // This will be used to set materials approp when splitting HEX into WEDGEs
+  bool mat_found = false;
+  for( std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator itm = mats.begin(); itm != mats.end(); itm++ )
+  {
+    if( itm->second->Type() == actmat->MaterialType() )
+    {
+      material_id_ = itm->first;
+      mat_found = true;
+    }
+  }
+
+  if( not mat_found )
+    dserror("given material is not found in material maps?\n");
+
   switch(actmat->MaterialType())
   {
     case INPAR::MAT::m_elasthyper:
@@ -774,7 +789,9 @@ DRT::Node * DRT::CRACK::PropagateCrack::findNeighboringCrackNode( const DRT::Nod
 DRT::Node * DRT::CRACK::PropagateCrack::findAttachedNode( DRT::Node * neigh, DRT::Node * tipnode )
 {
   DRT::Node * attach = NULL;
-  const double * neighcord = neigh->X();
+  //const double * neighcord = neigh->X();
+
+  int tipid = tipnode->Id();
 
   // find all the elements attached with this neighboring node
   DRT::Element** ElementsPtr = neigh->Elements();
@@ -808,7 +825,7 @@ DRT::Node * DRT::CRACK::PropagateCrack::findAttachedNode( DRT::Node * neigh, DRT
         for( int no = 0; no < ele->NumNode(); no++ )
         {
           const int id = nodeids[no];
-          if( std::find( tipnodes_.begin(), tipnodes_.end(), id ) != tipnodes_.end() )
+          if( id == tipid )
           {
             foundele = true;
             atele = ele;
@@ -829,7 +846,7 @@ DRT::Node * DRT::CRACK::PropagateCrack::findAttachedNode( DRT::Node * neigh, DRT
   // we already confirmed this element is in the present processor
   std::vector< Teuchos::RCP< DRT::Element > > Surfaces = atele->Surfaces();
 
-  Teuchos::RCP<DRT::Element> surf = getSurfaceSameZplane( Surfaces, neighcord );
+  Teuchos::RCP<DRT::Element> surf = getSurfaceThisPlane( Surfaces, tipid );
 
   // There are two nodes attached with this neighboring node in this elements
   // One node is the tip node, and other is the attached node
@@ -1392,7 +1409,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip()
           DRT::Element* Element = ElementsPtr[eleno];
           std::vector< Teuchos::RCP< DRT::Element > > Surfaces = Element->Surfaces();
 
-          Teuchos::RCP<DRT::Element> surf = getSurfaceSameZplane( Surfaces, tipcord );
+          Teuchos::RCP<DRT::Element> surf = getSurfaceThisPlane( Surfaces, tipid );
 
           if( surf == Teuchos::null )
             dserror("Did not found the surface on same z-plane\n");
@@ -1529,7 +1546,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip2()
           DRT::Element* Element = ElementsPtr[eleno];
           std::vector< Teuchos::RCP< DRT::Element > > Surfaces = Element->Surfaces();
 
-          Teuchos::RCP<DRT::Element> surf = getSurfaceSameZplane( Surfaces, tipcord );
+          Teuchos::RCP<DRT::Element> surf = getSurfaceThisPlane( Surfaces, tipid );
           if( surf == Teuchos::null )
             dserror("Did not found the surface on same z-plane\n");
 
@@ -2033,7 +2050,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
           DRT::Element* Element = ElementsPtr[eleno];
           std::vector< Teuchos::RCP< DRT::Element > > Surfaces = Element->Surfaces();
 
-          Teuchos::RCP<DRT::Element> surf = getSurfaceSameZplane( Surfaces, tipcord );
+          Teuchos::RCP<DRT::Element> surf = getSurfaceThisPlane( Surfaces, tipid );
 
           if( surf == Teuchos::null )
             dserror("Did not found the surface on same z-plane\n");
@@ -2304,7 +2321,7 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip3()
           DRT::Element* Element = ElementsPtr[eleno];
           std::vector< Teuchos::RCP< DRT::Element > > Surfaces = Element->Surfaces();
 
-          Teuchos::RCP<DRT::Element> surf = getSurfaceSameZplane( Surfaces, tipcord );
+          Teuchos::RCP<DRT::Element> surf = getSurfaceThisPlane( Surfaces, tipid );
 
           if( surf == Teuchos::null )
             dserror("Did not found the surface on same z-plane\n");
@@ -3154,7 +3171,7 @@ void DRT::CRACK::PropagateCrack::split_All_HEX_Elements()
   if( all_split_ele_.size() == 0 )
     return;
 
-  SplitHexIntoTwoWedges split( discret_ );
+  SplitHexIntoTwoWedges split( discret_, material_id_ );
 
   for( std::map<int,splitThisEle_>::iterator it = all_split_ele_.begin(); it != all_split_ele_.end(); it++ )
   {
@@ -3216,4 +3233,58 @@ void DRT::CRACK::PropagateCrack::split_All_HEX_Elements()
   discret_->FillComplete();
 }
 
+Teuchos::RCP<DRT::Element> DRT::CRACK::PropagateCrack::getSurfaceThisPlane( std::vector< Teuchos::RCP< DRT::Element > >& Surfaces,
+                                                                            int tipid )
+{
+  bool foundsur = false;
+  Teuchos::RCP< DRT::Element > reqd_surf = Teuchos::null;
 
+  for( unsigned surno = 0; surno<Surfaces.size(); surno++ )
+  {
+    Teuchos::RCP<DRT::Element> surele = Surfaces[surno];
+    const int * nodeids = surele->NodeIds();
+
+    // make sure given tip node is available on this surface
+    bool found_this_tip = false;
+    for( int nodno = 0; nodno < surele->NumNode(); nodno++ )
+    {
+      if( nodeids[nodno] == tipid )
+      {
+        found_this_tip = true;
+        break;
+      }
+    }
+
+    if( not found_this_tip )
+      continue;
+
+    // we need a surface that contains given crack tip --> we got them
+    // surface that is on this plane should not contain any other tip nodes
+    bool found_other_tip = false;
+    for( int nodno = 0; nodno < surele->NumNode(); nodno++ )
+    {
+      int thisid = nodeids[nodno];
+      if( thisid == tipid )
+        continue;
+
+      if( std::find( tipnodes_.begin(), tipnodes_.end(), thisid ) != tipnodes_.end() )
+      {
+        found_other_tip = true;
+        break;
+      }
+    }
+
+    if( not found_other_tip )
+    {
+      reqd_surf = surele;
+      foundsur = true;
+      break;
+    }
+
+  }
+
+  if( not foundsur )
+    dserror( "Required surface is not found\n" );
+
+  return reqd_surf;
+}
