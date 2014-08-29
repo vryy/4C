@@ -22,8 +22,8 @@ Maintainer: Georg Bauer
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_scatra/scatra_resulttest.H"
 
 // general time integration schemes
@@ -115,7 +115,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams= Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
+  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams = Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -177,6 +177,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   extraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
   extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
+  // get scatra_type
+  // ---------------
+  INPAR::SCATRA::ScaTraType sctrtype = DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*scatratimeparams,"SCATRATYPE");
+
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // respective time-integration (or stationary) scheme
@@ -184,7 +188,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain and probtype != prb_two_phase_flow)
+  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain and probtype != prb_two_phase_flow and sctrtype != INPAR::SCATRA::scatratype_cardiac_monodomain)
   {
     switch(timintscheme)
     {
@@ -373,8 +377,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
         break;
     }// switch(timintscheme)
   }
-  else if (probtype == prb_cardiac_monodomain)
+  else if (probtype == prb_cardiac_monodomain or sctrtype == INPAR::SCATRA::scatratype_cardiac_monodomain)
   {
+    std::cout << "We're in the right scheme :)" << std::endl;
+
     Teuchos::RCP<Teuchos::ParameterList> cmonoparams = Teuchos::null;
     switch(timintscheme)
     {
