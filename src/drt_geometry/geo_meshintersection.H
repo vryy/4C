@@ -57,6 +57,15 @@ namespace GEO
     */
     void AddElement( DRT::Element * ele );
 
+    /*!
+    \brief Build the bounding volume tree for the collision detection in the context of the selfcut
+    */
+    void BuildBVTree();
+
+    /*!
+    \brief Build the static search tree for the collision detection
+    */
+    void BuildStaticSearchTree();
 
     /*========================================================================*/
     //! @name Cut functionality routines

@@ -53,7 +53,7 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
   // wait for all processors before the Communication starts
   discret_.Comm().Barrier();
 
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- CommunicateNodePositions" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodePositions" );
 
 //  if(myrank_==0) std::cout << "\n\t ... CommunicateNodePositions" << std::flush;
 //
@@ -451,7 +451,7 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers(bool include_inner)
   // wait for all processors before the Communication starts
   discret_.Comm().Barrier();
 
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- CommunicateNodeDofSetNumbers" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodeDofSetNumbers" );
 
 //  if(myrank_==0) std::cout << "\n\t ... CommunicateNodeDofSetNumbers" << std::flush;
 //

@@ -62,6 +62,12 @@ public:
   /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
+  /// build the bounding volume tree for the collision detection in the context of the selfcut
+  void BuildBVTree();
+
+  /// build the static search tree for the collision detection
+  void BuildStaticSearchTree();
+
   /*========================================================================*/
   //! @name Cut functionality, routines
   /*========================================================================*/
@@ -73,8 +79,14 @@ public:
             bool tetcellsonly=true,
             bool screenoutput=true);
 
+  /// handles cut sides which cut each other
+  void Cut_SelfCut( bool include_inner,bool screenoutput=true);
+
+  /// detects if a side of the cut mesh possibly collides with an element of the background mesh
+  void Cut_CollisionDetection( bool include_inner,bool screenoutput=true);
+
   /// Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
-  void Cut_Mesh( bool include_inner ,bool screenoutput=true);
+  void Cut_MeshIntersection( bool include_inner,bool screenoutput=true);
 
   /// Routine for deciding the inside-outside position. This creates the dofset data, just serial
   void Cut_Positions_Dofsets( bool include_inner ,bool screenoutput=true);

@@ -33,10 +33,10 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+Maintainer: Andy Wirtz
+            wirtz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15270
 </pre>
 */
 
@@ -122,6 +122,26 @@ namespace GEO
       const LINALG::Matrix<9,2>&    cutterDOP,
       const LINALG::Matrix<9,2>&    xfemDOP
       );
+
+    /*!
+    \brief checks the intersection between two bounding volumes (AABB)
+    \param currentBV   (in)         : AABB of the current element
+    \param queryBV     (in)         : AABB of the query element
+    \return true if the AABB's intersect or false otherwise
+     */
+    bool intersectionOfBVs(
+        const LINALG::Matrix<3,2>&    currentBV,
+        const LINALG::Matrix<3,2>&    queryBV);
+
+    /*!
+    \brief checks the overlap of two intervals in one coordinate
+    \param smin     (in)         : minimum value of the current interval
+    \param smax     (in)         : maximum value of the current interval
+    \param omin     (in)         : minimum value of the query interval
+    \param omax     (in)         : maximum value of the query interval
+    \return true if the intervals's overlap or false otherwise
+     */
+    bool overlap( double smin, double smax, double omin, double omax );
 
 
     /*!

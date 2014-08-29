@@ -7,6 +7,9 @@
 #include "cut_edge.H"
 #include "cut_tolerance.H"
 
+// for bounding volume hierarchy
+#include "cut_boundingbox.H"
+
 namespace GEO
 {
 namespace CUT
@@ -36,6 +39,13 @@ public:
       e->Register(this);
     }
     selfcutposition_ = Point::undecided;
+
+    if (sid > -1)
+    {
+      BoundingBox boundingvolume(*this);
+      boundingvolume_ = boundingvolume;
+    }
+
   }
 
   virtual ~Side()
@@ -143,12 +153,14 @@ public:
   /*
    \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
    */
-  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n ) = 0;
+  virtual void Basis(const LINALG::Matrix<2, 1> & xsi, LINALG::Matrix<3, 1> & t1
+      , LINALG::Matrix<3, 1> & t2, LINALG::Matrix<3, 1> & n) = 0;
 
   /*
    \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
    */
-  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n ) = 0;
+  virtual void BasisAtCenter(LINALG::Matrix<3, 1> & t1
+      , LINALG::Matrix<3, 1> & t2, LINALG::Matrix<3, 1> & n) = 0;
 
   /*!
    \brief Returns the global coordinates of the nodes of this side
@@ -308,7 +320,7 @@ public:
   /// Gets the selfcutposition of this cutside and spread the positional information
   void GetSelfCutPosition(Point::PointPosition p);
 
-  /// Erase a cuttingside from this cutside because the bounding box found too much 
+  /// Erase a cuttingside from this cutside because the bounding box found too much
   void EraseCuttingSide(Side * nocuttingside)
   {
     cutting_sides_.erase(nocuttingside);
@@ -350,8 +362,14 @@ public:
     return selfcutposition_;
   }
 
-	/// replace "nod" associated with this side by the new node "replwith"
-  void replaceNodes( Node* nod, Node* replwith );
+  /// replace "nod" associated with this side by the new node "replwith"
+  void replaceNodes(Node* nod, Node* replwith);
+
+  /// get bounding volume
+  BoundingBox GetBoundingVolume()
+  {
+    return boundingvolume_;
+  }
 
 protected:
 
@@ -390,6 +408,9 @@ private:
 
   /// the selfcutposition of this cutside shows if it is inside or outside the other structure body
   Point::PointPosition selfcutposition_;
+
+  /// the bounding volume of the side
+  BoundingBox boundingvolume_;
 
 };
 
@@ -460,10 +481,12 @@ public:
       , LINALG::Matrix<3, 1> & normal);
 
   /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
-  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+  virtual void BasisAtCenter(LINALG::Matrix<3, 1> & t1
+      , LINALG::Matrix<3, 1> & t2, LINALG::Matrix<3, 1> & n);
 
   /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
-  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+  virtual void Basis(const LINALG::Matrix<2, 1> & xsi, LINALG::Matrix<3, 1> & t1
+      , LINALG::Matrix<3, 1> & t2, LINALG::Matrix<3, 1> & n);
 
   /// get coordinates of side
   void Coordinates(LINALG::Matrix<3, 3> & xyze_surfaceElement)
@@ -542,10 +565,12 @@ public:
       , LINALG::Matrix<3, 1> & normal);
 
   /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
-  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+  virtual void BasisAtCenter(LINALG::Matrix<3, 1> & t1
+      , LINALG::Matrix<3, 1> & t2, LINALG::Matrix<3, 1> & n);
 
   /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
-  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+  virtual void Basis(const LINALG::Matrix<2, 1> & xsi, LINALG::Matrix<3, 1> & t1
+      , LINALG::Matrix<3, 1> & t2, LINALG::Matrix<3, 1> & n);
 
   /// get coordinates of side
   void Coordinates(LINALG::Matrix<3, 4> & xyze_surfaceElement)

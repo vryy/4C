@@ -6,6 +6,9 @@
 
 #include "../drt_inpar/inpar_cut.H"
 
+// for bounding volume hierarchy
+#include "cut_boundingbox.H"
+
 namespace GEO
 {
 
@@ -55,6 +58,9 @@ public:
 
     // shadow elements are initialized separately
     isShadow_ = false;
+
+    BoundingBox boundingvolume(*this);
+    boundingvolume_ = boundingvolume;
   }
 
   virtual ~Element() {}
@@ -96,6 +102,16 @@ public:
   \brief Cutting the element with the given cut side
    */
   bool Cut( Mesh & mesh, Side & cut_side, int recursion );
+
+  /*!
+  \brief cut this element with its cut faces
+   */
+  void FindCutPoints( Mesh & mesh );
+
+  /*!
+  \brief cut this element with given cut_side
+   */
+  bool FindCutPoints( Mesh & mesh, Side & cut_side, int recursion );
 
   /*!
   \brief Create cut lines over this element by connecting appropriate cut points
@@ -380,6 +396,16 @@ public:
    */
   void LocalCoordinatesQuad( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
+  /*!
+  \brief Add cut face
+   */
+  void AddCutFace( Side* cutface ){cut_faces_.insert(cutface);}
+
+  /*!
+  \brief get the bounding volume
+   */
+  BoundingBox GetBoundingVolume(){return boundingvolume_;}
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }
@@ -427,6 +453,10 @@ private:
 
   /// Discretization shape of the parent quad element
   DRT::Element::DiscretizationType quadshape_;
+
+  /// the bounding volume of the element
+  BoundingBox boundingvolume_;
+
 };
 
 /// tet4 element

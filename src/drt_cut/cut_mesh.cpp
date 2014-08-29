@@ -29,6 +29,9 @@ Maintainer: Benedikt Schott
 
 #include "../drt_geometry/element_volume.H"
 
+// search
+//#include "../drt_geometry/bvtree.H"
+#include "../drt_geometry/searchtree.H"
 
 /*-------------------------------------------------------------------------------------*
  * constructor
@@ -511,13 +514,77 @@ GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::Point
   return c;
 }
 
+/*------------------------------------------------------------------------------------------------*
+ * build the bounding volume tree for the collision detection in the context of the selfcut       *
+ *                                                                                    wirtz 09/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::Mesh::BuildBVTree()
+{
+
+  // constructor for the bounding volume tree of the cut mesh
+//  bvtree_ = Teuchos::rcp(new GEO::BVTree());
+
+  // initializes the bounding volume tree of the cut mesh
+//  bvtree_->InitializeBVTree();
+
+  // builds the bounding volume tree of the cut mesh
+//  bvtree_->BuildBVTree();
+
+}
+
+/*------------------------------------------------------------------------------------------------*
+ * build the static search tree for the collision detection                           wirtz 08/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::Mesh::BuildStaticSearchTree()
+{
+
+  // constructor for the search tree of the background mesh
+  searchtree_ = Teuchos::rcp(new GEO::SearchTree(5));   // tree_depth_ 4 is reasonable, 5 is possible
+
+  // extent the bounding volume of the root of the search tree to prevent symmetry issues
+  LINALG::Matrix<3,2> boundingvolume = bb_.GetBoundingVolume();
+  boundingvolume(0,1) += 1e-4;
+  boundingvolume(1,1) += 1e-4;
+  boundingvolume(2,1) += 1e-4;
+
+  // initializes the search tree of the background mesh
+  searchtree_->initializeTree(boundingvolume, GEO::TreeType(GEO::OCTTREE));
+
+  // inserts all linear elements into the search tree of the background mesh
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    int eid = i->first;
+    Element* e = &*i->second;
+    searchtree_->insertElement(eid);
+    boundingvolumes_[eid] = e->GetBoundingVolume().GetBoundingVolume();
+  }
+
+  // inserts all quadratic elements into the search tree of the background mesh
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i = shadow_elements_.begin();
+      i != shadow_elements_.end(); ++i)
+  {
+    int eid = i->first;
+    Element* e = &*i->second;
+    searchtree_->insertElement(eid);
+    boundingvolumes_[eid] = e->GetBoundingVolume().GetBoundingVolume();
+  }
+
+  // builds the static search tree of the background mesh
+  if (boundingvolumes_.size() != 0) // *********************************************************** possible in case of parallel computing and using only relevant elements
+  {
+    searchtree_->buildStaticSearchTree(boundingvolumes_);
+  }
+
+}
 
 /*-----------------------------------------------------------------*
  * Cuts the background elements of the mesh with all the cut sides *
  *-----------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int recursion )
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- CUT (incl. tetmesh-cut)" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)" );
 
   plain_element_set my_elements_done;
 
@@ -554,7 +621,7 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
     // then elements have not been found
     //
     // schott 10/2012
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- preselection of possible cut between" );
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize --- preselection of possible cut between" );
 
     pp_->CollectElements( sidebox, elements ); // find involved elements (octree-based)
   }
@@ -572,8 +639,7 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
 
   {
 
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- preselection of possible cut between" );
-
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize --- preselection of possible cut between" );
 
     // preselection of possible cut between linear elements and the current side
     for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end(); i++)
@@ -590,11 +656,11 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
       }
     }
     // preselection of possible cut between shadow elements of quadratic elements and the current side
-    for(std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         i++)
     {
-      Element* e= &**i;
+      Element* e= &*(i->second);
       BoundingBox elementbox;
       elementbox.Assign(*e);
       if(elementbox.Within(1.0, sidebox))
@@ -611,7 +677,7 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
 
 
   {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- cutting sides with elements" );
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize --- cutting sides with elements" );
 
 
   // perform the cut of this side for each involved element
@@ -651,11 +717,11 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.Cut( *this, side, 0 );
@@ -683,13 +749,97 @@ void GEO::CUT::Mesh::RectifyCutNumerics()
   }
 }
 
+/*------------------------------------------------------------------------------------------------*
+ * detects if a side of the cut mesh possibly collides with an element of the background mesh     *
+ *                                                                                    wirtz 08/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::Mesh::SearchCollisions(Mesh & cutmesh)
+{
+
+  std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = cutmesh.Sides();
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = cutsides.begin();
+      i != cutsides.end(); ++i)
+  {
+    Side* cutside = &*i->second;
+    LINALG::Matrix<3, 2> cutsideBV =
+        cutside->GetBoundingVolume().GetBoundingVolume();
+    if (boundingvolumes_.size() != 0) // ******************************************************* possible in case of parallel computing and using only relevant elements
+    {
+      std::set<int> collisions;
+      // search collision between cutside and elements in the static search tree
+      searchtree_->searchCollisions(boundingvolumes_, cutsideBV, 0, collisions);
+      // add the cutside to all the elements which have been found
+      for (std::set<int>::iterator ic = collisions.begin();
+          ic != collisions.end(); ++ic)
+      {
+        int collisionid = *ic;
+        std::map<int, Teuchos::RCP<Element> >::iterator ie = elements_.find(
+            collisionid);
+        if (ie != elements_.end())
+        {
+          Element & e = *ie->second;
+          e.AddCutFace(cutside);
+        }
+        std::map<int, Teuchos::RCP<Element> >::iterator ise =
+            shadow_elements_.find(collisionid);
+        if (ise != shadow_elements_.end())
+        {
+          Element & e = *ise->second;
+          e.AddCutFace(cutside);
+        }
+      }
+    }
+  }
+
+}
+
+/*-------------------------------------------------------------------------------------*
+ * finds intersections between sides and edges                                         *
+ *                                                                         wirtz 08/14 *
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::Mesh::FindCutPoints()
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints" );
+
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    try
+    {
+      e.FindCutPoints( *this );
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+  }
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    try
+    {
+      e.FindCutPoints( *this );
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+  }
+
+}
 
 /*-------------------------------------------------------------------------------------*
  * create cut lines based on the point cloud
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::MakeCutLines()
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- MakeCutLines" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeCutLines" );
 
   Creator creator;
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
@@ -707,11 +857,11 @@ void GEO::CUT::Mesh::MakeCutLines()
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.MakeCutLines( *this, creator );
@@ -732,7 +882,7 @@ void GEO::CUT::Mesh::MakeCutLines()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::MakeFacets()
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- MakeFacets" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeFacets" );
 
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -749,11 +899,11 @@ void GEO::CUT::Mesh::MakeFacets()
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.MakeFacets( *this );
@@ -772,7 +922,7 @@ void GEO::CUT::Mesh::MakeFacets()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::MakeVolumeCells()
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- MakeVolumeCells" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeVolumeCells" );
 
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -789,11 +939,11 @@ void GEO::CUT::Mesh::MakeVolumeCells()
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.MakeVolumeCells( *this );
@@ -813,7 +963,7 @@ void GEO::CUT::Mesh::MakeVolumeCells()
 void GEO::CUT::Mesh::FindNodePositions()
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- FindNodePositions" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodePositions" );
 
 
   // On multiple cuts former outside positions can become inside
@@ -836,11 +986,11 @@ void GEO::CUT::Mesh::FindNodePositions()
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.FindNodePositions();
@@ -899,7 +1049,7 @@ void GEO::CUT::Mesh::FindLSNodePositions()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::FindFacetPositions()
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- FindFacetPositions" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindFacetPositions" );
 
 
   plain_volumecell_set undecided;
@@ -1203,11 +1353,11 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset, bool tetc
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.CreateIntegrationCells( *this, count+1, levelset, tetcellsonly );
@@ -1241,11 +1391,11 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCell
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.MomentFitGaussWeights( *this, include_inner, Bcellgausstype );
@@ -1279,11 +1429,11 @@ void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, INPAR::CUT::B
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.DirectDivergenceGaussRule( *this, include_inner, Bcellgausstype );
@@ -1317,11 +1467,11 @@ void GEO::CUT::Mesh::RemoveEmptyVolumeCells()
       throw;
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     try
     {
       e.RemoveEmptyVolumeCells();
@@ -1365,11 +1515,11 @@ void GEO::CUT::Mesh::TestElementVolume( bool fatal )
     Element & e = *i->second;
     TestElementVolume( e.Shape(), e, fatal );
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     TestElementVolume( e.Shape(), e, fatal );
   }
 }
@@ -1537,11 +1687,11 @@ void GEO::CUT::Mesh::PrintCellStats()
       }
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element & e = **i;
+    Element & e = *i->second;
     if ( e.IsCut() )
     {
       cutted += 1;
@@ -1755,11 +1905,11 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
         DumpGmsh( file, nodes, elementtype );
       }
     }
-    for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+    for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
           i!=shadow_elements_.end();
           ++i )
     {
-      Element & e = **i;
+      Element & e = *i->second;
       const std::vector<Node*> & nodes = e.Nodes();
       char elementtype;
       switch ( nodes.size() )
@@ -1897,11 +2047,11 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
       }
     }
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
-    Element * e = &**i;
+    Element * e = &*i->second;
     const plain_volumecell_set & volumes = e->VolumeCells();
     count = volumes.size();
     for ( plain_volumecell_set::const_iterator i=volumes.begin(); i!=volumes.end(); ++i )
@@ -2619,7 +2769,9 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
   }
   else
   {
-    shadow_elements_.push_back( Teuchos::rcp( e ) );
+    int seid = - shadow_elements_.size() - 1;
+    // Remark: the seid of a shadow node is not unique over processors, consequently numbered with negative integers on each proc
+    shadow_elements_[seid] = Teuchos::rcp( e );
   }
   return e;
 }

@@ -355,7 +355,8 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
 
   //**********************************************************
   //search for near elements to the background node's coord
-  SearchTree->searchMultibodyContactElements(currentKDOPs, queryKDOP, 0, gid);
+  SearchTree->searchCollisions(currentKDOPs,queryKDOP,0,gid);
+
 
   for (std::set<int>::iterator iter = gid.begin(); iter != gid.end(); ++iter)
     gids.push_back(*iter);

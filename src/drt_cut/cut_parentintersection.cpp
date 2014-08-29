@@ -26,7 +26,7 @@ Maintainer: Benedikt Schott and Magnus Winter
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::ParentIntersection::CreateNodalDofSetNEW( bool include_inner, const DRT::Discretization& dis)
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
 
 
     std::set<int> eids; // eids of elements that are involved in CUT and include ele_vc_set_inside/outside (no duplicates!)
@@ -520,9 +520,9 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
                                                bool tetcellsonly,
                                                bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 3/3 --- Cut_Finalize ..." );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize" );
 
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 3/3 Cut_Finalize";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize";
 
 //  const double t_start = Teuchos::Time::wallTime();
 

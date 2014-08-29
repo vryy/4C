@@ -60,6 +60,23 @@ GEO::CUT::SideHandle * GEO::CutWizardMesh::GetCutSide( int sid, int mi )
 }
 
 /*------------------------------------------------------------------------------------------------*
+ * build the bounding volume tree for the collision detection in the context of the selfcut       *
+ *                                                                                    wirtz 09/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CutWizardMesh::BuildBVTree()
+{
+  meshintersection_->BuildBVTree();
+}
+
+/*------------------------------------------------------------------------------------------------*
+ * build the static search tree for the collision detection                           wirtz 08/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CutWizardMesh::BuildStaticSearchTree()
+{
+  meshintersection_->BuildStaticSearchTree();
+}
+
+/*------------------------------------------------------------------------------------------------*
  * cut routine for parallel framework in XFSI and XFLUIDFLUID                        schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizardMesh::CutParallel( bool include_inner,
@@ -79,22 +96,53 @@ void GEO::CutWizardMesh::CutParallel( bool include_inner,
   dis_.Comm().Barrier();
 
   //----------------------------------------------------------
-  // FIRST step (1/3): cut the mesh
+  // Selfcut (2/6 Cut_SelfCut)
   {
     const double t_start = Teuchos::Time::wallTime();
 
     // cut the mesh
-    meshintersection_->Cut_Mesh( include_inner, screenoutput );
+    meshintersection_->Cut_SelfCut(include_inner, screenoutput);
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime() - t_start;
+    if (myrank_ == 0)
+      IO::cout << "\t\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  }
+  //----------------------------------------------------------
+  // Cut Part I: Collision Detection (3/6 Cut_CollisionDetection)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    // cut the mesh
+    meshintersection_->Cut_CollisionDetection(include_inner, screenoutput);
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime() - t_start;
+    if (myrank_ == 0)
+      IO::cout << "\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  }
+
+  //----------------------------------------------------------
+  // Cut Part II: Mesh Intersection (4/6 Cut_MeshIntersection)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    // cut the mesh
+    meshintersection_->Cut_MeshIntersection( include_inner, screenoutput );
 
     // just for time measurement
     dis_.Comm().Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   //----------------------------------------------------------
-  // SECOND step (2/3): find node positions and create dofset in PARALLEL
+  // Cut Part III & IV: Element Selection and DOF-Set Management (5/6 Cut_Positions_Dofsets)
   {
     const double t_start = Teuchos::Time::wallTime();
 
@@ -104,11 +152,11 @@ void GEO::CutWizardMesh::CutParallel( bool include_inner,
     dis_.Comm().Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 ) IO::cout << "\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   //----------------------------------------------------------
-  // THIRD step (3/3): perform tessellation or moment fitting on the mesh
+  // Cut Part V & VI: Polyhedra Integration and Boundary Tessellation (6/6 Cut_Finalize)
   {
     const double t_start = Teuchos::Time::wallTime();
 
@@ -119,7 +167,7 @@ void GEO::CutWizardMesh::CutParallel( bool include_inner,
     dis_.Comm().Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   meshintersection_->Status(VCellgausstype);
@@ -133,10 +181,10 @@ void GEO::CutWizardMesh::CutParallel_FindPositionDofSets(bool include_inner, boo
 {
 
 
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)" );
 
 
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
 
 //  const double t_start = Teuchos::Time::wallTime();
 

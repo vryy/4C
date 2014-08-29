@@ -32,6 +32,10 @@ Maintainer: Benedikt Schott
 
 namespace GEO
 {
+
+//class BVTree;
+class SearchTree;
+
 namespace CUT
 {
 
@@ -173,6 +177,19 @@ public:
   Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
 
+  /*========================================================================*/
+  //! @name Basic routines to run the collision detection
+  /*========================================================================*/
+
+  /// build the static search tree for the collision detection
+  void BuildBVTree();
+
+  /// build the static search tree for the collision detection
+  void BuildStaticSearchTree();
+
+  /// detects if a side of the cut mesh possibly collides with an element of the background mesh
+  void SearchCollisions(Mesh & cutmesh);
+
 
   /*========================================================================*/
   //! @name Basic routines to run the cut, creates a cloud of cut points
@@ -190,6 +207,8 @@ public:
   /// ???
   void RectifyCutNumerics();
 
+  /// finds intersections between sides and edges
+  void FindCutPoints();
 
   /*========================================================================*/
   //! @name Basic routines to create lines, facets and volumecells
@@ -449,6 +468,9 @@ public:
   /// Erases a side of the cutmesh
   void EraseSide( plain_int_set sid ) { sides_.erase( sid ); }
 
+  /// Erases a cut side of the cutmesh
+  void EraseCutSide( int sid ) { cut_sides_.erase( sid ); }
+
   /// Erases a edge of the cutmesh
   void EraseEdge( plain_int_set eid ) { edges_.erase( eid ); }
 
@@ -504,6 +526,15 @@ private:
   /// (output) flag for cut mesh
   bool cutmesh_;
 
+  /// the bounding volume hierarchy for a fast collision detection in the context of the selfcut
+//  Teuchos::RCP<GEO::BVTree> bvtree_;
+
+  /// the spatial partitioning octree for a fast collision detection
+  Teuchos::RCP<GEO::SearchTree> searchtree_;
+
+  /// the bounding volumes for a fast collision detection
+  std::map<int, LINALG::Matrix<3,2> > boundingvolumes_;
+
   /*========================================================================*/
   //! @name Containers that hold all those mesh objects
   /*========================================================================*/
@@ -536,10 +567,13 @@ private:
   /// it is the center node of a quad8 side in case of a hex20 element, the eight nodes are used as key for the boundary shadow node
   /// the inner center node of hex20 element is a (kind of) unique inner! shadow node
   /// and is stored using all 20 nodes of the hex20 element as key for the map
+  /// warning: in the context of the selfcut, nodes are erased for the cut mesh
+  /// these nodes are not erased in shadow_nodes_
+  /// so don't use the shadow_nodes_ of the cut mesh
   std::map<plain_int_set, Node*> shadow_nodes_;
 
-  /// internally generated element (quadratic to linear conversation)
-  std::list<Teuchos::RCP<Element> > shadow_elements_;
+  /// new: unique map between int ( < 0 ) and element; int is not eid and not parentid
+  std::map<int, Teuchos::RCP<Element> > shadow_elements_;
 
   //@}
 };

@@ -5,10 +5,10 @@
 
 
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+Maintainer: Andy Wirtz
+            wirtz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15270
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -235,6 +235,36 @@ bool GEO::intersectionOfKDOPs(
   return true;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  checks the intersection between two bounding volumes (AABB)         |
+ |                                                          wirtz 08/14 |
+ *----------------------------------------------------------------------*/
+bool GEO::intersectionOfBVs(
+    const LINALG::Matrix<3,2>&    currentBV,
+    const LINALG::Matrix<3,2>&    queryBV)
+{
+
+  return ( overlap( currentBV(0,0), currentBV(0,1), queryBV(0,0), queryBV(0,1) ) and
+      overlap( currentBV(1,0), currentBV(1,1), queryBV(1,0), queryBV(1,1) ) and
+      overlap( currentBV(2,0), currentBV(2,1), queryBV(2,0), queryBV(2,1) ) );
+
+  return 0;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  checks the overlap of two intervals in one coordinate               |
+ |                                                          wirtz 08/14 |
+ *----------------------------------------------------------------------*/
+bool GEO::overlap( double smin, double smax, double omin, double omax )
+{
+
+  return ( ( omax > smin - GEO::TOL7 and omin < smax + GEO::TOL7 ) or
+           ( smax > omin - GEO::TOL7 and smin < omax + GEO::TOL7 ) );
+
+}
 
 
 /*----------------------------------------------------------------------*

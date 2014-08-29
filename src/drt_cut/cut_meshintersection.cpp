@@ -116,6 +116,31 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
 }
 
 /*------------------------------------------------------------------------------------------------*
+ * build the bounding volume tree for the collision detection in the context of the selfcut       *
+ *                                                                                    wirtz 09/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::BuildBVTree()
+{
+
+  Mesh & cm = CutMesh();
+
+  cm.BuildBVTree();
+
+}
+
+/*------------------------------------------------------------------------------------------------*
+ * build the static search tree for the collision detection                           wirtz 08/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::BuildStaticSearchTree()
+{
+
+  Mesh & m = NormalMesh();
+
+  m.BuildStaticSearchTree();
+
+}
+
+/*------------------------------------------------------------------------------------------------*
  * standard Cut routine for two phase flow and combustion where dofsets and node positions        *
  * have not to be computed, standard cut for cut_est                                 schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
@@ -128,8 +153,17 @@ void GEO::CUT::MeshIntersection::Cut(
 {
   Status();
 
+  // build the static search tree for the collision detection
+  BuildStaticSearchTree();
+
+  // handles cut sides which cut each other
+  Cut_SelfCut( include_inner, screenoutput);
+
+  // detects if a side of the cut mesh possibly collides with an element of the background mesh
+  Cut_CollisionDetection( include_inner, screenoutput);
+
   // cut the mesh and create cutlines, facets, volumecells
-  Cut_Mesh( include_inner, screenoutput);
+  Cut_MeshIntersection( include_inner, screenoutput);
 
   // determine inside-outside position and dofset-data, parallel communication if required
   Cut_Positions_Dofsets( include_inner, screenoutput );
@@ -144,16 +178,49 @@ void GEO::CUT::MeshIntersection::Cut(
 }
 
 /*------------------------------------------------------------------------------------------------*
+ * handles cut sides which cut each other                                                         *
+ *                                                                                    wirtz 08/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::Cut_SelfCut( bool include_inner,bool screenoutput)
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/6 --- Cut_SelfCut" );
+
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ...";
+
+  SelfCut selfcut( CutMesh() );
+
+}
+
+/*------------------------------------------------------------------------------------------------*
+ * detects if a side of the cut mesh possibly collides with an element of the background mesh     *
+ *                                                                                    wirtz 08/14 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::Cut_CollisionDetection( bool include_inner,bool screenoutput)
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 3/6 --- Cut_CollisionDetection" );
+
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 3/6 Cut_CollisionDetection ...";
+
+  Mesh & m = NormalMesh();
+
+  Mesh & cutmesh = CutMesh();
+
+  m.SearchCollisions(cutmesh);
+
+}
+
+/*------------------------------------------------------------------------------------------------*
  * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
+void GEO::CUT::MeshIntersection::Cut_MeshIntersection( bool include_inner,bool screenoutput)
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection" );
 
-
-  if(myrank_==0 and screenoutput) IO::cout << "\n\t * 1/3 Cut_Mesh ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 4/6 Cut_MeshIntersection ...";
 
 //  const double t_start = Teuchos::Time::wallTime();
 
@@ -161,19 +228,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
 
   Mesh & m = NormalMesh();
 
-  plain_element_set elements_done;
-
-  // loop cut sides and cut against elements at the same position in space
-  for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
-        i!=cut_mesh_.end();
-        ++i )
-  {
-    MeshHandle & cut_mesh_handle = **i;
-    Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
-    SelfCut selfcut( cut_mesh );
-    cut_mesh.Cut( m, elements_done, 0 );
-  }
-
+  m.FindCutPoints();
   m.MakeCutLines();
   m.MakeFacets();
   m.MakeVolumeCells();
@@ -186,7 +241,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
 //    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
 //  }
 
-} // GEO::CUT::MeshIntersection::Cut_Mesh
+} // GEO::CUT::MeshIntersection::Cut_MeshIntersection
 
 /*------------------------------------------------------------------------------------------------*
  * Routine for deciding the inside-outside position. This creates the dofset data,                *
@@ -194,9 +249,9 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (serial)" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (serial)" );
 
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets ...";
 
 //  const double t_start = Teuchos::Time::wallTime();
 

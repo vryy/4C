@@ -103,6 +103,12 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   cut_->SetFindPositions( positions );
   GEO::CutWizardMesh & cw = *cut_;
 
+  {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/6 --- Cut_Initialize" );
+
+  if(backdis_.Comm().MyPID()==0 and screenoutput)
+    IO::cout << "\n\t * 1/6 Cut_Initialize ...";
+
   std::vector<int> lm;
   std::vector<double> mydisp;
 
@@ -203,6 +209,22 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
     cw.AddElement( element );
   }
 
+  // build the bounding volume tree for the collision detection in the context of the selfcut
+//  cw.BuildBVTree();
+
+  // build the static search tree for the collision detection
+  cw.BuildStaticSearchTree();
+
+  const double t_mid = Teuchos::Time::wallTime()-t_start;
+  if ( backdis_.Comm().MyPID() == 0  and screenoutput)
+  {
+    IO::cout << "\t\t\t... Success (" << t_mid  <<  " secs)" << IO::endl;
+  }
+  }
+  // wirtz 08/14:
+  // preprocessing: everything above should only be done once in a simulation; so it should be moved before the time loop into a preprocessing step
+  // runtime:       everything below should be done in every Newton increment
+
   // run the (parallel) Cut
   if(parallel)
   {
@@ -219,7 +241,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   const double t_end = Teuchos::Time::wallTime()-t_start;
   if ( backdis_.Comm().MyPID() == 0  and screenoutput)
   {
-    IO::cout << "\n\t ... Success (" << t_end  <<  " secs)\n" << IO::endl;
+    IO::cout << "\n\t\t\t\t\t\t\t... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
 
   if(gmsh_output) cw.DumpGmshNumDOFSets(include_inner);
