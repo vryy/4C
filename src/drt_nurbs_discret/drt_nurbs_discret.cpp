@@ -13,6 +13,7 @@
 *----------------------------------------------------------------------*/
 
 #include <Epetra_Vector.h>
+#include <Epetra_Time.h>
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -26,6 +27,7 @@
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
+#include "drt_nurbs_utils.H"
 #include "drt_nurbs_discret.H"
 
 /*----------------------------------------------------------------------*
@@ -300,12 +302,16 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
   Teuchos::RCP<Epetra_Vector>  systemvectord,
   Teuchos::RCP<Epetra_Vector>  systemvectordd)
 {
+  Epetra_Time timer(Comm());
+  std::cout << "calculating least squares Dirichlet condition in ... ";
 
   Teuchos::RCP<std::set<int> > nurbslsdbcgids = Teuchos::rcp(new std::set<int>());
+  //for integration over elements with DBC we need the column map
+  Teuchos::RCP<std::set<int> > nurbslsdbccolgids = Teuchos::rcp(new std::set<int>());
 
   FindDBCgidAndToggle(cond,
       systemvector,systemvectord,systemvectordd,
-      Teuchos::null,nurbslsdbcgids);
+      Teuchos::null,nurbslsdbcgids,nurbslsdbccolgids);
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
   Teuchos::RCP<LINALG::MapExtractor> auxdbcmapextractor = Teuchos::rcp(new LINALG::MapExtractor());
@@ -325,6 +331,24 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
       = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, DofRowMap()->IndexBase(), DofRowMap()->Comm()));
     // build the map extractor of Dirichlet-conditioned and free DOFs
     *auxdbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap);
+  }
+
+  //column map of all DOFs subjected to a least squares Dirichlet condition
+  Teuchos::RCP<Epetra_Map> dbccolmap=Teuchos::null;
+  {
+    // build map of Dirichlet DOFs
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
+    std::vector<int> dbcgidsv;
+    if (nurbslsdbccolgids->size() > 0)
+    {
+      dbcgidsv.reserve(nurbslsdbccolgids->size());
+      dbcgidsv.assign(nurbslsdbccolgids->begin(),nurbslsdbccolgids->end());
+      nummyelements = dbcgidsv.size();
+      myglobalelements = &(dbcgidsv[0]);
+    }
+    dbccolmap
+      = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, DofRowMap()->IndexBase(), DofRowMap()->Comm()));
   }
 
   // -------------------------------------------------------------------
@@ -426,26 +450,31 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
     std::vector<int> lmstride_full;
 
     std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-
-    // loop over column elements
-    const int numcolele = geom.size();
-
-    int every=numcolele/58;
-    // prevent division by zero when dividing by every later on
-    if (every<1) every=1;
-
-    for (int i=0; i<numcolele; ++i)
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
-      Teuchos::RCP<DRT::Element> actele = geom[i];
+      Teuchos::RCP<DRT::Element> actele = curr->second;
 
-      // get the knotvector from nurbs discretisation
-      Teuchos::RCP<DRT::NURBS::Knotvector> knots=GetKnotVector();
+      static const int probdim = DRT::Problem::Instance()->NDim();
+      const DRT::Element::DiscretizationType distype = actele->Shape();
+      const int dim = DRT::UTILS::getDimension(distype);
+      const bool isboundary = (dim!=probdim);
+      const int nen = DRT::UTILS::getNumberOfElementNodes(distype);
 
       // access elements knot span
-      std::vector<Epetra_SerialDenseVector> eleknots;
+      std::vector<Epetra_SerialDenseVector> eleknots(dim);
+      Epetra_SerialDenseVector weights(nen);
 
       bool zero_size = false;
-      zero_size = knots->GetEleKnots(eleknots,actele->Id());
+      if(isboundary)
+      {
+        double normalfac = 0.0;
+        std::vector<Epetra_SerialDenseVector> pknots(probdim);
+        zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+            actele.get(), actele->FaceMasterNumber(), actele->ParentElement()->Id(), *this, pknots, eleknots, weights, normalfac);
+      }
+      else
+        zero_size =DRT::NURBS::GetMyNurbsKnotsAndWeights(*this,actele.get(),eleknots,weights);
 
       // nothing to be done for a zero sized element
       if(zero_size)
@@ -467,7 +496,7 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
       for(unsigned j=0;j<lm_full.size();++j)
       {
         int gid =lm_full[j];
-        if(dofrowmap->LID(gid)!=-1)
+        if(dbccolmap->MyGID(gid))
         {
           lm.push_back(gid);
           lmowner.push_back(lmowner_full[j]);
@@ -496,30 +525,6 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
           memset(elerhs[i].Values(),0,eledim*sizeof(double));
         }
       }
-
-      static const int probdim = DRT::Problem::Instance()->NDim();
-      int dim = -1;
-      const DRT::Element::DiscretizationType distype = actele->Shape();
-      switch(distype)
-      {
-      case DRT::Element::nurbs2:
-      case DRT::Element::nurbs3:
-        dim =1;
-        break;
-      case DRT::Element::nurbs4:
-      case DRT::Element::nurbs9:
-        dim =2;
-        break;
-      case DRT::Element::nurbs8:
-      case DRT::Element::nurbs27:
-        dim =3;
-        break;
-      default:
-        dserror("discretization type %s not supported for evaluation of least squares boundary condition",DistypeToString(distype).c_str());
-        break;
-      }
-
-      const bool isboundary = (dim!=probdim);
 
       if(isboundary)
         switch(distype)
@@ -578,8 +583,7 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
       if (assemblevecd) LINALG::Assemble(*rhsd,elerhs[1],lm,lmowner);
       if (assemblevecdd) LINALG::Assemble(*rhsdd,elerhs[2],lm,lmowner);
 
-    } // for (int i=0; i<numcolele; ++i)
-
+    }
   }
 
 
@@ -645,6 +649,8 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
   if (assemblevecd) auxdbcmapextractor->InsertCondVector(dbcvectord,systemvectord);
   if (assemblevecdd) auxdbcmapextractor->InsertCondVector(dbcvectordd,systemvectordd);
 
+  std::cout << timer.ElapsedTime() << " seconds \n\n";
+
   return;
 }
 
@@ -656,10 +662,11 @@ void DRT::NURBS::NurbsDiscretization::FindDBCgidAndToggle(
     const Teuchos::RCP<Epetra_Vector>  systemvector,
     const Teuchos::RCP<Epetra_Vector>  systemvectord,
     const Teuchos::RCP<Epetra_Vector>  systemvectordd,
-    Teuchos::RCP<Epetra_Vector>  toggle,
-    Teuchos::RCP<std::set<int> > dbcgids)
+    Teuchos::RCP<Epetra_Vector>        toggle,
+    Teuchos::RCP<std::set<int> >       dbcgids,
+    Teuchos::RCP<std::set<int> >       dbccolgids)
 {
-
+  const bool findcolgids = (dbccolgids!=Teuchos::null);
   const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
@@ -688,10 +695,29 @@ void DRT::NURBS::NurbsDiscretization::FindDBCgidAndToggle(
   // of Dirichlet boundary conditions
   for (int i=0; i<nnode; ++i)
   {
+    bool iscol=false;
+
+    DRT::Node* actnode = NULL;
+
     // do only nodes in my row map
     int nlid = this->NodeRowMap()->LID((*nodeids)[i]);
-    if (nlid < 0) continue;
-    DRT::Node* actnode = this->lRowNode( nlid );
+    if (nlid < 0)
+    {
+      if(not findcolgids) continue;  //not in row map and column dofs not needed -> next node
+      //check if node is in col map
+      else
+      {
+        // do nodes in my col map
+        nlid = this->NodeColMap()->LID((*nodeids)[i]);
+        if (nlid < 0) continue;   //node not on this processor -> next node
+        iscol =true;
+        //get node from col node list
+        actnode = this->lColNode( nlid );
+      }
+    }
+    else
+      //get node from row node list
+      actnode = this->lRowNode( nlid );
 
     // call explicitly the main dofset, i.e. the first column
     std::vector<int> dofs = this->Dof(0,actnode);
@@ -712,31 +738,48 @@ void DRT::NURBS::NurbsDiscretization::FindDBCgidAndToggle(
     if ( ( total_numdf % numdf ) != 0 )
       dserror( "illegal dof set number" );
 
-    for (unsigned j=0; j<total_numdf; ++j)
-    {
-      int onesetj = j % numdf;
-      if ((*onoff)[onesetj]==0)
+    if(not iscol)
+      for (unsigned j=0; j<total_numdf; ++j)
       {
-        const int lid = (*systemvectoraux).Map().LID(dofs[j]);
-        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
-        if (toggle!=Teuchos::null)
-          (*toggle)[lid] = 0.0;
-        // get rid of entry in DBC map - if it exists
-        if (dbcgids != Teuchos::null)
-          (*dbcgids).erase(dofs[j]);
-        continue;
-      }
-      const int gid = dofs[j];
+        int onesetj = j % numdf;
+        if ((*onoff)[onesetj]==0)
+        {
+          const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+          if (toggle!=Teuchos::null)
+            (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).erase(dofs[j]);;
+          continue;
+        }
+        const int gid = dofs[j];
 
-      // assign value
-      const int lid = (*systemvectoraux).Map().LID(gid);
-      // set toggle vector
-      if (toggle != Teuchos::null)
-        (*toggle)[lid] = 1.0;
-      // amend vector of DOF-IDs which are Dirichlet BCs
-      if (dbcgids != Teuchos::null)
-        (*dbcgids).insert(gid);
-    }  // loop over nodal DOFs
+        // assign value
+        const int lid = (*systemvectoraux).Map().LID(gid);
+        // set toggle vector
+        if (toggle != Teuchos::null)
+          (*toggle)[lid] = 1.0;
+        // amend vector of DOF-IDs which are Dirichlet BCs
+        if (dbcgids != Teuchos::null)
+          (*dbcgids).insert(gid);
+      }  // loop over nodal DOFs
+
+    if(findcolgids)
+      for (unsigned j=0; j<total_numdf; ++j)
+      {
+        int onesetj = j % numdf;
+        if ((*onoff)[onesetj]==0)
+        {
+          // get rid of entry in DBC map - if it exists
+          (*dbccolgids).erase(dofs[j]);
+          continue;
+        }
+        const int gid = dofs[j];
+
+        // assign value
+        (*dbccolgids).insert(gid);
+      }  // loop over nodal DOFs
   }  // loop over nodes
 
   return;

@@ -222,6 +222,7 @@ private:
   \param systemvectordd  Second time derivative of DBCs (only needed for dofmap here)
   \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
   \param dbcgids         Map containing DOFs subjected to Dirichlet boundary conditions
+  \param dbccolgids      Map containing DOFs (also from column nodes) subjected to Dirichlet boundary conditions
 
   */
   void FindDBCgidAndToggle(
@@ -230,7 +231,8 @@ private:
       const Teuchos::RCP<Epetra_Vector>   systemvectord,
       const Teuchos::RCP<Epetra_Vector>   systemvectordd,
       Teuchos::RCP<Epetra_Vector>         toggle,
-      Teuchos::RCP<std::set<int> >        dbcgids);
+      Teuchos::RCP<std::set<int> >        dbcgids,
+      Teuchos::RCP<std::set<int> >        dbccolgids=Teuchos::null);
 
   /*!
   \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a boundary
