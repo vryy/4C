@@ -179,6 +179,7 @@ public:
   void NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells,
       const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal );
 
+  /// unused, see comment
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 
   void TestFacetArea( double tolerance );

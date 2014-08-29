@@ -685,12 +685,95 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
   // shoot a ray starting from the startpoint through the midpoint of this side
   // and find an intersection point with the other side
   LINALG::Matrix<3,1> ray_point_xyz(true);
-  this->SideCenter(ray_point_xyz); // as second point on the ray we define the midpoint of this side
+//  this->SideCenter(ray_point_xyz); // as second point on the ray we define the midpoint of this side
 
+
+  // choose a point inside the side such that the angle between the normal of the other side and the vector between
+  // start-point and ray-point is next to 0 or 180 degree to avoid orthogonal ray and normal vector
+  // therefore, for almost parallel sides and a start-point next to the common point of the sides the side-center might lead
+  // to a ray which is almost parallel to the other side
+
+  // number of nodes of this side
+  int numnode = this->nodes_.size();
+
+  Epetra_SerialDenseMatrix corner_coords_rst( numnode, 3 );
+  this->LocalCornerCoordinates(&corner_coords_rst(0,0));
+
+  // shrink/perturb the local coordinates around the center point with a given tolerance to obtain points which are next to the
+  // corner points however slightly inside
+  LINALG::Matrix<3,1> rst_center = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
+
+  //-----------------------------
+  // get perturbed coordinates
+  //-----------------------------
+  Epetra_SerialDenseMatrix inner_corner_coords_rst( numnode, 3 );
+
+  // 1. transform such that coordinates center is located in the element center
+  for( int i=0; i<numnode; ++i )
+  {
+    for( int j=0; j<3; ++j )
+      inner_corner_coords_rst(i,j) = corner_coords_rst(i,j)-rst_center(j);
+  }
+
+  // 2. shrink the side coordinates (hard-coded tolerance w.r.t. local coordinates of element, this should be fine)
+  const double TOL = 1e-003;
+  const double scalefac = 1.0-TOL;
+  inner_corner_coords_rst.Scale(scalefac);
+
+  // 3. transform the element back
+  for( int i=0; i<numnode; ++i )
+  {
+    for( int j=0; j<3; ++j )
+      inner_corner_coords_rst(i,j) += rst_center(j);
+  }
+
+  //-----------------------------
+  // choose the center point point or a perturbed inner corner point
+  // such that the ray between startpoint and this point is as perpendicular as possible
+  // to guarantee well-conditioned systems for finding ray-cut points
+  //-----------------------------
+
+  LINALG::Matrix<3,1> xyz(true);
+  LINALG::Matrix<3,1> ray_dir(true);
+
+  // get normal of other side at its center
+  LINALG::Matrix<3,1> t1,t2,n(true);
+  other->BasisAtCenter(t1,t2,n);
+
+
+  // start with center point
+  this->SideCenter(xyz); // as second point on the ray we define the midpoint of this side
+  ray_dir.Update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
+  ray_point_xyz.Update(1.0, xyz, 0.0);
+
+  double cosine = ray_dir.Dot(n) / ray_dir.Norm2(); // n is normalized
+
+
+  // loop corner nodes
+  for(int i= 0; i< numnode; i++)
+  {
+    // get ray vector (endpoint-startpoint)
+    PointAt( inner_corner_coords_rst(i,0), inner_corner_coords_rst(i,1), xyz);
+    ray_dir.Update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
+
+    double cosine_tmp = ray_dir.Dot(n) / ray_dir.Norm2(); // n is normalized
+
+    // maximize the absolute value of the cosine to choose the ray which is as perpendicular to the side as possible
+    if(fabs(cosine_tmp) > fabs(cosine))
+    {
+      ray_point_xyz.Update(1.0, xyz, 0.0);
+      cosine = cosine_tmp;
+    }
+  }
+
+
+
+  //-----------------------------
+  // shoot the ray and find a cutpoint with the other side's plane or curved surface space
+  //-----------------------------
   LINALG::Matrix<2,1> rs(true);
   double line_xi = 0.0;
 
-  // shoot the ray and find a cutpoint with the other side's plane or curved surface space
   bool cut_found = other->RayCut( startpoint_xyz, ray_point_xyz, rs, line_xi);
 
   if(!cut_found) return false;
@@ -698,7 +781,7 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
   {
     // The main decision if the side lies closer to the start-point than the other side
 
-    //std::cout << "line_xi " << line_xi << std::endl;
+//    std::cout << "line_xi " << line_xi << std::endl;
 
     if(line_xi > 1.0+TOLERANCE)
     {
@@ -758,6 +841,46 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
   }
 
   return false; // return not successful
+}
+
+/*--------------------------------------------------------------------*
+ * get local coordinates (rst) with respect to the element shape for all the corner points
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCornerCoordinates(double * rst_corners)
+{
+
+  const double rst[9] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
+
+  std::copy(&rst[0], &rst[0]+9, rst_corners);
+
+//  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+//
+//  for(int i=0; i< numnode; ++i)
+//  {
+//    LINALG::Matrix<3, 1> coords = DRT::UTILS::getNodeCoordinates(i, DRT::Element::tri3);
+//    std::copy(coords.A(), coords.A()+3, rst);
+//    rst += 3;
+//  }
+}
+
+
+/*--------------------------------------------------------------------*
+ * get local coordinates (rst) with respect to the element shape for all the corner points
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCornerCoordinates(double * rst_corners)
+{
+  const double rst[12] = {-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0};
+
+  std::copy(&rst[0], &rst[0]+12, rst_corners);
+
+//  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+//
+//  for(int i=0; i< numnode; ++i)
+//  {
+//    LINALG::Matrix<3, 1> coords = DRT::UTILS::getNodeCoordinates(i, DRT::Element::quad4);
+//    std::copy(coords.A(), coords.A()+3, rst);
+//    rst += 3;
+//  }
 }
 
 
@@ -885,7 +1008,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::RayCut( const LINALG::Matrix<3,
   bool checklimits = false;
 
   GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi, checklimits );
-  //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi, checklimits );
+//  GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi, checklimits );
 
   // successful line-side intersection
   if ( ci( xyze_surfaceElement, xyze_lineElement ) )
@@ -926,7 +1049,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::RayCut( const LINALG::Matrix<3
   bool checklimits = false;
 
   GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::quad4> ci( xsi, checklimits );
-  //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::quad4> ci( xsi, checklimits );
+//  GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::quad4> ci( xsi, checklimits );
 
   // successful line-side intersection
   if ( ci( xyze_surfaceElement, xyze_lineElement ) )
@@ -1127,7 +1250,7 @@ std::ostream & operator<<( std::ostream & stream, GEO::CUT::Side & s )
   const std::vector<GEO::CUT::Node*> & nodes = s.Nodes();
   for ( std::vector<GEO::CUT::Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
   {
-	GEO::CUT::Node * n = *i;
+    GEO::CUT::Node * n = *i;
     n->point()->Print( stream );
     stream << ",";
   }
@@ -1142,7 +1265,7 @@ void GEO::CUT::Side::GetSelfCutPosition( Point::PointPosition position )
 {
   if ( selfcutposition_ != position )
   {
-	selfcutposition_ = position;
+    selfcutposition_ = position;
 
     for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
     {

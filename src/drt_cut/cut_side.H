@@ -128,8 +128,12 @@ public:
   /*!
    \brief Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
    */
-  virtual bool LocalCoordinates(const LINALG::Matrix<3, 1> & xyz
-      , LINALG::Matrix<3, 1> & rst, bool allow_dist = false) = 0;
+  virtual bool LocalCoordinates(const LINALG::Matrix<3, 1> & xyz, LINALG::Matrix<3, 1> & rst, bool allow_dist = false) = 0;
+
+  /*!
+   \brief get local coordinates (rst) with respect to the element shape for all the corner points
+   */
+  virtual void LocalCornerCoordinates(double * rst_corners) = 0;
 
   /*!
    \brief lies point with given coordinates within this side?
@@ -476,6 +480,9 @@ public:
   virtual bool LocalCoordinates(const LINALG::Matrix<3, 1> & xyz
       , LINALG::Matrix<3, 1> & rst, bool allow_dist = false);
 
+  /// get local coordinates (rst) with respect to the element shape for all the corner points
+  virtual void LocalCornerCoordinates(double * rst_corners);
+
   /// Calculates the normal vector with respect to the element shape at local coordinates xsi
   virtual void Normal(const LINALG::Matrix<2, 1> & xsi
       , LINALG::Matrix<3, 1> & normal);
@@ -559,6 +566,9 @@ public:
   /// Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
   virtual bool LocalCoordinates(const LINALG::Matrix<3, 1> & xyz
       , LINALG::Matrix<3, 1> & rst, bool allow_dist = false);
+
+  /// get local coordinates (rst) with respect to the element shape for all the corner points
+  virtual void LocalCornerCoordinates(double * rst_corners);
 
   /// Calculates the normal vector with respect to the element shape at local coordinates xsi
   virtual void Normal(const LINALG::Matrix<2, 1> & xsi

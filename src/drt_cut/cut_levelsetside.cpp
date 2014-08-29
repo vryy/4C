@@ -42,6 +42,11 @@ bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, 
   throw std::runtime_error( "no local coordinates on level set cut surface" );
 }
 
+void GEO::CUT::LevelSetSide::LocalCornerCoordinates(double * rst_corners)
+{
+  throw std::runtime_error( "no local coordinates of corner points on level set cut surface" );
+}
+
 void GEO::CUT::LevelSetSide::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal )
 {
   throw std::runtime_error( "no normal vector on level set cut surface implemented" );

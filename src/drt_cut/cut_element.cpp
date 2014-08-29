@@ -8,8 +8,6 @@
 
 #include "../drt_inpar/inpar_cut.H"
 
-//#include "cut_createVolumeCell.H"
-
 #include <string>
 #include <stack>
 
@@ -105,7 +103,9 @@ struct nextSideAlongRay
       // try to return true or false, both sides should lead to the same position, sorting not necessary
 
       //return true;
-
+      std::cout << "side 1: " << *s1 << std::endl;
+      std::cout << "side 2: " << *s2 << std::endl;
+      std::cout << "startpoint: " << startpoint_xyz_ << std::endl;
       throw std::runtime_error(
           "ray-tracing-based comparisons to find the nearest side along the ray failed for the first time!");
     }
@@ -262,7 +262,7 @@ bool GEO::CUT::Element::FindCutPoints(Mesh & mesh, Side & cut_side,
     }
   }
 
-  // insert this side into cut_faces_
+  // insert this side into cut_faces_, also the case when a side just touches the element at a single point, edge or the whole side
   if (cut)
   {
     return true;
@@ -380,7 +380,7 @@ void GEO::CUT::Element::FindNodePositions()
 
   // DEBUG flag for FindNodePositions
   // compute positions for nodes again, also if already set by other nodes, facets, vcs (safety check)
-  //  #define check_for_all_nodes
+//#define check_for_all_nodes
 
 #if(1)
   //----------------------------------------------------------------------------------------
@@ -989,17 +989,25 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
   return false;
 }
 
+/*----------------------------------------------------------------------*/
+// returns true in case that any cut-side cut with the element produces cut points,
+// i.e. also for touched cases (at points, edges or sides),
+// or when an element side has more than one facet or is touched by fully/partially by the cut side
+/*----------------------------------------------------------------------*/
 bool GEO::CUT::Element::IsCut()
 {
-  if (cut_faces_.size() > 0)
+  // count the number cut-sides for which the intersection of the side with the element finds cut points
+  // note that also elements which are just touched by a cut side at points, edges or on an element's side have the status IsCut = true
+  if ( cut_faces_.size()>0 )
   {
     return true;
   }
-  for (std::vector<Side*>::const_iterator i = Sides().begin();
-      i != Sides().end(); ++i)
+
+  // loop the element sides
+  for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
   {
     Side & side = **i;
-    if (side.IsCut())
+    if ( side.IsCut() ) // side is cut if it has more than one facet, or when the unique facet is created by a cut side (touched case)
     {
       return true;
     }
@@ -1048,8 +1056,10 @@ bool GEO::CUT::Element::OnSide(const std::vector<Point*> & facet_points)
 
 void GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set & cells)
 {
-  for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end();
-      ++i)
+  dserror("be aware of using this function! Read comment!");
+
+  // for non-Tessellation approaches there are no integration cells stored, do you want to have all cells or sorted by position?
+  for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell * vc = *i;
     vc->GetIntegrationCells(cells);
@@ -1058,7 +1068,17 @@ void GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set & cells)
 
 void GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set & bcells)
 {
-  for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
+  dserror("be aware of using this function! Read comment!");
+
+  // when asking the element for boundary cells is it questionable which cells you want to have,
+  // for Tesselation boundary cells are stored for each volumecell (inside and outside) independently,
+  // the f->GetBoundaryCells then return the bcs just for the first vc stored
+  // For DirectDivergence bcs are created just for outside vcs and therefore the return of f->GetBoundaryCells does not work properly
+  // as it can happen that the first vc of the facet is an inside vc which does not store the bcs.
+  // We have to restructure the storage of bcs. bcs should be stored unique! for each cut-facet and if necessary also for non-cut facets
+  // between elements. The storage of boundary-cells to the volume-cells is not right way to do this!
+
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     if (cut_faces_.count(f->ParentSide()) != 0)
@@ -1069,7 +1089,7 @@ void GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set & bcells)
 }
 
 /*------------------------------------------------------------------------------------------*
- * Get cutpoints of this element
+ * Get cutpoints of this element, returns also all touch-points
  *------------------------------------------------------------------------------------------*/
 void GEO::CUT::Element::GetCutPoints(PointSet & cut_points)
 {

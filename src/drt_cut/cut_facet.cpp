@@ -884,11 +884,25 @@ void GEO::CUT::Facet::NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const 
   bcells.insert( bc );
 }
 
+/// unused, see comment
 void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
   if ( cells_.size()==0 )
     throw std::runtime_error( "no volume cells" );
 
+  dserror("do not use this function at the moment -> Read comment!");
+
+  // when asking the facet for boundary cells is it questionable which cells you want to have,
+  // for Tesselation boundary cells are stored for each volumecell (inside and outside) independently,
+  // the f->GetBoundaryCells then return the bcs just for the first vc which is fine.
+  // For DirectDivergence bcs are created just for outside vcs and therefore the return of f->GetBoundaryCells does not work properly
+  // as it can happen that the first vc of the facet is an inside vc which does not store the bcs.
+  // We have to restructure the storage of bcs. bcs should be stored unique! for each cut-facet and if necessary also for non-cut facets
+  // between elements. The storage of boundary-cells to the volume-cells is not right way to do this!
+
+  // TODO: we should not ask the volume-cells for boundary cells!!!
+
+  // it is sufficient to take the boundary cells only from one of the two adjacent volume cells
   VolumeCell * vc = *cells_.begin();
 
   const plain_boundarycell_set & vbcells = vc->BoundaryCells();

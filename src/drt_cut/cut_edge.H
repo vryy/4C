@@ -93,7 +93,7 @@ public:
   //virtual bool HasPoint( Point * p ) = 0;
 
   /*!
-  \bried Get all the sides on which this edge is a part of
+  \brief Get all the sides on which this edge is a part of
    */
   const plain_side_set & Sides() { return sides_; }
 
@@ -214,7 +214,7 @@ public:
   //const std::vector<Point*> & CutPoints() const { return cut_points_; }
 
   void RectifyCutNumerics();
-  
+
   /// Returns the selfcutposition of this edge
   Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
 

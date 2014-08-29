@@ -208,6 +208,8 @@ void GEO::CUT::VolumeCell::GetIntegrationCells( plain_integrationcell_set & cell
   std::copy( integrationcells_.begin(), integrationcells_.end(), std::inserter( cells, cells.begin() ) );
 }
 
+/// get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells
+/// note that the boundary cells of subsides with the same side id are stored now in one key
 void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells )
 {
   for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
@@ -217,6 +219,8 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
     int sid = f->SideId();
     if ( sid > -1 )
     {
+      // usually there are more facets with the same side id as the cutting sides have been subdivided into subsides
+      // which produce own facets for each subside
       bcells[sid].push_back( bc );
     }
   }
@@ -769,6 +773,9 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
                                                   int BaseNos,
                                                   INPAR::CUT::BCellGaussPts BCellgausstype )
 {
+  //TODO: we have to restructure the creation of boundary cells.
+  // bcs should not be stored for a volumecell but for the respective facet, see comments in f->GetBoundaryCells
+
   const plain_facet_set & facete = Facets();
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {

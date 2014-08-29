@@ -88,6 +88,8 @@ public:
 
   /*!
   \brief Get the boundarycells generated from this volumecell
+     get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells
+     note that the boundary cells of subsides with the same side id are stored now in one key
    */
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
@@ -225,11 +227,11 @@ public:
    */
   std::string IsThisPointInside( LINALG::Matrix<3,1>& x );
 
-	/*!
-	\brief Integrate specific predifined functions over the volumecell by integrating over each of the
-	integration cells resulting from Tessellation.
-	For MomentFitting and DIrectDivergence this can't be used
-	 */
+  /*!
+  \brief Integrate specific predifined functions over the volumecell by integrating over each of the
+  integration cells resulting from Tessellation.
+  For MomentFitting and DIrectDivergence this can't be used
+   */
   void integrateSpecificFunctionsTessellation();
 
   template <DRT::Element::DiscretizationType distype>

@@ -46,6 +46,8 @@ public:
 
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist=false );
 
+  virtual void LocalCornerCoordinates(double * rst_corners);
+
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
 
   virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
