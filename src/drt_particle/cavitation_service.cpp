@@ -144,44 +144,31 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
         for (std::set<DRT::Element*>::const_iterator ineighbor=neighboringfluideles.begin(); ineighbor!=neighboringfluideles.end(); ++ineighbor)
         {
           DRT::Element* ele = *ineighbor;
-          int gid = ele->Id();
 
           // get bounding box of current element
-          LINALG::Matrix<3,2> xaabb;
-          for(int inode=0; inode<ele->NumNode(); ++inode)
+          double xaabb[6] = { std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),
+                              std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
+                             -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+          for (int inode=0; inode<ele->NumNode(); ++inode)
           {
-            const DRT::Node* node = ele->Nodes()[inode];
-            LINALG::Matrix<3,1> position;
-
-            // fill with nodal positions
-            for (int dim=0; dim<3; ++dim)
+            const DRT::Node* node  = ele->Nodes()[inode];
+            const double* coord = node->X();
+            for (size_t i = 0; i < 3; ++i)
             {
-              position(dim) = node->X()[dim];
-              if(inode==0)
-              {
-                xaabb(dim,0) = position(dim);
-                xaabb(dim,1) = position(dim);
-              }
-              else
-              {
-                if(position(dim) < xaabb(dim,0))
-                  xaabb(dim,0) = position(dim);
-                if(position(dim) > xaabb(dim,1))
-                  xaabb(dim,1) = position(dim);
-              }
+              xaabb[i+0] = std::min(xaabb[i+0], coord[i]);
+              xaabb[i+3] = std::max(xaabb[i+3], coord[i]);
             }
           }
 
-
-          double bubblesurface[] = {particleposition(0)+influence, particleposition(0)-influence,
-                                    particleposition(1)+influence, particleposition(1)-influence,
-                                    particleposition(2)+influence, particleposition(2)-influence};
+          double bubblesurface[6] = {particleposition(0)+influence, particleposition(1)+influence,
+                                     particleposition(2)+influence, particleposition(0)-influence,
+                                     particleposition(1)-influence, particleposition(2)-influence};
 
           bool boundingbox = true;
           // test whether the bounding box of the fluid element touches the bubbleinfluence
           for(int dim=0; dim<3; ++dim)
           {
-            if(xaabb(dim,0) - GEO::TOL7 > bubblesurface[dim*2] or xaabb(dim,1) + GEO::TOL7 < bubblesurface[dim*2+1])
+            if(xaabb[dim] - GEO::TOL7 > bubblesurface[dim] or xaabb[dim+3] + GEO::TOL7 < bubblesurface[dim+3])
             {
               boundingbox = false;
               break;
@@ -194,13 +181,14 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
             switch(void_frac_strategy_)
             {
             case INPAR::CAVITATION::analytical_constpoly:
-            {
-              DoAnalyticalIntegration(ele, particleposition, influence, vol_ele, surfaceoverlap);
-            }
-            break;
             case INPAR::CAVITATION::analytical_quadraticpoly:
             {
               DoAnalyticalIntegration(ele, particleposition, influence, vol_ele, surfaceoverlap);
+
+              // in case of polynomial influence, twisted surfaces and tight cut situations,
+              // the polynomial can become negative very close to the bubble influence area
+              if(vol_ele < 0.0)
+                vol_ele = 0.0;
             }
             break;
             case INPAR::CAVITATION::gaussian_integration:
@@ -220,14 +208,13 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
               break;
             }
 
-            // in case of polynomial influence, twisted surfaces and tight cut situations,
-            // the polynomial can become negative very close to the bubble influence area
+            // safety check
             if(vol_ele < 0.0)
-              vol_ele = 0.0;
+              dserror("negative volume occured during void fraction computation");
 
             // sum and store volume for each fluid element
             vol_influence += vol_ele;
-            volumefraction[gid] = vol_ele;
+            volumefraction[ele->Id()] = vol_ele;
           } // end if boundingbox
 
         } // end loop neighboring eles

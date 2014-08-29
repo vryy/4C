@@ -27,7 +27,6 @@ Maintainer: Martin Kronbichler
 #include "drt_singletondestruction.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
-#include "drt_domainreader.H"
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
 #include "drt_timecurve.H"

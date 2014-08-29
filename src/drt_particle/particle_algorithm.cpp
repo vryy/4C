@@ -257,7 +257,7 @@ void PARTICLE::Algorithm::Integrate()
     particles_->Veln()->MaxValue(&maxvel);
     double maxrad = 0.0;
     particles_->Radius()->MaxValue(&maxrad);
-    if(maxrad + maxvel*Dt() > cutoff_radius_)
+    if(maxrad + maxvel*Dt() > 0.5*cutoff_radius_)
       dserror("Particles travel more than one bin per time step. Increase bin size or reduce step size");
   }
 
@@ -401,7 +401,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
   // fill all local entries into the graph
   {
     for (int lid=0; lid<roweles->NumMyElements(); ++lid)
-    {    
+    {
       int binId = roweles->GID(lid);
 
       std::vector<int> neighbors;
@@ -1026,7 +1026,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
 
   // some output to screen and initialization of binary output
   if(myrank_ == 0)
-  	std::cout << "after adding particle walls" << std::endl;
+    std::cout << "after adding particle walls" << std::endl;
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
   if(moving_walls_)
     wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(structure_->Discretization()->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));

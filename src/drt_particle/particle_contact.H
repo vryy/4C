@@ -26,8 +26,8 @@ Maintainer: Georg Hammerl
 // forward declarations
 namespace DRT
 {
-	class Element;
-	class Node;
+  class Element;
+  class Node;
 }
 namespace PARTICLE
 {

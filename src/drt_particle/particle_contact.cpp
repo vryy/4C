@@ -1113,24 +1113,24 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   int owner_j
   )
 {
-	// damping parameter
-	double d = 0.0;
+  // damping parameter
+  double d = 0.0;
 
-	//--------------------------------------------------------
-	// which contact law: for details see Bachelor thesis Niklas Fehn
-	// LinSpring = linear spring
-	// Hertz = normal force law of Hertz
-	// LinSpringDamp = linear spring damper element
-	// LeeHerrmann = nonlinear normal force law of Lee and Herrmann
-	// KuwabaraKono = nonlinear normal force law of Kuwabara und Kono
-	// Tsuji = nonlinear normal force law of Tsuji
-	//---------------------------------------------------------
+  //--------------------------------------------------------
+  // which contact law: for details see Bachelor thesis Niklas Fehn
+  // LinSpring = linear spring
+  // Hertz = normal force law of Hertz
+  // LinSpringDamp = linear spring damper element
+  // LeeHerrmann = nonlinear normal force law of Lee and Herrmann
+  // KuwabaraKono = nonlinear normal force law of Kuwabara und Kono
+  // Tsuji = nonlinear normal force law of Tsuji
+  //---------------------------------------------------------
 
   // damping parameter
-	// TODO: for uni-sized particles this can be done once in the beginning -> efficiency
-	// TODO: different m_eff for particle-wall and particel-particle needed when uni-size assumption
-	if(owner_j < 0) // contact particle-wall
-	{
+  // TODO: for uni-sized particles this can be done once in the beginning -> efficiency
+  // TODO: different m_eff for particle-wall and particel-particle needed when uni-size assumption
+  if(owner_j < 0) // contact particle-wall
+  {
     if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
     {
       d = 2.0 * std::fabs(log(e_wall_)) * sqrt(k_normal_ * m_eff / (pow(log(e_wall_),2.0) + M_PI*M_PI));
@@ -1139,21 +1139,21 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     {
       d = d_normal_wall_;
     }
-	}
-	else // contact particle-particle
-	{
-	  if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
-	  {
-	    d = 2.0 * std::fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0) + M_PI*M_PI));
-	  }
-	  else
-	  {
-	    d = d_normal_;
-	  }
-	}
+  }
+  else // contact particle-particle
+  {
+    if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
+    {
+      d = 2.0 * std::fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0) + M_PI*M_PI));
+    }
+    else
+    {
+      d = d_normal_;
+    }
+  }
 
   // contact force
-	switch(normal_contact_)
+  switch(normal_contact_)
   {
   case INPAR::PARTICLE::LinSpring:
   {
@@ -1264,7 +1264,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     break;
   }
 
-	return;
+  return;
 }
 
 
@@ -1284,16 +1284,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   int owner_j
   )
 {
-	// damping parameter
-	double d = -0.0;
-	// stiffness
-	double k = -1.0;
+  // damping parameter
+  double d = -0.0;
+  // stiffness
+  double k = -1.0;
   // frictional coefficient
   double mu = -1.0;
 
-	if(owner_j<0) //contact particle-wall
-	{
-	  // friction
+  if(owner_j<0) //contact particle-wall
+  {
+    // friction
     mu = mu_wall_;
     // stiffness
     k = k_tang_wall_;
@@ -1306,54 +1306,54 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     {
       d = d_tang_wall_;
     }
-	}
-	else // contact particle-particle
-	{
-	  // friction
-	  mu = mu_;
-	  // stiffness
-	  k = k_tang_;
-	  // damping
-	  if(d_tang_ < 0.0)
-	  {
-	    d = 2.0 * std::fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0) + M_PI*M_PI));
-	  }
-	  else
-	  {
-	    d = d_tang_;
-	  }
-	}
+  }
+  else // contact particle-particle
+  {
+    // friction
+    mu = mu_;
+    // stiffness
+    k = k_tang_;
+    // damping
+    if(d_tang_ < 0.0)
+    {
+      d = 2.0 * std::fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0) + M_PI*M_PI));
+    }
+    else
+    {
+      d = d_tang_;
+    }
+  }
 
-	// store length of g_t at time n
-	double old_length = 0.0;
-	double interime = 0.0;
-	for(int n=0; n<3; ++n)
-	{
-		old_length += currentColl.g_t[n] * currentColl.g_t[n];
-		interime += normal[n] * currentColl.g_t[n];
-	}
-	old_length = sqrt(old_length);
+  // store length of g_t at time n
+  double old_length = 0.0;
+  double interime = 0.0;
+  for(int n=0; n<3; ++n)
+  {
+    old_length += currentColl.g_t[n] * currentColl.g_t[n];
+    interime += normal[n] * currentColl.g_t[n];
+  }
+  old_length = sqrt(old_length);
 
-	// projection of g_t onto current normal at time n+1
+  // projection of g_t onto current normal at time n+1
   double new_length = 0.0;
-	for(int n=0; n<3; ++n)
-	{
-		currentColl.g_t[n] += - interime * normal[n];
-		new_length += currentColl.g_t[n] * currentColl.g_t[n];
-	}
-	new_length = sqrt(new_length);
+  for(int n=0; n<3; ++n)
+  {
+    currentColl.g_t[n] += - interime * normal[n];
+    new_length += currentColl.g_t[n] * currentColl.g_t[n];
+  }
+  new_length = sqrt(new_length);
 
-	// ensure that g_t has the same length as before projection
-	// if almost no tangential spring elongation, neglect it
-	if(new_length > 1.0E-14)
-	{
-		for(int n=0; n<3; ++n)
-		{
-			currentColl.g_t[n] = old_length/new_length * currentColl.g_t[n];
-		}
-	}
+  // ensure that g_t has the same length as before projection
+  // if almost no tangential spring elongation, neglect it
+  if(new_length > 1.0E-14)
+  {
+    for(int n=0; n<3; ++n)
+    {
+      currentColl.g_t[n] = old_length/new_length * currentColl.g_t[n];
+    }
+  }
 
-	// update of elastic tangential displacement if stick is true
+  // update of elastic tangential displacement if stick is true
   if(currentColl.stick == true)
   {
     for(int n=0; n<3; ++n)
@@ -1362,42 +1362,42 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     }
   }
 
-	// calculate tangential test force
+  // calculate tangential test force
   // norm of tangential contact force
   double norm_f_t = 0.0;
-	for(int n=0; n<3; ++n)
-	{
-		tangentcontactforce[n] = - k * currentColl.g_t[n] - d * v_rel_tangential[n];
-		norm_f_t += tangentcontactforce[n] * tangentcontactforce[n];
-	}
-	norm_f_t = sqrt(norm_f_t);
+  for(int n=0; n<3; ++n)
+  {
+    tangentcontactforce[n] = - k * currentColl.g_t[n] - d * v_rel_tangential[n];
+    norm_f_t += tangentcontactforce[n] * tangentcontactforce[n];
+  }
+  norm_f_t = sqrt(norm_f_t);
 
-	// Coulomb friction law
+  // Coulomb friction law
 
-	// tangential contact force for "stick" - case----------------------
-	if( norm_f_t <= (mu * std::fabs(normalcontactforce)) )
-	{
-	  currentColl.stick = true;
-		//tangential contact force already calculated
-	}
-	else //"slip"-case
-	{
-	  currentColl.stick = false;
-		//calculate tangent vector ( unit vector in (test-)tangentcontactforce-direction )
-		double tangent[3];
-		for(int n=0; n<3; ++n)
-		{
-			tangent[n] = tangentcontactforce[n] / norm_f_t;
-		}
+  // tangential contact force for "stick" - case----------------------
+  if( norm_f_t <= (mu * std::fabs(normalcontactforce)) )
+  {
+    currentColl.stick = true;
+    //tangential contact force already calculated
+  }
+  else //"slip"-case
+  {
+    currentColl.stick = false;
+    //calculate tangent vector ( unit vector in (test-)tangentcontactforce-direction )
+    double tangent[3];
+    for(int n=0; n<3; ++n)
+    {
+      tangent[n] = tangentcontactforce[n] / norm_f_t;
+    }
 
-		// calculate tangent contact force and tangential displacements
-		for(int n=0; n<3; ++n)
-		{
-			tangentcontactforce[n] = mu * std::fabs(normalcontactforce) * tangent[n];
-			currentColl.g_t[n] = - 1/k * (tangentcontactforce[n] + d * v_rel_tangential[n]);
-		}
-	}
-	//---------------------------------------------------------------
+    // calculate tangent contact force and tangential displacements
+    for(int n=0; n<3; ++n)
+    {
+      tangentcontactforce[n] = mu * std::fabs(normalcontactforce) * tangent[n];
+      currentColl.g_t[n] = - 1/k * (tangentcontactforce[n] + d * v_rel_tangential[n]);
+    }
+  }
+  //---------------------------------------------------------------
 
   if(writeenergyevery_)
   {
@@ -1411,7 +1411,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * new_length * new_length;
   }
 
-	return;
+  return;
 }
 
 
@@ -1601,7 +1601,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 #endif
 
       }
-      
+
       SearchForNewCollisions(next_event, eventqueue, dt);
     }
 

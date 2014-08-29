@@ -244,8 +244,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->ClearState();
   particledis_->ClearState();
 
-  //TODO 1: Test whether these states are updated enough
-  // at the beginning of the time step: veln := velnp(previous step)
+  // at the beginning of the coupling step: veln = velnp(previous step) and current velnp contains fluid predictor
   fluiddis_->SetState("veln",fluid_->Veln());
   fluiddis_->SetState("velnm",fluid_->Velnm());
 
@@ -253,7 +252,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->Veln();
   Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radius();
 
-  // vectors to be filled with forces, note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
+  // vectors to be filled with forces,
+  // note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
   Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofRowMap(),true);
   Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->DofRowMap()));
 
@@ -279,7 +279,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   {
     DRT::Node* currparticle = particledis_->lRowNode(i);
     // fill particle position
-    LINALG::Matrix<3,1> particleposition;
+    static LINALG::Matrix<3,1> particleposition;
     std::vector<int> lm_b = particledis_->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
     for (int d=0; d<dim; ++d)
@@ -292,7 +292,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
     // variables to store information about element in which the particle is located
     DRT::Element* targetfluidele = NULL;
-    LINALG::Matrix<3,1> elecoord(true);
+    static LINALG::Matrix<3,1> elecoord(false);
 
     // find out in which fluid element the current particle is located
     if(currparticle->NumElement() != 1)
@@ -390,15 +390,15 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     DRT::UTILS::ExtractMyValues(*bubblevel,v_bub,lm_b);
 
     // get bubble radius
-    double r_bub = (*bubbleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
+    const double r_bub = (*bubbleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
 
     // bubble Reynolds number
-    LINALG::Matrix<3,1> v_rel(false);
+    static LINALG::Matrix<3,1> v_rel(false);
     for (int d=0; d<dim; ++d)
       v_rel(d) = elevector1[d] - v_bub[d];
 
-    double v_relabs = v_rel.Norm2();
-    double Re_b = 2.0 * r_bub * v_relabs * rho_l / mu_l;
+    const double v_relabs = v_rel.Norm2();
+    const double Re_b = 2.0 * r_bub * v_relabs * rho_l / mu_l;
 
     bool output = false;
     if(output)
@@ -409,7 +409,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     }
 
     // variable to sum forces for the current bubble under observation
-    LINALG::Matrix<3,1> sumforces;
+    static LINALG::Matrix<3,1> sumforces(false);
     /*------------------------------------------------------------------*/
     //// 2.1) drag force = 0.5 * c_d * rho_l * Pi * r_b^2 * |u-v| * (u-v) or
     //// Stokes law for very small Re: drag force = 6.0 * Pi * mu_l * r_b * (u-v)
@@ -429,37 +429,38 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       coeff1 = 0.5 * c_d * rho_l * M_PI * r_bub * r_bub * v_relabs;
     }
 
-    LINALG::Matrix<3,1> dragforce(v_rel);
-    dragforce.Scale(coeff1);
-    //assemble
-    sumforces.Update(1.0, dragforce);
+    static LINALG::Matrix<3,1> dragforce(false);
+    dragforce.Update(coeff1, v_rel);
+    // assemble
+    sumforces.Update(dragforce);
     /*------------------------------------------------------------------*/
 
     /*------------------------------------------------------------------*/
     //// 2.2) lift force = c_l * rho_l * volume_b * (u-v) x rot_u   with rot_u = nabla x u
-    double c_l = 0.5;
-    double vol_b = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
-    LINALG::Matrix<3,1> rot_u;
+    const double c_l = 0.5;
+    const double vol_b = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
+    static LINALG::Matrix<3,1> rot_u(false);
     for (int d=0; d<dim; ++d)
       rot_u(d) = elevector3(d);
 
     LINALG::Matrix<3,1> liftforce = GEO::computeCrossProduct(v_rel, rot_u);
 
-    double coeff2 = c_l * rho_l * vol_b;
+    const double coeff2 = c_l * rho_l * vol_b;
     liftforce.Scale(coeff2);
-    //assemble
+    // assemble
     sumforces.Update(1.0, liftforce, 1.0);
     // store forces for coupling to fluid
-    LINALG::Matrix<3,1> couplingforce(sumforces);
+    static LINALG::Matrix<3,1> couplingforce(false);
+    couplingforce.Update(sumforces);
     /*------------------------------------------------------------------*/
 
     /*------------------------------------------------------------------*/
     //// 2.3) gravity and buoyancy forces = volume_b * rho_bub * g - volume_b * rho_l * ( g - Du/Dt )
-    LINALG::Matrix<3,1> Du_Dt;
+    static LINALG::Matrix<3,1> Du_Dt(false);
     for (int d=0; d<dim; ++d)
       Du_Dt(d) = elevector2[d];
 
-    LINALG::Matrix<3,1> grav_buoy_force;
+    static LINALG::Matrix<3,1> grav_buoy_force(false);
     grav_buoy_force.Update(rho_b, gravity_acc_);
     grav_buoy_force.Update(-rho_l, gravity_acc_, rho_l, Du_Dt, 1.0);
     grav_buoy_force.Scale(vol_b);
@@ -471,12 +472,14 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     //// 2.4) virtual/added mass = c_VM * rho_l * volume_b * ( Du/Dt - Dv/Dt )
     //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
     //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * volume_b * Du/Dt }{ 1 + c_VM * rho_l / rho_b }
-    double c_VM = 0.5;
-    double coeff3 = c_VM * rho_l * vol_b;
-    double coeff4 = 1.0 + c_VM * rho_l / rho_b;
+    //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) +         coeff3          * Du/Dt }{          coeff4          }
+    const double c_VM = 0.5;
+    const double coeff3 = c_VM * rho_l * vol_b;
+    const double coeff4 = 1.0 + c_VM * rho_l / rho_b;
+    const double invcoeff4 = 1.0 / coeff4;
 
-    LINALG::Matrix<3,1> bubbleforce;
-    bubbleforce.Update(1.0/coeff4, sumforces, coeff3/coeff4, Du_Dt);
+    static LINALG::Matrix<3,1> bubbleforce(false);
+    bubbleforce.Update(invcoeff4, sumforces, coeff3*invcoeff4, Du_Dt);
     /*------------------------------------------------------------------*/
 
 
@@ -485,7 +488,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     //--------------------------------------------------------------------
 
     // assemble of bubble forces (note: row nodes evaluated)
-    Epetra_SerialDenseVector forcecurrbubble(3);
+    static Epetra_SerialDenseVector forcecurrbubble(3);
     for(int d=0; d<dim; ++d)
       forcecurrbubble[d] = bubbleforce(d);
     std::vector<int> lmowner_b(lm_b.size(), myrank_);
@@ -499,6 +502,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus sign
     couplingforce.Update(-1.0, addedmassforce, -1.0);
 
+    // assembly of fluid forces
     if(coupalgo_ != INPAR::CAVITATION::OneWay)
     {
       // assemble of fluid forces must be done globally because col entries in the fluid can occur
@@ -506,10 +510,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       const int numnode = targetfluidele->NumNode();
       Epetra_SerialDenseVector funct(numnode);
       // get shape functions of the element; evaluated at the bubble position --> distribution
-      DRT::UTILS::shape_function_3D(funct,elecoord(0,0),elecoord(1,0),elecoord(2,0),targetfluidele->Shape());
+      DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),targetfluidele->Shape());
       // prepare assembly for fluid forces (pressure degrees do not have to be filled)
 
-      int numdofperfluidele = numnode*(dim+1);
+      const int numdofperfluidele = numnode*(dim+1);
       double val[numdofperfluidele];
       for(int iter=0; iter<numnode; ++iter)
       {

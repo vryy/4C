@@ -171,31 +171,31 @@ void PARTICLE::TimIntExpl::RotateOrientVector(double dt)
     //--------------------------------------------------------------
 
     //more exactly------------------------------------------------
-//  	double d[3];
-//  	double norm_ang_vel=0.0;
-//  	//norm ang_vel
-//  	for(int dim=0; dim<3; ++dim)
-//  	{
-//  		norm_ang_vel += ang_vel[dim]*ang_vel[dim];
-//  	}
-//  	norm_ang_vel = sqrt(norm_ang_vel);
+//    double d[3];
+//    double norm_ang_vel=0.0;
+//    //norm ang_vel
+//    for(int dim=0; dim<3; ++dim)
+//    {
+//      norm_ang_vel += ang_vel[dim]*ang_vel[dim];
+//    }
+//    norm_ang_vel = sqrt(norm_ang_vel);
 //
-//  	if(norm_ang_vel > 1E-10)
-//  	{
+//    if(norm_ang_vel > 1E-10)
+//    {
 //      double scalar = 0.0;
-//  	  double invnorm_ang_vel = 1.0 / norm_ang_vel;
-//  		for(int dim=0; dim<3; ++dim)
-//  		{
-//  			d[dim] = invnorm_ang_vel * ang_vel[dim];
-//  			scalar += d[dim] * r[dim];
-//  		}
+//      double invnorm_ang_vel = 1.0 / norm_ang_vel;
+//      for(int dim=0; dim<3; ++dim)
+//      {
+//        d[dim] = invnorm_ang_vel * ang_vel[dim];
+//        scalar += d[dim] * r[dim];
+//      }
 //
-//  		for(int dim=0; dim<3; ++dim)
-//  		{
-//  		  (*orient_)[i*3+dim] += (1-cos(norm_ang_vel*dt)) * scalar * d[dim] - (1-cos(norm_ang_vel*dt)) * r[dim]
-//  			      + sin(norm_ang_vel*dt) * ( d[(dim+1)%3] * r[(dim+2)%3] - d[(dim+2)%3] * r[(dim+1)%3] );
-//  		}
-//  	}
+//      for(int dim=0; dim<3; ++dim)
+//      {
+//        (*orient_)[i*3+dim] += (1-cos(norm_ang_vel*dt)) * scalar * d[dim] - (1-cos(norm_ang_vel*dt)) * r[dim]
+//              + sin(norm_ang_vel*dt) * ( d[(dim+1)%3] * r[(dim+2)%3] - d[(dim+2)%3] * r[(dim+1)%3] );
+//      }
+//    }
     //--------------------------------------------------------------
 
   }
