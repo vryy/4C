@@ -1,7 +1,7 @@
 /*
  \file post_drt_writer_base.H
 
- \brief contains base class for a generic output filter (ensight and vtu are derived from this class)
+ \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
 
  <pre>
  Maintainer: Martin Kronbichler

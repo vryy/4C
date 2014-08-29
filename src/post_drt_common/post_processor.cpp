@@ -667,7 +667,7 @@ namespace
   {
     Teuchos::CommandLineProcessor clp(false, false, false);
     std::string filter ("ensight");
-    clp.setOption("filter",&filter,"filter to run [ensight, gid, vtu]");
+    clp.setOption("filter",&filter,"filter to run [ensight, gid, vtu, vti]");
     // ignore warnings about unrecognized options.
     std::ostringstream warning;
     clp.parse(argc, argv, &warning);
@@ -696,12 +696,12 @@ int main(
 
     PostProblem problem(My_CLP, argc, argv);
 
-    if (filter == "ensight" || filter == "vtu")
+    if (filter == "ensight" || filter == "vtu" || filter == "vti")
       runEnsightVtuFilter(problem);
     else if (filter == "gid")
       PostGid::runGidFilter(problem);
     else
-      dserror("Unknown filter %s given, supported filters: [ensight|vtu|gid]", filter.c_str());
+      dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti|gid]", filter.c_str());
 
   } // try
   catch ( std::runtime_error & err )

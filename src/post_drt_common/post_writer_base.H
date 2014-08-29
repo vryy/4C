@@ -1,7 +1,7 @@
 /*
  \file post_drt_writer_base.H
 
- \brief contains base class for a generic output filter (ensight and vtu are derived from this class)
+ \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
 
  <pre>
  Maintainer: Martin Kronbichler
@@ -44,7 +44,7 @@ class PostWriterBase
 public:
   //! constructor. initializes the writer to a certain field
   PostWriterBase (PostField* field,
-                  const std::string &name);
+                  const std::string& filename);
 
   //! destructor
   virtual ~PostWriterBase() {}
@@ -146,7 +146,8 @@ public:
 protected:
   PostField* field_;
   std::string filename_;
-  int myrank_; ///< global processor id
+  unsigned int myrank_; ///< global processor id
+  unsigned int numproc_; ///< number of processors
 };
 
 #endif /* POST_DRT_WRITER_BASE_H_ */

@@ -61,7 +61,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   int printparobjecttypes = 0;
 
   CLP.throwExceptions(false);
-  CLP.setOption("filter",&filter_,"filter to run [ensight, gid, vtu]");
+  CLP.setOption("filter",&filter_,"filter to run [ensight, gid, vtu, vti]");
   CLP.setOption("start",&start_,"first time step to read");
   CLP.setOption("end",&end_,"last time step to read");
   CLP.setOption("step",&step_,"number of time steps to jump");

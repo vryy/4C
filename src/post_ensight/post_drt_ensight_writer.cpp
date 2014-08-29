@@ -91,10 +91,6 @@ EnsightWriter::EnsightWriter(PostField* field,
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteFiles(PostFilterBase &filter)
 {
-#ifndef PARALLEL
-  if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
-#endif
-
   PostResult result(field_);
 
   // timesteps when the solution is written
@@ -750,14 +746,11 @@ void EnsightWriter::WriteCells(
       }
     }
 
-#ifdef PARALLEL
     // now do some communicative work for the parallel case:
     // proc 1 to proc n have to send their stored node connectivity to proc0
     // which does the writing
 
     WriteNodeConnectivityPar(geofile, dis, nodevector, proc0map);
-#endif
-
   }
   return;
 }
@@ -775,7 +768,6 @@ void EnsightWriter::WriteNodeConnectivityPar(
   const std::vector<int>& nodevector,
   const Teuchos::RCP<Epetra_Map> proc0map) const
 {
-#ifdef PARALLEL
   // no we have communicate the connectivity infos from proc 1...proc n to proc 0
 
   std::vector<char> sblock; // sending block
@@ -794,7 +786,7 @@ void EnsightWriter::WriteNodeConnectivityPar(
   swap( sblock, data() );
 
   // now we start the communication
-  for (int pid=0;pid<(dis->Comm()).NumProc();++pid)
+  for (unsigned int pid=0;pid<static_cast<unsigned int>(dis->Comm().NumProc());++pid)
   {
     MPI_Request request;
     int         tag    =0;
@@ -853,8 +845,6 @@ void EnsightWriter::WriteNodeConnectivityPar(
 
   }// for pid
 
-#endif
-
   return;
 }
 
@@ -880,10 +870,6 @@ EnsightWriter::GetNumElePerDisType(
     numElePerDisType[distype]++;
   }
 
-#ifndef PARALLEL
-  return numElePerDisType; // these are already the global numbers
-
-#else
   // in parallel case we have to sum up the local element distype numbers
 
   // determine maximum number of possible element discretization types
@@ -915,9 +901,6 @@ EnsightWriter::GetNumElePerDisType(
   }
 
   return globalNumElePerDisType;
-
-#endif
-
 }
 
 
@@ -987,11 +970,6 @@ EnsightWriter::GetEleGidPerDisType(
     eleGidPerDisType[distype].push_back(gid);
   }
 
-#ifndef PARALLEL
-  return eleGidPerDisType; // these are already the global numbers
-
-#else
-
   // in parallel case we have to provide the ele gids located on other procs as well
   EleGidPerDisType globaleleGidPerDisType;
   NumElePerDisType::const_iterator iterator;
@@ -1018,7 +996,7 @@ EnsightWriter::GetEleGidPerDisType(
     swap( sblock, data() );
 
     // now we start the communication
-    for (int pid=0;pid<(dis->Comm()).NumProc();++pid)
+    for (unsigned int pid=0;pid<static_cast<unsigned int>(dis->Comm().NumProc());++pid)
     {
       MPI_Request request;
       int         tag    =0;
@@ -1074,8 +1052,6 @@ EnsightWriter::GetEleGidPerDisType(
 
     // note: this map is only filled on proc 0 !!!!
   return globaleleGidPerDisType;
-
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -1282,6 +1258,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
   case no_restype:
   case max_restype:
     dserror("found invalid result type");
+    break;
   default:
     dserror("Invalid output type in WriteResult");
   } // end of switch(restype)

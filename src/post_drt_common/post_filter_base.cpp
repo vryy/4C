@@ -1,7 +1,7 @@
 /*
  \file post_drt_filter_base.cpp
 
- \brief contains base class for a generic output filter (ensight and vtu are derived from this class)
+ \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
 
  <pre>
  Maintainer: Martin Kronbichler
@@ -16,7 +16,8 @@
 #include "post_writer_base.H"
 #include "post_drt_common.H"
 #include "../post_ensight/post_drt_ensight_writer.H"
-#include "../post_vtu/post_drt_vtu_writer.H"
+#include "../post_vtk/post_drt_vtu_writer.H"
+#include "../post_vtk/post_drt_vti_writer.H"
 
 
 #include "../pss_full/pss_cpp.h"
@@ -33,6 +34,8 @@ PostFilterBase::PostFilterBase(PostField *field,
     writer_ = Teuchos::rcp(new EnsightWriter(field, name));
   else if (field->problem()->filter() == "vtu")
     writer_ = Teuchos::rcp(new VtuWriter(field, name));
+  else if (field->problem()->filter() == "vti")
+    writer_ = Teuchos::rcp(new VtiWriter(field, name));
   else
     dserror("Unsupported filter");
 }
