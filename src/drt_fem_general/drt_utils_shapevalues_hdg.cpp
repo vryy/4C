@@ -169,61 +169,58 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
                                                     const unsigned int  face,
                                                     const DRT::UTILS::ShapeValues<distype> shapes)
 {
-  // what has been in the constructor before
   PolynomialSpaceParams params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,degree,completepoly);
+  polySpace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params);
+  degree_ = degree;
+  nfdofs_ = polySpace_->Size();
+  quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
+  nqpoints_ = quadrature_->NumPoints();
 
-  {
-    degree_ = degree;
-    polySpace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params);
-    nfdofs_ = polySpace_->Size();
-    quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
-    nqpoints_ = quadrature_->NumPoints();
+  faceValues.LightSize(nfdofs_);
+  xyzreal.LightShape(nsd_, nqpoints_);
+  funct.LightShape(nfn_, nqpoints_);
 
-    faceValues.LightSize(nfdofs_);
-    xyzreal.LightShape(nsd_, nqpoints_);
-    funct.LightShape(nfn_, nqpoints_);
-
-    shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
-    shfunct.LightShape(nfdofs_, nqpoints_);
+  shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
+  shfunct.LightShape(nfdofs_, nqpoints_);
+  if (shfunctI.size() != nfaces_)
     shfunctI.resize(nfaces_);
-    for (unsigned int f=0;f<nfaces_; ++f)
-      shfunctI[f].LightShape(shapes.ndofs_, nqpoints_);
-    normals.LightShape(nsd_, nqpoints_);
-    jfac.LightResize(nqpoints_);
+  for (unsigned int f=0;f<nfaces_; ++f)
+    shfunctI[f].LightShape(shapes.ndofs_, nqpoints_);
+  normals.LightShape(nsd_, nqpoints_);
+  jfac.LightResize(nqpoints_);
 
-    for (unsigned int q=0; q<nqpoints_; ++q )
-    {
-      const double* gpcoord = quadrature_->Point(q);
+  for (unsigned int q=0; q<nqpoints_; ++q )
+  {
+    const double* gpcoord = quadrature_->Point(q);
 
-      const unsigned int codim = nsd_-1;
-      for (unsigned int idim=0;idim<codim;idim++)
-        xsi(idim) = gpcoord[idim];
+    const unsigned int codim = nsd_-1;
+    for (unsigned int idim=0;idim<codim;idim++)
+      xsi(idim) = gpcoord[idim];
 
-      polySpace_->Evaluate(xsi,faceValues);
-      for (unsigned int i=0; i<nfdofs_; ++i)
-        shfunctNoPermute(i,q) = faceValues(i);
-
-      LINALG::Matrix<nfn_,1> myfunct(funct.A()+q*nfn_,true);
-      DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
-    }
-
-    // Fill face support points
-    nodexyzreal.LightShape(nsd_, nfdofs_);
-    polySpace_->FillUnitNodePoints(nodexyzunit);
-    dsassert(nodexyzreal.M() == nodexyzunit.M()+1 &&
-             nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
+    polySpace_->Evaluate(xsi,faceValues);
     for (unsigned int i=0; i<nfdofs_; ++i)
-    {
-      for (unsigned int idim=0;idim<nsd_-1;idim++)
-        xsi(idim) = nodexyzunit(idim,i);
+      shfunctNoPermute(i,q) = faceValues(i);
 
-      LINALG::Matrix<nfn_,1> myfunct;
-      DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
-      LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
-      mypoint.MultiplyNN(xyze,myfunct);
-    }
-
+    LINALG::Matrix<nfn_,1> myfunct(funct.A()+q*nfn_,true);
+    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
   }
+
+  // Fill face support points
+  nodexyzreal.LightShape(nsd_, nfdofs_);
+  polySpace_->FillUnitNodePoints(nodexyzunit);
+  dsassert(nodexyzreal.M() == nodexyzunit.M()+1 &&
+           nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
+  for (unsigned int i=0; i<nfdofs_; ++i)
+  {
+    for (unsigned int idim=0;idim<nsd_-1;idim++)
+      xsi(idim) = nodexyzunit(idim,i);
+
+    LINALG::Matrix<nfn_,1> myfunct;
+    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
+    mypoint.MultiplyNN(xyze,myfunct);
+  }
+
   const DRT::Element::DiscretizationType facedis = DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
