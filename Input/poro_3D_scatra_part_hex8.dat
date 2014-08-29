@@ -87,7 +87,7 @@ THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra //
+SCATRATYPE                      Poroscatra
 INITFUNCNO                      1
 CONVFORM                        convective
 SKIPINITDER                     yes
@@ -154,14 +154,8 @@ MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.5 BULKMODULUS 2.0e6 PENALTYPARAMETER
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 2.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 4 MAT_FluidPoro DYNVISCOSITY 0.05 DENSITY 1.0 PERMEABILITY 0.2e-1 TYPE Darcy
-MAT 5 MAT_matlist LOCAL No NUMMAT 7 MATIDS 6 7 8 9 10 11 12 END //collect Concentrations
+MAT 5 MAT_matlist LOCAL No NUMMAT 1 MATIDS 6 END //collect Concentrations
 MAT 6 MAT_scatra DIFFUSIVITY 10.0
-MAT 7 MAT_scatra DIFFUSIVITY 1.0 //10.0 //REACOEFF 2.0
-MAT 8 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 9 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 10 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 11 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-MAT 12 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -6.0/6.0 t1 0.0 t2 60.0
 //CURVE1 on EXPR FUNC 0.0 t1 0.0 t2 60.0
@@ -183,24 +177,12 @@ FUNCT1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 1.0*(4.0/10*x+3.0)
 SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.83446493414470924e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 1.42080655152740820e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 42 QUANTITY phi VALUE 1.83446490727230094e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 4 QUANTITY phi2 VALUE 2.71452049322297562e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi3 VALUE 4.34917912948262853e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi4 VALUE 4.08838858357186030e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi5 VALUE 8.69821269164960942e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi6 VALUE 1.73964253832992477e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 4 QUANTITY phi7 VALUE 1.37648255076172465e+00 TOLERANCE 1e-9
-SCATRA SPECIAL QUANTITY numiterlastnewton VALUE 7 TOLERANCE 1.0e-12
+SCATRA SPECIAL QUANTITY numiterlastnewton VALUE 3 TOLERANCE 1.0e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
-------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
-DVOL                           4
-E 1 - numscal 7 stoich 0 -1 0 0 0 0 0 reaccoeff 4.0 coupling simple_multiplicative
-E 1 - numscal 7 stoich 0 0 -1 1 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
-E 1 - numscal 7 stoich 0 0 1 -1 0 0 0 reaccoeff 4.0 coupling simple_multiplicative
-E 1 - numscal 7 stoich 0 0 0 0 -1 -2 1 reaccoeff 2.0 coupling simple_multiplicative
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 5.0 15.0 15.0 20.0 5.0 10.0 5.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0

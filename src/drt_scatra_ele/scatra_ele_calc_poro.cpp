@@ -212,9 +212,9 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
     const Teuchos::RCP<const MAT::ScatraMat>& material,
     const int                                 k,
     Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
-    const double                              porosity)
+    const double                              scale)
 {
-  diffmanager->SetIsotropicDiff(material->Diffusivity()*porosity,k);
+  diffmanager->SetIsotropicDiff(material->Diffusivity()*scale,k);
 
   return;
 }
@@ -226,10 +226,10 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetReaCoefficient(
     const Teuchos::RCP<const MAT::ScatraMat>& material,
     const int                                k,
     Teuchos::RCP<ScaTraEleReaManager>        reamanager,
-    const double                             porosity)
+    const double                             scale)
 {
   //set reaction coefficient (no scaling with porosity)
-  reamanager->SetReaCoeff(material->ReaCoeff(),k);
+  reamanager->SetReaCoeff(material->ReaCoeff()*scale,k);
 
   return;
 }

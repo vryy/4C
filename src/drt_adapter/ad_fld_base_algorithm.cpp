@@ -810,9 +810,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     }
     break;
     case prb_fsi_redmodels:
-    { //
+    { // give a warning
+      if (actdis->Comm().MyPID() == 0)
+        std::cout << "\n Warning: FSI_RedModels is little tested. Keep testing! \n" << std::endl;
+
+      // create the fluid time integration object
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-      std::cout << "\n Warning: FSI_RedModels is little tested. Keep testing! \n" << std::endl;
       if(timeint == INPAR::FLUID::timeint_stationary)
         tmpfluid = Teuchos::rcp(new FLD::TimIntRedModelsStat(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_one_step_theta)

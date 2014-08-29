@@ -118,12 +118,12 @@ protected:
   void SetDiffusivity(const Teuchos::RCP<const MAT::ScatraMat>& material,
                      const int                                 k,
                      Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
-                     const double                              porosity);
+                     const double                              scale);
 
   void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
                         const int                                 k,
                         Teuchos::RCP<ScaTraEleReaManager>         reamanager,
-                        const double                              porosity);
+                        const double                              scale);
 
   void SetDensities(double  porosity,
                    double& densn,    //!< density at t_(n)

@@ -92,8 +92,18 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
         result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,5))];
       else if (position=="phi7")
         result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,6))];
+      else if (position=="phi8")
+        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,7))];
+      else if (position=="phi9")
+        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,8))];
+      else if (position=="phi10")
+        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,9))];
+      else if (position=="phi11")
+        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,10))];
+      else if (position=="phi12")
+        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,11))];
       else if (position=="van_phi")
-        result = (*myvan_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
+        result = (*myvan_)[phinpmap.LID(dis_->Dof(0,actnode,12))];
       // we support only testing of fluxes for the first scalar
       else if (position=="fluxx")
         result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];

@@ -138,9 +138,9 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
 
   // set/calculate reaction coefficient (scaled with porosity)
   if (not advreac::iscoupled_)
-    poro::SetReaCoefficient(actmat,k,reamanager,porosity);
+    poro::SetReaCoefficient(actmat,k,reamanager,1.0);
   else
-    advreac::SetAdvancedReactionTerms(reamanager,k,porosity);
+    advreac::SetAdvancedReactionTerms(reamanager,k,1.0);
 
   // set densities (scaled with porosity)
   poro::SetDensities(porosity,densn,densnp,densam);

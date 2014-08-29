@@ -256,7 +256,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
 
                                        //... + reaction terms not depending on phi(k) -> source term
-  rhsint = my::bodyforce_[k].Dot(my::funct_) + reamanageradvreac->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp*reamanageradvreac->GetReaBodyForce(k);
 
   return;
 }
@@ -882,7 +882,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
 {
   // dynamic cast to Advanced_Reaction-specific reaction manager
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
-  if(reamanageradvreac==Teuchos::null) dserror("cast to ScaTraEleReaManagerAdvReac failed");
+  if(reamanageradvreac==Teuchos::null)
+    dserror("cast to ScaTraEleReaManagerAdvReac failed");
 
   reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
   reamanageradvreac->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
