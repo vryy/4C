@@ -259,7 +259,7 @@ Teuchos::RCP<GEO::SearchTree> VOLMORTAR::VolMortarCoupl::InitSearch(
 
   //init of 3D search tree
   Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(
-      new GEO::SearchTree(8));
+      new GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
   const LINALG::Matrix<3, 2> rootBox = GEO::getXAABBofDis(*searchdis,
