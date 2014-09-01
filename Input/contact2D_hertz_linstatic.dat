@@ -64,6 +64,8 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              No
+INITCONTACTBYGAP                Yes
+INITCONTACTGAPVALUE             1.e-5
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
 SEARCH_ALGORITHM                BruteForceEleBased
@@ -142,7 +144,7 @@ DLINE                           0
 DSURF                           0
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
-E 11 - 1 Slave Active
+E 11 - 1 Slave Inactive
 E 13 - 1 Master
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
