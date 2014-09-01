@@ -24,6 +24,47 @@ namespace DRT
 {
   namespace UTILS
   {
+    /*!
+     \brief helper holding the parameters, which we need to construct a the ShapeValuesFace
+    */
+    struct ShapeValuesFaceParams
+    {
+      explicit ShapeValuesFaceParams(unsigned int degree,
+                                     bool completepoly,
+                                     unsigned int quadraturedegree)
+      :
+      degree_(degree),
+      completepoly_(completepoly),
+      quadraturedegree_(quadraturedegree)
+      {}
+
+      unsigned int degree_;
+      bool completepoly_;
+      unsigned int quadraturedegree_;
+
+      bool operator<(const ShapeValuesFaceParams& otherparams) const
+      {
+        if(degree_<otherparams.degree_)
+          return true;
+        else if(degree_==otherparams.degree_)
+        {
+          if(quadraturedegree_<otherparams.quadraturedegree_)
+            return true;
+          else if(quadraturedegree_==otherparams.quadraturedegree_)
+          {
+            if(completepoly_<otherparams.completepoly_)
+              return true;
+            else
+              return false;
+          }
+          else
+            return false;
+        }
+        else
+          return false;
+      }
+    };
+
 
     /// Helper class for evaluating HDG polynomials, geometry, etc.
     /*!
@@ -122,17 +163,14 @@ namespace DRT
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /*!
-      \brief Constructor. Does nothing because of p-adaptivity where EvaluateFace needs to create all the data fields
-       */
-      ShapeValuesFace();
+      \briefConstructor which does the things which do not need to be redone for the same parameters
+      */
+      ShapeValuesFace(ShapeValuesFaceParams params);
 
       /*!
       \brief Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
       */
-      void EvaluateFace(const unsigned int degree,
-                        const bool         completepoly,
-                        const unsigned int quadratureDegree,
-                        const DRT::Element &ele,
+      void EvaluateFace(const DRT::Element &ele,
                         const unsigned int  face,
                         const DRT::UTILS::ShapeValues<distype> shapes);
 
@@ -180,6 +218,31 @@ namespace DRT
     private:
       LINALG::SerialDenseMatrix     faceQPoints; /// Quadrature points projected onto face
       LINALG::SerialDenseVector     faceValues; /// Evaluated basis functions on face
+    };
+
+    /*!
+    \brief Cache for the face-based shape values, so we do not need to calculate again
+
+     Author: schoeder 08/14
+    */
+    template <DRT::Element::DiscretizationType distype>
+    class ShapeValuesFaceCache : public SingletonDestruction
+    {
+    public:
+      /// return instance
+      static ShapeValuesFaceCache<distype> & Instance();
+
+      /// cleanup
+      virtual void Done();
+
+      /// give pointer to corresponding shape values face
+      Teuchos::RCP<ShapeValuesFace<distype> > Create(ShapeValuesFaceParams params);
+    private:
+      /// instance
+      static ShapeValuesFaceCache<distype> * instance_;
+
+      /// the actual cache; contains all pairs
+      std::map<ShapeValuesFaceParams, Teuchos::RCP<ShapeValuesFace<distype> > > svf_cache_;
     };
   }
 }

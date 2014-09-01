@@ -135,17 +135,13 @@ DRT::UTILS::ShapeValues<distype>::Evaluate (const DRT::Element &ele)
   }
 }
 
-
-
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 schoeder 06/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace()
+DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
 :
-degree_ (-1),
-nfdofs_(-1),
-nqpoints_(-1)
+degree_(params.degree_)
 {
   if (nsd_ == 2)
     faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
@@ -153,28 +149,14 @@ nqpoints_(-1)
     faceNodeOrder = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
   else
     dserror("Not implemented for dim != 2, 3");
-}
 
+  PolynomialSpaceParams polyparams(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,degree_,params.completepoly_);
+  polySpace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(polyparams);
 
-
-/*----------------------------------------------------------------------*
- |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void
-DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
-                                                    const bool         completepoly,
-                                                    const unsigned int quadratureDegree,
-                                                    const DRT::Element &ele,
-                                                    const unsigned int  face,
-                                                    const DRT::UTILS::ShapeValues<distype> shapes)
-{
-  PolynomialSpaceParams params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,degree,completepoly);
-  polySpace_ = DRT::UTILS::PolynomialSpaceCache<nsd_-1>::Instance().Create(params);
-  degree_ = degree;
   nfdofs_ = polySpace_->Size();
-  quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,quadratureDegree);
+  quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,params.quadraturedegree_);
   nqpoints_ = quadrature_->NumPoints();
+
 
   faceValues.LightSize(nfdofs_);
   xyzreal.LightShape(nsd_, nqpoints_);
@@ -184,8 +166,6 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
   shfunct.LightShape(nfdofs_, nqpoints_);
   if (shfunctI.size() != nfaces_)
     shfunctI.resize(nfaces_);
-  for (unsigned int f=0;f<nfaces_; ++f)
-    shfunctI[f].LightShape(shapes.ndofs_, nqpoints_);
   normals.LightShape(nsd_, nqpoints_);
   jfac.LightResize(nqpoints_);
 
@@ -220,12 +200,24 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const unsigned int degree,
     LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
     mypoint.MultiplyNN(xyze,myfunct);
   }
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void
+DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
+                                                    const unsigned int  face,
+                                                    const DRT::UTILS::ShapeValues<distype> shapes)
+{
+  for (unsigned int f=0;f<nfaces_; ++f)
+      shfunctI[f].LightShape(shapes.ndofs_, nqpoints_);
 
   const DRT::Element::DiscretizationType facedis = DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
-  dsassert(faceNodeOrder[face].size() == nfn_,
-           "Internal error");
+  dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
 
   LINALG::Matrix<nsd_,nen_> xyzeElement;
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(&ele,xyzeElement);
@@ -480,6 +472,44 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
   }
 }
 
+template<DRT::Element::DiscretizationType distype> DRT::UTILS::ShapeValuesFaceCache<distype> * DRT::UTILS::ShapeValuesFaceCache<distype> ::instance_;
+
+template<DRT::Element::DiscretizationType distype>
+DRT::UTILS::ShapeValuesFaceCache<distype> & DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
+{
+  if ( instance_==NULL )
+  {
+    instance_ = new ShapeValuesFaceCache<distype>;
+  }
+  return *instance_;
+}
+
+template<DRT::Element::DiscretizationType distype>
+void DRT::UTILS::ShapeValuesFaceCache<distype>::Done()
+{
+  delete instance_;
+  instance_ = NULL;
+}
+
+template<DRT::Element::DiscretizationType distype>
+Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
+{
+
+  typename std::map<ShapeValuesFaceParams, Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > >::iterator
+    i = svf_cache_.find(params);
+  if ( i!=svf_cache_.end() )
+  {
+    return i->second;
+  }
+
+  // this is expensive and should not be done too often
+  Teuchos::RCP<ShapeValuesFace<distype> > svf;
+  svf = Teuchos::rcp( new ShapeValuesFace<distype>(params) );
+
+  svf_cache_[params] = svf;
+
+  return svf;
+}
 
 // explicit instantiation of template classes
 template struct DRT::UTILS::ShapeValues<DRT::Element::hex8>;
@@ -511,3 +541,18 @@ template struct DRT::UTILS::ShapeValuesFace<DRT::Element::tri3>;
 template struct DRT::UTILS::ShapeValuesFace<DRT::Element::tri6>;
 template struct DRT::UTILS::ShapeValuesFace<DRT::Element::nurbs9>;
 template struct DRT::UTILS::ShapeValuesFace<DRT::Element::nurbs27>;
+
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::hex8>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::hex20>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::hex27>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::tet4>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::tet10>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::wedge6>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::pyramid5>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::quad4>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::quad8>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::quad9>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::tri3>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::tri6>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::nurbs9>;
+template struct DRT::UTILS::ShapeValuesFaceCache<DRT::Element::nurbs27>;

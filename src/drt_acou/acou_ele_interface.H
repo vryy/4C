@@ -72,15 +72,6 @@ namespace ELEMENTS
                                        const std::vector<int>&   lm            ,
                                        Epetra_SerialDenseVector& elevec1) = 0;
 
-
-    virtual int ProjectField(DRT::ELEMENTS::Acou*                 ele,
-                             Teuchos::ParameterList&              params,
-                             Teuchos::RCP<MAT::Material>&         mat,
-                             DRT::Discretization&                 discretization,
-                             const std::vector<int>&              lm,
-                             Epetra_SerialDenseVector&            elevec1,
-                             Epetra_SerialDenseVector&            elevec2) = 0;
-
   };
 
 

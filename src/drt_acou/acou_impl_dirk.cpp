@@ -220,9 +220,9 @@ void ACOU::TimIntImplDIRK::Solve()
 
     // solve the linear equation
     const double tcpusolve = Teuchos::Time::wallTime();
+    if(step_<=1)std::cout<<"LINALG::Condest"<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,500)<<std::endl;
     solver_->Solve(sysmat_->EpetraOperator(),t_,residual_,true,false,Teuchos::null);
     dtsolve_ += Teuchos::Time::wallTime()-tcpusolve;
-
     // update interior variables
     double tcpuele = Teuchos::Time::wallTime();
     UpdateInteriorVariablesAndAssemebleRHS(i);

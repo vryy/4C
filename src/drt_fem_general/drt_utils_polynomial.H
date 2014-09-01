@@ -53,7 +53,8 @@ namespace UTILS
         {
           if(completeSpace_<otherparams.completeSpace_)
             return true;
-          else return false;
+          else
+            return false;
         }
         else
           return false;

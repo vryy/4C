@@ -90,7 +90,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
                                                                   2*ele->Degree()));
 
     if (shapesface_ == Teuchos::null)
-      shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>());
+    {
+      DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Degree(), usescompletepoly_, 2 * ele->Degree());
+      shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>(svfparams));
+    }
     // TODO: check distype
 
     localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
@@ -138,12 +141,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
     // loop over faces
     for (unsigned int f=0; f<nfaces_; ++f) {
-      shapesface_->EvaluateFace(ele->Degree(),
-                                usescompletepoly_,
-                                2*ele->Degree(),
-                                *ele,
-                                f,
-                                *shapes_);
+      shapesface_->EvaluateFace(*ele,f,*shapes_);
       localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
       localSolver_->ComputeFaceMatrices(f, mat, false, elemat1);
     }
@@ -158,12 +156,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_);
   localSolver_->ComputeInteriorMatrices(mat, updateLocally);
   for (unsigned int f=0; f<nfaces_; ++f) {
-    shapesface_->EvaluateFace(ele->Degree(),
-        usescompletepoly_,
-        2*ele->Degree(),
-        *ele,
-        f,
-        *shapes_);
+    shapesface_->EvaluateFace(*ele,f,*shapes_);
     localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
     localSolver_->ComputeFaceMatrices(f, mat, updateLocally, elemat1);
   }
@@ -463,12 +456,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       if (*faceConsider != face)
         continue;
     }
-    shapesface_->EvaluateFace(ele->Degree(),
-        usescompletepoly_,
-        2*ele->Degree(),
-        *ele,
-        face,
-        *shapes_);
+    shapesface_->EvaluateFace(*ele,face,*shapes_);
     zeroMatrix(mass);
     zeroMatrix(trVec);
 
@@ -736,12 +724,7 @@ shapesface_(shapeValuesFace)
   int onfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
   {
-    shapesface_.EvaluateFace(ele->Degree(),
-                             completepoly,
-                             2*ele->Degree(),
-                             *ele,
-                             i,
-                             shapes_);
+    shapesface_.EvaluateFace(*ele,i,shapes_);
     onfdofs += shapesface_.nfdofs_;
   }
   onfdofs *= nsd_;

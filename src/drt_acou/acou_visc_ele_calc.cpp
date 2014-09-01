@@ -149,7 +149,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   case ACOU::calc_abc:
   {
     int face = params.get<int>("face");
-    shapesface_->EvaluateFace(ele->Degree(),usescompletepoly_,2*ele->Degree(),*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face,*shapes_);
     // note: absorbing bcs are treated fully implicitly!
     localSolver_->ComputeAbsorbingBC(ele,params,mat,face,elemat1,elevec1);
     break;
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
 
     ComputeMatrices(mat,*ele,dt,dyna_,true);
 
-    shapesface_->EvaluateFace(ele->Degree(),usescompletepoly_,2*ele->Degree(),*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face,*shapes_);
 
     if(!params.isParameter("nodeindices"))
       localSolver_->ComputeSourcePressureMonitor(ele,params,mat,face,elemat1,elevec1);
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   {
     int face = params.get<int>("face");
     ReadGlobalVectors(ele,discretization,lm);
-    shapesface_->EvaluateFace(ele->Degree(),usescompletepoly_,2*ele->Degree(),*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face,*shapes_);
     ComputePMonNodeVals(ele,params,mat,face,elemat1,elevec1);
 
     break;
@@ -241,7 +241,10 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::InitializeShapes(const DRT::ELEMEN
                                                                       2*ele->Degree()));
 
     if (shapesface_ == Teuchos::null)
-      shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>());
+    {
+      DRT::UTILS::ShapeValuesFaceParams svfparams( ele->Degree(), usescompletepoly_, 2 * ele->Degree());
+      shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+    }
     // TODO: check distype
 
     localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
@@ -297,12 +300,7 @@ shapesface_(shapeValuesFace)
   int onfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
   {
-    shapesface_.EvaluateFace(ele->Degree(),
-                             completepoly,
-                             2*ele->Degree(),
-                             *ele,
-                             i,
-                             shapes_);
+    shapesface_.EvaluateFace(*ele,i,shapes_);
     onfdofs += shapesface_.nfdofs_;
   }
   onfdofs *= nsd_;
@@ -1285,7 +1283,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ComputeMatrices(const Teuchos::RCP
   localSolver_->ComputeInteriorMatrices(mat,dt,dyna_);
   for (unsigned int face=0; face<nfaces_; ++face)
   {
-    shapesface_->EvaluateFace(ele.Degree(),usescompletepoly_,2*ele.Degree(),ele, face, *shapes_);
+    shapesface_->EvaluateFace(ele, face, *shapes_);
 //    std::cout<<"ele "<<ele.Id()<<" face "<<face<<std::endl;
 //    shapes_.normals.Print(std::cout);
 //    const int* nodeids = ele.Faces()[face]->NodeIds();
