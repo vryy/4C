@@ -7659,28 +7659,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
 
   // Parameters for AMGnxn Preconditioner
-  IntParameter("AMGNXN_MAXLEVEL",10,
-               "Max number of levels for AMGnxn preconditioner. The actual number of levels is the minimum of the levels in the individual hierarchies and the value given here.",
-               &list);
-  setNumericStringParameter("AMGNXN_SMOTIMES","1 1 1 1 1 1 1 1 1 1",
-                            "Number of sweeps for the block smoothers of the AMGnxn preconditioner (one value per level)",
-                            &list);
-  setNumericStringParameter("AMGNXN_SMODAMP","1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0",
-                            "Damping for the block smoothers of the AMGnxn preconditioner (one value per level)",
-                            &list);
-  setNumericStringParameter("AMGNXN_SMOFLIP","0 0 0 0 0 0 0 0 0 0",
-                            "Flip the order (1=yes, 0=no) of the BGS smoothers of the AMGnxn preconditioner (one value per level)",
-                            &list);
-
-  StringParameter("AMGNXN_BLOCKSMO","BGS",
-                  "Type of block smoother to be used: BGS or SIMPLE",
-                  &list);
-
-  StringParameter("AMGNXN_SCHURXML","none",
-                  "xml file defining the smoother for the Schur complement",
-                  &list);
-
-
+  StringParameter("AMGNXN_XML_FILE","none", "xml file defining the AMGnxn preconditioner", &list);
 
 
 }

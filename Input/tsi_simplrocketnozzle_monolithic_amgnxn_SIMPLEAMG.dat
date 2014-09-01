@@ -1,8 +1,7 @@
 //
-// Maintainer: Caroline Danowski
-// danowski@lnm.mw.tum.de
+// Maintainer: Francesc Verdugo
+// verdugo@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15253
 //
 // necessary defines: D_THERMO D_SOLID3 BINIO
 //
@@ -111,7 +110,7 @@ ITEMAX                          15
 ITEMIN                          1
 MAXTIME                         50  // 1000
 NORM_INC                        Abs
-NUMSTEP                         4  // 200000
+NUMSTEP                         1  // 200000
 RESTARTEVRY                     50
 TIMESTEP                        0.05
 UPRES                           1  // 10
@@ -124,13 +123,11 @@ NORM_RESF                       Rel   // Abs,Rel,Mix
 TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-AZPREC                          MueLu_sym 
-STRATIMIKOS_XMLFILE             Input/tsi_simplrocketnozzle_monolithic_amgnxn_term.xml     
-SOLVER                          Aztec_MSR  
+AZPREC                          MueLu_sym
+SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AZPREC                          MueLu_sym 
-STRATIMIKOS_XMLFILE             Input/tsi_simplrocketnozzle_monolithic_amgnxn_stru.xml     
+AZPREC                          MueLu_sym
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
 NAME                            Thermo_Structure_Interaction_Solver
@@ -140,18 +137,15 @@ AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
-AZOUTPUT                        10  
+AZOUTPUT                        10
 AZPOLY                          3
-AZPREC                          AMGnxn 
+AZPREC                          AMGnxn
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-06
-AMGNXN_MAXLEVEL                 2 
-AMGNXN_SMOTIMES                 1 3 
-AMGNXN_SMODAMP                  1.0 1.0 
-AMGNXN_SMOFLIP                  1 1 
+AMGNXN_XML_FILE                 Input/tsi_simplrocketnozzle_monolithic_amgnxn_SIMPLEAMG.xml
 SOLVER                          Aztec_MSR //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 // Cu
@@ -22398,13 +22392,14 @@ NODE 8442 COORD 1.4200000000000000e+02 8.6947051121388785e-15 5.0000000000000000
 3999 SOLIDH8THERMO HEX8 8437 8439 8440 8438 45 5 8 48 MAT 3 KINEM linear EAS none
 4000 SOLIDH8THERMO HEX8 8439 8441 8442 8440 5 1 4 8 MAT 3 KINEM linear EAS none
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -5.2033760020570256e-03 TOLERANCE 1.0e-8 NAME dispx_out
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -3.55183728539252273e-04 TOLERANCE 1.0e-8 NAME dispx_out
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0 TOLERANCE 1.0e-8 NAME dispy_out
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0 TOLERANCE 1.0e-8 NAME dispz_out
-STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE -4.3564436606644405e-03 TOLERANCE 1.0e-8 NAME dispx_in
+STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE -2.96979146830368451e-04 TOLERANCE 1.0e-8 NAME dispx_in
 STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE 0 TOLERANCE 1.0e-8 NAME dispy_in
 STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE 0 TOLERANCE 1.0e-8 NAME dispz_in
-THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 292.87275951774023 TOLERANCE 1.0e-8 NAME temp_out
-THERMAL DIS thermo NODE 41 QUANTITY temp VALUE 281.74079825861793 TOLERANCE 1.0e-8 NAME temp_in
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 2.93148640167333383e+02 TOLERANCE 1.0e-8 NAME temp_out
+THERMAL DIS thermo NODE 41 QUANTITY temp VALUE 2.91675774444172134e+02 TOLERANCE 1.0e-8 NAME temp_in
 -------------------------------------------------------------------------END
 //  END
+

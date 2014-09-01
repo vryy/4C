@@ -1494,6 +1494,9 @@ set(OBJS_SOLVER
   src/solver/muelu/MueLu_MeshtyingSPAmalgamationFactory.cpp
   src/solver/muelu/MueLu_ContactSPRepartitionInterface.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
+  src/solver/solver_amgnxn_vcycle.cpp
+  src/solver/solver_amgnxn_hierarchies.cpp
+  src/solver/solver_amgnxn_smoothers.cpp
 )
 
 set(OBJS_SOLVER_NONLIN

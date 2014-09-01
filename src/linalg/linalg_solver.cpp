@@ -1663,7 +1663,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
         azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
     {
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-      muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    	 // MueLu reuses the ML parameter list
+      muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    // MueLu reuses the ML parameter list
     }
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact  )
     {
@@ -1718,62 +1718,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     {
 
       Teuchos::ParameterList& amgnxnlist = outparams.sublist("AMGnxn Parameters");
-
-      int amgnxn_maxlevel = inparams.get<int>("AMGNXN_MAXLEVEL");
-      amgnxnlist.set<int>("maxlevel",amgnxn_maxlevel);
-
-      Teuchos::RCP< std::vector<int> >  amgnxn_smotimes=Teuchos::rcp(new std::vector<int>);
-      {
-         std::istringstream str_aux(
-             Teuchos::getNumericStringParameter(inparams,"AMGNXN_SMOTIMES"));
-         std::string word;
-         while (str_aux >> word)
-           amgnxn_smotimes->push_back(std::atoi(word.c_str()));
-      }
-      if((int)amgnxn_smotimes->size() < amgnxn_maxlevel)
-        dserror("The number of given values in AMGNXN_SMOTIMES should be at least AMGNXN_MAXLEVEL");
-      amgnxnlist.set< Teuchos::RCP< std::vector<int> > >("smotimes",amgnxn_smotimes);
-
-      Teuchos::RCP< std::vector<bool> > amgnxn_smoflip=Teuchos::rcp(new std::vector<bool>);
-      {
-        std::istringstream str_aux(
-            Teuchos::getNumericStringParameter(inparams,"AMGNXN_SMOFLIP"));
-        std::string word;
-        while (str_aux >> word)
-          amgnxn_smoflip->push_back(std::atoi(word.c_str())!=0);
-      }
-      if((int)amgnxn_smoflip->size() < amgnxn_maxlevel)
-        dserror("The number of given values in AMGNXN_SMOFLIP should be at least AMGNXN_MAXLEVEL");
-      amgnxnlist.set< Teuchos::RCP< std::vector<bool> > >("smoflip",amgnxn_smoflip);
-
-      Teuchos::RCP< std::vector<double> >amgnxn_smodamp=Teuchos::rcp(new std::vector<double>);
-      {
-        std::stringstream str_aux(
-            Teuchos::getNumericStringParameter(inparams,"AMGNXN_SMODAMP"));
-        double word;
-        while (str_aux >> word)
-          amgnxn_smodamp->push_back(word);
-      }
-      if((int)amgnxn_smodamp->size() < amgnxn_maxlevel)
-        dserror("The number of given values in AMGNXN_SMODAMP should be at least AMGNXN_MAXLEVEL");
-      amgnxnlist.set< Teuchos::RCP< std::vector<double> > >("smodamp",amgnxn_smodamp);
-
-      std::string BlockSmo = inparams.get<std::string>("AMGNXN_BLOCKSMO") ;
-      amgnxnlist.set<std::string>("BlockSmo",BlockSmo);
-
-      std::string SchurXml = inparams.get<std::string>("AMGNXN_SCHURXML") ;
-      amgnxnlist.set<std::string>("SchurXml",SchurXml);
-
-      //// Uncomment to see the input values
-      //std::cout << amgnxn_maxlevel << std::endl;
-      //for(int i=0;i<(int)amgnxn_smotimes->size();i++)
-      //  std::cout << (*amgnxn_smotimes)[i] << std::endl;
-      //for(int i=0;i<(int)amgnxn_smoflip->size();i++)
-      //  std::cout << (*amgnxn_smoflip)[i] << std::endl;
-      //for(int i=0;i<(int)amgnxn_smodamp->size();i++)
-      //  std::cout << (*amgnxn_smodamp)[i] << std::endl;
-      //std::cout << BlockSmo << std::endl;  
-      //std::cout << SchurXml << std::endl;  
+      std::string amgnxn_xml = inparams.get<std::string>("AMGNXN_XML_FILE");
+      amgnxnlist.set<std::string>("AMGNXN_XML_FILE",amgnxn_xml);
 
     }
   }
