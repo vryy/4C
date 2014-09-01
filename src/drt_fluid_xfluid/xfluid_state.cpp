@@ -172,6 +172,9 @@ void FLD::XFluidState::SetupMapExtractors(const Teuchos::RCP<DRT::Discretization
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   xfluiddiscret->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                    Teuchos::null, dbcmaps_);
+
+  zeros_->PutScalar(0.0);
+
   // create vel-pres splitter
   const int numdim = DRT::Problem::Instance()->NDim();
   velpressplitter_ = Teuchos::rcp( new LINALG::MapExtractor());
@@ -188,6 +191,16 @@ void FLD::XFluidState::SetupKSPMapExtractor(
   kspsplitter_->Setup(*(xfluiddiscret));
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Set xfem fluid wizard                                   kruse 08/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidStateCreator::SetWizard(
+  const Teuchos::RCP<DRT::Discretization> & discret)
+{
+  wizard_ = Teuchos::rcp( new XFEM::FluidWizardLevelSet(*discret) );
+
+}
 /*----------------------------------------------------------------------*
  |  Set xfem fluid wizard                                   kruse 08/14 |
  *----------------------------------------------------------------------*/
@@ -196,7 +209,7 @@ void FLD::XFluidStateCreator::SetWizard(
   const Teuchos::RCP<DRT::Discretization> & boundarydiscret)
 {
   // Initialize the mesh wizard
-  wizard_mesh_ = Teuchos::rcp( new XFEM::FluidWizardMesh(*discret, *boundarydiscret) );
+  wizard_ = Teuchos::rcp( new XFEM::FluidWizardMesh(*discret, *boundarydiscret) );
 }
 
 /*----------------------------------------------------------------------*
@@ -208,28 +221,29 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   const Epetra_Vector &                     idispcol,
   Teuchos::ParameterList &                  solver_params,
   const int                                 step,
-  const double &                            time
+  const double &                            time,
+  bool                                      coupling
 )
 {
-  if (wizard_mesh_ == Teuchos::null)
+  if (wizard_ == Teuchos::null)
     dserror("Uninitialized mesh wizard. Cannot create state.");
 
   //--------------------------------------------------------------------------------------
   // the XFEM::FluidWizardMesh is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizardMesh creates also a cut-object of type GEO::CutWizardMesh which performs the "CUT"
-  wizard_mesh_->Cut(false,                         // include_inner
-                    idispcol,                      // interface displacements
-                    VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
-                    BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
-                    true,                          // parallel cut framework
-                    gmsh_cut_out_,                 // gmsh output for cut library
-                    true                           // find point positions
-                    );
+  wizard_->Cut( false,                         // include_inner
+                idispcol,                      // interface displacements
+                VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
+                BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
+                true,                          // parallel cut framework
+                gmsh_cut_out_,                 // gmsh output for cut library
+                true                           // find point positions
+                );
 
   //--------------------------------------------------------------------------------------
   // set the new dofset after cut
   const int maxNumMyReservedDofs = discret->NumGlobalNodes()*(maxnumdofsets_)*4;
-  dofset_ = wizard_mesh_->DofSet(maxNumMyReservedDofs);
+  dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
 
   const int restart = DRT::Problem::Instance()->Restart();
 
@@ -252,8 +266,17 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap = Teuchos::rcp(
       new Epetra_Map(*discret->DofRowMap()));
 
-  Teuchos::RCP<FLD::XFluidState> state = Teuchos::rcp(
+  Teuchos::RCP<FLD::XFluidState> state;
+  if (coupling)
+  {
+    state = Teuchos::rcp(
       new FLD::XFluidState(xfluiddofrowmap,*boundarydiscret->DofRowMap(),*boundarydiscret->DofColMap()));
+  }
+  else
+  {
+    state = Teuchos::rcp(
+          new FLD::XFluidState(xfluiddofrowmap));
+  }
 
   state->SetupMapExtractors(discret,time);
 

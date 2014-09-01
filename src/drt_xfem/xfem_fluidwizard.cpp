@@ -274,16 +274,18 @@ GEO::CUT::SideHandle * XFEM::FluidWizardMesh::GetCutSide( int sid, int mi )
 /*--------------------------------------------------------------------------*
 * Cut routine for the new XFEM framework (TPFX)* utilizing level set for cut.
 *---------------------------------------------------------------------------*/
-void XFEM::FluidWizardLevelSet::Cut(  bool include_inner,                         //!< perform cut within the structure
-                              Teuchos::RCP<const Epetra_Vector> phinpnode,            //!< node based values for the level set function
+void XFEM::FluidWizardLevelSet::Cut(
+                              bool include_inner,                         //!< perform cut within the structure
+                              const Epetra_Vector & phinpnode,            //!< node based values for the level set function
                               INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
                               INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
                               bool parallel,                              //!< use parallel cut algorithms
                               bool gmsh_output,                           //!< print write gmsh output for cut
                               bool positions,                             //!< set inside and outside point, facet and volumecell positions
                               bool tetcellsonly,                          //!< generate only tet cells
-                              bool screenoutput                          //!< print screen output
-                              )
+                              bool screenoutput,                          //!< print screen output
+                              bool cutinrefconf                           //!< do not try to perform coordinate update
+)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizardLevelSet::Cut" );
 
@@ -310,7 +312,7 @@ void XFEM::FluidWizardLevelSet::Cut(  bool include_inner,                       
 
     DRT::Element * element = backdis_.lColElement(lid);
 
-    DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, * phinpnode);
+    DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, phinpnode);
     cut_->AddElement(element,myphinp);
   }
 

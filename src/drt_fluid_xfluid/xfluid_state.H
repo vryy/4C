@@ -233,7 +233,8 @@ public:
     const Epetra_Vector &                     idispcol,
     Teuchos::ParameterList &                  solver_params,
     const int                                 step,
-    const double &                            time);
+    const double &                            time,
+    bool                                      coupling = true);
 
   /// create a state-object after a cut
   Teuchos::RCP<XFluidState> Create(
@@ -245,19 +246,11 @@ public:
   }
 
   /// access to the fluid wizard (boundary mesh)
-  Teuchos::RCP<XFEM::FluidWizardMesh> WizardMesh()
+  Teuchos::RCP<XFEM::FluidWizard> Wizard()
   {
-    if (wizard_mesh_ == Teuchos::null)
-      dserror("Mesh wizard is not in use!");
-    return wizard_mesh_;
-  }
-
-  /// access to the fluid wizard (level-set field)
-  Teuchos::RCP<XFEM::FluidWizardLevelSet> WizardLevelSet()
-  {
-    if (wizard_levelset_ == Teuchos::null)
-      dserror("Level-set wizard is not in use!");
-    return wizard_levelset_;
+    if (wizard_ == Teuchos::null)
+      dserror("Xfem fluid wizard is uninitialized!");
+    return wizard_;
   }
 
   //! access to the xfem-dofset
@@ -284,10 +277,7 @@ private:
   Teuchos::RCP<XFEM::FluidDofSet>  dofset_;
 
   /// xfem fluid wizard (boundary mesh)
-  Teuchos::RCP<XFEM::FluidWizardMesh>     wizard_mesh_;
-
-  /// xfem fluid wizard (level-set field)
-  Teuchos::RCP<XFEM::FluidWizardLevelSet> wizard_levelset_;
+  Teuchos::RCP<XFEM::FluidWizard>  wizard_;
 
 };
 

@@ -68,6 +68,22 @@ public:
 
   virtual ~FluidWizard(){}
 
+  /*!
+  \brief Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)
+  */
+  virtual void Cut(
+              bool include_inner,                         //!< perform cut within the structure
+              const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
+              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
+              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
+              bool parallel,                              //!< use parallel cut algorithms
+              bool gmsh_output,                           //!< print write gmsh output for cut
+              bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
+              bool tetcellsonly = false,                  //!< generate only tet cells
+              bool screenoutput = true,                   //!< print screen output
+              bool cutinrefconf = false                   //!< do not try to perform coordinate update
+  ) = 0;
+
   /*========================================================================*/
   //! @name DofSet handling
   /*========================================================================*/
@@ -190,14 +206,15 @@ public:
   \brief Cut routine for the new XFEM framework (utilizing levelset for Cut)
   */
   void Cut(   bool include_inner,                          //!< perform cut within the structure
-              Teuchos::RCP<const Epetra_Vector> phinpnode, //!< col vector holding level set values at nodes
+              const Epetra_Vector & phinpnode,             //!< col vector holding level set values at nodes
               INPAR::CUT::VCellGaussPts VCellgausstype,    //!< Gauss point generation method for Volumecell
               INPAR::CUT::BCellGaussPts BCellgausstype,    //!< Gauss point generation method for Boundarycell
               bool parallel,                               //!< use parallel cut algorithms
               bool gmsh_output,                            //!< print write gmsh output for cut
               bool positions = true,                       //!< set inside and outside point, facet and volumecell positions);
               bool tetcellsonly = false,                   //!< generate only tet cells
-              bool screenoutput = true                     //!< print screen output
+              bool screenoutput = true,                    //!< print screen output
+              bool cutinrefconf = false                    //!< do not try to perform coordinate update
   );
 
   /*========================================================================*/
