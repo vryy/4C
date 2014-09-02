@@ -415,6 +415,8 @@ void STR::TimIntStatMech::UpdateAndOutput()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::Predict()
 {
+  //Set iter_ to zero for the predictor step
+  iter_=0;
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------

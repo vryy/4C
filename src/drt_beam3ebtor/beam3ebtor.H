@@ -15,7 +15,7 @@ also display torsion and is therefore a complete, geometrically exact Euler-Bern
 configuration) straight beams. Due to the Euler-Bernoulli theory there is no shear deformation.
 To be able to use this element correctly structural dynamic parameters need to be set to:
 
-	LOADLIN	     Yes
+  LOADLIN     Yes
 
 since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
 type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
@@ -41,11 +41,11 @@ be set to 0, otherwise the axial tension at the boundary would be prescribed. Th
 #define ScaleFactorLinetor 1;
 #define ScaleFactorColumntor 1;
 
-//#define ANS_BEA3EBTOR// Flag, to apply Assumed Natural Strain approach for axial tension epsilon
-//Default: Off
+#define ANS_BEA3EBTOR// Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+//Default: On
 
-#define mygaussruleebtor intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
-//Default: 6
+#define mygaussruleebtor intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
+//Default: 4
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT

@@ -16,7 +16,7 @@ There is no shear deformation and no torsion. The expansion of the model to a fu
 possible and implemented in beam3ebtor.
 To be able to use this element correctly so far structural dynamic parameters need to be set to:
 
-	LOADLIN	     Yes
+LOADLIN     Yes
 
 since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
 type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
@@ -91,13 +91,13 @@ using namespace cln;
                                 // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
 //Default: 2
 
-//#define ANS_BEAM3EB             // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
-//Default: Off
-//#define ANSVALUES 3             //Decide, how many ANS points are applied (2 or 3 possible)
+#define ANS_BEAM3EB             // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+//Default: On
+#define ANSVALUES 3             //Decide, how many ANS points are applied (2 or 3 possible)
 //Default: 3
 
-#define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
-//Default: 6
+#define mygaussruleeb intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
+//Default: 4
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT

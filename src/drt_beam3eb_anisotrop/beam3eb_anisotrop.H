@@ -14,8 +14,8 @@ Maintainer: Christoph Meier
 also display initially curved beams. To be able to use this element correctly structural dynamic
 parameters need to be set to:
 
-	LOADLIN	     Yes
-	MASSLIN      Yes (only necessary for dynamics)
+  LOADLIN      Yes
+  MASSLIN      Yes (only necessary for dynamics)
 
 since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
 type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
@@ -56,7 +56,7 @@ typedef Sacado::Fad::DFad<double> FAD;
 
 //#define NODALALPHAT 2 //Needed for dynamics --> 1: alpha_t = 0; 2: old reference triad constant; 3: old reference triad non-constant. DEFAULT: OUT
 
-#define mygaussrule intrule_line_3point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented. DEFAULT: intrule_line_3point
+#define mygaussrule intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented. DEFAULT: intrule_line_4point
 
 #define ROTATIONTOL 1.0e-12 //Tolerance that ensures a rotation per load/time step, that is smaller than 180°: 1+t*t_old !< ROTATIONTOL. DEFAULT: 1.0e-12
 
@@ -445,12 +445,12 @@ private:
   //! @name Internal calculation methods
 
   //! Calculate stiffness matrix via FAD
-  void CalculateInternalForces(Teuchos::ParameterList& params,
-							std::vector<double>&           vel,
-							std::vector<double>&           disp,
-							Epetra_SerialDenseMatrix* stiffmatrix,
-							Epetra_SerialDenseVector* force,
-							bool update);
+  void CalculateInternalForces( Teuchos::ParameterList& params,
+                                std::vector<double>&           vel,
+                                std::vector<double>&           disp,
+                                Epetra_SerialDenseMatrix* stiffmatrix,
+                                Epetra_SerialDenseVector* force,
+                                bool update);
 
   //! Calculate inertia forces
   void CalculateInertialForces(Teuchos::ParameterList& params,
