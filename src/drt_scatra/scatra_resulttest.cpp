@@ -103,7 +103,7 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       else if (position=="phi12")
         result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,11))];
       else if (position=="van_phi")
-        result = (*myvan_)[phinpmap.LID(dis_->Dof(0,actnode,12))];
+        result = (*myvan_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
       // we support only testing of fluxes for the first scalar
       else if (position=="fluxx")
         result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];
