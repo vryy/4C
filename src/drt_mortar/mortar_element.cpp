@@ -132,6 +132,7 @@ DRT::Element(id,owner),
 shape_(shape),
 isslave_(isslave),
 attached_(false),
+hermite_(false),
 nurbs_(isnurbs),
 normalfac_(1.0),    // normal factor for nurbs
 zero_sized_(false)  // information for nurbs integration
@@ -810,7 +811,19 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
                                     std::vector<double>& geta)
 {
-  const int nnodes = NumNode();
+  int nnodes = NumNode();
+
+  int sstatus = -1;
+  int sfeatures[2] = {0,0};
+
+  // for hermit smoothing
+  if (IsHermite())
+  {
+    AdjEleStatus(sfeatures);
+    sstatus = sfeatures[0];
+    nnodes  = sfeatures[1];
+  }
+
   int dim = 0;
   DRT::Element::DiscretizationType dt = Shape();
   if (dt==line2 || dt==line3 || dt==nurbs2 || dt==nurbs3) dim = 2;
@@ -822,11 +835,14 @@ void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
 
   // get shape function values and derivatives at xi
-  EvaluateShape(xi, val, deriv, nnodes);
+  EvaluateShape(xi, val, deriv, nnodes,false);
 
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3,nnodes);
-  GetNodalCoords(coord);
+  if(IsHermite())
+    AdjNodeCoords(coord,sstatus);
+  else
+    GetNodalCoords(coord);
 
   // build basis vectors gxi and geta
   for (int i=0;i<nnodes;++i)
@@ -864,10 +880,8 @@ double MORTAR::MortarElement::Jacobian(double* xi)
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt==line2)
-  {
+  if (dt==line2 and !IsHermite())
     jac = MoData().Area()*0.5;
-  }
 
   // 3D linear case (3noded triangular element)
   else if (dt==tri3)
@@ -880,7 +894,7 @@ double MORTAR::MortarElement::Jacobian(double* xi)
   // 3D biquadratic case (9noded quadrilateral element)
   else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  ||
            dt==quad9  || dt==nurbs2 || dt==nurbs3 || dt==nurbs4 ||
-           dt==nurbs8 || dt==nurbs9)
+           dt==nurbs8 || dt==nurbs9 || (dt==line2 and IsHermite()) )
   {
     // metrics routine gives local basis vectors
     Metrics(xi,gxi,geta);
@@ -907,7 +921,28 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,doub
 {
   // get element nodes
   int nnodes = NumNode();
-  DRT::Node** mynodes = Nodes();
+
+  int sstatus = -1;
+  int sfeatures[2] = {0,0};
+
+  // for hermit smoothing
+  if (IsHermite())
+  {
+    AdjEleStatus(sfeatures);
+    sstatus = sfeatures[0];
+    nnodes  = sfeatures[1];
+  }
+
+  DRT::Node** mynodes=NULL;//Nodes();
+  DRT::Node* myhnodes[4] = {0,0,0,0};
+  if(IsHermite())
+  {
+    HermitEleNodes(myhnodes,sstatus);
+    mynodes = myhnodes;
+  }
+  else
+    mynodes = Nodes();
+
   if (!mynodes) dserror("ERROR: DerivJacobian: Null pointer!");
 
   // the inverse Jacobian
@@ -918,7 +953,7 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,doub
   // evaluate shape functions
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  EvaluateShape(xi, val, deriv, nnodes);
+  EvaluateShape(xi, val, deriv, nnodes, false);
 
   // metrics routine gives local basis vectors
   Metrics(xi,gxi,geta);
@@ -932,7 +967,7 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,doub
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt==line2) jacinv = 2.0/MoData().Area();
+  if (dt==line2 and !IsHermite()) jacinv = 2.0/MoData().Area();
 
   // 3D linear case (3noded triangular element)
   else if (dt==tri3) jacinv = 1.0/(MoData().Area()*2.0);
@@ -942,8 +977,9 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,doub
   // 3D quadratic case (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  || dt==quad9 ||
-           dt==nurbs2 || dt==nurbs3 || dt==nurbs4 || dt==nurbs8 || dt==nurbs9)
+  else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  || dt==quad9  ||
+           dt==nurbs2 || dt==nurbs3 || dt==nurbs4 || dt==nurbs8 || dt==nurbs9 ||
+           (dt==line2 and IsHermite()))
     jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
   else
     dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
@@ -986,7 +1022,7 @@ double MORTAR::MortarElement::ComputeArea()
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt==line2)
+  if (dt==line2 and !IsHermite())
   {
     // no integration necessary (constant Jacobian)
     LINALG::SerialDenseMatrix coord(3,NumNode());
@@ -1032,7 +1068,7 @@ double MORTAR::MortarElement::ComputeArea()
   // 3D biquadratic case (9noded quadrilateral element)
   else if (dt==line3  || dt==quad4  || dt==tri6     || dt==quad8  ||
            dt==quad9  || dt==nurbs2 || dt== nurbs3  || dt==nurbs4 ||
-           dt==nurbs8 || dt==nurbs9)
+           dt==nurbs8 || dt==nurbs9 || (dt==line2 and IsHermite()))
   {
     // Gauss quadrature with correct NumGP and Dim
     MORTAR::ElementIntegrator integrator(dt);
@@ -1065,7 +1101,21 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord,
   if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
 
   // collect fundamental data
-  int nnodes = NumNode();
+  int nnodes = 0;
+
+  // for hermit smoothing
+  int status = 0;
+  int features[2] = {0,0};
+
+  if(IsHermite())
+  {
+    AdjEleStatus(features);
+    status = features[0];
+    nnodes = features[1];
+  }
+  else
+    nnodes = NumNode();
+
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
   LINALG::SerialDenseMatrix coord(3,nnodes);
@@ -1073,17 +1123,17 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord,
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
 
   // Evaluate shape, get nodal coords  and interpolate global coords
-  EvaluateShape(xi, val, deriv, nnodes);
+  EvaluateShape(xi, val, deriv, nnodes, false);
+  if(IsHermite())
+    AdjNodeCoords(coord, status);
+  else
+    GetNodalCoords(coord,false);
+
+  // init globcoords
   for (int i=0;i<3;++i) globcoord[i]=0.0;
 
   for (int i=0;i<nnodes;++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
-    coord(0,i) = mymrtrnode->xspatial()[0];
-    coord(1,i) = mymrtrnode->xspatial()[1];
-    coord(2,i) = mymrtrnode->xspatial()[2];
-
     if (inttype==0)
     {
       // use shape function values for interpolation
@@ -1364,6 +1414,337 @@ bool MORTAR::MortarElement::AddSearchElements(const int & gid)
 
   // add new gid to vector of search candidates
   MoData().SearchElements().push_back(gid);
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get information from adjacent elements                   farah 09/14|
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarElement::AdjEleStatus(int* status)
+{
+  if(Shape()!=DRT::Element::line2)
+    dserror("Hermit smoothing only for line2 elements!!!");
+
+  DRT::Node** nodes = Nodes();
+  if(!nodes) dserror("ERROR: Nodes: Null pointer!");
+
+  MortarNode* mrtrnode0 = static_cast<MortarNode*> (nodes[0]);
+  MortarNode* mrtrnode1 = static_cast<MortarNode*> (nodes[1]);
+
+  int numelemrtrnode0 = mrtrnode0->NumElement();
+  int numelemrtrnode1 = mrtrnode1->NumElement();
+
+  if(numelemrtrnode0 == 2 && numelemrtrnode1 == 2)
+  {
+    status[0] = 1; // std hermit case
+    status[1] = 4; // numnode for smoothing
+  }
+  else if(numelemrtrnode0 == 1 && numelemrtrnode1 == 2)
+  {
+    status[0] = 2; // edge0 boundary modification
+    status[1] = 3;
+  }
+  else if(numelemrtrnode0 == 2 && numelemrtrnode1 == 1)
+  {
+    status[0] = 3; // edge1 boundary modification
+    status[1] = 3;
+  }
+  else
+  {
+    dserror("ERROR: No adjacent element found");
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get node coordinates from adj elements -- for Hermit sm. farah 09/14|
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarElement::AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int inttype)
+{
+  if(Shape()!=DRT::Element::line2)
+    dserror("Hermit smoothing only for line2 elements!!!");
+
+  int eleId = Id();
+  DRT::Node** mynodes = Nodes();
+
+  MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
+  MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
+
+  MortarNode* myadjacentmrtrnode = 0;
+  DRT::Node** myAdjacentNodes    = 0;
+
+  LINALG::SerialDenseMatrix nodecoord(3,4);
+
+  nodecoord(0,1) = mymrtrnode0->xspatial()[0];
+  nodecoord(1,1) = mymrtrnode0->xspatial()[1];
+  nodecoord(2,1) = mymrtrnode0->xspatial()[2];
+
+  nodecoord(0,2) = mymrtrnode1->xspatial()[0];
+  nodecoord(1,2) = mymrtrnode1->xspatial()[1];
+  nodecoord(2,2) = mymrtrnode1->xspatial()[2];
+
+  if(inttype == 1)
+  {
+    DRT::Element** myelements0 = mymrtrnode0->Elements();
+
+    if(myelements0[0]->Id() == eleId && myelements0[1]->Id() != eleId)
+      myAdjacentNodes = myelements0[1]->Nodes();
+    else if(myelements0[1]->Id() == eleId && myelements0[0]->Id() != eleId)
+      myAdjacentNodes = myelements0[0]->Nodes();
+    else
+    dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode0->Id() && myAdjacentNodes[1]->Id() == mymrtrnode0->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode0->Id() && myAdjacentNodes[1]->Id() != mymrtrnode0->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodecoord(0,0) = myadjacentmrtrnode->xspatial()[0];
+    nodecoord(1,0) = myadjacentmrtrnode->xspatial()[1];
+    nodecoord(2,0) = myadjacentmrtrnode->xspatial()[2];
+
+    DRT::Element** myelements1 = mymrtrnode1->Elements();
+
+    if(myelements1[0]->Id() == eleId && myelements1[1]->Id() != eleId)
+      myAdjacentNodes = myelements1[1]->Nodes();
+    else if(myelements1[0]->Id() != eleId && myelements1[1]->Id() == eleId)
+      myAdjacentNodes = myelements1[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode1->Id() && myAdjacentNodes[1]->Id() == mymrtrnode1->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode1->Id() && myAdjacentNodes[1]->Id() != mymrtrnode1->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodecoord(0,3) = myadjacentmrtrnode->xspatial()[0];
+    nodecoord(1,3) = myadjacentmrtrnode->xspatial()[1];
+    nodecoord(2,3) = myadjacentmrtrnode->xspatial()[2];
+  }
+  else if(inttype == 2)
+  {
+    DRT::Element** myelements1 = mymrtrnode1->Elements();
+
+    if(myelements1[0]->Id() == eleId && myelements1[1]->Id() != eleId)
+      myAdjacentNodes = myelements1[1]->Nodes();
+    else if(myelements1[0]->Id() != eleId && myelements1[1]->Id() == eleId)
+      myAdjacentNodes = myelements1[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode1->Id() && myAdjacentNodes[1]->Id() == mymrtrnode1->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode1->Id() && myAdjacentNodes[1]->Id() != mymrtrnode1->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodecoord(0,3) = myadjacentmrtrnode->xspatial()[0];
+    nodecoord(1,3) = myadjacentmrtrnode->xspatial()[1];
+    nodecoord(2,3) = myadjacentmrtrnode->xspatial()[2];
+  }
+  else if(inttype == 3)
+  {
+    DRT::Element** myelements0 = mymrtrnode0->Elements();
+
+    if(myelements0[0]->Id() == eleId && myelements0[1]->Id() != eleId)
+      myAdjacentNodes = myelements0[1]->Nodes();
+    else if(myelements0[1]->Id() == eleId && myelements0[0]->Id() != eleId)
+      myAdjacentNodes = myelements0[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode0->Id() && myAdjacentNodes[1]->Id() == mymrtrnode0->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode0->Id() && myAdjacentNodes[1]->Id() != mymrtrnode0->Id())
+      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodecoord(0,0) = myadjacentmrtrnode->xspatial()[0];
+    nodecoord(1,0) = myadjacentmrtrnode->xspatial()[1];
+    nodecoord(2,0) = myadjacentmrtrnode->xspatial()[2];
+  }
+  else dserror("ERROR: Inttype must be 0,1,2");
+
+  if(inttype ==1)
+  {
+    coord(0,0) = nodecoord(0,0);
+    coord(1,0) = nodecoord(1,0);
+    coord(2,0) = nodecoord(2,0);
+
+    coord(0,1) = nodecoord(0,1);
+    coord(1,1) = nodecoord(1,1);
+    coord(2,1) = nodecoord(2,1);
+
+    coord(0,2) = nodecoord(0,2);
+    coord(1,2) = nodecoord(1,2);
+    coord(2,2) = nodecoord(2,2);
+
+    coord(0,3) = nodecoord(0,3);
+    coord(1,3) = nodecoord(1,3);
+    coord(2,3) = nodecoord(2,3);
+  }
+  else if(inttype == 2)
+  {
+    coord(0,0) = nodecoord(0,1);
+    coord(1,0) = nodecoord(1,1);
+    coord(2,0) = nodecoord(2,1);
+
+    coord(0,1) = nodecoord(0,2);
+    coord(1,1) = nodecoord(1,2);
+    coord(2,1) = nodecoord(2,2);
+
+    coord(0,2) = nodecoord(0,3);
+    coord(1,2) = nodecoord(1,3);
+    coord(2,2) = nodecoord(2,3);
+  }
+  else if(inttype == 3)
+  {
+    coord(0,0) = nodecoord(0,0);
+    coord(1,0) = nodecoord(1,0);
+    coord(2,0) = nodecoord(2,0);
+
+    coord(0,1) = nodecoord(0,1);
+    coord(1,1) = nodecoord(1,1);
+    coord(2,1) = nodecoord(2,1);
+
+    coord(0,2) = nodecoord(0,2);
+    coord(1,2) = nodecoord(1,2);
+    coord(2,2) = nodecoord(2,2);
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get nodes for hermit smoothing                           farah 09/14|
+ *----------------------------------------------------------------------*/
+bool  MORTAR::MortarElement::HermitEleNodes(DRT::Node** nodes, int status)
+{
+  int numNodes = NumNode();
+
+  if(Shape()!=DRT::Element::line2)
+    dserror("Hermit smoothing only for line2 elements!!!");
+  if(numNodes != 2)
+    dserror("ERROR: Number of nodes per element must be 2");
+
+  int eleId = Id();
+  DRT::Node** mynodes = Nodes();
+  if(!mynodes) dserror("ERROR: SmoothEleNodes: Null pointer!");
+
+  MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
+  MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
+
+  DRT::Node* myadjacentnode   = 0;
+  DRT::Node** myAdjacentNodes = 0;
+
+  if(status == 1)
+  {
+    DRT::Element** myelements0 = mymrtrnode0->Elements();
+    if(!myelements0) dserror("ERROR: SmoothEleNodes: Null pointer!");
+
+    if(myelements0[0]->Id() == eleId && myelements0[1]->Id() != eleId)
+      myAdjacentNodes = myelements0[1]->Nodes();
+    else if(myelements0[1]->Id() == eleId && myelements0[0]->Id() != eleId)
+      myAdjacentNodes = myelements0[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode0->Id() && myAdjacentNodes[1]->Id() == mymrtrnode0->Id())
+      myadjacentnode = myAdjacentNodes[0];
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode0->Id() && myAdjacentNodes[1]->Id() != mymrtrnode0->Id())
+      myadjacentnode =  myAdjacentNodes[1];
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodes[0] = myadjacentnode;
+    nodes[1] =  mynodes[0];
+    nodes[2] =  mynodes[1];
+
+    DRT::Element** myelements1 = mymrtrnode1->Elements();
+    if(!myelements1) dserror("ERROR: SmoothEleNodes: Null pointer!");
+
+    if(myelements1[0]->Id() == eleId && myelements1[1]->Id() != eleId)
+      myAdjacentNodes = myelements1[1]->Nodes();
+    else if(myelements1[0]->Id() != eleId && myelements1[1]->Id() == eleId)
+      myAdjacentNodes = myelements1[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode1->Id() && myAdjacentNodes[1]->Id() == mymrtrnode1->Id())
+      myadjacentnode = myAdjacentNodes[0];
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode1->Id() && myAdjacentNodes[1]->Id() != mymrtrnode1->Id())
+      myadjacentnode = myAdjacentNodes[1];
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodes[3] = myadjacentnode;
+  }
+  else if(status == 2)
+  {
+    DRT::Element** myelements1 = mymrtrnode1->Elements();
+    if(!myelements1) dserror("ERROR: SmoothEleNodes: Null pointer!");
+
+    if(mymrtrnode1->NumElement() < 2)
+      dserror("ERROR: Only one element belongs to chosen node 1");
+
+    if(myelements1[0]->Id() == eleId && myelements1[1]->Id() != eleId)
+      myAdjacentNodes = myelements1[1]->Nodes();
+    else if(myelements1[0]->Id() != eleId && myelements1[1]->Id() == eleId)
+      myAdjacentNodes = myelements1[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode1->Id() && myAdjacentNodes[1]->Id() == mymrtrnode1->Id())
+      myadjacentnode = myAdjacentNodes[0];
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode1->Id() && myAdjacentNodes[1]->Id() != mymrtrnode1->Id())
+      myadjacentnode = myAdjacentNodes[1];
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodes[2] = myadjacentnode;
+    nodes[0] =  mynodes[0];
+    nodes[1] =  mynodes[1];
+  }
+  else if(status == 3)
+  {
+    DRT::Element** myelements0 = mymrtrnode0->Elements();
+    if(!myelements0) dserror("ERROR: SmoothEleNodes: Null pointer!");
+
+    if(mymrtrnode0->NumElement() < 2)
+    {
+      std::cout << "Number of elements of node 0 = " << mymrtrnode0->NumElement() << std::endl;
+      std::cout << "Number of elements of node 1 = " << mymrtrnode1->NumElement() << std::endl;
+      dserror("ERROR: Only one element belongs to chosen node 0");
+    }
+
+    if(myelements0[0]->Id() == eleId && myelements0[1]->Id() != eleId)
+      myAdjacentNodes = myelements0[1]->Nodes();
+    else if(myelements0[1]->Id() == eleId && myelements0[0]->Id() != eleId)
+      myAdjacentNodes = myelements0[0]->Nodes();
+    else
+      dserror("ERROR: Element Ids do not match");
+
+    if(myAdjacentNodes[0]->Id() != mymrtrnode0->Id() && myAdjacentNodes[1]->Id() == mymrtrnode0->Id())
+      myadjacentnode = myAdjacentNodes[0];
+    else if(myAdjacentNodes[0]->Id() == mymrtrnode0->Id() && myAdjacentNodes[1]->Id() != mymrtrnode0->Id())
+      myadjacentnode = myAdjacentNodes[1];
+    else
+      dserror("ERROR: Adjacent nodes cant be found");
+
+    nodes[0] = myadjacentnode;
+    nodes[1] = mynodes[0];
+    nodes[2] = mynodes[1];
+  }
+  else
+    dserror("ERROR: Status must be 0,1,2");
 
   return true;
 }

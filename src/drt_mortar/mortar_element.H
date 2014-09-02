@@ -211,6 +211,7 @@ public:
   {
     lin1D,                      // displacements / std LM linear 1D
     quad1D,                     // displacements / std LM quadratic 1D
+    hermite1D,                  // displacements / std LM hermit 1D
     lin2D,                      // displacements / std LM linear 2D
     bilin2D,                    // displacements / std LM bilinear 2D
     quad2D,                     // displacements / std LM quadratic 2D
@@ -219,6 +220,7 @@ public:
 
     lindual1D,                  // dual LM linear 1D
     quaddual1D,                 // dual LM quadratic 1D
+    hermite1Ddual,              // dual LM hermit 1D
     lindual2D,                  // dual LM linear 2D
     bilindual2D,                // dual LM bilinear 2D
     quaddual2D,                 // dual LM quadratic 2D
@@ -235,6 +237,10 @@ public:
     quad1D_edge1,               // crosspoint LM modification 1D
     quaddual1D_edge0,           // crosspoint LM modification 1D
     quaddual1D_edge1,           // crosspoint LM modification 1D
+    hermite1D_edge0,            // boundary LM modification 1D
+    hermite1D_edge1,            // boundary LM modification 1D
+    hermite1Ddual_edge0,        // boundary LM modification 1D
+    hermite1Ddual_edge1,        // boundary LM modification 1D
 
     quad1D_only_lin,            // quad->lin standard LM modification 1D
     quad2D_only_lin,            // quad->lin standard LM modification 2D
@@ -710,6 +716,26 @@ public:
   virtual void InitializeDataContainer();
 
   /*!
+  \brief get some information from adjacent elements for hermit smoothing
+         status[0] ... type of boundary modification
+         status[1] ... numnode for smoothing ele
+
+  */
+  virtual bool AdjEleStatus(int* status);
+
+  /*!
+  \brief get adjacent nodes for hermit smoothing
+
+  */
+  virtual bool HermitEleNodes(DRT::Node** nodes, int status);
+
+  /*!
+  \brief get node coordinates from adj elements
+
+  */
+  virtual bool AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int inttype);
+
+  /*!
   \brief delete all found meles for this element
 
   */
@@ -723,6 +749,13 @@ public:
 
   */
   virtual void ResetDataContainer();
+
+  // hermit specific
+  /*!
+  \brief bool for hermit smoothing
+
+  */
+  virtual bool& IsHermite() { return hermite_; };
 
   // nurbs specific:
 
@@ -746,21 +779,25 @@ public:
   */
   virtual std::vector<Epetra_SerialDenseVector>& Knots() { return mortarknots_; };
 
+
   //@}
 
 protected:
 
-  DRT::Element::DiscretizationType              shape_;      // shape of this element
-  bool                                          isslave_;    // indicating slave or master side
-  bool                                          attached_;   // bool whether an element contributes to M
+  DRT::Element::DiscretizationType              shape_;        // shape of this element
+  bool                                          isslave_;      // indicating slave or master side
+  bool                                          attached_;     // bool whether an element contributes to M
 
-  Teuchos::RCP<MORTAR::MortarEleDataContainer>  modata_;     // additional information
+  Teuchos::RCP<MORTAR::MortarEleDataContainer>  modata_;       // additional information
+
+  // hermit smoothing
+  bool                                          hermite_;        // bool for hermit smoothing
 
   // nurbs specific:
   bool                                          nurbs_;
-  std::vector<Epetra_SerialDenseVector>         mortarknots_;// mortar element knot vector
-  double                                        normalfac_;  // factor for normal orientation
-  bool                                          zero_sized_; // zero-sized element: if true: no integration for this element
+  std::vector<Epetra_SerialDenseVector>         mortarknots_;  // mortar element knot vector
+  double                                        normalfac_;    // factor for normal orientation
+  bool                                          zero_sized_;   // zero-sized element: if true: no integration for this element
 
 }; // class MortarElement
 

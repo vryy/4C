@@ -1647,6 +1647,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("LM_NODAL_SCALE","No","If chosen a nodal scaling factor is calculated for each LM",
                                yesnotuple,yesnovalue,&mortar);
 
+  setStringToIntegralParameter<int>("HERMITE_SMOOTHING","No","If chosen hermite interface smoothing is activated for line2 elements",
+                               yesnotuple,yesnovalue,&mortar);
+
   setStringToIntegralParameter<int>("MESH_RELOCATION","Initial","Type of mesh relocation",
       tuple<std::string>("Initial","initial",
                          "Every_Timestep", "every_timestep",

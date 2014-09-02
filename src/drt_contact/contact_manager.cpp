@@ -540,9 +540,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
 
           // store nurbs specific data to node
           cele->ZeroSized() = zero_size;
-          cele->Knots() = mortarknots;
+          cele->Knots()     = mortarknots;
           cele->NormalFac() = normalfac;
         }
+
+        cele->IsHermite() = DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING");
+
 
         interface->AddCoElement(cele);
       } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
@@ -1076,12 +1079,32 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   cparams.setParameters(tsic);
   cparams.set<double>("TIMESTEP", stru.get<double>("TIMESTEP"));
 
+  // *********************************************************************
+  // Smooth contact
+  // *********************************************************************
   // NURBS PROBLEM?
   if (distype == "Nurbs")
     cparams.set<bool>("NURBS", true);
   else
     cparams.set<bool>("NURBS", false);
 
+  if (DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING") == true and Comm().NumProc()!=1)
+    dserror("Hermit smoothing only for serial problems. It requires general overlap of 2!");
+
+  if (DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING") == true and dim==3)
+    dserror("Hermit smoothing only for 2D cases!");
+
+  if (DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING") == true and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE")!= INPAR::MORTAR::inttype_elements)
+    dserror("Hermit smoothing only for element-based integration!");
+
+  if (DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING") == true and
+      DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == false)
+    dserror("ERROR: Use hermit smoothing with MESH_ADAPTIVE_CN!!!");
+
+  if (DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING") == true)
+    std::cout <<"\n \n Warning: Hermite smoothing still experimental!" << std::endl;
+  // *********************************************************************
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types

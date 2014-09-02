@@ -2373,7 +2373,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
      std::vector<MORTAR::MortarElement*> meles,
      bool *boundary_ele)
 {
-  // *********************************************************************
+  // ********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
 
@@ -2383,10 +2383,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
 
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
-
-  // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
-  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   // check input data
   for (int i=0;i<(int)meles.size();++i)
@@ -2404,18 +2400,43 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   double sxib=1.0;
 
   // number of nodes (slave, master)
-  int nrow = sele.NumNode();
   int ndof = Dim();
+  int nrow = 0 ;
+  int sstatus = -1;
+  int sfeatures[2] = {0,0};
+
+  DRT::Node** mynodes = NULL;
+  DRT::Node* hnodes[4] = {0,0,0,0};
+  // for hermit smoothing
+  if (sele.IsHermite())
+  {
+    sele.AdjEleStatus(sfeatures);
+    sstatus = sfeatures[0];
+    nrow    = sfeatures[1];
+    sele.HermitEleNodes(hnodes, sfeatures[0]);
+    mynodes=hnodes;
+  }
+  else
+  {
+    nrow    = sele.NumNode();
+    mynodes = sele.Nodes();
+  }
+
+  // get slave element nodes themselves
+  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
-  static LINALG::SerialDenseVector sval(nrow);
-  static LINALG::SerialDenseMatrix sderiv(nrow,1);
-  static LINALG::SerialDenseVector lmval(nrow);
-  static LINALG::SerialDenseMatrix lmderiv(nrow,1);
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,1);
 
   // get slave nodal coords for Jacobian / GP evaluation
-  static LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix scoord(3,nrow);
+  if(sele.IsHermite())
+    sele.AdjNodeCoords(scoord, sstatus);
+  else
+    sele.GetNodalCoords(scoord);
 
   // nodal coords from previous time step and lagrange mulitplier
   Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
@@ -2431,7 +2452,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   std::vector<std::vector<GEN::pairedvector<int,double> > > dualmap(nrow,std::vector<GEN::pairedvector<int,double> >(nrow,ndof*nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() ==INPAR::MORTAR::shape_petrovgalerkin)
       && (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null ||
-          sele.Shape()==MORTAR::MortarElement::nurbs3))
+          sele.Shape()==MORTAR::MortarElement::nurbs3 || sele.IsHermite()))
   {
     //duallin=true;
     sele.DerivShapeDual(dualmap);
@@ -2489,7 +2510,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
       sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
       // evaluate trace space shape functions
-      sele.EvaluateShape(sxi,sval,sderiv,nrow);
+      sele.EvaluateShape(sxi,sval,sderiv,nrow,false);
 
       //****************************************************************************************************************
       //                loop over all Master Elements
@@ -2498,23 +2519,42 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
       {
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
+        if(sele.IsHermite())
+          MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPointHermit(sele,sxi,*meles[nummaster],mxi);
+        else
+          MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
 
         // gp on mele?
         if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
         {
           kink_projection=true;
 
-          int ncol      =   meles[nummaster]->NumNode();
+          int ncol      =   0;
+          int mstatus = -1;
+          int mfeatures[2] = {0,0};
+
+          // for hermit smoothing
+          if (meles[nummaster]->IsHermite())
+          {
+            meles[nummaster]->AdjEleStatus(mfeatures);
+            mstatus = mfeatures[0];
+            ncol = mfeatures[1];
+          }
+          else
+            ncol = meles[nummaster]->NumNode();;
+
           LINALG::SerialDenseVector mval(ncol);
           LINALG::SerialDenseMatrix mderiv(ncol,1);
 
           // get master nodal coords for Jacobian / GP evaluation
-          LINALG::SerialDenseMatrix mcoord(3,meles[nummaster]->NumNode());
-          meles[nummaster]->GetNodalCoords(mcoord);
+          LINALG::SerialDenseMatrix mcoord(3,ncol);
+          if(meles[nummaster]->IsHermite())
+            meles[nummaster]->AdjNodeCoords(mcoord, mstatus);
+          else
+            meles[nummaster]->GetNodalCoords(mcoord);
 
           // evaluate trace space shape functions
-          meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol);
+          meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
 
           // get directional derivatives of sxia, sxib, mxia, mxib --> derivatives of mxia/mxib not required
           std::vector<GEN::pairedvector<int,double> > ximaps(4,linsize+ndof*ncol);
@@ -2549,7 +2589,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           //**********************************************************************
           // evaluate at GP and lin char. quantities
           //**********************************************************************
-
           // integrate D and M
           GP_DM(sele,*meles[nummaster],lmval,sval,mval,dxdsxi,wgt,nrow,ncol,ndof,bound);
 
@@ -2742,13 +2781,39 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(sele.NumNode());
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(mele.NumNode());
-  const int numsnode = sele.NumNode();
-  const int nummnode = mele.NumNode();
-  const int ndof     = Dim();
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
+  int numsnode = sele.NumNode();
+  int nummnode = mele.NumNode();
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+
+  int ndof = Dim();
+
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    numsnode = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    nummnode = mfeatures[1];
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes=mele.Nodes();
+
+  std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
+  std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
 
   for (int i=0;i<numsnode;++i)
   {
@@ -2767,19 +2832,19 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   double psxib[2] = {sxib, 0.0};
   double pmxia[2] = {mxia, 0.0};
   double pmxib[2] = {mxib, 0.0};
-  static LINALG::SerialDenseVector valsxia(numsnode);
-  static LINALG::SerialDenseVector valsxib(numsnode);
-  static LINALG::SerialDenseVector valmxia(nummnode);
-  static LINALG::SerialDenseVector valmxib(nummnode);
-  static LINALG::SerialDenseMatrix derivsxia(numsnode,1);
-  static LINALG::SerialDenseMatrix derivsxib(numsnode,1);
-  static LINALG::SerialDenseMatrix derivmxia(nummnode,1);
-  static LINALG::SerialDenseMatrix derivmxib(nummnode,1);
+  LINALG::SerialDenseVector valsxia(numsnode);
+  LINALG::SerialDenseVector valsxib(numsnode);
+  LINALG::SerialDenseVector valmxia(nummnode);
+  LINALG::SerialDenseVector valmxib(nummnode);
+  LINALG::SerialDenseMatrix derivsxia(numsnode,1);
+  LINALG::SerialDenseMatrix derivsxib(numsnode,1);
+  LINALG::SerialDenseMatrix derivmxia(nummnode,1);
+  LINALG::SerialDenseMatrix derivmxib(nummnode,1);
 
-  sele.EvaluateShape(psxia,valsxia,derivsxia,numsnode);
-  sele.EvaluateShape(psxib,valsxib,derivsxib,numsnode);
-  mele.EvaluateShape(pmxia,valmxia,derivmxia,nummnode);
-  mele.EvaluateShape(pmxib,valmxib,derivmxib,nummnode);
+  sele.EvaluateShape(psxia,valsxia,derivsxia,numsnode,false);
+  sele.EvaluateShape(psxib,valsxib,derivsxib,numsnode,false);
+  mele.EvaluateShape(pmxia,valmxia,derivmxia,nummnode,false);
+  mele.EvaluateShape(pmxib,valmxib,derivmxib,nummnode,false);
 
   // compute factors and leading constants for master
   double cmxia = 0.0;
@@ -3055,13 +3120,39 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
-  std::vector<MORTAR::MortarNode*> smrtrnodes(sele.NumNode());
-  std::vector<MORTAR::MortarNode*> mmrtrnodes(mele.NumNode());
-  const int numsnode = sele.NumNode();
-  const int nummnode = mele.NumNode();
-  const int ndof     = Dim();
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+  int numsnode = sele.NumNode();
+  int nummnode = mele.NumNode();
+
+  int ndof     = Dim();
+
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    numsnode = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    nummnode = mfeatures[1];
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes=mele.Nodes();
+
+  std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
+  std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
 
   for (int i=0;i<numsnode;++i)
   {
@@ -3078,13 +3169,13 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   // we also need shape function derivs in A and B
   double psxigp[2] = {sxigp, 0.0};
   double pmxigp[2] = {mxigp, 0.0};
-  static LINALG::SerialDenseVector valsxigp(numsnode);
-  static LINALG::SerialDenseVector valmxigp(nummnode);
-  static LINALG::SerialDenseMatrix derivsxigp(numsnode,1);
-  static LINALG::SerialDenseMatrix derivmxigp(nummnode,1);
+  LINALG::SerialDenseVector valsxigp(numsnode);
+  LINALG::SerialDenseVector valmxigp(nummnode);
+  LINALG::SerialDenseMatrix derivsxigp(numsnode,1);
+  LINALG::SerialDenseMatrix derivmxigp(nummnode,1);
 
-  sele.EvaluateShape(psxigp,valsxigp,derivsxigp,numsnode);
-  mele.EvaluateShape(pmxigp,valmxigp,derivmxigp,nummnode);
+  sele.EvaluateShape(psxigp,valsxigp,derivsxigp,numsnode,false);
+  mele.EvaluateShape(pmxigp,valmxigp,derivmxigp,nummnode,false);
 
   // we also need the GP slave coordinates + normal
   double sgpn[3] = {0.0,0.0,0.0};
@@ -3537,10 +3628,29 @@ void inline CONTACT::CoIntegrator::GP_DM(
      int& ndof, bool& bound)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  if(!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  DRT::Node** mnodes = mele.Nodes();
-  if(!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes=mele.Nodes();
 
   // BOUNDARY NODE MODIFICATION **********************************
   // We have modified their neighbors' dual shape functions, so we
@@ -3879,15 +3989,36 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
-  if(!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  if(!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
 
-  // number of nodes (slave, master)
-  const int nrow = sele.NumNode();
-  const int ncol = mele.NumNode();
-  const int ndof = Dim();
+  int ndof     = Dim();
+
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    nrow = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    ncol = mfeatures[1];
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes=mele.Nodes();
 
   double sgpx[3] = {0.0, 0.0, 0.0};
   double mgpx[3] = {0.0, 0.0, 0.0};
@@ -4786,10 +4917,21 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Ele_Lin(
      const GEN::pairedvector<int,double>& derivjac,
      const std::vector<std::vector<GEN::pairedvector<int,double> > >& dualmap)
 {
-  const int nrow = sele.NumNode();
-
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  DRT::Node** snodes = NULL;
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  int nrow = sele.NumNode();
+
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    nrow = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
 
   MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
@@ -5575,11 +5717,36 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
      const GEN::pairedvector<int,double>& derivjac,
      const std::vector<std::vector<GEN::pairedvector<int,double> > >& dualmap)
 {
-  const int nrow = sele.NumNode();
-  const int ncol = mele.NumNode();
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
 
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    nrow = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    ncol = mfeatures[1];
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes = mele.Nodes();
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -5596,8 +5763,9 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
     for (int k=0; k<ncol; ++k)
     {
       // global master node ID
-      int mgid = mele.Nodes()[k]->Id();
+      int mgid = mnodes[k]->Id();
       double fac = 0.0;
+
 
       // get the correct map as a reference
       std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
@@ -5625,7 +5793,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
     for (int k=0; k<nrow; ++k)
     {
       // global slave node ID
-      int sgid = sele.Nodes()[k]->Id();
+      int sgid = snodes[k]->Id();
       double fac = 0.0;
 
       // get the correct map as a reference
@@ -5658,7 +5826,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
     for (int k=0; k<ncol; ++k)
     {
       // global master node ID
-      int mgid = mele.Nodes()[k]->Id();
+      int mgid = mnodes[k]->Id();
       double fac = 0.0;
 
       // get the correct map as a reference

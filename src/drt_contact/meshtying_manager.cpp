@@ -328,6 +328,8 @@ discret_(discret)
           mtele->NormalFac() = normalfac;
         }
 
+        mtele->IsHermite() = DRT::INPUT::IntegralValue<int>(mtparams,"HERMITE_SMOOTHING") ;
+
         interface->AddMortarElement(mtele);
       } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
@@ -539,11 +541,17 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     mtparams.set<bool>("NURBS",false);
   }
 
+  // *********************************************************************
+  // smooth interfaces
+  // *********************************************************************
   // NURBS PROBLEM?
   if(distype=="Nurbs")
     mtparams.set<bool>("NURBS",true);
   else
     mtparams.set<bool>("NURBS",false);
+
+  if (DRT::INPUT::IntegralValue<int>(mtparams,"HERMITE_SMOOTHING") == true)
+    dserror("Hermite smoothing only for mortar contact!");
 
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 

@@ -760,6 +760,7 @@ public:
   void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length,
       double ltxi);
 
+  void DerivAveragedNormalHermit(double length, double ltxi);
   /*!
    \brief Initializes the data container of the node
 

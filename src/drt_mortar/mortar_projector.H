@@ -98,6 +98,10 @@ public:
                                const double* auxn,
                                MORTAR::MortarElement& ele,
                                double* xi, double& par) = 0;
+
+  virtual bool ProjectGaussPointHermit(MORTAR::MortarElement& gpele,
+                                       const double* gpeta, MORTAR::MortarElement& ele,
+                                       double* xi) = 0;
 }; // class MortarProjector
 
 /*!
@@ -213,6 +217,28 @@ public:
                            const double* gpeta,
                            MORTAR::MortarElement& ele,
                            double* xi, double& par)
+  {
+    dserror("Called ele-based projection for segment-based integration!!!");
+    return false;
+  };
+
+  /*!
+  \brief Project a Gauss point onto an element along GP normal for Hermit
+
+  Used to project a slave side GP onto an element of the master side
+
+  This method will compute the coordinates of a projection of a Gauss
+  point in the local coordinate system of an element.
+
+  \param gpele (in): Slave element containing GP to project
+  \param gpeta (in): Local coordinates of GP on gpele
+  \param ele (in)  : Master element to project on
+  \param xi (out)  : Local coordinates of projection on master element
+
+  */
+  bool ProjectGaussPointHermit(MORTAR::MortarElement& gpele,
+                               const double* gpeta, MORTAR::MortarElement& ele,
+                               double* xi)
   {
     dserror("Called ele-based projection for segment-based integration!!!");
     return false;
@@ -439,6 +465,24 @@ public:
     return false;
   };
 
+  /*!
+  \brief Project a Gauss point onto an element along GP normal for Hermit
+
+  Used to project a slave side GP onto an element of the master side
+
+  This method will compute the coordinates of a projection of a Gauss
+  point in the local coordinate system of an element.
+
+  \param gpele (in): Slave element containing GP to project
+  \param gpeta (in): Local coordinates of GP on gpele
+  \param ele (in)  : Master element to project on
+  \param xi (out)  : Local coordinates of projection on master element
+
+  */
+  bool ProjectGaussPointHermit(MORTAR::MortarElement& gpele,
+                               const double* gpeta, MORTAR::MortarElement& ele,
+                               double* xi);
+
 protected:
 
   /*!
@@ -495,6 +539,23 @@ protected:
                                  MORTAR::MortarElement& ele,
                                  const double* eta,
                                  const double& alpha);
+
+  /*!
+  \brief Evaluate F for Gauss point projection (2D Hermit)
+
+  */
+  double EvaluateFGaussPointHermit(const double* gpx,
+                                   const double* gpn,
+                                   MORTAR::MortarElement& ele,
+                                   const double* eta);
+
+  /*!
+  \brief Evaluate GradF for Gauss point projection (2D Hermit)
+
+  */
+  double EvaluateGradFGaussPointHermit(const double* gpn,
+                                       MORTAR::MortarElement& ele,
+                                       const double* eta);
 };
 }  // namespace MORTAR
 
