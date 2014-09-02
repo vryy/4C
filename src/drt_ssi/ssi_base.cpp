@@ -24,6 +24,8 @@
 
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_particle/binning_strategy.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
@@ -95,7 +97,6 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
   //1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
-
   if(!scatradis->Filled())
     scatradis->FillComplete();
 
@@ -104,5 +105,47 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
   }
   else
-    dserror("Structure AND ScaTra discretization present. This is not supported.");
+  {
+   // dserror("Structure AND ScaTra discretization present. This is not supported.");
+
+    std::map<std::string,std::string> conditions_to_copy;
+
+    conditions_to_copy.insert(std::pair<std::string,std::string>("TransportDirichlet","Dirichlet"));
+    conditions_to_copy.insert(std::pair<std::string,std::string>("TransportPointNeumann","PointNeumann"));
+
+    // copy selected conditions to the new discretization (and rename them if desired)
+    for (std::map<std::string,std::string>::const_iterator conditername = conditions_to_copy.begin();
+        conditername != conditions_to_copy.end();
+        ++conditername)
+    {
+      std::vector<DRT::Condition*> conds;
+      scatradis->GetCondition((*conditername).first, conds);
+      for (unsigned i=0; i<conds.size(); ++i)
+      {
+        // We use the same nodal ids and therefore we can just copy the conditions.
+        // The string-map gives the new condition names
+        // (e.g. renaming from TransportDirichlet to Dirichlet)
+        scatradis->SetCondition((*conditername).second, Teuchos::rcp(new DRT::Condition(*conds[i])));
+      }
+      conds.clear();
+    }
+
+    // redistribute discr. with help of binning strategy
+    if(scatradis->Comm().NumProc()>1)
+    {
+      scatradis->FillComplete();
+      structdis->FillComplete();
+      // create vector of discr.
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      dis.push_back(structdis);
+      dis.push_back(scatradis);
+
+      /// binning strategy is created and parallel redistribution is performed
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis));
+    }
+  }
+
+
+
 }
