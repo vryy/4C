@@ -96,7 +96,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
     }
     // TODO: check distype
 
-    localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
+    if (localSolver_ == Teuchos::null)
+      localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
   }
   else
     dserror("Only works for HDG fluid elements");
