@@ -345,26 +345,6 @@ public:
     return firsttimestep_;
   };
 
-  LINALG::TMatrix<double, 3*numnodes*numnodalvalues,1>* GetEle1PositionsOld()
-  {
-    if (BEAMCONTACT::Norm(xi1_old_) < 1.1 and BEAMCONTACT::Norm(xi2_old_) < 1.1)
-    {
-      return &ele1pos_old_;
-    }
-    else
-      return NULL;
-  };
-
-  LINALG::TMatrix<double, 3*numnodes*numnodalvalues,1>* GetEle2PositionsOld()
-  {
-    if (BEAMCONTACT::Norm(xi1_old_) < 1.1 and BEAMCONTACT::Norm(xi2_old_) < 1.1)
-    {
-      return &ele2pos_old_;
-    }
-    else
-      return NULL;
-  };
-
   /*!
   \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
   */
@@ -381,13 +361,8 @@ public:
   */
   double GetEnergy()
   {
-    #ifndef QUADPENALTY
-      TYPE test=0.5*pp_*gap_*gap_;
-      return BEAMCONTACT::CastToDouble(test);
-    #else
-      TYPE test= -1.0/3.0*pp_*gap_*gap_*gap_;
-      return BEAMCONTACT::CastToDouble(test);
-    #endif
+    TYPE energy=0.5*pp_*gap_*gap_;
+    return BEAMCONTACT::CastToDouble(energy);
   };
   //@}
 

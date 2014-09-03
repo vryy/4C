@@ -3309,9 +3309,6 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesSte
       nodedistance2(i) = BEAMCONTACT::CastToDouble(ele2pos_(i)-ele2pos_(3*numnodalvalues+i));
       diffvector(i) = midpos1(i) - midpos2(i);
     }
-    //TODO:
-  //  if(diffvector.Norm2()<0.5*nodedistance1.Norm2()+0.5*nodedistance2.Norm2()+2*MAXDELTADFAC*searchboxinc_)
-   //   dserror("The distance between two beam elements found the first time within this step is not allowed to undershoot a certain minimum value! Choose smaller time step or larger search radius!");
   }
 
 

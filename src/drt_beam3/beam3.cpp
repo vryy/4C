@@ -258,24 +258,24 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3::Shape() const
   int numnodes = NumNode();
   switch(numnodes)
   {
-  	case 2:
-			return line2;
-			break;
-  	case 3:
-			return line3;
-			break;
-  	case 4:
-  		return line4;
-  		break;
-  	case 5:
-  		return line5;
-  		break;
+    case 2:
+      return line2;
+      break;
+    case 3:
+      return line3;
+      break;
+    case 4:
+      return line4;
+      break;
+    case 5:
+      return line5;
+      break;
     case 6:
       return line6;
       break;
-  	default:
-			dserror("Only Line2, Line3, Line4, Line5 and Line6 elements are implemented.");
-			break;
+    default:
+      dserror("Only Line2, Line3, Line4, Line5 and Line6 elements are implemented.");
+      break;
   }
 
   return dis_none;
@@ -324,7 +324,7 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack<6,1>(data,xactrefe_);
   AddtoPack<6,1>(data,rotinitrefe_);
   AddtoPack(data,f_);
-
+  AddtoPack<3,1>(data,Ngp_);
 
   return;
 }
@@ -373,6 +373,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack<6,1>(position,data,xactrefe_);
   ExtractfromPack<6,1>(position,data,rotinitrefe_);
   ExtractfromPack(position,data,f_);
+  ExtractfromPack<3,1>(position,data,Ngp_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -517,75 +518,75 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, Integration
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 {
-	  //setting up geometric variables for beam3 elements
+    //setting up geometric variables for beam3 elements
 
-	  for (int num=0; num<  dis.NumMyColElements(); ++num)
-	  {
-	    //in case that current element is not a beam3 element there is nothing to do and we go back
-	    //to the head of the loop
-	    if (dis.lColElement(num)->ElementType() != *this) continue;
+    for (int num=0; num<  dis.NumMyColElements(); ++num)
+    {
+      //in case that current element is not a beam3 element there is nothing to do and we go back
+      //to the head of the loop
+      if (dis.lColElement(num)->ElementType() != *this) continue;
 
-	    //if we get so far current element is a beam3 element and  we get a pointer at it
-	    DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));
-	    if (!currele) dserror("cast to Beam3* failed");
+      //if we get so far current element is a beam3 element and  we get a pointer at it
+      DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));
+      if (!currele) dserror("cast to Beam3* failed");
 
-	    //reference node position
-	    std::vector<double> xrefe;
-	    std::vector<double> rotrefe;
-	    const int nnode= currele->NumNode();
+      //reference node position
+      std::vector<double> xrefe;
+      std::vector<double> rotrefe;
+      const int nnode= currele->NumNode();
 
-	    //resize xrefe for the number of coordinates we need to store
-	    xrefe.resize(3*nnode);
-	    rotrefe.resize(3*nnode);
+      //resize xrefe for the number of coordinates we need to store
+      xrefe.resize(3*nnode);
+      rotrefe.resize(3*nnode);
 
-	    //getting element's nodal coordinates and treating them as reference configuration
-	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
-	      dserror("Cannot get nodes in order to compute reference configuration'");
-	    else
-	    {
-	      for (int node=0; node<nnode; node++) //element has k nodes
-	        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-	        {
-	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
-	        	rotrefe[node*3 + dof]= 0.0;
-	        }
-	    }
+      //getting element's nodal coordinates and treating them as reference configuration
+      if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+        dserror("Cannot get nodes in order to compute reference configuration'");
+      else
+      {
+        for (int node=0; node<nnode; node++) //element has k nodes
+          for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+          {
+            xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+            rotrefe[node*3 + dof]= 0.0;
+          }
+      }
 
-	    //SetUpReferenceGeometry is a templated function
-	    switch(nnode)
-	    {
-	  		case 2:
-	  		{
-	  			currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		case 3:
-	  		{
-	  			currele->SetUpReferenceGeometry<3>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		case 4:
-	  		{
-	  			currele->SetUpReferenceGeometry<4>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		case 5:
-	  		{
-	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
-	  			break;
-	  		}
+      //SetUpReferenceGeometry is a templated function
+      switch(nnode)
+      {
+        case 2:
+        {
+          currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+          break;
+        }
+        case 3:
+        {
+          currele->SetUpReferenceGeometry<3>(xrefe,rotrefe);
+          break;
+        }
+        case 4:
+        {
+          currele->SetUpReferenceGeometry<4>(xrefe,rotrefe);
+          break;
+        }
+        case 5:
+        {
+          currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
+          break;
+        }
         case 6:
         {
           currele->SetUpReferenceGeometry<6>(xrefe,rotrefe);
           break;
         }
-	  		default:
-	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
-	  	}
+        default:
+          dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
+      }
 
-	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
+    } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
-	  return 0;
+    return 0;
 }
 
 
@@ -599,7 +600,7 @@ void DRT::ELEMENTS::Beam3::SetReferenceLength(const double& scalefac)
   xactrefe_(4,0) = xactrefe_(1,0) + (scalefac * (xactrefe_(4,0)-xactrefe_(1,0)));
   xactrefe_(5,0) = xactrefe_(2,0) + (scalefac * (xactrefe_(5,0)-xactrefe_(2,0)));
 
-	// store linker coordinates
+  // store linker coordinates
   std::vector<double> xrefe(6);
   std::vector<double> rotrefe(6);
   for (int k=0; k<6; k++)
@@ -610,7 +611,7 @@ void DRT::ELEMENTS::Beam3::SetReferenceLength(const double& scalefac)
 
   // call function to update the linker with the new coordinates
   SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
-	return;
+  return;
 }
 
 

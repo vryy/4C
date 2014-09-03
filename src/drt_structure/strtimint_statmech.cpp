@@ -1678,7 +1678,7 @@ void STR::TimIntStatMech::BeamContactAugLag()
   beamcman_->ResetUzawaIter();
   beamcman_->ResetAlllmuzawa();
 
-
+  beamcman_->UpdateConstrNorm();
   return;
 }
 

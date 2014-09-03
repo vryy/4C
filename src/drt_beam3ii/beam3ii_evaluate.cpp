@@ -38,10 +38,10 @@ Maintainer: Christoph Meier
 int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
     std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseMatrix& elemat1, //nonlinear stiffness matrix
+    Epetra_SerialDenseMatrix& elemat2, //nonlinear mass matrix
+    Epetra_SerialDenseVector& elevec1, //nonlinear internal (elastic) forces
+    Epetra_SerialDenseVector& elevec2, //nonlinear inertia forces
     Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Beam3ii::ActionType act = Beam3ii::calc_none;
@@ -365,7 +365,6 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     } //end of section in which numerical approximation for stiffness matrix is computed
     */
 
-
     }
     break;
     case calc_struct_update_istep:
@@ -617,6 +616,10 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
   gamma.MultiplyTN(Lambda,rprime);
   gamma(0) = gamma(0) - 1.0;
 
+  #ifdef BEAM3IIGAMMAREF
+    gamma -= gammaref_[0];
+  #endif
+
   /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by
    *a computation according to eq. (2.12), Jelenic 1999*/
   if(NumNode()>2)
@@ -732,6 +735,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
           (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
           (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
         }
+        Eint_=(*intenergy)(0);
       }
       else if(intenergy->M()==6)
       {
@@ -897,7 +901,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);
 
-
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
      *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
      *in implementation, whereas for the lower left block we have to multiply the weight by the jacobi
@@ -993,7 +996,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
     }
   }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-
 
   //calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
   //finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
@@ -1108,7 +1110,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         //(for testing purposes, not recommended by Jelenic). In the predictor step of the time integration the following
         //formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration predictor.
         //This fact has to be reflected in a consistent manner by the choice of the predictor in the input file:
-        //TODO: Check Predictor!!!
         if (materialintegration)
         {
           for (int i=0;i<3;i++)
@@ -1268,6 +1269,10 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
         ekintrans.MultiplyTN(r_t,r_t);
         Ekin_+=0.5*(ekinrot.Norm2() + rho*crosssec_*ekintrans.Norm2())*jacobimass_[gp]*wgtmass;
+        kintorsionenergy_+=0.5* Wnewmass(0)*Jp_Wnewmass(0)*jacobimass_[gp]*wgtmass;
+        kinbendingenergy_+=0.5* Wnewmass(1)*Jp_Wnewmass(1)*jacobimass_[gp]*wgtmass;
+        kinbendingenergy_+=0.5* Wnewmass(2)*Jp_Wnewmass(2)*jacobimass_[gp]*wgtmass;
+        kintransenergy_+=0.5*rho*crosssec_*ekintrans.Norm2()*jacobimass_[gp]*wgtmass;
 
         Jp_Wnewmass.Multiply(Jp,Wnewmass);
 
@@ -1334,12 +1339,16 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     Ngp_ = stressN;
   }
 
-    /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
-   * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
-   * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
-   * the element does not attach this special vector to params the following method is just doing nothing, which means that for
-   * any ordinary problem of structural mechanics it may be ignored*/
-   CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
+  /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
+  * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
+  * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
+  * the element does not attach this special vector to params the following method is just doing nothing, which means that for
+  * any ordinary problem of structural mechanics it may be ignored*/
+  #ifndef BEAM3IICONSTSTOCHFORCE
+    CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
+  #else
+    CalcBrownian<nnode,3,6,3>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
+  #endif
 
 //  string action = params.get<string>("action","calc_none");
 //  if (action=="calc_struct_nlnstiff")
@@ -1669,7 +1678,8 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& p
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = std::pow((4*Iyy_/PI),0.5);
-  double artificial = 4000;//50;  20000//50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
+  //TODO: Here the damping constants are artificially enhanced!!!
+  double artificial = 4000;//4000;//50;  20000//50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
 
   //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
@@ -1701,7 +1711,11 @@ int DRT::ELEMENTS::Beam3ii::HowManyRandomNumbersINeed()
 {
   /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
    *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
-  return (4*NumNode());
+  #ifndef BEAM3IICONSTSTOCHFORCE
+    return (4*NumNode());
+  #else
+    return (3);
+  #endif
 
 }
 
@@ -2040,14 +2054,26 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
         for(int l=0; l<ndim; l++)
         {
           if(force != NULL)
-            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
+          {
+            #ifndef BEAM3IICONSTSTOCHFORCE
+              (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
+            #else
+              (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
+            #endif
+          }
+
 
           if(stiffmatrix != NULL)
             //loop over all column nodes
             for (int j=0; j<nnode; j++)
             {
-              (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
-              (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              #ifndef BEAM3IICONSTSTOCHFORCE
+                (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+                (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              #else
+                (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+                (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              #endif
             }
         }
   }
@@ -2190,7 +2216,6 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList& params,
 
 
   //now start with evaluation of force vectors and stiffness matrices
-
 
 
   /*if(force->Norm2()>100)

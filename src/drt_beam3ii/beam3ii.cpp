@@ -158,14 +158,14 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     ;
 }
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ii::Beam3ii(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
-eps_(0.0),
+eps_(0.0),                                //The class variables 1) - 2) are resized in the methods SetUpReferenceGeometry() and ReadElement()
+Ngp_(LINALG::Matrix<3,1>(true)),
 nodeI_(0),
 nodeJ_(0),
 crosssec_(0),
@@ -179,7 +179,10 @@ jacobinode_(0),
 Ekin_(0.0),
 Eint_(0.0),
 L_(0.0),
-P_(0.0)
+P_(0.0),
+kintorsionenergy_(0.0),
+kinbendingenergy_(0.0),
+kintransenergy_(0.0)
 {
   return;
 }
@@ -190,6 +193,8 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
  eps_(old.eps_),
+ f_(old.f_),                                                //1)
+ Ngp_(old.Ngp_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -199,18 +204,21 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  wnewmass_(old.wnewmass_),
  aconvmass_(old.aconvmass_),
  anewmass_(old.anewmass_),
- amodconvmass_(old.amodconvmass_),
- amodnewmass_(old.amodnewmass_),
  rttconvmass_(old.rttconvmass_),
  rttnewmass_(old.rttnewmass_),
  rttmodconvmass_(old.rttmodconvmass_),
  rttmodnewmass_(old.rttmodnewmass_),
  rtconvmass_(old.rtconvmass_),
  rtnewmass_(old.rtnewmass_),
+ dispconvmass_(old. dispconvmass_),
+ dispnewmass_(old. dispnewmass_),
+ amodconvmass_(old.amodconvmass_),
+ amodnewmass_(old.amodnewmass_),
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
  kapparef_(old.kapparef_),
+ gammaref_(old.gammaref_),                                  //2)
  nodeI_(old.nodeI_),
  nodeJ_(old.nodeJ_),
  crosssec_(old.crosssec_),
@@ -224,7 +232,10 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Ekin_(old.Ekin_),
  Eint_(old.Eint_),
  L_(old.L_),
- P_(old.P_)
+ P_(old.P_),
+ kintorsionenergy_(old.kintorsionenergy_),
+ kinbendingenergy_(old.kinbendingenergy_),
+ kintransenergy_(old.kintransenergy_)
 {
   return;
 }
@@ -265,21 +276,21 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
   int numnodes = NumNode();
   switch(numnodes)
   {
-  	case 2:
-			return line2;
-			break;
-  	case 3:
-			return line3;
-			break;
-  	case 4:
-  		return line4;
-  		break;
-  	case 5:
-  		return line5;
-  		break;
-  	default:
-			dserror("Only Line2, Line3 and Line4 elements are implemented.");
-			break;
+    case 2:
+      return line2;
+      break;
+    case 3:
+      return line3;
+      break;
+    case 4:
+      return line4;
+      break;
+    case 5:
+      return line5;
+      break;
+    default:
+      dserror("Only Line2, Line3 and Line4 elements are implemented.");
+      break;
   }
 
   return dis_none;
@@ -334,6 +345,9 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,f_);
   AddtoPack(data,Ekin_);
   AddtoPack(data,Eint_);
+  AddtoPack(data,kintorsionenergy_);
+  AddtoPack(data,kinbendingenergy_);
+  AddtoPack(data,kintransenergy_);
   AddtoPack<3,1>(data,L_);
   AddtoPack<3,1>(data,P_);
   AddtoPack<3,1>(data,amodnewmass_);
@@ -394,6 +408,9 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,f_);
   ExtractfromPack(position,data,Ekin_);
   ExtractfromPack(position,data,Eint_);
+  ExtractfromPack(position,data,kintorsionenergy_);
+  ExtractfromPack(position,data,kinbendingenergy_);
+  ExtractfromPack(position,data,kintransenergy_);
   ExtractfromPack<3,1>(position,data,L_);
   ExtractfromPack<3,1>(position,data,P_);
   ExtractfromPack<3,1>(position,data,amodnewmass_);
@@ -525,70 +542,70 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(int nnode, Integrati
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
 {
-	  //setting up geometric variables for beam3ii elements
+    //setting up geometric variables for beam3ii elements
 
-	  for (int num=0; num<  dis.NumMyColElements(); ++num)
-	  {
-	    //in case that current element is not a beam3ii element there is nothing to do and we go back
-	    //to the head of the loop
-	    if (dis.lColElement(num)->ElementType() != *this) continue;
+    for (int num=0; num<  dis.NumMyColElements(); ++num)
+    {
+      //in case that current element is not a beam3ii element there is nothing to do and we go back
+      //to the head of the loop
+      if (dis.lColElement(num)->ElementType() != *this) continue;
 
-	    //if we get so far current element is a beam3ii element and  we get a pointer at it
-	    DRT::ELEMENTS::Beam3ii* currele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(num));
-	    if (!currele) dserror("cast to Beam3ii* failed");
+      //if we get so far current element is a beam3ii element and  we get a pointer at it
+      DRT::ELEMENTS::Beam3ii* currele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(num));
+      if (!currele) dserror("cast to Beam3ii* failed");
 
-	    //reference node position
-	    std::vector<double> xrefe;
-	    std::vector<double> rotrefe;
-	    const int nnode= currele->NumNode();
+      //reference node position
+      std::vector<double> xrefe;
+      std::vector<double> rotrefe;
+      const int nnode= currele->NumNode();
 
-	    //resize xrefe for the number of coordinates we need to store
-	    xrefe.resize(3*nnode);
-	    rotrefe.resize(3*nnode);
+      //resize xrefe for the number of coordinates we need to store
+      xrefe.resize(3*nnode);
+      rotrefe.resize(3*nnode);
 
-	    //getting element's nodal coordinates and treating them as reference configuration
-	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
-	      dserror("Cannot get nodes in order to compute reference configuration'");
-	    else
-	    {
-	      for (int node=0; node<nnode; node++) //element has k nodes
-	        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-	        {
-	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
-	        	rotrefe[node*3 + dof]= 0.0;
-	        }
-	    }
+      //getting element's nodal coordinates and treating them as reference configuration
+      if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+        dserror("Cannot get nodes in order to compute reference configuration'");
+      else
+      {
+        for (int node=0; node<nnode; node++) //element has k nodes
+          for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+          {
+            xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+            rotrefe[node*3 + dof]= 0.0;
+          }
+      }
 
-	    //SetUpReferenceGeometry is a templated function
-	    switch(nnode)
-	    {
-	  		case 2:
-	  		{
-	  			currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		case 3:
-	  		{
-	  			currele->SetUpReferenceGeometry<3>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		case 4:
-	  		{
-	  			currele->SetUpReferenceGeometry<4>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		case 5:
-	  		{
-	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
-	  			break;
-	  		}
-	  		default:
-	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-	  	}
+      //SetUpReferenceGeometry is a templated function
+      switch(nnode)
+      {
+        case 2:
+        {
+          currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+          break;
+        }
+        case 3:
+        {
+          currele->SetUpReferenceGeometry<3>(xrefe,rotrefe);
+          break;
+        }
+        case 4:
+        {
+          currele->SetUpReferenceGeometry<4>(xrefe,rotrefe);
+          break;
+        }
+        case 5:
+        {
+          currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
+          break;
+        }
+        default:
+          dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+      }
 
-	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
+    } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
-	  return 0;
+    return 0;
 }
 
 

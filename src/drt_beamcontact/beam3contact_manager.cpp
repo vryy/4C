@@ -1783,12 +1783,22 @@ void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
   double scalemat = 1.0;
   if (newsti) scalemat = 1.0 - alphaf_;
 
-  // remove contact stiffness terms from stiffmatrix
-  stiffmatrix.Add(*stiffc_, false, -scalemat, 1.0);
+  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_,"MASSLIN") != INPAR::STR::ml_rotations)
+  {
+    // remove contact stiffness terms from stiffmatrix
+    stiffmatrix.Add(*stiffc_, false, -scalemat, 1.0);
+    // remove old contact force terms from fres
+    fres.Update(-(1.0-alphaf_),*fc_,1.0);
+    fres.Update(-alphaf_,*fcold_,1.0);
+  }
+  else
+  {
 
-  // remove old contact force terms from fres
-  fres.Update(-(1.0-alphaf_),*fc_,1.0);
-  fres.Update(-alphaf_,*fcold_,1.0);
+    // remove contact stiffness terms from stiffmatrix
+    stiffmatrix.Add(*stiffc_, false, -1.0, 1.0);
+    // remove old contact force terms from fres
+    fres.Update(-1.0,*fc_,1.0);
+  }
 
   // now redo Evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;

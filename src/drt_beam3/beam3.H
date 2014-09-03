@@ -81,9 +81,9 @@ angles minus reference director angles, respectively
 The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
 in the input file.
 LIN2  1---2
-LIN3	 1---3---2
+LIN3   1---3---2
 LIN4  1---4---2---3
-LIN5	 1---5---2---3---4
+LIN5   1---5---2---3---4
 LIN6   1---6---2---3---4---5
 
 author cyron (cyron @lnm.mw.tum.de)
@@ -217,12 +217,6 @@ public:
 
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}
-
-  //! \brief vector, which stores the actual x node coordinates of the element; subject to change during runtime
-  LINALG::Matrix<6,1> xactrefe_;
-
-  //! \brief vector, which stores the initial rotational node coordinates of the element
-  LINALG::Matrix<6,1> rotinitrefe_;
 
   /*!
   \brief Set moment of inertia of area Iyy_ of this element
@@ -370,16 +364,16 @@ public:
      *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
      *second initilization in principle (e.g. for periodic boundary conditions*/
 
-		//just during initialization of a new crosslinker
-  	if(!isinit_)
-  	{
+    //just during initialization of a new crosslinker
+    if(!isinit_)
+    {
       //store node x and rotational coordinates of this element
       for (int k=0; k<6; k++)
       {
-      	xactrefe_(k,0) = xrefe[k];
-      	rotinitrefe_(k,0) = rotrefe[k];
+        xactrefe_(k,0) = xrefe[k];
+        rotinitrefe_(k,0) = rotrefe[k];
       }
-  	}
+    }
 
     if(!isinit_ || secondinit)
     {
@@ -662,6 +656,12 @@ private:
 
   //! Vector holding value of Jacobi determinant jacobi at nodes
   std::vector<double> jacobinode_;
+
+  //! \brief vector, which stores the actual x node coordinates of the element; subject to change during runtime
+  LINALG::Matrix<6,1> xactrefe_;
+
+  //! \brief vector, which stores the initial rotational node coordinates of the element
+  LINALG::Matrix<6,1> rotinitrefe_;
 
   //! @name Internal calculation methods
 

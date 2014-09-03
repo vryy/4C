@@ -32,6 +32,11 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+//#define BEAM3IIGAMMAREF   //When this flag is set, initial axial and shear strain is possible
+//#define BEAM3IICONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the element length
+                                //and to only provide random numbers for the 3 translational DoFs
+                                //(needed in order to compare with beam3eb)
+
 //#define FDCHECKINERTIA //comment this out in order to perform a finite difference check of the linearization of nonlinear inertia forces
 
 //! \brief DRT: namespace of the ccarat discretization module
@@ -244,7 +249,7 @@ public:
   const Epetra_SerialDenseVector& InternalForceVector() const {return f_;}
   //! \brief return material forces at Gauss point
   const LINALG::Matrix<3,1>& MatForceGp() const {return Ngp_;}
-  
+
   //! brief epsilonnormal
   const double& EpsilonSgn() const { return eps_;}
 
@@ -288,6 +293,7 @@ public:
       //resize STL vectors for Jacobi determinants so that they can store one value at each Gauss point
       jacobi_.resize(nnode-1);
       kapparef_.resize(nnode-1);
+      gammaref_.resize(nnode-1);
       jacobimass_.resize(nnode);
       jacobinode_.resize(nnode);
 
@@ -300,7 +306,7 @@ public:
       //create Matrix for the shapefunctions at the GP
       LINALG::Matrix<1,nnode> funct;
 
-      //derivative of curve in physical space with respect to curve parameter xi \in [-1;1] on element level
+      //derivative of initial curve in physical space with respect to curve parameter xi \in [-1;1] on element level
       LINALG::Matrix<3,1> drdxi;
 
       //Get DiscretizationType
@@ -331,7 +337,6 @@ public:
         //Store Jacobi determinant with respect to reference configuration
         jacobi_[numgp]= drdxi.Norm2();
 
-
         /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by
          *a computation according to eq. (2.12), Jelenic 1999*/
         if(NumNode()>2)
@@ -344,11 +349,7 @@ public:
         //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
         LARGEROTATIONS::quaterniontoangle(phi12,kapparef_[0]);
         kapparef_[0].Scale(0.5/jacobi_[0]);
-
-
       }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-
-
 
       //Get the applied integrationpoints for exact integration of mass matrix
       //TODO: DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,lobattointegration));
@@ -396,6 +397,36 @@ public:
       //evaluate basis functions
       evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
 
+      #ifdef BEAM3IIGAMMAREF
+        //derivative of initial curve in physical space with respect to curve parameter xi \in [-1;1] on element level
+        LINALG::Matrix<3,1> rprime0;
+        //Loop through all GPs for underintegration and calculate jacobi determinants and initial curvature at the GPs
+        for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+        {
+          //Get position xi of GP
+          const double xi = gausspoints.qxg[numgp][0];
+
+          //Get derivatives of shapefunctions at GP
+          DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+          drdxi.Clear();
+          rprime0.Clear();
+
+          //calculate vector dxdxi
+          for(int node=0; node<nnode; node++)
+            for(int dof=0; dof<3 ; dof++)
+              drdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+
+          //begin: initial gamma
+          for(int dof=0; dof<3 ; dof++)
+            rprime0(dof)=drdxi(dof)/jacobi_[numgp];
+
+          //convected initial strain gamma according to Crisfield 1999, eq. (3.4)
+          gammaref_[0].MultiplyTN(Lambda[numgp],rprime0);
+          (gammaref_[0])(0) = (gammaref_[0])(0) - 1.0;
+
+        }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+      #endif
 
       //Loop through all GPs for exact integration and compute initial jacobi determinant
       for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
@@ -436,7 +467,6 @@ public:
         dispnewmass_[numgp].PutScalar(0);
 
       }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-
 
       //compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
       for(int numgp=0; numgp< nnode; numgp++)
@@ -619,10 +649,6 @@ private:
   std::vector<LINALG::Matrix<3,1> > aconvmass_;
   //! current spatial angular acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
   std::vector<LINALG::Matrix<3,1> > anewmass_;
-  //! modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > amodconvmass_;
-  //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > amodnewmass_;
   //! translational acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
   std::vector<LINALG::Matrix<3,1> > rttconvmass_;
   //! current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
@@ -639,6 +665,10 @@ private:
   std::vector<LINALG::Matrix<3,1> > dispconvmass_;
   //! current translational displacement vector at Gauss points for exact integration (required for computation of inertia terms)
   std::vector<LINALG::Matrix<3,1> > dispnewmass_;
+  //! modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodconvmass_;
+  //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodnewmass_;
   //!rotation angle displacement at nodes; relates to the end of the preceeding time step
   std::vector<LINALG::Matrix<3,1> > dispthetaconv_;
   //!rotation angle displacement at nodes; relates to the end of the preceeding iteration step
@@ -648,6 +678,9 @@ private:
 
   //!initial curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
   std::vector<LINALG::Matrix<3,1> > kapparef_;
+
+  //!initial axial tension (allways zero) and shear deformation at Gauss points for elasticity (corresponding to \Lambda_0^t rprime_0 - (1,0,0) )
+  std::vector<LINALG::Matrix<3,1> > gammaref_;
 
   //!node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
   int nodeI_;
@@ -690,6 +723,15 @@ private:
 
   //! linear momentum of the element
   LINALG::Matrix<3,1> P_;
+
+  //!kinetic energy from rotational dofs part1
+  double kintorsionenergy_;
+
+  //!kinetic energy from rotational dofs part2
+  double kinbendingenergy_;
+
+  //!kinetic energy from translational dofs
+  double kintransenergy_;
 
   //! @name methods for initilization of the element
 
@@ -889,7 +931,7 @@ private:
     //loop through all nodes i
     for (int node=0; node<nnode; ++node)
     {
-    
+
       //compute rightmost term in curley brackets in (3.18), Jelenic 1999
       Itilde[node].PutScalar(0);
       Itilde[node].Multiply(LARGEROTATIONS::Tinvmatrix(Psil),LARGEROTATIONS::Tmatrix(Psili[node]));
@@ -914,8 +956,6 @@ private:
       Itilde[node].MultiplyNN(Lambdar,auxmatrix);
 
     }
-
-
 
      return;
   } // DRT::ELEMENTS::Beam3ii::computeItilde
