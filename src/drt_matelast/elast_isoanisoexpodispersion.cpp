@@ -11,9 +11,9 @@ the input line should read
 
 
 
-// This worked on the small example testcase_aspect10f_haskettD.dat, but then somehow didn't work on a bigger example. 
+// This worked on the small example testcase_aspect10f_haskettD.dat, but then somehow didn't work on a bigger example.
 // I think it still lies with how the fibre-contribution is excluded.
-// If J4 < 1 
+// If J4 < 1
 // -- switching k1, k2 to 0 is wrong - see Matlab figures (WhereAreYouGaussPoint.m)
 // -- and currently not sure about making J4 == 1, what should happen in R, and what happens with that other weird projection
 // term that also includes J4?
@@ -91,8 +91,10 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::PackSummand(DRT::PackBuffer& data) co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoAnisoExpoDispersion::UnpackSummand(const std::vector<char>& data,
-																							std::vector<char>::size_type& position)
+void MAT::ELASTIC::IsoAnisoExpoDispersion::UnpackSummand(
+  const std::vector<char>& data,
+  std::vector<char>::size_type& position
+  )
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);
@@ -118,9 +120,9 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::Setup(DRT::INPUT::LineDefinition* lin
         linedef->HaveNamed("AXI") and
         linedef->HaveNamed("CIR"))
     {
-    	std::vector<double> rad;
-    	std::vector<double> axi;
-    	std::vector<double> cir;
+      std::vector<double> rad;
+      std::vector<double> axi;
+      std::vector<double> cir;
       // read local (cylindrical) cosy-directions at current element
       // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
       LINALG::Matrix<3,3> locsys(true);
@@ -150,7 +152,7 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::Setup(DRT::INPUT::LineDefinition* lin
     // read given first fiber family
     else if ( linedef->HaveNamed("FIBER1") )
     {
-    	std::vector<double> fiber1;
+      std::vector<double> fiber1;
       LINALG::Matrix<3,3> locsys(true);
       linedef->ExtractDoubleVector("FIBER1",fiber1);
       double f1norm=0.;
@@ -158,7 +160,7 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::Setup(DRT::INPUT::LineDefinition* lin
       //normalization
       for (int i = 0; i < 3; ++i)
       {
-      	f1norm += fiber1[i]*fiber1[i];
+        f1norm += fiber1[i]*fiber1[i];
       }
       f1norm = sqrt(f1norm);
 
@@ -205,55 +207,55 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
       + A_(3)*rcg(3) + A_(4)*rcg(4) + A_(5)*rcg(5);
   //double J4 = incJ * ( A_(0)*rcg(0) + A_(1)*rcg(1) + A_(2)*rcg(2) + A_(3)*rcg(3) + A_(4)*rcg(4) + A_(5)*rcg(5)); //J4 = J^{-2/3} I4
   double J4 = incJ * I4;
-  
+
   double k1 = params_->k1_;
   double k2 = params_->k2_;
   double kappa = params_->kappa_;
-  
+
   if (kappa == 0.33) kappa = 1./3.;
   else if (kappa > 0.33) dserror("kappa must be [0:1/3]. By setting KAPPA 0.33, you will get a KAPPA of (1./3.)");
   else if (kappa < 0.0) dserror("kappa must be [0:1/3]");
-  
+
   // The inbetween term when differentiating the exponent
   double R;
-  
+
   if (J4 < 1.0)
   {
     //TODO: confirm how the fibre-contribution is neglected when stretch in fibre direction < 1
-    // At this stage, the compression fibre-stiffness parameters are not considered here as in elast_isoanisoexpo, 
+    // At this stage, the compression fibre-stiffness parameters are not considered here as in elast_isoanisoexpo,
     // but rather the J4 contribution is zeroed out
-    // It would be wrong to allow zero k1 and k2 when kappa > 0, because it would then cause a 
+    // It would be wrong to allow zero k1 and k2 when kappa > 0, because it would then cause a
     // discontinuity in the SEF when J1 != 3 at the border between J4 < 1 and J4 > 1.
     // How exactly to do this is not clearly defined.
-      
+
     //k1 = params_->k1comp_;
     //k2 = params_->k2comp_;
-    
+
     R = kappa*J1 + (1. - 3.*kappa)*1. - 1.;
     //R = kappa*J1 - 1.; // this does not work
     //J4 = 1.; // not sure if this should be the case
   }
-  else 
-  {    
+  else
+  {
       // The inbetween term when differentiating the exponent
       R = kappa*J1 + (1. - 3.*kappa)*J4 - 1.;
   }
-  
+
   // The exponent term: Q = k2*(((kappa*I1 + (1. - 3.*kappa)*I4) - 1.)*((kappa*I1 + (1. - 3.*kappa)*I4) - 1.));
   double Q = exp(k2*R*R);
   // Term reoccuring in Cbar coefficients
   double V = 2.*k2*R*R + 1.;
 
-    
+
   // The gamma and delta calculations for the anisotropic parts are for the time-being
   // located in the material itself, and not within elasthyper.cpp
   LINALG::Matrix<2,1> gammabar(true);
   LINALG::Matrix<4,1> deltabar(true);
-  
+
   // build Cartesian identity 2-tensor I_{AB} -- could perhaps read in from somewhere else
   LINALG::Matrix<6,1> id2_temp(true);
   for (int i=0; i<3; i++) id2_temp(i) = 1.0;
-  
+
   // 1st invariant, trace -- could perhaps read in from somewhere else
   const double I1 = rcg(0) + rcg(1) + rcg(2);
 
@@ -263,36 +265,36 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
   std::cout << "this is J1, J4: " << J1 << " " << J4 << std::endl;
   std::cout << "this is I1, I4: " << I1 << " " << I4 << std::endl;
   std::cout << "this is R and Q: " << R << " " << Q << std::endl;*/
-  
-  if (isinf(Q)) 
-	{
-	std::cout << "\n" << std::endl;
-	std::cout << "this is rcg(0) and rcg(1) and rcg(2): " << rcg(0) << " " << rcg(1) << " " << rcg(2) << std::endl;
-	std::cout << "this is k1, k2 and kappa: " << k1 << " " << k2 << " " << kappa << std::endl;
-	std::cout << "this is J1, J4: " << J1 << " " << J4 << std::endl;
-	std::cout << "this is I1, I4: " << I1 << " " << I4 << std::endl;
-	std::cout << "this is R and Q: " << R << " " << Q << std::endl;
-	dserror("The exponential Q became infinite");
-	}
-  if (isnan(Q)) 
-	{
-	std::cout << "\n" << std::endl;
-	std::cout << "this is rcg(0) and rcg(1) and rcg(2): " << rcg(0) << " " << rcg(1) << " " << rcg(2) << std::endl;
-	std::cout << "this is k1, k2 and kappa: " << k1 << " " << k2 << " " << kappa << std::endl;
-	std::cout << "this is I1, I4: " << I1 << " " << I4 << std::endl;
-	std::cout << "this is R and Q: " << R << " " << Q << std::endl;
-	dserror("The exponential Q is NaN");
-	}
-  
+
+  if (isinf(Q))
+  {
+    std::cout << "\n" << std::endl;
+    std::cout << "this is rcg(0) and rcg(1) and rcg(2): " << rcg(0) << " " << rcg(1) << " " << rcg(2) << std::endl;
+    std::cout << "this is k1, k2 and kappa: " << k1 << " " << k2 << " " << kappa << std::endl;
+    std::cout << "this is J1, J4: " << J1 << " " << J4 << std::endl;
+    std::cout << "this is I1, I4: " << I1 << " " << I4 << std::endl;
+    std::cout << "this is R and Q: " << R << " " << Q << std::endl;
+    dserror("The exponential Q became infinite");
+  }
+  if (isnan(Q))
+  {
+    std::cout << "\n" << std::endl;
+    std::cout << "this is rcg(0) and rcg(1) and rcg(2): " << rcg(0) << " " << rcg(1) << " " << rcg(2) << std::endl;
+    std::cout << "this is k1, k2 and kappa: " << k1 << " " << k2 << " " << kappa << std::endl;
+    std::cout << "this is I1, I4: " << I1 << " " << I4 << std::endl;
+    std::cout << "this is R and Q: " << R << " " << Q << std::endl;
+    dserror("The exponential Q is NaN");
+  }
+
   // Sfbar = 2 dW/dJ1 1_ + 2 dW/dJ4 A_
   // first compute scalar coefficients of Sfbar
   gammabar(0) = 2.*k1*kappa        *R*Q; // gammabar(0) = 2 dW/dJ1
   gammabar(1) = 2.*k1*(1.-3.*kappa)*R*Q; // gammabar(1) = 2 dW/dJ4
 
   // Now build Sfbar
-  LINALG::Matrix<6,1> Saniso(A_); 
+  LINALG::Matrix<6,1> Saniso(A_);
   Saniso.Update(gammabar(0),id2_temp,gammabar(1)); //Sfbar = 2 dW/dJ1 id2 + 2 dW/dJ4 A_
-    
+
   double traceCSfbar =  Saniso(0)*rcg(0) + Saniso(1)*rcg(1) + Saniso(2)*rcg(2)
                       + 1.*(Saniso(3)*rcg(3) + Saniso(4)*rcg(4) + Saniso(5)*rcg(5));
   Saniso.Update(-incJ/3.*traceCSfbar,icg,incJ); //S_isoch (eq. 6.90)
@@ -302,13 +304,13 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
   Psl.MultiplyNT(-1./3.,icg,icg,1.0);
 
   // Cbar/J^{-4/3} = 4 d(dW)/(dJ1*dJ1) id2 \otimes id2 + 4 d(dW)/(dJ1*dJ4) A_ \otimes id2
-  //        + 4 d(dW)/(dJ4*dJ1) id2 \otimes A_ + 4 d(dW)/(dJ4*dJ4) A_ \otimes A_  
+  //        + 4 d(dW)/(dJ4*dJ1) id2 \otimes A_ + 4 d(dW)/(dJ4*dJ4) A_ \otimes A_
   // first compute scalar coefficients of Cbar
   deltabar(0) = 4.*k1*kappa        *kappa      *Q*V; // 4 incJ*incJ d(dW)/(dJ1*dJ1)
   deltabar(1) = 4.*k1*(1.-3.*kappa)*kappa      *Q*V; // 4 d(dW)/(dJ1*dJ4)
   deltabar(2) = deltabar(1);                                  // 4 d(dW)/(dJ4*dJ1)
   deltabar(3) = 4.*k1*(1.-3.*kappa)*(1-3*kappa)*Q*V; // 4 d(dW)/(dJ4*dJ4)
-  
+
   /*std::cout << "gammabar(0), gammabar(1): " << gammabar(0) << " " << gammabar(1) << std::endl;
   std::cout << "deltabar(0), deltabar(1), deltabar(2), deltabar(3): " << deltabar(0) << " " << deltabar(1) << " " << deltabar(2)<< " " << deltabar(3) << std::endl;*/
 
@@ -331,14 +333,14 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
   cmataniso.MultiplyNT(deltabar(2),id2_hat,Aiso,1.0);
   // contribution: deltabar(3) (A_hat \otimes A_hat)
   cmataniso.MultiplyNT(deltabar(3),Aiso,Aiso,1.0);
-  
+
   // term: (2/3) Tr(incJ Sfbar) Psl -- (same as in elast_isoanisoexpo.cpp)
   cmataniso.Update(2./3.*incJ*traceCSfbar,Psl,1.0);
-  
+
   // term: -(2/3) (icg \otimes S_isoch + S_isoch \otimes icg) -- (same as in elast_isoanisoexpo.cpp)
   cmataniso.MultiplyNT(-2./3.,icg,Saniso,1.0);
   cmataniso.MultiplyNT(-2./3.,Saniso,icg,1.0);
-  
+
   stress.Update(1.0,Saniso,1.0);
   cmat.Update(1.0,cmataniso,1.0);
 }

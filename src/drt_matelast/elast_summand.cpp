@@ -287,7 +287,7 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoRateDep(curmat));
     MAT::ELASTIC::PAR::IsoRateDep* params = static_cast<MAT::ELASTIC::PAR::IsoRateDep*>(curmat->Parameter());
     return Teuchos::rcp(new IsoRateDep(params));
-  }  
+  }
   default:
     dserror("cannot deal with type %d", curmat->Type());
   }

@@ -61,8 +61,10 @@ void MAT::ELASTIC::IsoAnisoExpo::PackSummand(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoAnisoExpo::UnpackSummand(const std::vector<char>& data,
-																							std::vector<char>::size_type& position)
+void MAT::ELASTIC::IsoAnisoExpo::UnpackSummand(
+  const std::vector<char>& data,
+  std::vector<char>::size_type& position
+  )
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);

@@ -64,8 +64,10 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::PackSummand(DRT::PackBuffer& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::UnpackSummand(const std::vector<char>& data,
-																														std::vector<char>::size_type& position)
+void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::UnpackSummand(
+  const std::vector<char>& data,
+  std::vector<char>::size_type& position
+  )
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);
@@ -102,13 +104,13 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinit
     //         cos(gamma)^2*cos(theta_)        sin(gamma_)^2*cos(theta_)               cos(theta_)
     //
     {
-    	// Local initialization of spherical angles
+      // Local initialization of spherical angles
       double theta = (params_->theta_);
       double gamma = (params_->gamma_);
       if ( gamma < 0.0 || gamma > 180.0 || abs(theta) > 180.0 )
-	    {
-      		dserror("Wrong choice of sherical coodinates. Correct domain is gamma in [0,180], theta in [-180, 180]");
-	    }
+      {
+        dserror("Wrong choice of sherical coodinates. Correct domain is gamma in [0,180], theta in [-180, 180]");
+      }
       // conversion to radian measure
       theta = (theta*PI)/180.0;
       gamma = (gamma*PI)/180.0;

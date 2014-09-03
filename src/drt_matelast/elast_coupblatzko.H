@@ -65,7 +65,7 @@ namespace ELASTIC
       /// respective the elasthyper class
       ///
       virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
-      
+
       /// @name Write methods
       //@{
       void SetMue(const double mue) { mue_ = mue; }

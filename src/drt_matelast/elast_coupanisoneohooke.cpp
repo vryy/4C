@@ -55,8 +55,10 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::PackSummand(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke::UnpackSummand(const std::vector<char>& data,
-																										std::vector<char>::size_type& position)
+void MAT::ELASTIC::CoupAnisoNeoHooke::UnpackSummand(
+  const std::vector<char>& data,
+  std::vector<char>::size_type& position
+  )
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);

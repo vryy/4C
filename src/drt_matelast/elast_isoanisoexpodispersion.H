@@ -88,13 +88,13 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric anisotropic exponential fiber function, including isotropic dispersion parameter, 
+  /// Isochoric anisotropic exponential fiber function, including isotropic dispersion parameter,
   /// implemented for one possible fiber family [1,2]
   /// This material has the following limit cases:
   /// With kappa == 0.0, this reduces to the isochoric anisotropic exponential fiber model,
   /// only dependent on the isochoric fourth invariant [1] -- same as elast_isoanisoexpo.cpp
   /// With kappa == 0.3333, this reduces to an isochoric isotropic exponential model
-  /// only dependent on the isochoric first invariant -- not exactly equivalent to elast_isoexpopow.cpp, 
+  /// only dependent on the isochoric first invariant -- not exactly equivalent to elast_isoexpopow.cpp,
   /// due to some different constants
   ///
   /// Strain energy function is given by [2]
@@ -111,7 +111,7 @@ namespace ELASTIC
   /// <ul>
   /// <li> [1] G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial wall mechanics
   ///          and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
-  /// <li> [1] T.C. Gasser, R.W. Ogden, G.A. Holzapfel: Hyperelastic modelling of arterial layers with 
+  /// <li> [1] T.C. Gasser, R.W. Ogden, G.A. Holzapfel: Hyperelastic modelling of arterial layers with
   ///          distributed collagen fibre orientations, J. R. Soc. Interface 6 (2006), 15-35.
   /// </ul>
   ///

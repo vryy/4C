@@ -378,8 +378,7 @@ namespace MAT
       {
         return;  // do nothing
       };
-      
-      
+
       virtual void AddCoefficientsViscoModified(
        const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
         LINALG::Matrix<8,1>& modmy,  ///< see above
@@ -390,8 +389,6 @@ namespace MAT
       {
         return;  // do nothing
       };
-
-      
 
       /// retrieve stress and cmat
       /// of summand for fiber directions with respect to modified strains

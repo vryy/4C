@@ -35,7 +35,7 @@ MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(
 }
 
 /*----------------------------------------------------------------------*
- *            Constructor Material Class                               *
+ *            Constructor Material Class                                *
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params)
   : params_(params)
