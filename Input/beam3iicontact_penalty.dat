@@ -54,7 +54,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         25
-MASSLIN				            rotations
+MASSLIN                         rotations
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5
@@ -69,7 +69,9 @@ PENALTYPARAM                    1e+06
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
-//BEAMS_OCTREE                  octree_axisaligned
+BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_OCTREE                    none
+BEAMS_ADDEXTVAL                 2.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym

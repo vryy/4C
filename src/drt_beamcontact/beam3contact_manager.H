@@ -173,11 +173,11 @@ public:
   iterarion in order to create an of an out-of-balance force again. First,
   the contact force and stiffness terms are removed from stiff and fres.
   Then the new contact forces and contact stiffness terms for the updated LM
-  (Uzawa AugmentedLagrange) are created by calling Evaluate().
+  (AugmentedLagrange) are created by calling Evaluate().
 
   */
   void InitializeUzawa(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-                       const Epetra_Vector& disrow, bool newsti = false);
+                       const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti = false);
 
   /*!
   \brief Rest Lagrange Multipliers
@@ -208,7 +208,7 @@ public:
   as a reference for the modified gap function definition
 
   */
-  void ShiftAllNormal();
+  void UpdateAllPairs();
 
   /*!
   \brief Update Lagrange multipliers
@@ -277,6 +277,16 @@ public:
                  const Epetra_Vector& dirichtoggle,
                  const int& timestep);
 
+  /*!
+  \brief Get total potential energy of penalty approach
+  */
+  double GetTotEnergy() {return totpenaltyenergy_; };
+
+  /*!
+  \brief Get maximal gap
+  */
+  double GetMaxGap() {return maxgap_; };
+
   //@}
 
 private:
@@ -344,6 +354,8 @@ private:
   // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap_;
 
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > oldcontactpairmap_;
+
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;
 
@@ -355,6 +367,9 @@ private:
 
   //! search radius
   double searchradius_;
+
+  //! search radius for spherical intersection
+  double sphericalsearchradius_;
 
   //! contact forces of current time step
   Teuchos::RCP<Epetra_Vector> fc_;
@@ -380,7 +395,17 @@ private:
   //! current Uzawa iteration index (for augmented Lagrange strategy)
   int uzawaiter_;
 
+  //! maximal converged gap
   double maxgap_;
+
+  //! minimal converged gap
+  double mingap_;
+
+  //! maximal unconverged gap
+  double unconvmaxgap_;
+
+  //! total contact energy (of elastic penalty forces)
+  double totpenaltyenergy_;
 
   //@}
 
@@ -427,6 +452,11 @@ private:
   \brief Calculate beam radius
   */
   double CalcEleRadius(const DRT::Element* ele);
+
+  /*
+  \brief Test if element midpoints are close (spherical bounding box intersection)
+  */
+  bool CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2, std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   /*!
   \brief Set the member variables numnodes_ and numnodalvalues depending on the element type handed in!
@@ -532,9 +562,17 @@ private:
 
   /*!
   \brief Compute coordinates for GMSH-Output for N-noded-elements
-
   */
   void GMSH_N_noded(const int& n,
+                    const int& n_axial,
+                    const Epetra_SerialDenseMatrix& allcoord,
+                    const DRT::Element* thisele,
+                    std::stringstream& gmshfilecontent);
+
+  /*!
+  \brief Compute coordinates for GMSH-Line-Output for N-noded-elements
+  */
+  void GMSH_N_nodedLine(const int& n,
                     const int& n_axial,
                     const Epetra_SerialDenseMatrix& allcoord,
                     const DRT::Element* thisele,

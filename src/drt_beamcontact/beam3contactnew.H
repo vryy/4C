@@ -19,6 +19,8 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "Sacado.hpp"
 
+#include "../drt_lib/standardtypes_cpp.H"
+
 namespace CONTACT
 {
 
@@ -92,6 +94,11 @@ public:
   virtual const double GetGap()=0;
 
   /*!
+  \brief Get contact force of this contact pair
+  */
+  virtual const double GetContactForce()=0;
+
+  /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
   virtual const double Getlmuzawa()=0;
@@ -108,12 +115,21 @@ public:
 
   virtual const Epetra_SerialDenseVector GetX2()=0;
 
-  virtual LINALG::TMatrix<TYPE, 3, 1> GetNormalOld()=0;
+  virtual const Epetra_SerialDenseVector GetNormal()=0;
+
+  virtual LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()=0;
 
   /*!
     \Check, if there is a difference between the result of the new and old gap definition, i.e. if the beams centerlines have already crossed or not.
   */
   virtual bool GetNewGapStatus()=0;
+
+  /*!
+    \Get energy of penalty contact.
+  */
+  virtual double GetEnergy()=0;
+
+  virtual bool FirstTimeStep()=0;
 
   /*!
   \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
@@ -129,15 +145,15 @@ public:
   virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                         Epetra_Vector& fint,
                         const double& pp,
-                        std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap,
-                        Teuchos::ParameterList beamcontactparams)=0;
+                        std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
+                        Teuchos::ParameterList timeintparams)=0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
   static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,
                                      const int numnodalvalues,
                                      const DRT::Discretization& pdiscret,
                                      const DRT::Discretization& cdiscret,
-                                     const std::map<int,int> dofoffsetmap,
+                                     const std::map<int,int>& dofoffsetmap,
                                      DRT::Element* element1,
                                      DRT::Element* element2,
                                      Teuchos::ParameterList beamcontactparams);
@@ -156,10 +172,9 @@ public:
   virtual void InvertNormal()=0;
 
   /*!
-    \brief Shift current normal vector to old normal vector at the end of a time step. This is necessary when the new gap function
-    definition (ngf_=true) for slender beams is applied!
+    \brief Update of class variables at the end of a time step
   */
-  virtual void ShiftNormal()=0;
+  virtual void UpdateClassVariablesStep()=0;
 
   /*!
     \brief Update Uzawa-based Lagrange multiplier
@@ -204,7 +219,7 @@ public:
   */
   Beam3contactnew(  const DRT::Discretization& pdiscret,
                     const DRT::Discretization& cdiscret,
-                    const std::map<int,int> dofoffsetmap,
+                    const std::map<int,int>& dofoffsetmap,
                     DRT::Element* element1,
                     DRT::Element* element2,
                     Teuchos::ParameterList beamcontactparams);
@@ -254,6 +269,11 @@ public:
   const double GetGap() { return BEAMCONTACT::CastToDouble(gap_); };
 
   /*!
+  \brief Get contact force of this contact pair
+  */
+  const double GetContactForce() { return BEAMCONTACT::CastToDouble(fp_); };
+
+  /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
   const double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
@@ -286,7 +306,64 @@ public:
     return r2;
   };
 
-  LINALG::TMatrix<TYPE, 3, 1> GetNormalOld() {return normal_old_;};
+  const Epetra_SerialDenseVector GetNormal()
+  {
+    Epetra_SerialDenseVector normal(3);
+
+    if(GetNewGapStatus()==true)
+    {
+      for(int i=0;i<3;i++)
+        normal(i)=-normal_(i);
+    }
+    else
+    {
+      for(int i=0;i<3;i++)
+        normal(i)=normal_(i);
+    }
+
+    return normal;
+  }
+
+  LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()
+  {
+    if(firsttimestep_)
+    {
+      dserror("Vector normal_old_requested but not available in the first time step the pair has been found: Choose larger search radius!!!");
+    }
+
+    //Only deliver normal_old_ when a valid closest point projection for last time step existed!
+    if (BEAMCONTACT::Norm(xi1_old_) < 1.0+XIETATOL and BEAMCONTACT::Norm(xi2_old_) < 1.0+XIETATOL and !oldcppunconverged_)
+    {
+      return &normal_old_;
+    }
+    else
+      return NULL;
+  };
+
+  bool FirstTimeStep()
+  {
+    return firsttimestep_;
+  };
+
+  LINALG::TMatrix<double, 3*numnodes*numnodalvalues,1>* GetEle1PositionsOld()
+  {
+    if (BEAMCONTACT::Norm(xi1_old_) < 1.1 and BEAMCONTACT::Norm(xi2_old_) < 1.1)
+    {
+      return &ele1pos_old_;
+    }
+    else
+      return NULL;
+  };
+
+  LINALG::TMatrix<double, 3*numnodes*numnodalvalues,1>* GetEle2PositionsOld()
+  {
+    if (BEAMCONTACT::Norm(xi1_old_) < 1.1 and BEAMCONTACT::Norm(xi2_old_) < 1.1)
+    {
+      return &ele2pos_old_;
+    }
+    else
+      return NULL;
+  };
 
   /*!
   \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
@@ -299,6 +376,21 @@ public:
   bool GetNewGapStatus();
   //@}
 
+  /*!
+    \Get energy of penalty contact.
+  */
+  double GetEnergy()
+  {
+    #ifndef QUADPENALTY
+      TYPE test=0.5*pp_*gap_*gap_;
+      return BEAMCONTACT::CastToDouble(test);
+    #else
+      TYPE test= -1.0/3.0*pp_*gap_*gap_*gap_;
+      return BEAMCONTACT::CastToDouble(test);
+    #endif
+  };
+  //@}
+
 
   //! @name Public evaluation methods
   /*!
@@ -307,8 +399,8 @@ public:
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint,
                 const double& pp,
-                std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap,
-                Teuchos::ParameterList beamcontactparams);
+                std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
+                Teuchos::ParameterList timeintparams);
 
   /*!
   \brief Reset Uzawa-based Lagrange multiplier
@@ -323,10 +415,9 @@ public:
   void InvertNormal();
 
   /*!
-    \brief Shift current normal vector to old normal vector at the end of a time step. This is necessary when the new gap function
-    definition (ngf_=true) for slender beams is applied!
+    \brief Update of class variables at the end of a time step
   */
-  void ShiftNormal();
+  void UpdateClassVariablesStep();
 
   /*!
     \brief Update Uzawa-based Lagrange multiplier
@@ -357,7 +448,7 @@ private:
   const DRT::Discretization& cdiscret_;
 
   //! dof offset between pdiscret and cdiscret
-  std::map<int,int> dofoffsetmap_;
+  const std::map<int,int>& dofoffsetmap_;
 
   //! first element of contact pair
   DRT::Element* element1_;
@@ -365,14 +456,18 @@ private:
   //! second element of contact pair
   DRT::Element* element2_;
 
-  //const int numnode1_ = NumNodes1(element1_);
+  //! beam contact parameter list
+  Teuchos::ParameterList bcparams_;
 
   //! current node coordinates of the two elements
   LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele1pos_;
   LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele2pos_;
 
-  //! variable to check if old or modified gap function
-  bool ngf_;
+  LINALG::TMatrix<double,3*numnodes*numnodalvalues,1> ele1pos_old_;
+  LINALG::TMatrix<double,3*numnodes*numnodalvalues,1> ele2pos_old_;
+
+  LINALG::TMatrix<double,3*numnodes*numnodalvalues,1> ele1pos_lastiter_;
+  LINALG::TMatrix<double,3*numnodes*numnodalvalues,1> ele2pos_lastiter_;
 
   //! variable to check which smoothing type should be applied
   int smoothing_;
@@ -380,8 +475,11 @@ private:
   //! sgn(normal*normal_old)
   double sgn_;
 
-  //! variable to identify first call of a pair (for initializing)
-  bool firstcall_;
+  //! variable to identify first call of a pair within considered time step (for initializing)
+  bool firstcallofstep_;
+
+  //! variable to identify the first time step in which the pair was found
+  bool firsttimestep_;
 
   //! Uzawa-based Lagrange multiplier
   TYPE lmuzawa_;
@@ -395,8 +493,14 @@ private:
   //! flag indicating contact (active/inactive)
   bool contactflag_;
 
+  //! flag indicating (active/inactive) damping forces
+  bool dampingcontactflag_;
+
   //! flag indicating if contact was active in the last time step
   bool oldcontactflag_;
+
+  //! flag indicating weather an element has at least once been active during the current time step
+  bool currentlyincontact_;
 
   //! flag indicating if elements are collinear or not
   bool elementscolinear_;
@@ -410,14 +514,22 @@ private:
   //! coordinates of contact point on center lines of beams
   LINALG::TMatrix<TYPE, 3, 1> r1_;
   LINALG::TMatrix<TYPE, 3, 1> r2_;
+  LINALG::TMatrix<TYPE, 3, 1> r1_old_;
+  LINALG::TMatrix<TYPE, 3, 1> r2_old_;
+
+  //! derivative of contact point coordinates
+  LINALG::TMatrix<TYPE, 3, 1> r1_xi_;
+  LINALG::TMatrix<TYPE, 3, 1> r2_xi_;
+  LINALG::TMatrix<TYPE, 3, 1> r1_xi_old_;
+  LINALG::TMatrix<TYPE, 3, 1> r2_xi_old_;
 
   //! parameter values of contact point
   TYPE xi1_;
   TYPE xi2_;
 
   //! parameter values of contact point of last time step
-  TYPE xi1_old_;
-  TYPE xi2_old_;
+  double xi1_old_;
+  double xi2_old_;
 
   //! normal vector of current time step
   LINALG::TMatrix<TYPE, 3, 1>  normal_;
@@ -437,22 +549,58 @@ private:
 
   //! current penalty parameter
   TYPE pp_;
-  //! scalar value of current contact force, standard case: fp_ = pp_ * gap_
+
+  //! scalar value of current contact force, standard case: fp_ = -pp_ * gap_
   TYPE fp_;
 
-  bool basicstiff_;
+  //! derivative of scalar value of current contact force, standard case: fp_ = -pp_
+  TYPE dfp_;
 
-  TYPE ptcpoint_;
+  //! scalar value of current damping force and its derivative, standard case: fdamp_ = -d_ * fd_ e.g. = -d_ * gap_t =
+  TYPE fd_;
+  TYPE dfd_;
+  TYPE d_;
+  TYPE dd_;
 
-  TYPE ptcpointold_;
-
-  TYPE resnorm_;
-
-  TYPE resnormold_;
-
+  //!current Newton iteration
   int iter_;
 
+  //!current time step
+  int numstep_;
+
+  //!time step size
+  double dt_;
+
+  //!flag indicating when one beam slides over the end point of the second beam
   bool beamendcontactopened_;
+
+  //!flag indicating that a pair is sorted out due to almost parallelism
+  bool beamsalmostparallel_;
+
+  //!flag indicating that closest point projection did not converge
+  bool cppunconverged_;
+
+  //!flag indicating that closest point projection of last time step did not converge
+  bool oldcppunconverged_;
+
+  //! initial element lengths
+  double ele1length_;
+  double ele2length_;
+
+  //! Has the pair asked for the vector normal_old_ of an neighbor element during the current iteration step?
+  bool neighbornormalrequired_;
+
+  //! Scalar product of normalized tangents at contact point (needed in order to exclude almost parallel elements)
+  TYPE tangentproduct_;
+
+  //! Cross-section radius of beam 1
+  double radius1_;
+
+  //! Cross-section radius of beam 2
+  double radius2_;
+
+  //! Additive extrusion value of bounding box applied in contact search
+  double searchboxinc_;
 
   //@}
 
@@ -489,6 +637,36 @@ private:
                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xixi);
 
   /*!
+  \brief Evaluate algorithmic forces that make convergence more robust / faster
+  */
+  void EvaluateAlgorithmicForce(const double& pp,
+                                Epetra_Vector* fint,
+                                const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                                const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                                LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1>* fc1_FAD = NULL,
+                                LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1>* fc2_FAD = NULL);
+
+  /*!
+  \brief Evaluate algorithmic stiffnesses that make convergence more robust / faster
+  */
+  void EvaluateAlgorithmicStiff(const double& pp,
+                                 const TYPE& norm_delta_r,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
+                                 LINALG::SparseMatrix& stiffmatrix,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r1,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r2,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xixi,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xixi);
+
+  /*!
   \brief Compute linearizations of contact point parameter coordinates xi and eta
   */
   void ComputeLinXiAndLinEta( LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>&  delta_xi,
@@ -517,6 +695,22 @@ private:
                      const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2);
 
   /*!
+  \brief Compute linearization of time derivative g_t of gap g
+  */
+  void ComputeLinGapt(LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_gap_t,
+                      const LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>&  delta_xi,
+                      const LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_eta,
+                      const LINALG::TMatrix<TYPE, 3, 2*3*numnodes*numnodalvalues>& delta_n,
+                      const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
+                      const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                      const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                      const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                      const LINALG::TMatrix<TYPE, 3, 1>& r1_old,
+                      const LINALG::TMatrix<TYPE, 3, 1>& r2_old,
+                      const LINALG::TMatrix<TYPE, 3, 1>& r1_xi_old,
+                      const LINALG::TMatrix<TYPE, 3, 1>& r2_xi_old);
+
+  /*!
   \brief Compute linearization of normal vector n
   */
   void ComputeLinNormal(LINALG::TMatrix<TYPE, 3, 2*3*numnodes*numnodalvalues>& delta_normal,
@@ -532,6 +726,16 @@ private:
   \brief Find contact point via closest point projection
   */
   void ClosestPointProjection();
+
+  /*!
+  \brief Calculate scalar contact force and linearization according to chosen penalty law
+  */
+  void CalcPenaltyLaw();
+
+  /*!
+  \brief Calculate scalar damping contribution to contact force and linearization
+  */
+  void CalcDampingLaw();
 
   /*!
   \brief Calculate shape function values for given parameter values
@@ -572,6 +776,18 @@ private:
                               const LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N2_xixi);
 
   /*!
+  \brief Compute coordinates of contact points of last time step from the discretization
+  */
+  void ComputeOldCoordsAndDerivs(LINALG::TMatrix<TYPE,3,1>& r1_old,
+                              LINALG::TMatrix<TYPE,3,1>& r2_old,
+                              LINALG::TMatrix<TYPE,3,1>& r1_xi_old,
+                              LINALG::TMatrix<TYPE,3,1>& r2_xi_old,
+                              const LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N1,
+                              const LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N2,
+                              const LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N1_xi,
+                              const LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N2_xi);
+
+  /*!
   \brief Utility method for CPP (evaluate nonlinear function f)
   */
   void EvaluateOrthogonalityCondition(LINALG::TMatrix<TYPE,2,1>& f,
@@ -603,7 +819,7 @@ private:
   */
   void ComputeNormal(LINALG::TMatrix<TYPE,3,1>& delta_r,
                      TYPE& norm_delta_r,
-                     std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap);
+                     std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap);
 
   /*!
   \brief Check, if we have contact or not (gap < 0 ???)
@@ -629,7 +845,7 @@ private:
     /*!
       \brief Get the vector normal_old_ from the neighbor element
     */
-    void GetNeighborNormalOld(std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap);
+    void GetNeighborNormalOld(std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap);
 
     void FADCheckLinXiAndLinEta(const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
@@ -654,6 +870,17 @@ private:
       \brief Get jacobi factor of beam element
     */
     double GetJacobi(DRT::Element* element1);
+
+
+    /*!
+      \brief Update of class variables at the end of a Newton step
+    */
+    void UpdateClassVariablesIter();
+
+    /*!
+      \brief Set class variables at the beginning of a Newton step
+    */
+    void SetClassVariables(const double& pp, Teuchos::ParameterList timeintparams);
 
   //@}
 

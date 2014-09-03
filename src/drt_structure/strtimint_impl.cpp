@@ -963,6 +963,8 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
     // create empty parameter list
     Teuchos::ParameterList beamcontactparams;
     beamcontactparams.set("iter", iter_);
+    beamcontactparams.set("dt", (*dt_)[0]);
+    beamcontactparams.set("numstep", step_);
 
     // make contact / meshtying modifications to lhs and rhs
     // (set boolean flag 'newsti' to true, which activates
@@ -2979,9 +2981,14 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
       {
         // beam contact modifications need -fres
         fres_->Scale(-1.0);
+        // create empty parameter list
+        Teuchos::ParameterList beamcontactparams;
+        beamcontactparams.set("iter", iter_);
+        beamcontactparams.set("dt", (*dt_)[0]);
+        beamcontactparams.set("numstep", step_);
 
         // make contact modifications to lhs and rhs
-        beamcman_->InitializeUzawa(*SystemMatrix(),*fres_,*disn_,true);
+        beamcman_->InitializeUzawa(*SystemMatrix(),*fres_,*disn_,beamcontactparams,true);
 
         // scaling back
         fres_->Scale(-1.0);

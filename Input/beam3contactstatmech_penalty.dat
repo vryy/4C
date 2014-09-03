@@ -74,6 +74,9 @@ PENALTYPARAM                    1e+06
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
+BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_OCTREE                    none
+BEAMS_ADDEXTVAL                 2.0
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std

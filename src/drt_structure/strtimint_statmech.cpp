@@ -955,6 +955,10 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
     if(HaveBeamContact())
     {
       Teuchos::ParameterList beamcontactparams;
+      beamcontactparams.set("iter", iter_);
+      beamcontactparams.set("dt", (*dt_)[0]);
+      beamcontactparams.set("numstep", step_);
+
       beamcman_->Evaluate(*SystemMatrix(),*fres_,*disn_,beamcontactparams);
     }
     //**********************************************************************

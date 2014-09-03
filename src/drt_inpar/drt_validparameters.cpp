@@ -1995,6 +1995,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
                                yesnotuple,yesnovalue,&beamcontact);
 
+  setStringToIntegralParameter<int>("BEAMS_INACTIVESTIFF","No","Always apply contact stiffness in first Newton step for pairs which have active in last time step",
+                                  yesnotuple,yesnovalue,&beamcontact);
+
   setStringToIntegralParameter<int>("BEAMS_BTSOL","No","decide, if also the contact between beams and solids is possible",
                                yesnotuple,yesnovalue,&beamcontact);
 
@@ -2008,6 +2011,41 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::BEAMCONTACT::bsm_none,INPAR::BEAMCONTACT::bsm_none,
                   INPAR::BEAMCONTACT::bsm_cpp,INPAR::BEAMCONTACT::bsm_cpp),
        &beamcontact);
+
+  setStringToIntegralParameter<int>("BEAMS_DAMPING","No","Application of a contact damping force",
+       tuple<std::string>("No","no",
+                          "Yes", "yes"),
+       tuple<int>(
+                  INPAR::BEAMCONTACT::bd_no,INPAR::BEAMCONTACT::bd_no,
+                  INPAR::BEAMCONTACT::bd_yes,INPAR::BEAMCONTACT::bd_yes),
+       &beamcontact);
+
+  DoubleParameter("BEAMS_DAMPINGPARAM",-1000.0,"Damping parameter for contact damping force",&beamcontact);
+  DoubleParameter("BEAMS_DAMPREGPARAM1",-1000.0,"First (at gap1, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
+  DoubleParameter("BEAMS_DAMPREGPARAM2",-1000.0,"Second (at gap2, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
+
+  setStringToIntegralParameter<int>("BEAMS_PENALTYLAW","LinPen","Applied Penalty Law",
+       tuple<std::string>("LinPen",
+                          "QuadPen",
+                          "LinNegQuadPen",
+                          "LinPosQuadPen",
+                          "LinPosCubPen",
+                          "LinPosDoubleQuadPen",
+                          "LinPosExpPen"),
+       tuple<int>(
+                  INPAR::BEAMCONTACT::pl_lp,
+                  INPAR::BEAMCONTACT::pl_qp,
+                  INPAR::BEAMCONTACT::pl_lnqp,
+                  INPAR::BEAMCONTACT::pl_lpqp,
+                  INPAR::BEAMCONTACT::pl_lpcp,
+                  INPAR::BEAMCONTACT::pl_lpdqp,
+                  INPAR::BEAMCONTACT::pl_lpep),
+       &beamcontact);
+
+  DoubleParameter("BEAMS_PENREGPARAM_G0",-1.0,"First penalty regularization parameter G0 >=0: For gap<G0 contact is active!",&beamcontact);
+  DoubleParameter("BEAMS_PENREGPARAM_F0",-1.0,"Second penalty regularization parameter F0 >=0: F0 represents the force at the transition point between regularized and linear force law!",&beamcontact);
+  DoubleParameter("BEAMS_PENREGPARAM_C0",-1.0,"Third penalty regularization parameter C0 >=0: C0 has different physical meanings for the different penalty laws!",&beamcontact);
+  DoubleParameter("BEAMS_BASICSTIFFGAP",-1.0,"For gaps > -BEAMS_BASICSTIFFGAP, only the basic part of the contact linearization is applied!",&beamcontact);
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, cobb = cylindrical oriented)
   setStringToIntegralParameter<int>("BEAMS_OCTREE","None","octree and bounding box type for octree search routine",

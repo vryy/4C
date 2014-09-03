@@ -39,9 +39,15 @@ numnodes_(0),
 numnodalvalues_(0),
 pdiscret_(discret),
 pdiscomm_(discret.Comm()),
+searchradius_(0.0),
+sphericalsearchradius_(0.0),
 alphaf_(alphaf),
 constrnorm_(0.0),
-btsolconstrnorm_(0.0)
+btsolconstrnorm_(0.0),
+maxgap_(0.0),
+mingap_(0.0),
+unconvmaxgap_(0.0),
+totpenaltyenergy_(0.0)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -54,6 +60,8 @@ btsolconstrnorm_(0.0)
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
 
+  contactpairmap_.clear();
+  oldcontactpairmap_.clear();
   // read parameter lists from DRT::Problem
   sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
   scontact_     = DRT::Problem::Instance()->ContactDynamicParams();
@@ -285,7 +293,7 @@ btsolconstrnorm_(0.0)
   // check input parameters
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
    dserror("ERROR: The given input parameters are not for beam contact");
-  if (scontact_.get<double>("PENALTYPARAM") <= 0.0)
+  if (scontact_.get<double>("PENALTYPARAM") < 0.0)
    dserror("ERROR: The penalty parameter has to be positive.");
 
   // initialize contact element pairs
@@ -328,11 +336,76 @@ btsolconstrnorm_(0.0)
   if(!pdiscret_.Comm().MyPID())
   {
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_penalty )
-      std::cout << "Strategy               = Penalty" << std::endl;
+      std::cout << "Strategy                 Penalty" << std::endl;
     else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_uzawa)
-      std::cout << "Strategy               = Uzawa Augmented Lagrange" << std::endl;
+    {
+      std::cout << "Strategy                 Augmented Lagrange" << std::endl;
+      if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW")!=INPAR::BEAMCONTACT::pl_lp)
+        dserror("Augmented Lagrange strategy only implemented for Linear penalty law (LinPen) so far!");
+
+    }
+
+    switch (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW"))
+    {
+      case INPAR::BEAMCONTACT::pl_lp:
+      {
+        std::cout << "Regularization Type      Linear penalty law!" << std::endl;
+        break;
+      }
+      case INPAR::BEAMCONTACT::pl_qp:
+      {
+        std::cout << "Regularization Type      Quadratic penalty law!" << std::endl;
+        break;
+      }
+      case INPAR::BEAMCONTACT::pl_lnqp:
+      {
+        std::cout << "Regularization Type      Linear penalty law with quadratic regularization for negative gaps!" << std::endl;
+        break;
+      }
+      case INPAR::BEAMCONTACT::pl_lpqp:
+      {
+        std::cout << "Regularization Type      Linear penalty law with quadratic regularization for positive gaps!" << std::endl;
+        break;
+      }
+      case INPAR::BEAMCONTACT::pl_lpcp:
+      {
+        std::cout << "Regularization Type      Linear penalty law with cubic regularization for positive gaps!" << std::endl;
+        break;
+      }
+      case INPAR::BEAMCONTACT::pl_lpdqp:
+      {
+        std::cout << "Regularization Type      Linear penalty law with double quadratic regularization for positive gaps!" << std::endl;
+        break;
+      }
+      case INPAR::BEAMCONTACT::pl_lpep:
+      {
+        std::cout << "Regularization Type      Linear penalty law with exponential regularization for positive gaps!" << std::endl;
+        break;
+      }
+    }
+
+    if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW")!=INPAR::BEAMCONTACT::pl_lp)
+    {
+      std::cout << "Regularization Params    BEAMS_PENREGPARAM_G0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_G0",-1.0)\
+      << ",  BEAMS_PENREGPARAM_F0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_F0",-1.0)\
+      << ",  BEAMS_PENREGPARAM_C0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_C0",-1.0) << std::endl;
+    }
+
+    if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Damping>(sbeamcontact_,"BEAMS_DAMPING") == INPAR::BEAMCONTACT::bd_no )
+      std::cout << "Damping                  No Contact Damping Force Applied!" << std::endl;
     else
-      dserror("Unrecognized strategy");
+    {
+      std::cout << "Damping                  BEAMS_DAMPINGPARAM = " << sbeamcontact_.get<double>("BEAMS_DAMPINGPARAM",-1.0)\
+      << ",    BEAMS_DAMPREGPARAM1 = " << sbeamcontact_.get<double>("BEAMS_DAMPREGPARAM1",-1.0)\
+      << ",   BEAMS_DAMPREGPARAM2 = " << sbeamcontact_.get<double>("BEAMS_DAMPREGPARAM2",-1.0) << std::endl;
+    }
+
+    if (sbeamcontact_.get<double>("BEAMS_BASICSTIFFGAP",-1000.0)!=-1000.0)
+    {
+      std::cout << "Linearization            For gaps < -" << sbeamcontact_.get<double>("BEAMS_BASICSTIFFGAP",-1000.0)\
+      << " only the basic part of the contact linearization is applied!"<< std::endl;
+    }
+
     std::cout <<"================================================================\n" << std::endl;
   }
 
@@ -361,10 +434,9 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       Epetra_Vector& fres,
                                       const Epetra_Vector& disrow,
-                                      Teuchos::ParameterList beamcontactparams,
+                                      Teuchos::ParameterList timeintparams,
                                       bool newsti)
 {
-
   // map linking node numbers and current node positions
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
   currentpositions.clear();
@@ -387,7 +459,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
      double t_end = Teuchos::Time::wallTime() - t_start;
      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
      if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-       std::cout << "           Octree Search: " << t_end << " seconds, "<< std::endl;
+       std::cout << "            Octree Search: " << t_end << " seconds, "<< std::endl;
   }
   //**********************************************************************
   // brute-force search (loop over all elements and find closest pairs)
@@ -455,38 +527,35 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // This procedure looks a bit circumstantial at first glance: However, it is not possible to solely use btsolelementpairs
   // and to simply delete oldpairs_ at the end of a time step if the new gap function definition is used, since the latter needs
   // history variables of the last time step which are stored in the oldpairs_ vector.
-  // Only beam-to-beam contact pairs (not beam-to-solid or beam-to-shpere pairs) need this history information.
+  // Only beam-to-beam contact pairs (not beam-to-solid or beam-to-spere pairs) need this history information.
   for (int k=0;k<(int)btsolelementpairs.size();k++)
   {
     DRT::Element* ele1 = (btsolelementpairs[k])[0];
     DRT::Element* ele2 = (btsolelementpairs[k])[1];
     int currid1 = ele1->Id();
     int currid2 = ele2->Id();
-    bool foundlasttimestep = false;
-    for (int m=0;m<(int)oldpairs_.size();m++)
-    {
-      int id1 = (oldpairs_[m]->Element1())->Id();
-      int id2 = (oldpairs_[m]->Element2())->Id();
-      // pair already exists
-      if ((id1 == currid1 && id2 == currid2) || (id1 == currid2 && id2 == currid1))
-      {
-        //Add existing pair of last time step (stored in oldpairs_) to new pairs_ vector
-        //So far, this is only done if the new gap function is applied.
-        if (!PairAllreadyExisting(currid1,currid2) and newgapfunction_)
-        {
-          pairs_.push_back(oldpairs_[m]);
-          if (id1<id2)
-            contactpairmap_[std::make_pair(id1,id2)] = pairs_[pairs_.size()-1];
-          else
-            contactpairmap_[std::make_pair(id2,id1)] = pairs_[pairs_.size()-1];
 
-          foundlasttimestep = true;
-        }
-        break;
-      }
+    bool foundlasttimestep = false;
+    bool isalreadyinpairs = false;
+
+    if(contactpairmap_.find(std::make_pair(currid1,currid2))!=contactpairmap_.end())
+      isalreadyinpairs = true;
+
+    if(oldcontactpairmap_.find(std::make_pair(currid1,currid2))!=oldcontactpairmap_.end())
+      foundlasttimestep = true;
+
+    if(!isalreadyinpairs and foundlasttimestep)
+    {
+      pairs_.push_back(oldcontactpairmap_[std::make_pair(currid1,currid2)]);
+      if (currid1<currid2)
+        contactpairmap_[std::make_pair(currid1,currid2)] = pairs_[pairs_.size()-1];
+      else
+        dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+
+      isalreadyinpairs = true;
     }
-    // create new contact pair and add to pairs_ if not found before
-    if (!foundlasttimestep && !PairAllreadyExisting(currid1,currid2))
+
+    if(!isalreadyinpairs)
     {
       //beam-to-beam pair
       if(BEAMCONTACT::BeamElement(*(btsolelementpairs[k])[1]))
@@ -494,20 +563,22 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
         //Add new contact pair objcect: The auxiliary_instance of the abstract class Beam3contactinterface is only needed here in order to call
         //the function Impl() which creates an instance of the templated class Beam3contactnew<numnodes, numnodalvalues> !
         pairs_.push_back(CONTACT::Beam3contactinterface::Impl(numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
-
-        if (currid1<currid2)
+        if (currid1<=currid2)
           contactpairmap_[std::make_pair(currid1,currid2)] = pairs_[pairs_.size()-1];
         else
-          contactpairmap_[std::make_pair(currid2,currid1)] = pairs_[pairs_.size()-1];
+          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
       //beam-to-solid pair
       else
       {
         btsolpairs_.push_back(CONTACT::Beam3tosolidcontactinterface::Impl((btsolelementpairs[k])[1]->NumNode(),numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
       }
-
     }
   }
+
+  if(pdiscret_.Comm().MyPID()==0)
+    std::cout << "            Total number of pairs: " << pairs_.size() << std::endl;
+
   // update element state of all pairs with current positions (already calculated in SetCurrentPositions) and current tangents (will be calculated in SetState)
   SetState(currentpositions,disccol);
   // At this point we have all possible contact pairs_ with updated positions
@@ -532,6 +603,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // initialize contact stiffness and uncomplete global stiffness
   stiffc_ = Teuchos::rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
+
   // Loop over all pairs
   for (int i=0;i<(int)pairs_.size();++i)
   {
@@ -545,9 +617,13 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,contactpairmap_,beamcontactparams);
+      pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,contactpairmap_,timeintparams);
+      double gap = pairs_[i]->GetGap();
+      if (gap<unconvmaxgap_)
+        unconvmaxgap_ = gap;
     }
   }
+
   // Loop over all pairs
   for (int i=0;i<(int)btsolpairs_.size();++i)
   {
@@ -1024,15 +1100,25 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
 
         // if NOT neighbouring and NOT found before
         // create new beam3contact object and store it into pairs_
-        if (!elements_neighbouring && !foundbefore)
+
+        //if (!elements_neighbouring && !foundbefore)
+        if (!elements_neighbouring && !foundbefore && CloseMidpointDistance(ele1, ele2, currentpositions))
         {
           std::vector<DRT::Element*> contactelementpair;
           contactelementpair.clear();
-          contactelementpair.push_back(ele1);
-          contactelementpair.push_back(ele2);
+          if (ele1->Id()<ele2->Id())
+          {
+            contactelementpair.push_back(ele1);
+            contactelementpair.push_back(ele2);
+          }
+          else
+          {
+            contactelementpair.push_back(ele2);
+            contactelementpair.push_back(ele1);
+          }
           newpairs.push_back(contactelementpair);
-         }
-       }
+        }
+      }
     }
   } //LOOP 1
   return newpairs;
@@ -1043,7 +1129,6 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::SearchPossibleC
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ComputeSearchRadius()
 {
-
   // some local variables
   double charactlength = 0.0;
   double globalcharactlength = 0.0;
@@ -1066,7 +1151,9 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
   // compute the search radius
   // the factor is only empiric yet it must be greater than 2
   // in order to account for the circular beam cross sections
-  searchradius_ = 2.5 * globalcharactlength;
+  searchradius_ = 5.0 * globalcharactlength;
+  double searchboxinc=sbeamcontact_.get<double>("BEAMS_ADDEXTVAL", 0.0);
+  sphericalsearchradius_ = 2.0*searchboxinc + globalcharactlength;
 
   // some information for the user
   if (Comm().MyPID()==0)
@@ -1165,18 +1252,90 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   GmshOutput(disrow, timestep, newtonstep, true);
 #endif
 
-  // print some data to screen
-  ConsoleOutput();
+  // First, we check some restrictions concerning the new gap function definition
+  for (int i=0;i<(int)pairs_.size();++i)
+  {
+    // only relevant if current pair is active
+    if (pairs_[i]->GetContactFlag() == true)
+    {
+      if (pairs_[i]->GetNewGapStatus() == true)
+      {
+        //Necessary when using the new gap function definition (ngf_=true) for very slender beams in order to avoid crossing:
+        //For very low penalty parameters and very slender beams it may happen that in the converged configuration the remaining penetration is
+        //larger than the sum of the beam radii (R1+R2), i.e. the beam centerlines remain crossed even in the converged configuration. In this
+        //case the sign of the normal vector normal_ has to be inverted at the end of the time step, since this quantity is stored in normal_old_ afterwards.
+        //Otherwise the contact force would be applied in the wrong direction and the beams could cross!
+        pairs_[i]->InvertNormal();
+        Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+        if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
+          std::cout << "Warning: Penetration to large, choose higher penalty parameter!" << std::endl;
+      }
+
+      if (pairs_[i]->GetShiftStatus() == true)
+      {
+      //In case the contact points of two beams are identical (i.e. r1=r2), the nodal coordinates of one beam are shifted by a small
+      //predefined value in order to enable evaluation of the contact pair. This makes the Newton scheme more robust. However,
+      //in the converged configuration we want to have the real nodal positions for all contact pairs!!!
+      dserror("Contact pair with identical contact points (i.e. r1=r2) not possible in the converged configuration!");
+      }
+    }
+  }
 
   // set normal_old_=normal_ for all contact pairs at the end of the time step
-  if(newgapfunction_) ShiftAllNormal();
+  UpdateAllPairs();
 
+  //Next we want to find out the maximal and minimal gap
+  double maxgap = 0.0;
+  double maxallgap = 0.0;
+  double mingap = 0.0;
+  double minallgap = 0.0;
+
+  // loop over all pairs to find all gaps
+  for (int i=0;i<(int)pairs_.size();++i)
+  {
+    // only relevant if current pair is active
+    if (pairs_[i]->GetContactFlag() == true)
+    {
+      double gap = pairs_[i]->GetGap();
+
+      if (gap>maxgap)
+        maxgap = gap;
+
+      if (gap<mingap)
+        mingap = gap;
+    }
+  }
+
+  Comm().MaxAll(&maxgap,&maxallgap,1);
+  Comm().MinAll(&mingap,&minallgap,1);
+
+  if (maxallgap>maxgap_)
+    maxgap_ = maxallgap;
+
+  if (minallgap<mingap_)
+    mingap_ = minallgap;
+
+   // print results to screen
+  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
+  {
+    std::cout << std::endl << "*********************************************"<<std::endl;
+    std::cout << "Maximal unconv. Gap = " << unconvmaxgap_ << std::endl;
+    std::cout << "Maximal Gap = " << maxgap_ << std::endl;
+    std::cout << "Minimal Gap = " << mingap_ << std::endl;
+    std::cout<<"*********************************************"<<std::endl;
+  }
+
+  // print some data to screen
+  ConsoleOutput();
   //store pairs_ in oldpairs_ to be available in next time step
-  //this is needed for the new gapfunction definition and also for the output at the end of an time step
+  //this is needed for the new gapfunction defintion and also for the output at the end of an time step
   oldpairs_.clear();
   oldpairs_.resize(0);
   oldpairs_ = pairs_;
 
+  oldcontactpairmap_.clear();
+  oldcontactpairmap_ = contactpairmap_;
   // clear potential contact pairs
   pairs_.clear();
   pairs_.resize(0);
@@ -1200,7 +1359,6 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   //**********************************************************************
   // create filename for ASCII-file for output
   //**********************************************************************
-
   //Only write out put every OUTPUTEVERY^th step
   if (timestep%OUTPUTEVERY!=0)
     return;
@@ -1210,7 +1368,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
-  filename << "o/gmsh_output/";
+  filename << "/home/meier/workspace/o/gmsh_output/";
   if (timestep<1000000)
     filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
   else /*(timestep>=1000000)*/
@@ -1252,61 +1410,66 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
   //**********************************************************************
   // gsmh output beam elements as prisms
-  // NOT YET AVAILABLE FOR THE PARALLEL CASE!
   //**********************************************************************
-  if (Comm().NumProc() == 1)
-  {
-    // approximation of the circular cross section with n prisms
-    int n=N_CIRCUMFERENTIAL;        // CHOOSE N HERE
-    if (n<3) n=3;    // minimum is 3, else no volume is defined.
-    int n_axial=N_Axial; //number of devisions of element in axial direction
 
-    //extract fully overlapping displacement vector on contact discretization from
-    //displacement vector in row map format on problem discretization
-    Epetra_Vector disccol(*BTSolDiscret().DofColMap(),true);
-    ShiftDisMap(disrow, disccol);
+  // approximation of the circular cross section with n prisms
+  int n=N_CIRCUMFERENTIAL;        // CHOOSE N HERE
+  if (n<3) n=3;    // minimum is 3, else no volume is defined.
+  int n_axial=N_Axial; //number of devisions of element in axial direction
+
+  //extract fully overlapping displacement vector on contact discretization from
+  //displacement vector in row map format on problem discretization
+  Epetra_Vector disccol(*BTSolDiscret().DofColMap(),true);
+  ShiftDisMap(disrow, disccol);
 
     // do output to file in c-style
     FILE* fp = NULL;
 
+  //The whole gmsh output is done by proc 0!
+  if (btsoldiscret_->Comm().MyPID()==0)
+  {
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
-
     std::stringstream gmshfileheader;
-    // write output to temporary std::stringstream;
-    gmshfileheader <<"General.BackgroundGradient = 0;\n";
-    gmshfileheader <<"View.LineType = 1;\n";
-    gmshfileheader <<"View.LineWidth = 1.4;\n";
-    gmshfileheader <<"View.PointType = 1;\n";
-    gmshfileheader <<"View.PointSize = 3;\n";
-    gmshfileheader <<"General.ColorScheme = 1;\n";
-    gmshfileheader <<"General.Color.Background = {255,255,255};\n";
-    gmshfileheader <<"General.Color.Foreground = {255,255,255};\n";
-    //gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
-    gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
-    gmshfileheader <<"General.Color.Text = {0,0,0};\n";
-    gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
-    gmshfileheader <<"General.Color.SmallAxes = {0,0,0};\n";
-    gmshfileheader <<"General.Color.AmbientLight = {25,25,25};\n";
-    gmshfileheader <<"General.Color.DiffuseLight = {255,255,255};\n";
-    gmshfileheader <<"General.Color.SpecularLight = {255,255,255};\n";
-    gmshfileheader <<"View.ColormapAlpha = 1;\n";
-    gmshfileheader <<"View.ColormapAlphaPower = 0;\n";
-    gmshfileheader <<"View.ColormapBeta = 0;\n";
-    gmshfileheader <<"View.ColormapBias = 0;\n";
-    gmshfileheader <<"View.ColormapCurvature = 0;\n";
-    gmshfileheader <<"View.ColormapInvert = 0;\n";
-    gmshfileheader <<"View.ColormapNumber = 2;\n";
-    gmshfileheader <<"View.ColormapRotation = 0;\n";
-    gmshfileheader <<"View.ColormapSwap = 0;\n";
-    gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
+      //write output to temporary std::stringstream;
+//    gmshfileheader <<"General.BackgroundGradient = 0;\n";
+//    gmshfileheader <<"View.LineType = 1;\n";
+//    gmshfileheader <<"View.LineWidth = 1.4;\n";
+//    gmshfileheader <<"View.PointType = 1;\n";
+//    gmshfileheader <<"View.PointSize = 3;\n";
+//    gmshfileheader <<"General.ColorScheme = 1;\n";
+//    gmshfileheader <<"General.Color.Background = {255,255,255};\n";
+//    gmshfileheader <<"General.Color.Foreground = {255,255,255};\n";
+//    //gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+//    gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
+//    gmshfileheader <<"General.Color.Text = {0,0,0};\n";
+//    gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
+//    gmshfileheader <<"General.Color.SmallAxes = {0,0,0};\n";
+//    gmshfileheader <<"General.Color.AmbientLight = {25,25,25};\n";
+//    gmshfileheader <<"General.Color.DiffuseLight = {255,255,255};\n";
+//    gmshfileheader <<"General.Color.SpecularLight = {255,255,255};\n";
+//    gmshfileheader <<"View.ColormapAlpha = 1;\n";
+//    gmshfileheader <<"View.ColormapAlphaPower = 0;\n";
+//    gmshfileheader <<"View.ColormapBeta = 0;\n";
+//    gmshfileheader <<"View.ColormapBias = 0;\n";
+//    gmshfileheader <<"View.ColormapCurvature = 0;\n";
+//    gmshfileheader <<"View.ColormapInvert = 0;\n";
+//    gmshfileheader <<"View.ColormapNumber = 2;\n";
+//    gmshfileheader <<"View.ColormapRotation = 0;\n";
+//    gmshfileheader <<"View.ColormapSwap = 0;\n";
+//    gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
+
+    gmshfileheader <<"General.RotationCenterGravity=0;\n";
+    gmshfileheader <<"General.RotationCenterX=11;\n";
+    gmshfileheader <<"General.RotationCenterY=11;\n";
+    gmshfileheader <<"General.RotationCenterZ=11;\n";
 
     //write content into file and close it
     fprintf(fp, gmshfileheader.str().c_str());
     fclose(fp);
 
-    fp = fopen(filename.str().c_str(), "w");
-    //fp = fopen(filename.str().c_str(), "a");
+    //fp = fopen(filename.str().c_str(), "w");
+    fp = fopen(filename.str().c_str(), "a");
 
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Step T" << timestep;
@@ -1318,8 +1481,20 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     // finish step information
     gmshfilecontent << " \" {" << std::endl;
 
-    // loop over all column elements on this processor
-    for (int i=0;i<ColElements()->NumMyElements();++i)
+    // write content into file and close
+    fprintf(fp,gmshfilecontent.str().c_str());
+    fclose(fp);
+  }
+
+  // loop over the participating processors each of which appends its part of the output to one output file
+  if (btsoldiscret_->Comm().MyPID() == 0)
+  {
+
+    fp = fopen(filename.str().c_str(), "a");
+    std::stringstream gmshfilecontent;
+
+    //loop over fully overlapping column element map of proc 0
+    for (int i=0;i<FullElements()->NumMyElements();++i)
     {
       // get pointer onto current beam element
       DRT::Element* element = BTSolDiscret().lColElement(i);
@@ -1422,7 +1597,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         {
           dserror("Only 2-noded Kirchhoff elements possible so far!");
         }
-        GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+        if(N_CIRCUMFERENTIAL!=0)
+          GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+        else
+          GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
       }
       else if (eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
       {
@@ -1471,14 +1649,41 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         {
           dserror("Only 2-noded Kirchhoff elements possible so far!");
         }
-        GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
-        //GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
+        if(N_CIRCUMFERENTIAL!=0)
+          GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+        else
+          GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
       }
       else
       {
         dserror("Your chosen type of beam element is not allowed for beam contact!");
       }
-    }
+    }//loop over elements
+
+//    //loop over pairs vector in order to print normal vector
+//    for (int i=0;i<pairs_.size();++i)
+//    {
+//      if(pairs_[i]->Element1()->Id()==191 and pairs_[i]->Element2()->Id()==752)
+//      {
+//        Epetra_SerialDenseVector r1 = pairs_[i]->GetX1();
+//        Epetra_SerialDenseVector r2 = pairs_[i]->GetX2();
+//        Epetra_SerialDenseVector normal = pairs_[i]->GetNormal();
+//        double color = 0.5;
+//
+//        gmshfilecontent << "VP("<< std::scientific;
+//        gmshfilecontent << r2(0) << "," << r2(1) << "," << r2(2);
+//        gmshfilecontent << "){" << std::scientific;
+//        gmshfilecontent << normal(0) << "," << normal(1) << "," << normal(2);
+//        gmshfilecontent << "};"<< std::endl << std::endl;
+//
+//        gmshfilecontent << "SL("<< std::scientific;
+//        gmshfilecontent << r1(0) << "," << r1(1) << "," << r1(2) << ",";
+//        gmshfilecontent << r2(0) << "," << r2(1) << "," << r2(2);
+//        gmshfilecontent << "){" << std::scientific;
+//        gmshfilecontent << color << "," << color << "};"<< std::endl << std::endl;
+//      }
+//
+//    }//loop over pairs
 
     // finish data section of this view by closing curley brackets (somehow needed to get color)
     gmshfilecontent <<"SP(0.0,0.0,0.0){0.0,0.0};"<<std::endl;
@@ -1488,7 +1693,6 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     fprintf(fp,gmshfilecontent.str().c_str());
     fclose(fp);
   }
-
 
   return;
 }
@@ -1562,6 +1766,7 @@ void CONTACT::Beam3cmanager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
 void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
                                              Epetra_Vector& fres,
                                              const Epetra_Vector& disrow,
+                                             Teuchos::ParameterList timeintparams,
                                              bool newsti)
 {
   // since we will modify the graph of stiffmatrix by adding additional
@@ -1587,8 +1792,7 @@ void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
 
   // now redo Evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
-  Teuchos::ParameterList beamcontactparams;
-  Evaluate(stiffmatrix,fres,disrow,beamcontactparams,newsti);
+  Evaluate(stiffmatrix,fres,disrow,timeintparams,newsti);
 
   return;
 }
@@ -1618,9 +1822,6 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   int dim = (int)pairs_.size();
   int btsoldim = (int)btsolpairs_.size();
 
-  std::cout << "dim: " << dim << std::endl;
-  std::cout << "btsoldim: " << btsoldim << std::endl;
-
   // vector holding the values of the penetration relative to the radius of the beam with the smaller radius
   Epetra_SerialDenseVector gapvector(dim);
   Epetra_SerialDenseVector btsolgapvector(btsoldim);
@@ -1631,42 +1832,13 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   double btsollocnorm = 0.0;
   double btsolglobnorm = 0.0;
 
-  // First, we check some restrictions concerning the new gap function definition
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
-    // only relevant if current pair is active
-    if (pairs_[i]->GetContactFlag() == true)
-    {
-
-      if (pairs_[i]->GetNewGapStatus() == true)
-      {
-        //Necessary when using the new gap function definition (ngf_=true) for very slender beams in order to avoid crossing:
-        //For very low penalty parameters and very slender beams it may happen that in the converged configuration the remaining penetration is
-        //larger than the sum of the beam radii (R1+R2), i.e. the beam centerlines remain crossed even in the converged configuration. In this
-        //case the sign of the normal vector normal_ has to be inverted at the end of the time step, since this quantity is stored in normal_old_ afterwards.
-        //Otherwise the contact force would be applied in the wrong direction and the beams could cross!
-        pairs_[i]->InvertNormal();
-        Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-        if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-          std::cout << "Warning: Penetration to large, choose higher penalty parameter!" << std::endl;
-      }
-
-      if (pairs_[i]->GetShiftStatus() == true)
-      {
-      //In case the contact points of two beams are identical (i.e. r1=r2), the nodal coordinates of one beam are shifted by a small
-      //predefined value in order to enable evaluation of the contact pair. This makes the Newton scheme more robust. However,
-      //in the converged configuration we want to have the real nodal positions for all contact pairs!!!
-      dserror("Contact pair with identical contact points (i.e. r1=r2) not possible in the converged configuration!");
-      }
-    }
-  }
-
   // loop over all pairs to find all gaps
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // only relevant if current pair is active
     if (pairs_[i]->GetContactFlag() == true)
     {
+      totpenaltyenergy_ += pairs_[i]->GetEnergy();
 
 #ifdef RELCONSTRTOL
       // Retrieve beam radii
@@ -1724,21 +1896,22 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   Comm().MaxAll(&locnorm,&globnorm,1);
   Comm().MaxAll(&btsollocnorm,&btsolglobnorm,1);
 
-  // update penalty parameter if necessary
-  // (only possible for UZAWA AUGMENTED LAGRANGE strategy)
-  bool updatepp = false;
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
-  if (soltype==INPAR::CONTACT::solution_uzawa)
-      updatepp = IncreaseCurrentpp(globnorm);
+    //update penalty parameter: uncomment these lines  if necessary
+    //(only possible for AUGMENTED LAGRANGE strategy)
+//  bool updatepp = false;
+//  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
+//  if (soltype==INPAR::CONTACT::solution_auglag)
+//      updatepp = IncreaseCurrentpp(globnorm);
 
    // print results to screen
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if (Comm().MyPID()==0 && cnorm==NULL && ioparams.get<int>("STDOUTEVRY",0))
   {
     std::cout << std::endl << "*********************************************"<<std::endl;
+    std::cout << "Total Contact Energy = " << totpenaltyenergy_ << std::endl;
     std::cout << "Global Constraint Norm = " << globnorm << std::endl;
     std::cout << "Global BTS Constraint Norm = " << btsolglobnorm << std::endl;
-    if (updatepp) std::cout << "Updated penalty parameter = " << currentpp_ << std::endl;
+    std::cout << "Penalty parameter = " << currentpp_ << std::endl;
     std::cout<<"*********************************************"<<std::endl;
   }
 
@@ -1757,13 +1930,11 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
 /*----------------------------------------------------------------------*
  |  Shift normal vector to "normal_old_"                     meier 10/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::ShiftAllNormal()
+void CONTACT::Beam3cmanager::UpdateAllPairs()
 {
    // loop over all potential contact pairs
     for (int i=0;i<(int)pairs_.size();++i)
-      pairs_[i]->ShiftNormal();
-
-
+      pairs_[i]->UpdateClassVariablesStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -1863,11 +2034,12 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
         int id2 = (pairs_[i]->Element2())->Id();
         double gap = pairs_[i]->GetGap();
         double lm = pairs_[i]->Getlmuzawa() - currentpp_ * pairs_[i]->GetGap();
+        double force = pairs_[i]->GetContactForce();
 
         // print some output (use printf-method for formatted output)
         if (firstisinrowmap)
         {
-          printf("ACTIVE PAIR: %d & %d \t gap: %e \t lm: %e \n",id1,id2,gap,lm);
+          printf("ACTIVE PAIR: %d & %d \t gap: %e \t force: %e \t lm: %e \n",id1,id2,gap,force,lm);
           //printf("x1 = %e %e %e \t x2 = %e %e %e \n",x1[0],x1[1],x1[2],x2[0],x2[1],x2[2]);
           fflush(stdout);
         }
@@ -2517,6 +2689,13 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
       coord(j,1) = allcoord(j,i+1);
     }
 
+    //Output of element IDs
+    if (i==n_axial/2)
+    {
+      gmshfilecontent << "T3(" << std::scientific << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," << 17 << ")";
+      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
+    }
+
     // compute three dimensional angle theta
     for (int j=0;j<3;++j)
       axis[j] = coord(j,1) - coord(j,0);
@@ -2634,6 +2813,42 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
 }
 
 /*----------------------------------------------------------------------*
+ |  Compute gmsh output for N-noded elements (private)       meier 02/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n,
+                                              const int& n_axial,
+                                              const Epetra_SerialDenseMatrix& allcoord,
+                                              const DRT::Element* thisele,
+                                              std::stringstream& gmshfilecontent)
+{
+
+  // declaring variable for color of elements
+  double color = 1.0;
+  for (int i=0;i<(int)pairs_.size();++i)
+  {
+    // abbreviations
+    int id1 = (pairs_[i]->Element1())->Id();
+    int id2 = (pairs_[i]->Element2())->Id();
+    bool active = pairs_[i]->GetContactFlag();
+
+    // if element is memeber of an active contact pair, choose different color
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0;
+  }
+
+
+  for (int i=0;i<n_axial-1;i++)
+  {
+      gmshfilecontent << "SL("<< std::scientific;
+      gmshfilecontent << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << ",";
+      gmshfilecontent << allcoord(0,i+1) << "," << allcoord(1,i+1) << "," << allcoord(2,i+1);
+      gmshfilecontent << "){" << std::scientific;
+      gmshfilecontent << color << "," << color << "};" << std::endl;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Determine number of nodes and nodal DoFs of element      meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
@@ -2709,4 +2924,33 @@ double CONTACT::Beam3cmanager::CalcEleRadius(const DRT::Element* ele)
 
 
   return eleradius;
+}
+
+/*----------------------------------------------------------------------*
+ | Is element midpoint distance smaller than search radius?  meier 02/14|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2, std::map<int,LINALG::Matrix<3,1> >& currentpositions)
+{
+
+  const DRT::Node* node1ele1 = ele1->Nodes()[0];
+  const DRT::Node* node2ele1 = ele1->Nodes()[1];
+  const DRT::Node* node1ele2 = ele2->Nodes()[0];
+  const DRT::Node* node2ele2 = ele2->Nodes()[1];
+
+  LINALG::Matrix<3,1> midpos1(true);
+  LINALG::Matrix<3,1> midpos2(true);
+  LINALG::Matrix<3,1> diffvector(true);
+
+  for(int i=0;i<3;i++)
+  {
+    midpos1(i) = 0.5*((currentpositions[node1ele1->Id()])(i)+(currentpositions[node2ele1->Id()])(i));
+    midpos2(i) = 0.5*((currentpositions[node1ele2->Id()])(i)+(currentpositions[node2ele2->Id()])(i));
+    diffvector(i) = midpos1(i) - midpos2(i);
+  }
+
+  if(diffvector.Norm2()<sphericalsearchradius_)
+    return true;
+  else
+    return false;
+
 }

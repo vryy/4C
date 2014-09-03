@@ -56,6 +56,25 @@ namespace INPAR
       bsm_cpp           ///< smoothing only for the closest point projection; element evaluation without smoothing"
     };
 
+    enum Damping
+    {
+      bd_no,           ///< no damping force
+      bd_yes           ///< application of a contact damping force
+    };
+
+    /// Application of a smoothed tangent field
+    /// (this enum represents the input file parameter BEAMS_SMOOTHING)
+    enum PenaltyLaw
+    {
+      pl_lp,          ///< linear penalty law
+      pl_qp,          ///< quadratic penalty law
+      pl_lnqp,        ///< linear penalty law with quadratic regularization for negative gaps
+      pl_lpqp,        ///< linear penalty law with quadratic regularization for positive gaps
+      pl_lpcp,        ///< linear penalty law with cubic regularization for positive gaps
+      pl_lpdqp,       ///< linear penalty law with double quadratic regularization for positive gaps
+      pl_lpep         ///< linear penalty law with exponential regularization for positive gaps
+    };
+
     /// Beam Contact Octree  and Bounding Box Type
     /// (this enum represents the input file parameter BEAMS_OCTREEBBOX)
     enum OctreeType

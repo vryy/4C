@@ -75,6 +75,10 @@ PENALTYPARAM                    1e-5
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
+BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_BASICSTIFFGAP             0.01
+BEAMS_OCTREE                    none
+BEAMS_ADDEXTVAL                 2.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          2

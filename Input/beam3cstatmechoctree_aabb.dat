@@ -77,7 +77,9 @@ UZAWAMAXSTEPS                   25
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
+BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
 BEAMS_OCTREE                    octree_axisaligned
+BEAMS_ADDEXTVAL                 0.04
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std
