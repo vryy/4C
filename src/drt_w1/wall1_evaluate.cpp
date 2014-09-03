@@ -681,11 +681,6 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
                                           Epetra_SerialDenseVector& elevec1,
                                           Epetra_SerialDenseMatrix* elemat1)
 {
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -703,45 +698,39 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   const int iel = NumNode();
 
   // do the isogeometric extras --- get knots and weights
-  std::vector<Epetra_SerialDenseVector> myknots(2);
+  std::vector<Epetra_SerialDenseVector> myknots(numdim_);
   Epetra_SerialDenseVector weights(iel);
 
   if(Shape()==DRT::Element::nurbs4
      ||
      Shape()==DRT::Element::nurbs9)
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-      bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+    bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
-      // skip zero sized elements in knot span --- they correspond to interpolated nodes
-      if(zero_sized)
-      {
-        return(0);
-      }
+    // skip zero sized elements in knot span --- they correspond to interpolated nodes
+    if(zero_sized)
+    {
+      return(0);
+    }
 
-      for (int inode=0; inode<iel; ++inode)
-      {
-        DRT::NURBS::ControlPoint* cp
-          =
-          dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+    for (int inode=0; inode<iel; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
 
-        weights(inode) = cp->W();
-      }
+      weights(inode) = cp->W();
+    }
   }
 
   // general arrays
-  int ngauss = 0;  // total number of Gauss points
-  Epetra_SerialDenseMatrix xjm(2,2);  // iso-parametric Jacobian
-  double det;  // determinant of iso-parametric Jacobian
+  Epetra_SerialDenseMatrix xjm(numdim_,numdim_);  // iso-parametric Jacobian
+  double det=0.0;  // determinant of iso-parametric Jacobian
 
   // quad, tri, etc
   const DiscretizationType distype = Shape();
-
-  // number of DOFs at each element node
-  const int numdf = 2;
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
@@ -752,12 +741,10 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   // shape functions
   Epetra_SerialDenseVector funct(iel);
   // natural derivatives of shape funcions
-  Epetra_SerialDenseMatrix deriv(2,iel);
+  Epetra_SerialDenseMatrix deriv(numdim_,iel);
 
   // reference co-ordinates of element nodes
-  Epetra_SerialDenseMatrix xrefe(2,iel);
-  // current co-ordinates of element nodes
-  Epetra_SerialDenseMatrix xcure(2,iel);
+  Epetra_SerialDenseMatrix xrefe(numdim_,iel);
 
 
   /*----------------------------------------------------- geometry update */
@@ -765,15 +752,13 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   {
     xrefe(0,k) = Nodes()[k]->X()[0];
     xrefe(1,k) = Nodes()[k]->X()[1];
-
-    xcure(0,k) = xrefe(0,k) + mydisp[k*numdf+0];
-    xcure(1,k) = xrefe(1,k) + mydisp[k*numdf+1];
   }
 
 
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
+  const std::vector<int>* spa_func = condition.Get<std::vector<int> >("funct");
 
   /*=================================================== integration loops */
   for (int ip=0; ip<intpoints.nquad; ++ip)
@@ -815,21 +800,50 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
     double fac=0;
     fac = wgt * det;
 
+    double functfac = 1.0;
+    int functnum = -1;
+
     // load vector ar
-    double ar[2];
+    double ar[noddof_];
     // loop the dofs of a node
     // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
-    for (int i=0; i<2; ++i)
+    for (int i=0; i<noddof_; ++i)
     {
-      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefac;
+      if ((*onoff)[i]) // is this dof activated?
+      {
+        // factor given by spatial function
+        if (spa_func)
+          functnum = (*spa_func)[i];
+
+        if (functnum > 0)
+        {
+          // calculate reference position of GP
+          LINALG::SerialDenseMatrix gp_coord(1, numdim_);
+          gp_coord.Multiply('T', 'T', 1.0, funct, xrefe, 0.0);
+
+          // write coordinates in another datatype
+          double gp_coord2[3]; // the position vector has to be given in 3D!!!
+          for (int k = 0; k < numdim_; k++)
+            gp_coord2[k] = gp_coord(0, k);
+          for (int k = numdim_; k < 3; k++) // set a zero value for the remaining spatial directions
+            gp_coord2[k] = 0.0;
+          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+          //evaluate function at current gauss point
+          functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(i,
+              coordgpref, time, NULL);
+        }
+        else
+          functfac = 1.0;
+      }
+      ar[i] = fac * (*val)[i] * curvefac * functfac;
     }
 
     // add load components
-    for (int node=0; node<NumNode(); ++node)
-      for (int dof=0; dof<2; ++dof)
-         elevec1[node*2+dof] += funct[node] * ar[dof];
+    for (int node=0; node<iel; ++node)
+      for (int dof=0; dof<noddof_; ++dof)
+         elevec1[node*noddof_+dof] += funct[node] * ar[dof];
 
-    ngauss++;
   } // for (int ip=0; ip<totngp; ++ip)
 
   // finished
