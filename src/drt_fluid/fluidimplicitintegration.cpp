@@ -59,6 +59,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "fluid_windkessel_optimization.H"
 
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
@@ -112,6 +113,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   fldgrdisp_(Teuchos::null),
   velatmeshfreenodes_(Teuchos::null),
   locsysman_(Teuchos::null),
+  impedancebc_(Teuchos::null),
+  impedancebc_optimization_(Teuchos::null),
+  isimpedancebc_(false),
   massmat_(Teuchos::null),
   logenergy_(Teuchos::null)
 {
@@ -192,34 +196,9 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   Reset();
 
-  // initialize flow-rate and flow-volume vectors (fixed to length of four,
-  // for the time being) in case of flow-dependent pressure boundary conditions,
-  // including check of respective conditions
+  // initialize nonlinear boundary conditions
   if (nonlinearbc_)
-  {
-    std::vector<DRT::Condition*> flowdeppressureline;
-    discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
-    std::vector<DRT::Condition*> flowdeppressuresurf;
-    discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
-
-    // check number of boundary conditions
-    if (flowdeppressureline.size() > 0 or flowdeppressuresurf.size() > 0)
-    {
-      // initialize vectors for flow rate and volume
-      flowratenp_(true);
-      flowratenpi_(true);
-      flowraten_(true);
-      flowratenm_(true);
-
-      flowvolumenp_(true);
-      flowvolumenpi_(true);
-      flowvolumen_(true);
-      flowvolumenm_(true);
-
-      if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
-        dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
-    }
-  }
+    InitNonlinearBC();
 
   // ---------------------------------------------------------------------
   // Create LocSysManager, if needed (used for LocSys-Dirichlet BCs)
@@ -512,6 +491,63 @@ void FLD::FluidImplicitTimeInt::Init()
 
   return;
 } // FluidImplicitTimeInt::Init()
+
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm for nonlinear BCs                   thon 09/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::InitNonlinearBC()
+{
+  // initialize flow-rate and flow-volume vectors (fixed to length of four,
+  // for the time being) in case of flow-dependent pressure boundary conditions,
+  // including check of respective conditions.
+  std::vector<DRT::Condition*> flowdeppressureline;
+  discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+  std::vector<DRT::Condition*> flowdeppressuresurf;
+  discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+  std::vector<DRT::Condition*> impedancecond;
+  discret_->GetCondition("ImpedanceCond",impedancecond);
+
+  // check number of flow-rate and flow-volume boundary conditions
+  if (flowdeppressureline.size() > 0 or flowdeppressuresurf.size() > 0)
+  {
+    // initialize vectors for flow rate and volume
+    flowratenp_(true);
+    flowratenpi_(true);
+    flowraten_(true);
+    flowratenm_(true);
+
+    flowvolumenp_(true);
+    flowvolumenpi_(true);
+    flowvolumen_(true);
+    flowvolumenm_(true);
+
+    if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
+      dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
+  }
+
+  // check number of impedance boundary conditions
+  if (impedancecond.size() > 0)
+  {
+    #ifdef D_ALE_BFLOW
+      if (alefluid_)
+      {
+        discret_->ClearState();
+        discret_->SetState("dispnp", dispnp_);
+      }
+    #endif // D_ALE_BFLOW
+
+    impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
+    impedancebc_optimization_ = Teuchos::rcp(new UTILS::FluidWkOptimizationWrapper(discret_, *output_, impedancebc_, dta_) );
+    isimpedancebc_ = true; //Set bool to ture since there is an impedance BC
+
+    //Test if also AVM3 is used
+    fssgv_ = DRT::INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(params_->sublist("TURBULENCE MODEL"),"FSSUGRVISC");
+    if (fssgv_ != INPAR::FLUID::no_fssgv)
+      dserror("The functionality of impedance BC together with AVM3 is not known. Take a look into function AVM3Preparation()");
+
+  }
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1125,7 +1161,16 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
   // application of potential nonlinear boundary conditions to system
   //----------------------------------------------------------------------
-  if (nonlinearbc_) ApplyNonlinearBoundaryConditions();
+  if (nonlinearbc_)
+  {
+    if (isimpedancebc_)
+    {
+      // update impedance boundary condition
+      impedancebc_->UpdateResidual(residual_);
+    }
+
+    ApplyNonlinearBoundaryConditions();
+  }
 
   //----------------------------------------------------------------------
   // update surface tension (free surface flow only)
@@ -2966,39 +3011,9 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     dispn_ ->Update(1.0,*dispnp_,0.0);
   }
 
-  // update flow-rate and flow-volume vectors in case of flow-dependent pressure
-  // boundary conditions,
+  // update flow-rate, flow-volume and impedance vectors in case of flow-dependent pressure boundary conditions,
   if (nonlinearbc_)
-  {
-    std::vector<DRT::Condition*> flowdeppressureline;
-    discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
-    std::vector<DRT::Condition*> flowdeppressuresurf;
-    discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
-
-    if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
-    {
-      for (int i = 0; i < 4; i++)
-      {
-        flowratenm_(i) = flowraten_(i);
-        flowraten_(i)  = flowratenp_(i);
-
-        flowvolumenm_(i) = flowvolumen_(i);
-        flowvolumen_(i)  = flowvolumenp_(i);
-      }
-
-      // close this time step also in output file
-      if (myrank_ == 0)
-      {
-        const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
-        std::ofstream f1;
-        f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
-
-        f1 << "\n";
-        f1.flush();
-        f1.close();
-      }
-    }
-  }
+    TimeUpdateNonlinearBC();
 
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null)
@@ -3011,6 +3026,75 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
+
+
+/*----------------------------------------------------------------------*
+ | Update NonlinearBCs                                       thon 09/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
+{
+
+  std::vector<DRT::Condition*> flowdeppressureline;
+  discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+  std::vector<DRT::Condition*> flowdeppressuresurf;
+  discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+  if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      flowratenm_(i) = flowraten_(i);
+      flowraten_(i)  = flowratenp_(i);
+
+      flowvolumenm_(i) = flowvolumen_(i);
+      flowvolumen_(i)  = flowvolumenp_(i);
+    }
+
+    // close this time step also in output file
+    if (myrank_ == 0)
+    {
+      const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
+      std::ofstream f1;
+      f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
+
+      f1 << "\n";
+      f1.flush();
+      f1.close();
+    }
+  }
+
+  if (isimpedancebc_)
+    {
+    // -------------------------------------------------------------------
+    // treat impedance BC
+    // note: these methods return without action, if the problem does not
+    //       have impedance boundary conditions
+    // -------------------------------------------------------------------
+    discret_->ClearState();
+    discret_->SetState("velaf",velnp_);
+    discret_->SetState("hist",hist_);
+
+    #ifdef D_ALE_BFLOW
+      if (alefluid_)
+      {
+        discret_->SetState("dispnp", dispn_);
+      }
+    #endif //D_ALE_BFLOW
+
+    //Do actual calculations
+    impedancebc_->FlowRateCalculation(time_,dta_);
+    impedancebc_->OutflowBoundary(time_,dta_,theta_);
+
+    // get the parameters needed to be optimized
+    Teuchos::ParameterList WkOpt_params;
+    WkOpt_params.set<double> ("total time", time_);
+    WkOpt_params.set<double> ("time step size", dta_);
+    impedancebc_->getResultsOfAPeriod(WkOpt_params);
+
+    // update wind kessel optimization condition
+    impedancebc_optimization_->Solve(WkOpt_params);
+    }
+}
 
 /*----------------------------------------------------------------------*
  | Calculate Acceleration                                               |
@@ -3357,43 +3441,9 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("dispnm",dispnm_);
       }
 
-      // flow rate and flow volume in case of flow-dependent pressure bc
+      // flow rate, flow volume and impedance in case of flow-dependent pressure bc
       if (nonlinearbc_)
-      {
-        std::vector<DRT::Condition*> flowdeppressureline;
-        discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
-        std::vector<DRT::Condition*> flowdeppressuresurf;
-        discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
-
-        if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
-        {
-          output_->WriteDouble("flowratenp0",flowratenp_(0));
-          output_->WriteDouble("flowratenp1",flowratenp_(1));
-          output_->WriteDouble("flowratenp2",flowratenp_(2));
-          output_->WriteDouble("flowratenp3",flowratenp_(3));
-          output_->WriteDouble("flowraten0", flowraten_(0));
-          output_->WriteDouble("flowraten1", flowraten_(1));
-          output_->WriteDouble("flowraten2", flowraten_(2));
-          output_->WriteDouble("flowraten3", flowraten_(3));
-          output_->WriteDouble("flowratenm0",flowratenm_(0));
-          output_->WriteDouble("flowratenm1",flowratenm_(1));
-          output_->WriteDouble("flowratenm2",flowratenm_(2));
-          output_->WriteDouble("flowratenm3",flowratenm_(3));
-
-          output_->WriteDouble("flowvolumenp0",flowvolumenp_(0));
-          output_->WriteDouble("flowvolumenp1",flowvolumenp_(1));
-          output_->WriteDouble("flowvolumenp2",flowvolumenp_(2));
-          output_->WriteDouble("flowvolumenp3",flowvolumenp_(3));
-          output_->WriteDouble("flowvolumen0", flowvolumen_(0));
-          output_->WriteDouble("flowvolumen1", flowvolumen_(1));
-          output_->WriteDouble("flowvolumen2", flowvolumen_(2));
-          output_->WriteDouble("flowvolumen3", flowvolumen_(3));
-          output_->WriteDouble("flowvolumenm0",flowvolumenm_(0));
-          output_->WriteDouble("flowvolumenm1",flowvolumenm_(1));
-          output_->WriteDouble("flowvolumenm2",flowvolumenm_(2));
-          output_->WriteDouble("flowvolumenm3",flowvolumenm_(3));
-        }
-      }
+        OutputNonlinearBC();
 
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
@@ -3449,43 +3499,9 @@ void FLD::FluidImplicitTimeInt::Output()
     output_->WriteVector("veln", veln_);
     output_->WriteVector("velnm",velnm_);
 
-    // flow rate and flow volume in case of flow-dependent pressure bc
+    // flow rate, flow volume and impedance in case of flow-dependent pressure bc
     if (nonlinearbc_)
-    {
-      std::vector<DRT::Condition*> flowdeppressureline;
-      discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
-      std::vector<DRT::Condition*> flowdeppressuresurf;
-      discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
-
-      if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
-      {
-        output_->WriteDouble("flowratenp0",flowratenp_(0));
-        output_->WriteDouble("flowratenp1",flowratenp_(1));
-        output_->WriteDouble("flowratenp2",flowratenp_(2));
-        output_->WriteDouble("flowratenp3",flowratenp_(3));
-        output_->WriteDouble("flowraten0", flowraten_(0));
-        output_->WriteDouble("flowraten1", flowraten_(1));
-        output_->WriteDouble("flowraten2", flowraten_(2));
-        output_->WriteDouble("flowraten3", flowraten_(3));
-        output_->WriteDouble("flowratenm0",flowratenm_(0));
-        output_->WriteDouble("flowratenm1",flowratenm_(1));
-        output_->WriteDouble("flowratenm2",flowratenm_(2));
-        output_->WriteDouble("flowratenm3",flowratenm_(3));
-
-        output_->WriteDouble("flowvolumenp0",flowvolumenp_(0));
-        output_->WriteDouble("flowvolumenp1",flowvolumenp_(1));
-        output_->WriteDouble("flowvolumenp2",flowvolumenp_(2));
-        output_->WriteDouble("flowvolumenp3",flowvolumenp_(3));
-        output_->WriteDouble("flowvolumen0", flowvolumen_(0));
-        output_->WriteDouble("flowvolumen1", flowvolumen_(1));
-        output_->WriteDouble("flowvolumen2", flowvolumen_(2));
-        output_->WriteDouble("flowvolumen3", flowvolumen_(3));
-        output_->WriteDouble("flowvolumenm0",flowvolumenm_(0));
-        output_->WriteDouble("flowvolumenm1",flowvolumenm_(1));
-        output_->WriteDouble("flowvolumenm2",flowvolumenm_(2));
-        output_->WriteDouble("flowvolumenm3",flowvolumenm_(3));
-      }
-    }
+      OutputNonlinearBC();
   }
 
 //#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current configuration - only works for 1 processor  devaal 02.2011
@@ -3545,6 +3561,54 @@ void FLD::FluidImplicitTimeInt::Output()
   return;
 } // FluidImplicitTimeInt::Output
 
+
+//*----------------------------------------------------------------------*
+// | output of solution vector for nonlinear BCs              thon  09/14|
+// *---------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::OutputNonlinearBC()
+{
+  std::vector<DRT::Condition*> flowdeppressureline;
+  discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+  std::vector<DRT::Condition*> flowdeppressuresurf;
+  discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+  if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+  {
+    output_->WriteDouble("flowratenp0",flowratenp_(0));
+    output_->WriteDouble("flowratenp1",flowratenp_(1));
+    output_->WriteDouble("flowratenp2",flowratenp_(2));
+    output_->WriteDouble("flowratenp3",flowratenp_(3));
+    output_->WriteDouble("flowraten0", flowraten_(0));
+    output_->WriteDouble("flowraten1", flowraten_(1));
+    output_->WriteDouble("flowraten2", flowraten_(2));
+    output_->WriteDouble("flowraten3", flowraten_(3));
+    output_->WriteDouble("flowratenm0",flowratenm_(0));
+    output_->WriteDouble("flowratenm1",flowratenm_(1));
+    output_->WriteDouble("flowratenm2",flowratenm_(2));
+    output_->WriteDouble("flowratenm3",flowratenm_(3));
+
+    output_->WriteDouble("flowvolumenp0",flowvolumenp_(0));
+    output_->WriteDouble("flowvolumenp1",flowvolumenp_(1));
+    output_->WriteDouble("flowvolumenp2",flowvolumenp_(2));
+    output_->WriteDouble("flowvolumenp3",flowvolumenp_(3));
+    output_->WriteDouble("flowvolumen0", flowvolumen_(0));
+    output_->WriteDouble("flowvolumen1", flowvolumen_(1));
+    output_->WriteDouble("flowvolumen2", flowvolumen_(2));
+    output_->WriteDouble("flowvolumen3", flowvolumen_(3));
+    output_->WriteDouble("flowvolumenm0",flowvolumenm_(0));
+    output_->WriteDouble("flowvolumenm1",flowvolumenm_(1));
+    output_->WriteDouble("flowvolumenm2",flowvolumenm_(2));
+    output_->WriteDouble("flowvolumenm3",flowvolumenm_(3));
+  }
+  if (isimpedancebc_)
+  {
+    // write restart also when uprestart_ is not a integer multiple of upres_
+    // also write impedance bc information if required
+    // Note: this method acts only if there is an impedance BC
+    impedancebc_->WriteRestart(*output_);
+    impedancebc_optimization_->WriteRestart(*output_);
+  }
+}
 
 void FLD::FluidImplicitTimeInt::OutputToGmsh(
     const int step,
@@ -3659,6 +3723,14 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
       flowvolumenm_(1) = reader.ReadDouble("flowvolumenm1");
       flowvolumenm_(2) = reader.ReadDouble("flowvolumenm2");
       flowvolumenm_(3) = reader.ReadDouble("flowvolumenm3");
+    }
+
+    if (isimpedancebc_)
+    {
+      // also read impedance bc information if required
+      // Note: this method acts only if there is an impedance BC
+      impedancebc_->ReadRestart(reader);
+      impedancebc_optimization_->ReadRestart(reader);
     }
   }
 
@@ -3777,6 +3849,13 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   //necessary here, because some application time integrations add something to the residual
   //before the Neumann loads are added
   residual_->PutScalar(0.0);
+
+  // Maybe this needs to be inserted in case of impedanceBC + AVM3
+  //  if (nonlinearbc_ && isimpedancebc_)
+  //  {
+  //    // add impedance Neumann loads
+  //    impedancebc_->UpdateResidual(residual_);
+  //  }
 
   AVM3AssembleMatAndRHS(eleparams);
 

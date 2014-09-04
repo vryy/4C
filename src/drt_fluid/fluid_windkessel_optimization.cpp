@@ -52,51 +52,50 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
 
   std::map<const int, Teuchos::RCP<DRT::Condition> > wkmap;
 
-  if (numcondlines > 0) // if there is at least one impedance condition
+  if (numcondlines < 1)
+    dserror("this function should just be called if there is a least one impedance condition.");
+
+  // -------------------------------------------------------------------
+  // get time period length of first condition, this should always be
+  // the same!
+  // -------------------------------------------------------------------
+  period_ = (impedancecond[0])->GetDouble("timeperiod");
+
+  // -------------------------------------------------------------------
+  // now care for the fact that there could be more than one input line
+  // belonging to the same impedance boundary condition
+  // -------------------------------------------------------------------
+  for (int i=0; i<numcondlines; i++)
   {
-    // -------------------------------------------------------------------
-    // get time period length of first condition, this should always be
-    // the same!
-    // -------------------------------------------------------------------
-    period_ = (impedancecond[0])->GetDouble("timeperiod");
-    
-    // -------------------------------------------------------------------
-    // now care for the fact that there could be more than one input line
-    // belonging to the same impedance boundary condition
-    // -------------------------------------------------------------------
-    for (int i=0; i<numcondlines; i++)
+    int condid = (impedancecond[i])->GetInt("ConditionID");
+
+    double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
+    if (thisperiod != period_)
     {
-      int condid = (impedancecond[i])->GetInt("ConditionID");
-      
-      double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
-      if (thisperiod != period_)
-      {
-        dserror("all periods of impedance conditions in one problem have to be the same!!!");
-        exit(1);
-      }
-      
-      // -----------------------------------------------------------------
-      // stack the impedances into a map
-      // -----------------------------------------------------------------
-      Teuchos::RCP<DRT::Condition> wkCond = Teuchos::rcp(new DRT::Condition(*(impedancecond[i])));
-      bool inserted = wkmap.insert( std::make_pair( condid, wkCond ) ).second;
-      
-      if ( !inserted )
-      {
-	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
-        exit(1);
-      }
-      
-    } // end loop over condition lines from input
-  } // end if there were conditions
-  
+      dserror("all periods of impedance conditions in one problem have to be the same!!!");
+      exit(1);
+    }
+
+    // -----------------------------------------------------------------
+    // stack the impedances into a map
+    // -----------------------------------------------------------------
+    Teuchos::RCP<DRT::Condition> wkCond = Teuchos::rcp(new DRT::Condition(*(impedancecond[i])));
+    bool inserted = wkmap.insert( std::make_pair( condid, wkCond ) ).second;
+
+    if ( !inserted )
+    {
+      dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
+      exit(1);
+    }
+  } // end loop over condition lines from input
+
   // ---------------------------------------------------------------------
   // Check if there is any optimzation conditions
   // ---------------------------------------------------------------------
-  
+
   std::vector<DRT::Condition*> wk_optim_cond;
   discret_->GetCondition("Windkessel_Optimization_Cond",wk_optim_cond);
-  
+
   int numOptlines = wk_optim_cond.size();
   if (numOptlines > 0 )
   {
@@ -117,7 +116,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
     for (int i = 0; i< numOptlines; i++)
     {
       int optID = wk_optim_cond[i]->GetInt("ConditionID");
-      
+
       // check whether optimization condition has an impedance condition
       if (wkmap.find(optID) == wkmap.end())
       {
@@ -133,7 +132,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       bool inserted = optwkmap_.insert( std::make_pair( optID, wkoptCond ) ).second;
       if ( !inserted )
       {
-	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
+        dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
         exit(1);
       }
       Dim += GetObjectiveFunctionSize(wkoptCond,optID);
@@ -156,7 +155,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
     // initial optimization step is zero
     // -----------------------------------------------------------------
     step_ = 0;
-    
+
   }
 } // end FluidWkOptimizationWrapper
 
@@ -263,7 +262,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
   // Read in all of the pressures and evaluate the objective function
   // -------------------------------------------------------------------
   std::map<int, Teuchos::RCP<DRT::Condition> >::iterator itr;
-  
+
   int index = 0;
   int constrain_num = 0;
 
@@ -367,7 +366,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
     // -----------------------------------------------------------------
     // calculate partial derivative of objective function w.r.t
     // state variables
-    // -----------------------------------------------------------------    
+    // -----------------------------------------------------------------
     this->FluidWkOptimizationWrapper::dL_du(index,
                                             constrain_num,
                                             itr->second,
@@ -424,7 +423,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
     // -----------------------------------------------------------------
     // calculate partial derivative of design function w.r.t
     // design variables
-    // -----------------------------------------------------------------    
+    // -----------------------------------------------------------------
     this->FluidWkOptimizationWrapper::dJ_dphi(index,
                                               constrain_num,
                                               itr->second,
@@ -464,12 +463,12 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
   // -------------------------------------------------------------------
   int err2 = solver_.Factor();
   int err  = solver_.Solve();
-  
+
   if (err!=0 || err2!=0)
   {
     dserror("Unable to solve for du/dphi while claculating the adjoint Jacobian");
   }
-  
+
   // -------------------------------------------------------------------
   // since xn_ has the result of dx = xnm_ -xn_
   // then some manipulation of xn_ must be done to get the new results
@@ -586,7 +585,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   {
     const double alfa = cond->GetDouble("R1R2_ratio");
     //    VarDim = 2;
-    
+
     // -----------------------------------------------------------------
     //   (*xn_)[index] = R1 + R2 = R
     //    alfa = R1/R2
@@ -607,10 +606,10 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
     //  _                                                             _
     // |               .               .               .               |
     // | 0.5 + R2.C/dt .       0       .      ...      . 0.5 + R2.C/dt |
-    // |               .               .               .               |              
+    // |               .               .               .               |
     // | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
     // |               .               .               .               |
-    // | 0.5 - R2.C/dt . 0.5 + R2.C/dt .      ...      .      0        |                          
+    // | 0.5 - R2.C/dt . 0.5 + R2.C/dt .      ...      .      0        |
     // |               .               .               .               |
     // | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
     // |               . .             . .             .               |
@@ -620,7 +619,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
     // |               .               .               .               |
     // |      0        .       0       . 0.5 - R2.C/dt . 0.5 + R2.C/dt |
     // |               .               .               .               |
-    // |_                                                             _| 
+    // |_                                                             _|
     // -----------------------------------------------------------------
     for (unsigned int i = (constrain_num)*(pressures->size()); i<(constrain_num+1)*(pressures->size()); i++)
     {
@@ -680,7 +679,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   {
     const double alfa = cond->GetDouble("R1R2_ratio");
     //    VarDim = 2;
-    
+
     // -----------------------------------------------------------------
     //   (*xn_)[index] = R1 + R2 = R
     //    alfa = R1/R2
@@ -734,8 +733,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
       // ---------------------------------------------------------------
       // Update the Qn and Pn
       // ---------------------------------------------------------------
-      Qn  = (*flowrates)[i]; 
-      Pn  = (*pressures)[i]; 
+      Qn  = (*flowrates)[i];
+      Pn  = (*pressures)[i];
 
       // ---------------------------------------------------------------
       // Evaluate dN_dphi_
@@ -867,7 +866,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
         }
         else
         {
-          (*dL_du_)(index+1,i+k) =-1.0;          
+          (*dL_du_)(index+1,i+k) =-1.0;
         }
       }
     }
@@ -920,7 +919,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
     if (DesignVars == "R_C")
     {
       //      VarDim = 2;
-      
+
       //      int k = (constrain_num)*(pressures->size());
       //      for (unsigned int i = k; i<k+pressures->size(); i++)
       //      {
@@ -982,7 +981,7 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
   // -------------------------------------------------------------------
   // if time is less that period, no need to even check for steadiness
   // that is because such a case mean nothing
-  // -------------------------------------------------------------------  
+  // -------------------------------------------------------------------
   if (time<period_)
   {
     return false;
@@ -992,7 +991,7 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
   //  {
     // -----------------------------------------------------------------
     // if results are not at n*CardiacPeriod, then return false
-    // -----------------------------------------------------------------  
+    // -----------------------------------------------------------------
     //  return false;
   //  }
 
@@ -1032,7 +1031,7 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
     // the last and first value of pressure
     // -----------------------------------------------------------------
     double error = fabs( params.get<double>(stream2.str()));
-    
+
     // -----------------------------------------------------------------
     // This looks silly, but the user must be careful that the tolerance
     // is a positive value
@@ -1066,12 +1065,12 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
   //{
     // -----------------------------------------------------------------
     // if results are not at n*CardiacPeriod, then return false
-    // -----------------------------------------------------------------  
+    // -----------------------------------------------------------------
   //    return false;
       //}
 
   // -------------------------------------------------------------------
-  // if this stage is obtained then all of the windkessel conditions 
+  // if this stage is obtained then all of the windkessel conditions
   // reached to a steady state periodicity
   // -------------------------------------------------------------------
   return converged;
@@ -1112,7 +1111,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcAdjointJacobian()
   // -------------------------------------------------------------------
   int err2 = solver_.Factor();
   int err  = solver_.Solve();
-  
+
   if (err!=0 || err2!=0)
   {
     dserror("Unable to solve for du/dphi while claculating the adjoint Jacobian");
@@ -1156,7 +1155,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
 
   *fnm_ = *fn_;
   *xnm_ = *xn_;
-  
+
   int index = 0;
   int VarDim= 0;
   std::map<const int, Teuchos::RCP<DRT::Condition> >::iterator  itr;
@@ -1360,7 +1359,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::WriteRestart(
 
   std::stringstream stream1;
 
-  // output optimization step  
+  // output optimization step
   stream1<<"Optimization_Step";
   output.WriteInt(stream1.str(), step_);
 
@@ -1389,7 +1388,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::ReadRestart(
   }
 
   std::stringstream stream1;
-  
+
   // read in step number
   stream1<<"Optimization_Step";
   step_ = reader.ReadInt(stream1.str());

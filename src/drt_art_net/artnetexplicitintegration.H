@@ -410,9 +410,6 @@ protected:
   bool coupledTo3D_;
   //@}
 
-  /// bio related special (outflow) boudaries
-  //  Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
-
   //@}
 
 }; // class ArtNetExplicitTimeInt

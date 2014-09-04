@@ -94,6 +94,8 @@ class FluidMHDEvaluate;
 namespace UTILS
 {
   class FluidInfNormScaling;
+  class FluidImpedanceWrapper;
+  class FluidWkOptimizationWrapper;
 }
 
 /*!
@@ -134,6 +136,12 @@ public:
 
   */
   virtual void Init();
+
+  /*!
+  \brief initialization of nonlinear BCs
+
+  */
+  virtual void InitNonlinearBC();
 
   /*!
   \brief start time loop for starting algorithm, normal problems and restarts
@@ -407,6 +415,8 @@ public:
   */
   virtual void TimeUpdate();
 
+  virtual void TimeUpdateNonlinearBC();
+
   /// Implement ADAPTER::Fluid
   virtual void Update() { TimeUpdate(); }
 
@@ -477,6 +487,8 @@ public:
 
   */
   virtual void Output();
+
+  virtual void OutputNonlinearBC();
 
   virtual void OutputToGmsh(
       const int step,
@@ -1201,6 +1213,14 @@ protected:
 
   //! Dirichlet BCs with local co-ordinate system
   Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+
+  /// windkessel (outflow) boundaries
+  Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
+  Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> impedancebc_optimization_;
+
+  /// flag for windkessel outflow condition
+  bool isimpedancebc_;
+
 
   //! @name Set general parameter in class f3Parameter
   /*!

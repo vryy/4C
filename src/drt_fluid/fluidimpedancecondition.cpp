@@ -45,53 +45,54 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(Teuchos::RCP<DRT::Discr
   // The corresponding resorting of result values has to be done later
   int numcondlines = impedancecond.size();
 
-  if (numcondlines > 0) // if there is at least one impedance condition
+
+  if (numcondlines < 1)
+    dserror("this function should just be called if there is a least one impedance condition.");
+
+  // -------------------------------------------------------------------
+  // get time period length of first condition, this should always be
+  // the same!
+  // -------------------------------------------------------------------
+  double period = (impedancecond[0])->GetDouble("timeperiod");
+
+  // -------------------------------------------------------------------
+  // now care for the fact that there could be more than one input line
+  // belonging to the same impedance boundary condition
+  // -------------------------------------------------------------------
+  for (int i=0; i<numcondlines; i++)
   {
-    // -------------------------------------------------------------------
-    // get time period length of first condition, this should always be
-    // the same!
-    // -------------------------------------------------------------------
-    double period = (impedancecond[0])->GetDouble("timeperiod");
+    int condid = (impedancecond[i])->GetInt("ConditionID");
+
+    double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
+    if (thisperiod != period)
+      dserror("all periods of impedance conditions in one problem have to be the same!!!");
 
     // -------------------------------------------------------------------
-    // now care for the fact that there could be more than one input line
-    // belonging to the same impedance boundary condition
+    // test that we have an integer number of time steps per cycle
     // -------------------------------------------------------------------
-    for (int i=0; i<numcondlines; i++)
-    {
-      int condid = (impedancecond[i])->GetInt("ConditionID");
+    // something more intelligent could possibly be found one day ...
+    double doublestepnum = period/dta;
 
-      double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
-      if (thisperiod != period)
-	dserror("all periods of impedance conditions in one problem have to be the same!!!");
+    int cyclesteps = (int)(doublestepnum+0.5);
+    double diff = doublestepnum - (double)cyclesteps;
 
-      // -------------------------------------------------------------------
-      // test that we have an integer number of time steps per cycle
-      // -------------------------------------------------------------------
-      // something more intelligent could possibly be found one day ...
-      double doublestepnum = period/dta;
-
-      int cyclesteps = (int)(doublestepnum+0.5);
-      double diff = doublestepnum - (double)cyclesteps;
-
-      if ( abs(diff) > 1.0E-5 )
-	dserror("Make sure that the cycle can be calculated within an integer number of steps!!!");
+    if ( abs(diff) > 1.0E-5 )
+      dserror("Make sure that the cycle can be calculated within an integer number of steps!!!");
 
 
-      // -------------------------------------------------------------------
-      // allocate the impedance bc class members for every case
-      // -------------------------------------------------------------------
-      Teuchos::RCP<FluidImpedanceBc> impedancebc = Teuchos::rcp(new FluidImpedanceBc(discret_, output_, dta, condid, i) );
+    // -------------------------------------------------------------------
+    // allocate the impedance bc class members for every case
+    // -------------------------------------------------------------------
+    Teuchos::RCP<FluidImpedanceBc> impedancebc = Teuchos::rcp(new FluidImpedanceBc(discret_, output_, dta, condid, i) );
 
-      // -----------------------------------------------------------------
-      // sort impedance bc's in map and test, if one condition ID appears
-      // more than once. Currently this case is forbidden.
-      // -----------------------------------------------------------------
-      bool inserted = impmap_.insert( std::make_pair( condid, impedancebc ) ).second;
-      if ( !inserted )
-	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
-    } // end loop over condition lines from input
-  } // end if there were conditions
+    // -----------------------------------------------------------------
+    // sort impedance bc's in map and test, if one condition ID appears
+    // more than once. Currently this case is forbidden.
+    // -----------------------------------------------------------------
+    bool inserted = impmap_.insert( std::make_pair( condid, impedancebc ) ).second;
+    if ( !inserted )
+      dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
+  } // end loop over condition lines from input
   return;
 } // end FluidImpedanceWrapper
 
@@ -365,14 +366,17 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(Teuchos::RCP<DRT::Discretization>
   termradius_ = (impedancecond[numcond])->GetDouble("termradius");
 
   // 'material' parameters required for artery tree and for 3 element windkessel
-  k1_ = (impedancecond[numcond])->GetDouble("k1");
-  k2_ = (impedancecond[numcond])->GetDouble("k2");
-  k3_ = (impedancecond[numcond])->GetDouble("k3");
+  R1_ = (impedancecond[numcond])->GetDouble("R1");
+  std::cout<<R1_<<"\n";
+  R2_ = (impedancecond[numcond])->GetDouble("R2");
+  std::cout<<R2_<<"\n";
+  C_ = (impedancecond[numcond])->GetDouble("C");
+  std::cout<<C_<<"\n";
 
   E_  = (impedancecond[numcond])->GetDouble("stiffness");
-  h1_ = (impedancecond[numcond])->GetDouble("h1");
-  h2_ = (impedancecond[numcond])->GetDouble("h2");
-  h3_ = (impedancecond[numcond])->GetDouble("h3");
+  H1_ = (impedancecond[numcond])->GetDouble("H1");
+  H2_ = (impedancecond[numcond])->GetDouble("H2");
+  H3_ = (impedancecond[numcond])->GetDouble("H3");
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
@@ -413,15 +417,15 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(Teuchos::RCP<DRT::Discretization>
       }
     }
 
-    Qin_np_ = (Pin_np_ - Pc_np_)/k1_;
+    Qin_np_ = (Pin_np_ - Pc_np_)/R1_;
     // This par might look little messy but could be fixed in the future
     if (myrank_ == 0)
     {
       printf(" Pin initially is: %f  --  %f",Pin_n_,Pin_np_);
       printf("Frequency independent windkessel condition(%d) with:\n",condid);
-      printf("          R1 = %f\n",k1_);
-      printf("          R2 = %f\n",k2_);
-      printf("          C  = %f\n",k3_);
+      printf("          R1 = %f\n",R1_);
+      printf("          R2 = %f\n",R2_);
+      printf("          C  = %f\n",C_);
       printf("          Pc(initialt)= %f:\n",termradius_);
     }
   }
@@ -994,9 +998,9 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   double pressure=0.0;
   if(treetype_ == "windkessel_freq_indp")
   {
-    double R1 = k1_;
-    double R2 = k2_;
-    double C  = k3_;
+    double R1 = R1_;
+    double R2 = R2_;
+    double C  = C_;
     double Qc_n   = (Pin_n_ - Pc_n_)/R1 - Pc_n_/R2;
     double Pceq_n =  Pc_n_ + dta/(2.0*C)*Qc_n;
     Pc_np_  = (Qin_np_ + Pceq_n*2.0*C/dta)/(2.0*C/dta + 1.0/R2);
@@ -1006,7 +1010,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   }
   else if(treetype_ == "resistive")
   {
-    double R = k1_;
+    double R = R1_;
     pressure = R*Qin_np_;
   }
   else
@@ -1154,9 +1158,9 @@ this method is an alternative to the impedance calculation from arterial trees
  */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::WindkesselImpedance(double k)
 {
-  double pr = k1_;  // proximal resistance
-  double dr = k2_;  // distal resistance
-  double ct = k3_;  // capacitance
+  double pr = R1_;  // proximal resistance
+  double dr = R2_;  // distal resistance
+  double ct = C_;  // capacitance
 
   std::complex<double> imag(0,1), imp;
 
@@ -1205,12 +1209,12 @@ root vessel for given frequency
 
 */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
-						       int generation,
-						       double radius,
-						       double termradius,
-						       double density,
-						       double viscosity,
-						       std::map<const double,std::complex<double> > zstored)
+                   int generation,
+                   double radius,
+                   double termradius,
+                   double density,
+                   double viscosity,
+                   std::map<const double,std::complex<double> > zstored)
 {
   // general data
   double lscale = 50.0; // length to radius ratio
@@ -1278,7 +1282,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
 
   // ... and compute impedance at my upstream end!
   //*************************************************************
-  double compliance = 1.5*area / ( k1_ * exp(k2_*radius) + k3_ );
+  double compliance = 1.5*area / ( R1_ * exp(R2_*radius) + C_ );
 
   double sqrdwo = radius*radius*omega/(viscosity/density);  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
@@ -1323,11 +1327,11 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   analogy.
 */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generation,
-							 double radius,
-							 double termradius,
-							 double density,
-							 double viscosity,
-							 std::map<const double,std::complex<double> > zstored)
+               double radius,
+               double termradius,
+               double density,
+               double viscosity,
+               std::map<const double,std::complex<double> > zstored)
 {
   // general data
   double lscale = 50.0; // length to radius ratio
@@ -1408,12 +1412,12 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
 What is supposed to happen within these lines?
 */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
-						     int generation,
-						     double radius,
-						     double termradius,
-						     double density,
-						     double viscosity,
-						     std::map<const double,std::complex<double> > zstored)
+                 int generation,
+                 double radius,
+                 double termradius,
+                 double density,
+                 double viscosity,
+                 std::map<const double,std::complex<double> > zstored)
 {
    // general data
   double lscale = 5.8; // length to radius ratio
@@ -1443,7 +1447,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   double E= 0.0033;
   double compliance=2.0*PI*radius*radius*radius/(3.0*h*E);
 #else
-  double h= h1_*radius*radius+h2_*radius+h3_;
+  double h= H1_*radius*radius+H2_*radius+H3_; //calculate wallthickness as quadratic polynomial
   double E= E_;
   double compliance=2.0*PI*radius*radius*radius/(3.0*h*E);
 #endif
@@ -1542,11 +1546,11 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
 What is supposed to happen within these lines?
 */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generation,
-								 double radius,
-								 double termradius,
-								 double density,
-								 double viscosity,
-								 std::map<const double,std::complex<double> > zstored)
+                 double radius,
+                 double termradius,
+                 double density,
+                 double viscosity,
+                 std::map<const double,std::complex<double> > zstored)
 {
   //general data
   double lscale = 5.8; // length to radius ratio
@@ -1618,9 +1622,9 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
 void FLD::UTILS::FluidImpedanceBc::SetWindkesselParams(Teuchos::ParameterList & params)
 {
 
-  k1_ = params.get<double> ("R1");
-  k2_ = params.get<double> ("R2");
-  k3_ = params.get<double> ("C");
+  R1_ = params.get<double> ("R1");
+  R2_ = params.get<double> ("R2");
+  C_ = params.get<double> ("C");
 }// FluidImpedanceWrapper::SetWindkesselParams
 
 
@@ -1636,9 +1640,9 @@ void FLD::UTILS::FluidImpedanceBc::SetWindkesselParams(Teuchos::ParameterList & 
 void FLD::UTILS::FluidImpedanceBc::GetWindkesselParams(Teuchos::ParameterList & params)
 {
 
-  params.set<double> ("R1",k1_);
-  params.set<double> ("R2",k2_);
-  params.set<double> ("C",k3_);
+  params.set<double> ("R1",R1_);
+  params.set<double> ("R2",R2_);
+  params.set<double> ("C",C_);
 
 }// FluidImpedanceWrapper::SetWindkesselParams
 

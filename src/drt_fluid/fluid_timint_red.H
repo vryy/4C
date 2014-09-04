@@ -92,13 +92,6 @@ public:
   void OutputReducedD();
 
   /*!
-  \brief Update the solution after convergence of the nonlinear
-         iteration. Current solution becomes old solution of next
-         timestep.
-  */
-  void TimeUpdate();
-
-  /*!
   \brief Setup meshtying
 
   */
@@ -158,12 +151,6 @@ public:
 
 
 protected:
-
-  /// bio related special (outflow) boundaries
-  Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
-
-  /// bio related special (outflow) optimization of boundaries
-  Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
 
   /// bio related special (in/outflow) boundaries
   Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;

@@ -1026,12 +1026,6 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     // write domain decomposition for visualization (only once!)
     if (step_==upres_) output_.WriteElementData(true);
 
-    if (uprestart_ != 0 && step_%uprestart_ == 0)
-    {
-      // also write impedance bc information if required
-      // Note: this method acts only if there is an impedance BC
-      // impedancebc_->WriteRestart(output_);
-    }
     //#endif
     // ------------------------------------------------------------------
     // Export gnuplot format arteries
@@ -1098,10 +1092,6 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("forward_speed0",Wfo_);
     output_.WriteVector("backward_speed",Wbnp_);
     output_.WriteVector("backward_speed0",Wbo_);
-
-    // also write impedance bc information if required
-    // Note: this method acts only if there is an impedance BC
-    // impedancebc_->WriteRestart(output_);
 
     // ------------------------------------------------------------------
     // Export gnuplot format arteries
@@ -1170,10 +1160,6 @@ void ART::ArtNetExplicitTimeInt::ReadRestart(int step,
   }
 
   reader.ReadVector(qanp_,"qanp");
-
-  // also read impedance bc information if required
-  // Note: this method acts only if there is an impedance BC
-  // impedancebc_->ReadRestart(reader);
 
 }
 

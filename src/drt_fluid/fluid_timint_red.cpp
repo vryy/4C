@@ -32,8 +32,6 @@ FLD::TimIntRedModels::TimIntRedModels(
         const Teuchos::RCP<IO::DiscretizationWriter>& output,
         bool                                          alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      impedancebc_(Teuchos::null),
-      Wk_optimization_(Teuchos::null),
       vol_surf_flow_bc_(Teuchos::null),
       traction_vel_comp_adder_bc_(Teuchos::null),
       coupled3D_redDbc_art_(Teuchos::null),
@@ -127,20 +125,6 @@ void FLD::TimIntRedModels::Init()
 
   traction_vel_comp_adder_bc_ = Teuchos::rcp(new UTILS::TotalTractionCorrector(discret_, *output_, dta_) );
 
-#ifdef D_ALE_BFLOW
-  if (alefluid_)
-  {
-    discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
-  }
-#endif // D_ALE_BFLOW
-  // construct impedance bc wrapper
-  impedancebc_      = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
-
-  Wk_optimization_  = Teuchos::rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
-                                                                *output_,
-                                                                impedancebc_,
-                                                                dta_) );
 
   // ------------------------------------------------------------------------------
   // Check, if features are used with the locsys manager that are not supported,
@@ -202,8 +186,6 @@ void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
 *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
 {
-  // update impedance boundary condition
-  impedancebc_->UpdateResidual(residual_);
 
   discret_->ClearState();
 
@@ -312,11 +294,6 @@ void FLD::TimIntRedModels::ReadRestart(int step)
   FluidImplicitTimeInt::ReadRestart(step);
 
   IO::DiscretizationReader reader(discret_,step);
-  // also read impedance bc information if required
-  // Note: this method acts only if there is an impedance BC
-  impedancebc_->ReadRestart(reader);
-
-  Wk_optimization_->ReadRestart(reader);
 
   vol_surf_flow_bc_->ReadRestart(reader);
 
@@ -355,44 +332,6 @@ void FLD::TimIntRedModels::ReadRestartReducedD(int step)
     airway_imp_timeInt_->ReadRestart(step,true);
   }
 }//FLD::TimIntRedModels::ReadRestartReadRestart(int step)
-
-/*----------------------------------------------------------------------*
- | do some additional steps in TimeUpdate                       bk 12/13|
- *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::TimeUpdate()
-{
-  FluidImplicitTimeInt::TimeUpdate();
-
-
-  // -------------------------------------------------------------------
-  // treat impedance BC
-  // note: these methods return without action, if the problem does not
-  //       have impedance boundary conditions
-  // -------------------------------------------------------------------
-  discret_->ClearState();
-  discret_->SetState("velaf",velnp_);
-  discret_->SetState("hist",hist_);
-
-#ifdef D_ALE_BFLOW
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispn_);
-  }
-#endif //D_ALE_BFLOW
-
-  impedancebc_->FlowRateCalculation(time_,dta_);
-  impedancebc_->OutflowBoundary(time_,dta_,theta_);
-
-  // get the parameters needed to be optimized
-  Teuchos::ParameterList WkOpt_params;
-  WkOpt_params.set<double> ("total time", time_);
-  WkOpt_params.set<double> ("time step size", dta_);
-  impedancebc_->getResultsOfAPeriod(WkOpt_params);
-
-  // update wind kessel optimization condition
-  Wk_optimization_->Solve(WkOpt_params);
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | do some additional steps in SetupMeshtying                   bk 12/13|
@@ -463,12 +402,6 @@ void FLD::TimIntRedModels::Output()
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
-      // also write impedance bc information if required
-      // Note: this method acts only if there is an impedance BC
-      impedancebc_->WriteRestart(*output_);
-
-      Wk_optimization_->WriteRestart(*output_);
-      // write reduced model problem
       // Check if one-dimensional artery network problem exist
       if (ART_exp_timeInt_ != Teuchos::null)
       {
@@ -484,11 +417,6 @@ void FLD::TimIntRedModels::Output()
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
   {
-    // also write impedance bc information if required
-    // Note: this method acts only if there is an impedance BC
-    impedancebc_->WriteRestart(*output_);
-
-    Wk_optimization_->WriteRestart(*output_);
     // write reduced model problem
     // Check if one-dimensional artery network problem exist
     if (ART_exp_timeInt_ != Teuchos::null)
@@ -542,8 +470,12 @@ void FLD::TimIntRedModels::AVM3Preparation()
   //before the Neumann loads are added
   residual_->PutScalar(0.0);
 
-  // add impedance Neumann loads
-  impedancebc_->UpdateResidual(residual_);
+  // Maybe this needs to be inserted in case of impedanceBC + AVM3
+  //  if (nonlinearbc_ && isimpedancebc_)
+  //  {
+  //    // add impedance Neumann loads
+  //    impedancebc_->UpdateResidual(residual_);
+  //  }
 
   AVM3AssembleMatAndRHS(eleparams);
 

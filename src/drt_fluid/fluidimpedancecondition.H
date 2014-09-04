@@ -52,8 +52,8 @@ public:
   \brief Standard Constructor
   */
   FluidImpedanceWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
-			 IO::DiscretizationWriter& output,
-			 double dta);
+       IO::DiscretizationWriter& output,
+       double dta);
 
   /*!
   \brief Destructor
@@ -145,10 +145,10 @@ public:
   \brief Standard Constructor
   */
   FluidImpedanceBc( Teuchos::RCP<DRT::Discretization>  actdis,
-		    IO::DiscretizationWriter& output,
-		    double dta,
-		    int condid,
-		    int numcond );
+        IO::DiscretizationWriter& output,
+        double dta,
+        int condid,
+        int numcond );
 
   /*!
   \brief Empty Constructor
@@ -176,17 +176,17 @@ protected:
     time steps belonging to one cycle
   */
   void FlowRateCalculation( double time,
-			    double dta,
-			    int condid );
+          double dta,
+          int condid );
 
   /*!
     \brief compute convolution integral and apply pressure
     to elements
   */
   void OutflowBoundary( double time,
-			double dta,
-			double theta,
-			int condid );
+      double dta,
+      double theta,
+      int condid );
 
   /*!
   \brief SetWindkesselParams
@@ -226,43 +226,43 @@ private:
   \brief compute tree and root impedance for given frequency for artery
   */
   std::complex<double> ArteryImpedance( int k,
-					int generation,
-					double radius,
-					double termradius,
-					double density,
-					double viscosity,
-					std::map<const double,std::complex<double> > zstored);
+          int generation,
+          double radius,
+          double termradius,
+          double density,
+          double viscosity,
+          std::map<const double,std::complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for zero frequency for artery
   */
   std::complex<double> DCArteryImpedance( int generation,
-					  double radius,
-					  double termradius,
-					  double density,
-					  double viscosity,
-					  std::map<const double,std::complex<double> > zstored);
+            double radius,
+            double termradius,
+            double density,
+            double viscosity,
+            std::map<const double,std::complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for given frequency for lung
   */
   std::complex<double> LungImpedance( int k,
-					int generation,
-					double radius,
-					double termradius,
-					double density,
-					double visosity,
-					std::map<const double,std::complex<double> > zstored);
+          int generation,
+          double radius,
+          double termradius,
+          double density,
+          double visosity,
+          std::map<const double,std::complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for zero frequency for lung
   */
   std::complex<double> DCLungImpedance( int generation,
-  					  double radius,
-  					  double termradius,
-  					  double density,
-  					  double viscosity,
-  					  std::map<const double,std::complex<double> > zstored);
+              double radius,
+              double termradius,
+              double density,
+              double viscosity,
+              std::map<const double,std::complex<double> > zstored);
 
 
   /*!
@@ -298,7 +298,7 @@ private:
   std::string treetype_;
 
   //! 'material' parameters required for artery tree
-  double k1_, k2_, k3_, E_, h1_, h2_, h3_;
+  double R1_, R2_, C_, E_, H1_, H2_, H3_;
 
   //! time step size
   double dta_;

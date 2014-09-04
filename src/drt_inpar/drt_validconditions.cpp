@@ -2494,14 +2494,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                       Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp","resistive"),
                                                                       true)));
   AddNamedReal(impedancebc,"termradius");
-  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k1")));
-  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k2")));
-  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k3")));
-
+  AddNamedReal(impedancebc,"R1");
+  AddNamedReal(impedancebc,"R2");
+  AddNamedReal(impedancebc,"C");
   AddNamedReal(impedancebc,"stiffness");
-  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("h1")));
-  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("h2")));
-  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("h3")));
+  AddNamedReal(impedancebc,"H1");
+  AddNamedReal(impedancebc,"H2");
+  AddNamedReal(impedancebc,"H3");
 
   condlist.push_back(impedancebc);
 
