@@ -303,7 +303,11 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
   Teuchos::RCP<Epetra_Vector>  systemvectordd)
 {
   Epetra_Time timer(Comm());
-  std::cout << "calculating least squares Dirichlet condition in ... ";
+
+  // get the processor ID from the communicator
+  const int myrank  = Comm().MyPID();
+  if(myrank==0)
+    std::cout << "calculating least squares Dirichlet condition in ... ";
 
   Teuchos::RCP<std::set<int> > nurbslsdbcgids = Teuchos::rcp(new std::set<int>());
   //for integration over elements with DBC we need the column map
@@ -649,7 +653,8 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
   if (assemblevecd) auxdbcmapextractor->InsertCondVector(dbcvectord,systemvectord);
   if (assemblevecdd) auxdbcmapextractor->InsertCondVector(dbcvectordd,systemvectordd);
 
-  std::cout << timer.ElapsedTime() << " seconds \n\n";
+  if(myrank==0)
+    std::cout << timer.ElapsedTime() << " seconds \n\n";
 
   return;
 }
