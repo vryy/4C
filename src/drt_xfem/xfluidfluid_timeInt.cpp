@@ -745,7 +745,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
 
 {
   //init of 3D search tree
-  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
+  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
 
   // find current positions for emb fluid discretization
   std::map<int,LINALG::Matrix<3,1> > currentpositions;

@@ -187,7 +187,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Face::AssignNodesToNodes(
       nodepositions.insert( std::pair<int,LINALG::Matrix<3,1> >(cnode->first,LINALG::Matrix<3,1>(cnode->second->X())));
 
     // set up searchtree - always OCTREE although for surfaces a QUADTREE would be optimal
-    GEO::SearchTree searchTree(8);
+    GEO::SearchTree searchTree(5);
     searchTree.initializePointTree(GEO::getXAABBofPositions(nodepositions), nodepositions, GEO::TreeType(GEO::OCTTREE));
 
     // loop over row nodes
@@ -290,7 +290,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Face::AssignNodesToCells()
         nodepositions.insert( std::pair<int,LINALG::Matrix<3,1> >(cnode->first,LINALG::Matrix<3,1>(cnode->second->X())));
 
       // set up searchtree - always OCTREE although for surfaces a QUADTREE would be optimal
-      GEO::SearchTree searchTree(8);
+      GEO::SearchTree searchTree(5);
       searchTree.initializePointTree(GEO::getXAABBofPositions(nodepositions), nodepositions, GEO::TreeType(GEO::OCTTREE));
 
       // loop over all cells

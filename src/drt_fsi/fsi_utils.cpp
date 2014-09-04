@@ -627,7 +627,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
       // Project fluid nodes onto the struct interface
       //init of search tree
-      Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(0));
+      Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
       const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofEles(structreduelements_[mnit->first], currentpositions);
 
       if(dim==2)
