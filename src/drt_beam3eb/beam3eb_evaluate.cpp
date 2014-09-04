@@ -50,20 +50,21 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
 
-  if 	  (action == "calc_none") 				dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") 		act = Beam3eb::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") 		act = Beam3eb::calc_struct_nlnstiff;
+  if     (action == "calc_none")         dserror("No action supplied");
+  else if (action=="calc_struct_linstiff")     act = Beam3eb::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")     act = Beam3eb::calc_struct_nlnstiff;
   else if (action=="calc_struct_internalforce") act = Beam3eb::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") 	act = Beam3eb::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") 	act = Beam3eb::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_linstiffmass")   act = Beam3eb::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")   act = Beam3eb::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_nlnstifflmass") act = Beam3eb::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress") 		act = Beam3eb::calc_struct_stress;
-  else if (action=="calc_struct_eleload") 		act = Beam3eb::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") 		act = Beam3eb::calc_struct_fsiload;
+  else if (action=="calc_struct_stress")     act = Beam3eb::calc_struct_stress;
+  else if (action=="calc_struct_eleload")     act = Beam3eb::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")     act = Beam3eb::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam3eb::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   act = Beam3eb::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")		act = Beam3eb::calc_struct_ptcstiff;
-  else 	  dserror("Unknown type of action for Beam3eb");
+  else if (action=="calc_struct_ptcstiff")    act = Beam3eb::calc_struct_ptcstiff;
+  else if (action=="calc_struct_energy")        act = Beam3eb::calc_struct_energy;
+  else     dserror("Unknown type of action for Beam3eb");
 
   std::string test = params.get<std::string>("action","calc_none");
 
@@ -132,32 +133,46 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       if (act == Beam3eb::calc_struct_nlnstiffmass)
       {
-			eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+      eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       }
       else if (act == Beam3eb::calc_struct_nlnstifflmass)
       {
-  	  		eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  		lumpmass(&elemat2);
+          eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+          lumpmass(&elemat2);
       }
       else if (act == Beam3eb::calc_struct_nlnstiff)
       {
-  	  		eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+          eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
       }
       else if (act == Beam3eb::calc_struct_internalforce)
       {
-  	  		eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
+          eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
       }
     }
     break;
 
     case calc_struct_stress:
-    	dserror("No stress output implemented for beam3 elements");
+      dserror("No stress output implemented for beam3 elements");
     break;
     case calc_struct_update_istep:
-    	//not necessary since no class variables are modified in predicting steps
+      for (int i=0;i<3;i++)
+      {
+        t0_(i,0)=t_(i,0);
+        t0_(i,1)=t_(i,1);
+      }
     break;
     case calc_struct_reset_istep:
-    	//not necessary since no class variables are modified in predicting steps
+      //not necessary since no class variables are modified in predicting steps
+    break;
+    case calc_struct_energy:
+      elevec1(0)=Eint_;
+      //elevec1(1)=Ekin_;
+      //elevec1(2)=P_(0);
+      //elevec1(3)=P_(1);
+      //elevec1(4)=P_(2);
+      //elevec1(5)=L_(0);
+      //elevec1(6)=L_(1);
+      //elevec1(7)=L_(2);
     break;
 
     default:
@@ -167,7 +182,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
   return 0;
 
-}	//DRT::ELEMENTS::Beam3eb::Evaluate
+}  //DRT::ELEMENTS::Beam3eb::Evaluate
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition (public)                                  meier 05/12|
@@ -479,7 +494,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
   return (0);
 
-}	//DRT::ELEMENTS::Beam3eb::EvaluateNeumann
+}  //DRT::ELEMENTS::Beam3eb::EvaluateNeumann
 
 
 
@@ -505,6 +520,8 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   Eint_=0.0;
   Ekin_=0.0;
+  L_.Clear();
+  P_.Clear();
 
 #ifdef SIMPLECALC
 {
@@ -593,7 +610,6 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     break;
   }
 
-  //TODO: The integration rule should be set via input parameter and not hard coded as here
   //Get integrationpoints for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
@@ -917,7 +933,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   //Uncomment the following line to print the elment stiffness matrix to matlab format
   /*
   const std::string fname = "stiffmatrixele.mtl";
-  cout<<"Printing stiffmatrixele to file"<<endl;
+  std::cout<<"Printing stiffmatrixele to file"<<std::endl;
   LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);
   */
 
@@ -1061,7 +1077,6 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     break;
   }
 
-  //TODO: The integration rule should be set via input parameter and not hard coded as here (standard: 3)
   //Get integrationpoints for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
@@ -1096,6 +1111,13 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   {
     disp_totlag_fad[dof]=disp_totlag[dof];
     disp_totlag_fad[dof].diff(dof,nnode*dofpn);
+  }
+
+  //Set class variables
+  for (int i=0;i<3;i++)
+  {
+    t_(i,0)=disp_totlag[3+i];
+    t_(i,1)=disp_totlag[9+i];
   }
 
   double tangentnorm1 = sqrt(disp_totlag[3]*disp_totlag[3]+disp_totlag[4]*disp_totlag[4]+disp_totlag[5]*disp_totlag[5]);
@@ -1258,7 +1280,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       for (int j=0; j<nnode*NODALDOFS; j++)
       {
-        //r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
+        r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
         r_x(i,0)+= N_i_x(j) * disp_totlag[3*j + i];
         rx_fad(i,0)+= N_i_x(j) * disp_totlag_fad[3*j + i];
         r_xx(i,0)+= N_i_xx(j) * disp_totlag[3*j + i];
@@ -1447,6 +1469,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
     LINALG::Matrix<3,1> r_t(true);
+    LINALG::Matrix<3,1> r(true);
 
     N_i.Clear();
     N.Clear();
@@ -1480,6 +1503,14 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         r_t(i)+= N_i(j)*vel[3*j + i];
       }
     }
+    //calculate r' and r''
+    for (int i=0 ; i < 3 ; i++)
+    {
+      for (int j=0; j<nnode*NODALDOFS; j++)
+      {
+        r(i,0)+= N_i(j)*disp_totlag[3*j + i];
+      }
+    }
     NTilde.MultiplyTN(N,N);
 
     if (massmatrix != NULL)
@@ -1493,12 +1524,23 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
     Ekin_+=0.5*wgt*jacobi_*density*crosssec_*pow(r_t.Norm2(),2.0);
 
+    LINALG::Matrix<3,1> dL(true);
+    LINALG::Matrix<3,3> S_r(true);
+    LARGEROTATIONS::computespin(S_r,r);
+    dL.Multiply(S_r,r_t);
+    dL.Scale(density*crosssec_);
+    for (int i=0;i<3;i++)
+    {
+      L_(i)+=wgt*jacobi_*dL(i);
+      P_(i)+=wgt*jacobi_*density*crosssec_*r_t(i);
+    }
+
   }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Uncomment the following line to print the elment stiffness matrix to matlab format
   /*
   const std::string fname = "stiffmatrixele.mtl";
-  cout<<"Printing stiffmatrixele to file"<<endl;
+  std::cout<<"Printing stiffmatrixele to file"<<std::endl;
   LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);
   */
 
@@ -1559,7 +1601,10 @@ internalforces_ = *force;
 // Get if normal dynamics problem or statmech problem
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
+  {
     CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
+  }
+
 
   return;
 
@@ -1576,12 +1621,43 @@ void DRT::ELEMENTS::Beam3eb::EvaluatePTC(Teuchos::ParameterList& params,
     dserror("PTC implemented for 2-noded elements only");
   for (int node=0; node<nnode; node++)
   {
-    //PTC for tangential degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
-    for(int k=0; k<3; k++)
+    LINALG::Matrix<3,1> t0(true);
+    LINALG::Matrix<3,1> t(true);
+    for (int i=0;i<3;i++)
     {
-      elemat1(node*6+3+k,node*6+3+k) += params.get<double>("crotptc",0.0)*0.5*jacobi_;
+      t0(i)=t0_(i,node);
+      t(i)=t_(i,node);
+    }
+    t0.Scale(1.0/t0.Norm2());
+    t.Scale(1.0/t.Norm2());
+
+    double tTt0 = 0.0;
+    for (int i=0;i<3;i++)
+    {
+      tTt0 += t0(i)*t(i);
     }
 
+    #ifdef BEAM3EBROTPTC
+      //variant1: PTC for tangential degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
+      for(int k=0; k<3; k++)
+      {
+        elemat1(node*6+3+k,node*6+3+k) += tTt0*params.get<double>("crotptc",0.0)*0.5*jacobi_;
+      }
+
+      for (int k=0; k<3; k++)
+      {
+        for (int l=0; l<3; l++)
+        {
+          elemat1(node*6+3+k,node*6+3+l) += params.get<double>("crotptc",0.0)*0.5*jacobi_*t(k)*t0(l);
+        }
+      }
+    #else
+      //variant2: PTC for tangential degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
+      for(int k=0; k<3; k++)
+      {
+        elemat1(node*6+3+k,node*6+3+k) += params.get<double>("crotptc",0.0)*0.5*jacobi_;
+      }
+    #endif
 
     //PTC for translational degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
     for(int k=0; k<3; k++)
@@ -1589,7 +1665,6 @@ void DRT::ELEMENTS::Beam3eb::EvaluatePTC(Teuchos::ParameterList& params,
       elemat1(node*6+k,node*6+k) += params.get<double>("ctransptc",0.0)*0.5*jacobi_;
     }
   }
-
 
   return;
 } //DRT::ELEMENTS::Beam3ii::EvaluatePTC
@@ -1650,8 +1725,11 @@ int DRT::ELEMENTS::Beam3eb::HowManyRandomNumbersINeed()
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
   /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
    *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
-  return (4*gausspoints.nquad);
-
+  #ifdef CONSTSTOCHFORCE
+    return (3);
+  #else
+    return (4*gausspoints.nquad);
+  #endif
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1935,14 +2013,28 @@ inline void DRT::ELEMENTS::Beam3eb::MyStochasticForces(Teuchos::ParameterList& p
         for(int l=0; l<ndim; l++)
         {
           if(force != NULL)
-            (*force)(i*3+k) -= N_i(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*r_x(k)*r_x(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi_*gausspoints.qwgt[gp]);
+          {
+            #ifndef CONSTSTOCHFORCE
+              (*force)(i*3+k) -= N_i(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*r_x(k)*r_x(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi_*gausspoints.qwgt[gp]);
+            #else
+              (*force)(i*3+k) -= N_i(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*r_x(k)*r_x(l))*(*randomnumbers)[l][LID()]*sqrt(jacobi_*gausspoints.qwgt[gp]);
+            #endif
+          }
+
           if(stiffmatrix != NULL)
+          {
             //loop over all column nodes
             for (int j=0; j<2*nnode; j++)
             {
-              (*stiffmatrix)(i*3+k,j*3+k) -= N_i(i)*N_i_x(j)*r_x(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
-              (*stiffmatrix)(i*3+k,j*3+l) -= N_i(i)*N_i_x(j)*r_x(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              #ifndef CONSTSTOCHFORCE
+                (*stiffmatrix)(i*3+k,j*3+k) -= N_i(i)*N_i_x(j)*r_x(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
+                (*stiffmatrix)(i*3+k,j*3+l) -= N_i(i)*N_i_x(j)*r_x(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              #else
+                            (*stiffmatrix)(i*3+k,j*3+k) -= N_i(i)*N_i_x(j)*r_x(l)*(*randomnumbers)[l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
+                (*stiffmatrix)(i*3+k,j*3+l) -= N_i(i)*N_i_x(j)*r_x(k)*(*randomnumbers)[l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi_)*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              #endif
             }
+          }
         }
       }
     }
@@ -2056,10 +2148,10 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, LINALG::Matrix<12
 {
   LINALG::Matrix<3,1> r(true);
   LINALG::Matrix<4,1> N_i(true);
- 
+
   const DRT::Element::DiscretizationType distype = Shape();
   DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
- 
+
   for (int n=0;n<4;n++)
   {
     for (int i=0;i<3;i++)
@@ -2162,7 +2254,6 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       break;
     }
 
-    //TODO: The integration rule should be set via input parameter and not hard coded as here
     //Get integrationpoints for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
@@ -2364,9 +2455,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     {
       for(int j = 0; j< 12; j++)
       {
-        cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
+        std::cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
       }
-      cout<<endl;
+      std::cout<<endl;
     }
 
     std::cout<<"\n\n analytical stiffness matrix: "<< std::endl;
@@ -2464,7 +2555,6 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       break;
     }
 
-    //TODO: The integration rule should be set via input parameter and not hard coded as here
     //Get integrationpoints for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 

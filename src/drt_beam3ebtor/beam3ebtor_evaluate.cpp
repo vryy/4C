@@ -47,21 +47,21 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
 
-  if 	  (action == "calc_none") 				dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") 		act = Beam3ebtor::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") 		act = Beam3ebtor::calc_struct_nlnstiff;
+  if     (action == "calc_none")         dserror("No action supplied");
+  else if (action=="calc_struct_linstiff")     act = Beam3ebtor::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")     act = Beam3ebtor::calc_struct_nlnstiff;
   else if (action=="calc_struct_internalforce") act = Beam3ebtor::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") 	act = Beam3ebtor::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") 	act = Beam3ebtor::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_linstiffmass")   act = Beam3ebtor::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")   act = Beam3ebtor::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_nlnstifflmass") act = Beam3ebtor::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress") 		act = Beam3ebtor::calc_struct_stress;
-  else if (action=="calc_struct_eleload") 		act = Beam3ebtor::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") 		act = Beam3ebtor::calc_struct_fsiload;
+  else if (action=="calc_struct_stress")     act = Beam3ebtor::calc_struct_stress;
+  else if (action=="calc_struct_eleload")     act = Beam3ebtor::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")     act = Beam3ebtor::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam3ebtor::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")act = Beam3ebtor::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam3ebtor::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")		act = Beam3ebtor::calc_struct_ptcstiff;
-  else 	  dserror("Unknown type of action for Beam3ebtor");
+  else if (action=="calc_struct_ptcstiff")    act = Beam3ebtor::calc_struct_ptcstiff;
+  else     dserror("Unknown type of action for Beam3ebtor");
 
   std::string test = params.get<std::string>("action","calc_none");
 
@@ -115,38 +115,38 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
       }
       if (act == Beam3ebtor::calc_struct_nlnstiffmass)
       {
-			eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+      eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       }
       else if (act == Beam3ebtor::calc_struct_nlnstifflmass)
       {
         eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  	lumpmass(&elemat2);
+        lumpmass(&elemat2);
       }
       else if (act == Beam3ebtor::calc_struct_nlnstiff)
       {
-  	  	eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+        eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
       }
       else if (act == Beam3ebtor::calc_struct_internalforce)
       {
-  	  	eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
+        eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
       }
     }
     break;
 
     case calc_struct_stress:
-    	dserror("No stress output implemented for beam3 elements");
+      dserror("No stress output implemented for beam3 elements");
     break;
 
     case calc_struct_update_istep:
-    	//not necessary since no class variables are modified in predicting steps
+      //not necessary since no class variables are modified in predicting steps
     break;
 
     case calc_struct_update_imrlike:
-    	//not necessary since no class variables are modified in predicting steps
+      //not necessary since no class variables are modified in predicting steps
     break;
 
     case calc_struct_reset_istep:
-    	//not necessary since no class variables are modified in predicting steps
+      //not necessary since no class variables are modified in predicting steps
     break;
 
     default:
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
 
   return 0;
 
-}	//DRT::ELEMENTS::Beam3ebtor::Evaluate
+}  //DRT::ELEMENTS::Beam3ebtor::Evaluate
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition (public)                                  meier 05/12|
@@ -446,7 +446,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
 
   return 0;
 
-}	//DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann
+}  //DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann
 
 
 /*------------------------------------------------------------------------------------------------------------*
@@ -594,7 +594,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
     //twist_totlag[node]= disp[node*(dofpn+1) + 6];
     twist_totlag[node]= disp[node*(dofpn+1) + 6]*ScaleFactorColumntor;
 
-  }	//for (int node = 0 ; node < nnode ; node++)
+  }  //for (int node = 0 ; node < nnode ; node++)
 
 
   //Calculate epsilon at collocation points
@@ -750,8 +750,8 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
         N_x(r,r+3*d) = N_i_x(d)/jacobi_;
         N_xx(r,r+3*d) = N_i_xx(d)/jacobi2;
 
-      }	//for (int d=0; d<4; ++d)
-    }	//for (int r=0; r<3; ++r)
+      }  //for (int d=0; d<4; ++d)
+    }  //for (int r=0; r<3; ++r)
 
 
     //create matrices to help assemble the stiffness matrix and internal force vector:: NTilde_x = N'^T * N'; NTilde_xx = N''^T * N''; NTilde = N'^T * N''
@@ -825,12 +825,12 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
         dTNTilde_x(i)    += disp_totlag[j]*NTilde_x(j,i);
         dTNTilde_xx(i)    += disp_totlag[j]*NTilde_xx(j,i);
         dTNTilde_aux(i) += disp_totlag[j]*NTilde_aux(j,i);
-      }	//for (int j=0 ; j < dofpn*nnode ; j++)
+      }  //for (int j=0 ; j < dofpn*nnode ; j++)
 
       dTNTilded  += disp_totlag[i] * NTilded(i);
       dTNTilde_xd += disp_totlag[i] * NTilde_xd(i);
       dTNTilde_xxd += disp_totlag[i] * NTilde_xxd(i);
-    }	//for (int i=0 ; i < dofpn*nnode ; i++)
+    }  //for (int i=0 ; i < dofpn*nnode ; i++)
 
     for (int i = 0; i<3;i++)
     {
@@ -877,8 +877,8 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
         NTilde_xddTNTilde_xx(j,i)       = NTilde_xd(j)*dTNTilde_xx(i);
         NTilde_auxddTNTilde_aux(j,i) = NTilde_auxd(j)*dTNTilde_aux(i);
 
-      }	//for (int j=0 ; j < dofpn*nnode ; j++)
-    }	//for (int i=0 ; i < dofpn*nnode ; i++)
+      }  //for (int j=0 ; j < dofpn*nnode ; j++)
+    }  //for (int i=0 ; i < dofpn*nnode ; i++)
 
 #ifdef ANS_BEA3EBTOR
     L_i.Clear();
@@ -1024,9 +1024,9 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
 //      {
 //        for (int j=0;j<12;j++)
 //        {
-//          cout << (*stiffmatrix)(i,j) << "  ";
+//          std::cout << (*stiffmatrix)(i,j) << "  ";
 //        }
-//        cout << endl;
+//        std::cout << std::endl;
 //      }
     }//if (stiffmatrix != NULL)
 
@@ -1098,7 +1098,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
           (*force)(6+7*i) +=Res_torsion(6+7*i);
       }
-    }	//if (force != NULL)
+    }  //if (force != NULL)
 
     //assemble massmatrix if requested
     if (massmatrix != NULL)
@@ -1106,7 +1106,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       std::cout << "\n\nWarning: Massmatrix not implemented yet!";
     }//if (massmatrix != NULL)
 
-  }	//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  }  //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Scaling of Residuum and Tangent for better conditioning
   double Factor = ScaleFactorLinetor;
@@ -1129,7 +1129,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
 } // DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass
 
 /*------------------------------------------------------------------------------------------------------------*
- | lump mass matrix					   (private)                                                   meier 05/12|
+ | lump mass matrix             (private)                                                   meier 05/12|
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebtor::lumpmass(Epetra_SerialDenseMatrix* emass)
 {
@@ -1649,23 +1649,23 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(std::vector<double>& disp,
 //  }
 //
 //  /*
-//  //std::cout<<"\n\n original stiffness matrix: "<< endl;
+//  //std::cout<<"\n\n original stiffness matrix: "<< std::endl;
 //  for(int i = 0; i< (dofpn+1)*nnode; i++)
 //  {
 //    for(int j = 0; j< (dofpn+1)*nnode; j++)
 //    {
-//      cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
+//      std::cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
 //    }
-//    cout<<endl;
+//    std::cout<<endl;
 //  }
 //  */
 //
 //  //std::cout<<"\n\n FAD stiffness matrix"<< stiffmatrix_check;
 //  std::cout<<"\n\n rel error of stiffness matrix"<< stiff_relerr;
 //  //std::cout<<"\n\n rel error of internal force"<< force_relerr;
-//  //std::cout<<"Force: "<< *force << endl;
-//  //std::cout<<"Forde_FAD"<< endl;
-//  //cout << "Steifigkeitsmatrix2: " << (*stiffmatrix) << endl;
+//  //std::cout<<"Force: "<< *force << std::endl;
+//  //std::cout<<"Forde_FAD"<< std::endl;
+//  //cout << "Steifigkeitsmatrix2: " << (*stiffmatrix) << std::endl;
 
 }
 
@@ -1917,5 +1917,5 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
 //    force_relerr(line,0)= fabs(pow(force_check(line,0).val(),2.0) - pow((elevec1)(line),2.0 ));
 //  }
 //
-//std::cout<<"\n\n Rel error stiffness matrix Neumann: "<< stiff_relerr << endl;
+//std::cout<<"\n\n Rel error stiffness matrix Neumann: "<< stiff_relerr << std::endl;
 }

@@ -36,9 +36,9 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create( const std::vector<char> & da
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const std::string eletype,
-																 															const std::string eledistype,
-																 															const int id,
-																 															const int owner )
+                                                               const std::string eledistype,
+                                                               const int id,
+                                                               const int owner )
 {
   if ( eletype=="BEAM3EB" )
   {
@@ -107,7 +107,11 @@ Irr_(0),
 jacobi_(0),
 firstcall_(true),
 Ekin_(0.0),
-Eint_(0.0)
+Eint_(0.0),
+L_(LINALG::Matrix<3,1>(true)),
+P_(LINALG::Matrix<3,1>(true)),
+t0_(LINALG::Matrix<3,2>(true)),
+t_(LINALG::Matrix<3,2>(true))
 {
   return;
 }
@@ -124,7 +128,11 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  jacobi_(old.jacobi_),
  Tref_(old.Tref_),
  Ekin_(old.Ekin_),
- Eint_(old.Eint_)
+ Eint_(old.Eint_),
+ L_(old.L_),
+ P_(old.P_),
+ t0_(old.t0_),
+ t_(old.t_)
 {
   return;
 }
@@ -165,7 +173,7 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const
 {
-			return line2;
+      return line2;
 }
 
 
@@ -194,6 +202,10 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,Izz_);
   AddtoPack(data,Ekin_);
   AddtoPack(data,Eint_);
+  AddtoPack<3,1>(data,L_);
+  AddtoPack<3,1>(data,P_);
+  AddtoPack<3,2>(data,t0_);
+  AddtoPack<3,2>(data,t_);
 
   return;
 }
@@ -225,6 +237,10 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Ekin_);
   ExtractfromPack(position,data,Eint_);
+  ExtractfromPack<3,1>(position,data,L_);
+  ExtractfromPack<3,1>(position,data,P_);
+  ExtractfromPack<3,2>(position,data,t0_);
+  ExtractfromPack<3,2>(position,data,t_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -332,6 +348,9 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
             norm2 = Tref_[node].Norm2();
             Tref_[node].Scale(1/norm2);
 
+            for (int i=0;i<3;i++)
+              t0_(i,node)=Tref_[node](i);
+
           }
 
         }//if(!isinit_)
@@ -396,41 +415,41 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 {
-	  //setting up geometric variables for beam3eb elements
-	  for (int num=0; num<  dis.NumMyColElements(); ++num)
-	  {
-	    //in case that current element is not a Truss3CL element there is nothing to do and we go back
-	    //to the head of the loop
-	    if (dis.lColElement(num)->ElementType() != *this) continue;
+    //setting up geometric variables for beam3eb elements
+    for (int num=0; num<  dis.NumMyColElements(); ++num)
+    {
+      //in case that current element is not a Truss3CL element there is nothing to do and we go back
+      //to the head of the loop
+      if (dis.lColElement(num)->ElementType() != *this) continue;
 
-	    //if we get so far current element is a beam3eb element and  we get a pointer at it
-	    DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
-	    if (!currele) dserror("cast to Beam3eb* failed");
+      //if we get so far current element is a beam3eb element and  we get a pointer at it
+      DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
+      if (!currele) dserror("cast to Beam3eb* failed");
 
-	    //reference node position
-	    std::vector<double> xrefe;
+      //reference node position
+      std::vector<double> xrefe;
 
-	    const int nnode= currele->NumNode();
+      const int nnode= currele->NumNode();
 
-	    //resize xrefe for the number of coordinates we need to store
-	    xrefe.resize(3*nnode);
+      //resize xrefe for the number of coordinates we need to store
+      xrefe.resize(3*nnode);
 
-	    //getting element's nodal coordinates and treating them as reference configuration
-	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
-	      dserror("Cannot get nodes in order to compute reference configuration'");
-	    else
-	    {
-	      for (int node=0; node<nnode; node++) //element has k nodes
-	        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-	        {
-	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
-	        }
-	    }
+      //getting element's nodal coordinates and treating them as reference configuration
+      if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+        dserror("Cannot get nodes in order to compute reference configuration'");
+      else
+      {
+        for (int node=0; node<nnode; node++) //element has k nodes
+          for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+          {
+            xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+          }
+      }
 
-	    currele->SetUpReferenceGeometry(xrefe);
+      currele->SetUpReferenceGeometry(xrefe);
 
-	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
-	  return 0;
+    } //for (int num=0; num<dis_.NumMyColElements(); ++num)
+    return 0;
 }
 
 std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3eb::Tref() const

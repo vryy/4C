@@ -99,6 +99,11 @@ using namespace cln;
 #define mygaussruleeb intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
 //Default: 4
 
+//#define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC for tangential DoFs
+
+//#define CONSTSTOCHFORCE       //Flag in order to hold stochastic forces constant over the element length
+                                //(needed in order to compare with Reissner beams)
+
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
@@ -435,7 +440,8 @@ private:
     calc_struct_fsiload,
     calc_struct_update_istep,
     calc_struct_reset_istep,
-    calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_energy
   };
   //! vector storing the internal force vector
   Epetra_SerialDenseVector internalforces_;
@@ -464,8 +470,19 @@ private:
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
 
+  //! kinetic energy
   double Ekin_;
+  //! internal energy
   double Eint_;
+  //! angular momentum of the element
+  LINALG::Matrix<3,1> L_;
+  //! linear momentum of the element
+  LINALG::Matrix<3,1> P_;
+  //! nodal tangents of last time step (necessary for PTC scheme)
+  LINALG::Matrix<3,2> t0_;
+  //! nodal tangents of current time step (necessary for PTC scheme)
+  LINALG::Matrix<3,2> t_;
+
 
 #if NODALDOFS == 3
   //! Matrix holding the derivatives of the tangents at each node in reference configuration

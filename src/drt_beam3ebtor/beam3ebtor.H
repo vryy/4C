@@ -356,8 +356,6 @@ private:
   //! Variable holding the constant Jacobi determinant jacobi of the element
   double jacobi_;
 
-  double factor_;
-
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
 
