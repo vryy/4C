@@ -79,11 +79,8 @@ BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
 BEAMS_OCTREE                    octree_cylorient
-BEAMS_ADDEXTVAL                 2.0
-BEAMS_RADFAC                    1.5
-BEAMS_EXTFAC                    1.5
-BEAMS_TREEDEPTH                 4
-BEAMS_BOXESINOCT                4
+BEAMS_ADDITEXT                  No
+BEAMS_EXTVAL                    1.5 1.5
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std

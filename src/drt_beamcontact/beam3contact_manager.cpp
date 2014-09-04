@@ -459,7 +459,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
      double t_end = Teuchos::Time::wallTime() - t_start;
      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
      if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-       std::cout << "            Octree Search: " << t_end << " seconds, "<< std::endl;
+       std::cout << "           Octree Search: " << t_end << " seconds, found pairs: "<<elementpairs.size()<< std::endl;
   }
   //**********************************************************************
   // brute-force search (loop over all elements and find closest pairs)
@@ -1152,7 +1152,21 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
   // the factor is only empiric yet it must be greater than 2
   // in order to account for the circular beam cross sections
   searchradius_ = 5.0 * globalcharactlength;
-  double searchboxinc=sbeamcontact_.get<double>("BEAMS_ADDEXTVAL", 0.0);
+  double searchboxinc = 0.0;
+  {
+    std::vector<double> extval(0);
+    std::istringstream PL(Teuchos::getNumericStringParameter(sbeamcontact_,"BEAMS_EXTVAL"));
+    std::string word;
+    char* input;
+    while (PL >> word)
+      extval.push_back(std::strtod(word.c_str(), &input));
+    if((int)extval.size()>2)
+      dserror("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
+    if(extval.size()==1)
+      searchboxinc = extval.at(0);
+    else
+      searchboxinc = std::max(extval.at(0),extval.at(1));
+  }
   sphericalsearchradius_ = 2.0*searchboxinc + globalcharactlength;
 
   // some information for the user

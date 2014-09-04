@@ -205,8 +205,11 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       periodlength_->push_back(std::strtod(word.c_str(), &input));
   }
 
-  if((int)periodlength_->size()<3)
+  if((int)periodlength_->size()<3 && (int)periodlength_->size()!=1)
     dserror("You only gave %d values for PERIODLENGTH! Check your input file.", (int)periodlength_->size());
+  else if((int)periodlength_->size()==1)
+    for(int i=0; i<2; i++)
+      periodlength_->push_back(periodlength_->at(0));
   for(int i=0; i<(int)periodlength_->size(); i++)
     if(periodlength_->at(i)<0.0)
       dserror("PERIODLENGTH( %d ) = %4.2f < 0.0 does not make any sense! Check your input file.", i, periodlength_->at(i));

@@ -2054,9 +2054,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::BEAMCONTACT::boct_aabb,INPAR::BEAMCONTACT::boct_cobb,INPAR::BEAMCONTACT::boct_spbb),
        &beamcontact);
 
-  DoubleParameter("BEAMS_ADDEXTVAL",0.0,"additive extrusion value of the bounding box",&beamcontact);
-  DoubleParameter("BEAMS_EXTFAC",1.05,"extrusion factor of the bounding box",&beamcontact);
-  DoubleParameter("BEAMS_RADFAC",1.05,"radius extrusion factor of the bounding box",&beamcontact);
+  setStringToIntegralParameter<int>("BEAMS_ADDITEXT","No","Switch between No==multiplicative extrusion factor and Yes==additive extrusion factor",
+                               yesnotuple,yesnovalue,&beamcontact);
+  setNumericStringParameter("BEAMS_EXTVAL","1.05", "extrusion value(s) of the bounding box, Depending on BEAMS_ADDITIVEEXTFAC is either additive or multiplicative. Give one or two values.",&beamcontact);
   IntParameter("BEAMS_TREEDEPTH",6,"max, tree depth of the octree",&beamcontact);
   IntParameter("BEAMS_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beamcontact);
 

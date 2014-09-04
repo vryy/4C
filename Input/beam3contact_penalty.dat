@@ -69,7 +69,8 @@ BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
 BEAMS_OCTREE                    none
-BEAMS_ADDEXTVAL                 2.0
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym

@@ -949,6 +949,9 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_octree:
     {
+      if(beamcmanager!=Teuchos::null && beamcmanager->OcTree()==Teuchos::null)
+        dserror("Beam Contact withtout Octree search detected! Either set BEAMS_OCTREE to something other than -None- or disable this output!");
+
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
       if( ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8) && beamcmanager!=Teuchos::null)
       {

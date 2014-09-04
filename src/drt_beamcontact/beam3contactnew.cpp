@@ -173,9 +173,23 @@ radius2_(0.0)
     //TODO: Here we need a warning in case we have no additive bounding box extrusion value!
   }
 
-  searchboxinc_ = beamcontactparams.get<double>("BEAMS_ADDEXTVAL", 0.0);
+  searchboxinc_ = 0.0;
+  {
+    std::vector<double> extval(0);
+    std::istringstream PL(Teuchos::getNumericStringParameter(beamcontactparams,"BEAMS_EXTVAL"));
+    std::string word;
+    char* input;
+    while (PL >> word)
+      extval.push_back(std::strtod(word.c_str(), &input));
+    if((int)extval.size()>2)
+      dserror("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
+    if(extval.size()==1)
+      searchboxinc_ = extval.at(0);
+    else
+      searchboxinc_ = std::max(extval.at(0),extval.at(1));
+  }
   if(searchboxinc_==0.0)
-    dserror("Input parameter BEAMS_ADDEXTVAL not set. Choose an additive bounding box extrusion value!");
+    dserror("Input parameter BEAMS_EXTVAL not set. Choose an (additive) bounding box extrusion value!");
 
   int penaltylaw = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(beamcontactparams,"BEAMS_PENALTYLAW");
   if(penaltylaw != INPAR::BEAMCONTACT::pl_lp and penaltylaw != INPAR::BEAMCONTACT::pl_qp)

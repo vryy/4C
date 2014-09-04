@@ -94,9 +94,8 @@ class Beam3ContactOctTree
     void CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     /*! \brief create spherical bounding boxes for crosslinker
      * \param coord      (in)  coordinates of the element's nodes
-     * \param elecolid   (in)  element column map Id
-     * \param bboxlimits (out) limits of the bounding box*/
-    void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+     * \param elecolid   (in)  element column map Id*/
+    void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid);
 
 
     //!\brief base call for octree build. Returns false if no bounding boxes exist
@@ -155,6 +154,9 @@ class Beam3ContactOctTree
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
 
+    //!\brief flag indicating
+    bool additiveextrusion_;
+
     //!\brief vector holding the edge lengths of the cuboid periodic volume
     Teuchos::RCP<std::vector<double> > periodlength_;
 
@@ -179,14 +181,8 @@ class Beam3ContactOctTree
     //!\brief minimum number of BBs per octant
     int minbboxesinoctant_;
 
-    //!\brief scalar additive extrusion value for bounding boxes (alternative to multiplicative extrusionfactor_)
-    double addextrusionvalue_;
-
-    //!\brief scalar factor for diameters
-    double extrusionfactor_;
-
-    //!\brief scalar factor for radial scaling of the bounding box
-    double radialextrusion_;
+    //!\brief scalar extrusion values for additive or multiplicative extrusion of the bounding box
+    Teuchos::RCP<std::vector<double> > extrusionvalue_;
 
     //!\brief diameters of all beam elements
     Teuchos::RCP<Epetra_Vector> diameter_;

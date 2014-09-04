@@ -69,9 +69,8 @@ BEAMS_PENREGPARAM_F0    0.0
 BEAMS_PENREGPARAM_C0    0.0
 BEAMS_BASICSTIFFGAP     0.001
 BEAMS_OCTREE            octree_axisaligned
-BEAMS_ADDEXTVAL         0.1
-BEAMS_EXTFAC            2.5
-BEAMS_RADFAC            2.5
+BEAMS_ADDITEXT          Yes
+BEAMS_EXTVAL            0.1
 BEAMS_TREEDEPTH         5
 BEAMS_BOXESINOCT        7
 ----------------------------------------------STATISTICAL MECHANICS
