@@ -367,11 +367,8 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(Teuchos::RCP<DRT::Discretization>
 
   // 'material' parameters required for artery tree and for 3 element windkessel
   R1_ = (impedancecond[numcond])->GetDouble("R1");
-  std::cout<<R1_<<"\n";
   R2_ = (impedancecond[numcond])->GetDouble("R2");
-  std::cout<<R2_<<"\n";
   C_ = (impedancecond[numcond])->GetDouble("C");
-  std::cout<<C_<<"\n";
 
   E_  = (impedancecond[numcond])->GetDouble("stiffness");
   H1_ = (impedancecond[numcond])->GetDouble("H1");
