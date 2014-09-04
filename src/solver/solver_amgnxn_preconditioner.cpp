@@ -108,7 +108,9 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
           myInterface.GetNullSpacesDim(),
           myInterface.GetNullSpacesData(),
           myInterface.GetPreconditionerParams(),
-          myInterface.GetSmoothersParams()));
+          myInterface.GetSmoothersParams(),
+          myInterface.GetSmoothersParams()
+          ));
   }
   else if (myInterface.GetPreconditionerType() == "BlockSmoother(X)")
   {
@@ -136,6 +138,9 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
   //<ParameterList name="params">
   //
   //  <ParameterList name="AMGnxn Parameters">
+  //    <Parameter name="AMGNXN_TYPE"          type="string"  value="AMG(BGS)"/>
+  //    <!-- or -->
+  //    <Parameter name="AMGNXN_TYPE"          type="string"  value="XML"/>
   //    <Parameter name="AMGNXN_XML_FILE"      type="string"  value=" ... .xml"/>
   //  </ParameterList>
   //
@@ -183,13 +188,23 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
     dserror("AMGnxn Parameters not found!");
   Teuchos::ParameterList& amglist = params.sublist("AMGnxn Parameters");
 
-  // Parse the whole file
-  std::string amgnxn_xml =amglist.get<std::string>("AMGNXN_XML_FILE","none");
-  if(amgnxn_xml=="none")
-    dserror("The input parameter AMGNXN_XML_FILE is empty.");
-  if(not(amgnxn_xml=="none"))
-    Teuchos::updateParametersFromXmlFile(
-        amgnxn_xml,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
+
+  // Decide whether to choose a default type or parse a xml file
+  std::string amgnxn_type =amglist.get<std::string>("AMGNXN_TYPE","AMG(BGS)");
+  if(amgnxn_type=="AMG(BGS)") Params_AMG_BGS(smoo_params_);
+  else if (amgnxn_type=="XML")
+  {
+    // Parse the whole file
+    std::string amgnxn_xml =amglist.get<std::string>("AMGNXN_XML_FILE","none");
+    if(amgnxn_xml=="none")
+      dserror("The input parameter AMGNXN_XML_FILE is empty.");
+    if(not(amgnxn_xml=="none"))
+      Teuchos::updateParametersFromXmlFile(
+          amgnxn_xml,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
+  }
+  else dserror("\"%s\" is an invalid value for \"AMGNXN_TYPE\". Fix your .dat",amgnxn_type.c_str());
+
+
 
   // Find preconditioner type and parameters
   std::string myprec =  smoo_params_.get<std::string>("Preconditioner","none");
@@ -237,6 +252,110 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
 }
 
 
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::AMGnxn_Interface::Params_AMG_BGS(Teuchos::ParameterList& params)
+{
+
+// This is a pre-defined AMG(BGS) preconditioner
+// TODO Add the possibility to the user of tuning some of the
+// more relevant parameters using the existing input params in the .dat file
+
+// This is the xml file which defines the preconditioner
+
+//<ParameterList name="dummy">
+//
+//  <Parameter name="Preconditioner" type="string"  value="default_AMG(BGS)"/>
+//
+//  <!-- Global setup of the preconditioner  -->
+//
+//  <ParameterList name="default_AMG(BGS)">
+//  <Parameter name="type" type="string"  value="AMG(BlockSmoother)"/>
+//    <ParameterList name="parameters">
+//      <Parameter name="number of levels"                 type="int"     value="5"                 />
+//      <Parameter name="smoother: all but coarsest level" type="string"  value="BGS"               />
+//      <Parameter name="smoother: coarsest level"         type="string"  value="MERGE_AND_SOLVE"   />
+//      <Parameter name="verbosity"                        type="string"  value="off"               />
+//      <Parameter name="muelu parameters for block 0"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 1"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 2"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 3"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 5"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 6"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 7"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 8"     type="string"  value="myMueluLISTDefault"/>
+//      <Parameter name="muelu parameters for block 9"     type="string"  value="myMueluLISTDefault"/>
+//    </ParameterList>
+//  </ParameterList>
+//
+//  <!-- Muelu Hierarachies  -->
+//
+//  <ParameterList name="myMueluLISTDefault">
+//    <ParameterList name="Factories">
+//      <ParameterList name="myForwardGaussSeidel">
+//        <Parameter name="factory"                      type="string"  value="TrilinosSmoother"/>
+//        <Parameter name="type"                         type="string"  value="RELAXATION"      />
+//        <ParameterList name="ParameterList">
+//          <Parameter name="relaxation: type"           type="string"  value="Gauss-Seidel"/>
+//        </ParameterList>
+//      </ParameterList>
+//    </ParameterList>
+//    <ParameterList name="Hierarchy">
+//      <Parameter name="numDesiredLevel" type="int"      value="3"   />
+//      <Parameter name="maxCoarseSize"   type="int"      value="700" />
+//      <Parameter name="verbosity"       type="string"   value="None"/>
+//      <ParameterList name="All">
+//      <Parameter name="startLevel"   type="int"      value="0"                   />
+//      <Parameter name="Smoother"     type="string"   value="myForwardGaussSeidel"/>
+//      <Parameter name="CoarseSolver" type="string"   value="myForwardGaussSeidel"/>
+//      </ParameterList>
+//    </ParameterList>
+//  </ParameterList>
+//
+//
+//</ParameterList>
+
+  // This is the parameter list
+
+  params.set<std::string>("Preconditioner","default_AMG(BGS)");
+
+  Teuchos::ParameterList& default_AMG_BGS = params.sublist("default_AMG(BGS)");
+  default_AMG_BGS.set<std::string>("type","AMG(BlockSmoother)");
+  Teuchos::ParameterList& default_AMG_BGS_params = default_AMG_BGS.sublist("parameters");
+  default_AMG_BGS_params.set             ("number of levels"                ,5                   );
+  default_AMG_BGS_params.set<std::string>("smoother: all but coarsest level","BGS"               );
+  default_AMG_BGS_params.set<std::string>("smoother: coarsest level"        ,"MERGE_AND_SOLVE"   );
+  default_AMG_BGS_params.set<std::string>("verbosity"                       ,"off"               );
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 0"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 1"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 2"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 3"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 5"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 6"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 7"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 8"    ,"myMueluLISTDefault");
+  default_AMG_BGS_params.set<std::string>("muelu parameters for block 9"    ,"myMueluLISTDefault");
+
+  Teuchos::ParameterList& muelu = params.sublist("myMueluLISTDefault");
+  Teuchos::ParameterList& muelu_fact = muelu.sublist("Factories");
+  Teuchos::ParameterList& muelu_fact_gs = muelu_fact.sublist("myForwardGaussSeidel");
+  muelu_fact_gs.set<std::string>("factory","TrilinosSmoother");
+  muelu_fact_gs.set<std::string>("type"   ,"RELAXATION"      );
+  muelu_fact_gs.sublist("ParameterList").set<std::string>("relaxation: type","Gauss-Seidel");
+
+  Teuchos::ParameterList& muelu_hier = muelu.sublist("Hierarchy");
+  muelu_hier.set             ("numDesiredLevel",3     );
+  muelu_hier.set             ("maxCoarseSize"  ,700   );
+  muelu_hier.set<std::string>("verbosity"      ,"None");
+  muelu_hier.sublist("All").set             ("startLevel"  ,0                     );
+  muelu_hier.sublist("All").set<std::string>("Smoother"    ,"myForwardGaussSeidel");
+  muelu_hier.sublist("All").set<std::string>("CoarseSolver","myForwardGaussSeidel");
+
+
+
+
+  return;
+}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -246,13 +365,15 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator(
     std::vector<int> null_spaces_dim,
     std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data,
     const Teuchos::ParameterList& amgnxn_params,
-    const Teuchos::ParameterList& smoothers_params):
+    const Teuchos::ParameterList& smoothers_params,
+    const Teuchos::ParameterList& muelu_params):
     A_                   (A               ),
     num_pdes_            (num_pdes        ),
     null_spaces_dim_     (null_spaces_dim ),
     null_spaces_data_    (null_spaces_data),
     amgnxn_params_       (amgnxn_params   ),
     smoothers_params_    (smoothers_params),
+    muelu_params_        (muelu_params),
     is_setup_flag_       (false           )
 {
 
@@ -267,9 +388,9 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator(
   //
   //  <Parameter name="verbosity"                        type="string"  value="on"/>
   //
-  //  <Parameter name="muelu xml file for block 0"       type="string"  value="file0.xml"/>
+  //  <Parameter name="muelu parameters for block 0"       type="string"  value="myMuelu0"/>
   //
-  //  <Parameter name="muelu xml file for block 1"       type="string"  value="file1.xml"/>
+  //  <Parameter name="muelu parameters for block 1"       type="string"  value="myMuelu1"/>
   //
   //   ....
   //
@@ -291,6 +412,22 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator(
   //   ...    ...    ...    ...    ...
   //
   //  </ParameterList>
+  //
+  //</ParameterList>
+
+  // Expected parameters in muelu_params (example)
+  //<ParameterList name="muelu_params">
+  //
+  //   <ParameterList name="myMueluX">
+  //     <Parameter name="xml file"      type="string"  value="myfile.xml"/>
+  //   </ParameterList>
+  //
+  //   TODO or
+  //
+  //   <ParameterList name="myMueluX">
+  //    ... ... list defining the muelue hierarcy (i.e.) the contents of the xml file
+  //   </ParameterList>
+  //
   //
   //</ParameterList>
 
@@ -326,17 +463,30 @@ void  LINALG::SOLVER::AMGnxn_Operator::Setup()
     std::cout << std::endl;
   }
 
-  // Parse the name of the xml files
+  //recover the muelu params
   int NumBlocks = A_->Rows();
   for(int i=0;i<NumBlocks;i++)
   {
+
+    // recover the name of the list
     std::stringstream ss;
     ss << i;
-    std::string param_name = "muelu xml file for block " + ss.str();
-    std::string xml_name =amgnxn_params_.get<std::string>(param_name,"none");
-    if (xml_name == "none")
-      dserror("You must specify an xml file for creating the AMG on block %d",i);
-    xml_files_.push_back(xml_name);
+    std::string param_name = "muelu parameters for block " + ss.str();
+    std::string list_name =amgnxn_params_.get<std::string>(param_name,"none");
+    if (list_name == "none")
+      dserror("You must specify the parameters for creating the AMG on block %d",i);
+
+    // Parse contents of the list
+    Teuchos::ParameterList muelu_list_this_block;
+    if (not muelu_params_.isSublist(list_name)) dserror("list %s not found",list_name.c_str());
+    std::string xml_file = muelu_params_.sublist(list_name).get<std::string>("xml file","none");
+    if (xml_file!="none")
+      Teuchos::updateParametersFromXmlFile(
+          xml_file,Teuchos::Ptr<Teuchos::ParameterList>(&muelu_list_this_block));
+    else
+      muelu_list_this_block=muelu_params_.sublist(list_name);
+
+    muelu_lists_.push_back(muelu_list_this_block);
   }
 
 
@@ -345,7 +495,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::Setup()
   //  dserror("Missing \"number of levels\" in your xml file");
   H_ = Teuchos::rcp(new  AMGnxn_Hierarchies(
         A_,
-        xml_files_,
+        muelu_lists_,
         num_pdes_,
         null_spaces_dim_,
         null_spaces_data_,

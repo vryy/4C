@@ -7700,6 +7700,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
 
   // Parameters for AMGnxn Preconditioner
+  StringParameter("AMGNXN_TYPE","AMG(BGS)", "Name of the pre-built preconditioner to be used. If set to\"XML\" the preconditioner is defined using a xml file", &list);
   StringParameter("AMGNXN_XML_FILE","none", "xml file defining the AMGnxn preconditioner", &list);
 
 

@@ -32,14 +32,14 @@ Created on: Aug 11, 2014
 
 LINALG::SOLVER::AMGnxn_Hierarchies::AMGnxn_Hierarchies(
     Teuchos::RCP<BlockSparseMatrixBase> A,
-    std::vector<std::string> xml_files,
+    std::vector<Teuchos::ParameterList> muelu_params,
     std::vector<int> num_pdes,
     std::vector<int> null_spaces_dim,
     std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data,
     int NumLevelAMG,
     std::string verbosity):
 A_                (A               ),
-xml_files_        (xml_files       ),
+muelu_params_     (muelu_params    ),
 num_pdes_         (num_pdes        ),
 null_spaces_dim_  (null_spaces_dim ),
 null_spaces_data_ (null_spaces_data),
@@ -49,7 +49,7 @@ verbosity_        (verbosity       )
 {
   // Plausibility checks
   if (A_->Rows() != A_->Cols() or
-      (int)(xml_files_.size()) != NumBlocks_ or
+      (int)(muelu_params_.size()) != NumBlocks_ or
       (int)( num_pdes_.size()) != NumBlocks_ or
       (int)( null_spaces_dim_.size()) != NumBlocks_ or
       (int)( null_spaces_data_.size()) != NumBlocks_ )
@@ -155,7 +155,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
     int offsetFineLevel =  A_->Matrix(block,block).RowMap().MinAllGID();
     Teuchos::RCP<Epetra_Operator> A_eop = A_->Matrix(block,block).EpetraOperator();
     H_block_[block]=BuildMueLuHierarchy(
-        xml_files_[block],
+        muelu_params_[block],
         num_pdes_[block],
         null_spaces_dim_[block],
         null_spaces_data_[block],
@@ -279,7 +279,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
-    std::string xmlFileName,
+    Teuchos::ParameterList paramListFromXml,
     int numdf,
     int dimns,
     Teuchos::RCP<std::vector<double> > nsdata,
@@ -295,8 +295,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
     dserror("Error: PDE equations or null space dimension wrong.");
   if(nsdata==Teuchos::null)
     dserror("Error: null space data is empty");
-  if(xmlFileName == "none")
-    dserror("Missing xml file name");
 
   //Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_eop);
@@ -333,18 +331,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
   // Build up hierarchy
   Teuchos::RCP<Hierarchy> H = Teuchos::null;
 
-  if (verbosity_=="on")
-  {
-    if (A_eop->Comm().MyPID() == 0)
-      std::cout << "Block " << block << " < " << NumBlocks
-        << " : Using XML file " << xmlFileName << std::endl;
-  }
-
-  // Convert XML file contests to Teuchos::ParameterList
-  Teuchos::ParameterList paramListFromXml;
-  Teuchos::updateParametersFromXmlFileAndBroadcast
-    (xmlFileName, Teuchos::Ptr<Teuchos::ParameterList>(&paramListFromXml),
-     *(mueluOp->getRowMap()->getComm()));
 
   // Add information about maps offsets
   std::string offsets_str("{");

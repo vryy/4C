@@ -149,7 +149,7 @@ namespace LINALG
             int num_pde,
             int null_space_dim,
             Teuchos::RCP<std::vector<double> > null_space_data,
-            std::string xml_filename);
+            Teuchos::ParameterList muelu_list);
         virtual void Apply(
             const Epetra_MultiVector& X,
             Epetra_MultiVector& Y,
@@ -159,7 +159,7 @@ namespace LINALG
         int num_pde_;
         int null_space_dim_;
         Teuchos::RCP<std::vector<double> > null_space_data_;
-        std::string xml_filename_;
+        Teuchos::ParameterList muelu_list_;
         Teuchos::RCP<Hierarchy> H_;
         Teuchos::RCP<Epetra_Operator> P_;
         void Setup();

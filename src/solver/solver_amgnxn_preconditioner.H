@@ -93,6 +93,8 @@ namespace SOLVER
       Teuchos::ParameterList smoo_params_;
       std::string prec_type_;
 
+      void Params_AMG_BGS(Teuchos::ParameterList& params);
+
       // Helper function to convert int to std::string
       std::string ConvertInt(int number)
       {
@@ -112,7 +114,8 @@ namespace SOLVER
           std::vector<int> null_spaces_dim,
           std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data,
           const Teuchos::ParameterList& amgnxn_params,
-          const Teuchos::ParameterList& smoothers_params);
+          const Teuchos::ParameterList& smoothers_params,
+          const Teuchos::ParameterList& muelu_params);
 
 
       // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
@@ -164,12 +167,13 @@ namespace SOLVER
 
     private:
       Teuchos::RCP<BlockSparseMatrixBase> A_;
-      std::vector<std::string> xml_files_;
+      std::vector<Teuchos::ParameterList> muelu_lists_;
       std::vector<int> num_pdes_;
       std::vector<int> null_spaces_dim_;
       std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data_;
       Teuchos::ParameterList amgnxn_params_;
       Teuchos::ParameterList smoothers_params_;
+      Teuchos::ParameterList muelu_params_;
 
       bool is_setup_flag_;
       Teuchos::RCP<AMGnxn_Hierarchies>            H_;

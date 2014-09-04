@@ -1720,6 +1720,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       Teuchos::ParameterList& amgnxnlist = outparams.sublist("AMGnxn Parameters");
       std::string amgnxn_xml = inparams.get<std::string>("AMGNXN_XML_FILE");
       amgnxnlist.set<std::string>("AMGNXN_XML_FILE",amgnxn_xml);
+      std::string amgnxn_type = inparams.get<std::string>("AMGNXN_TYPE");
+      amgnxnlist.set<std::string>("AMGNXN_TYPE",amgnxn_type);
 
     }
   }

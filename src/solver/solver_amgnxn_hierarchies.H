@@ -38,7 +38,7 @@ namespace LINALG
       public:
         AMGnxn_Hierarchies(
             Teuchos::RCP<BlockSparseMatrixBase> A,
-            std::vector<std::string> xml_files,
+            std::vector<Teuchos::ParameterList> muelu_params,
             std::vector<int> num_pdes,
             std::vector<int> null_spaces_dim,
             std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data,
@@ -70,7 +70,7 @@ namespace LINALG
 
       private:
         Teuchos::RCP<BlockSparseMatrixBase> A_;
-        std::vector<std::string> xml_files_;
+        std::vector<Teuchos::ParameterList> muelu_params_;
         std::vector<int> num_pdes_;
         std::vector<int> null_spaces_dim_;
         std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data_;
@@ -89,7 +89,7 @@ namespace LINALG
         void Setup();
 
         Teuchos::RCP<Hierarchy> BuildMueLuHierarchy(
-            std::string xml_file,
+            Teuchos::ParameterList paramListFromXml,
             int num_pde,
             int null_space_dim,
             Teuchos::RCP<std::vector<double> > null_space_data,
