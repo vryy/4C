@@ -25,7 +25,7 @@ Maintainer: Andreas Ehrl
 namespace SCATRA
 {
 
-class ScaTraTimIntElchOST : public virtual ScaTraTimIntElch, public virtual TimIntOneStepTheta
+class ScaTraTimIntElchOST : public ScaTraTimIntElch, public TimIntOneStepTheta
 {
 
 public:
@@ -68,7 +68,7 @@ protected:
 }; // class TimIntElchOST
 
 
-class ScaTraTimIntElchBDF2 : public virtual ScaTraTimIntElch, public virtual TimIntBDF2
+class ScaTraTimIntElchBDF2 : public ScaTraTimIntElch, public TimIntBDF2
 {
 
 public:
@@ -111,7 +111,7 @@ protected:
 }; // class TimIntElchBDF2
 
 
-class ScaTraTimIntElchGenAlpha : public virtual ScaTraTimIntElch, public virtual TimIntGenAlpha
+class ScaTraTimIntElchGenAlpha : public ScaTraTimIntElch, public TimIntGenAlpha
 {
 
 public:
@@ -154,7 +154,7 @@ protected:
 }; // class TimIntElchGenAlpha
 
 
-class ScaTraTimIntElchStationary : public virtual ScaTraTimIntElch, public virtual TimIntStationary
+class ScaTraTimIntElchStationary : public ScaTraTimIntElch, public TimIntStationary
 {
 
 public:

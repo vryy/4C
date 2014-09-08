@@ -45,11 +45,11 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE SUPG //residual_based
+STABTYPE                        SUPG //residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 CONSISTENCY                     no
 EVALUATION_MAT                  element_center
-EVALUATION_TAU integration_point //element_center
+EVALUATION_TAU                  integration_point //element_center
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          3                             // abort solution process -> be able to test influence of the matrix as well!
 CONVTOL                         1e-09
