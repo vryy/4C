@@ -76,6 +76,9 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   if (not IsInit())  { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
+  // local copy of residual that can be modified
+  Teuchos::RCP<Epetra_MultiVector> ftmp = Teuchos::rcp(new Epetra_MultiVector(f));
+
   bool converged = false;
   double fnorm2 = 1.0e+12;
 
@@ -90,7 +93,9 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     // choose type of multigrid cycle //ToDo (mayr) switch between different cycles based on params_
     VCycle(f, x, 0);
 
-    converged = NlnProblem()->ConvergenceCheck(f, fnorm2);
+    // Evaluate and check for convergence
+    NlnProblem()->Evaluate(x, *ftmp);
+    converged = NlnProblem()->ConvergenceCheck(*ftmp, fnorm2);
 
     PrintIterSummary(iter, fnorm2);
   }
