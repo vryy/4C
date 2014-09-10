@@ -13,8 +13,8 @@ Maintainer: Alexander Popp
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FSI_COUPLING_MORTAR_H
-#define FSI_COUPLING_MORTAR_H
+#ifndef ADAPTER_COUPLING_MORTAR_H
+#define ADAPTER_COUPLING_MORTAR_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
@@ -172,4 +172,4 @@ namespace ADAPTER
   };
 }
 
-#endif // FSI_COUPLING_MORTAR_CONTACT_H
+#endif /* ADAPTER_COUPLING_MORTAR_H */

@@ -14,8 +14,8 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 
-#ifndef FSI_COUPLING_H
-#define FSI_COUPLING_H
+#ifndef ADAPTER_COUPLING_H
+#define ADAPTER_COUPLING_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
@@ -426,4 +426,4 @@ namespace ADAPTER
 
 }
 
-#endif
+#endif /* ADAPTER_COUPLING_H */
