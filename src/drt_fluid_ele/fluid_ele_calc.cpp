@@ -3093,9 +3093,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
        -> see respective definitions for computation of tau_M above
 
+       fixed bug: before we used sqrt(c3) instead of c3 here   bk 2014
+       see for example Diss Peter Gamnitzer for correct definition
     */
 
-    tau_(2) = DSQR(h_p)/(sqrt(c3)*tau_(1));
+    tau_(2) = DSQR(h_p)/(c3*tau_(1));
   }
   break;
 
