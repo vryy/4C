@@ -17,7 +17,7 @@ Maintainer: Sudhakar
 #ifndef SPLITHEXINTOTWOWEDGES_H_
 #define SPLITHEXINTOTWOWEDGES_H_
 
-#include "propagateCrack.H"
+#include "crackDyn.H"
 
 namespace DRT
 {
@@ -62,6 +62,12 @@ private:
   \brief Add a WEDGE element with given nodal data into the discretization
    */
   void AddThisWedge( int owner, int eleid, std::vector<int> elenodes );
+
+  /*!
+  brief Get two faces from HEX8 element with each face having only one tip node and one splitnode
+   */
+  void GetTwoCorrectFaces( const int * elenodes,std::vector<int>& tipnodes, std::vector<int>& splitnodes,
+                           std::vector<int>& face1, std::vector<int>& face2 );
 
   //! underlying discretization
   Teuchos::RCP<DRT::Discretization> discret_;

@@ -87,6 +87,22 @@ namespace UTILS{
 
   double QuadraticHatFunction( const double &r, double n );
 
+  /*!
+  \brief Modify element connectivity of given discretization
+   */
+  void ModifyElementConnectivity( Teuchos::RCP<DRT::Discretization>& discret, std::map<int,int> delEle, std::map<int,int> oldnew );
+
+  /*!
+  \brief When a new node is introduced into the discretization, it is mandatory to copy the conditions
+  existing in old nodes into its duplicated new nodes
+   */
+  void AddConditions( Teuchos::RCP<DRT::Discretization>& discret, std::map<int,int> oldnew );
+
+  /*!
+  \brief For a the given node on the given surface element, get indices of two nodes that are directly connected with this node
+   */
+  void getConnectedNodeIdIndex( const Teuchos::RCP<DRT::Element> & surfele, int & tip_id, int & conn1_index, int & conn2_index );
+
 } /* namespace CRACK */
 } /* namespace CRACK */
 } /* namespace DRT */

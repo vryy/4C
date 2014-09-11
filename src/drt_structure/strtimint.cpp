@@ -71,7 +71,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_io/io_pstream.H"
 
-#include "../drt_crack/propagateCrack.H"
+#include "../drt_crack/crackDyn.H"
 #include "../drt_crack/crackUtils.H"
 
 /*----------------------------------------------------------------------*/
@@ -3439,7 +3439,7 @@ void STR::TimInt::PrepareCrackSimulation()
    or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
     isCrack_ = true;
-    propcrack_ = Teuchos::rcp(new DRT::CRACK::PropagateCrack( discret_ ) );
+    propcrack_ = Teuchos::rcp(new DRT::CRACK::CrackDyn( discret_ ) );
 
     const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
     gmsh_out_ = DRT::INPUT::IntegralValue<int>(crackparam,"GMSH_OUT")==1;
@@ -3454,7 +3454,7 @@ bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
   if( not isCrack_ )
     return false;
 
-  propcrack_->propagateOperations( displace, stressdata_ );
+  propcrack_->propagateOperations( displace, stressdata_, straindata_ );
 
   if (not discret_->Filled() || not discret_->HaveDofs())
   {

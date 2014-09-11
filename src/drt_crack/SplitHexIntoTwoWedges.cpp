@@ -19,7 +19,6 @@ Maintainer: Sudhakar
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_linedefinition.H"
 
 #include <iostream>
 #include <sstream>
@@ -38,15 +37,19 @@ void DRT::CRACK::SplitHexIntoTwoWedges::DoAllSplittingOperations( DRT::Element *
 {
   const int * elenodes = ele->NodeIds();
 
-  // We assume that first 4 nodes contains a face in z-plane
-  // next 4 nodes has another face
-  // TODO: Check whether this is always true with HEX
   std::vector<int> face1, face2;
 
+#if 0
+  // We assume that first 4 nodes contains a face in z-plane
+  // next 4 nodes has another face
+  // not working for many cases
   for( int i=0;i<4;i++ )
     face1.push_back( elenodes[i] );
   for( int i=4;i<8;i++ )
     face2.push_back( elenodes[i] );
+#else
+  GetTwoCorrectFaces( elenodes, tipnodes, splitnodes, face1, face2 );
+#endif
 
   std::vector<int> tri1, tri2, tri3, tri4;
   SplitThisQuad( face1, tipnodes, splitnodes, tri1, tri2 );
@@ -104,12 +107,121 @@ void DRT::CRACK::SplitHexIntoTwoWedges::DoAllSplittingOperations( DRT::Element *
 #endif
 }
 
+/*-----------------------------------------------------------------------------------------------*
+ * From given HEX element nodes, get two Quad faces that will be split                   sudhakar 09/14
+ * into Tri while forming WEDGE element
+ *-----------------------------------------------------------------------------------------------*/
+void DRT::CRACK::SplitHexIntoTwoWedges::GetTwoCorrectFaces( const int * elenodes,
+                                                            std::vector<int>& tipnodes,
+                                                            std::vector<int>& splitnodes,
+                                                            std::vector<int>& face1,
+                                                            std::vector<int>& face2 )
+{
+  // The faces are HEX8 are ordered in the following fashion in such a way
+  // that this nodal arrangement always give outward pointing normal
+  // Face0 -- 0 3 2 1 ----- (a)
+  // Face1 -- 0 1 5 4 ----- (b)
+  // Face2 -- 1 2 6 5 ----- (c)
+  // Face3 -- 2 3 7 6 ----- (b)
+  // Face4 -- 0 4 7 3 ----- (c)
+  // Face5 -- 4 5 6 7 ----- (a)
+  // (a), (b) and (c) mark paried surfaces
+  // One can see that face1 must be from first 3 sides, and face2 must be from last 3 sides
+  // Refer to BACI report -- single_report_conventions.pdf -- for more details
+
+  int number = 0; // not even one surface found
+  bool found_face2 = false;
+  for( unsigned numsurf = 3; numsurf < 6; numsurf++ )
+  {
+    std::vector<int> thisfacenodes;
+    if( numsurf == 3 )
+    {
+      thisfacenodes.push_back(elenodes[2]);
+      thisfacenodes.push_back(elenodes[3]);
+      thisfacenodes.push_back(elenodes[7]);
+      thisfacenodes.push_back(elenodes[6]);
+    }
+    else if( numsurf == 4 )
+    {
+      thisfacenodes.push_back(elenodes[0]);
+      thisfacenodes.push_back(elenodes[4]);
+      thisfacenodes.push_back(elenodes[7]);
+      thisfacenodes.push_back(elenodes[3]);
+    }
+    else if( numsurf == 5 )
+    {
+      thisfacenodes.push_back(elenodes[4]);
+      thisfacenodes.push_back(elenodes[5]);
+      thisfacenodes.push_back(elenodes[6]);
+      thisfacenodes.push_back(elenodes[7]);
+    }
+    else
+      dserror( "HEX8 should have only 6 surfaces\n" );
+
+    if( std::find( thisfacenodes.begin(), thisfacenodes.end(), tipnodes[1] ) != thisfacenodes.end() and
+        std::find( thisfacenodes.begin(), thisfacenodes.end(), tipnodes[0] ) == thisfacenodes.end() )
+    {
+      if( std::find( thisfacenodes.begin(), thisfacenodes.end(), splitnodes[0] ) != thisfacenodes.end() or
+          std::find( thisfacenodes.begin(), thisfacenodes.end(), splitnodes[1] ) != thisfacenodes.end() )
+      {
+        number = numsurf;
+        face2 = thisfacenodes;
+        found_face2 = true;
+      }
+    }
+  }
+
+  if( not found_face2 )
+    dserror( "face2 is not found\n" );
+
+  if( number == 3 )
+  {
+    face1.push_back( elenodes[1] );
+    face1.push_back( elenodes[0] );
+    face1.push_back( elenodes[4] );
+    face1.push_back( elenodes[5] );
+  }
+  else if( number == 4 )
+  {
+    face1.push_back( elenodes[1] );
+    face1.push_back( elenodes[5] );
+    face1.push_back( elenodes[6] );
+    face1.push_back( elenodes[2] );
+  }
+  else if( number == 5 )
+  {
+    face1.push_back( elenodes[0] );
+    face1.push_back( elenodes[1] );
+    face1.push_back( elenodes[2] );
+    face1.push_back( elenodes[3] );
+  }
+  else
+    dserror( "number should be between this given values\n" );
+
+  if( face1.size() != 4 )
+  {
+    std::cout<<"face1 nodes are = \n";
+    for( std::vector<int>::iterator it = face1.begin(); it != face1.end(); it++ )
+      std::cout<<*it<<" ";
+    std::cout<<"\n";
+    dserror( "face1 does not have 4 nodes\n" );
+  }
+  if( face2.size() != 4 )
+  {
+    std::cout<<"face2 nodes are = \n";
+    for( std::vector<int>::iterator it = face2.begin(); it != face2.end(); it++ )
+      std::cout<<*it<<" ";
+    std::cout<<"\n";
+    dserror( "face2 does not have 4 nodes\n" );
+  }
+}
+
 /*-------------------------------------------------------------------------------------------*
- * Give Quad element is split into two Tri elements with a diagonal                sudhakar 08/14
+ * Give Quad element is split into two Tri elements with a diagonal
  * which has one tip node and one split node at its ends
  *
  *
- *      -------*                 * splitnode
+ *      -------*                 * splitnode                                          sudhakar 08/14
  *      |     /|                 o tip node
  *      |    / |
  *      |   /  |

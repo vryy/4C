@@ -1894,18 +1894,38 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                true,
                                                DRT::Condition::Point));
 
+  Teuchos::RCP<ConditionDefinition> crackInnerLayer =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CRACK INNER LAYER POINTS",
+                                             "CrackInnerLayerPoints",
+                                             "Points on the inner layer while performing crack initiation",
+                                             DRT::Condition::CrackInnerLayerPoints,
+                                             true,
+                                             DRT::Condition::Point));
+
+  Teuchos::RCP<ConditionDefinition> crackOuterLayer =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CRACK OUTER LAYER POINTS",
+                                             "CrackOuterLayerPoints",
+                                             "Points on the outer layer while performing crack initiation",
+                                             DRT::Condition::CrackOuterLayerPoints,
+                                             true,
+                                             DRT::Condition::Point));
+
   for (unsigned i=0; i<crackdef.size(); ++i)
   {
     crmaster->AddComponent(crackdef[i]);
     crslave->AddComponent(crackdef[i]);
     initialCrack->AddComponent(crackdef[i]);
     crackBoundary->AddComponent(crackdef[i]);
+    crackInnerLayer->AddComponent(crackdef[i]);
+    crackOuterLayer->AddComponent(crackdef[i]);
   }
 
   condlist.push_back(crmaster);
   condlist.push_back(crslave);
   condlist.push_back(initialCrack);
   condlist.push_back(crackBoundary);
+  condlist.push_back(crackInnerLayer);
+  condlist.push_back(crackOuterLayer);
 
   /*--------------------------------------------------------------------*/
 

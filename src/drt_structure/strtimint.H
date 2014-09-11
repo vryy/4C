@@ -101,7 +101,7 @@ namespace DRT
 {
 namespace CRACK
 {
-class PropagateCrack;
+class CrackDyn;
 }
 }
 
@@ -1117,7 +1117,7 @@ namespace STR
     Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
     //!  Holds class that propagates crack within the discretiztion
-    Teuchos::RCP<DRT::CRACK::PropagateCrack> propcrack_;
+    Teuchos::RCP<DRT::CRACK::CrackDyn> propcrack_;
 
     //! elements with micro-materials
     bool havemicromat_;
