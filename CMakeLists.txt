@@ -1708,7 +1708,9 @@ set(OBJS_DRT_CRACK
   src/drt_crack/InsertCohesiveElements.cpp
   src/drt_crack/dcohesive.cpp
   src/drt_crack/dcohesive_evaluate.cpp
-  src/drt_crack/propagateCrack.cpp
+  src/drt_crack/crackDyn.cpp
+  src/drt_crack/propagateTip.cpp
+  src/drt_crack/initiateCrack.cpp
   src/drt_crack/crackUtils.cpp
   src/drt_crack/aleCrack.cpp
   src/drt_crack/SplitHexIntoTwoWedges.cpp
@@ -1750,6 +1752,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_triangulateFacet.cpp
   src/drt_cut/cut_volumecell.cpp
   src/drt_cut/cut_volumecellgenerator.cpp
+  src/drt_cut/cut_output.cpp
   src/drt_cut/line_integration.cpp
   src/drt_cut/facet_integration.cpp
   src/drt_cut/boundarycell_integration.cpp
@@ -1804,6 +1807,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_shadan_6.cpp
   tests/cut_test/cut_test_volume.cpp
   tests/cut_test/drt_dserror.cpp
+  tests/cut_test/cut_test_errors.cpp
   tests/cut_test/drt_singletondestruction.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp

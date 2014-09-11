@@ -29,7 +29,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.0025
-NUMSTEP                         10
+NUMSTEP                         9
 MAXTIME                         0.75
 DAMPING                         No
 M_DAMP                          0.0

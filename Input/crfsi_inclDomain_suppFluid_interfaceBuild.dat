@@ -61,8 +61,11 @@ CRITICAL_K1     1.0//5000
 CRITICAL_K2     1.0//5000
 THICKNESS_ASSUMPTION    plane_strain
 GMSH_OUT      no
-START_NEW_NODE_ID   48152
-START_NEW_ELE_ID    48152
+START_NEW_NODE_ID   374
+START_NEW_ELE_ID    148
+-----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   2
+ALE_TYPE                        classic_lin
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-7
 COUPMETHOD                      conforming
@@ -171,6 +174,9 @@ GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1
 MAT 3 ELAST_CoupNeoHooke YOUNG 5000 NUE 0.3
+MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0.3 DENS 1 THEXPANS 0.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD ale TAR_MAT 4
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(pi/2*t)   t1  0.0  t2 1 // dx=0.3+0.8(1+sin(2/3*pi*(t-0.75)))
 ------------------------------------------------------------CURVE2
