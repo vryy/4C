@@ -248,5 +248,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::nurbs27>;

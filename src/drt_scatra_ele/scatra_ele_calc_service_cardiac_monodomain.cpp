@@ -240,5 +240,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex27
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs27>;

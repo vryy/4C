@@ -171,5 +171,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs27>;

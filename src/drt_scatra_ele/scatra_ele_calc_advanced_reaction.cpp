@@ -915,5 +915,5 @@ template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::nurbs27>;

@@ -459,7 +459,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs27>;
 
 

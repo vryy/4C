@@ -230,7 +230,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs27>;
 

@@ -172,7 +172,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::wedge6>;
-//template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalcPoroReac<DRT::Element::nurbs27>;
 

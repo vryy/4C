@@ -80,10 +80,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 //  {
 //    return ScaTraImpl<DRT::Element::wedge15>::Instance(problem,numdofpernode,numscal);
 //  } */
-//  case DRT::Element::pyramid5:
-//  {
-//    return ScaTraImpl<DRT::Element::pyramid5>::Instance(problem,numdofpernode,numscal);
-//  }
+  case DRT::Element::pyramid5:
+  {
+    return DefineProblemType<DRT::Element::pyramid5>(problem,numdofpernode,numscal);
+  }
   case DRT::Element::quad4:
   {
     return DefineProblemType<DRT::Element::quad4>(problem,numdofpernode,numscal);

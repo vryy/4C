@@ -41,6 +41,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 
 #include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale.cpp"
 
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -331,14 +332,14 @@ void FS3I::PartFS3I::SetupSystem()
   /*----------------------------------------------------------------------*/
 
   // create map extractors needed for scatra condition coupling
-  const int ndim = DRT::Problem::Instance()->NDim();
+
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
     Teuchos::RCP<LINALG::MultiMapExtractor> mapex = Teuchos::rcp(new LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
-    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,ndim)));
+    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,1)));
     mcs.SetupExtractor(*currdis,*currdis->DofRowMap(),*mapex);
     scatrafieldexvec_.push_back(mapex);
   }
@@ -469,6 +470,7 @@ void FS3I::PartFS3I::SetupSystem()
 void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi_->AleField().CreateFieldTest());
   DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)

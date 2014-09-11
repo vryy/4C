@@ -161,7 +161,7 @@ namespace FS3I
 
     void SetVelocityFields();
 
-    //! routine for preparing time step to be defined in inherited classes 
+    //! routine for preparing time step to be defined in inherited classes
     //! (structure depends on coupling, that is, either one- or two-way)
     virtual void PrepareTimeStep() = 0;
 
