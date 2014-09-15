@@ -507,7 +507,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   DRT::Element*   element = discret_->lRowElement(0);
   Teuchos::RCP<MAT::Material>  mat = element->Material();
 
-  if (mat->MaterialType() == INPAR::MAT::m_matlist)
+  if (mat->MaterialType() == INPAR::MAT::m_matlist or mat->MaterialType() == INPAR::MAT::m_matlist_reactions)
   {
     Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 

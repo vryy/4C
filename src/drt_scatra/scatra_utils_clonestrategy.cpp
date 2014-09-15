@@ -50,7 +50,6 @@ std::map<std::string,std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsTo
   conditions_to_copy.insert(std::pair<std::string,std::string>("ElectrodeKinetics","ElectrodeKinetics"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("HomoScaTraCoupling","HomoScaTraCoupling"));
 
   // for moving boundary problems
   conditions_to_copy.insert(std::pair<std::string,std::string>("FSICoupling","FSICoupling"));
@@ -87,6 +86,7 @@ if (
     (mtype != INPAR::MAT::m_thermostvenant) &&
     (mtype != INPAR::MAT::m_yoghurt) &&
     (mtype != INPAR::MAT::m_matlist) &&
+    (mtype != INPAR::MAT::m_matlist_reactions) &&
     (mtype != INPAR::MAT::m_myocard) &&
     (mtype != INPAR::MAT::m_scatra_growth_scd)
    )

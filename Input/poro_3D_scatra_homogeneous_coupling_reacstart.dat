@@ -151,16 +151,25 @@ MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.5 BULKMODULUS 2.0e6 PENALTYPARAMETER
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 4 MAT_FluidPoro DYNVISCOSITY 0.05 DENSITY 1.0 PERMEABILITY 0.2e-1 TYPE Darcy
-MAT 5 MAT_matlist LOCAL No NUMMAT 9 MATIDS 6 7 8 9 10 11 12 13 14 END //collect Concentrations
-MAT 6 MAT_scatra DIFFUSIVITY 0.0 //REACOEFF 2.0
-MAT 7 MAT_scatra DIFFUSIVITY 0.0 //000000000001
-MAT 8 MAT_scatra DIFFUSIVITY 0.0 //000000000001
-MAT 9 MAT_scatra DIFFUSIVITY 0.0 //REACOEFF 2.0
+MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 9 MATIDS 8 9 10 11 12 13 14 15 16 NUMREAC 9 REACIDS 71 72 73 74 75 76 77 78 79 END //collect Concentrations
+MAT 8 MAT_scatra DIFFUSIVITY 0.0 //REACOEFF 2.0
+MAT 9 MAT_scatra DIFFUSIVITY 0.0 //000000000001
 MAT 10 MAT_scatra DIFFUSIVITY 0.0 //000000000001
-MAT 11 MAT_scatra DIFFUSIVITY 0.0 //000000000001
-MAT 12 MAT_scatra DIFFUSIVITY 0.0 //REACOEFF 2.0
+MAT 11 MAT_scatra DIFFUSIVITY 0.0 //REACOEFF 2.0
+MAT 12 MAT_scatra DIFFUSIVITY 0.0 //000000000001
 MAT 13 MAT_scatra DIFFUSIVITY 0.0 //000000000001
-MAT 14 MAT_scatra DIFFUSIVITY 0.0 //000000000001
+MAT 14 MAT_scatra DIFFUSIVITY 0.0 //REACOEFF 2.0
+MAT 15 MAT_scatra DIFFUSIVITY 0.0 //000000000001
+MAT 16 MAT_scatra DIFFUSIVITY 0.0 //000000000001//collect Concentrations
+MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 0 0 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
+MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 1 -1 0 0 0 0 0 0 REACCOEFF 2.0 COUPLING simple_multiplicative
+MAT 74 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 75 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative
+MAT 76 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 0 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 5.0
+MAT 77 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 0 REACCOEFF 2.0 COUPLING simple_multiplicative
+MAT 78 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 0 REACCOEFF -1.0 COUPLING simple_multiplicative REACSTART 3.0
+MAT 79 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative REACSTART 3.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 4
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
@@ -216,17 +225,17 @@ NDPOINT 0
 NDLINE  0
 NDSURF  1
 NDVOL   1
-------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
-DVOL                           9
-E 1 - numscal 9 stoich -1 0 0 0 0 0 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
-E 1 - numscal 9 stoich 0 -1 1 0 0 0 0 0 0 reaccoeff 1.0 coupling simple_multiplicative
-E 1 - numscal 9 stoich 0 1 -1 0 0 0 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
-E 1 - numscal 9 stoich 0 0 0 -1 -2 1 0 0 0 reaccoeff 1.0 coupling simple_multiplicative
-E 1 - numscal 9 stoich 0 0 0 0 0 0 -1 0 0 reaccoeff -1.0 coupling simple_multiplicative
-E 1 - numscal 9 stoich 0 0 0 0 0 0 -1 0 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 5.0
-E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff 2.0 coupling simple_multiplicative
-E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 3.0
-E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 1 reaccoeff 1.0 coupling simple_multiplicative reacstart 3.0
+// ------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
+// DVOL                           9
+// E 1 - numscal 9 stoich -1 0 0 0 0 0 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
+// E 1 - numscal 9 stoich 0 -1 1 0 0 0 0 0 0 reaccoeff 1.0 coupling simple_multiplicative
+// E 1 - numscal 9 stoich 0 1 -1 0 0 0 0 0 0 reaccoeff 2.0 coupling simple_multiplicative
+// E 1 - numscal 9 stoich 0 0 0 -1 -2 1 0 0 0 reaccoeff 1.0 coupling simple_multiplicative
+// E 1 - numscal 9 stoich 0 0 0 0 0 0 -1 0 0 reaccoeff -1.0 coupling simple_multiplicative
+// E 1 - numscal 9 stoich 0 0 0 0 0 0 -1 0 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 5.0
+// E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff 2.0 coupling simple_multiplicative
+// E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 3.0
+// E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 1 reaccoeff 1.0 coupling simple_multiplicative reacstart 3.0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                          1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0

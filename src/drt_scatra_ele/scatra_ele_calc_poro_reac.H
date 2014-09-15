@@ -48,16 +48,6 @@ public:
   /// called upon destruction
   virtual void Done();
 
-  //evaluation method
-  virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization &         discretization,
-                         const std::vector<int> &      lm,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra);
 
 protected:
 

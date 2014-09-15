@@ -70,43 +70,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Done()
   Instance( 0, 0, false );
 }
 
-/*-------------------------------------------------------------------------------*
- |  Evaluate including check for ScaTra in Porous medium with reaction   vuong 08/14 |
- *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Evaluate(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
-{
-
-  if (not advreac::isinit_)
-  {
-    advreac::iscoupled_=advreac::IsCoupledAndRead(discretization);
-    advreac::isinit_=true;
-  }
-  return my::Evaluate(
-      ele,
-      params,
-      discretization,
-      lm,
-      elemat1_epetra,
-      elemat2_epetra,
-      elevec1_epetra,
-      elevec2_epetra,
-      elevec3_epetra
-      );
-
-  //Todo: extend for evaluation of coupling terms
-}
-
 
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          thon 02/14 |
@@ -136,19 +99,12 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
   // set diffusivity (scaled with porosity)
   poro::SetDiffusivity(actmat,k,diffmanager,porosity);
 
-  // set/calculate reaction coefficient (scaled with porosity)
-  if (not advreac::iscoupled_)
-    poro::SetReaCoefficient(actmat,k,reamanager,1.0);
-  else
-    advreac::SetAdvancedReactionTerms(reamanager,k,1.0);
-
   // set densities (scaled with porosity)
   poro::SetDensities(porosity,densn,densnp,densam);
 
+  //NOTE: The reaction stuff happens in function SetAdvancedReactionTerms(...)
   return;
 } // ScaTraEleCalcPoroReac<distype>::MatScaTra
-
-
 
 
 

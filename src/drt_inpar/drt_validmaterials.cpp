@@ -200,6 +200,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*----------------------------------------------------------------------*/
+  // anisotropic scalar transport material (with potential reaction coefficient)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_reaction",
+                                            "advanced reaction material",
+                                            INPAR::MAT::m_scatra_reaction));
+
+    AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
+    AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
+    AddNamedReal(m,"REACCOEFF","reaction coefficient");
+    AddNamedString(m,"COUPLING","type of coupling", "simple_multiplicative");
+    AddNamedReal(m,"REACSTART","starting point of reaction",-1.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
   /*----------------------------------------------------------------------*/
   // anisotropic scalar transport material (with potential reaction coefficient)
   {
@@ -427,6 +446,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     //AddNamedInt(m,"LOCAL","individual materials allocated per element or only at global scope");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material collection with reactions (thon 09/14)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_matlist_reactions",
+                                            "list/collection of materials, i.e. material IDs and list of reactions",
+                                            INPAR::MAT::m_matlist_reactions));
+
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    //AddNamedInt(m,"LOCAL","individual materials allocated per element or only at global scope");
+    AddNamedInt(m,"NUMMAT","number of materials in list");
+    AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMREAC","number of reactions for these elements",0);
+    AddNamedIntVector(m,"REACIDS","advanced reaction list","NUMREAC",0);
     AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);

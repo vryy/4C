@@ -66,6 +66,8 @@ namespace INPAR
       m_vp_robinson,   ///< Robinson's visco-plastic material
       m_struct_multiscale, ///<  structural microscale approach
       m_matlist,       ///< collection of single materials (used for scalar transport problems)
+      m_scatra_reaction,   ///< reaction definition and parameters
+      m_matlist_reactions, ///< collection of single materials (used for scalar transport problems) and collection of reactions (used for advanced reaction elements)
       m_elchmat,
       m_elchphase,
       m_ion,            ///< properties of an ion species in an electrolyte solution

@@ -66,6 +66,8 @@ Maintainer: Lena Wiechert
 #include "growth_ip.H"
 #include "growth_scd.H"
 #include "scatra_growth_scd.H"
+#include "scatra_reaction_mat.H"
+#include "matlist_reactions.H"
 #include "constraintmixture.H"
 #include "biofilm.H"
 #include "optimization_density.H"
@@ -236,7 +238,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_scatra_aniso:
+  case INPAR::MAT::m_scatra_reaction:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraReactionMat(curmat));
+    MAT::PAR::ScatraReactionMat* params = static_cast<MAT::PAR::ScatraReactionMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+    case INPAR::MAT::m_scatra_aniso:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
@@ -341,6 +350,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::MatList* params = static_cast<MAT::PAR::MatList*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_matlist_reactions:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::MatListReactions(curmat));
+            MAT::PAR::MatListReactions* params = static_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
   case INPAR::MAT::m_elchmat:
   {
     if (curmat->Parameter() == NULL)

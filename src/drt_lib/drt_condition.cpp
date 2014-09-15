@@ -256,7 +256,6 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumeModeKrylovProjection)    os << "Volume mode for Krylov space projection";
   else if (Type()==SurfaceCurrent)                os << "Surface Current Evaluation";
   else if (Type()==UncertainSurface)              os << "Uncertain Surface";
-  else if (Type()==HomoScaTraCoupling)            os << "Homogeneous ScaTra Coulping";
   else if (Type()==LsContact)                     os << "level-set condition for contact points";
   else if (Type()==Absorb)                        os << "Absorbing boundary for acoustics";
   else if (Type()==PressureMonitor)               os << "Pressure monitor boundary for acoustics";

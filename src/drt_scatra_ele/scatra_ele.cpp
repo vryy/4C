@@ -17,6 +17,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_mat/matlist_reactions.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/elasthyper.H"
@@ -302,6 +303,26 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       }
       numdofpernode_ += 1;
     }
+  }
+  else if (mat->MaterialType() == INPAR::MAT::m_matlist_reactions) // we have a system of reactive scalars
+    {
+      const MAT::MatListReactions* actmat = static_cast<const MAT::MatListReactions*>(mat.get());
+      numdofpernode_=actmat->NumMat();
+
+      for (int ii=0; ii<numdofpernode_; ++ii)
+      {
+        // In the context of reactions the only valid material combination is m_matlist and m_scatra
+        if(actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+          dserror("The material Mat_matlist_reaction only supports MAT_scatra as valid main Material");
+      }
+
+      int numreac = actmat->NumReac();
+      for (int jj=0; jj<numreac; ++jj)
+      {
+        // In the context of reactions the only valid material combination is m_matlist and m_scatra_reaction
+        if(actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction)
+          dserror("The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction Material");
+      }
   }
   else if (mat->MaterialType() == INPAR::MAT::m_elchmat)
   {

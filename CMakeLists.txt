@@ -513,6 +513,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/damage.cpp
   src/drt_mat/scatra_mat.cpp
+  src/drt_mat/scatra_reaction_mat.cpp
+  src/drt_mat/matlist_reactions.cpp
   src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp

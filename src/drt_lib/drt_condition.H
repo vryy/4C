@@ -269,7 +269,6 @@ public:
     NeumannIntegration,
     SurfaceCurrent,
     UncertainSurface,
-    HomoScaTraCoupling,
     LsContact,
     Absorb,
     PressureMonitor,

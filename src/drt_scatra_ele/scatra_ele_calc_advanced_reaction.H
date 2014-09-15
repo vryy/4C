@@ -17,16 +17,12 @@
 #define SCATRA_ELE_CALC_ADVANCED_REACTION_H_
 
 #include "scatra_ele_calc.H"
+#include "../drt_mat/scatra_reaction_mat.H"
 
 namespace DRT
 {
 namespace ELEMENTS
 {
-
-enum reaction_coupling
-  {
-    simple_multiplicative
-  };
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype>
@@ -53,22 +49,20 @@ public:
 
 protected:
 
-  //! evaluate material
-  virtual void Materials(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-    double&                                 visc,      //!< fluid viscosity
-    const int                               iquad=-1   //!< id of current gauss point (default = -1)
+  //! get the material parameters
+  virtual void GetMaterialParams(
+    const DRT::Element* ele,       //!< the element we are dealing with
+    double&             densn,     //!< density at t_(n)
+    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    double&             densam,    //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
+    double&             visc,       //!< fluid viscosity
+    const int           iquad=-1    //!< id of current gauss point (default = -1)
   );
 
-
-  //! material ScaTra
-  virtual void MatScaTra(
+  //! evaluate material
+  virtual void Materials(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                               k,        //!< id of current scalar
     double&                                 densn,    //!< density at t_(n)
@@ -116,27 +110,23 @@ protected:
   );
 
 
-  //! check if homogenous scatra couplung condition exists and if, read it
-  virtual bool IsCoupledAndRead(
-      const DRT::Discretization&            ScaTraDiscretization //!<discretisation of the ScaTra field
-    );
-
-
   //!Calculate K(c)
   virtual double CalcReaCoeff(
-      const int                        k                       //!< id of current scalar
+      const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
+      const int                                 k         //!< id of current scalar
       );
 
 
   virtual double CalcReaCoeffFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichometry coefficients
       const int                                 k                       //!< id of current scalar
   );
 
 
   //! calculate \frac{partial}{\partial c} K(c)
   virtual double CalcReaCoeffDerivMatrix(
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                 k,                  //!< id of current scalar
       const int                 j                   //!< concentration to be derived to
       );
@@ -144,7 +134,7 @@ protected:
 
   virtual double CalcReaCoeffDerivFac(
       const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-      const DRT::ELEMENTS::reaction_coupling  couplingtype,            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling      couplingtype,            //!<type of coupling the stoichometry coefficients
       const int                               toderive,                //!<concentration to be derived to
       const int                               k                       //!< id of current scalar
   );
@@ -152,18 +142,20 @@ protected:
 
   //! calculate f(c)
   virtual double CalcReaBodyForceTerm(
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                                 k                       //!< id of current scalar
 );
 
 
   virtual double CalcReaBodyForceTermFac(
       const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-      const DRT::ELEMENTS::reaction_coupling      couplingtype            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichometry coefficients
   );
 
 
   //! calculate \frac{partial}{\partial c} f(c)
   virtual double CalcReaBodyForceDerivMatrix(
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                 k,                  //!< id of current scalar
       const int                 j                   //!< concentration to be derived to
 );
@@ -171,7 +163,7 @@ protected:
 
   virtual double CalcReaBodyForceDerivFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichometry coefficients
       const int                                 toderive                 //!<concentration to be derived to
   );
 
@@ -180,6 +172,7 @@ protected:
   virtual void ReacStartForReaCoeff(
   const int                               k,            //!< id of current scalar
   const int                               condnum,       //!< id of current condition
+  const double                            reacstart,      //!< value for reaction starting
   double&                                 value         //!< current reaction value
   );
 
@@ -188,9 +181,10 @@ protected:
     const int                               k,              //!< id of current scalar
     const int                               toderive,       //!<concentration to be derived to
     const int                               condnum,        //!< id of current condition
+    const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
     const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-    const DRT::ELEMENTS::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
+    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
     );
 
 
@@ -198,6 +192,7 @@ protected:
   virtual void ReacStartForReaBF(
   const int                               k,            //!< id of current scalar
   const int                               condnum,       //!< id of current condition
+  const double                            reacstart,      //!< value for reaction starting
   double&                                 value         //!< current reaction value
   );
 
@@ -206,21 +201,11 @@ protected:
     const int                               k,              //!< id of current scalar
     const int                               toderive,       //!<concentration to be derived to
     const int                               condnum,        //!< id of current condition
+    const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
     const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-    const DRT::ELEMENTS::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
+    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
     );
-
-
-  virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization &         discretization,
-                         const std::vector<int> &      lm,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra);
 
 
   //! calculation of reactive element matrix
@@ -238,18 +223,12 @@ protected:
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );
 
-  void SetAdvancedReactionTerms(Teuchos::RCP<ScaTraEleReaManager>       reamanager,
-                                const int                               k,
-                                const double                            scale=1.0);
-
-  bool iscoupled_;                           /// Flag for homogenous scatra coupling volume condition
-  bool isinit_;                              /// Flag if is checked for coupling condition or Material is allready done
-  int numcond_;                              /// number of homogenous scatra coupling conditions
-  std::vector<std::vector<int> > stoich_;    /// vector containing the stoichometrie
-  std::vector<double> reaconst_;             ///constant by which the reaction coefficient is multiplied
-  std::vector<DRT::ELEMENTS::reaction_coupling> couplingtype_;///how to calculate the different couplings
-  std::vector<double> reacstart_;             ///constant by which the reaction starts
-
+  void SetAdvancedReactionTerms(
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+      Teuchos::RCP<ScaTraEleReaManager>       reamanager,
+      const int                               k,
+      const double                            scale=1.0
+  );
 
 }; //end ScaTraEleCalcAdvReac
 

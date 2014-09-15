@@ -2866,58 +2866,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     condlist.push_back(surfelec);
   }
 
-  /*-------------------------------------------------------------------*/
-  // Scalar transport reaction terms
-
-  //Separators for "numscal xx stoich xx xx xx":
-  // definition separator for int vectors
-  std::vector<Teuchos::RCP<SeparatorConditionComponent> > HSTRintsepveccompstoich;
-  HSTRintsepveccompstoich.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoich")));
-  // definition int vectors
-  std::vector<Teuchos::RCP<IntVectorConditionComponent> > HSTRintveccompstoich;
-  HSTRintveccompstoich.push_back(Teuchos::rcp(new IntVectorConditionComponent("stoich",2)));
-  // definition separator for real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<SeparatorConditionComponent> > HSTRrealsepveccompstoich;
-  // definition real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<RealVectorConditionComponent> > HSTRrealveccompstoich;
-
-
-  std::vector<Teuchos::RCP<ConditionComponent> > homvolscatracoupcomp;
-
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")) );
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new IntRealBundle(
-                                 "intreal bundle numscal",
-                                Teuchos::rcp(new IntConditionComponent("numscal")),
-                                HSTRintsepveccompstoich,
-                                HSTRintveccompstoich,
-                                HSTRrealsepveccompstoich,
-                                HSTRrealveccompstoich)) );
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("reaccoeff")) );
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("reaccoeff")) );
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("coupling")) );
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new StringConditionComponent("coupling",
-                                  "simple_multiplicative",
-                                  Teuchos::tuple<std::string>("simple_multiplicative","other"),
-                                  /*Teuchos::tuple<int>(INPAR::SCATRA::simple_multiplicative,
-                                            INPAR::SCATRA::other)*/
-                                  Teuchos::tuple<std::string>("simple_multiplicative","other"))) );
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("reacstart",true)) ); //optional input
-  homvolscatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("reacstart")) );
-
-  Teuchos::RCP<ConditionDefinition> homvolscatracoup =
-    Teuchos::rcp(new ConditionDefinition("DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS",
-                 "HomoScaTraCoupling",
-                 "Homogenous ScaTra Volume Coupling",
-                 DRT::Condition::HomoScaTraCoupling,
-                 true,
-                 DRT::Condition::Volume) );
-
-  for (unsigned i=0; i<homvolscatracoupcomp.size(); ++i)
-  {
-    homvolscatracoup->AddComponent(homvolscatracoupcomp[i]);
-  }
-  condlist.push_back(homvolscatracoup);
-
 
   /*--------------------------------------------------------------------*/
   // Boundary flux evaluation condition for scalar transport
