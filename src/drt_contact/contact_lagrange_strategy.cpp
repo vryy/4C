@@ -2452,7 +2452,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
@@ -2472,7 +2472,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 
       if (friction_)
       {
-        FriNode* frinode = static_cast<FriNode*>(cnode);
+        FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute tangential part of Lagrange multiplier
         tz = frinode->CoData().txi()[0]*frinode->MoData().lm()[0] + frinode->CoData().txi()[1]*frinode->MoData().lm()[1];
@@ -2520,7 +2520,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           activesetconv_ = false;
 
           // friction
-          if (friction_) static_cast<FriNode*>(cnode)->FriData().Slip() = false;
+          if (friction_) dynamic_cast<FriNode*>(cnode)->FriData().Slip() = false;
         }
 
         // only do something for friction
@@ -2529,7 +2529,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           // friction tresca
           if (ftype == INPAR::CONTACT::friction_tresca)
           {
-            FriNode* frinode = static_cast<FriNode*>(cnode);
+            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
@@ -2562,7 +2562,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           // friction coulomb
           if (ftype == INPAR::CONTACT::friction_coulomb)
           {
-            FriNode* frinode = static_cast<FriNode*>(cnode);
+            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
@@ -2747,7 +2747,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // The nested active set strategy cannot deal with the case of
         // active nodes that have no integration segments/cells attached,
@@ -2804,7 +2804,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // get scaling factor
       double scalefac=1.;
@@ -2849,7 +2849,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       if (friction_)
       {
         // static cast
-        FriNode* frinode = static_cast<FriNode*>(cnode);
+        FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute tangential parts and of Lagrange multiplier and incremental jumps
         for (int i=0;i<Dim();++i)
@@ -2903,7 +2903,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           if (friction_)
           {
             // nodes coming into contact
-            static_cast<FriNode*>(cnode)->FriData().Slip() = true;
+            dynamic_cast<FriNode*>(cnode)->FriData().Slip() = true;
           }
         }
       }
@@ -2927,7 +2927,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           activesetconv_ = false;
 
           // friction
-          if (friction_) static_cast<FriNode*>(cnode)->FriData().Slip() = false;
+          if (friction_) dynamic_cast<FriNode*>(cnode)->FriData().Slip() = false;
         }
 
         // only do something for friction
@@ -2936,7 +2936,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // friction tresca
           if (ftype == INPAR::CONTACT::friction_tresca)
           {
-            FriNode* frinode = static_cast<FriNode*>(cnode);
+            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
             double frbound = interface_[i]->IParams().get<double>("FRBOUND");
@@ -2968,7 +2968,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // friction coulomb
           if (ftype == INPAR::CONTACT::friction_coulomb)
           {
-            FriNode* frinode = static_cast<FriNode*>(cnode);
+            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
             double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");

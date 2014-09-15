@@ -1583,7 +1583,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
          // (use fully overlapping column map)
          for (int i=0;i<idiscret_.NumMyColNodes();++i)
          {
-           CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
            const int numdof = node->NumDof();
            std::vector<double> myvel(numdof);
            std::vector<int> lm(numdof);
@@ -1615,7 +1615,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
          // (use fully overlapping column map)
          for (int i=0;i<idiscret_.NumMyColNodes();++i)
          {
-           CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
 
            const int numdof = node->NumDof();
            std::vector<double> mylm(numdof);

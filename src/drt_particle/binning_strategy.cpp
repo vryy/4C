@@ -143,7 +143,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
   for (int lid = 0; lid<mortardis.NumMyColElements(); ++lid)
   {
     DRT::Element* ele = mortardis.lColElement(lid);
-    if(static_cast<MORTAR::MortarElement*>(ele)->IsSlave() == isslave)
+    if(dynamic_cast<MORTAR::MortarElement*>(ele)->IsSlave() == isslave)
     {
       DRT::Node** nodes = ele->Nodes();
       const int numnode = ele->NumNode();
@@ -152,7 +152,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
       int ijk[3];
       {
         DRT::Node* node = nodes[0];
-        const double* coords = static_cast<MORTAR::MortarNode*>(node)->xspatial();
+        const double* coords = dynamic_cast<MORTAR::MortarNode*>(node)->xspatial();
         ConvertPosToijk(coords, ijk);
       }
 
@@ -163,7 +163,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
       for (int j=1; j<numnode; ++j)
       {
         DRT::Node* node = nodes[j];
-        const double* coords = static_cast<MORTAR::MortarNode*>(node)->xspatial();
+        const double* coords = dynamic_cast<MORTAR::MortarNode*>(node)->xspatial();
         int ijk[3];
         ConvertPosToijk(coords, ijk);
 

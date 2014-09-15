@@ -905,7 +905,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       if (stype_ == INPAR::CONTACT::solution_augmented)
       {
         Teuchos::RCP<CONTACT::AugmentedInterface> augInterface =
-            Teuchos::rcp_static_cast<CONTACT::AugmentedInterface>(interface_[i]);
+            Teuchos::rcp_dynamic_cast<CONTACT::AugmentedInterface>(interface_[i]);
         // evaluate averaged weighted gap
         augInterface->Evaluate(0,step_,iter_);
         // Calculate weighted gap
@@ -1565,7 +1565,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node)
           dserror("ERROR: Cannot find node with gid %", gid);
-        FriNode* fnode = static_cast<FriNode*>(node);
+        FriNode* fnode = dynamic_cast<FriNode*>(node);
 
         // store updated wcurr into node
         fnode->FriDataPlus().wcurr()[0] =
@@ -1580,7 +1580,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node)
           dserror("ERROR: Cannot find node with gid %", gid);
-        FriNode* fnode = static_cast<FriNode*>(node);
+        FriNode* fnode = dynamic_cast<FriNode*>(node);
 
         // store updated wcurr into node
         fnode->FriDataPlus().wold()[0] +=
@@ -1596,7 +1596,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node)
           dserror("ERROR: Cannot find node with gid %", gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // be aware of problem dimension
         int dim = Dim();
@@ -1659,7 +1659,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
               (*vectorinterface)[locindex[dof]] = 0.0;
 
             // store updated wcurr into node
-            FriNode* fnode = static_cast<FriNode*>(cnode);
+            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriDataPlus().wcurr()[0] =
                 (*vectorinterface)[locindex[(int) (dof / Dim())]];
             dof = dof + Dim() - 1;
@@ -1676,7 +1676,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
               (*vectorinterface)[locindex[dof]] = 0.0;
 
             // store updated wcurr into node
-            FriNode* fnode = static_cast<FriNode*>(cnode);
+            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriDataPlus().waccu()[0] +=
                 (*vectorinterface)[locindex[(int) (dof / Dim())]];
             dof = dof + Dim() - 1;
@@ -1693,7 +1693,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
               (*vectorinterface)[locindex[dof]] = 0.0;
 
             // store updated wcurr into node
-            FriNode* fnode = static_cast<FriNode*>(cnode);
+            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriDataPlus().wold()[0] +=
                 (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
             dof = dof + Dim() - 1;
@@ -1710,7 +1710,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
             if (!friction_)
               dserror("Slip just for friction problems!");
 
-            FriNode* fnode = static_cast<FriNode*>(cnode);
+            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriData().SlipOld() = fnode->FriData().Slip();
             break;
           }
@@ -1722,7 +1722,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
             // update wear only once
             if (dof == 0)
             {
-              FriNode* frinode = static_cast<FriNode*>(cnode);
+              FriNode* frinode = dynamic_cast<FriNode*>(cnode);
               double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
               double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
               double wearcoeff = wearcoeffs + wearcoeffm;
@@ -1774,7 +1774,7 @@ void CONTACT::CoAbstractStrategy::OutputStresses()
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
@@ -1853,7 +1853,7 @@ void CONTACT::CoAbstractStrategy::StoreDirichletStatus(
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // check if this node's dofs are in dbcmap
       for (int k = 0; k < cnode->NumDof(); ++k)
@@ -1935,7 +1935,7 @@ void CONTACT::CoAbstractStrategy::StoreToOld(
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      FriNode* cnode = static_cast<FriNode*>(node);
+      FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       switch (type)
       {
@@ -2062,7 +2062,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
       if (forcedrestart)
@@ -2081,7 +2081,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(
       // set value slip / stick in the toggle vector
       if (friction_)
       {
-        CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(cnode);
+        CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
         if (forcedrestart)
         {
           if (frinode->FriData().SlipOld())
@@ -2173,7 +2173,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node)
           dserror("ERROR: Cannot find node with gid %", gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // set value active / inactive in cnode
         cnode->Active() = true;
@@ -2182,7 +2182,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
         {
           // set value stick / slip in cnode
           if ((*sliptoggle)[dof] == 1)
-            static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip() = true;
+            dynamic_cast<CONTACT::FriNode*>(cnode)->FriData().Slip() = true;
         }
       }
     }
@@ -2351,7 +2351,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       std::vector<double> nodeforce(3);
       std::vector<double> position(3);
@@ -2395,7 +2395,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       std::vector<double> nodeforce(3);
       std::vector<double> position(3);
@@ -2456,7 +2456,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       std::vector<double> lm(3);
       std::vector<double> nodegaps(3);
@@ -2697,7 +2697,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       if (!friction_)
       {
         // cast to CoNode
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // compute weighted gap
         double wgap = (*g_)[g_->Map().LID(gid)];
@@ -2739,8 +2739,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       else
       {
         // cast to CoNode and FriNode
-        CoNode* cnode = static_cast<CoNode*>(node);
-        FriNode* frinode = static_cast<FriNode*>(cnode);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
+        FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute weighted gap
         double wgap = (*g_)[g_->Map().LID(gid)];
@@ -2964,7 +2964,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         dserror("ERROR: Cannot find node with gid %", gid);
 
       // increase active counters
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       if (cnode->Active() or cnode->AugActive()) activenodes   += 1;
       else                                       inactivenodes += 1;
@@ -2972,7 +2972,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       // increase friction counters
       if (friction_)
       {
-        FriNode* frinode = static_cast<FriNode*>(cnode);
+        FriNode* frinode = dynamic_cast<FriNode*>(cnode);
         if (cnode->Active() && frinode->FriData().Slip())
           slipnodes += 1;
       }

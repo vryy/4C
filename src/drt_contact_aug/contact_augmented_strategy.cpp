@@ -65,7 +65,7 @@ gFdCheck_(false)
   // cast to augmented interfaces
   for (int i=0; i<(int) interfaces.size(); ++i)
   {
-    interface_.push_back(Teuchos::rcp_static_cast<CONTACT::AugmentedInterface>(interfaces[i]));
+    interface_.push_back(Teuchos::rcp_dynamic_cast<CONTACT::AugmentedInterface>(interfaces[i]));
     if (interface_[i]==Teuchos::null)
       dserror("AugmentedLagrangeStartegy: Interface-cast failed!");
   }
@@ -488,7 +488,7 @@ void CONTACT::AugmentedLagrangeStrategy::OutputStresses()
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();

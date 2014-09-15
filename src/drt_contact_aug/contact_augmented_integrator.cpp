@@ -129,7 +129,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivCell3DAuxPlane(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -314,7 +314,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
 
   int msize   = meles.size();
   int nrow    = sele.NumNode();
-  int ndof    = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof    = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -352,7 +352,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -618,7 +618,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
   bool linlm = false;
   for (int k=0;k<nrow;++k)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -662,7 +662,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -747,7 +747,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
 
     // evaluate the derivative dxdsxidsxi = Jac,xi
     double djacdxi[2] = {0.0, 0.0};
-    static_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
+    dynamic_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
     double dxdsxidsxi=djacdxi[0]; // only 2D here
 
     // evalute the GP slave coordinate derivatives
@@ -875,7 +875,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
   bool bound = false;
   for (int k=0;k<nrow;++k)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -893,7 +893,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -1097,7 +1097,7 @@ void inline CONTACT::AugmentedIntegrator::GP_kappa(
   // add to node
   for (int j=0;j<nrow;++j)
   {
-    CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
     double val = 0.0;
     val = lmval[j]*jac*wgt;
@@ -1131,7 +1131,7 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_kappa_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
   std::map<int,double>& kappaLinMap = cnode->CoData().GetKappaLin();
 
   double fac = 0.0;
@@ -1179,7 +1179,7 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_kappa_Ele_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
   std::map<int,double>& kappaLinMap = cnode->CoData().GetKappaLin();
 
   // (0) Lin(LmSlave) - slave GP coordinates --> 0
@@ -1211,7 +1211,7 @@ void inline CONTACT::AugmentedIntegrator::GP_3D_kappa_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
   std::map<int,double>& kappaLinMap = cnode->CoData().GetKappaLin();
   double fac = 0.0;
 
@@ -1261,7 +1261,7 @@ void inline CONTACT::AugmentedIntegrator::GP_Normal_DerivNormal(
 
   for (int i=0;i<nrow;++i)
   {
-    MORTAR::MortarNode* mymrtnode = static_cast<MORTAR::MortarNode*> (snodes[i]);
+    MORTAR::MortarNode* mymrtnode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
     gpn[0]+=sval[i]*mymrtnode->MoData().n()[0];
     gpn[1]+=sval[i]*mymrtnode->MoData().n()[1];
     gpn[2]+=sval[i]*mymrtnode->MoData().n()[2];
@@ -1286,10 +1286,10 @@ void inline CONTACT::AugmentedIntegrator::GP_Normal_DerivNormal(
 
     for (int i=0;i<nrow;++i)
     {
-      CoNode* snode = static_cast<CoNode*> (snodes[i]);
+      CoNode* snode = dynamic_cast<CoNode*> (snodes[i]);
 
-      GEN::pairedvector<int,double>& dmap_nxsl_i = static_cast<CoNode*>(snodes[i])->CoData().GetDerivN()[0];
-      GEN::pairedvector<int,double>& dmap_nysl_i = static_cast<CoNode*>(snodes[i])->CoData().GetDerivN()[1];
+      GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CoNode*>(snodes[i])->CoData().GetDerivN()[0];
+      GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CoNode*>(snodes[i])->CoData().GetDerivN()[1];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -1335,7 +1335,7 @@ void inline CONTACT::AugmentedIntegrator::GP_Normal_DerivNormal(
 
     for (int i=0;i<nrow;++i)
     {
-      CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+      CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
 
       GEN::pairedvector<int,double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
       GEN::pairedvector<int,double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
@@ -1430,13 +1430,13 @@ void inline CONTACT::AugmentedIntegrator::GP_VarWGap(
   // loop over all possible active slave nodes
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*>(snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*>(snodes[i]);
 
     // *** slave node contributions ***
     // loop over all slave nodes
     for (int k=0;k<nrow;++k)
     {
-      CoNode* snode = static_cast<CoNode*>(snodes[k]);
+      CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
       for (int kdof=0;kdof<Dim();++kdof)
       {
         int sGid   = snode->Id();
@@ -1450,7 +1450,7 @@ void inline CONTACT::AugmentedIntegrator::GP_VarWGap(
     // loop over all master nodes
     for (int j=0;j<ncol;++j)
     {
-      CoNode* mnode = static_cast<CoNode*>(mnodes[j]);
+      CoNode* mnode = dynamic_cast<CoNode*>(mnodes[j]);
       for (int jdof=0;jdof<Dim();++jdof)
       {
         int mGid   = mnode->Id();
@@ -1498,13 +1498,13 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CoNode* cnode = static_cast<CoNode*>(snodes[iter]);
+  CoNode* cnode = dynamic_cast<CoNode*>(snodes[iter]);
   if (!cnode) dserror("ERROR: GP_2D_VarWGap_Lin: Null pointer!");
 
   // *** integrate lin varWGapSl ****************************************
   for (int k=0;k<nrow;++k)
   {
-    CoNode* snode = static_cast<CoNode*>(snodes[k]);
+    CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
 
     double val[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
@@ -1545,7 +1545,7 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Lin(
   // *** integrate lin varWGapMa ****************************************
   for (int l=0;l<ncol;++l)
   {
-    CoNode* mnode = static_cast<CoNode*>(mnodes[l]);
+    CoNode* mnode = dynamic_cast<CoNode*>(mnodes[l]);
 
     double val[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
@@ -1621,13 +1621,13 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Ele_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CoNode* cnode = static_cast<CoNode*>(snodes[iter]);
+  CoNode* cnode = dynamic_cast<CoNode*>(snodes[iter]);
   if (!cnode) dserror("ERROR: GP_2D_VarWGap_Ele_Lin: Null pointer!");
 
   // *** integrate lin varWGapSl ****************************************
   for (int k=0;k<nrow;++k)
   {
-    CoNode* snode = static_cast<CoNode*>(snodes[k]);
+    CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
 
     double val[2] = {0.0, 0.0};
 
@@ -1659,7 +1659,7 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Ele_Lin(
   // *** integrate lin varWGapMa ****************************************
   for (int l=0;l<ncol;++l)
   {
-    CoNode* mnode = static_cast<CoNode*>(mnodes[l]);
+    CoNode* mnode = dynamic_cast<CoNode*>(mnodes[l]);
 
     double val[3] = {0.0, 0.0, 0.0};
 
@@ -1726,13 +1726,13 @@ void inline CONTACT::AugmentedIntegrator::GP_3D_VarWGap_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CoNode* cnode = static_cast<CoNode*>(snodes[iter]);
+  CoNode* cnode = dynamic_cast<CoNode*>(snodes[iter]);
   if (!cnode) dserror("ERROR: GP_2D_VarWGap_Lin: Null pointer!");
 
   // *** integrate lin varWGapSl ****************************************
   for (int k=0;k<nrow;++k)
   {
-    CoNode* snode = static_cast<CoNode*>(snodes[k]);
+    CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
     double val[4] = {0.0,0.0,0.0,0.0};
 
     // (1) Lin(Phi) - dual shape functions
@@ -1767,7 +1767,7 @@ void inline CONTACT::AugmentedIntegrator::GP_3D_VarWGap_Lin(
   // *** integrate lin varWGapMa ****************************************
   for (int l=0;l<ncol;++l)
   {
-    CoNode* mnode = static_cast<CoNode*>(mnodes[l]);
+    CoNode* mnode = dynamic_cast<CoNode*>(mnodes[l]);
 
     double val[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
@@ -1825,7 +1825,7 @@ void inline CONTACT::AugmentedIntegrator::GP_AugA(
   DRT::Node** snodes = sele.Nodes();
   if (!snodes) dserror("ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
-  CoNode* cnode = static_cast<CoNode*>(snodes[it]);
+  CoNode* cnode = dynamic_cast<CoNode*>(snodes[it]);
   double& augA = cnode->CoData().GetAugA();
 
   augA += lmval[it]*jac*wgt;
@@ -1852,7 +1852,7 @@ void inline CONTACT::AugmentedIntegrator::GP_AugA_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[it]);
+  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[it]);
   std::map<int,double>& augALinMap = cnode->CoData().GetAugALin();
 
   // Lin(dxdsxi) - slave GP Jacobian

@@ -475,7 +475,7 @@ void MORTAR::MortarNode::BuildAveragedNormal()
   // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
   {
-    MortarElement* adjmrtrele = static_cast<MortarElement*> (adjeles[i]);
+    MortarElement* adjmrtrele = dynamic_cast<MortarElement*> (adjeles[i]);
 
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
@@ -510,7 +510,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(const Teuchos::RCP<DRT::
     int gid = nodesearchmap->GID(i);
     DRT::Node* node = intdis->gNode(gid);
     if (!node) dserror("ERROR: FindClosestNode: Cannot find node with gid %",gid);
-    MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+    MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // build distance between the two nodes
     double dist = 0.0;
@@ -549,7 +549,7 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
     // get the current element
     DRT::Element* ele = Elements()[i];
     if (!ele) dserror("ERROR: Cannot find element with lid %",i);
-    MortarElement* mrtrele = static_cast<MortarElement*>(ele);
+    MortarElement* mrtrele = dynamic_cast<MortarElement*>(ele);
 
     // minimal edge size of the current element
     double minedgesize = mrtrele->MinEdgeSize();

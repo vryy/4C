@@ -129,7 +129,7 @@ bool MORTAR::Coupling2d::Project()
   // project slave nodes onto master element
   for (int i = 0; i < SlaveElement().NumNode(); ++i)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(mysnodes[i]);
+    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(mysnodes[i]);
     double xi[2] =
     { 0.0, 0.0 };
 
@@ -156,7 +156,7 @@ bool MORTAR::Coupling2d::Project()
   // project master nodes onto slave element
   for (int i = 0; i < 2; ++i)
   {
-    MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mymnodes[i]);
+    MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(mymnodes[i]);
     double xi[2] =
     { 0.0, 0.0 };
 
@@ -598,7 +598,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
     dserror("ERROR: Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
-    MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mycnode)
       dserror("ERROR: Null pointer!");
     mycnode->HasSegment() = true;
@@ -664,8 +664,8 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
    {
    if (integrator.Dim()==2)
    {
-   MortarNode* snode0 = static_cast<MortarNode*>(SlaveElement().Nodes()[0]);
-   MortarNode* snode1 = static_cast<MortarNode*>(SlaveElement().Nodes()[1]);
+   MortarNode* snode0 = dynamic_cast<MortarNode*>(SlaveElement().Nodes()[0]);
+   MortarNode* snode1 = dynamic_cast<MortarNode*>(SlaveElement().Nodes()[1]);
 
    const double* n0 = snode0->n();
    const double* n1 = snode1->n();

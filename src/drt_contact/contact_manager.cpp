@@ -1363,7 +1363,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
   // define my own interface
   MORTAR::StrategyBase& myStrategy = GetStrategy();
-  CoAbstractStrategy& myContactStrategy = static_cast<CoAbstractStrategy&>(myStrategy);
+  CoAbstractStrategy& myContactStrategy = dynamic_cast<CoAbstractStrategy&>(myStrategy);
 
   std::vector<Teuchos::RCP<CONTACT::CoInterface> > myInterface = myContactStrategy.ContactInterfaces();
 
@@ -1474,7 +1474,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   {
     //output of poro no penetration lagrange multiplier!
 
-    CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(GetStrategy());
+    CONTACT::PoroLagrangeStrategy& costrategy = dynamic_cast<CONTACT::PoroLagrangeStrategy&>(GetStrategy());
     Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.lambda_;
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     LINALG::Export(*lambdaout, *lambdaoutexp);

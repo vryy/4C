@@ -140,7 +140,7 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   // we first need the element center:
   // for line2, line3, quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
-  CoElement* celement= static_cast<CoElement*>(idiscret_.gElement(elelist_[0]));
+  CoElement* celement= dynamic_cast<CoElement*>(idiscret_.gElement(elelist_[0]));
   double loccenter[2];
 
   DRT::Element::DiscretizationType dt = celement->Shape();
@@ -258,14 +258,14 @@ void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop()
     int gid = Elelist()[i];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    CoElement* celement=static_cast<CoElement*>(element);
+    CoElement* celement=dynamic_cast<CoElement*>(element);
     DRT::Node** nodes = celement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
     for (int k=0;k<celement->NumNode();++k)
     {
-      CoNode* cnode=static_cast<CoNode*>(nodes[k]);
+      CoNode* cnode=dynamic_cast<CoNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
 
       // get current position
@@ -364,14 +364,14 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
     int gid = Elelist()[0];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    CoElement* celement=static_cast<CoElement*>(element);
+    CoElement* celement=dynamic_cast<CoElement*>(element);
     DRT::Node** nodes = celement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // update slabs for every node
     for (int k=0;k<celement->NumNode();++k)
     {
-      CoNode* cnode=static_cast<CoNode*>(nodes[k]);
+      CoNode* cnode=dynamic_cast<CoNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
 
       // decide which position is relevant (initial or current)
@@ -579,14 +579,14 @@ void CONTACT::SelfDualEdge::CalculateCosts()
     for (int l=0;l<(int)(node1_->Elelist().size());++l)
     {
       int gid = (node1_->Elelist()).at(l);
-      CoElement* celement= static_cast<CoElement*> (node1_->Discret().gElement(gid));
+      CoElement* celement= dynamic_cast<CoElement*> (node1_->Discret().gElement(gid));
       lele = lele + celement->MaxEdgeSize();
     }
 
     for (int l=0;l<(int)(node2_->Elelist().size());++l)
     {
       int gid = node2_->Elelist()[l];
-      CoElement* celement= static_cast<CoElement*> (node2_->Discret().gElement(gid));
+      CoElement* celement= dynamic_cast<CoElement*> (node2_->Discret().gElement(gid));
       lele = lele + celement->MaxEdgeSize();
     }
 
@@ -604,14 +604,14 @@ void CONTACT::SelfDualEdge::CalculateCosts()
     for (int l=0;l<(int)(node1_->Elelist().size());++l)
     {
       int gid = (node1_->Elelist()).at(l);
-      CoElement* celement= static_cast<CoElement*> (node1_->Discret().gElement(gid));
+      CoElement* celement= dynamic_cast<CoElement*> (node1_->Discret().gElement(gid));
       area = area + celement->MoData().Area();
     }
 
     for (int l=0;l<(int)(node2_->Elelist().size());++l)
     {
       int gid = node2_->Elelist()[l];
-      CoElement* celement= static_cast<CoElement*> (node2_->Discret().gElement(gid));
+      CoElement* celement= dynamic_cast<CoElement*> (node2_->Discret().gElement(gid));
       area = area + celement->MoData().Area();
     }
 
@@ -836,7 +836,7 @@ eps_(eps)
     // in both 2D and 3D as they do not bring in any additional
     // information about connectivity / adjacency
     int numnode = 0;
-    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(element);
+    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(element);
 
     switch(mele->Shape())
     {
@@ -1094,7 +1094,7 @@ void CONTACT::SelfBinaryTree::SetEnlarge()
     int gid = elements_->GID(i);
     DRT::Element* element = idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    CONTACT::CoElement* celement = (CoElement*) element;
+    CONTACT::CoElement* celement = dynamic_cast<CoElement*>(element);
     double mincurrent=celement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
@@ -2062,7 +2062,7 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID,bool isslave)
   {
     // set the current element to content of "isslave"
     DRT::Element* element= idiscret_.gElement(eleID);
-    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
     celement->SetSlave()=isslave;
 
     // if the element is a slave, set its node to slave (otherwise the nodes
@@ -2072,7 +2072,7 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID,bool isslave)
       for (int i=0; i<(int)element->NumNode();i++)
       {
         DRT::Node* node = element->Nodes()[i];
-        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
         cnode->SetSlave()=isslave;
       }
 
@@ -2200,7 +2200,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   {
     int gid = leafiter->first;
     DRT::Element* element= idiscret_.gElement(gid);
-    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
 
     if (celement->IsSlave() == true)
     {
@@ -2211,7 +2211,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
       for (int i=0;i<(int)element->NumNode();++i)
       {
         DRT::Node* node = element->Nodes()[i];
-        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
         cnode->SetSlave() = false;
       }
     }
@@ -2251,7 +2251,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   while (!contactpairs_.empty())
   {
     DRT::Element* element = idiscret_.gElement(contactpairs_.begin()->first);
-    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
     MasterSlaveSorting(contactpairs_.begin()->first,celement->IsSlave());
   }
 
@@ -2270,7 +2270,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     int gid1 = elements_->GID(i);
     DRT::Element* ele1 = idiscret_.gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find element with gid %",gid1);
-    MORTAR::MortarElement* element1 = static_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
     // only slave elements store search candidates
     if (!element1->IsSlave())
@@ -2282,7 +2282,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
       int gid2 = element1->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_.gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find element with gid %",gid2);
-      MORTAR::MortarElement* element2 = static_cast<MORTAR::MortarElement*>(ele2);
+      MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
 
       // error if this is a slave element
       // (this happens if individual self contact patches are connected,
@@ -2376,7 +2376,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   {
     int gid = leafiter->first;
     DRT::Element* element= idiscret_.gElement(gid);
-    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
 
     if (celement->IsSlave() == true)
     {
@@ -2387,7 +2387,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
       for (int i=0;i<(int)element->NumNode();++i)
       {
         DRT::Node* node = element->Nodes()[i];
-        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
         cnode->SetSlave() = false;
       }
     }
@@ -2413,7 +2413,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   while (!contactpairs_.empty())
   {
     DRT::Element* element = idiscret_.gElement(contactpairs_.begin()->first);
-    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
     MasterSlaveSorting(contactpairs_.begin()->first,celement->IsSlave());
   }
 
@@ -2425,7 +2425,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
     int gid1 = elements_->GID(i);
     DRT::Element* ele1 = idiscret_.gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find element with gid %",gid1);
-    MORTAR::MortarElement* element1 = static_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
     // only slave elements store search candidates
     if (!element1->IsSlave())
@@ -2437,7 +2437,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
       int gid2 = element1->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_.gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find element with gid %",gid2);
-      MORTAR::MortarElement* element2 = static_cast<MORTAR::MortarElement*>(ele2);
+      MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
 
       // error if this is a slave element
       // (this happens if individual self contact patches are connected,

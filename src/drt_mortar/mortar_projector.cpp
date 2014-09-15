@@ -718,7 +718,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (int i = 0; i < ns_; ++i)
     {
-      MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
 
       for (int j = 0; j < ndim_; ++j)
       {
@@ -811,7 +811,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     gpx[1]+=val[j]*coord(1,j);
     gpx[2]+=val[j]*coord(2,j);
 
-    MortarNode* cnode = static_cast<MortarNode*>(snodes[j]);
+    MortarNode* cnode = dynamic_cast<MortarNode*>(snodes[j]);
     gpn[0]+=val[j]*cnode->MoData().n()[0];
     gpn[1]+=val[j]*cnode->MoData().n()[1];
     gpn[2]+=val[j]*cnode->MoData().n()[2];
@@ -943,35 +943,35 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
     {
       if(i==0)
       {
-        mycnode_1 = static_cast<MortarNode*> (mynodes[0]);
+        mycnode_1 = dynamic_cast<MortarNode*> (mynodes[0]);
         if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
 
-        mycnode_0 = static_cast<MortarNode*> (mynodes[3]);
+        mycnode_0 = dynamic_cast<MortarNode*> (mynodes[3]);
         if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
 
-        mycnode_2 = static_cast<MortarNode*> (mynodes[1]);
+        mycnode_2 = dynamic_cast<MortarNode*> (mynodes[1]);
         if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
       }
       if(i==3)
       {
-        mycnode_1 = static_cast<MortarNode*> (mynodes[3]);
+        mycnode_1 = dynamic_cast<MortarNode*> (mynodes[3]);
         if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
 
-        mycnode_0 = static_cast<MortarNode*> (mynodes[2]);
+        mycnode_0 = dynamic_cast<MortarNode*> (mynodes[2]);
         if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
 
-        mycnode_2 = static_cast<MortarNode*> (mynodes[0]);
+        mycnode_2 = dynamic_cast<MortarNode*> (mynodes[0]);
         if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
       }
       if (i==1 || i==2)
       {
-        mycnode_1 = static_cast<MortarNode*> (mynodes[i]);
+        mycnode_1 = dynamic_cast<MortarNode*> (mynodes[i]);
         if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
 
-        mycnode_0 = static_cast<MortarNode*> (mynodes[i-1]);
+        mycnode_0 = dynamic_cast<MortarNode*> (mynodes[i-1]);
         if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
 
-        mycnode_2 = static_cast<MortarNode*> (mynodes[i+1]);
+        mycnode_2 = dynamic_cast<MortarNode*> (mynodes[i+1]);
         if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
       }
 
@@ -1112,7 +1112,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (int i=0;i<ns_;++i)
     {
-      MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
 
       for (int j=0;j<ndim_;++j)
       {
@@ -1386,7 +1386,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
 
   for (int i = 0; i < n_; ++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
 
     for (int j = 0; j < ndim_; ++j)
     {
@@ -1473,7 +1473,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
 
     for (int i=0;i<n_;++i)
     {
-      MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
 
       for (int j=0;j<ndim_;++j)
       {

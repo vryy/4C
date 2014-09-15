@@ -1975,7 +1975,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
   bool bound = false;
   for (int i = 0; i < NumNode(); ++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
     if (!mymrtrnode)
       dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
@@ -2095,7 +2095,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseMatrix auxderiv(1, NumNode());
     DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(val, auxderiv, xi[0],
@@ -2117,7 +2117,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseMatrix auxderiv(1, NumNode());
     DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(val, auxderiv, xi[0],
@@ -2140,7 +2140,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector uv(2);
     uv(0) = xi[0];
@@ -2166,7 +2166,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
 
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
-      weights(inode) = static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+      weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector uv(2);
     uv(0) = xi[0];
@@ -2231,8 +2231,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
       if (valdim != 2)
         dserror("ERROR: Inconsistency in EvluateShape");
       // check for boundary nodes
-      MortarNode* mymrtrnode0 = static_cast<MortarNode*>(mynodes[0]);
-      MortarNode* mymrtrnode1 = static_cast<MortarNode*>(mynodes[1]);
+      MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*>(mynodes[0]);
+      MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*>(mynodes[1]);
       if (!mymrtrnode0)
         dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
       if (!mymrtrnode1)
@@ -2317,9 +2317,9 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
     if (valdim != 3)
       dserror("ERROR: Inconsistency in EvluateShape");
     // check for boundary nodes
-    MortarNode* mymrtrnode0 = static_cast<MortarNode*>(mynodes[0]);
-    MortarNode* mymrtrnode1 = static_cast<MortarNode*>(mynodes[1]);
-    MortarNode* mymrtrnode2 = static_cast<MortarNode*>(mynodes[2]);
+    MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*>(mynodes[0]);
+    MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*>(mynodes[1]);
+    MortarNode* mymrtrnode2 = dynamic_cast<MortarNode*>(mynodes[2]);
     if (!mymrtrnode0)
       dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     if (!mymrtrnode1)
@@ -2615,7 +2615,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(
   bool bound = false;
   for (int i = 0; i < NumNode(); ++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
     if (!mymrtrnode)
       dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
@@ -2971,7 +2971,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      {
      // apply FD
      DRT::Node** mynodes = Nodes();
-     CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
+     CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
      mycnode->xspatial()[dim] += delta;
 
      LINALG::SerialDenseVector val1(nnodes);
@@ -3397,7 +3397,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      {
      // apply FD
      DRT::Node** mynodes = Nodes();
-     CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
+     CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
      mycnode->xspatial()[dim] += delta;
 
      LINALG::SerialDenseVector val1(nnodes);
@@ -3593,7 +3593,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      {
      // apply FD
      DRT::Node** mynodes = Nodes();
-     MortarNode* mycnode = static_cast<MortarNode*> (mynodes[node]);
+     MortarNode* mycnode = dynamic_cast<MortarNode*> (mynodes[node]);
      mycnode->xspatial()[dim] += delta;
 
      LINALG::SerialDenseVector val1(nnodes);
@@ -3785,7 +3785,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
 //        {
 //          // apply FD
 //          DRT::Node** mynodes = Nodes();
-//          MortarNode* mycnode = static_cast<MortarNode*> (mynodes[node]);
+//          MortarNode* mycnode = dynamic_cast<MortarNode*> (mynodes[node]);
 //          mycnode->xspatial()[dim] += delta;
 //
 //          LINALG::SerialDenseVector val1(nnodes);
@@ -4010,7 +4010,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
      DRT::Node** mynodes = Nodes();
-     CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
+     CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
      int col= mycnode->Dofs()[dim];
 
      std::cout << "A-Derivative: " << col << std::endl;
@@ -4201,7 +4201,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
      DRT::Node** mynodes = Nodes();
-     CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
+     CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
      int col= mycnode->Dofs()[dim];
 
      std::cout << "A-Derivative: " << col << std::endl;
@@ -4414,7 +4414,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector auxval(NumNode());
     LINALG::SerialDenseVector auxderiv(NumNode());
@@ -4439,7 +4439,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     Epetra_SerialDenseVector weights(3);
     for (int inode = 0; inode < 3; ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector auxval(3);
     LINALG::SerialDenseVector auxderiv(3);
@@ -4465,7 +4465,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector uv(2);
     uv(0) = xi[0];
@@ -4495,7 +4495,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector uv(2);
     uv(0) = xi[0];
@@ -4525,7 +4525,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     Epetra_SerialDenseVector weights(NumNode());
     for (int inode = 0; inode < NumNode(); ++inode)
       weights(inode) =
-          static_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
+          dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector uv(2);
     uv(0) = xi[0];
@@ -4625,9 +4625,9 @@ bool MORTAR::MortarElement::DerivShapeDual(
   case DRT::Element::line3:
   {
     // check for boundary nodes
-    MortarNode* mycnode0 = static_cast<MortarNode*>(mynodes[0]);
-    MortarNode* mycnode1 = static_cast<MortarNode*>(mynodes[1]);
-    MortarNode* mycnode2 = static_cast<MortarNode*>(mynodes[2]);
+    MortarNode* mycnode0 = dynamic_cast<MortarNode*>(mynodes[0]);
+    MortarNode* mycnode1 = dynamic_cast<MortarNode*>(mynodes[1]);
+    MortarNode* mycnode2 = dynamic_cast<MortarNode*>(mynodes[2]);
     if (!mycnode0)
       dserror("ERROR: DerivShapeDual: Null pointer!");
     if (!mycnode1)
@@ -4673,7 +4673,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
     bool bound = false;
     for (int i = 0; i < NumNode(); ++i)
     {
-      MortarNode* mycnode = static_cast<MortarNode*>(mynodes[i]);
+      MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
       if (!mycnode)
         dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
       bound += mycnode->IsOnBound();

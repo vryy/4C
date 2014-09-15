@@ -78,7 +78,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if ((int) cnode->CoData().GetKappaLin().size()==0)
       continue;
@@ -98,7 +98,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if(!snode)
       dserror("ERROR: Cannot find slave node with gid %",gid);
 
@@ -138,7 +138,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int) kcnode->CoData().GetKappaLin().size()==0)
         continue;
@@ -209,7 +209,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -247,7 +247,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int) kcnode->CoData().GetKappaLin().size()==0)
               continue;
@@ -352,7 +352,7 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
     int gid = augActiveSlaveNodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if ((int) cnode->CoData().GetAWGapLin().size()==0)
       dserror("Linearization map shouldn't be empty for active nodes!");
@@ -379,7 +379,7 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if(!snode)
       dserror("ERROR: Cannot find slave node with gid %",gid);
 
@@ -421,7 +421,7 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int) kcnode->CoData().GetAWGapLin().size()==0)
         dserror("Linearization map shouldn't be empty for active nodes!");
@@ -499,7 +499,7 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -539,7 +539,7 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int) kcnode->CoData().GetAWGapLin().size()==0)
         dserror("Linearization map shouldn't be empty for active nodes!");
@@ -651,7 +651,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if ((int) cnode->CoData().GetVarWGapSl().size()==0)
       continue;
@@ -673,7 +673,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if(!snode)
       dserror("ERROR: Cannot find slave node with gid %",gid);
 
@@ -713,7 +713,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int)(kcnode->CoData().GetVarWGapSl().size())==0)
         continue;
@@ -789,7 +789,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -827,7 +827,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -941,7 +941,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if ((int) cnode->CoData().GetVarWGapSl().size()==0)
       continue;
@@ -963,7 +963,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if(!snode)
       dserror("ERROR: Cannot find slave node with gid %",gid);
 
@@ -1003,7 +1003,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int)(kcnode->CoData().GetVarWGapMa().size())==0)
         continue;
@@ -1079,7 +1079,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -1117,7 +1117,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -1228,7 +1228,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if ((int) cnode->CoData().GetAugALin().size()==0)
       continue;
@@ -1248,7 +1248,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if(!snode)
       dserror("ERROR: Cannot find slave node with gid %",gid);
 
@@ -1288,7 +1288,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int) kcnode->CoData().GetAugALin().size()==0)
         continue;
@@ -1359,7 +1359,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -1397,7 +1397,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if ((int) kcnode->CoData().GetAugALin().size()==0)
               continue;
@@ -1487,7 +1487,7 @@ bool CONTACT::AugmentedInterface::UpdateInterfaces(int gid,
   DRT::Node* node = idiscret_->gNode(gid);
   if (!node) return (false);
 
-  CoNode* cnode = static_cast<CoNode*>(node);
+  CoNode* cnode = dynamic_cast<CoNode*>(node);
 
   // change forward step to backward step
   if (!forward) delta *= (-1);

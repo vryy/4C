@@ -122,7 +122,7 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
 
     for (int i=0;i<n;++i)
     {
-      MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
       if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
 
       for(int j=0;j<ndim;++j)
@@ -172,7 +172,7 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
 
     for (int i=0;i<n;++i)
     {
-      MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
       if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
 
       for(int j=0;j<ndim;++j)
@@ -221,7 +221,7 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
 
     for (int i=0;i<n;++i)
     {
-      MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
       if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
 
       for(int j=0;j<ndim;++j)

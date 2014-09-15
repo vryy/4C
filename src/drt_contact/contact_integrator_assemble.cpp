@@ -73,7 +73,7 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
   // loop over all master nodes
   for (int master=0;master<mele.NumNode();++master)
   {
-    CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
+    CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(mnodes[master]);
 
     int mndof = mnode->NumDof();
 
@@ -83,7 +83,7 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
       // loop over all master nodes again ("master2 nodes")
       for (int master2=0;master2<mele.NumNode();++master2)
       {
-        CONTACT::CoNode* m2node = static_cast<CONTACT::CoNode*>(mnodes[master2]);
+        CONTACT::CoNode* m2node = dynamic_cast<CONTACT::CoNode*>(mnodes[master2]);
         const int* m2dofs = m2node->Dofs();
         int m2ndof = m2node->NumDof();
 
@@ -122,7 +122,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
     int sndof = snode->NumDof();
 
     // only process slave node rows that belong to this proc
@@ -140,7 +140,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
       // loop over all slave nodes again ("master nodes")
       for (int master=0;master<sele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[master]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -211,7 +211,7 @@ bool CONTACT::CoIntegrator::AssembleT(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID())
@@ -220,7 +220,7 @@ bool CONTACT::CoIntegrator::AssembleT(const Epetra_Comm& comm,
     // loop over all slave nodes again ("master nodes")
     for (int master=0;master<sele.NumNode();++master)
     {
-      CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(snodes[master]);
+      CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(snodes[master]);
       const int* mdofs = mnode->Dofs();
 
       int col = mdofs[0];
@@ -248,7 +248,7 @@ bool CONTACT::CoIntegrator::AssembleE(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID())
@@ -262,7 +262,7 @@ bool CONTACT::CoIntegrator::AssembleE(const Epetra_Comm& comm,
     // loop over all slave nodes again ("master nodes")
     for (int master=0;master<sele.NumNode();++master)
     {
-      CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(snodes[master]);
+      CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(snodes[master]);
       const int* mdofs = mnode->Dofs();
 
       int row = 0;
@@ -293,7 +293,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
   // loop over all slave int nodes
   for (int slave=0;slave<sintele.NumNode();++slave)
   {
-    CONTACT::CoNode* sintnode = static_cast<CONTACT::CoNode*>(sintnodes[slave]);
+    CONTACT::CoNode* sintnode = dynamic_cast<CONTACT::CoNode*>(sintnodes[slave]);
     int sintndof = sintnode->NumDof();
 
     // only process slave int node rows that belong to this proc
@@ -305,7 +305,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
       // loop over all slave nodes ("master nodes")
       for (int master=0;master<sele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[master]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -347,7 +347,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
     int sndof = snode->NumDof();
 
     // only process slave node rows that belong to this proc
@@ -365,7 +365,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -413,7 +413,7 @@ bool CONTACT::CoIntegrator::AssembleM_EleBased(const Epetra_Comm& comm,
 {
   //problem dimension via numdof of an arbitrary slave node
   DRT::Node** testnodes = sele.Nodes();
-  CONTACT::CoNode* tnode = static_cast<CONTACT::CoNode*>(testnodes[0]);
+  CONTACT::CoNode* tnode = dynamic_cast<CONTACT::CoNode*>(testnodes[0]);
   int dim = tnode->NumDof();
 
   for ( int nummasterele=0;nummasterele<(int)meles.size();++nummasterele )
@@ -445,7 +445,7 @@ bool CONTACT::CoIntegrator::AssembleM_EleBased(const Epetra_Comm& comm,
       // loop over all slave nodes
       for (int slave=0;slave<sele.NumNode();++slave)
       {
-        CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
         int sndof = snode->NumDof();
 
         // only process slave node rows that belong to this proc
@@ -463,7 +463,7 @@ bool CONTACT::CoIntegrator::AssembleM_EleBased(const Epetra_Comm& comm,
           // loop over all master nodes
           for (int master=0;master<meles[nummasterele]->NumNode();++master)
           {
-            CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+            CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[master]);
             const int* mdofs = mnode->Dofs(); //global dofs
             int mndof = mnode->NumDof();
 
@@ -504,7 +504,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
   // loop over all slave int nodes
   for (int slave=0;slave<sintele.NumNode();++slave)
   {
-    CONTACT::CoNode* sintnode = static_cast<CONTACT::CoNode*>(sintnodes[slave]);
+    CONTACT::CoNode* sintnode = dynamic_cast<CONTACT::CoNode*>(sintnodes[slave]);
     int sintndof = sintnode->NumDof();
 
     // only process slave int node rows that belong to this proc
@@ -516,7 +516,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -551,7 +551,7 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
@@ -588,7 +588,7 @@ bool CONTACT::CoIntegrator::AssembleU(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
@@ -627,7 +627,7 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sintele.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
@@ -661,7 +661,7 @@ bool CONTACT::CoIntegrator::AssembleMechDissSlave(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
@@ -695,7 +695,7 @@ bool CONTACT::CoIntegrator::AssembleMechDissMaster(const Epetra_Comm& comm,
   // loop over all master nodes
   for (int master=0;master<mele.NumNode();++master)
   {
-    CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
+    CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(mnodes[master]);
 
     double val = mdissseg(master);
     mnode->AddMechDissValue(val);
@@ -723,7 +723,7 @@ bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
     int sndof = snode->NumDof();
 
     // only process slave node rows that belong to this proc
@@ -741,7 +741,7 @@ bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
       // loop over all slave nodes again ("master nodes")
       for (int master=0;master<sele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[master]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -780,7 +780,7 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
   // loop over all master nodes
   for (int slave=0;slave<mele.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(mnodes[slave]);
+    CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mnodes[slave]);
     int sndof = snode->NumDof();
 
     // loop over all dofs of the slave node
@@ -789,7 +789,7 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
       // loop over all master nodes again ("master nodes")
       for (int master=0;master<mele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -825,7 +825,7 @@ bool CONTACT::CoIntegrator::AssembleWear(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID())
@@ -858,7 +858,7 @@ bool CONTACT::CoIntegrator::AssembleScale(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;

@@ -151,7 +151,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
       {
-        MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
+        MORTAR::MortarElement* element = dynamic_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
         element->GetNodalCoords(coord);
@@ -555,7 +555,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         int gid = snoderowmap_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
         if (!cnode) dserror("ERROR: Static Cast to CoNode* failed");
 
         double nc[3];
@@ -605,7 +605,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         // frictional contact, slip node = {G}
         else if (friction_ && cnode->Active())
         {
-          if (static_cast<FriNode*>(cnode)->FriData().Slip())
+          if (dynamic_cast<FriNode*>(cnode)->FriData().Slip())
           {
             gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
             gmshfilecontentslave << "{\"" << "G" << "\"};" << std::endl;
@@ -978,7 +978,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     int jgid = snodecolmapbound_->GID(j);
     DRT::Node* jnode = idiscret_->gNode(jgid);
     if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
-    CoNode* jcnode = static_cast<CoNode*>(jnode);
+    CoNode* jcnode = dynamic_cast<CoNode*>(jnode);
 
     // store reference normals / tangents
     refnx[j] = jcnode->MoData().n()[0];
@@ -1008,7 +1008,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     int gid = snodefullmap->GID(i/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[i%dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
@@ -1038,7 +1038,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       int kgid = snodecolmapbound_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       // build NEW averaged normal at each slave node
       kcnode->BuildAveragedNormal();
@@ -1224,7 +1224,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
@@ -1255,7 +1255,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%dim];
 
@@ -1291,7 +1291,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -1372,7 +1372,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -1408,7 +1408,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -1520,7 +1520,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     //typedef std::map<int,std::map<int,double> >::const_iterator CIM;
     //typedef std::map<int,double>::const_iterator CI;
@@ -1551,7 +1551,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%dim];
 
@@ -1587,7 +1587,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -1665,7 +1665,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
 
@@ -1701,7 +1701,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -1810,7 +1810,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     refU[i]=cnode->FriData().jump_var()[0]; //txi value
   }
@@ -1828,7 +1828,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
     int gid = snodefullmap->GID(fd/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
@@ -1862,7 +1862,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
       newU[k]=kcnode->FriData().jump_var()[0];
@@ -1924,7 +1924,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
     int gid = mnodefullmap->GID(fd/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
@@ -1958,7 +1958,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
       newU[k]=kcnode->FriData().jump_var()[0];
@@ -2042,7 +2042,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store gap-values into refG
     refU[i]=cnode->FriData().jump_var()[1]; //txi value
@@ -2061,7 +2061,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
     int gid = snodefullmap->GID(fd/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
@@ -2095,7 +2095,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
       newU[k]=kcnode->FriData().jump_var()[1];
@@ -2157,7 +2157,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
     int gid = mnodefullmap->GID(fd/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
@@ -2191,7 +2191,7 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
       newU[k]=kcnode->FriData().jump_var()[1];
@@ -2274,7 +2274,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
 //    if (cnode->Active())
 //    {
@@ -2293,7 +2293,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 //        int gid = mnodefullmap->GID(m);
 //        DRT::Node* mnode = idiscret_->gNode(gid);
 //        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-//        CoNode* cmnode = static_cast<CoNode*>(mnode);
+//        CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 //        const int* mdofs = cmnode->Dofs();
 //        bool hasentry = false;
 //
@@ -2336,7 +2336,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     int gid = snodefullmap->GID(fd/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
@@ -2377,7 +2377,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
 //      if (kcnode->Active())
 //      {
@@ -2396,7 +2396,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 //          int gid = mnodefullmap->GID(m);
 //          DRT::Node* mnode = idiscret_->gNode(gid);
 //          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-//          CoNode* cmnode = static_cast<CoNode*>(mnode);
+//          CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 //          const int* mdofs = cmnode->Dofs();
 //          bool hasentry = false;
 //
@@ -2481,7 +2481,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     int gid = mnodefullmap->GID(fd/dim);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
@@ -2522,7 +2522,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if (kcnode->Active())
       {
@@ -2541,7 +2541,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CoNode* cmnode = static_cast<CoNode*>(mnode);
+          CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
           bool hasentry = false;
 
@@ -2646,7 +2646,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     double valxi = 0.0;
     double valeta = 0.0;
@@ -2669,7 +2669,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // (use fully overlapping column map)
     for (int i=0;i<idiscret_->NumMyColNodes();++i)
     {
-      CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
+      CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
@@ -2724,7 +2724,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
     }
@@ -2736,7 +2736,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
@@ -2774,7 +2774,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid1 = snodecolmapbound_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid1);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // build averaged normal at each slave node
       cnode->BuildAveragedNormal();
@@ -2790,7 +2790,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid1 = selecolmap_->GID(i);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
+      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
       // empty vector of master element pointers
       std::vector<MORTAR::MortarElement*> melements;
@@ -2802,7 +2802,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
         int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
+        MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
         melements.push_back(melement);
       }
 
@@ -2821,7 +2821,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       double valxi = 0.0;
       double valeta = 0.0;
@@ -2876,7 +2876,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // (use fully overlapping column map)
     for (int i=0;i<idiscret_->NumMyColNodes();++i)
     {
-      CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
+      CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
       //reset nodal normal vector
       for (int j=0;j<3;++j)
@@ -2931,7 +2931,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
     }
@@ -2943,7 +2943,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
@@ -2981,7 +2981,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid1 = snodecolmapbound_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid1);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // build averaged normal at each slave node
       cnode->BuildAveragedNormal();
@@ -2997,7 +2997,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid1 = selecolmap_->GID(i);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-      MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
+      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
       // empty vector of master element pointers
       std::vector<MORTAR::MortarElement*> melements;
@@ -3009,7 +3009,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
         int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
+        MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
         melements.push_back(melement);
       }
 
@@ -3028,7 +3028,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       double valxi = 0.0;
       double valeta = 0.0;
@@ -3082,7 +3082,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   // (use fully overlapping column map)
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
   {
-    CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
+    CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
     //reset nodal normal vector
     for (int j=0;j<3;++j)
@@ -3137,7 +3137,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -3159,7 +3159,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     int gid1 = snodecolmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid1);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // build averaged normal at each slave node
     cnode->BuildAveragedNormal();
@@ -3175,7 +3175,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
     // empty vector of master element pointers
     std::vector<MORTAR::MortarElement*> melements;
@@ -3187,7 +3187,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-      MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
+      MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
       melements.push_back(melement);
     }
 
@@ -3237,7 +3237,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double jumptxi = 0;
     double jumpteta = 0;
@@ -3274,7 +3274,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cmnode = static_cast<FriNode*>(mnode);
+        FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
         const int* mdofs = cmnode->Dofs();
 
         double mik = (mmap[0])[mdofs[0]];
@@ -3320,7 +3320,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    FriNode* snode = static_cast<FriNode*>(node);
+    FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
@@ -3361,7 +3361,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
@@ -3398,7 +3398,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cmnode = static_cast<FriNode*>(mnode);
+          FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
 
           double mik = (mmap[0])[mdofs[0]];
@@ -3526,7 +3526,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    FriNode* mnode = static_cast<FriNode*>(node);
+    FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
@@ -3567,7 +3567,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
@@ -3604,7 +3604,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cmnode = static_cast<FriNode*>(mnode);
+          FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
 
           double mik = (mmap[0])[mdofs[0]];
@@ -3767,7 +3767,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double jumptxi = 0;
     double jumpteta = 0;
@@ -3811,7 +3811,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cmnode = static_cast<FriNode*>(mnode);
+        FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
         const int* mdofs = cmnode->Dofs();
 
         double mik = (mmap[0])[mdofs[0]];
@@ -3872,7 +3872,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
     int coldof= 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    FriNode* snode = static_cast<FriNode*>(node);
+    FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -3898,7 +3898,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
@@ -3941,7 +3941,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cmnode = static_cast<FriNode*>(mnode);
+          FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
           double mik = (mmap[0])[mdofs[0]];
           double mikold = (mmapold[0])[mdofs[0]];
@@ -4088,7 +4088,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    FriNode* snode = static_cast<FriNode*>(node);
+    FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -4122,7 +4122,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
@@ -4166,7 +4166,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cmnode = static_cast<FriNode*>(mnode);
+          FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
 
           double mik = (mmap[0])[mdofs[0]];
@@ -4316,7 +4316,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    FriNode* mnode = static_cast<FriNode*>(node);
+    FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -4350,7 +4350,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
@@ -4394,7 +4394,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cmnode = static_cast<FriNode*>(mnode);
+          FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
 
           double mik = (mmap[0])[mdofs[0]];
@@ -4566,7 +4566,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     int dim = cnode->NumDof();
 
@@ -4608,7 +4608,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%3];
 
@@ -4644,7 +4644,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -4717,7 +4717,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd%3];
 
@@ -4753,7 +4753,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = static_cast<CoNode*>(knode);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       int dim = kcnode->NumDof();
 
@@ -4866,7 +4866,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
@@ -4978,7 +4978,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* snode = static_cast<CoNode*>(node);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
 
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
@@ -5017,7 +5017,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // get some informatiom form the node
       double gap = kcnode->CoData().Getg();
@@ -5180,7 +5180,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CoNode* mnode = static_cast<CoNode*>(node);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
 
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
@@ -5219,7 +5219,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
-      FriNode* kcnode = static_cast<FriNode*>(knode);
+      FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // get some informatiom form the node
       double gap = kcnode->CoData().Getg();

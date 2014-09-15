@@ -484,7 +484,7 @@ void CONTACT::CoNode::InitializeDataContainer()
   }
 
   // this is a hack for hermit elements
-  if (static_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
+  if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
     dentries_ = 4*dentries_;
 
   // only initialize if not yet done
@@ -548,7 +548,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
   //********************************
   // Hermit smoothing normal
-  if (static_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
+  if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
   {
     int status = 0;
     int numnode = 0;
@@ -560,13 +560,13 @@ void CONTACT::CoNode::BuildAveragedNormal()
     int gid = Id();
     if (nseg == 1)
     {
-      adjcele = static_cast<CoElement*> (adjeles[0]);
+      adjcele = dynamic_cast<CoElement*> (adjeles[0]);
       lid = adjcele->GetLocalNodeId(gid);
       if (lid == 1) nodexi[0] = 1.0;
     }
     else if (nseg ==2)
     {
-      adjcele = static_cast<CoElement*> (adjeles[0]);
+      adjcele = dynamic_cast<CoElement*> (adjeles[0]);
       lid = adjcele->GetLocalNodeId(gid);
       if (lid == 1) nodexi[0] = 1.0;
     }
@@ -619,7 +619,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
     // loop over all adjacent elements
     for (int i=0;i<nseg;++i)
     {
-      CoElement* adjcele = static_cast<CoElement*> (adjeles[i]);
+      CoElement* adjcele = dynamic_cast<CoElement*> (adjeles[i]);
 
       // build element normal at current node
       // (we have to pass in the index i to be able to store the
@@ -654,7 +654,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
   if (NumDof()==2)
   {
-    if (static_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
+    if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
     {
       CoData().txi()[0] = tangent[0];
       CoData().txi()[1] = tangent[1];
@@ -719,7 +719,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
     dserror("ERROR: Contact problems must be either 2D or 3D");
 
   // build linearization of averaged nodal normal and tangents
-  if (static_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
+  if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
     DerivAveragedNormalHermit(length,ltxi);
   else
     DerivAveragedNormal(elens,length,ltxi);
@@ -743,19 +743,19 @@ void CONTACT::CoNode::DerivAveragedNormalHermit(double length, double ltxi)
   int status = 0;
   int numnode = 0;
   int features[2] = {0,0};
-  CoElement* adjcele = static_cast<CoElement*> (adjeles[0]);
+  CoElement* adjcele = dynamic_cast<CoElement*> (adjeles[0]);
   double nodexi[2] = {-1.0, 0.0};
   int lid = 7;
   int gid = Id();
   if (nseg == 1)
   {
-    adjcele = static_cast<CoElement*> (adjeles[0]);
+    adjcele = dynamic_cast<CoElement*> (adjeles[0]);
     lid = adjcele->GetLocalNodeId(gid);
     if (lid == 1) nodexi[0] = 1.0;
   }
   else if (nseg ==2)
   {
-    adjcele = static_cast<CoElement*> (adjeles[0]);
+    adjcele = dynamic_cast<CoElement*> (adjeles[0]);
     lid = adjcele->GetLocalNodeId(gid);
     if (lid == 1) nodexi[0] = 1.0;
   }
@@ -783,8 +783,8 @@ void CONTACT::CoNode::DerivAveragedNormalHermit(double length, double ltxi)
 
   for (int i=0;i<numnode;++i)
   {
-    tangent0[static_cast<CoNode*>(nodes[i])->Dofs()[0]] += deriv(i,0);
-    tangent1[static_cast<CoNode*>(nodes[i])->Dofs()[1]] += deriv(i,0);
+    tangent0[dynamic_cast<CoNode*>(nodes[i])->Dofs()[0]] += deriv(i,0);
+    tangent1[dynamic_cast<CoNode*>(nodes[i])->Dofs()[1]] += deriv(i,0);
   }
 
   typedef GEN::pairedvector<int,double>::const_iterator CI;
@@ -897,7 +897,7 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
   {
-    CoElement* adjcele = static_cast<CoElement*> (adjeles[i]);
+    CoElement* adjcele = dynamic_cast<CoElement*> (adjeles[i]);
 
     // build element normal derivative at current node
     adjcele->DerivNormalAtNode(Id(),i,elens,CoData().GetDerivN());

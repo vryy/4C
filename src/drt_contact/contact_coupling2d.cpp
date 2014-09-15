@@ -97,7 +97,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     dserror("ERROR: Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
-    MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mycnode)
       dserror("ERROR: Null pointer!");
     mycnode->HasSegment() = true;
@@ -136,7 +136,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     //                   Integrate stuff !!!                    //
     // ***********************************************************
     if (stype_==INPAR::CONTACT::solution_augmented)
-      Teuchos::rcp_static_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
+      Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
     else
       integrator->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
     // ***********************************************************
@@ -314,7 +314,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       //                  START INTEGRATION !!!                   //
       // ***********************************************************
       if (stype_==INPAR::CONTACT::solution_augmented)
-        Teuchos::rcp_static_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle2D(SlaveElement(),
+        Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle2D(SlaveElement(),
             MasterElements(),&boundary_ele);
       else
         integrator->IntegrateDerivEle2D(SlaveElement(), MasterElements(),&boundary_ele);
@@ -439,7 +439,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     int linsize = 0;
     for (int i=0;i<nnodes;++i)
     {
-      CoNode* cnode = static_cast<CoNode*> (SlaveElement().Nodes()[i]);
+      CoNode* cnode = dynamic_cast<CoNode*> (SlaveElement().Nodes()[i]);
       linsize += cnode->GetLinsize();
     }
 
@@ -552,7 +552,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
       // evaluate the derivative dxdsxidsxi = Jac,xi
       double djacdxi[2] =
       { 0.0, 0.0};
-      static_cast<CONTACT::CoElement&> (SlaveElement()).DJacDXi(djacdxi,sxi,ssecderiv);
+      dynamic_cast<CONTACT::CoElement&> (SlaveElement()).DJacDXi(djacdxi,sxi,ssecderiv);
       double dxdsxidsxi=djacdxi[0]; // only 2D here
 
       // evalute the GP slave coordinate derivatives

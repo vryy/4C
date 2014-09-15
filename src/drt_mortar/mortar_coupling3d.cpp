@@ -207,7 +207,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
     if (!mycnode)
       dserror("ERROR: RoughCheckNodes: Null pointer!");
 
@@ -321,7 +321,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
     if (!mycnode)
       dserror("ERROR: ProjectSlave: Null pointer!");
 
@@ -367,7 +367,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
 
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
     if (!mycnode)
       dserror("ERROR: ProjectMaster: Null pointer!");
 
@@ -1852,14 +1852,14 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           dserror("ERROR: Null pointer!");
         std::vector<MortarNode*> mycsnodes(nsnodes);
         for (int i = 0; i < nsnodes; ++i)
-          mycsnodes[i] = static_cast<MortarNode*>(mysnodes[i]);
+          mycsnodes[i] = dynamic_cast<MortarNode*>(mysnodes[i]);
         int nmnodes = MasterIntElement().NumNode();
         DRT::Node** mymnodes = MasterIntElement().Nodes();
         if (!mymnodes)
           dserror("ERROR: Null pointer!");
         std::vector<MortarNode*> mycmnodes(nmnodes);
         for (int i = 0; i < nmnodes; ++i)
-          mycmnodes[i] = static_cast<MortarNode*>(mymnodes[i]);
+          mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
 
         // get node coordinates
         LINALG::SerialDenseMatrix scoord(3, nsnodes);
@@ -2909,7 +2909,7 @@ bool MORTAR::Coupling3d::HasProjStatus()
   // loop over all slave nodes
   for (int i = 0; i < nnodes; ++i)
   {
-    MortarNode* mycnode = static_cast<MortarNode*>(mynodes[i]);
+    MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
     if (!mycnode)
       dserror("ERROR: HasProjStatus: Null pointer!");
 
@@ -3724,7 +3724,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
       dserror("ERROR: Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+      MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
       if (!mycnode)
         dserror("ERROR: Null pointer!");
       mycnode->HasSegment() = true;
@@ -3757,11 +3757,11 @@ bool MORTAR::Coupling3d::IntegrateCells()
         && (lmtype == INPAR::MORTAR::lagmult_quad_quad
             || lmtype == INPAR::MORTAR::lagmult_lin_lin))
     {
-      // static_cast to make sure to pass in IntElement&
+      // dynamic_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref =
-          static_cast<MORTAR::IntElement&>(SlaveIntElement());
+          dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref =
-          static_cast<MORTAR::IntElement&>(MasterIntElement());
+          dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateCell3DAuxPlaneQuad(
           SlaveElement(), MasterElement(), sintref, mintref, Cells()[i],
@@ -3778,11 +3778,11 @@ bool MORTAR::Coupling3d::IntegrateCells()
         dserror(
             "ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
 
-      // static_cast to make sure to pass in IntElement&
+      // dynamic_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref =
-          static_cast<MORTAR::IntElement&>(SlaveIntElement());
+          dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref =
-          static_cast<MORTAR::IntElement&>(MasterIntElement());
+          dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateCell3DAuxPlaneQuad(
           SlaveElement(), MasterElement(), sintref, mintref, Cells()[i],

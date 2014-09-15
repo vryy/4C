@@ -152,7 +152,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       dserror("ERROR: Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+      MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
       if (!mycnode)
         dserror("ERROR: Null pointer!");
       mycnode->HasSegment() = true;
@@ -174,7 +174,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     if (!Quad())
     {
       if (stype_ == INPAR::CONTACT::solution_augmented)
-        Teuchos::rcp_static_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
+        Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
       else
         integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
     }
@@ -197,11 +197,11 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
               || SlaveElement().Shape() == DRT::Element::tri6))
         dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
 
-      // static_cast to make sure to pass in IntElement&
+      // dynamic_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref =
-          static_cast<MORTAR::IntElement&>(SlaveIntElement());
+          dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref =
-          static_cast<MORTAR::IntElement&>(MasterIntElement());
+          dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
       integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
@@ -217,11 +217,11 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
           || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
         dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
-      // static_cast to make sure to pass in IntElement&
+      // dynamic_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref =
-          static_cast<MORTAR::IntElement&>(SlaveIntElement());
+          dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref =
-          static_cast<MORTAR::IntElement&>(MasterIntElement());
+          dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
       integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
@@ -413,14 +413,14 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
 
   for (int i=0;i<nrow;++i)
   {
-    smrtrnodes[i] = static_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("ERROR: SlaveVertexLinearization: Null pointer!");
   }
 
   // we also need the corresponding slave node
   DRT::Node* snode = Discret().gNode(sid);
   if (!snode) dserror("ERROR: Cannot find node with gid %",sid);
-  MORTAR::MortarNode* mrtrsnode = static_cast<MORTAR::MortarNode*>(snode);
+  MORTAR::MortarNode* mrtrsnode = dynamic_cast<MORTAR::MortarNode*>(snode);
 
   // map iterator
   typedef GEN::pairedvector<int, double>  :: const_iterator _CI;    // linearization of element center Auxc()
@@ -534,14 +534,14 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
 
   for (int i=0;i<nrow;++i)
   {
-    smrtrnodes[i] = static_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("ERROR: MasterVertexLinearization: Null pointer!");
   }
 
   // we also need the corresponding master node
   DRT::Node* mnode = Discret().gNode(mid);
   if (!mnode) dserror("ERROR: Cannot find node with gid %",mid);
-  MORTAR::MortarNode* mrtrmnode = static_cast<MORTAR::MortarNode*>(mnode);
+  MORTAR::MortarNode* mrtrmnode = dynamic_cast<MORTAR::MortarNode*>(mnode);
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator _CI;  // linearization of element center Auxc()
@@ -1231,7 +1231,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
         integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,SlaveElement().Shape(),Comm(),
             Teuchos::null));
         //Perform integration and linearization
-        Teuchos::rcp_static_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle3D(SlaveElement(), MasterElements(),&boundary_ele, &proj, Comm());
+        Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle3D(SlaveElement(), MasterElements(),&boundary_ele, &proj, Comm());
       }
       else
       {

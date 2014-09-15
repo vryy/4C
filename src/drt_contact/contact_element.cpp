@@ -251,7 +251,7 @@ lcubeinv = 1.0 / (elens(4, i) * elens(4, i) * elens(4, i));
   // now loop over all element nodes for derivatives
   for (int n = 0; n < nnodes; ++n)
   {
-    CoNode* mycnode = static_cast<CoNode*>(mynodes[n]);
+    CoNode* mycnode = dynamic_cast<CoNode*>(mynodes[n]);
     if (!mycnode)
       dserror("ERROR: DerivNormalAtXi: Null pointer!");
       int ndof = mycnode->NumDof();

@@ -55,7 +55,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-  
+
   //**********************************************************************
   // GMSH output of all interface elements
   //**********************************************************************
@@ -124,7 +124,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         fps = fopen(filenameslave.str().c_str(), "w");
         fpm = fopen(filenamemaster.str().c_str(), "w");
       }
-      else 
+      else
       {
         fp = fopen(filename.str().c_str(), "a");
         fps = fopen(filenameslave.str().c_str(), "a");
@@ -147,7 +147,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
       {
-        MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
+        MORTAR::MortarElement* element = dynamic_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
         element->GetNodalCoords(coord);
@@ -181,7 +181,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,1) << ")";
             gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "};" << std::endl;
           }
-          
+
         }
 
         // 2D quadratic case (3noded line elements)
@@ -507,7 +507,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         // plot element number in element center
         double elec[3];
         element->LocalToGlobal(xi,elec,0);
-        
+
         if (element->IsSlave())
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
@@ -551,7 +551,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         int gid = snoderowmap_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        MortarNode* mtrnode = static_cast<MortarNode*>(node);
+        MortarNode* mtrnode = dynamic_cast<MortarNode*>(node);
         if (!mtrnode) dserror("ERROR: Static Cast to MortarNode* failed");
 
         double nc[3];
@@ -586,7 +586,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     lComm()->Barrier();
   }
 
-  
+
   //**********************************************************************
   // GMSH output of all treenodes (DOPs) on all layers
   //**********************************************************************
@@ -634,7 +634,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filenametn << iter;
 #endif // #ifdef MORTARGMSH3
-  
+
   if (lComm()->MyPID()==0)
   {
     for (int i=0; i<gnslayers;i++)
@@ -769,7 +769,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
   }
 #endif // ifdef MORTARGMSHTN
 
-  
+
   //**********************************************************************
   // GMSH output of all active treenodes (DOPs) on leaf level
   //**********************************************************************
@@ -833,7 +833,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           std::ostringstream currentfilename;
           std::stringstream gmshfile;
           std::stringstream newgmshfile;
-          
+
           // create new sheet for slave
           if (lComm()->MyPID()==0 && j==0)
           {
@@ -841,7 +841,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
             fp = fopen(currentfilename.str().c_str(), "w");
             gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp,gmshfile.str().c_str());
-            fclose(fp);     
+            fclose(fp);
             (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
           else
@@ -850,10 +850,10 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
             fp = fopen(currentfilename.str().c_str(), "a");
             gmshfile << "};" << std::endl << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp,gmshfile.str().c_str());
-            fclose(fp);     
+            fclose(fp);
             (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
-          
+
           // create new sheet for master
           fp = fopen(currentfilename.str().c_str(), "a");
           newgmshfile << "};" << std::endl << "View \" Step " << step << " Iter " << iter << " CM  \" {" << std::endl;

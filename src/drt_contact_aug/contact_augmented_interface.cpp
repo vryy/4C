@@ -83,7 +83,7 @@ void CONTACT::AugmentedInterface::Initialize()
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // reset nodal weighted gap
     cnode->CoData().GetWGap() = 1.0e12;
@@ -133,7 +133,7 @@ void CONTACT::AugmentedInterface::RedEvaluate()
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
+    MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
     if (selement->ZeroSized())
       continue;
@@ -176,7 +176,7 @@ void CONTACT::AugmentedInterface::AssembleAugDnMnMatrix(LINALG::SparseMatrix& au
     DRT::Node* node = idiscret_->gNode(gid);
 
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleAugDnMn: Node ownership inconsistency!");
@@ -225,7 +225,7 @@ void CONTACT::AugmentedInterface::AssembleDGLmLinMatrix(LINALG::SparseMatrix& dG
   for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
     // get Lagrange multiplier in normal direction
@@ -288,7 +288,7 @@ void CONTACT::AugmentedInterface::AssembleDGGLinMatrix(LINALG::SparseMatrix& dGG
   for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
       // typedef of the map iterator
@@ -374,7 +374,7 @@ void CONTACT::AugmentedInterface::AssembleAugLmVector(Epetra_Vector& augLmVec)
     int gid = augActiveSlaveNodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: AssembleDGLmrhs: Cannot find slave node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     double lm_n  = cnode->MoData().lm()[0];
 
@@ -408,7 +408,7 @@ void CONTACT::AugmentedInterface::AssembleAWGapRhs(Epetra_Vector& aWGapRhs)
   for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -453,7 +453,7 @@ void CONTACT::AugmentedInterface::AssembleDLmNWGapRhs(Epetra_Vector& dLmNWGapRhs
   for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -492,7 +492,7 @@ void CONTACT::AugmentedInterface::AssembleDLmNWGapLinMatrix(LINALG::SparseMatrix
   for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find node with gid %",gid);
 
     // typedef of the map iterator
@@ -541,7 +541,7 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveRhs(Epetra_Vector& augInact
   for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
   {
     int gid = augInactiveSlaveNodes->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find inactive slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -589,7 +589,7 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs)
   for(int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleDLmTLmTRhs: Cannot find active slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -657,7 +657,7 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dL
   for(int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleDLmTLmTrhs: Cannot find slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -706,7 +706,7 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix&
     int gid = augActiveSlaveNodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDGLmLin: Node ownership inconsistency!");
@@ -761,7 +761,7 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveMatrix(LINALG::SparseMatrix
   for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
   {
     int gid = augInactiveSlaveNodes->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleAugInactiveMatrix: Cannot find inactive slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -811,7 +811,7 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveLinMatrix(LINALG::SparseMat
   for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
   {
     int gid = augInactiveSlaveNodes->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleAugInactiveMatrix: Cannot find inactive slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
@@ -862,7 +862,7 @@ void CONTACT::AugmentedInterface::WGap()
     int gid  =snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: AssembleDGGrhs: Cannot find slave node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleGGrhs: Node ownership inconsistency!");
@@ -878,7 +878,7 @@ void CONTACT::AugmentedInterface::WGap()
       {
         int sGid = (p->second).first;
 
-        CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(sGid));
+        CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(sGid));
         if (!snode) dserror("ERROR: Cannot find slave node with gid %",sGid);
         // Check if Slave node
         if (!snode->IsSlave()) dserror("ERROR: This has to be a slave node!");
@@ -899,7 +899,7 @@ void CONTACT::AugmentedInterface::WGap()
       {
         int mGid = (p->second).first;
 
-        CoNode* mnode = static_cast<CoNode*>(idiscret_->gNode(mGid));
+        CoNode* mnode = dynamic_cast<CoNode*>(idiscret_->gNode(mGid));
         if (!mnode) dserror("ERROR: Cannot find master node with gid %",mGid);
         // Check if Slave node
         if (mnode->IsSlave()) dserror("ERROR: This has to be a master node!");
@@ -934,7 +934,7 @@ void CONTACT::AugmentedInterface::AWGapLin()
     int gid = augActiveSlaveNodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: AssembleDGGrhs: Cannot find slave node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleGGrhs: Node ownership inconsistency!");
@@ -961,7 +961,7 @@ void CONTACT::AugmentedInterface::AWGapLin()
       {
         int sGid = (p->second).first;
 
-        CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(sGid));
+        CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(sGid));
         if (!snode) dserror("ERROR: Cannot find slave node with gid %",sGid);
         // Check if Slave node
         if (!snode->IsSlave()) dserror("ERROR: This has to be a slave node!");
@@ -997,7 +997,7 @@ void CONTACT::AugmentedInterface::AWGapLin()
       {
         int mGid = (p->second).first;
 
-        CoNode* mnode = static_cast<CoNode*>(idiscret_->gNode(mGid));
+        CoNode* mnode = dynamic_cast<CoNode*>(idiscret_->gNode(mGid));
         if (!mnode) dserror("ERROR: Cannot find master node with gid %",mGid);
         // Check if master node
         if (mnode->IsSlave()) dserror("ERROR: This has to be a master node!");
@@ -1047,7 +1047,7 @@ void CONTACT::AugmentedInterface::BuildAugActiveSet(bool init)
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
   {
     int gid = snoderowmap_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERRO: BuildAugActiveSet: Cannot find node with gid %",gid);
 
     const int numdof = cnode->NumDof();
@@ -1139,7 +1139,7 @@ void CONTACT::AugmentedInterface::SplitAugActiveDofs()
   for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
   {
     int gid = augActiveSlaveNodes_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
     // add first dof to nMap
@@ -1195,7 +1195,7 @@ bool CONTACT::AugmentedInterface::UpdateAugActiveSetSemiSmooth()
       int gid = snoderowmap_->GID(j);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // The nested active set strategy cannot deal with the case of
       // active nodes that have no integration segments/cells attached,
@@ -1226,7 +1226,7 @@ bool CONTACT::AugmentedInterface::UpdateAugActiveSetSemiSmooth()
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
   {
     int gid = snoderowmap_->GID(i);
-    CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
+    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AugmentedInterface::UpdateAugActiveSetSemiSmooth: "
         "Cannot find node with gid %",gid);
 

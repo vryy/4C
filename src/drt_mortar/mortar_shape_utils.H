@@ -148,7 +148,7 @@ void EvaluateShape_Displ(const double* xi, V& val,
   bool bound = false;
   for (int i=0;i<nnode;++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -260,8 +260,8 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   {
     if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
     // check for boundary nodes
-    MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
-    MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
+    MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
+    MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
     if (!mymrtrnode0) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     if (!mymrtrnode1) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bool isonbound0 = mymrtrnode0->IsOnBound();
@@ -300,9 +300,9 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   {
     if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
     // check for boundary nodes
-    MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
-    MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
-    MortarNode* mymrtrnode2 = static_cast<MortarNode*> (mynodes[2]);
+    MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
+    MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
+    MortarNode* mymrtrnode2 = dynamic_cast<MortarNode*> (mynodes[2]);
     if (!mymrtrnode0) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     if (!mymrtrnode1) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     if (!mymrtrnode2) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
@@ -440,7 +440,7 @@ void EvaluateShape_LM_Lin(const INPAR::MORTAR::ShapeFcn& lmtype,
   bool bound = false;
   for (int i=0;i<ele.NumNode();++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -1815,7 +1815,7 @@ void mortar_nurbs_shape_function_1D(
   {
     Epetra_SerialDenseVector weights(ele.NumNode());
     for (int inode=0; inode<ele.NumNode(); ++inode)
-      weights(inode) = static_cast<MORTAR::MortarNode* > (ele.Nodes()[inode])->NurbsW();
+      weights(inode) = dynamic_cast<MORTAR::MortarNode* > (ele.Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseMatrix auxderiv(1,ele.NumNode());
     DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct,
@@ -1833,7 +1833,7 @@ void mortar_nurbs_shape_function_1D(
   {
     Epetra_SerialDenseVector weights(ele.NumNode());
     for (int inode=0; inode<ele.NumNode(); ++inode)
-      weights(inode) = static_cast<MORTAR::MortarNode* > (ele.Nodes()[inode])->NurbsW();
+      weights(inode) = dynamic_cast<MORTAR::MortarNode* > (ele.Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseMatrix auxderiv(1,ele.NumNode());
     DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct,

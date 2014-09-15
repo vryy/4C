@@ -169,14 +169,14 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop()
     int gid = Elelist()[i];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    MortarElement* mrtrelement=static_cast<MortarElement*>(element);
+    MortarElement* mrtrelement=dynamic_cast<MortarElement*>(element);
     DRT::Node** nodes = mrtrelement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
     for (int k=0;k<mrtrelement->NumNode();k++)
     {
-      MortarNode* mrtrnode=static_cast<MortarNode*>(nodes[k]);
+      MortarNode* mrtrnode=dynamic_cast<MortarNode*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
       // get current node position
@@ -279,14 +279,14 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
     int gid = Elelist()[0];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    MortarElement* mrtrelement=static_cast<MortarElement*>(element);
+    MortarElement* mrtrelement=dynamic_cast<MortarElement*>(element);
     DRT::Node** nodes = mrtrelement->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // update slabs for every node
     for (int k=0;k<mrtrelement->NumNode();++k)
     {
-      MortarNode* mrtrnode=static_cast<MortarNode*>(nodes[k]);
+      MortarNode* mrtrnode=dynamic_cast<MortarNode*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
       // get current position
@@ -417,7 +417,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
       for (int k=0;k<element->NumNode();++k)
       {
-        MortarNode* mrtrnode = static_cast<MortarNode*>(nodes[k]);
+        MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
         if (!mrtrnode) dserror("ERROR: Null pointer!");
         const double* posnode = mrtrnode->X();
 
@@ -1106,7 +1106,7 @@ void MORTAR::BinaryTree::SetEnlarge()
     int gid = selements_->GID(i);
     DRT::Element* element = idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    MORTAR::MortarElement* mrtrelement = (MORTAR::MortarElement*) element;
+    MORTAR::MortarElement* mrtrelement = dynamic_cast<MORTAR::MortarElement*>(element);
     double mincurrent = mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
@@ -1117,7 +1117,7 @@ void MORTAR::BinaryTree::SetEnlarge()
     int gid = melements_->GID(i);
     DRT::Element* element = idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-    MORTAR::MortarElement* mrtrelement = (MORTAR::MortarElement*) element;
+    MORTAR::MortarElement* mrtrelement = dynamic_cast<MORTAR::MortarElement*>(element);
     double mincurrent=mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
@@ -1285,7 +1285,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(Teuchos::RCP<BinaryTreeNode> str
       //std::cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: "
       //     << sgid <<"and master-Element: "<< mgid;
       DRT::Element* element= idiscret_.gElement(sgid);
-      MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(element);
+      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(element);
       selement->AddSearchElements(mgid);
     }
   }
@@ -1391,7 +1391,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> str
       //std::cout <<"\n"<< Comm().MyPID() << "TreeCombinedContact found between slave-Element: "
       //     << sgid <<"and master-Element: "<< mgid;
       DRT::Element* element= idiscret_.gElement(sgid);
-      MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(element);
+      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(element);
       selement->AddSearchElements(mgid);
      }
   }

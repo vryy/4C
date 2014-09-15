@@ -72,7 +72,7 @@ CoLagrangeStrategy(probdiscret,params,interfaces,dim,comm,alphaf,maxdof)
   // cast to  wearinterfaces
   for (int z=0; z<(int)interfaces.size();++z)
   {
-    interface_.push_back(Teuchos::rcp_static_cast<CONTACT::WearInterface>(interfaces[z]));
+    interface_.push_back(Teuchos::rcp_dynamic_cast<CONTACT::WearInterface>(interfaces[z]));
     if (interface_[z]==Teuchos::null)
       dserror("WearLagrangeStrategy: Interface-cast failed!");
   }
@@ -189,7 +189,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cnode = static_cast<FriNode*>(node);
+        FriNode* cnode = dynamic_cast<FriNode*>(node);
 
         cnode->FriDataPlus().wcurr()[0]=0.0;
       }
@@ -201,7 +201,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
           int gid = interface_[i]->MasterColNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cnode = static_cast<FriNode*>(node);
+          FriNode* cnode = dynamic_cast<FriNode*>(node);
 
           cnode->FriDataPlus().wcurr()[0]=0.0;
         }
@@ -476,7 +476,7 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cnode = static_cast<FriNode*>(node);
+          FriNode* cnode = dynamic_cast<FriNode*>(node);
 
           if(cnode->FriData().Slip()==true)
             cnode->CoData().Getg()+=cnode->FriDataPlus().Wear();
@@ -3856,7 +3856,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* frinode = static_cast<FriNode*>(node);
+          FriNode* frinode = dynamic_cast<FriNode*>(node);
 
           // be aware of problem dimension
           int dim = Dim();
@@ -3901,7 +3901,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
             int gid = interface_[i]->MasterRowNodes()->GID(j);
             DRT::Node* node = interface_[i]->Discret().gNode(gid);
             if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-            FriNode* frinode = static_cast<FriNode*>(node);
+            FriNode* frinode = dynamic_cast<FriNode*>(node);
 
             // be aware of problem dimension
             int dim = Dim();
@@ -3946,7 +3946,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* frinode = static_cast<FriNode*>(node);
+          FriNode* frinode = dynamic_cast<FriNode*>(node);
 
           // be aware of problem dimension
           int dim = Dim();
@@ -3991,7 +3991,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
             int gid = interface_[i]->MasterRowNodes()->GID(j);
             DRT::Node* node = interface_[i]->Discret().gNode(gid);
             if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-            FriNode* frinode = static_cast<FriNode*>(node);
+            FriNode* frinode = dynamic_cast<FriNode*>(node);
 
             // be aware of problem dimension
             int dim = Dim();
@@ -4059,7 +4059,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* frinode = static_cast<FriNode*>(node);
+        FriNode* frinode = dynamic_cast<FriNode*>(node);
 
         // be aware of problem dimension
         int dim = Dim();
@@ -4226,7 +4226,7 @@ void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& 
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
       // set value active / inactive in toggle vector
@@ -4235,7 +4235,7 @@ void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& 
       // set value slip / stick in the toggle vector
       if (friction_)
       {
-        CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(cnode);
+        CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
         if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
         if (wear_)
         {
@@ -4723,7 +4723,7 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
       {
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // set value active / inactive in cnode
         cnode->Active()=true;
@@ -4732,9 +4732,9 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
         {
           // set value stick / slip in cnode
           // set wear value
-          if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
+          if ((*sliptoggle)[dof]==1) dynamic_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
           if (wear_)
-            static_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().Wear() = (*weightedwear)[dof];
+            dynamic_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().Wear() = (*weightedwear)[dof];
         }
       }
     }
@@ -4846,7 +4846,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // The nested active set strategy cannot deal with the case of
         // active nodes that have no integration segments/cells attached,
@@ -4890,7 +4890,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // get scaling factor
       double scalefac=1.;
@@ -4919,7 +4919,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
       if (friction_)
       {
         // static cast
-        FriNode* frinode = static_cast<FriNode*>(cnode);
+        FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute tangential parts and of Lagrange multiplier and incremental jumps
         for (int i=0;i<Dim();++i)
@@ -4968,7 +4968,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
           if (friction_)
           {
             // nodes coming into contact
-            static_cast<FriNode*>(cnode)->FriData().Slip() = true;
+            dynamic_cast<FriNode*>(cnode)->FriData().Slip() = true;
           }
         }
       }
@@ -4989,7 +4989,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
           activesetconv_ = false;
 
           // friction
-          if (friction_) static_cast<FriNode*>(cnode)->FriData().Slip() = false;
+          if (friction_) dynamic_cast<FriNode*>(cnode)->FriData().Slip() = false;
         }
 
         // only do something for friction
@@ -4998,7 +4998,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // friction tresca
           if (ftype == INPAR::CONTACT::friction_tresca)
           {
-            FriNode* frinode = static_cast<FriNode*>(cnode);
+            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
             double frbound = interface_[i]->IParams().get<double>("FRBOUND");
@@ -5030,7 +5030,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // friction coulomb
           if (ftype == INPAR::CONTACT::friction_coulomb)
           {
-            FriNode* frinode = static_cast<FriNode*>(cnode);
+            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
             double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
@@ -5259,7 +5259,7 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
         int gid = interface_[i]->SlaveColNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cnode = static_cast<FriNode*>(node);
+        FriNode* cnode = dynamic_cast<FriNode*>(node);
 
         cnode->FriDataPlus().wcurr()[0] = 0.0;
         cnode->FriDataPlus().wold()[0]  = 0.0;
@@ -5274,7 +5274,7 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
           int gid = masternodes->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cnode = static_cast<FriNode*>(node);
+          FriNode* cnode = dynamic_cast<FriNode*>(node);
 
           cnode->FriDataPlus().wcurr()[0] = 0.0;
           cnode->FriDataPlus().wold()[0]  = 0.0;

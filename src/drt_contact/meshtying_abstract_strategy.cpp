@@ -536,7 +536,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
       {
         node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        mtnode = static_cast<MORTAR::MortarNode*>(node);
+        mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
       }
 
       // ... AND standard node in underlying problem discret
@@ -724,7 +724,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
@@ -797,7 +797,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapE
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       // check if this node's dofs are in dbcmap
       for (int k=0;k<mtnode->NumDof();++k)
@@ -935,7 +935,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       std::vector<double> nodeforce(3);
       std::vector<double> position(3);
@@ -977,7 +977,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       std::vector<double> nodeforce(3);
       std::vector<double> position(3);
@@ -1033,7 +1033,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       std::vector<double> lm(3);
       std::vector<double> nodegaps(3);
@@ -1196,7 +1196,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
       // cast to MortarNode
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       // store node id
       lnid.push_back(gid);
@@ -1333,7 +1333,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(const std::string& sidename, bo
       }
     }
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
     // prepare assembly
     Epetra_SerialDenseVector val(Dim());
@@ -1397,7 +1397,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtAbstractStrategy::LagrMultOldRescaled()
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();

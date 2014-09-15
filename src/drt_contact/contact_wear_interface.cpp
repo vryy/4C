@@ -120,7 +120,7 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
     int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     if (fnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleTE: Node ownership inconsistency!");
@@ -241,7 +241,7 @@ void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
     int gid = slmasternodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     /**************************************************** T-matrix ******/
     if ((fnode->FriDataPlus().GetT()).size()>0)
@@ -348,7 +348,7 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
     int gid = slipnodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
     std::map<int,std::map<int,double> >& tderiv = fnode->FriDataPlus().GetDerivTw();
@@ -366,7 +366,7 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
-      FriNode* csnode = static_cast<FriNode*>(snode);
+      FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
       // current Lagrange multipliers
       double lmn = 0.0;
@@ -418,7 +418,7 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
     int gid = slipnodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     if (fnode->FriDataPlus().GetT().size()>0)
     {
@@ -435,7 +435,7 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
         int gid3 = (int)((z->first)/Dim());
         DRT::Node* snode = idiscret_->gNode(gid3);
         if (!snode) dserror("ERROR: Cannot find node with gid");
-        FriNode* csnode = static_cast<FriNode*>(snode);
+        FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
         for (int u=0;u<Dim();++u)
         {
@@ -492,7 +492,7 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
     int gid = slmasternodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
     std::map<int,std::map<int,double> >& tderiv = fnode->FriDataPlus().GetDerivTw();
@@ -510,7 +510,7 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
-      FriNode* csnode = static_cast<FriNode*>(snode);
+      FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
       // current Lagrange multipliers
       double lmn = 0.0;
@@ -562,7 +562,7 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
     int gid = slmasternodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     if (fnode->FriDataPlus().GetT().size()>0)
     {
@@ -579,7 +579,7 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
         int gid3 = (int)((z->first)/Dim());
         DRT::Node* snode = idiscret_->gNode(gid3);
         if (!snode) dserror("ERROR: Cannot find node with gid");
-        FriNode* csnode = static_cast<FriNode*>(snode);
+        FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
         for (int u=0;u<Dim();++u)
         {
@@ -636,7 +636,7 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
     int gid = slipnodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
     std::map<int,std::map<int,double> >& ederiv = fnode->FriDataPlus().GetDerivE();
@@ -654,7 +654,7 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
-      FriNode* csnode = static_cast<FriNode*>(snode);
+      FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
       // current wear - wear from last converged iteration step (partitioned scheme)
       double w = 0.0;
@@ -727,7 +727,7 @@ void CONTACT::WearInterface::AssembleLinE_D_Master(LINALG::SparseMatrix& lineglo
     int gid = slmasternodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
     std::map<int,std::map<int,double> >& ederiv = fnode->FriDataPlus().GetDerivE();
@@ -745,7 +745,7 @@ void CONTACT::WearInterface::AssembleLinE_D_Master(LINALG::SparseMatrix& lineglo
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
-      FriNode* csnode = static_cast<FriNode*>(snode);
+      FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
       // current wear - wear from last converged iteration step (partitioned scheme)
       double w = 0.0;
@@ -813,7 +813,7 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
     int gid = slipnodes_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     typedef std::map<int,double>::const_iterator CI;
 
@@ -827,7 +827,7 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
         int gid2 = (int)((p->first)/Dim());
         DRT::Node* node2 = idiscret_->gNode(gid2);
         if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
-        FriNode* jnode = static_cast<FriNode*>(node2);
+        FriNode* jnode = dynamic_cast<FriNode*>(node2);
 
         for (int iter=0;iter<Dim();++iter)
         {
@@ -875,7 +875,7 @@ void CONTACT::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintgl
     int gid = slmasternodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     typedef std::map<int,double>::const_iterator CI;
 
@@ -889,7 +889,7 @@ void CONTACT::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintgl
         int gid2 = (int)((p->first)/Dim());
         DRT::Node* node2 = idiscret_->gNode(gid2);
         if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
-        FriNode* jnode = static_cast<FriNode*>(node2);
+        FriNode* jnode = dynamic_cast<FriNode*>(node2);
 
         for (int iter=0;iter<Dim();++iter)
         {
@@ -922,7 +922,7 @@ void CONTACT::WearInterface::EvaluateNodalNormals()
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarNode* mrtrnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
     // build averaged normal at each slave node
     mrtrnode->BuildAveragedNormal();
@@ -936,7 +936,7 @@ void CONTACT::WearInterface::EvaluateNodalNormals()
       int gid = mnoderowmap_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mrtrnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       // build averaged normal at each slave node
       mrtrnode->BuildAveragedNormal();
@@ -982,7 +982,7 @@ void CONTACT::WearInterface::ExportNodalNormals()
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // fill nodal matrix
     Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
@@ -1086,7 +1086,7 @@ void CONTACT::WearInterface::ExportNodalNormals()
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
     int linsize = cnode->GetLinsize()+(int)(n_x_key[gid].size());
 
     // extract info
@@ -1174,7 +1174,7 @@ void CONTACT::WearInterface::ExportNodalNormals()
        int gid = mnoderowmap_->GID(i);
        DRT::Node* node = idiscret_->gNode(gid);
        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-       CoNode* cnode = static_cast<CoNode*>(node);
+       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
        // fill nodal matrix
        Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
@@ -1276,7 +1276,7 @@ void CONTACT::WearInterface::ExportNodalNormals()
        int gid = masternodes->GID(i);
        DRT::Node* node = idiscret_->gNode(gid);
        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-       CoNode* cnode = static_cast<CoNode*>(node);
+       CoNode* cnode = dynamic_cast<CoNode*>(node);
        int linsize = cnode->GetLinsize()+(int)(n_x_key[gid].size());
 
        if (cnode->Owner()==Comm().MyPID())
@@ -1392,7 +1392,7 @@ void CONTACT::WearInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
@@ -1468,7 +1468,7 @@ void CONTACT::WearInterface::AssembleLinG_W(LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
@@ -1534,7 +1534,7 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       int gid = sticknodes->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      FriNode* cnode = static_cast<FriNode*>(node);
+      FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
@@ -1829,7 +1829,7 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       int gid = sticknodes->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      FriNode* cnode = static_cast<FriNode*>(node);
+      FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
@@ -2048,7 +2048,7 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
         int gid = slipnodes_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cnode = static_cast<FriNode*>(node);
+        FriNode* cnode = dynamic_cast<FriNode*>(node);
 
         if (cnode->Owner() != Comm().MyPID())
           dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
@@ -2249,7 +2249,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      FriNode* cnode = static_cast<FriNode*>(node);
+      FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
@@ -3041,7 +3041,7 @@ void CONTACT::WearInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleWLm: Node ownership inconsistency!");
@@ -3101,7 +3101,7 @@ void CONTACT::WearInterface::AssembleLinWLmSt(LINALG::SparseMatrix& sglobal)
     int gid = sticknodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: Node ownership inconsistency!");
@@ -3198,7 +3198,7 @@ void CONTACT::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
     int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
@@ -3307,7 +3307,7 @@ void CONTACT::WearInterface::AssembleWear(Epetra_Vector& gglobal)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     if (frinode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleWear: Node ownership inconsistency!");
@@ -3359,7 +3359,7 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
     int gid = masternodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     /**************************************************** D2-matrix ******/
     if ((cnode->FriDataPlus().GetD2()).size()>0 )
@@ -3431,7 +3431,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = SlaveRowNodes()->GID(j);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     if (frinode->Active())
       a.push_back(frinode->Id());
@@ -3454,7 +3454,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     if(frinode->Owner()!=Comm().MyPID())
     {
@@ -3470,7 +3470,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     if(frinode->Owner()!=Comm().MyPID())
       frinode->FriData().Slip()=true;
@@ -3485,7 +3485,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = meleall->GID(j);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarElement* moele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::MortarElement* moele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     if(moele->IsAttached()==true and moele->Owner()==Comm().MyPID())
       eleatt.push_back(moele->Id());
@@ -3499,7 +3499,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = att->GID(j);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarElement* moele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::MortarElement* moele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     if(moele->IsAttached()==false)
       moele->SetAttached()=true;
@@ -3517,25 +3517,25 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = SlaveRowNodes()->GID(j);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     // get elements from node (SLAVE)
     for(int u=0;u<(int)frinode->NumElement();++u)
     {
       // all found MASTER elements:
-      for(int k=0;k<(int)static_cast<MORTAR::MortarElement*>(frinode->Elements()[u])->MoData().NumSearchElements();++k)
+      for(int k=0;k<(int)dynamic_cast<MORTAR::MortarElement*>(frinode->Elements()[u])->MoData().NumSearchElements();++k)
       {
-        int gid2 = static_cast<MORTAR::MortarElement*>(frinode->Elements()[u])->MoData().SearchElements()[k];
+        int gid2 = dynamic_cast<MORTAR::MortarElement*>(frinode->Elements()[u])->MoData().SearchElements()[k];
         DRT::Element* ele2 = Discret().gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
-        MORTAR::MortarElement* celement = static_cast<MORTAR::MortarElement*>(ele2);
+        MORTAR::MortarElement* celement = dynamic_cast<MORTAR::MortarElement*>(ele2);
 
         // nodes cor. to this master element
         if(celement->IsAttached()==true)
         {
           for(int p=0;p<celement->NumNode();++p)
           {
-            FriNode* mnode = static_cast<FriNode*>(celement->Nodes()[p]);
+            FriNode* mnode = dynamic_cast<FriNode*>(celement->Nodes()[p]);
 
             if(mnode->IsDetected()==false)
             {
@@ -3543,14 +3543,14 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
               if(frinode->Active())
               {
                 wa.push_back(celement->Nodes()[p]->Id());
-                wad.push_back(static_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
+                wad.push_back(dynamic_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
               }
 
               //slip master nodes!
               if(frinode->FriData().Slip())
               {
                 wsl.push_back(celement->Nodes()[p]->Id());
-                wsln.push_back(static_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
+                wsln.push_back(dynamic_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
               }
 
               //set detection status
@@ -3573,7 +3573,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = masternodes->GID(j);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* mnode = static_cast<FriNode*>(node);
+    FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     mnode->SetDetected()=false;
   }
@@ -3582,7 +3582,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = mastereles->GID(j);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
-    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     mele->SetAttached()=false;
   }
@@ -3603,7 +3603,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = ARactmn->GID(j);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* mnode = static_cast<FriNode*>(node);
+    FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     if(mnode->Owner()==Comm().MyPID())
     {
@@ -3624,7 +3624,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
     int gid = ARslimn->GID(j);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* mnode = static_cast<FriNode*>(node);
+    FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     if(mnode->Owner()==Comm().MyPID())
     {
@@ -3656,7 +3656,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     if(frinode->Owner()!=Comm().MyPID())
       frinode->Active()=false;
@@ -3670,7 +3670,7 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
 
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
-    FriNode* frinode = static_cast<FriNode*>(node);
+    FriNode* frinode = dynamic_cast<FriNode*>(node);
 
     if(frinode->Owner()!=Comm().MyPID())
       frinode->FriData().Slip()=false;
@@ -3699,7 +3699,7 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
     const int numdof = cnode->NumDof();
 
     // *******************************************************************
@@ -3746,8 +3746,8 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
           DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
       if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-      static_cast<FriNode*>(cnode)->FriData().Slip() = true;
-      static_cast<FriNode*>(cnode)->FriData().InconInit() = true;
+      dynamic_cast<FriNode*>(cnode)->FriData().Slip() = true;
+      dynamic_cast<FriNode*>(cnode)->FriData().InconInit() = true;
       myslipnodegids.push_back(cnode->Id());
 
       for (int j=0;j<numdof;++j)
@@ -3786,7 +3786,7 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
       // check if frictional node is in slip state
       if (friction_)
       {
-        if (static_cast<FriNode*>(cnode)->FriData().Slip())
+        if (dynamic_cast<FriNode*>(cnode)->FriData().Slip())
         {
           myslipnodegids.push_back(cnode->Id());
 
@@ -3816,7 +3816,7 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
       int gid = masternodes->GID(k);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
       const int numdof = cnode->NumDof();
 
       int inv = 0;
@@ -3926,7 +3926,7 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
 
     for (int i=0; i<(Discret().NodeRowMap())->NumMyElements();++i)
     {
-      MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+      MORTAR::MortarNode* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
 
       // candidates are slave nodes with only 1 adjacent MortarElement
       if (node->IsSlave() && node->NumElement()==1)
@@ -3965,7 +3965,7 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
     for (int i=0; i<Discret().NodeRowMap()->NumMyElements(); ++i)
     {
       // get node and cast to cnode
-      MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+      MORTAR::MortarNode* node = dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
 
       // candidates are slave nodes with shape line3 (2D), tri6 and quad8/9 (3D)
       if (node->IsSlave())
@@ -4185,7 +4185,7 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
-    MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(node);
+    MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
     //********************************************************
     // NOTE: depending on which kind of node this really is,
@@ -4213,7 +4213,7 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
       int gid = masternodes->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
-      MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(node);
+      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       //********************************************************
       // NOTE: depending on which kind of node this really is,
@@ -4233,7 +4233,7 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     // initialize container if not yet initialized before
     mele->InitializeDataContainer();
@@ -4273,7 +4273,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
     int gid = inactivenodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleInactiverhs: Node ownership inconsistency!");
@@ -4335,7 +4335,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& ina
     int gid = inactivenodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* cnode = static_cast<FriNode*>(node);
+    FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleInactiverhs: Node ownership inconsistency!");
@@ -4404,7 +4404,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
     int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     if (fnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleWearCondRhs: Node ownership inconsistency!");
@@ -4419,7 +4419,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         int gid3 = (int)((p->first)/Dim());
         DRT::Node* snode = idiscret_->gNode(gid3);
         if (!snode) dserror("ERROR: Cannot find node with gid");
-        FriNode* csnode = static_cast<FriNode*>(snode);
+        FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
@@ -4446,7 +4446,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         int gid3 = (int)((p->first)/Dim());
         DRT::Node* snode = idiscret_->gNode(gid3);
         if (!snode) dserror("ERROR: Cannot find node with gid");
-        FriNode* csnode = static_cast<FriNode*>(snode);
+        FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
         double lmn = 0.0;
         for (int u=0;u<Dim();++u)
@@ -4502,7 +4502,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
     int gid = slmasternodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* fnode = static_cast<FriNode*>(node);
+    FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     /**************************************************** E-matrix ******/
     if ((fnode->FriDataPlus().GetE()).size()>0)
@@ -4514,7 +4514,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
         int gid3 = (int)((p->first)/Dim());
         DRT::Node* snode = idiscret_->gNode(gid3);
         if (!snode) dserror("ERROR: Cannot find node with gid");
-        FriNode* csnode = static_cast<FriNode*>(snode);
+        FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
@@ -4541,7 +4541,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
         int gid3 = (int)((p->first)/Dim());
         DRT::Node* snode = idiscret_->gNode(gid3);
         if (!snode) dserror("ERROR: Cannot find node with gid");
-        FriNode* csnode = static_cast<FriNode*>(snode);
+        FriNode* csnode = dynamic_cast<FriNode*>(snode);
 
         double lmn = 0.0;
         for (int u=0;u<Dim();++u)
@@ -4580,7 +4580,7 @@ void CONTACT::WearInterface::Initialize()
 
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
   {
-    CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
+    CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
     // reset feasible projection and segmentation status
     node->HasProj()    = false;
@@ -4588,7 +4588,7 @@ void CONTACT::WearInterface::Initialize()
 
     if (friction_)
     {
-      FriNode* frinode = static_cast<FriNode*>(node);
+      FriNode* frinode = dynamic_cast<FriNode*>(node);
 
       // reset nodal mechanical dissipation
       frinode->MechDiss() = 0.0;
@@ -4617,7 +4617,7 @@ void CONTACT::WearInterface::Initialize()
       int gid = masternodes->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      FriNode* cnode = static_cast<FriNode*>(node);
+      FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->IsSlave() == false)
       {
@@ -4637,7 +4637,7 @@ void CONTACT::WearInterface::Initialize()
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // reset nodal Mortar maps
     for (int j=0;j<(int)((cnode->MoData().GetD()).size());++j)
@@ -4686,7 +4686,7 @@ void CONTACT::WearInterface::Initialize()
     //*************************************
     if (friction_)
     {
-      FriNode* frinode = static_cast<FriNode*>(cnode);
+      FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
       // reset SNodes and Mnodes
       frinode->FriData().GetSNodes().clear();
@@ -4773,7 +4773,7 @@ void CONTACT::WearInterface::Initialize()
       int gid = masternodes->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      FriNode* frinode = static_cast<FriNode*>(node);
+      FriNode* frinode = dynamic_cast<FriNode*>(node);
 
       // reset nodal Mortar wear maps
       for (int j=0;j<(int)((frinode->FriDataPlus().GetT()).size());++j)
@@ -4803,7 +4803,7 @@ void CONTACT::WearInterface::Initialize()
     for (int i=0;i<idiscret_->NumMyColElements();++i)
     {
       DRT::Element* ele = idiscret_->lColElement(i);
-      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -4821,7 +4821,7 @@ void CONTACT::WearInterface::Initialize()
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
       if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -4871,7 +4871,7 @@ void CONTACT::WearInterface::SplitSlaveDofs()
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // add first dof to Nmap
     myNgids[countN] = cnode->Dofs()[0];
@@ -4927,7 +4927,7 @@ void CONTACT::WearInterface::SplitMasterDofs()
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // add first dof to Nmap
     myNgids[countN] = cnode->Dofs()[0];
@@ -4970,7 +4970,7 @@ void CONTACT::WearInterface::SetElementAreas()
     // (use fully overlapping column map)
     for (int i=0;i<idiscret_->NumMyColElements();++i)
     {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+      MORTAR::MortarElement* element = dynamic_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
       element->InitializeDataContainer();
       element->MoData().Area()=element->ComputeArea();
     }
@@ -4982,7 +4982,7 @@ void CONTACT::WearInterface::SetElementAreas()
     {
       for (int i=0;i<idiscret_->NumMyColElements();++i)
       {
-        MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+        MORTAR::MortarElement* element = dynamic_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
         element->InitializeDataContainer();
         element->MoData().Area()=element->ComputeArea();
       }

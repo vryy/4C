@@ -666,7 +666,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
   // now the derivative
   for (int n=0;n<nnodes;++n)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[n]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[n]);
     if (!mymrtrnode) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
     int ndof = mymrtrnode->NumDof();
 
@@ -738,7 +738,7 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
 
   for (int i=0;i<nnodes;++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
     if (isinit)
     {
@@ -770,7 +770,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
 
   for (int i=0;i<nnodes;++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: GetNodalCoordsOld: Null pointer!");
 
     coord(0,i) = mymrtrnode->X()[0] + mymrtrnode->uold()[0];
@@ -794,7 +794,7 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 
   for (int i=0;i<nnodes;++i)
   {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
 
     lagmult(0,i) = mymrtrnode->MoData().lm()[0];
@@ -995,7 +995,7 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,doub
   // *********************************************************************
   for (int i=0;i<nnodes;++i)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[i]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: DerivJacobian: Null pointer!");
 
     derivjac[mymrtrnode->Dofs()[0]] += jacinv*(cross[2]*geta[1]-cross[1]*geta[2])*deriv(i,0);
@@ -1429,8 +1429,8 @@ bool MORTAR::MortarElement::AdjEleStatus(int* status)
   DRT::Node** nodes = Nodes();
   if(!nodes) dserror("ERROR: Nodes: Null pointer!");
 
-  MortarNode* mrtrnode0 = static_cast<MortarNode*> (nodes[0]);
-  MortarNode* mrtrnode1 = static_cast<MortarNode*> (nodes[1]);
+  MortarNode* mrtrnode0 = dynamic_cast<MortarNode*> (nodes[0]);
+  MortarNode* mrtrnode1 = dynamic_cast<MortarNode*> (nodes[1]);
 
   int numelemrtrnode0 = mrtrnode0->NumElement();
   int numelemrtrnode1 = mrtrnode1->NumElement();
@@ -1469,8 +1469,8 @@ bool MORTAR::MortarElement::AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int 
   int eleId = Id();
   DRT::Node** mynodes = Nodes();
 
-  MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
-  MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
+  MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
+  MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
 
   MortarNode* myadjacentmrtrnode = 0;
   DRT::Node** myAdjacentNodes    = 0;
@@ -1497,9 +1497,9 @@ bool MORTAR::MortarElement::AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int 
     dserror("ERROR: Element Ids do not match");
 
     if(myAdjacentNodes[0]->Id() != mymrtrnode0->Id() && myAdjacentNodes[1]->Id() == mymrtrnode0->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[0]);
     else if(myAdjacentNodes[0]->Id() == mymrtrnode0->Id() && myAdjacentNodes[1]->Id() != mymrtrnode0->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[1]);
     else
       dserror("ERROR: Adjacent nodes cant be found");
 
@@ -1517,9 +1517,9 @@ bool MORTAR::MortarElement::AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int 
       dserror("ERROR: Element Ids do not match");
 
     if(myAdjacentNodes[0]->Id() != mymrtrnode1->Id() && myAdjacentNodes[1]->Id() == mymrtrnode1->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[0]);
     else if(myAdjacentNodes[0]->Id() == mymrtrnode1->Id() && myAdjacentNodes[1]->Id() != mymrtrnode1->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[1]);
     else
       dserror("ERROR: Adjacent nodes cant be found");
 
@@ -1539,9 +1539,9 @@ bool MORTAR::MortarElement::AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int 
       dserror("ERROR: Element Ids do not match");
 
     if(myAdjacentNodes[0]->Id() != mymrtrnode1->Id() && myAdjacentNodes[1]->Id() == mymrtrnode1->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[0]);
     else if(myAdjacentNodes[0]->Id() == mymrtrnode1->Id() && myAdjacentNodes[1]->Id() != mymrtrnode1->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[1]);
     else
       dserror("ERROR: Adjacent nodes cant be found");
 
@@ -1561,9 +1561,9 @@ bool MORTAR::MortarElement::AdjNodeCoords(LINALG::SerialDenseMatrix& coord, int 
       dserror("ERROR: Element Ids do not match");
 
     if(myAdjacentNodes[0]->Id() != mymrtrnode0->Id() && myAdjacentNodes[1]->Id() == mymrtrnode0->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[0]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[0]);
     else if(myAdjacentNodes[0]->Id() == mymrtrnode0->Id() && myAdjacentNodes[1]->Id() != mymrtrnode0->Id())
-      myadjacentmrtrnode = static_cast<MortarNode*> (myAdjacentNodes[1]);
+      myadjacentmrtrnode = dynamic_cast<MortarNode*> (myAdjacentNodes[1]);
     else
       dserror("ERROR: Adjacent nodes cant be found");
 
@@ -1639,8 +1639,8 @@ bool  MORTAR::MortarElement::HermitEleNodes(DRT::Node** nodes, int status)
   DRT::Node** mynodes = Nodes();
   if(!mynodes) dserror("ERROR: SmoothEleNodes: Null pointer!");
 
-  MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
-  MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
+  MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
+  MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
 
   DRT::Node* myadjacentnode   = 0;
   DRT::Node** myAdjacentNodes = 0;

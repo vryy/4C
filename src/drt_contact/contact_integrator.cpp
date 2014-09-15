@@ -138,7 +138,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
           sele.LocalToGlobal(sxi_test,glob_test,0);
           for (int ii=0;ii<sele.NumNode();++ii)
           {
-            MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+            MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
             if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
             if (glob_test[0]==mycnode_test->xspatial()[0] && glob_test[1]==mycnode_test->xspatial()[1] && glob_test[2]==mycnode_test->xspatial()[2])
@@ -175,7 +175,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
           sele.LocalToGlobal(sxi_test,glob_test,0);
           for (int ii=0;ii<sele.NumNode();++ii)
           {
-            MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+            MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
             if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
             if (glob_test[0]==mycnode_test->xspatial()[0] && glob_test[1]==mycnode_test->xspatial()[1] && glob_test[2]==mycnode_test->xspatial()[2])
@@ -618,7 +618,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   bool bound = false;
   for (int k=0;k<nrow;++k)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -685,7 +685,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -781,7 +781,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // evaluate the derivative dxdsxidsxi = Jac,xi
     double djacdxi[2] = {0.0, 0.0};
-    static_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
+    dynamic_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
     double dxdsxidsxi=djacdxi[0]; // only 2D here
 
     // evalute the GP slave coordinate derivatives
@@ -948,7 +948,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -972,7 +972,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1024,7 +1024,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1048,7 +1048,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1099,7 +1099,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1123,7 +1123,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1170,7 +1170,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1194,7 +1194,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1244,7 +1244,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1268,7 +1268,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
             sele.LocalToGlobal(sxi_test,glob_test,0);
             for (int ii=0;ii<sele.NumNode();++ii)
             {
-              MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+              MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
               if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
               if (glob_test[0]>mycnode_test->xspatial()[0]-tol && glob_test[0]<mycnode_test->xspatial()[0]+tol &&
@@ -1333,7 +1333,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 
   int msize   = meles.size();
   int nrow    = sele.NumNode();
-  int ndof    = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int ndof    = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -1392,7 +1392,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -1729,7 +1729,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -1859,7 +1859,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
       LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
       sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
-      static_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
+      dynamic_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
     }
 
     //**********************************************************************
@@ -2128,7 +2128,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   bool bound = false;
   for (int k=0;k<nrow;++k)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -2147,7 +2147,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
   //**********************************************************************
@@ -2463,7 +2463,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   bool bound = false;
   for (int k=0;k<nrow;++k)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -2481,7 +2481,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (mynodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -2653,7 +2653,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
   bool bound = false;
   for (int k=0;k<nrow;++k)
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
     if (!mymrtrnode) dserror("ERROR: IntegrateKappaPenalty: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
@@ -2817,13 +2817,13 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    smrtrnodes[i] = static_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
 
   for (int i=0;i<nummnode;++i)
   {
-    mmrtrnodes[i] = static_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
 
@@ -2968,8 +2968,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   if (startslave==true)
   {
     GEN::pairedvector<int,double> dmap_mxib(nummnode*ndof+linsize);
-    GEN::pairedvector<int,double>& nxmap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& nymap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& nxmap_b = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& nymap_b = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[1];
 
     // add derivative of slave node coordinates
     dmap_mxib[smrtrnodes[0]->Dofs()[0]] -= smrtrnodes[0]->MoData().n()[1];
@@ -3000,8 +3000,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   if (endslave==true)
   {
     GEN::pairedvector<int,double> dmap_mxia(nummnode*ndof+linsize);
-    GEN::pairedvector<int,double>& nxmap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& nymap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& nxmap_a = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& nymap_a = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[1];
 
     // add derivative of slave node coordinates
     dmap_mxia[smrtrnodes[1]->Dofs()[0]] -= smrtrnodes[1]->MoData().n()[1];
@@ -3050,8 +3050,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     // add derivatives of slave node normals
     for (int i=0;i<numsnode;++i)
     {
-      GEN::pairedvector<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-      GEN::pairedvector<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      GEN::pairedvector<int,double>& nxmap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      GEN::pairedvector<int,double>& nymap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (_CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
         dmap_sxia[p->first] -= valsxia[i]*fac_yslm_a*(p->second);
@@ -3086,8 +3086,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     // add derivatives of slave node normals
     for (int i=0;i<numsnode;++i)
     {
-      GEN::pairedvector<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-      GEN::pairedvector<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      GEN::pairedvector<int,double>& nxmap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      GEN::pairedvector<int,double>& nymap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (_CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
         dmap_sxib[p->first] -= valsxib[i]*fac_yslm_b*(p->second);
@@ -3156,13 +3156,13 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    smrtrnodes[i] = static_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
 
   for (int i=0;i<nummnode;++i)
   {
-    mmrtrnodes[i] = static_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
 
@@ -3259,8 +3259,8 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    GEN::pairedvector<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
     for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp_mod[p->first] += valsxigp[i]*(p->second);
@@ -3349,13 +3349,13 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    smrtrnodes[i] = static_cast<MORTAR::MortarNode*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
     if (!smrtrnodes[i]) dserror("ERROR: DerivXiGP3D: Null pointer!");
   }
 
   for (int i=0;i<nummnode;++i)
   {
-    mmrtrnodes[i] = static_cast<MORTAR::MortarNode*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
     if (!mmrtrnodes[i]) dserror("ERROR: DerivXiGP3D: Null pointer!");
   }
 
@@ -3400,7 +3400,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
   int linsize = 0;
   for (int i=0;i<numsnode;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -3410,9 +3410,9 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    GEN::pairedvector<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
-    GEN::pairedvector<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
+    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& dmap_nzsl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
 
     for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp[p->first] += valsxigp[i]*(p->second);
@@ -3527,7 +3527,7 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
 
   for (int i=0;i<numnode;++i)
   {
-    mrtrnodes[i] = static_cast<MORTAR::MortarNode*>(nodes[i]);
+    mrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(nodes[i]);
     if (!mrtrnodes[i]) dserror("ERROR: DerivXiGP3DAuxPlane: Null pointer!");
   }
 
@@ -3670,12 +3670,12 @@ void inline CONTACT::CoIntegrator::GP_DM(
   {
     for (int j=0; j<nrow; ++j)
     {
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
       // integrate mseg
       for (int k=0; k<ncol; ++k)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[k]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
@@ -3692,7 +3692,7 @@ void inline CONTACT::CoIntegrator::GP_DM(
       // integrate dseg
       for (int k=0; k<nrow; ++k)
       {
-        CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[k]);
+        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j]*sval[k]*jac*wgt;
@@ -3721,12 +3721,12 @@ void inline CONTACT::CoIntegrator::GP_DM(
   {
     for (int j=0;j<nrow;++j)
     {
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
       // integrate mseg
       for (int k=0; k<ncol; ++k)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[k]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
 
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
@@ -3755,7 +3755,7 @@ void inline CONTACT::CoIntegrator::GP_DM(
 
         for (int k=0;k<nrow;++k)
         {
-          CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[k]);
+          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
           bool k_boundnode = mnode->IsOnBound();
 
           // do not assemble off-diagonal terms if j,k are both non-boundary nodes
@@ -3823,7 +3823,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j=0; j<nrow; ++j)
     {
-      CoNode* cnode = static_cast<CoNode*>(snodes[j]);
+      CoNode* cnode = dynamic_cast<CoNode*>(snodes[j]);
 
       //loop over slave dofs
       for (int jdof=0;jdof<ndof;++jdof)
@@ -3831,7 +3831,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
         // integrate mseg
         for (int k=0; k<ncol; ++k)
         {
-          CoNode* mnode = static_cast<CoNode*>(mnodes[k]);
+          CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
 
           int col = mnode->Dofs()[jdof];
 
@@ -3845,7 +3845,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
         // integrate dseg
         for (int k=0; k<nrow; ++k)
         {
-          CoNode* snode = static_cast<CoNode*>(snodes[k]);
+          CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
 
           int col = snode->Dofs()[jdof];
 
@@ -3876,7 +3876,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j=0; j<nintrow; ++j)
     {
-      CoNode* cnode = static_cast<CoNode*>(sintnodes[j]);
+      CoNode* cnode = dynamic_cast<CoNode*>(sintnodes[j]);
 
       //loop over slave dofs
       for (int jdof=0;jdof<ndof;++jdof)
@@ -3884,7 +3884,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
         // integrate mseg
         for (int k=0; k<ncol; ++k)
         {
-          CoNode* mnode = static_cast<CoNode*>(mnodes[k]);
+          CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
 
           int col = mnode->Dofs()[jdof];
 
@@ -3898,7 +3898,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
         // integrate dseg
         for (int k=0; k<nrow; ++k)
         {
-          CoNode* snode = static_cast<CoNode*>(snodes[k]);
+          CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
 
           int col = snode->Dofs()[jdof];
 
@@ -3929,7 +3929,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
     // loop over Lagrange multiplier dofs j
     for (int j=0; j<nrow; ++j)
     {
-      CoNode* cnode = static_cast<CoNode*>(snodes[j]);
+      CoNode* cnode = dynamic_cast<CoNode*>(snodes[j]);
 
       //loop over slave dofs
       for (int jdof=0;jdof<ndof;++jdof)
@@ -3939,7 +3939,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
         // integrate mseg
         for (int k=0; k<ncol; ++k)
         {
-          CoNode* mnode = static_cast<CoNode*>(mnodes[k]);
+          CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
 
           int col = mnode->Dofs()[jdof];
 
@@ -4025,17 +4025,18 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
 
   for (int i=0;i<nrow;++i)
   {
-    FriNode* mymrtrnode = static_cast<FriNode*> (snodes[i]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
     gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
     gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
     gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
     if (WearType() == INPAR::CONTACT::wear_discr)
     {
-      double w = mymrtrnode->FriDataPlus().wcurr()[0] + mymrtrnode->FriDataPlus().waccu()[0];
-      sgpx[0]+=sval[i] * (scoord(0,i)-(mymrtrnode->MoData().n()[0]) * w);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(mymrtrnode->MoData().n()[1]) * w);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(mymrtrnode->MoData().n()[2]) * w);
+      FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
+      double w = myfricnode->FriDataPlus().wcurr()[0] + myfricnode->FriDataPlus().waccu()[0];
+      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * w);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * w);
+      sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * w);
     }
     else
     {
@@ -4048,10 +4049,9 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
   // build interpolation of master GP coordinates
   for (int i=0;i<ncol;++i)
   {
-    FriNode* mymrtrnodeM = static_cast<FriNode*> (mnodes[i]);
-
     if(WearSide() == INPAR::CONTACT::wear_both_discr)
     {
+      FriNode* mymrtrnodeM = dynamic_cast<FriNode*> (mnodes[i]);
       double w = mymrtrnodeM->FriDataPlus().wcurr()[0] + mymrtrnodeM->FriDataPlus().waccu()[0];
       mgpx[0]+=mval[i] * (mcoord(0,i) - (mymrtrnodeM->MoData().n()[0]) * w);
       mgpx[1]+=mval[i] * (mcoord(1,i) - (mymrtrnodeM->MoData().n()[1]) * w);
@@ -4081,7 +4081,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
   // **************************
   for (int j=0;j<nrow;++j)
   {
-    CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
     double prod = 0.0;
     // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -4110,10 +4110,10 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
 
   for (int i=0;i<nrow;++i)
   {
-    FriNode* snode = static_cast<FriNode*> (snodes[i]);
+    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
 
-    GEN::pairedvector<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[1];
 
     for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -4168,7 +4168,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
     {
       for (int k=0;k<2;++k)
       {
-        FriNode* frinode = static_cast<FriNode*> (snodes[z]);
+        FriNode* frinode = dynamic_cast<FriNode*> (snodes[z]);
         double w = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
 
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
@@ -4185,7 +4185,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
   {
     for (int z=0;z<nrow;++z)
     {
-      FriNode* snode = static_cast<FriNode*> (snodes[z]);
+      MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[z]);
 
       for (int k=0;k<Dim();++k)
       {
@@ -4205,7 +4205,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
     {
       for (int k=0;k<2;++k)
       {
-        FriNode* frinode = static_cast<FriNode*> (mnodes[z]);
+        FriNode* frinode = dynamic_cast<FriNode*> (mnodes[z]);
         const double w = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
 
         dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
@@ -4222,7 +4222,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
   {
     for (int z=0;z<ncol;++z)
     {
-      FriNode* mnode = static_cast<FriNode*> (mnodes[z]);
+      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*> (mnodes[z]);
 
       for (int k=0;k<Dim();++k)
       {
@@ -4278,16 +4278,17 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
 
   for (int i=0;i<nrow;++i)
   {
-    FriNode* mymrtrnode = static_cast<FriNode*> (snodes[i]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
     gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
     gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
     gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
     if (WearType() == INPAR::CONTACT::wear_discr)
     {
-      sgpx[0]+=sval[i] * (scoord(0,i)-(mymrtrnode->MoData().n()[0]) * mymrtrnode->FriDataPlus().wcurr()[0]);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(mymrtrnode->MoData().n()[1]) * mymrtrnode->FriDataPlus().wcurr()[0]);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(mymrtrnode->MoData().n()[2]) * mymrtrnode->FriDataPlus().wcurr()[0]);
+      FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
+      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * myfricnode->FriDataPlus().wcurr()[0]);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * myfricnode->FriDataPlus().wcurr()[0]);
+      sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * myfricnode->FriDataPlus().wcurr()[0]);
     }
     else
     {
@@ -4302,7 +4303,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   {
     if (WearSide() == INPAR::CONTACT::wear_both_discr)
     {
-      FriNode* masternode = static_cast<FriNode*> (mnodes[i]);
+      FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
 
       mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->FriDataPlus().wcurr()[0]) );
       mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->FriDataPlus().wcurr()[0])  );
@@ -4334,7 +4335,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   {
     for (int j=0;j<nrow;++j)
     {
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -4362,7 +4363,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     {
       for (int j=0;j<nrow;++j)
       {
-        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
         double prod = 0.0;
         prod = lmval[j]*gap[0]*jac*wgt;
@@ -4384,7 +4385,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
 
       for (int j=0;j<nintrow;++j)
       {
-        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
         double prod = 0.0;
         prod = lmval[j]*gap[0]*jac*wgt;
@@ -4402,7 +4403,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     {
       for (int j=0;j<nrow;++j)
       {
-        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
         double prod = 0.0;
         prod = lmval[j]*gap[0]*jac*wgt;
@@ -4425,7 +4426,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -4436,7 +4437,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
 
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
 
     GEN::pairedvector<int,double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
     GEN::pairedvector<int,double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
@@ -4522,7 +4523,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     {
       for (int k=0;k<3;++k)
       {
-        FriNode* frinode = static_cast<FriNode*> (snodes[z]);
+        FriNode* frinode = dynamic_cast<FriNode*> (snodes[z]);
 
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
 
@@ -4541,7 +4542,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   {
     for (int z=0;z<nrow;++z)
     {
-      CoNode* cnode = static_cast<CoNode*> (snodes[z]);
+      CoNode* cnode = dynamic_cast<CoNode*> (snodes[z]);
 
       for (int k=0;k<3;++k)
       {
@@ -4561,7 +4562,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   {
     for (int z=0;z<ncol;++z)
     {
-      FriNode* frinode = static_cast<FriNode*> (mnodes[z]);
+      FriNode* frinode = dynamic_cast<FriNode*> (mnodes[z]);
 
       for (int k=0;k<3;++k)
       {
@@ -4583,7 +4584,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     // lin master nodes
     for (int z=0;z<ncol;++z)
     {
-      CoNode* cnode = static_cast<CoNode*> (mnodes[z]);
+      CoNode* cnode = dynamic_cast<CoNode*> (mnodes[z]);
 
       for (int k=0;k<3;++k)
       {
@@ -4644,7 +4645,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
 
   for (int i=0;i<nrow;++i)
   {
-    FriNode* mymrtrnode = static_cast<FriNode*> (snodes[i]);
+    FriNode* mymrtrnode = dynamic_cast<FriNode*> (snodes[i]);
     gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
     gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
     gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
@@ -4668,7 +4669,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   {
     if (WearSide() == INPAR::CONTACT::wear_both_discr)
     {
-      FriNode* masternode = static_cast<FriNode*> (mnodes[i]);
+      FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
 
       mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->FriDataPlus().wcurr()[0]) );
       mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->FriDataPlus().wcurr()[0])  );
@@ -4703,7 +4704,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   {
     for (int j=0;j<nintrow;++j)
     {
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(sintnodes[j]);
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(sintnodes[j]);
 
       double prod = 0.0;
       prod = lmintval[j]*gap[0]*jac*wgt;
@@ -4726,7 +4727,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -4737,7 +4738,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
 
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
 
     GEN::pairedvector<int,double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
     GEN::pairedvector<int,double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
@@ -4823,7 +4824,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
     {
       for (int k=0;k<3;++k)
       {
-        FriNode* frinode = static_cast<FriNode*> (snodes[z]);
+        FriNode* frinode = dynamic_cast<FriNode*> (snodes[z]);
 
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
 
@@ -4842,7 +4843,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   {
     for (int z=0;z<nrow;++z)
     {
-      CoNode* cnode = static_cast<CoNode*> (snodes[z]);
+      CoNode* cnode = dynamic_cast<CoNode*> (snodes[z]);
 
       for (int k=0;k<3;++k)
       {
@@ -4862,7 +4863,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   {
     for (int z=0;z<ncol;++z)
     {
-      FriNode* frinode = static_cast<FriNode*> (mnodes[z]);
+      FriNode* frinode = dynamic_cast<FriNode*> (mnodes[z]);
 
       for (int k=0;k<3;++k)
       {
@@ -4884,7 +4885,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
     // lin master nodes
     for (int z=0;z<ncol;++z)
     {
-      CoNode* cnode = static_cast<CoNode*> (mnodes[z]);
+      CoNode* cnode = dynamic_cast<CoNode*> (mnodes[z]);
 
       for (int k=0;k<3;++k)
       {
@@ -4933,7 +4934,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Ele_Lin(
   else
     snodes = sele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
@@ -4942,7 +4943,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Ele_Lin(
   double fac = 0.0;
 
   // get the corresponding map as a reference
-  std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+  std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
@@ -5032,7 +5033,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
   // get master element nodes themselves
   DRT::Node** mnodes = mele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   double fac = 0.0;
@@ -5041,7 +5042,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // get the corresponding map as a reference
-  std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+  std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
   // switch if Petrov-Galerkin approach for LM is applied
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -5124,11 +5125,11 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
   //****************************************************************
   if(WearType() == INPAR::CONTACT::wear_discr)
   {
-    std::map<int,double>& dgwmmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
+    std::map<int,double>& dgwmmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
 
     for (int bl=0;bl<nrow;++bl)
     {
-      MORTAR::MortarNode* wearnode = static_cast<MORTAR::MortarNode*>(snodes[bl]);
+      MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
       for (int z=0;z<Dim();++z)
         dgwmmap[wearnode->Dofs()[0]] += dxdsxi*dsxideta*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
     }
@@ -5137,7 +5138,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
     {
       for (int bl=0;bl<ncol;++bl)
       {
-        MORTAR::MortarNode* wearnodeM = static_cast<MORTAR::MortarNode*>(mnodes[bl]);
+        MORTAR::MortarNode* wearnodeM = dynamic_cast<MORTAR::MortarNode*>(mnodes[bl]);
         for (int z=0;z<Dim();++z)
           dgwmmap[wearnodeM->Dofs()[0]] -= dxdsxi*dsxideta*wgt*lmval[iter]*(gpn[z]*mval[bl]*wearnodeM->MoData().n()[z]);
       }
@@ -5169,7 +5170,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(
   // get slave element nodes themselves
   DRT::Node** sintnodes = sintele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(sintnodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
@@ -5179,7 +5180,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(
            LagMultQuad() == INPAR::MORTAR::lagmult_pwlin_pwlin)
   {
     // get the corresponding map as a reference
-    std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+    std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -5238,7 +5239,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
@@ -5249,7 +5250,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
       (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin))
   {
     // get the corresponding map as a reference
-    std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+    std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -5279,7 +5280,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
       LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
   {
     // get the corresponding map as a reference
-    std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+    std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
     // (1) Lin(Phi) - dual shape functions
     if (duallin)
@@ -5332,7 +5333,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Ele_Lin(
      GEN::pairedvector<int,double>& jacslavemap,
      const std::vector<std::vector<GEN::pairedvector<int,double> > >& dualmap)
 {
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
 
   DRT::Element::DiscretizationType dt_s = sele.Shape();
@@ -5341,7 +5342,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Ele_Lin(
   double fac = 0.0;
 
   // get the corresponding map as a reference
-  std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+  std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
@@ -5457,13 +5458,13 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   static double fac = 0.0;
 
   // get the corresponding map as a reference
-  std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+  std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
   // switch if Petrov-Galerkin approach for LM is applied
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -5528,11 +5529,11 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
   //****************************************************************
   if(WearType() == INPAR::CONTACT::wear_discr)
   {
-    std::map<int,double>& dgwmmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
+    std::map<int,double>& dgwmmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
 
     for (int bl=0;bl<nrow;++bl)
     {
-      MORTAR::MortarNode* wearnode = static_cast<MORTAR::MortarNode*>(snodes[bl]);
+      MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
       for (int z=0;z<3;++z)
         dgwmmap[wearnode->Dofs()[0]] += jac*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
     }
@@ -5541,7 +5542,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
     {
       for (int bl=0;bl<ncol;++bl)
       {
-        MORTAR::MortarNode* wearnodeM = static_cast<MORTAR::MortarNode*>(mnodes[bl]);
+        MORTAR::MortarNode* wearnodeM = dynamic_cast<MORTAR::MortarNode*>(mnodes[bl]);
         for (int z=0;z<Dim();++z)
           dgwmmap[wearnodeM->Dofs()[0]] -= jac*wgt*lmval[iter]*(gpn[z]*mval[bl]*wearnodeM->MoData().n()[z]);
       }
@@ -5587,11 +5588,11 @@ void inline CONTACT::CoIntegrator::GP_DM_Lin_bound(
 
   // **************** edge modification ********************************
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
   bool boundnode = mymrtrnode->IsOnBound();
   int sgid = mymrtrnode->Id();
-  std::map<int,double>& nodemap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+  std::map<int,double>& nodemap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
   double fac = 0.0;
 
   //******************************************************************
@@ -5648,11 +5649,11 @@ void inline CONTACT::CoIntegrator::GP_DM_Lin_bound(
     // loop over other nodes (interior nodes)
     for (int k=0;k<nrow;++k)
     {
-      MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(snodes[k]);
+      MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
       if (!mymrtrnode2) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
       bool boundnode2 = mymrtrnode2->IsOnBound();
       if (boundnode2) continue;
-      std::map<int,double>& nodemmap = static_cast<CONTACT::CoNode*>(mymrtrnode2)->CoData().GetDerivM()[bgid];
+      std::map<int,double>& nodemmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode2)->CoData().GetDerivM()[bgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -5751,7 +5752,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   const int sgid = mymrtrnode->Id();
@@ -5768,7 +5769,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
 
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions    --> 0
 
@@ -5797,7 +5798,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
       // (1) Lin(Phi) - dual shape functions --> 0
 
@@ -5820,7 +5821,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
   else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // get the D-map as a reference
-    std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+    std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
     // integrate LinM and LinD (NO boundary modification)
     for (int k=0; k<ncol; ++k)
@@ -5830,7 +5831,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -5887,7 +5888,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
     GEN::pairedvector<int,double>& jacslavemap,
     const std::vector<std::vector<GEN::pairedvector<int,double> > >& dualmap)
 {
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
 
   const int sgid   = mymrtrnode->Id();
@@ -5911,7 +5912,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions --> 0
       // this vanishes here since there are no deformation-dependent dual functions
@@ -5945,7 +5946,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[ssgid];
+      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[ssgid];
 
       // (1) Lin(Phi) - dual shape functions  --> 0
       // this vanishes here since there are no deformation-dependent dual functions
@@ -5972,7 +5973,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
       (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3))
   {
     // get the D-map as a reference
-    std::map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+    std::map<int,double>& ddmap_jj = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
     // integrate LinM and LinD
     for (int k=0; k<nmnode; ++k)
@@ -5982,7 +5983,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -6078,7 +6079,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
       dserror("ERROR: Petrov-Galerkin and linear LM for 2D quadratic FE not compatible");
 
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
     if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
     bool jbound = mymrtrnode->IsOnBound();
 
@@ -6099,7 +6100,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         double fac = 0.0;
 
         // get the correct map as a reference
-        std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+        std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -6135,7 +6136,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
       // integrate LinD
       for (int k=0; k<nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
         if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
         bool kbound = mymrtrnode2->IsOnBound();
 
@@ -6148,7 +6149,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         {
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
-          std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+          std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -6185,7 +6186,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         else
         {
           // get the correct map as a reference
-          std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+          std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -6224,7 +6225,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
   // no linear LM interpolation for quadratic FE
   else
   {
-    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
     if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
     int sgid = mymrtrnode->Id();
@@ -6240,7 +6241,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         double fac = 0.0;
 
         // get the correct map as a reference
-        std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+        std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -6281,7 +6282,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         double fac = 0.0;
 
         // get the correct map as a reference
-        std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+        std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -6319,7 +6320,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
     else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       // get the D-map as a reference
-      std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
       // integrate LinM and LinD (NO boundary modification)
       for (int k=0; k<ncol; ++k)
@@ -6329,7 +6330,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         double fac = 0.0;
 
         // get the correct map as a reference
-        std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+        std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         for (int m=0; m<nrow; ++m)
@@ -6430,7 +6431,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(
   // **************** no edge modification *****************************
   // (and LinM also for edge node modification case)
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(sintnodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // integrate LinM
@@ -6441,7 +6442,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(
     double fac = 0.0;
 
     // get the correct map as a reference
-    std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+    std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -6478,7 +6479,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(
     double fac = 0.0;
 
     // get the correct map as a reference
-    std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+    std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
     // (1) Lin(Phi) - dual shape functions
     // this vanishes here since there are no deformation-dependent dual functions
@@ -6543,7 +6544,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
   // **************** no edge modification *****************************
   // (and LinM also for edge node modification case)
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   int sgid = mymrtrnode->Id();
@@ -6561,7 +6562,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
       static double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       // this vanishes here since there are no deformation-dependent dual functions
@@ -6599,7 +6600,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
       static double fac2 = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
       // (1) Lin(Phi) - dual shape functions
       // this vanishes here since there are no deformation-dependent dual functions
@@ -6647,7 +6648,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
         static double fac = 0.0;
 
         // get the correct map as a reference
-        std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+        std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -6679,7 +6680,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
       // integrate LinD
       for (int k=0; k<nrow; ++k)
       {
-        MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(snodes[k]);
+        MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
         if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
         bool kbound = mymrtrnode2->IsOnBound();
 
@@ -6692,7 +6693,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
         {
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
-          std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+          std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -6725,7 +6726,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
         else
         {
           // get the correct map as a reference
-          std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+          std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -6761,7 +6762,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
            LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
   {
     // for dual shape functions ddmap_jj and dmmap_jk can be calculated together
-    std::map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+    std::map<int,double>& ddmap_jj = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
     // integrate LinM and LinD
     for (int k=0; k<ncol; ++k)
@@ -6771,7 +6772,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
       static double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -6861,7 +6862,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
   // **************** no edge modification *****************************
   // (and LinM also for edge node modification case)
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   int sgid = mymrtrnode->Id();
@@ -6877,7 +6878,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
       static double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       // this vanishes here since there are no deformation-dependent dual functions
@@ -6915,7 +6916,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
       static double fac2 = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
       // (1) Lin(Phi) - dual shape functions
       // this vanishes here since there are no deformation-dependent dual functions
@@ -6943,7 +6944,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
   else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // get the D-map as a reference
-    std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+    std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
     // integrate LinM and LinD
     for (int k=0; k<ncol; ++k)
@@ -6953,7 +6954,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
       static double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -7030,7 +7031,7 @@ void inline CONTACT::CoIntegrator::GP_D2(
   {
     for (int j=0;j<ncol;++j)
     {
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+      CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
 
       // IMPORTANT: assembling to node is only allowed for master nodes
       //            associated to owned slave elements. This results
@@ -7041,7 +7042,7 @@ void inline CONTACT::CoIntegrator::GP_D2(
         {
           for (int k=0;k<ncol;++k)
           {
-            CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[k]);
+            CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(mnodes[k]);
 
             for(int kdof=0;kdof<ndof;++kdof)
             {
@@ -7131,7 +7132,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
 
   for (int i=0;i<nrow;++i)
   {
-     CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (snodes[i]);
+     CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
 
      //nodal tangent interpolation
      gpt[0]+=sval[i]*myconode->CoData().txi()[0];
@@ -7197,7 +7198,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   // nrow represents the slave side dofs !!!
   for (int j=0;j<nrow;++j)
   {
-    CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*> (snodes[j]);
+    CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*> (snodes[j]);
 
     double prod = 0.0;
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -7275,10 +7276,10 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
 
     for (int i=0;i<nrow;++i)
     {
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*> (snodes[i]);
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
 
-      GEN::pairedvector<int,double>& dmap_txsl_i = static_cast<CONTACT::CoNode*>(cnode)->CoData().GetDerivTxi()[0];
-      GEN::pairedvector<int,double>& dmap_tysl_i = static_cast<CONTACT::CoNode*>(cnode)->CoData().GetDerivTxi()[1];
+      GEN::pairedvector<int,double>& dmap_txsl_i = dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().GetDerivTxi()[0];
+      GEN::pairedvector<int,double>& dmap_tysl_i = dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().GetDerivTxi()[1];
 
       for (_CI p=dmap_txsl_i.begin();p!=dmap_txsl_i.end();++p)
         dmap_txsl_gp[p->first] += sval[i]*(p->second);
@@ -7287,9 +7288,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
 
       for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
       {
-        double valx =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[0];
+        double valx =  sderiv(i,0) * dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[0];
         dmap_txsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[1];
+        double valy =  sderiv(i,0) * dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[1];
         dmap_tysl_gp[p->first] += valy*(p->second);
       }
     }
@@ -7371,7 +7372,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
     // deriv slave x-coords
     for (int i=0;i<nrow;++i)
     {
-      CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*> (snodes[i]);
+      CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
 
       dmap_slcoord_gp_x[snode->Dofs()[0]]+=sval[i];
       dmap_slcoord_gp_y[snode->Dofs()[1]]+=sval[i];
@@ -7379,7 +7380,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
     // deriv master x-coords
     for (int i=0;i<ncol;++i)
     {
-      CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*> (mnodes[i]);
+      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*> (mnodes[i]);
 
       dmap_mcoord_gp_x[mnode->Dofs()[0]]+=mval[i];
       dmap_mcoord_gp_y[mnode->Dofs()[1]]+=mval[i];
@@ -7561,7 +7562,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   // add to node
   for (int j=0;j<nrow;++j)
   {
-    CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*> (snodes[j]);
+    CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*> (snodes[j]);
 
     double prod = 0.0;
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
@@ -7579,7 +7580,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
     int linsize = 0;
     for (int i=0;i<nrow;++i)
     {
-      CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+      CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
       linsize += cnode->GetLinsize();
     }
 
@@ -7802,7 +7803,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
     // deriv slave x-coords
     for (int i=0;i<nrow;++i)
     {
-      CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*> (snodes[i]);
+      CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
 
       dmap_slcoord_gp_x[snode->Dofs()[0]]+=sval[i];
       dmap_slcoord_gp_y[snode->Dofs()[1]]+=sval[i];
@@ -7811,7 +7812,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
     // deriv master x-coords
     for (int i=0;i<ncol;++i)
     {
-      CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*> (mnodes[i]);
+      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*> (mnodes[i]);
 
       dmap_mcoord_gp_x[mnode->Dofs()[0]]+=mval[i];
       dmap_mcoord_gp_y[mnode->Dofs()[1]]+=mval[i];
@@ -7899,7 +7900,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Scaling(
 
   for (int j=0;j<nrow;++j)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*> (snodes[j]);
+    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[j]);
 
     double prod = wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
     snode->AddScValue(prod);
@@ -7925,7 +7926,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling(
 
   for (int j=0;j<nrow;++j)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*> (snodes[j]);
+    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[j]);
 
     double prod = (wgt * sval[j] * jac / jacsele)/(sele.Nodes()[j]->NumElement());
     if (sele.Shape() == DRT::Element::tri3 )
@@ -7954,7 +7955,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Scaling_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
-  CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
   if (!myconode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // get the corresponding map as a reference
@@ -7993,7 +7994,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
   if (!myconode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // get the corresponding map as a reference
@@ -8069,7 +8070,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_A(
   // !!! ncol represents the dofs                       !!!
   for (int j=0; j<nrow; ++j)
   {
-    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(snodes[j]);
+    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
     //loop over slave dofs
     for (int jdof=0;jdof<ndof;++jdof)
@@ -8077,7 +8078,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_A(
       // integrate mseg
       for (int k=0; k<ncol; ++k)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[k]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
 
         for (int kdof=0;kdof<ndof;++kdof)
         {
@@ -8120,7 +8121,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_B(
   // !!! ncol represents the dofs                       !!!
   for (int j=0; j<ncol; ++j)
   {
-    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
 
     //loop over slave dofs
     for (int jdof=0;jdof<ndof;++jdof)
@@ -8128,7 +8129,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_B(
       // integrate mseg
       for (int k=0; k<ncol; ++k)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[k]);
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
 
         for (int kdof=0;kdof<ndof;++kdof)
         {
@@ -8176,7 +8177,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_MechDiss(
   // nrow represents the slave side dofs !!!
   for (int j=0; j<nrow; ++j)
   {
-    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(snodes[j]);
+    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
     double prod = 0.0;
     if(thermolagmult==true) prod = lmval[j]*mechdiss*jac*wgt;
@@ -8189,7 +8190,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_MechDiss(
   // ncol represents the master side dofs !!!
   for (int j=0;j<ncol;++j)
   {
-    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
 
     double prod = mval[j]*mechdiss*jac*wgt;
 
@@ -8219,11 +8220,11 @@ void inline CONTACT::CoIntegrator::GP_TE(
   {
     for (int k=0; k<nrow; ++k)
     {
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(snodes[k]);
+      CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(snodes[k]);
 
       for (int j=0; j<nrow; ++j)
       {
-        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
+        CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
         // multiply the two shape functions
         double prod1 = sval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
@@ -8241,11 +8242,11 @@ void inline CONTACT::CoIntegrator::GP_TE(
   {
     for (int k=0; k<nrow; ++k)
     {
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(snodes[k]);
+      CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(snodes[k]);
 
       for (int j=0; j<nrow; ++j)
       {
-        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
+        CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
         // multiply the two shape functions
         double prod1 = lmval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
@@ -8303,12 +8304,12 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(
   {
     for (int k=0; k<nrow; ++k)
     {
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(mnodes[k]);
+      CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(mnodes[k]);
       int row = 0;
 
       for (int j=0; j<nrow; ++j)
       {
-        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+        CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
 
         // multiply the two shape functions
         double prod2 = mval[k]*mval[j]*jac*wgt;
@@ -8318,7 +8319,7 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(
       }
       for (int j=0; j<ncol; ++j)
       {
-        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
+        CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
         // multiply the two shape functions
         double prod1 = mval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
@@ -8332,12 +8333,12 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(
   {
     for (int k=0; k<nrow; ++k)
     {
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(mnodes[k]);
+      CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(mnodes[k]);
       int row = 0;
 
       for (int j=0; j<nrow; ++j)
       {
-        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+        CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
 
         // multiply the two shape functions
         double prod2 = lm2val[k]*mval[j]*jac*wgt;
@@ -8347,7 +8348,7 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(
       }
       for (int j=0; j<ncol; ++j)
       {
-        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
+        CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
 
         // multiply the two shape functions
         double prod1 = lm2val[k]*lmval[j]*abs(*jumpval)*jac*wgt;
@@ -8403,7 +8404,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mnodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
@@ -8416,7 +8417,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -8470,7 +8471,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - slave GP coordinates
       fac = wgt*mderiv(iter, 0)*mval[j]*dsxideta*dxdsxi;
@@ -8538,7 +8539,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
@@ -8551,7 +8552,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -8605,7 +8606,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - slave GP coordinates
       fac = wgt*sderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
@@ -8645,7 +8646,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -8709,7 +8710,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -8779,7 +8780,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
@@ -8792,7 +8793,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -8842,7 +8843,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*sderiv(j, 0)*sval[iter]*jac;
@@ -8879,7 +8880,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       //**********************************************
       // LM-shape function lin...
@@ -8945,7 +8946,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       //**********************************************
       // wear weighting lin...
@@ -9028,7 +9029,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mnodes[iter]);
+  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
@@ -9041,7 +9042,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -9091,7 +9092,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*mderiv(j, 0)*mval[iter]*jac;
@@ -9131,7 +9132,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -9192,7 +9193,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*mderiv(j, 0)*lm2val[iter]*jac;
@@ -9287,7 +9288,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
   double tanlength = 0.0;
   for (int i=0;i<nrow;++i)
   {
-     CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (snodes[i]);
+     CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
 
      //nodal tangent interpolation
      tanv[0]+=sval[i]*myconode->CoData().txi()[0];
@@ -9330,8 +9331,8 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
   // *****************************************************************************
   for (int i=0;i<nrow;++i)
   {
-    GEN::pairedvector<int,double>& dmap_txsl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int,double>& dmap_tysl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[1];
+    GEN::pairedvector<int,double>& dmap_txsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[0];
+    GEN::pairedvector<int,double>& dmap_tysl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[1];
 
     for (_CI p=dmap_txsl_i.begin();p!=dmap_txsl_i.end();++p)
       dmap_txsl_gp[p->first] += sval[i]*(p->second);
@@ -9340,9 +9341,9 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
 
     for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
     {
-      double valx =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
+      double valx =  sderiv(i,0) * dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
       dmap_txsl_gp[p->first] += valx*(p->second);
-      double valy =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[1];
+      double valy =  sderiv(i,0) * dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[1];
       dmap_tysl_gp[p->first] += valy*(p->second);
     }
   }
@@ -9381,7 +9382,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
   //coord lin
   for (int z=0;z<nrow;++z)
   {
-    FriNode* snode = static_cast<FriNode*> (snodes[z]);
+    FriNode* snode = dynamic_cast<FriNode*> (snodes[z]);
     for (int k=0;k<2;++k)
     {
       dslipgp[snode->Dofs()[k]] += sval[z] * tanv[k];
@@ -9393,7 +9394,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
 
   for (int z=0;z<ncol;++z)
   {
-    FriNode* mnode = static_cast<FriNode*> (mnodes[z]);
+    FriNode* mnode = dynamic_cast<FriNode*> (mnodes[z]);
     for (int k=0;k<2;++k)
     {
       dslipgp[mnode->Dofs()[k]] -= mval[z] * tanv[k];
@@ -9407,7 +9408,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
   // Add to node!
   for (int j=0;j<nrow;++j)
   {
-    FriNode* snode = static_cast<FriNode*> (snodes[j]);
+    FriNode* snode = dynamic_cast<FriNode*> (snodes[j]);
 
     double prod = lmval[j]*jumpvalv[0]*dxdsxi*dsxideta*wgt;
 
@@ -9457,7 +9458,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -9479,7 +9480,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
 
   for (int i=0;i<nrow;++i)
   {
-     CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (snodes[i]);
+     CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
 
      //nodal tangent interpolation
      tanv1[0]+=sval[i]*myconode->CoData().txi()[0];
@@ -9532,7 +9533,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
   // Add to node!
   for (int j=0;j<nrow;++j)
   {
-    FriNode* snode = static_cast<FriNode*> (snodes[j]);
+    FriNode* snode = dynamic_cast<FriNode*> (snodes[j]);
 
     double prod1 = lmval[j]*jumpvalv1*jac*wgt;
     double prod2 = lmval[j]*jumpvalv2*jac*wgt;
@@ -9555,9 +9556,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
 
   for (int i=0;i<nrow;++i)
   {
-    GEN::pairedvector<int,double>& dmap_txsl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int,double>& dmap_tysl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[1];
-    GEN::pairedvector<int,double>& dmap_tzsl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[2];
+    GEN::pairedvector<int,double>& dmap_txsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[0];
+    GEN::pairedvector<int,double>& dmap_tysl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[1];
+    GEN::pairedvector<int,double>& dmap_tzsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTxi()[2];
 
     for (_CI p=dmap_txsl_i.begin();p!=dmap_txsl_i.end();++p)
       dmap_txix_gp[p->first] += sval[i]*(p->second);
@@ -9566,9 +9567,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
     for (_CI p=dmap_tzsl_i.begin();p!=dmap_tzsl_i.end();++p)
       dmap_txiz_gp[p->first] += sval[i]*(p->second);
 
-    const double txi_x=static_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
-    const double txi_y=static_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[1];
-    const double txi_z=static_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[2];
+    const double txi_x=dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
+    const double txi_y=dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[1];
+    const double txi_z=dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[2];
 
     for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
     {
@@ -9640,9 +9641,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
 
   for (int i=0;i<nrow;++i)
   {
-    GEN::pairedvector<int,double>& dmap_txsl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[0];
-    GEN::pairedvector<int,double>& dmap_tysl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[1];
-    GEN::pairedvector<int,double>& dmap_tzsl_i = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[2];
+    GEN::pairedvector<int,double>& dmap_txsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[0];
+    GEN::pairedvector<int,double>& dmap_tysl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[1];
+    GEN::pairedvector<int,double>& dmap_tzsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivTeta()[2];
 
     for (_CI p=dmap_txsl_i.begin();p!=dmap_txsl_i.end();++p)
       dmap_tetax_gp[p->first] += sval[i]*(p->second);
@@ -9651,9 +9652,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
     for (_CI p=dmap_tzsl_i.begin();p!=dmap_tzsl_i.end();++p)
       dmap_tetaz_gp[p->first] += sval[i]*(p->second);
 
-    const double teta_x = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[0];
-    const double teta_y = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[1];
-    const double teta_z = static_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[2];
+    const double teta_x = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[0];
+    const double teta_y = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[1];
+    const double teta_z = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().teta()[2];
 
     for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
     {
@@ -9734,7 +9735,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
   // coord lin
   for (int z=0;z<nrow;++z)
   {
-    FriNode* snode = static_cast<FriNode*> (snodes[z]);
+    FriNode* snode = dynamic_cast<FriNode*> (snodes[z]);
 
     for (int k=0;k<3;++k)
     {
@@ -9757,7 +9758,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
 
   for (int z=0;z<ncol;++z)
   {
-    FriNode* mnode = static_cast<FriNode*> (mnodes[z]);
+    FriNode* mnode = dynamic_cast<FriNode*> (mnodes[z]);
 
     for (int k=0;k<3;++k)
     {
@@ -9808,7 +9809,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  FriNode* snode = static_cast<FriNode*> (snodes[iter]);
+  FriNode* snode = dynamic_cast<FriNode*> (snodes[iter]);
 
   // get the corresponding map as a reference
   std::map<int,double>& djumpmap = snode->FriData().GetDerivVarJump()[0];
@@ -9878,7 +9879,7 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr_Lin(
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-  FriNode* snode = static_cast<FriNode*> (snodes[iter]);
+  FriNode* snode = dynamic_cast<FriNode*> (snodes[iter]);
 
   // get the corresponding map as a reference
   std::map<int,double>& djumpmap1 = snode->FriData().GetDerivVarJump()[0];
@@ -9970,7 +9971,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // get the corresponding map as a reference
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*> (snodes[iter]);
+  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*> (snodes[iter]);
 
   std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
 
@@ -10054,7 +10055,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
 
   for (int bl=0;bl<nrow;++bl)
   {
-    MORTAR::MortarNode* wearnode = static_cast<MORTAR::MortarNode*>(snodes[bl]);
+    MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
 
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
@@ -10098,7 +10099,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
   // get the corresponding map as a reference
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*> (snodes[iter]);
+  CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*> (snodes[iter]);
 
   // get the corresponding map as a reference
   std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
@@ -10168,7 +10169,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(
 
   for (int bl=0;bl<nrow;++bl)
   {
-    MORTAR::MortarNode* wearnode = static_cast<MORTAR::MortarNode*>(snodes[bl]);
+    MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
 
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
@@ -10225,7 +10226,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
   for (int i=0;i<nrow;++i)
   {
-    CoNode* mymrtrnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
     gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
     gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
     gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
@@ -10238,7 +10239,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
   //double mgpfvel[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<nrow;++i)
   {
-    CoNode* mymrtrnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
     sgpfvel[0]+=sval[i]*mymrtrnode->CoPoroData().fvel()[0];
     sgpfvel[1]+=sval[i]*mymrtrnode->CoPoroData().fvel()[1];
     sgpfvel[2]+=sval[i]*mymrtrnode->CoPoroData().fvel()[2];
@@ -10246,14 +10247,14 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
   for (int i=0;i<nrow;++i)
   {
-    CoNode* mymrtrnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
     sgpsvel[0]+=sval[i]*mymrtrnode->CoPoroData().svel()[0];
     sgpsvel[1]+=sval[i]*mymrtrnode->CoPoroData().svel()[1];
     sgpsvel[2]+=sval[i]*mymrtrnode->CoPoroData().svel()[2];
   }
 //  for (int i=0;i<ncol;++i) --- waiting for twosided poro contact !!!
 //  {
-//    CoNode* mymrtrnode = static_cast<CoNode*> (mnodes[i]);
+//    CoNode* mymrtrnode = dynamic_cast<CoNode*> (mnodes[i]);
 //    mgpfvel[0]+=mval[i]*mymrtrnode->normalMoData().fvel()[0];
 //    mgpfvel[1]+=mval[i]*mymrtrnode->normalMoData().fvel()[1];
 //    mgpfvel[2]+=mval[i]*mymrtrnode->normalMoData().fvel()[2];
@@ -10276,7 +10277,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
   {
     for (int j=0;j<nrow;++j)
     {
-      CONTACT::CoNode* mrtrnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+      CONTACT::CoNode* mrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
       double prod = 0.0;
       // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
@@ -10302,7 +10303,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 //    {
 //      for (int j=0;j<nrow;++j)
 //      {
-//        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
+//        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 //
 //        double prod = 0.0;
 //        prod = lmval[j]*gap[0]*jac*wgt;
@@ -10325,7 +10326,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
   int linsize = 0;
   for (int i=0;i<nrow;++i)
   {
-    CoNode* cnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -10336,7 +10337,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
   for (int i=0;i<nrow;++i)
   {
-    CoNode* mrtrnode = static_cast<CoNode*> (snodes[i]);
+    CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[i]);
 
 
     GEN::pairedvector<int, double>& dmap_nxsl_i = mrtrnode->CoData().GetDerivN()[0];
@@ -10420,7 +10421,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
   double timefac = imortar_.get<double>("porotimefac"); //TODO: move in final version to other place ChrAg
   for (int z=0;z<nrow;++z)
   {
-    CoNode* mrtrnode = static_cast<CoNode*> (snodes[z]);
+    CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[z]);
 
     for (int k=0;k<3;++k)
     {
@@ -10445,7 +10446,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 //    // lin master nodes
 //    for (int z=0;z<ncol;++z)
 //    {
-//      CoNode* mrtrnode = static_cast<CoNode*> (mnodes[z]);
+//      CoNode* mrtrnode = dynamic_cast<CoNode*> (mnodes[z]);
 //
 //      for (int k=0;k<3;++k)
 //      {
@@ -10470,7 +10471,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
    for (int z=0;z<nrow;++z)
    {
-     CoNode* mrtrnode = static_cast<CoNode*> (snodes[z]);
+     CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[z]);
 
      for (int k=0;k<3;++k)
      {
@@ -10512,7 +10513,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
   DRT::Node** snodes = sele.Nodes();
   //DRT::Node** mnodes = mele.Nodes();
 
-  CONTACT::CoNode* mymrtrnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
+  CONTACT::CoNode* mymrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
