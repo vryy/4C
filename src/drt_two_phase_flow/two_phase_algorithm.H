@@ -5,8 +5,8 @@
 \brief Basis of all two phase flow (TPF) algorithms
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+Maintainer: Magnus Winter
+            winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
 </pre>

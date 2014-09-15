@@ -44,7 +44,8 @@ StruResultTest::StruResultTest(PARTICLE::TimInt& tintegrator)
 {
   dis_  = tintegrator.Dispnp();
   if (DRT::Problem::Instance()->ProblemType() != prb_level_set and
-      DRT::Problem::Instance()->ProblemType() != prb_combust)
+      DRT::Problem::Instance()->ProblemType() != prb_combust and
+      DRT::Problem::Instance()->ProblemType() != prb_two_phase_flow)
   {
     vel_  = tintegrator.Veln();
     acc_  = tintegrator.Accn();

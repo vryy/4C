@@ -51,6 +51,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     mat_gp_(false),     // standard evaluation of the material at the element center
     tau_gp_(false),      // standard evaluation of tau at the element center
     interface_thickness_(0.0), //two phase parameters
+    enhanced_gaussrule_(false),
     include_surface_tension_(false),  // include the surface tension in the calculations.
     turb_mod_action_(INPAR::FLUID::no_model), // turbulence parameters
     Cs_(0.0),
@@ -417,6 +418,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter( Teuchos::Par
 {
   //Two Phase Flow specific parameters.
   interface_thickness_ = params.get<double>("INTERFACE_THICKNESS");
+  enhanced_gaussrule_  = params.get<bool>("ENHANCED_GAUSSRULE");
   include_surface_tension_ = true;
   return;
 }

@@ -146,6 +146,8 @@ public:
   */
   virtual const double TimIntParam() const { return (1.0 - alphaF_); }
 
+  virtual const double AlphaM() const {return alphaM_;}
+
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
   Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(

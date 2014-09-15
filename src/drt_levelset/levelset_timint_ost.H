@@ -46,6 +46,27 @@ public:
   /// redistribute the scatra discretization and vectors according to nodegraph
   void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
+  /// Interpolate phi(alpha_F) values from OST calculations.
+  Teuchos::RCP<Epetra_Vector> PhiafOst(const double alpha_F);
+
+  /// Interpolate phi(alpha_F) values from OST calculations.
+  Teuchos::RCP<Epetra_Vector> PhiamOst(const double alpha_M);
+
+  /// Interpolate phi(alpha_F) values from OST calculations.
+  Teuchos::RCP<Epetra_Vector> PhidtamOst(const double alpha_M);
+
+  void SetAlphaF(const double alpha_F){alphaF_=alpha_F;};
+
+  /// return phi at evaluation time
+  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){
+    if(alphaF_>=0.0){
+      return PhiafOst(alphaF_);
+    }
+    else{
+      return phinp_;
+    }
+  };
+
 protected:
 
   /// Print information about current time step to screen (reimplementation for OST)
@@ -56,7 +77,7 @@ protected:
 
   /// additional predictor not intended for level-set methods
   void ExplicitPredictor(){return;};
-  
+
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
 
@@ -72,6 +93,9 @@ protected:
   void UpdateReinit();
 
 private:
+
+  //Member introduced to make the OST level set algorithm compatible with fluid gen alpha algorithm.
+  double alphaF_;
 
 }; // class LevelSetTimIntOneStepTheta
 

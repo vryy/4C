@@ -288,6 +288,22 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   if (fldpara_->GetIncludeSurfaceTension())
   {
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &gradphiele, &curvatureele,"tpf_gradphi_curvaf");
+    double epsilon = fldpara_->GetInterfaceThickness();
+
+    if(fldpara_->GetEnhancedGaussRuleInInterface())
+    {
+      for(int i=0; i<nen_; i++)
+      {
+        //      if(escaaf(i,1) < epsilon && escaaf(i,1) > -epsilon)
+        if(abs(escaaf(i,1)) <= epsilon)
+        {
+          //Intpoints are changed. For sine and cosine, this new rule is utilized for error computation compared to analytical solution.
+          DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree()*2+3);
+          intpoints_=intpoints_tmp;
+          break;
+        }
+      }
+    }
   }
 
   LINALG::Matrix<nen_,1> eporo(true);

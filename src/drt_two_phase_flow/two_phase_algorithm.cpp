@@ -1,35 +1,27 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file loma_algorithm.cpp
+\file two_phase_algorithm.cpp
 
-\brief Basis of all LOMA algorithms
+\brief Basis of Two Phase algorithms utilizing standard fluid and levelset
 
 <pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
+Maintainer: Magnus Winter
+            winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089/28915245
+            089/28915236
 </pre>
 */
 /*----------------------------------------------------------------------*/
 
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_levelset/levelset_algorithm.H"
+#include "../drt_levelset/levelset_timint_ost.H"
+#include "../drt_fluid/fluid_timint_two_phase.H"
+#include "../drt_fluid/fluid_timint_two_phase_genalpha.H"
+#include "../drt_scatra/scatra_timint_ost.H"
 
 #include "two_phase_algorithm.H"
-
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_solver.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-//NEW
-#include "../drt_levelset/levelset_algorithm.H"
-#include "../drt_fluid/fluid_timint_two_phase.H"
-#include "../drt_scatra/scatra_timint_ost.H"
-//#include "../drt_scatra/scatra_timint_loma.H" //USED WHERE?!
-//#include "../drt_scatra/"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -239,19 +231,40 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
 
     if (Comm().MyPID()==0)
     {
-      std::cout << "=============================================================================================================" << std::endl;
-      std::cout << "||LEVELSET USES ONE_STEP_THETA CURRENTLY. USE GEN ALPHA SETTINGS WITH ALPHA_M = ALPHA_F = 1 IN FLUID SOLVER.||" << std::endl;
-      std::cout << "=============================================================================================================" << std::endl;
+      std::cout << "================================================================================================================" << std::endl;
+      std::cout << "||LEVELSET USES ONE_STEP_THETA CURRENTLY. LINEAR INTERPOLATION IS DONE FOR VALUES AT TIME ALPHA_F and ALPHA_M.||" << std::endl;
+      std::cout << "================================================================================================================" << std::endl;
     }
+
+    //TimIntParam() provides 1 - alphaf
+    const double alphaf = 1.0 - FluidField().TimIntParam();
+    const double alpham = Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhaseGenAlpha>(FluidFieldrcp())->AlphaM();
+    //Necessary function for the structure of GetNodalCurvature() and GetGradientAtNodes()
+    Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->SetAlphaF(alphaf); //Set to -1.0 for Gradients and NodalCurv calculations at time (n+1)
+
+
     // As The Levelset algorithm does not have support for gen-alpha timeintegration ->
     // OST values from the ScaTra field will have to be used in the fluid field.
-    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(ScaTraField()->Phinp(),
-                                       ScaTraField()->Phinp(),
-                                       ScaTraField()->Phidtnp(),
-                                       ScaTraField()->FsPhi(),
-                                       Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
-                                       ScaTraField()->GetGradientAtNodes(),
-                                       ScaTraField()->Discretization());
+    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiafOst(alphaf),
+                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiamOst(alpham),
+                                               Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhidtamOst(alpham),
+                             Teuchos::null, //ScaTraField()->FsPhi()
+                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
+                             ScaTraField()->GetGradientAtNodes(),
+                             ScaTraField()->Discretization());
+
+
+//    // As The Levelset algorithm does not have support for gen-alpha timeintegration ->
+//    // OST values from the ScaTra field will have to be used in the fluid field.
+//    // Here the gen-alpha values have to be alpha_M=alpha_F=1
+//    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(ScaTraField()->Phinp(),
+//                                       ScaTraField()->Phinp(),
+//                                       ScaTraField()->Phidtnp(),
+//                                       ScaTraField()->FsPhi(), //Teuchos::null
+//                                       Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
+//                                       ScaTraField()->GetGradientAtNodes(),
+//                                       ScaTraField()->Discretization());
+
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
@@ -259,7 +272,7 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
     Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(ScaTraField()->Phinp(),
                                    ScaTraField()->Phin(),
                                    ScaTraField()->Phidtnp(),
-                                   ScaTraField()->FsPhi(),
+                                   ScaTraField()->FsPhi(), //Teuchos::null
                                    Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
                                    ScaTraField()->GetGradientAtNodes(),
                                    ScaTraField()->Discretization());

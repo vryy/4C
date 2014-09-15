@@ -39,7 +39,8 @@ SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
   Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
   LevelSetAlgorithm(actdis,solver,params,sctratimintparams,extraparams,output),
-  TimIntOneStepTheta(actdis,solver,sctratimintparams,extraparams,output)
+  TimIntOneStepTheta(actdis,solver,sctratimintparams,extraparams,output),
+  alphaF_(-1.0) //Member introduced to make OST calculations in level set in combination with gen-alpha in fluid.
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -331,7 +332,46 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(int start)
 
   // read restart for particles
   if (particle_ != Teuchos::null)
+  {
+    if(myrank_ == 0)
+      std::cout << "===== Particle restart! =====" <<std::endl;
+
     particle_->ReadRestart(start);
+  }
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | Create Phiaf from OST values                            winter 09/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::PhiafOst(const double alphaf)
+{
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    Teuchos::RCP< Epetra_Vector> phiaf = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+    phiaf->Update((1.0-alphaf),*phin_,alphaf,*phinp_,0.0);
+    return phiaf;
+}
+
+/*----------------------------------------------------------------------*
+ | Create Phiam from OST values                            winter 09/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::PhiamOst(const double alpham)
+{
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    Teuchos::RCP< Epetra_Vector> phiam = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+    phiam->Update((1.0-alpham),*phin_,alpham,*phinp_,0.0);
+    return phiam;
+}
+
+/*----------------------------------------------------------------------*
+ | Create Phidtam from OST values                            winter 09/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::PhidtamOst(const double alpham)
+{
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    Teuchos::RCP< Epetra_Vector> phidtam = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+    phidtam->Update((1.0-alpham),*phidtn_,alpham,*phidtnp_,0.0);
+    return phidtam;
+}
+

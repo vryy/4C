@@ -4685,8 +4685,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("UPRES",1,"Increment for writing solution",&twophasedyn);
    IntParameter("RESTARTEVRY",1,"Increment for writing restart",&twophasedyn);
    IntParameter("ITEMAX",1,"Maximum number of iterations in levelset-fluid loop",&twophasedyn);
-   BoolParameter("WRITE_CENTER_OF_MASS","No","write center of mass to file",&twophasedyn);
+   BoolParameter("WRITE_CENTER_OF_MASS","No","Write center of mass to file",&twophasedyn);
    BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&twophasedyn);
+   BoolParameter("ENHANCED_GAUSSRULE","No","Set higher order gaussrule within the interface layer.",&twophasedyn);
 
    /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");

@@ -132,6 +132,7 @@ public:
   //! @name two phase parameters
   /*----------------------------------------------------*/
   double GetInterfaceThickness() const {return interface_thickness_;};
+  bool   GetEnhancedGaussRuleInInterface() const {return enhanced_gaussrule_;}
   bool   GetIncludeSurfaceTension() const {return include_surface_tension_;};
 
   /*----------------------------------------------------*/
@@ -300,6 +301,7 @@ protected:
   /*----------------------------------------------------*/
 
   double interface_thickness_;
+  bool   enhanced_gaussrule_;
   bool   include_surface_tension_;
 
   /*----------------------------------------------------*/

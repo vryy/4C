@@ -425,10 +425,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
   // sublist for two phase flow specific parameters
    /* Transfers two phase specific problems                 05/14 winter */
-  if (probtype == prb_two_phase_flow) //TODO: How to write this?
+  if (probtype == prb_two_phase_flow)
   {
-    //const Teuchos::ParameterList& tpfdyn     = DRT::Problem::Instance()->TwoPhaseFlowParams();
     fluidtimeparams->set<double>("INTERFACE_THICKNESS",prbdyn.get<double>("INTERFACE_THICKNESS"));
+    fluidtimeparams->set<bool>("ENHANCED_GAUSSRULE", DRT::INPUT::IntegralValue<int>(prbdyn,"ENHANCED_GAUSSRULE"));
   }
 
   // sublist for combustion-specific fluid parameters
