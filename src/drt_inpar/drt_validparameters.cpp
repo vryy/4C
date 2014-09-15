@@ -1740,9 +1740,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::adhesion_bound,INPAR::CONTACT::adhesion_bound),
       &scontact);
 
-  DoubleParameter("ADHESION_BOUND",0.0,"Critical traction for std. adhesive contact",&scontact);
-
-
   setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
       tuple<std::string>("None","none",
                          "Stick","stick",

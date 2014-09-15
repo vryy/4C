@@ -71,7 +71,6 @@ MESH_ADAPTIVE_CN     yes
 STRATEGY             Lagrange
 FRICTION             none
 ADHESION             bounded
-ADHESION_BOUND       150.0
 ---------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.5
@@ -114,9 +113,9 @@ E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 -1.0 CURVE 2 1 FUNCT 0 0
 -------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // slave
-E 3 - 1 Slave Inactive
+E 3 - 1 Slave Inactive FrCoeffOrBound 0 AdhesionBound 150
 // master
-E 4 - 1 Master Inactive
+E 4 - 1 Master Inactive FrCoeffOrBound 0 AdhesionBound 150
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    68 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY

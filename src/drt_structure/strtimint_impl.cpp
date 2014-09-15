@@ -1403,6 +1403,8 @@ int STR::TimIntImpl::NewtonFull()
     // update end-point displacements etc
     UpdateIter(iter_);
 
+    if (outputeveryiter_) OutputEveryIter(true);
+
     // create empty parameter list
     Teuchos::ParameterList params;
 
@@ -1433,8 +1435,6 @@ int STR::TimIntImpl::NewtonFull()
     // that thus vanish in the Krylov space projection
     if (projector_!=Teuchos::null)
       projector_->ApplyPT(*fres_);
-
-    if (outputeveryiter_) OutputEveryIter(true);
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;

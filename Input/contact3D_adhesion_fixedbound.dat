@@ -70,7 +70,6 @@ STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 FRICTION                        None
 ADHESION                        bounded
-ADHESION_BOUND                  120.0
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree
@@ -156,8 +155,8 @@ DSURF                           0
 DLINE                           0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
-E 6 - 1 Master
-E 7 - 1 Slave
+E 6 - 1 Master Inactive FrCoeffOrBound 0 AdhesionBound 120
+E 7 - 1 Slave Inactive FrCoeffOrBound 0 AdhesionBound 120
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D

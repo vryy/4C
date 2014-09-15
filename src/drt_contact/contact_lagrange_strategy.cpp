@@ -2882,7 +2882,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       double adhbound = 0.0;
       if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(Params(),"ADHESION") ==
           INPAR::CONTACT::adhesion_bound)
-        adhbound = Params().get<double>("ADHESION_BOUND");
+        adhbound = interface_[i]->IParams().get<double>("ADHESION_BOUND");
 
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)

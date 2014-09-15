@@ -750,6 +750,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound",true)));
   contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
 
+  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("AdhesionBound",true)));
+  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("AdhesionBound")));
+
   Teuchos::RCP<ConditionDefinition> linecontact =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D",
                                          "Contact",

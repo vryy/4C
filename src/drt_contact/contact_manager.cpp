@@ -329,6 +329,31 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
       }
     }
 
+    // find out if interface-specific coefficients of friction are given
+    INPAR::CONTACT::AdhesionType ad = DRT::INPUT::IntegralValue<
+        INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
+    if (ad == INPAR::CONTACT::adhesion_bound)
+    {
+      // read interface COFs
+      std::vector<double> ad_bound((int) currentgroup.size());
+      for (int j = 0; j < (int) currentgroup.size(); ++j)
+        ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
+
+      // check consistency of interface COFs
+      for (int j = 1; j < (int) currentgroup.size(); ++j)
+        if (ad_bound[j] != ad_bound[0])
+          dserror(
+              "ERROR: Inconsistency in friction coefficients of interface %i",
+              groupid1);
+
+      // check for infeasible value of COF
+      if (ad_bound[0] < 0.0)
+        dserror("ERROR: Negative adhesion bound on interface %i", groupid1);
+
+      // add COF locally to contact parameter list of this interface
+      icparams.setEntry("ADHESION_BOUND",static_cast<Teuchos::ParameterEntry>(ad_bound[0]));
+    }
+
     // create an empty interface and store it in this Manager
     // create an empty contact interface and store it in this Manager
     // (for structural contact we currently choose redundant master storage)
@@ -958,9 +983,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       and DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,
           "WEARLAW") != INPAR::CONTACT::wear_none)
     dserror("Adhesion combined with wear not yet tested!");
-
-  if (contact.get<double>("ADHESION_BOUND") < 0.0)
-    dserror("Adhesion bound must be greater than 0.0!");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact,
       "ADHESION") != INPAR::CONTACT::adhesion_none
