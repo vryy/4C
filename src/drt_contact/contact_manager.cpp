@@ -343,7 +343,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
       for (int j = 1; j < (int) currentgroup.size(); ++j)
         if (ad_bound[j] != ad_bound[0])
           dserror(
-              "ERROR: Inconsistency in friction coefficients of interface %i",
+              "ERROR: Inconsistency in adhesion bounds of interface %i",
               groupid1);
 
       // check for infeasible value of COF
