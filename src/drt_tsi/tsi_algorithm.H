@@ -137,7 +137,8 @@ namespace TSI
     //! @name Transfer methods
 
     //! apply temperature state on structure discretization
-    void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp);
+    void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
+                                  Teuchos::RCP<const Epetra_Vector> temp_res=Teuchos::null);
 
     //! apply structural displacements and velocities on thermo discretization
     void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,

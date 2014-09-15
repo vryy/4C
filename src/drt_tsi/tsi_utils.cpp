@@ -33,6 +33,7 @@ Maintainer: Caroline Danowski
 
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_so3/so3_thermo.H"
+#include "../drt_so3/so3_ssn_plast.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -95,12 +96,18 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   // initialise kinematic type to geo_linear.
   // kintype is passed to the cloned thermo element
   GenKinematicType kintype = geo_linear;
-  // if oldele is a so3_base element
-  DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(oldele);
+  // if oldele is a so3_base element or a so3_Plast element
+  DRT::ELEMENTS::So3_Base*  so3_base  = dynamic_cast<DRT::ELEMENTS::So3_Base*>(oldele);
+  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* so3_plast_h8 =
+      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8> * >(oldele);
+  DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* so3_plast_h27 =
+      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27> * >(oldele);
   if (so3_base != NULL)
     kintype = so3_base->GetKinematicType();
+  else if (so3_plast_h8 != NULL || so3_plast_h27!=NULL)
+    kintype = geo_nonlinear; // So3_Plast only with nonlinear kinematics
   else
-    dserror("oldele is not a so3_thermo element!");
+    dserror("oldele is neither a so3_thermo nor a So3_Plast element!");
 
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
@@ -145,7 +152,13 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
-  if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
+  if (!structdis->Filled() or !structdis->HaveDofs())
+  {
+    structdis->FillComplete();
+    Epetra_Map nc=*(structdis->NodeColMap());
+    Epetra_Map nr=*(structdis->NodeRowMap());
+    structdis->Redistribute(nr,nc);
+  }
 
   // access the thermo discretization
   Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;

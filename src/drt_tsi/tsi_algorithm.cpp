@@ -307,12 +307,15 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp)
+void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
+                                              Teuchos::RCP<const Epetra_Vector> temp_res)
 {
   if (matchinggrid_)
   {
     if (temp != Teuchos::null)
       StructureField()->Discretization()->SetState(1,"temperature",temp);
+    if (temp_res != Teuchos::null)
+      StructureField()->Discretization()->SetState(1,"residual temperature",temp_res);
   }
   else
   {

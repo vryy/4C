@@ -111,6 +111,9 @@ namespace ELASTIC
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     );
 
+    /// Add third derivative w.r.t. J
+    virtual void Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, double& d3PsiVolDJ3);
+
     /// @name Access methods
     //@{
     double Epsilon() const { return params_->eps_; }

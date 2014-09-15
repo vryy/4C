@@ -20,6 +20,7 @@
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -44,6 +45,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
     alpha_eas_delta_over_last_timestep_ = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
     alpha_eas_inc_                      = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
     Kba_                                = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(5,neas_)));
+
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    if (probtype==prb_tsi)
+    {
+      KaT_=Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,nen_));
+      KdT_eas_=Teuchos::rcp(new LINALG::Matrix<numdofperelement_,nen_>);
+    }
   }
 
   return;

@@ -15,15 +15,40 @@ Maintainer: Alexander Seitz
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include "../drt_lib/drt_globalproblem_enums.H"
+#include "../drt_inpar/inpar_structure.H"
 
 // forward declarations
 namespace DRT
 {
-  class Discretization;
-}
+class Discretization;
 
 namespace UTILS
 {
+
+/*!
+  \brief struct containing plasticity algorithm info needed by every element
+ */
+struct PlastSsnData {
+  bool unconverged_active_set_;
+  double pl_inc_;
+  double pl_res_;
+  bool eas_;
+  double eas_res_;
+  double eas_inc_;
+  int num_active_;
+  INPAR::STR::PredEnum pred_type_;
+  bool no_pl_condensation_;
+  bool tsi_pred_;
+  double scale_timint_;
+  double dt_;
+  bool split_res_;
+  double cond_rhs_norm_;
+  bool ls_;
+  double alpha_ls_;
+  int myPID;
+};
+
 /*!
 \brief Class controlling semi-smooth Newton strategy for plasticity
 */
@@ -55,7 +80,7 @@ public:
 
   */
   void ReadAndCheckInput();
-  
+
   /*
   \brief set plastic parameters before element evaluation
   */
@@ -122,14 +147,25 @@ public:
   Teuchos::RCP<Teuchos::ParameterList> Params() {return plparams_; };
 
   /*
-  \brief return parameter list of plastic algorithmic parameters
+  \brief Do some plastic elements use EAS?
   */
   bool EAS() {return have_eas; };
+
+  /*
+  \brief Is this a TSI problem
+  */
+  bool TSI() {return probtype_==prb_tsi; };
+
+  /*
+  \brief Is this a TSI problem
+  */
+  void SetTSIpredictor(const bool pred) { data_.tsi_pred_=pred; return; };
 
 private:
 
   Teuchos::RCP<DRT::Discretization> discret_; // current discretization
   Teuchos::RCP<Teuchos::ParameterList> plparams_; // plasticity algorithm input parameters
+  PROBLEM_TYP probtype_;                          // problem type TSI or Structure
 
   int numactive_global_;// number of active plastic Gauss points on all procs
   bool unconvergedactiveset_; // true, if the active set has not changed in the last step
@@ -145,7 +181,11 @@ private:
   double pl_res_tol_;       // convergence tolerance for plastic constraints
   double eas_incr_tol_;     // convergence tolerance for EAS increment
   double eas_res_tol_;       // convergence tolerance for EAS residual
+
+  struct DRT::UTILS::PlastSsnData data_;
 };// class SsnPlastManager
+
 }//namespace UTILS
+} // namespace DRT
 
 #endif // PLASTIC_SSN_MANAGER_H_

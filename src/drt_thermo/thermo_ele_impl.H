@@ -179,7 +179,7 @@ namespace ELEMENTS
 
     //! get the body force
     virtual void Radiation(
-      const DRT::Element* ele,  //!< current element we are dealing with
+      DRT::Element* ele,  //!< current element we are dealing with
       const double time  //!< current times
       );
 
@@ -377,7 +377,7 @@ namespace ELEMENTS
     //! capacity matrix
     LINALG::Matrix<nen_,nen_> ecapa_;
 
-    //! node coordinates
+    //! node reference coordinates
     LINALG::Matrix<nsd_,nen_> xyze_;
     //! radiation in element nodes
     LINALG::Matrix<numdofpernode_,1> radiation_;

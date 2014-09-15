@@ -852,10 +852,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     // optional Hill yield parameters
     AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",0.0,true);
     AddNamedReal(m,"rY_22","relative yield stress in fiber2-direction (Y_22/Y_0)",0.0,true);
-    AddNamedReal(m,"rY_33","relative yield stress in fiber2-direction (Y_33/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_33","relative yield stress in fiber3-direction (Y_33/Y_0)",0.0,true);
     AddNamedReal(m,"rY_12","relative shear yield stress in 12-direction (Y_12/Y_0)",0.0,true);
     AddNamedReal(m,"rY_23","relative shear yield stress in 23-direction (Y_23/Y_0)",0.0,true);
     AddNamedReal(m,"rY_13","relative shear yield stress in 13-direction (Y_13/Y_0)",0.0,true);
+
+    // optional TSI parameters
+    AddNamedReal(m,"CTE","coefficient of thermal expansion",0.,true);
+    AddNamedReal(m,"INITTEMP","initial, reference temperature",0.,true);
+    AddNamedReal(m,"YIELDSOFT","yield stress softening",0.,true);
+    AddNamedReal(m,"HARDSOFT","hardening softening",0.,true);
 
     AppendMaterialDefinition(matlist,m);
   }

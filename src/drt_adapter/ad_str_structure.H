@@ -33,6 +33,7 @@ namespace DRT
   namespace UTILS
   {
     class LocsysManager;
+    class PlastSsnManager;
     template <typename> class TimIntMStep;
   }
 }
@@ -195,11 +196,17 @@ namespace ADAPTER {
     /// are there any Windkessel bcs?
     virtual bool HaveWindkessel() = 0;
 
+    /// do we have semi-smooth Newton-type plasticity algorithm
+    virtual bool HaveSemiSmoothPlasticity() = 0;
+
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
     /// get Windkessel manager defined in the structure
     virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
+
+    /// get plasticity manager defined in the structure
+    virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;

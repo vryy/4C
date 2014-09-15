@@ -23,6 +23,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_crack/crackUtils.H"
+#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()
@@ -319,6 +320,14 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // external mid-forces F_{ext;n+1-alpha_f} ----> TR-like
   // F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} + alpha_f * F_{ext;n}
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+
+  // set time integration info for plastic TSI problem
+  if (HaveSemiSmoothPlasticity())
+    if (plastman_->TSI())
+    {
+      params.set("scale_timint", beta_/gamma_);
+      params.set("time_step_size", (*dt_)[0]);
+    }
 
   // ************************** (2) INTERNAL FORCES ***************************
 
@@ -704,8 +713,8 @@ void STR::TimIntGenAlpha::UpdateStepElement()
   }
   else
   {
-  	// In the NonlinearMass-case its possible to make an update of displacements, velocities
-  	// and accelerations at the end of time step (currently only necessary for Kirchhoff beams)
+    // In the NonlinearMass-case its possible to make an update of displacements, velocities
+    // and accelerations at the end of time step (currently only necessary for Kirchhoff beams)
     // An corresponding update rule has to be implemented in the element, otherwise
     // displacements, velocities and accelerations remain unchange.
     discret_->SetState("velocity",(*vel_)(0));

@@ -265,6 +265,27 @@ namespace MAT
         return;  // do nothing
       };
 
+      /// retrieve coefficients for the third derivative
+      /// of volumetric summand with respect to modified invariants
+      /// This is needed for TSI problems where
+      ///\f[
+      /// \hat{\mathbb{M}}(J,\Delta T)=-3\alpha_T\Delta T \frac{\partial \Psi_{\text{vol}}(J)}{\partial J}
+      ///\f]
+      /// and the PK2 stress
+      ///\f[
+      /// \mathbf{S}=-\frac{\partial \mathcal{M}}{\partial J}J\mathbf{C}^{-1} = -3\alpha_T\Delta T (\bar{\delta}_5-\bar{\gamma}_3)\mathbf{C}^{-1}
+      ///\f]
+      /// and the tangent
+      ///\f[
+      /// \mathbb{C} = 6\alpha_T\Delta T (\bar{\delta}_5-\bar{\gamma}_3) \mathbf{C}^{-1}\odot\mathbf{C}^{-1}
+      ///             -\frac{3}{4}\alpha_T\Delta T  J^2  \frac{\partial^3 \Psi_{vol}}{\partial J^3}  \mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
+      ///             -\frac{3}{4}\alpha_T\Delta T \underbrace{J  \frac{\partial^2 \Psi_{vol}}{\partial J^2}}_{=\bar{\delta}_5-\bar{\gamma}_3}  \mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
+      ///\f]
+      virtual void Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, double& d3PsiVolDJ3)
+      {
+        return; // do nothing
+      };
+
       /// retrieve coefficients of first and second derivative
       /// of summand for fiber directions with respect to principal invariants
       ///

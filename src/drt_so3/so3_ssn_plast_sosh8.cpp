@@ -202,7 +202,6 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
         dserror("no thickness direction for So_sh8");
         break;
       }
-      //actele->sosh8_gmshplotlabeledelement(actele->NodeIds());
     }
   }
 
@@ -228,9 +227,6 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
     if (!actele) dserror("cast to So_sh8* failed");
     actele->InitJacobianMapping();
   }
-
-  // **************** debug printout ot gmesh **********************************
-  //sosh8_gmshplotdis(dis);
 
   return 0;
 }
@@ -893,6 +889,9 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     std::vector<int>&              lm,             // location matrix
     std::vector<double>&           disp,           // current displacements
     std::vector<double>&           residual,       // current residual displ
+    std::vector<double>&           vel,            // current velocities
+    std::vector<double>&           temp,           // current temperatures
+    std::vector<double>&           temp_res,       // current temperatures
     LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
     LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
     LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
@@ -905,10 +904,19 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     const int MyPID  // processor id
     )
 {
+  if (data_==Teuchos::null)
+    if (params.isParameter("PlastSsnData"))
+    data_=params.get<Teuchos::RCP<UTILS::PlastSsnData> >("PlastSsnData");
+
+  // do the evaluation of tsi terms
+  const bool eval_tsi = (temp.size()!=0);
 
   // update element geometry
-  LINALG::Matrix<nen_,3> xrefe;  // X, material coord. of element
-  LINALG::Matrix<nen_,3> xcurr;  // x, current  coord. of element
+  LINALG::Matrix<nen_,3> xrefe(false);      // X, material coord. of element
+  LINALG::Matrix<nen_,3> xcurr(false);      // x, current  coord. of element
+  LINALG::Matrix<nen_,3> xcurrrate(false);  // x, rate of current  coord. of element
+  LINALG::Matrix<nen_,1> etemp(false);      // vector of the current element temperatures
+  LINALG::Matrix<nen_,1> res_T(false);      // vector of the current element residual temperatures
 
   DRT::Node** nodes = Nodes();
   for (int i=0; i<nen_; ++i)
@@ -921,6 +929,21 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+
+    if (eval_tsi)
+    {
+      etemp(i)=temp[i];
+      if (neas_!=0)
+        if (temp_res.size()!=0)
+          res_T(i)=temp_res[i];
+
+      if (vel.size()!=0)
+      {
+        xcurrrate(i,0) = vel[i*numdofpernode_+0];
+        xcurrrate(i,1) = vel[i*numdofpernode_+1];
+        xcurrrate(i,2) = vel[i*numdofpernode_+2];
+      }
+    }
   }
 
   // we need the (residual) displacement -- current increment of displacement
@@ -951,23 +974,29 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
   // get references from parameter list
-  double& lp_inc = params.get<double>("Lp_increment_square");
-  double& lp_res = params.get<double>("Lp_residual_square");
-  double& eas_inc= params.get<double>("EAS_increment_square");
-  double& eas_res= params.get<double>("EAS_residual_square");
-  int& num_active_gp = params.get<int>("number_active_plastic_gp");
-  INPAR::STR::PredEnum pred = INPAR::STR::pred_vague;
-  if (params.isParameter("predict_type"))
-    pred = params.get<INPAR::STR::PredEnum>("predict_type");
-  bool tang_pred = false;
-  if (params.isParameter("eval_tang_pred"))
-    tang_pred = params.get<bool>("eval_tang_pred");
+  double& lp_inc = data_->pl_inc_;
+  double& lp_res = data_->pl_res_;
+  double& eas_inc= data_->eas_inc_;
+  double& eas_res= data_->eas_res_;
+  int& num_active_gp = data_->num_active_;
+  INPAR::STR::PredEnum pred = data_->pred_type_;
+  bool no_condensation = data_->no_pl_condensation_;
+
+  // do not recover condensed variables if it is a TSI predictor step
+  bool tsi_pred=data_->tsi_pred_;
+  // time integration factor (for TSI)
+  double theta=data_->scale_timint_;
+  // time step size (for TSI)
+  double dt=data_->dt_;
+  if (eval_tsi && (stiffmatrix!=NULL || force!=NULL))
+    if (theta==0 || dt==0)
+      dserror("time integration parameters not provided in element for TSI problem");
 
   // check if we need to split the residuals (for Newton line search)
   // if true an additional global vector is assembled containing
   // the internal forces without the condensed EAS entries and the norm
   // of the EAS residual is calculated
-  bool split_res = params.isParameter("cond_rhs_norm");
+  bool split_res = data_->split_res_;
 
   /* evaluation of EAS variables (which are constant for the following):
   ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -989,13 +1018,13 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     /* end of EAS Update ******************/
     // add Kda . res_d to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    if (stiffmatrix!=NULL)
+    if (stiffmatrix!=NULL && !tsi_pred)
     {
       // this is a line search step, i.e. the direction of the eas increments
       // has been calculated by a Newton step and now it is only scaled
-      if (params.isParameter("alpha_ls"))
+      if (data_->ls_)
       {
-        double alpha_ls=params.get<double>("alpha_ls");
+        double alpha_ls=data_->alpha_ls_;
         // undo step
         alpha_eas_inc_->Scale(-1.);
         alpha_eas_->operator +=(*alpha_eas_inc_);
@@ -1008,7 +1037,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       {
         // constant predictor
         if (pred == INPAR::STR::pred_constdis)
-          alpha_eas_=alpha_eas_last_timestep_;
+          *alpha_eas_=*alpha_eas_last_timestep_;
 
         // tangential predictor
         else if (pred == INPAR::STR::pred_tangdis || pred == INPAR::STR::pred_constvel || pred == INPAR::STR::pred_constacc)
@@ -1025,16 +1054,19 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
           {
           case soh8p_easmild:
             LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+            if (KaT_!=Teuchos::null) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T.A());
             LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
             LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
             break;
           case soh8p_easfull:
             LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+            if (KaT_!=Teuchos::null) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T.A());
             LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
             LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
             break;
           case soh8p_eassosh8:
             LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+            if (KaT_!=Teuchos::null) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T.A());
             LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,soh8p_eassosh8,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
             LINALG::DENSEFUNCTIONS::update<double,soh8p_eassosh8,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
             break;
@@ -1049,12 +1081,16 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     // reset EAS matrices
     KaaInv_->Shape(neas_,neas_);
     Kad_->Shape(neas_,numdofperelement_);
+    if (KaT_!=Teuchos::null) KaT_->Shape(neas_,nen_);
     feas_->Size(neas_);
     /* end of EAS Update ******************/
   }
 
   // EAS matrix block
   Epetra_SerialDenseMatrix Kda(numdofperelement_,neas_);
+  std::vector<Epetra_SerialDenseVector> dHda(0);
+  if (eastype_!=soh8p_easnone && eval_tsi)
+    dHda.resize(numgpt_,Epetra_SerialDenseVector(neas_));
   // temporary Epetra matrix for this and that
   Epetra_SerialDenseMatrix tmp;
   // RHS of EAS equation without condensed plasticity
@@ -1370,20 +1406,25 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     // plastic flow increment
     LINALG::Matrix<nsd_,nsd_> deltaLp;
 
+    // Gauss point temperature
+    double gp_temp;
+    if (eval_tsi) gp_temp=etemp.Dot(shapefunct);
+    else          gp_temp=-1.e12;
+
     // recover plastic variables
     if (HavePlasticSpin())
     {
       if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL),&(*alpha_eas_inc_));
+        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred),&(*alpha_eas_inc_));
       else
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL));
+        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred));
     }
     else
     {
       if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL),&(*alpha_eas_inc_));
+        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred),&(*alpha_eas_inc_));
       else
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,params,deltaLp,lp_inc,(stiffmatrix!=NULL));
+        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred));
     }
 
     // calculate deformation gradient consistent with modified GL strain tensor
@@ -1394,6 +1435,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     LINALG::Matrix<numstr_,1> pk2;
     LINALG::Matrix<numstr_,numstr_> cmat;
     plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp);
+    if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp);
     // material call *********************************************
 
     // return gp stresses
@@ -1462,69 +1504,69 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<numstr_,numdofperelement_> cb;
       cb.Multiply(cmat,bop);
-        stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
+      stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
-        // intergrate `geometric' stiffness matrix and add to keu *****************
-        // here also the ANS interpolation comes into play
-        double r=xsi_.at(gp)(0);
-        double s=xsi_.at(gp)(1);
-        for (int inod=0; inod<nen_; ++inod)
+      // intergrate `geometric' stiffness matrix and add to keu *****************
+      // here also the ANS interpolation comes into play
+      double r=xsi_.at(gp)(0);
+      double s=xsi_.at(gp)(1);
+      for (int inod=0; inod<nen_; ++inod)
+      {
+        for (int jnod=0; jnod<nen_; ++jnod)
         {
-          for (int jnod=0; jnod<nen_; ++jnod)
+          LINALG::Matrix<numstr_,1> G_ij;
+          G_ij(0) = deriv(0, inod) * deriv(0, jnod); // rr-dir
+          G_ij(1) = deriv(1, inod) * deriv(1, jnod); // ss-dir
+          G_ij(3) = deriv(0, inod) * deriv(1, jnod)
+                        + deriv(1, inod) * deriv(0, jnod); // rs-dir
+
+          // do the ANS related stuff if wanted!
+          if (anstype_==anssosh8_p)
           {
-            LINALG::Matrix<numstr_,1> G_ij;
-            G_ij(0) = deriv(0, inod) * deriv(0, jnod); // rr-dir
-            G_ij(1) = deriv(1, inod) * deriv(1, jnod); // ss-dir
-            G_ij(3) = deriv(0, inod) * deriv(1, jnod)
-                    + deriv(1, inod) * deriv(0, jnod); // rs-dir
+            // ANS modification in tt-dir
+            G_ij(2) = 0.25*(1-r)*(1-s) * (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](2,jnod)
+                           +0.25*(1+r)*(1-s) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
+                           +0.25*(1+r)*(1+s) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
+                           +0.25*(1-r)*(1+s) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
+            // ANS modification in st-dir
+            G_ij(4) = 0.5*((1+r) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
+                +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
+                +(1-r) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
+                    +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
+            // ANS modification in rt-dir
+            G_ij(5) = 0.5*((1-s) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
+                +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
+                +(1+s) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
+                    +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
 
-            // do the ANS related stuff if wanted!
-            if (anstype_==anssosh8_p)
-            {
-              // ANS modification in tt-dir
-              G_ij(2) = 0.25*(1-r)*(1-s) * (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](2,jnod)
-                       +0.25*(1+r)*(1-s) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
-                       +0.25*(1+r)*(1+s) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
-                       +0.25*(1-r)*(1+s) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
-              // ANS modification in st-dir
-              G_ij(4) = 0.5*((1+r) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
-                                         +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
-                            +(1-r) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
-                                         +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
-              // ANS modification in rt-dir
-              G_ij(5) = 0.5*((1-s) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
-                                         +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
-                            +(1+s) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
-                                         +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
-
-            }
-            else if (anstype_==ansnone_p)
-            {
-              G_ij(2) = deriv(2, inod) * deriv(2, jnod); // tt-dir
-              G_ij(4) = deriv(2, inod) * deriv(1, jnod)
-                      + deriv(1, inod) * deriv(2, jnod); // st-dir
-              G_ij(5) = deriv(0, inod) * deriv(2, jnod)
-                      + deriv(2, inod) * deriv(0, jnod); // rt-dir
-            }
-            else
-              dserror("Cannot build geometric stiffness matrix on your ANS-choice!");
-
-            // transformation of local(parameter) space 'back' to global(material) space
-            LINALG::Matrix<MAT::NUM_STRESS_3D,1> G_ij_glob;
-            G_ij_glob.Multiply(TinvT, G_ij);
-
-            // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-            const double Gij = detJ_w * pk2.Dot(G_ij_glob);
-
-            // add "geometric part" Gij times detJ*weights to stiffness matrix
-            (*stiffmatrix)(nsd_*inod+0, nsd_*jnod+0) += Gij;
-            (*stiffmatrix)(nsd_*inod+1, nsd_*jnod+1) += Gij;
-            (*stiffmatrix)(nsd_*inod+2, nsd_*jnod+2) += Gij;
           }
-        } // end of intergrate `geometric' stiffness ******************************
+          else if (anstype_==ansnone_p)
+          {
+            G_ij(2) = deriv(2, inod) * deriv(2, jnod); // tt-dir
+            G_ij(4) = deriv(2, inod) * deriv(1, jnod)
+                          + deriv(1, inod) * deriv(2, jnod); // st-dir
+            G_ij(5) = deriv(0, inod) * deriv(2, jnod)
+                          + deriv(2, inod) * deriv(0, jnod); // rt-dir
+          }
+          else
+            dserror("Cannot build geometric stiffness matrix on your ANS-choice!");
+
+          // transformation of local(parameter) space 'back' to global(material) space
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> G_ij_glob;
+          G_ij_glob.Multiply(TinvT, G_ij);
+
+          // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
+          const double Gij = detJ_w * pk2.Dot(G_ij_glob);
+
+          // add "geometric part" Gij times detJ*weights to stiffness matrix
+          (*stiffmatrix)(nsd_*inod+0, nsd_*jnod+0) += Gij;
+          (*stiffmatrix)(nsd_*inod+1, nsd_*jnod+1) += Gij;
+          (*stiffmatrix)(nsd_*inod+2, nsd_*jnod+2) += Gij;
+        }
+      } // end of intergrate `geometric' stiffness ******************************
 
       // EAS technology: integrate matrices --------------------------------- EAS
-      if (!tang_pred)
+      if (!no_condensation)
         if (eastype_ != soh8p_easnone)
         {
           // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
@@ -1574,7 +1616,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
         ifactor = shapefunct(inod) * factor;
         for (int jnod=0; jnod<nen_; ++jnod)
         {
-          massfactor = shapefunct(inod) * ifactor;     // intermediate factor
+          massfactor = shapefunct(jnod) * ifactor;     // intermediate factor
           (*massmatrix)(3*inod+0,3*jnod+0) += massfactor;
           (*massmatrix)(3*inod+1,3*jnod+1) += massfactor;
           (*massmatrix)(3*inod+2,3*jnod+2) += massfactor;
@@ -1582,69 +1624,233 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       }
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    if (eval_tsi && (stiffmatrix!=NULL || force!=NULL))
+    {
+      // volumetric part of K_dT = Gough-Joule effect**********************************
+      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
+      // get the thermal material tangent
+      LINALG::Matrix<numstr_,1> cTvol(true);
+      LINALG::Matrix<numstr_,numstr_> dcTvoldE;
+      plmat->EvaluateCTvol(&defgrd_mod,params,&cTvol,&dcTvoldE,gp);
+      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
+
+      // KdT block ************************************************************
+      (*dFintdT_)[gp].MultiplyTN(detJ_w,bop,cTvol,0.);
+      if (eastype_!=soh8p_easnone)
+      {
+        LINALG::Matrix<numstr_,nen_> cTm;
+        cTm.MultiplyNT(cTvol,shapefunct);
+        switch(eastype_)
+        {
+        case soh8p_easfull:
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,nen_>
+            (1.,KaT_->A(),detJ_w,M.A(),cTm.A());
+          break;
+        case soh8p_easmild:
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,nen_>
+            (1.,KaT_->A(),detJ_w,M.A(),cTm.A());
+          break;
+        case soh8p_eassosh8:
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_eassosh8,numstr_,nen_>
+            (1.,KaT_->A(),detJ_w,M.A(),cTm.A());
+          break;
+        case soh8p_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        }
+      }// KdT block ***********************************************************
+
+      plmat->HepDiss(gp)=0.;
+      plmat->dHepDT(gp) =0.;
+      plmat->dHepDissDd(gp).Size(numdofperelement_);
+      if (eastype_!=soh8p_easnone) dHda[gp].Scale(0.);
+
+      // elastic heating ******************************************************
+      // elastic heating ******************************************************
+      LINALG::Matrix<3,3> defgrd_rate;
+      defgrd_rate.MultiplyTT(xcurrrate,N_XYZ);
+      double timefac_d=1./(theta*dt);
+
+      // Gough-Joule effect
+      LINALG::Matrix<3,3> RCGrate;
+      RCGrate.MultiplyTN(defgrd_rate,defgrd);
+      RCGrate.MultiplyTN(1.,defgrd,defgrd_rate,1.);
+      LINALG::Matrix<6,1> RCGrateVec;
+      for (int i=0; i<3; ++i) RCGrateVec(i,0) = RCGrate(i,i);
+      RCGrateVec(3,0) = 2.*RCGrate(0,1);
+      RCGrateVec(4,0) = 2.*RCGrate(1,2);
+      RCGrateVec(5,0) = 2.*RCGrate(0,2);
+
+      // enhance the deformation rate
+      if (eastype_!=soh8p_easnone)
+      {
+        Epetra_SerialDenseVector alpha_dot(neas_);
+        switch(eastype_)
+        {
+        case soh8p_eassosh8:
+          // calculate EAS-rate
+          LINALG::DENSEFUNCTIONS::update<double,soh8p_eassosh8,1>(0.,alpha_dot.A(),1.,alpha_eas_->A());
+          LINALG::DENSEFUNCTIONS::update<double,soh8p_eassosh8,1>(1.,alpha_dot.A(),-1.,alpha_eas_last_timestep_->A());
+          alpha_dot.Scale(timefac_d);
+          // enhance the strain rate
+          // factor 2 because we deal with RCGrate and not GLrate
+          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_eassosh8,1>
+            (1.,RCGrateVec.A(),2.,M.A(),alpha_dot.A());
+          break;
+        case soh8p_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        }
+      }// enhance the deformation rate
+
+      // heating ************************************************************
+      double He=-.5*gp_temp*cTvol.Dot(RCGrateVec);
+
+      plmat->HepDiss(gp)=He;
+
+      // derivative of elastic heating w.r.t. temperature *******************
+      plmat->dHepDT(gp) =He/gp_temp;
+
+      // derivative of elastic heating w.r.t. displacement ******************
+      LINALG::Matrix<numdofperelement_,1> dHedd(true);
+      LINALG::Matrix<6,nen_*nsd_> boprate(false);  // (6x24)
+      CalculateBop(&boprate, &defgrd_rate, &N_XYZ);
+
+      LINALG::Matrix<6,1> tmp61;
+      tmp61.MultiplyTN(dcTvoldE,RCGrateVec);
+
+      dHedd.MultiplyTN(-.5*gp_temp,bop,tmp61,1.);
+
+      if (anstype_==ansnone_p)
+      {
+        dHedd.MultiplyTN(-timefac_d*gp_temp,bop,cTvol,1.);
+        dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
+      }
+      else if (anstype_==anssosh8_p)
+      {
+        LINALG::Matrix<6,nen_*nsd_> bop_disp(false);  // (6x24)
+        CalculateBop(&bop_disp, &defgrd, &N_XYZ);
+        dHedd.MultiplyTN(-timefac_d*gp_temp,bop_disp,cTvol,1.);
+        dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
+      }
+      else
+        dserror("don't know what to do with anstype %d",anstype_);
+
+
+      // derivative of elastic heating w.r.t. EAS alphas *******************
+      if (eastype_!=soh8p_easnone)
+      {
+        switch(eastype_)
+        {
+        case soh8p_eassosh8:
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_eassosh8,numstr_,1>
+            (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_eassosh8,numstr_,1>
+            (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
+          break;
+        case soh8p_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        }
+      }
+
+      plmat->dHepDissDd(gp).Scale(0.);
+      LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
+
+      // volumetric part of K_dT = Gough-Joule effect**********************************
+    } // if (eval_tsi)
+
     // plastic modifications
-    if ( (stiffmatrix!=NULL || force!=NULL) && !tang_pred)
+    if ( (stiffmatrix!=NULL || force!=NULL) && !no_condensation)
     {
       if (HavePlasticSpin())
       {
         if (eastype_!=soh8p_easnone)
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda);
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
         else
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res);
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
       else
       {
         if (eastype_!=soh8p_easnone)
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda);
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
         else
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,gp,params,force,stiffmatrix,num_active_gp,lp_res);
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
     }// plastic modifications
   } // gp loop
 
   // Static condensation EAS --> stiff ********************************
-  if (stiffmatrix != NULL && !tang_pred && eastype_!=soh8p_easnone)
+  if (stiffmatrix != NULL && !no_condensation && eastype_!=soh8p_easnone)
   {
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(*KaaInv_);
     solve_for_inverseKaa.Invert();
 
-    tmp.Shape(numdofperelement_,neas_);
+    Epetra_SerialDenseMatrix kdakaai(numdofperelement_,neas_);
     switch (eastype_)
     {
     case soh8p_easfull:
       LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easfull,soh8p_easfull>
-        (0.,tmp.A(),1.,Kda.A(),KaaInv_->A());
+        (0.,kdakaai.A(),1.,Kda.A(),KaaInv_->A());
       if (stiffmatrix!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easfull,numdofperelement_>
-          (1.,stiffmatrix->A(),-1.,tmp.A(),Kad_->A());
+          (1.,stiffmatrix->A(),-1.,kdakaai.A(),Kad_->A());
       if (force!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easfull,1>
-          (1.,force->A(),-1.,tmp.A(),feas_->A());
+          (1.,force->A(),-1.,kdakaai.A(),feas_->A());
       break;
     case soh8p_eassosh8:
       LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_eassosh8,soh8p_eassosh8>
-        (0.,tmp.A(),1.,Kda.A(),KaaInv_->A());
+        (0.,kdakaai.A(),1.,Kda.A(),KaaInv_->A());
       if (stiffmatrix!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_eassosh8,numdofperelement_>
-          (1.,stiffmatrix->A(),-1.,tmp.A(),Kad_->A());
+          (1.,stiffmatrix->A(),-1.,kdakaai.A(),Kad_->A());
       if (force!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_eassosh8,1>
-          (1.,force->A(),-1.,tmp.A(),feas_->A());
+          (1.,force->A(),-1.,kdakaai.A(),feas_->A());
       break;
     case soh8p_easmild:
       LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easmild,soh8p_easmild>
-        (0.,tmp.A(),1.,Kda.A(),KaaInv_->A());
+        (0.,kdakaai.A(),1.,Kda.A(),KaaInv_->A());
       if (stiffmatrix!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easmild,numdofperelement_>
-          (1.,stiffmatrix->A(),-1.,tmp.A(),Kad_->A());
+          (1.,stiffmatrix->A(),-1.,kdakaai.A(),Kad_->A());
       if (force!=NULL)
         LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easmild,1>
-          (1.,force->A(),-1.,tmp.A(),feas_->A());
+          (1.,force->A(),-1.,kdakaai.A(),feas_->A());
       break;
     case soh8p_easnone:
       break;
     default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+    }
+
+    // TSI with EAS
+    if (eval_tsi)
+    {
+      Epetra_SerialDenseVector dHdaKaai(neas_);
+      switch (eastype_)
+      {
+      case soh8p_eassosh8:
+        LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_eassosh8,nen_>
+          (0.,KdT_eas_->A(),-1.,kdakaai.A(),KaT_->A());
+        for (int gp=0; gp<numgpt_; ++gp)
+        {
+          LINALG::DENSEFUNCTIONS::multiply<double,1,soh8p_eassosh8,soh8p_eassosh8>
+            (0.,dHdaKaai.A(),1.,dHda.at(gp).A(),KaaInv_->A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,soh8p_eassosh8,1>
+            (1.,plmat->dHepDissDd(gp).A(),-1.,Kad_->A(),dHdaKaai.A());
+          LINALG::DENSEFUNCTIONS::multiply<double,1,soh8p_eassosh8,1>
+            (1.,&(plmat->HepDiss(gp)),-1.,dHdaKaai.A(),feas_->A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,nen_,soh8p_eassosh8,1>
+            (0.,plmat->dHepDTeas()->at(gp).A(),-1.,KaT_->A(),dHdaKaai.A());
+        }
+        break;
+      case soh8p_easnone:
+        break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+      }
     }
     eas_res += pow(feas_uncondensed.Norm2(),2.);
   }

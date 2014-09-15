@@ -66,38 +66,44 @@ namespace MAT
          const int id  ///< ID to look for in collection of summands
          ) const;
 
-
       /// length of material list
       const int nummat_;
-
       /// the list of material IDs
       const std::vector<int>* matids_;
-
       /// material mass density
       const double density_;
-
-      // plastic material parameters ************************************
-      // initial yield stress
+      /// initial yield stress
       const double inityield_;
-      // linear isotropic hardening parameter
+      /// linear isotropic hardening parameter
       const double isohard_;
-      // exponent for nonlinear isotropic hardening
+      /// exponent for nonlinear isotropic hardening
       const double expisohard_;
-      // saturation yield stress for nonlinear isotropic hardening
+      /// saturation yield stress for nonlinear isotropic hardening
       const double infyield_;
-      // linear kinematic hardening parameter
+      /// linear kinematic hardening parameter
       const double kinhard_;
-      // parameters F,G,H,L,M,N of Hill yield criterion
+      //! coefficient of thermal expansion
+      const double cte_;
+      //! initial, reference temperature
+      const double inittemp_;
+      //! yield stress softening
+      const double yieldsoft_;
+      //! hardening softening
+      const double hardsoft_;
+      /// plastic spin parameter
+      const double plspin_chi_;
+      /// parameters of Hill yield criterion (relative yield stresses)
       const double rY_11_;
       const double rY_22_;
       const double rY_33_;
       const double rY_12_;
       const double rY_23_;
       const double rY_13_;
-      const double plspin_chi_;
+      /// complementarity parameter
       double cpl_;
+      ///stabilization parameter "s" controlling the shape of the NCP function
       double stab_s_;
-      // plastic material parameters ************************************
+
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -218,6 +224,18 @@ private:
     /// plastic spin parameter chi
     virtual double PlSpinChi() const {return params_->plspin_chi_; }
 
+    /// thermal expansion coefficient
+    virtual double Cte() const {return params_->cte_; }
+
+    /// initial temperature
+    virtual double InitTemp() const {return params_->inittemp_; }
+
+    /// initial yield stress softening with temperature
+    virtual double YieldSoft() const {return params_->yieldsoft_;}
+
+    /// isotropic Hardening softening with temperature
+    virtual double HardSoft() const {return params_->hardsoft_;}
+
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
     virtual void EvaluateElast(const LINALG::Matrix<3,3>*defgrd,
@@ -227,10 +245,28 @@ private:
                                LINALG::Matrix<6,6>* cmat,
                                const int gp);
 
+    /// evaluate stresses and stiffness contribution
+    /// due to thermal expansion
+    virtual void EvaluateThermalStress(const LINALG::Matrix<3,3>*defgrd,
+                                       const double temp,
+                                       Teuchos::ParameterList& params,
+                                       LINALG::Matrix<6,1>* pk2,
+                                       LINALG::Matrix<6,6>* cmat,
+                                       const int gp);
+
+    /// evaluate stresses and stiffness contribution
+    /// due to thermal expansion
+    virtual void EvaluateCTvol(const LINALG::Matrix<3,3>*defgrd,
+                               Teuchos::ParameterList& params,
+                               LINALG::Matrix<6,1>* cTvol,
+                               LINALG::Matrix<6,6>* dCTvoldE,
+                               const int gp);
+
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
         const LINALG::Matrix<3,3>* deltaDp,///< symmetric part of plastic flow increment
+        const double temp,                 ///< current temperature
         Teuchos::ParameterList& params,    ///< Container for additional information
         LINALG::Matrix<6,6>* dPK2dDp,      ///< derivative of PK2 w.r.t. F_p^{-1}
         LINALG::Matrix<6,1>* NCP,          ///< NCP function
@@ -239,13 +275,17 @@ private:
         bool* active,                      ///< gauss point is active
         bool* elast,                       ///< gauss point needs condensation if it is not elast
         bool* as_converged,                ///< convergence of active set (false, if as has changed)
-        const int gp                       ///< gauss point
+        const int gp,                       ///< gauss point
+        LINALG::Matrix<6,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
+        LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
+        LINALG::Matrix<6,1>* dHdDp          ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
         );
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
         const LINALG::Matrix<3,3>* deltaLp,///< plastic deformation gradient (non-symmetric)
+        const double temp,                 ///< current temperature
         Teuchos::ParameterList& params,    ///< Container for additional information
         LINALG::Matrix<6,9>* dPK2dLp,      ///< derivative of PK2 w.r.t. F_p^{-1}
         LINALG::Matrix<9,1>* NCP,          ///< NCP function
@@ -254,7 +294,10 @@ private:
         bool* active,                      ///< gauss point is active
         bool* elast,                       ///< gauss point needs condensation if it is not elast
         bool* as_converged,                ///< convergence of active set (false, if as has changed)
-        const int gp                       ///< gauss point
+        const int gp,                      ///< gauss point
+        LINALG::Matrix<9,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
+        LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
+        LINALG::Matrix<9,1>* dHdLp          ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
         );
 
     /// hyperelastic stress response plus elasticity tensor
@@ -269,6 +312,9 @@ private:
 
     /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+
+    /// setup material TSI data
+    virtual void SetupTSI(const int numgp, const int numdofperelement, const bool eas);
 
     /// setup plastic orthotropy tensor H
     virtual void SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef);
@@ -303,10 +349,24 @@ private:
     virtual void GetParams(double s, double cpl){params_->stab_s_=s;params_->cpl_=cpl;};
 
     /// return accumulated plastic strain at GP
-    virtual double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_[gp];}
+    virtual double AccumulatedStrain(int gp) {return last_alpha_isotropic_[gp];}
 
     /// is this GP active
     virtual bool Active(int gp) { return activity_state_[gp];}
+
+    /// heating at this gp
+    virtual double& HepDiss(int gp) {return (*HepDiss_)[gp];}
+
+    /// derivative of heating at this gp
+    virtual Epetra_SerialDenseVector& dHepDissDd(int gp) { return (*dHepDissdd_)[gp]; }
+
+    // derivative of heating w.r.t. temperature
+    virtual double& dHepDT(int gp) { return (*dHepDissdT_)[gp]; }
+
+    // derivative of heating at each gp w.r.t. nodal temperature vector
+    // (only EAS contribution)
+    virtual Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDTeas() {return dHepDissdTeas_;}
+
 
   protected:
 
@@ -433,13 +493,18 @@ private:
                              const LINALG::Matrix<6,9>* dPK2dFpinv,
                              const LINALG::Matrix<3,3>* deltaDp,
                              const int gp,
+                             const double temp,
                              LINALG::Matrix<6,1>* NCP,
                              LINALG::Matrix<6,6>* dNCPdC,
                              LINALG::Matrix<6,6>* dNCPdDp,
+                             LINALG::Matrix<6,1>* dNCPdT,
                              LINALG::Matrix<6,6>* dPK2dDp,
                              bool* active,
                              bool* elast,
-                             bool* as_converged
+                             bool* as_converged,
+                             LINALG::Matrix<6,1>* dHdC,
+                             LINALG::Matrix<6,1>* dHdDp,
+                             Teuchos::ParameterList& params
     );
 
     virtual void EvaluateNCPandSpin(const LINALG::Matrix<3,3>* mStr,
@@ -529,6 +594,25 @@ private:
 
     /// isotropic hardening increment over this time step
     std::vector<double> delta_alpha_i_;
+
+    /// TSI infos ***************************************************
+    /// use the material to transfer linearization from the structural to the thermo element
+
+    /// Elasto-plastic heating and mechanical dissipation at each gp
+    Teuchos::RCP<std::vector<double> >                   HepDiss_;
+
+    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. nodal displacements
+    /// compute the complete derivative w.r.t. nodal displacements (not only RCG) to make sure, that the same
+    /// element technology is used.
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDissdd_;
+
+    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. gp temperature
+    Teuchos::RCP<std::vector<double> >                   dHepDissdT_;
+
+    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. to element temperature
+    /// this is an additional term to dHepDissdT_ that only appears in EAS elements
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDissdTeas_;
+
 
   };
 

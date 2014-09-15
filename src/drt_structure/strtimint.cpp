@@ -800,7 +800,7 @@ void STR::TimInt::PrepareSemiSmoothPlasticity()
   }
   discret_->Comm().MaxAll(&HavePlasticity_local,&HavePlasticity_global,1);
   if (HavePlasticity_global)
-    plastman_=Teuchos::rcp(new UTILS::PlastSsnManager(discret_));
+    plastman_=Teuchos::rcp(new DRT::UTILS::PlastSsnManager(discret_));
   return;
 }
 
@@ -934,7 +934,10 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     //plastic parameters
     if (HaveSemiSmoothPlasticity())
+    {
+      p.set<bool>("no_plastic_condensation",true);
       plastman_->SetPlasticParams(p);
+    }
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -2891,9 +2894,6 @@ void STR::TimInt::ApplyForceStiffInternal
   params.set<int>("young_temp", young_temp_);
   if (pressure_ != Teuchos::null) params.set("volume", 0.0);
 
-  // set plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(params);
-
   // compute new inner radius
   discret_->ClearState();
   discret_->SetState(0,"displacement",dis);
@@ -2910,6 +2910,14 @@ void STR::TimInt::ApplyForceStiffInternal
   // Set material displacement state for ale-wear formulation
   if( (dismatn_!=Teuchos::null) )
     discret_->SetState(0,"material_displacement",dismatn_);
+
+  // set plasticity data
+  if (HaveSemiSmoothPlasticity())
+  {
+    plastman_->SetPlasticParams(params);
+    if (DRT::Problem::Instance()->ProblemType() == prb_tsi)
+      discret_->SetState(0,"velocity",vel);
+  }
 
   // Additionally we hand in "fint_str_"
   // This is usually Teuchos::null unless we do line search in

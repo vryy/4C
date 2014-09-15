@@ -20,9 +20,10 @@ Maintainer: Alexander Seitz
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         seitz 07/13|
  *-------------------------------------------------------------------*/
-UTILS::PlastSsnManager::PlastSsnManager(Teuchos::RCP<DRT::Discretization> discret):
+DRT::UTILS::PlastSsnManager::PlastSsnManager(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
 plparams_(Teuchos::null),
+probtype_(prb_structure),
 numactive_global_(0),
 unconvergedactiveset_(false),
 lp_increment_norm_global_(0.),
@@ -49,7 +50,7 @@ eas_res_tol_(0.)
 /*----------------------------------------------------------------------*
  |  read and check input parameters (public)                 seitz 12/13|
  *----------------------------------------------------------------------*/
-void UTILS::PlastSsnManager::ReadAndCheckInput()
+void DRT::UTILS::PlastSsnManager::ReadAndCheckInput()
 {
   // read parameter lists from DRT::Problem
   plparams_ = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->SemiSmoothPlastParams()));
@@ -62,6 +63,10 @@ void UTILS::PlastSsnManager::ReadAndCheckInput()
 
   // check for EAS element technology
   plparams_->set<int>("have_EAS",0);
+
+  // problem type
+  probtype_ = DRT::Problem::Instance()->ProblemType();
+  plparams_->set<PROBLEM_TYP>("PROBLEM_TYP",probtype_);
 
   // send parameter list to all elements that might need it
   for (int i=0; i<discret_->NumMyColElements(); i++)
@@ -98,14 +103,52 @@ void UTILS::PlastSsnManager::ReadAndCheckInput()
 /*-------------------------------------------------------------------*
  |  set plastic parameters in parameter list (public)     seitz 07/13|
  *-------------------------------------------------------------------*/
-void UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
+void DRT::UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
 {
-  params.set<bool>("unconverged_active_set",false);
-  params.set<int>("number_active_plastic_gp",0);
-  params.set<double>("Lp_increment_square",0.);
-  params.set<double>("Lp_residual_square",0.);
-    params.set<double>("EAS_increment_square",0.);
-    params.set<double>("EAS_residual_square",0.);
+//  params.set<bool>("unconverged_active_set",false);
+//  params.set<int>("number_active_plastic_gp",0);
+//  params.set<double>("Lp_increment_square",0.);
+//  params.set<double>("Lp_residual_square",0.);
+//  params.set<double>("EAS_increment_square",0.);
+//  params.set<double>("EAS_residual_square",0.);
+  params.set<Teuchos::RCP<PlastSsnData> >
+    ("PlastSsnData",Teuchos::rcpFromRef<PlastSsnData>(data_));
+  data_.pl_inc_=0.;
+  data_.pl_res_=0.;
+  data_.eas_inc_=0.;
+  data_.eas_res_=0.;
+  data_.num_active_=0;
+  data_.unconverged_active_set_=false;
+
+  if (params.isParameter("predict_type"))
+    data_.pred_type_ = params.get<INPAR::STR::PredEnum>("predict_type");
+  else
+    data_.pred_type_= INPAR::STR::pred_vague;
+
+  if (params.isParameter("no_plastic_condensation"))
+    data_.no_pl_condensation_=params.get<bool>("no_plastic_condensation");
+  else
+    data_.no_pl_condensation_=false;
+
+  if (params.isParameter("scale_timint"))
+    data_.scale_timint_=params.get<double>("scale_timint");
+  else
+    data_.scale_timint_=0.;
+
+  if (params.isParameter("time_step_size"))
+    data_.dt_=params.get<double>("time_step_size");
+  else
+    data_.dt_=0.;
+
+  data_.split_res_=params.isParameter("cond_rhs_norm");
+
+  data_.ls_=params.isParameter("alpha_ls");
+  if (data_.ls_)
+    data_.alpha_ls_=params.get<double>("alpha_ls");
+
+  data_.myPID=discret_->Comm().MyPID();
+
+
 
   return;
 }
@@ -113,9 +156,9 @@ void UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
 /*-------------------------------------------------------------------*
  |  set plastic parameters in parameter list (public)     seitz 07/13|
  *-------------------------------------------------------------------*/
-void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
+void DRT::UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
 {
-  int unconverged_local=(int)params.get<bool>("unconverged_active_set");
+  int unconverged_local=(int)data_.unconverged_active_set_;
   int unconverged_global=0;
   discret_->Comm().SumAll(&unconverged_local,&unconverged_global,1);
   unconvergedactiveset_=(bool)unconverged_global;
@@ -123,28 +166,30 @@ void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
     if (discret_->Comm().MyPID()==0)
       std::cout << "ACTIVE PLASTIC SET HAS CHANGED" << std::endl;
 
-  int numactive_local=params.get<int>("number_active_plastic_gp");
+  int numactive_local=data_.num_active_;
 
   discret_->Comm().SumAll(&numactive_local,&numactive_global_,1);
 
-  double Lp_increment_norm_local=params.get<double>("Lp_increment_square");
+  double Lp_increment_norm_local=  data_.pl_inc_;
   discret_->Comm().SumAll(&Lp_increment_norm_local,&lp_increment_norm_global_,1.);
   lp_increment_norm_global_=sqrt(lp_increment_norm_global_);
 
-  double Lp_residual_norm_local=params.get<double>("Lp_residual_square");
+  double Lp_residual_norm_local=data_.pl_res_;
   discret_->Comm().SumAll(&Lp_residual_norm_local,&lp_residual_norm_global_,1.);
   lp_residual_norm_global_=sqrt(lp_residual_norm_global_);
 
   if (EAS())
   {
-    double EAS_increment_norm_local=params.get<double>("EAS_increment_square");
+    double EAS_increment_norm_local=data_.eas_inc_;
     discret_->Comm().SumAll(&EAS_increment_norm_local,&eas_increment_norm_global_,1.);
     eas_increment_norm_global_=sqrt(eas_increment_norm_global_);
 
-    double EAS_residual_norm_local=params.get<double>("EAS_residual_square");
+    double EAS_residual_norm_local=data_.eas_res_;
     discret_->Comm().SumAll(&EAS_residual_norm_local,&eas_residual_norm_global_,1.);
     eas_residual_norm_global_=sqrt(eas_residual_norm_global_);
   }
+
+  data_.tsi_pred_=false;
 
   return;
 }

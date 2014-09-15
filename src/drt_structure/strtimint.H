@@ -50,6 +50,7 @@ namespace DRT
   namespace UTILS
   {
     class LocsysManager;
+  class PlastSsnManager;
   }
 }
 
@@ -71,11 +72,6 @@ namespace CONTACT
 namespace STATMECH
 {
   class StatMechManager;
-}
-
-namespace UTILS
-{
-  class PlastSsnManager;
 }
 
 namespace POTENTIAL
@@ -929,6 +925,9 @@ namespace STR
     //! return bool indicating if contact or meshtying are defined
     bool HaveSemiSmoothPlasticity() { return (plastman_ != Teuchos::null); }
 
+    //! get access to the plasticity manager from TSI
+    const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager() {return plastman_;}
+
     //! Check if contact / meshtying is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
     void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
@@ -1105,7 +1104,7 @@ namespace STR
     Teuchos::RCP<CONTACT::Beam3cmanager>   beamcman_;
 
     //! semi-smooth plasticity
-    Teuchos::RCP<UTILS::PlastSsnManager>   plastman_;
+    Teuchos::RCP<DRT::UTILS::PlastSsnManager>   plastman_;
 
     //! statistical mechanics
     Teuchos::RCP<STATMECH::StatMechManager>   statmechman_;

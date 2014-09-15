@@ -27,7 +27,7 @@
 // include this thermo-implementation to make sure, that the same Gauss-rule
 // is used in the structural and the thermal part in a TSI problem
 #include "../drt_thermo/thermo_ele_impl_utils.H"
-
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |
@@ -38,6 +38,8 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   int owner
   )
 : DRT::Element(id,owner),
+  fbar_(false),
+  data_(Teuchos::null),
   KbbInv_(std::vector<Epetra_SerialDenseMatrix>(0)),
   Kbd_(std::vector<Epetra_SerialDenseMatrix>(0)),
   fbeta_(std::vector<Epetra_SerialDenseVector>(0)),
@@ -46,6 +48,8 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   plspintype_(plspin),
   KaaInv_(Teuchos::null),
   Kad_(Teuchos::null),
+  KaT_(Teuchos::null),
+  KdT_eas_(Teuchos::null),
   feas_(Teuchos::null),
   Kba_(Teuchos::null),
   alpha_eas_(Teuchos::null),
@@ -53,7 +57,8 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   alpha_eas_delta_over_last_timestep_(Teuchos::null),
   alpha_eas_inc_(Teuchos::null),
   eastype_(soh8p_easnone),
-  neas_(0)
+  neas_(0),
+  tsi_(false)
 {
   return;
 }
@@ -232,6 +237,19 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   // plastic spin type
   AddtoPack(data,(int)plspintype_);
 
+  // tsi
+  AddtoPack(data,(int)tsi_);
+  if (tsi_)
+  {
+    AddtoPack(data,(int)KbT_->size());
+    for (unsigned i=0; i<KbT_->size() ; i++)
+    {
+      AddtoPack(data,(*dFintdT_)[i]);
+      AddtoPack(data,(*KbT_)[i]);
+      AddtoPack(data,(*temp_last_)[i]);
+    }
+  }
+
   // EAS element technology
   AddtoPack(data,(int)eastype_);
   AddtoPack(data,neas_);
@@ -298,6 +316,23 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    // plastic spin type
    plspintype_=static_cast<PlSpinType>(ExtractInt(position,data));
 
+   //tsi
+   tsi_=(bool)ExtractInt(position,data);
+   if (tsi_)
+   {
+     dFintdT_=Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_,1> >(numgpt_));
+     KbT_=Teuchos::rcp(new std::vector<Epetra_SerialDenseVector>
+       (numgpt_,Epetra_SerialDenseVector(plspintype_)));
+     temp_last_=Teuchos::rcp(new std::vector<double>(numgpt_));
+     int size=ExtractInt(position,data);
+     for (int i=0; i<size; i++)
+     {
+       ExtractfromPack(position,data,(*dFintdT_)[i]);
+       ExtractfromPack(position,data,(*KbT_)[i]);
+       ExtractfromPack(position,data,(*temp_last_)[i]);
+     }
+   }
+
    // EAS element technology
    eastype_=static_cast<EASType>(ExtractInt(position,data));
    ExtractfromPack(position,data,neas_);
@@ -309,6 +344,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    {
      KaaInv_                             =Teuchos::null;
      Kad_                                =Teuchos::null;
+     KaT_                                =Teuchos::null;
+     KdT_eas_                            =Teuchos::null;
      feas_                               =Teuchos::null;
      Kba_                                =Teuchos::null;
      alpha_eas_                          =Teuchos::null;
@@ -320,6 +357,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    {
      KaaInv_                             =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,neas_));
      Kad_                                =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,numdofperelement_));
+     if (tsi_)
+     {
+       KaT_                      =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,nen_));
+       KdT_eas_                  =Teuchos::rcp(new LINALG::Matrix<numdofperelement_,nen_>);
+     }
      feas_                               =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
      Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,neas_)));
      alpha_eas_                          =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
@@ -407,6 +449,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   {
     if (distype!=DRT::Element::hex8)
       dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
+    if (DRT::Problem::Instance()->ProblemType() == prb_tsi)
+      dserror("You may not choose the Gauss point number in TSI problems");
 
     int ngp =0;
     linedef->ExtractInt("NUMGP",ngp);
@@ -653,6 +697,38 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::
   if (eastype_!=soh8p_easnone)
     plparams->get<int>("have_EAS")=1;
 
+  PROBLEM_TYP probtype = plparams->get<PROBLEM_TYP>("PROBLEM_TYP");
+  if (probtype == prb_tsi)
+    tsi_=true;
+  if (tsi_)
+  {
+    // get plastic hyperelastic material
+    MAT::PlasticElastHyper* plmat = NULL;
+    if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+      plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
+    else
+      dserror("so3_ssn_plast elements only with PlasticElastHyper material");
+
+    // prepare material for tsi
+    plmat->SetupTSI(numgpt_,numdofperelement_,(eastype_!=soh8p_easnone));
+
+    // setup element data
+    dFintdT_=Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_,1> >(numgpt_));
+    temp_last_=Teuchos::rcp(new std::vector<double>(numgpt_,plmat->InitTemp()));
+    KbT_=Teuchos::rcp(new std::vector<Epetra_SerialDenseVector>
+    (numgpt_,Epetra_SerialDenseVector(plspintype_)));
+
+    if (eastype_!=soh8p_easnone)
+    {
+      KaT_     = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,nen_));
+      KdT_eas_ = Teuchos::rcp(new LINALG::Matrix<numdofperelement_,nen_>);
+    }
+    else
+    {
+      KaT_     = Teuchos::null;
+      KdT_eas_ = Teuchos::null;
+    }
+  }
   return;
 }
 

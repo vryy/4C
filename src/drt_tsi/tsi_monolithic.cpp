@@ -48,6 +48,9 @@ Maintainer: Caroline Danowski
 //for coupling of nonmatching meshes
 #include "../drt_adapter/adapter_coupling_volmortar.H"
 
+// plasticity
+#include "../drt_plastic_ssn/plastic_ssn_manager.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -123,7 +126,7 @@ TSI::Monolithic::Monolithic(
   vel_->PutScalar(0.0);
 
   // --------------------------------- TSI solver: create a linear solver
-  
+
   // get iterative solver
   if (merge_tsi_blockmatrix_ == false)
     CreateLinearSolver();
@@ -170,7 +173,7 @@ TSI::Monolithic::Monolithic(
   {
     std::vector<DRT::Condition*> locsysconditions(0);
     (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
-    
+
     // if there are inclined structural Dirichlet BC, get the structural LocSysManager
     if (locsysconditions.size())
     {
@@ -373,7 +376,7 @@ void TSI::Monolithic::CreateLinearSolver()
 
     if(azprectype==INPAR::SOLVER::azprec_CheapSIMPLE)
     {
-    // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation 
+    // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
       solver_->Params().set<bool>("GENERAL",true);
     }
 
@@ -537,6 +540,11 @@ void TSI::Monolithic::NewtonFull()
   {
     // reset timer
     timernewton_.ResetStartTime();
+
+    // iter==1 is after predictor, i.e. no solver call yet
+    if (iter_==1)
+      if (StructureField()->HaveSemiSmoothPlasticity())
+        StructureField()->GetPlasticityManager()->SetTSIpredictor(true);
 
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
@@ -895,7 +903,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
 #ifndef MonTSIwithoutTHR
   // apply current temperature to structure
-  ApplyThermoCouplingState(ThermoField()->Tempnp());
+  ApplyThermoCouplingState(ThermoField()->Tempnp(),tx);
 #endif
 
 #ifdef TSIPARALLEL
@@ -921,7 +929,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
   StructureField()->Evaluate(sx);
   StructureField()->Discretization()->ClearState(true);
-  
+
 #ifdef TSI_DEBUG
   #ifndef TFSI
   std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
@@ -1342,7 +1350,7 @@ void TSI::Monolithic::LinearSolve()
                iter_==1
                );
   }  // MergeBlockMatrix
-  
+
 #ifdef TSI_DEBUG
   #ifndef TFSI
     if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
@@ -1532,6 +1540,18 @@ bool TSI::Monolithic::Converged()
   else
     dserror("Something went terribly wrong with binary operator!");
 
+  // convergence of plasticity
+  if (StructureField()->HaveSemiSmoothPlasticity())
+  {
+    conv = conv
+        && StructureField()->GetPlasticityManager()->ActiveSetConverged()
+        && StructureField()->GetPlasticityManager()->ConstraintConverged()
+        && StructureField()->GetPlasticityManager()->IncrementConverged();
+    if (StructureField()->GetPlasticityManager()->EAS())
+      conv = conv && StructureField()->GetPlasticityManager()->EasIncrConverged()
+                  && StructureField()->GetPlasticityManager()->EasResConverged();
+  }
+
   // return things
   return conv;
 
@@ -1679,6 +1699,18 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
+  // ------------------------------------------------------------- plasticity
+  if (structure_->HaveSemiSmoothPlasticity())
+  {
+    oss <<std::setw(16)<< "abs-plRes-norm";
+    oss <<std::setw(16)<< "abs-plInc-norm";
+    if (structure_->GetPlasticityManager()->EAS())
+    {
+      oss <<std::setw(16)<< "abs-easRes-norm";
+      oss <<std::setw(16)<< "abs-easInc-norm";
+    }
+  }
+
   if (soltech_ == INPAR::TSI::soltech_ptc)
   {
     oss << std::setw(16)<< "        PTC-dti";
@@ -1686,6 +1718,12 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // add solution time
   oss << std::setw(12)<< "wct";
+
+  // add plasticity information
+  if (structure_->HaveSemiSmoothPlasticity())
+  {
+    oss << std::setw(10) << "#plastic";
+  }
 
   // finish oss
   oss << std::ends;
@@ -1700,7 +1738,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-  
+
 }  // PrintNewtonIterHeader()
 
 
@@ -1820,6 +1858,18 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
+  // ------------------------------------------------------------- plasticity
+  if (structure_->HaveSemiSmoothPlasticity())
+  {
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->DeltaLp_residual_norm();
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->DeltaLp_increment_norm();
+    if (structure_->GetPlasticityManager()->EAS())
+    {
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->EAS_residual_norm();
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->EAS_increment_norm();
+    }
+  }
+
   if (soltech_ == INPAR::TSI::soltech_ptc)
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << dti_;
@@ -1827,6 +1877,10 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
 
   // add solution time of to print to screen
   oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
+
+  // add plasticity information
+  if (structure_->HaveSemiSmoothPlasticity())
+    oss << std::setw(10) << structure_->GetPlasticityManager()->NumActivePlasticGP();
 
   // finish oss
   oss << std::ends;
@@ -1880,12 +1934,12 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 
   StructureField()->Discretization()->ClearState(true);
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
-  
+
     // in case of temperature-dependent material parameters, here E(T), T_{n+1} is required in STR
   sparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
-  
+
   ApplyThermoCouplingState(ThermoField()->Tempnp());
-  
+
   // build specific assemble strategy for mechanical-thermal system matrix
   // from the point of view of StructureField:
   // structdofset = 0, thermdofset = 1

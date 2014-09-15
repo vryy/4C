@@ -20,8 +20,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
+#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "so3_ssn_plast_eletypes.H"
-
 #include "../drt_thermo/thermo_ele_impl_utils.H"
 
 // include header because number of Gauss points are determined
@@ -35,6 +35,10 @@ namespace DRT
 {
 class Discretization;
 
+namespace UTILS
+{
+struct PlastSsnData;
+}
 namespace ELEMENTS
 {
 
@@ -277,19 +281,20 @@ namespace ELEMENTS
     enum ActionType
     {
       none,
-      calc_struct_linstiff,  //!< geometrical linear analysis: stiffness matrix
-      calc_struct_nlnstiff,  //!< stiffness matrix
-      calc_struct_internalforce,  //!< internal force
+      calc_struct_linstiff,      //!< geometrical linear analysis: stiffness matrix
+      calc_struct_nlnstiff,      //!< stiffness matrix
+      calc_struct_internalforce, //!< internal force
       calc_struct_linstiffmass,  //!< geometrical linear analysis: internal force,
                                  //!< its stiffness and mass matrix
       calc_struct_nlnstiffmass,  //!< internal force, its stiffness and mass matrix
-      calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-      calc_struct_stress,  //!< calculate stresses
+      calc_struct_nlnstifflmass, //!< internal force, its stiffness and lumped mass matrix
+      calc_struct_stress,        //!< calculate stresses
       calc_struct_update_istep,  //!< update all at element level
-      calc_struct_reset_istep,  //!< reset elementwise internal variables
-                                //!< during iteration to last converged state
-                                //!< needed for predictor TangDis
-      postprocess_stress  //!< postprocess stresses
+      calc_struct_reset_istep,   //!< reset elementwise internal variables
+                                 //!< during iteration to last converged state
+                                 //!< needed for predictor TangDis
+      postprocess_stress,        //!< postprocess stresses
+      calc_struct_stifftemp      //!< calculate the coupling block K_dT in monolithic TSI
     };
 
     /*!
@@ -301,12 +306,12 @@ namespace ELEMENTS
     enum EASType  // with meaningful value for matrix size info
     {
       soh8p_easnone = 0,  //!< no EAS i.e. displacement based with tremendous locking
-      soh8p_eassosh8 = 7,  //!< related to Solid-Shell, 7 parameters to alleviate
+      soh8p_eassosh8 = 7, //!< related to Solid-Shell, 7 parameters to alleviate
                           //!< in-plane (membrane) locking and main modes for Poisson-locking
       soh8p_easmild = 9,  //!< 9 parameters consisting of modes to alleviate
-                         //!< shear locking (bending) and main incompressibility modes
-                         //!< (for Solid Hex8)
-      soh8p_easfull = 21,  //!< 21 parameters to prevent almost all locking modes.
+                          //!< shear locking (bending) and main incompressibility modes
+                          //!< (for Solid Hex8)
+      soh8p_easfull = 21, //!< 21 parameters to prevent almost all locking modes.
                           //!< Equivalent to all 30 parameters to fully complete element
                           //!< with quadratic modes (see Andelfinger 1993 for details) and therefore
                           //!< also suitable for distorted elements.
@@ -337,6 +342,9 @@ namespace ELEMENTS
         std::vector<int>&              lm,             // location matrix
         std::vector<double>&           disp,           // current displacements
         std::vector<double>&           residual,       // current residual displ
+        std::vector<double>&           vel,            // current velocities
+        std::vector<double>&           temp,           // current temperatures
+        std::vector<double>&           temp_res,       // current residual temperatures
         LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
         LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
         LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
@@ -347,6 +355,12 @@ namespace ELEMENTS
         const INPAR::STR::StressType   iostress,  // stress output option
         const INPAR::STR::StrainType   iostrain,  // strain output option
         const int MyPID  // processor id
+        );
+
+    //! Calculate the coupling matrix K_dT for monolithic TSI
+    virtual void nln_kdT_tsi(
+        LINALG::Matrix<numdofperelement_,nen_>* k_dT,  //!< (o): mechanical thermal stiffness term at current gp
+        Teuchos::ParameterList& params
         );
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
@@ -423,6 +437,7 @@ namespace ELEMENTS
         const int MyPID,
         const double detJ_w,
         const int gp,
+        const double temp,
         Teuchos::ParameterList& params,
         LINALG::Matrix<numdofperelement_,1>* force,
         LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix,
@@ -430,6 +445,7 @@ namespace ELEMENTS
         double& lp_res,
         Epetra_SerialDenseMatrix* M=NULL,
         Epetra_SerialDenseMatrix* Kda=NULL,
+        std::vector<Epetra_SerialDenseVector>* dHda=NULL,
         const double* f_bar_factor=NULL,
         const LINALG::Matrix<numdofperelement_,1>* htensor=NULL
         );
@@ -447,6 +463,7 @@ namespace ELEMENTS
         const INPAR::STR::PredEnum& pred,
         const int gp,
         const int MyPID,
+        const double temp,
         const Teuchos::ParameterList& params,
         LINALG::Matrix<3,3>& deltaLp,
         double& lp_inc,
@@ -464,6 +481,9 @@ namespace ELEMENTS
 
     // algoirthmic parameters
     bool fbar_;
+
+//     Data container of plastic_ssn_manager
+    Teuchos::RCP<DRT::UTILS::PlastSsnData> data_;
 
     static const int VOIGT3X3SYM_[3][3];
     static const int VOIGT3X3NONSYM_[3][3];
@@ -490,6 +510,8 @@ namespace ELEMENTS
     // EAS element technology ************************************
     Teuchos::RCP<Epetra_SerialDenseMatrix> KaaInv_;
     Teuchos::RCP<Epetra_SerialDenseMatrix> Kad_;
+    Teuchos::RCP<Epetra_SerialDenseMatrix> KaT_;
+    Teuchos::RCP<LINALG::Matrix<numdofperelement_,nen_> > KdT_eas_;
     Teuchos::RCP<Epetra_SerialDenseVector> feas_;
     Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > Kba_;
     Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_;
@@ -498,6 +520,23 @@ namespace ELEMENTS
     Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_inc_;
     EASType                  eastype_;
     int                      neas_;
+
+    // TSI ******************************************************
+    bool tsi_;
+
+    /// derivative of the internal force vector w.r.t. temperature at this GP
+    /// derivative w.r.t. gp temperature is sufficient as the gp temperature depends linearily
+    /// on the nodal values.
+    Teuchos::RCP<std::vector<LINALG::Matrix<numdofperelement_,1> > > dFintdT_;
+
+    /// derivative of NCP w.r.t. temperatures at gp
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > KbT_;
+
+    /// Temperature at each gp in last Newton iteration
+    /// this is needed for the recovery of the plastic flow using KbT_
+    /// As the gp temperature depends linearly on the nodal temperature dofs
+    /// a scalar value is sufficient
+    Teuchos::RCP<std::vector<double> > temp_last_;
 
   };  // class So3_Plast
 

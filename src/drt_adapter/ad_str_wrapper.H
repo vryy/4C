@@ -135,6 +135,10 @@ namespace ADAPTER
     virtual bool HaveWindkessel()
     { return structure_->HaveWindkessel(); }
 
+    /// do we have semi-smooth Newton type plasticity algorithm
+    virtual bool HaveSemiSmoothPlasticity()
+    { return structure_->HaveSemiSmoothPlasticity(); }
+
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
@@ -142,6 +146,10 @@ namespace ADAPTER
     /// get Windkessel manager defined in the structure
     virtual const Teuchos::RCP< UTILS::WindkesselManager> GetWindkesselManager()
     { return structure_->GetWindkesselManager(); }
+
+    /// get plasticity manager defined in the structure
+    virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager()
+    { return structure_->GetPlasticityManager(); }
 
     /// get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo()
@@ -406,13 +414,13 @@ namespace ADAPTER
     /// Propagate crack within the structure and accordingly modify the discretization
     virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace){ return structure_->UpdateCrackInformation( displace ); }
 
-		/// Write Gmsh output for structural field
+    /// Write Gmsh output for structural field
     virtual void writeGmshStrucOutputStep() { return structure_->writeGmshStrucOutputStep(); }
 
-		/// Get map of newly introduced node ids with their corresponding old node ids
+    /// Get map of newly introduced node ids with their corresponding old node ids
     virtual std::map<int,int> getOldNewCrackNodes(){ return structure_->getOldNewCrackNodes(); }
 
-		/// Get current crack tip nodes
+    /// Get current crack tip nodes
     virtual std::vector<int> GetCrackTipNodes(){ return structure_->GetCrackTipNodes(); }
 
     //@}

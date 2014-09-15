@@ -164,6 +164,9 @@ protected:
       std::vector<int>&              lm,             // location matrix
       std::vector<double>&           disp,           // current displacements
       std::vector<double>&           residual,       // current residual displ
+      std::vector<double>&           vel,            // current velocities
+      std::vector<double>&           temp,           // current temperatures
+      std::vector<double>&           temp_res,       // current residual temperatures
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
       LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector

@@ -58,5 +58,13 @@ void MAT::ELASTIC::VolSussmanBathe::AddCoefficientsModified(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::VolSussmanBathe::Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, double& d3PsiVolDJ3)
+{
+  d3PsiVolDJ3 += 0.;
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/

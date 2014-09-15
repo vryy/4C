@@ -60,5 +60,16 @@ void MAT::ELASTIC::VolOgden::AddCoefficientsModified(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::VolOgden::Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, double& d3PsiVolDJ3)
+{
+  const double kappa = params_ -> kappa_;
+  const double beta = params_ -> beta_;
+  const double J=modinv(2);
+  d3PsiVolDJ3 += kappa/(beta*J*J*J)*(2.-pow(J,-beta)*(beta*beta+3.*beta+2.));
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/

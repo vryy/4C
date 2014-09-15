@@ -560,7 +560,8 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   params.set<bool>("predict",true);
 
   // hand in flag indicating tangential predictor
-  params.set<bool>("eval_tang_pred",true);
+  if (HaveSemiSmoothPlasticity())
+    params.set<bool>("no_plastic_condensation",true);
 
   // compute residual forces fres_ and stiffness stiff_
   // at disn_, etc which are unchanged
