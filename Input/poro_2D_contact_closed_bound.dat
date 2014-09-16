@@ -69,7 +69,6 @@ LINEAR_SOLVER                   2
 APPLICATION                     mortarcontact
 RESTART_WITH_CONTACT            No
 ADHESION                        None
-ADHESION_BOUND                  0
 FRICTION                        none//Coulomb
 FRLESS_FIRST                    No
 GP_SLIP_INCR                    No
