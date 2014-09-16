@@ -3439,7 +3439,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   StructureField()->Discretization()->Comm().SumAll(
     &top_force_local,
     &top_force_global,
-    StructureField()->Discretization()->Comm().NumProc()
+    1
     );
 
   // --------------------------------------------- reaction force of whole body
@@ -3461,7 +3461,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   StructureField()->Discretization()->Comm().MaxAll(
     &one_dof_in_dbc.at(0),
     &one_dof_in_dbc_global.at(0),
-    StructureField()->Discretization()->Comm().NumProc()
+    1
     );
 
   // extract axial displacements (here z-displacements) of top surface
@@ -3480,7 +3480,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   StructureField()->Discretization()->Comm().SumAll(
    &top_disp_local.at(0),
    &top_disp_global,
-   StructureField()->Discretization()->Comm().NumProc()
+   1
    );
 
   // ------------------------------------------------ necking radius at point A
@@ -3502,9 +3502,6 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
       // we choose point A (6.413mm / 0mm / -13.3335mm)
       necking_radius_dof.at(0) = StructureField()->Discretization()->Dof(0,node,0);
       break;  // we only look for one specific node, if we have found it: stop
-      // --> An alternative to the break-statement is, e.g.
-      // k = StructureField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
-      // i.e. set the index k to a value higher than available so that the loop stops
 
     }  // end point A(6.413/0/-13.3335)
   }  // sum all nodes
@@ -3524,7 +3521,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   StructureField()->Discretization()->Comm().SumAll(
     &necking_radius.at(0),
     &necking_radius_global,
-    StructureField()->Discretization()->Comm().NumProc()
+    1
     );
 
   //---------------------------------------------------------------------------
@@ -3548,9 +3545,6 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
     {
       neck_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(0,node,0);
       break;  // we only look for one specific node, if we have found it: stop
-      // --> An alternative to the break-statement is, e.g.
-      // k = ThermoField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
-      // i.e. set the index k to a value higher than available so that the loop stops
     }
   }
   std::vector<double> temperature(1);
@@ -3568,7 +3562,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   ThermoField()->Discretization()->Comm().SumAll(
     &temperature.at(0),
     &necking_temperature_global,
-    ThermoField()->Discretization()->Comm().NumProc()
+    1
     );
 
   // -----------------------------------------temperatures at top, i.e. point B
@@ -3588,16 +3582,13 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
     {
       top_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(0,node,0);
       break;  // we only look for one specific node, if we have found it: stop
-      // --> An alternative to the break-statement is, e.g.
-      // k = ThermoField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
-      // i.e. set the index k to a value higher than available so that the loop stops
     }
   }  // loop over thermal nodes
 
   // extract top-temperatures of top surface out of global temperature vector
   std::vector<double> top_temperature_local(1);
   top_temperature_local.at(0) = 0.0;
-  if (top_temperature_dof.at(0) != -1)
+  if (top_temperature_dof.at(0) != -1.)
   {
     DRT::UTILS::ExtractMyValues(
       *(ThermoField()->Tempnp()),  // global vector (i)
@@ -3611,7 +3602,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   ThermoField()->Discretization()->Comm().SumAll(
     &top_temperature_local.at(0),
     &top_temperature_global,
-    ThermoField()->Discretization()->Comm().NumProc()
+    1
     );
 
   // -------------------------------------------------- print results to screen
