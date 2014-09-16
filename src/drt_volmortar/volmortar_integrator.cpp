@@ -199,9 +199,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
      Teuchos::RCP<const DRT::Discretization> masterdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval;
-  LINALG::Matrix<nm_,1>             mval;
-  LINALG::Matrix<ns_,1>             lmval;
+  LINALG::Matrix<ns_,1> sval;
+  LINALG::Matrix<nm_,1> mval;
+  LINALG::Matrix<ns_,1> lmval;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -217,8 +217,8 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
     cell->LocalToGlobal(eta,globgp,0);
 
     // map gp into slave and master para space
-    double sxi[2] = {0.0, 0.0};
-    double mxi[2] = {0.0, 0.0};
+    double sxi[3] = {0.0, 0.0 , 0.0};
+    double mxi[3] = {0.0, 0.0 , 0.0};
     MORTAR::UTILS::GlobalToLocal<distypeS>(sele,globgp,sxi);
     MORTAR::UTILS::GlobalToLocal<distypeM>(mele,globgp,mxi);
 
@@ -228,12 +228,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
       dserror("Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::volmortar_shape_function_2D(sval, sxi[0],sxi[1],distypeS);
-    UTILS::volmortar_shape_function_2D(mval, mxi[0],mxi[1],distypeM);
+    UTILS::shape_function<distypeS>(sval,sxi);
+    UTILS::shape_function<distypeM>(mval,mxi);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
     //UTILS::volmortar_shape_function_2D(lmval, sxi[0],sxi[1],distypeS);
-    UTILS::volmortar_dualshape_function_2D(lmval,sele, sxi[0],sxi[1],distypeS);
+    UTILS::dual_shape_function<distypeS>(lmval,sxi,sele);
 
     // evaluate the integration cell Jacobian
     double jac = cell->Jacobian(eta);
@@ -398,13 +398,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
       continue;
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
-    UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
+    UTILS::shape_function<distypeS>(sval_A, Axi);
+    UTILS::shape_function<distypeM>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
-    // ---
-    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
+    UTILS::dual_shape_function<distypeS>(lmval_A,Axi,Aele,dualquad_);
+    UTILS::dual_shape_function<distypeM>(lmval_B,Bxi,Bele,dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -553,14 +552,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
       //CheckMapping3D(Aele,Bele,Axi,Bxi);
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
-      UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
+      UTILS::shape_function<distypeS>(sval_A, Axi);
+      UTILS::shape_function<distypeM>(mval_A, Bxi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
-      // ---
-      UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
-
+      UTILS::dual_shape_function<distypeS>(lmval_A, Axi,Aele,dualquad_);
+      UTILS::dual_shape_function<distypeM>(lmval_B, Bxi,Bele,dualquad_);
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -720,19 +717,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
         Bele = Bdis->gElement(gpid);
       }
 
-      // evaluate trace space shape functions (on both elements)
-      if(dualquad_ == INPAR::VOLMORTAR::dualquad_quad_mod)
-        UTILS::volmortar_shape_function_3D_modified(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
-      else if (dualquad_ == INPAR::VOLMORTAR::dualquad_no_mod)
-        UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
-      else
-        dserror("No lin modification for quadratic elements possible!");
-
       // for "master" side
-      UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
+      UTILS::shape_function<distypeS>(sval_A,Axi,dualquad_);
+      UTILS::shape_function<distypeM>(mval_A,Bxi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
+      UTILS::dual_shape_function<distypeS>(lmval_A,Axi,Aele,dualquad_);
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -856,19 +846,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
       }
 
       // evaluate trace space shape functions (on both elements)
-      if(dualquad_ == INPAR::VOLMORTAR::dualquad_quad_mod)
-        UTILS::volmortar_shape_function_3D_modified(sval_B, Bxi[0],Bxi[1], Bxi[2],distypeM);
-      else if (dualquad_ == INPAR::VOLMORTAR::dualquad_no_mod)
-        UTILS::volmortar_shape_function_3D(sval_B, Bxi[0],Bxi[1], Bxi[2],distypeM);
-      else
-        dserror("No lin modification for quadratic elements possible!");
-
-      // for "master" side
-      UTILS::volmortar_shape_function_3D(mval_A, Axi[0],Axi[1], Axi[2],distypeS);
+      UTILS::shape_function<distypeM>(sval_B,Bxi,dualquad_);
+      UTILS::shape_function<distypeS>(mval_A,Axi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
-
+      UTILS::dual_shape_function<distypeM>(lmval_B,Bxi,Bele,dualquad_);
       // compute cell D/M matrix ****************************************
       // dual shape functions
       for (int j=0;j<nm_;++j)
@@ -975,14 +957,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
     CheckMapping3D(Aele,Bele,Axi,Bxi);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
-    UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
+    UTILS::shape_function<distypeS>(sval_A,Axi);
+    UTILS::shape_function<distypeM>(mval_A,Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS,dualquad_);
-    // ---
-    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM,dualquad_);
-
+    UTILS::dual_shape_function<distypeS>(lmval_A,Axi,Aele,dualquad_);
+    UTILS::dual_shape_function<distypeM>(lmval_B,Bxi,Bele,dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -1331,7 +1311,7 @@ void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
 
     // get values
     LINALG::Matrix<n_,1>  val;
-    UTILS::volmortar_shape_function_3D(val, xi[0],xi[1], xi[2],distype);
+    UTILS::shape_function<distype>(val,xi);
 
     int nsdof=nodediscret->NumDof(1,node);
 

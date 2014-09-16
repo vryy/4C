@@ -24,9 +24,10 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mortar/mortar_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_lib/drt_element_integration_select.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
@@ -36,112 +37,253 @@ namespace VOLMORTAR
 
 namespace UTILS
 {
-
+//=====================================================================================
+//=====================================================================================
 template<class V>
 void volmortar_shape_function_3D_deriv(
-  V&                                 deriv1,  ///< to be filled with shape function values
-  double&                            r,       ///< xi0 coordinate
-  double&                            s,       ///< xi1 coordinate
-  double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
+  V&                                       deriv1,  ///< to be filled with shape function values
+  double&                                  r,       ///< xi0 coordinate
+  double&                                  s,       ///< xi1 coordinate
+  double&                                  t,       ///< xi2 coordinate
+  DRT::Element::DiscretizationType         shape    ///< distinguish between mortar shape
   );
 
 template<DRT::Element::DiscretizationType distype>
-bool LocalToGlobal(DRT::Element& ele,
-                   const double* xi,
-                   double* globcoord);
+bool LocalToGlobal(DRT::Element&           ele,     ///< element which is considered
+                   const double*           xi,      ///< para. coordinates
+                   double*                 globcoord);
 
 template<DRT::Element::DiscretizationType distype>
-double Jacobian(const double* xi, DRT::Element& ele);
+double Jacobian(
+    const double*                          xi,      ///< para. coordinates
+    DRT::Element&                          ele);    ///< element which is considered
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+double nurbs_Jacobian(
+  W&                                       deriv,   ///< to be filled with shape function deriv
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  );
+
+template<class V>
+void volmortar_shape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  double&                                  xi0,     ///< xi0 coordinate
+  DRT::Element::DiscretizationType         shape    ///< distinguish between mortar shape
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_shape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function values
+  const U*                                 xi,      ///< xi0 coordinate
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
+  );
 
 template<class V>
 void volmortar_shape_function_2D(
-  V&                                 funct,  ///< to be filled with shape function values
-  double&                            xi0,    ///< xi0 coordinate
-  double&                            xi1,    ///< xi1 coordinate
-  DRT::Element::DiscretizationType  shape    ///< distinguish between mortar shape
+  V&                                       funct,   ///< to be filled with shape function values
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  DRT::Element::DiscretizationType         shape    ///< distinguish between mortar shape
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_shape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function values
+  const U*                                 xi,      ///< xi0 coordinate
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
   );
 
 template<class V>
 void volmortar_shape_function_3D(
-  V&                                 funct,   ///< to be filled with shape function values
-  double&                            r,       ///< xi0 coordinate
-  double&                            s,       ///< xi1 coordinate
-  double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
+  V&                                       funct,   ///< to be filled with shape function values
+  const double&                            r,       ///< xi0 coordinate
+  const double&                            s,       ///< xi1 coordinate
+  const double&                            t,       ///< xi2 coordinate
+  DRT::Element::DiscretizationType         shape    ///< distinguish between mortar shape
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_shape_function_3D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function values
+  const U*                                 xi,      ///< xi0 coordinate
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
   );
 
 template<class V>
 void volmortar_shape_function_3D_modified(
-  V&                                 funct,   ///< to be filled with shape function values
-  double&                            r,       ///< xi0 coordinate
-  double&                            s,       ///< xi1 coordinate
-  double&                            t,       ///< xi2 coordinate
-  DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
+  V&                                       funct,   ///< to be filled with shape function values
+  const double&                            r,       ///< xi0 coordinate
+  const double&                            s,       ///< xi1 coordinate
+  const double&                            t,       ///< xi2 coordinate
+  DRT::Element::DiscretizationType         shape    ///< distinguish between mortar shape
   );
 
-template<class V>
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void volmortar_dualshape_function_1D(
+    V&                                       funct,   ///< to be filled with shape function values
+    DRT::Element&                            ele,     ///< element which is considered
+    const T*                                 xi,      ///< para. coordinates
+    INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
+    );
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_dualshape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,
-  const double&                            xi0,     ///< xi0 coordinate
-  const double&                            xi1,     ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distinguish between mortar shape
-  );
-
-template<class V>
-void volmortar_dualshape_function_3D(
-  V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,
-  const double&                            xi0,     ///< xi0 coordinate
-  const double&                            xi1,     ///< xi1 coordinate
-  const double&                            xi2,     ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape,   ///< distinguish between mortar shape
+  DRT::Element&                            ele,     ///< element which is considered
+  const T*                                 xi,      ///< para. coordinates
   INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
   );
 
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_dualshape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void volmortar_dualshape_function_3D(
+  V&                                       funct,   ///< to be filled with shape function values
+  DRT::Element&                            ele,     ///< element which is considered
+  const T*                                 xi,      ///< para. coordinates
+  INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_dualshape_function_3D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  );
+
+// general evaluation routine for std shape functions
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void shape_function(
+    V&                                     f,       ///< to be filled with shape function values
+    const T*                               xi,      ///< para. coordinates
+    INPAR::VOLMORTAR::DualQuad             dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
+
+// general evaluation routine for dual shape functions
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void dual_shape_function(
+    V&                                     f,       ///< to be filled with shape function values
+    const T&                               xi,      ///< para. coordinates
+    DRT::Element&                          ele,     ///< element which is considered
+    INPAR::VOLMORTAR::DualQuad             dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void nurbs_shape_function(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
+  );
+
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void nurbs_dualshape_function(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  );
+//=====================================================================================
+//=====================================================================================
+
 /*----------------------------------------------------------------------*
- |  Get global coords for given local coords (ref pos)       farah 01/14|
+ |  get optimal gauss rule for volmortar integration         farah 09/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-bool LocalToGlobal(DRT::Element& ele,
-                   const double* xi,
-                   double* globcoord)
-{
-  // check input
-  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+  struct DisTypeToOptGaussRule {};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex8>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_8point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex20>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_64point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex27>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_64point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tet4>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_4point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tet10>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_45point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::wedge6>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_wedge_6point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::wedge15> {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_wedge_9point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::pyramid5>{static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_pyramid_8point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs8>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_8point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs27> {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::quad4>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_4point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::quad8>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::quad9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tri3>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_3point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tri6>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_6point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs4>  {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_4point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs9>  {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
 
-  static const int n    = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-  DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
-
-  for (int i=0;i<ndim;++i)
-    globcoord[i]=0.0;
-
-  LINALG::Matrix<n,1>      val;
-  if(ndim==2)      DRT::UTILS::shape_function_2D(val,xi[0],xi[1],distype);
-  else if(ndim==3) DRT::UTILS::shape_function_3D(val,xi[0],xi[1],xi[2],distype);
-  else dserror("Wrong Dimension");
-
-  LINALG::Matrix<ndim,n>   coord;
-
-  for (int i=0;i<n;++i)
+  /*----------------------------------------------------------------------*
+   | NURBS info                                                farah 09/14|
+   *----------------------------------------------------------------------*/
+  template <DRT::Element::DiscretizationType distype>
+  bool IsNurbs()
   {
-    for(int j=0;j<ndim;++j)
+    bool isnurbs = true;
+    switch (distype)
     {
-      coord(j,i)   = mynodes[i]->X()[j];
-
-      // use shape function values for interpolation
-      globcoord[j] += val(i)*coord(j,i);
+    case DRT::Element::nurbs2:
+    case DRT::Element::nurbs3:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs8:
+    case DRT::Element::nurbs9:
+    case DRT::Element::nurbs27:
+      isnurbs = true;
+      break;
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+    case DRT::Element::line4:
+    case DRT::Element::line5:
+    case DRT::Element::line6:
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    case DRT::Element::tet4:
+    case DRT::Element::tet10:
+    case DRT::Element::wedge6:
+    case DRT::Element::wedge15:
+    case DRT::Element::pyramid5:
+      isnurbs = false;
+      break;
+    default:
+      dserror("Distype unknown!");
     }
+    return isnurbs;
   }
-
-
-  return true;
-};
 
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant                            farah 01/14|
@@ -159,13 +301,43 @@ double Jacobian(const double* xi, DRT::Element& ele)
   std::vector<double> gxi(3);
   std::vector<double> geta(3);
 
-  //***************************************************************************
-  // 2D bilinear case (4noded quadrilateral element)
-  // 2D quadratic case (6noded triangular element)
-  // 2D serendipity case (8noded quadrilateral element)
-  // 2D biquadratic case (9noded quadrilateral element)
-  if (distype==DRT::Element::quad4 || distype==DRT::Element::tri6 ||
-      distype==DRT::Element::quad8 || distype==DRT::Element::quad9)
+  switch(distype)
+  {
+  case DRT::Element::line2:
+  case DRT::Element::line3:
+  {
+    // metrics routine gives local basis vectors
+    LINALG::Matrix<ndim,nn> deriv;
+
+    // get shape function values and derivatives at xi
+    DRT::UTILS::shape_function_1D_deriv1(deriv,xi[0],distype);
+
+    // build basis vectors gxi and geta
+    for (int i=0;i<nn;++i)
+    {
+      // first local basis vector
+      gxi[0] += deriv(0,i)*ele.Nodes()[i]->X()[0];
+      gxi[1] += deriv(0,i)*ele.Nodes()[i]->X()[1];
+      gxi[2] += deriv(0,i)*ele.Nodes()[i]->X()[2];
+    }
+
+    // second local basis vector
+    geta[0] = 0.0;
+    geta[1] = 0.0;
+    geta[2] = 1.0;
+
+    // cross product of gxi and geta
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+    jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+
+    break;
+  }
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
   {
     // metrics routine gives local basis vectors
     LINALG::Matrix<ndim,nn> deriv;
@@ -193,41 +365,10 @@ double Jacobian(const double* xi, DRT::Element& ele)
     cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
     cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
     jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+
+    break;
   }
-  //***************************************************************************
-  // 3D Hex8
-  else if (distype == DRT::Element::hex8)
-  {
-    LINALG::Matrix<3,8> derivs;
-    const double r = xi[0];
-    const double s = xi[1];
-    const double t = xi[2];
-
-    DRT::UTILS::shape_function_3D_deriv1(derivs,r,s,t,DRT::Element::hex8);
-
-
-    LINALG::Matrix<8,3> xrefe;
-    for (int i=0; i<8; ++i)
-    {
-      DRT::Node** nodes=ele.Nodes();
-      if(!nodes) dserror("Nodes() returned null pointer");
-
-      xrefe(i,0) = nodes[i]->X()[0];
-      xrefe(i,1) = nodes[i]->X()[1];
-      xrefe(i,2) = nodes[i]->X()[2];
-    }
-
-    LINALG::Matrix<3,3> invJ;
-    invJ.Clear();
-
-    invJ.Multiply(derivs,xrefe);
-    jac = invJ.Invert();
-    if (jac <= 0.0)
-      dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
-  }
-  //***************************************************************************
-  // 3D tet4
-  else if (distype == DRT::Element::tet4)
+  case DRT::Element::tet4:
   {
     LINALG::Matrix<4,4> jacob;
     for (int i=0; i<4; i++)  jacob(0,i)=1;
@@ -236,81 +377,23 @@ double Jacobian(const double* xi, DRT::Element& ele)
         jacob(row+1,col)= ele.Nodes()[col]->X()[row];
 
     jac=jacob.Determinant()/6.0;
+
+    break;
   }
-  //***************************************************************************
-  // 3D tet10
-  else if (distype == DRT::Element::tet10)
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  case DRT::Element::tet10:
   {
-    LINALG::Matrix<3,10> derivs;
-    double r = xi[0];
-    double s = xi[1];
-    double t = xi[2];
-
-    DRT::UTILS::shape_function_3D_deriv1(derivs,r,s,t,DRT::Element::tet10);
-
-    LINALG::Matrix<10,3> xrefe;
-    for (int i=0; i<10; ++i)
-    {
-      DRT::Node** nodes=ele.Nodes();
-      if(!nodes) dserror("Nodes() returned null pointer");
-
-      xrefe(i,0) = nodes[i]->X()[0];
-      xrefe(i,1) = nodes[i]->X()[1];
-      xrefe(i,2) = nodes[i]->X()[2];
-    }
-
-    LINALG::Matrix<3,3> invJ;
-    invJ.Clear();
-
-    invJ.Multiply(derivs,xrefe);
-    jac = invJ.Invert();
-    if (jac <= 0.0)
-      dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
-  }
-  //***************************************************************************
-  // 3D Hex20
-  else if (distype == DRT::Element::hex20)
-  {
-    LINALG::Matrix<3,20> derivs;
-    double r = xi[0];
-    double s = xi[1];
-    double t = xi[2];
-
-    DRT::UTILS::shape_function_3D_deriv1(derivs,r,s,t,DRT::Element::hex20);
-
-    LINALG::Matrix<20,3> xrefe;
-    for (int i=0; i<20; ++i)
-    {
-      DRT::Node** nodes=ele.Nodes();
-      if(!nodes) dserror("Nodes() returned null pointer");
-
-      xrefe(i,0) = nodes[i]->X()[0];
-      xrefe(i,1) = nodes[i]->X()[1];
-      xrefe(i,2) = nodes[i]->X()[2];
-    }
-
-    LINALG::Matrix<3,3> invJ;
-    invJ.Clear();
-
-    invJ.Multiply(derivs,xrefe);
-    jac = invJ.Invert();
-    if (jac <= 0.0)
-      dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
-  }
-  //***************************************************************************
-  // 3D Hex27
-  else if (distype == DRT::Element::hex27)
-  {
-    LINALG::Matrix<3,27> derivs;
+    LINALG::Matrix<ndim,nn> derivs;
     const double r = xi[0];
     const double s = xi[1];
     const double t = xi[2];
 
-    DRT::UTILS::shape_function_3D_deriv1(derivs,r,s,t,DRT::Element::hex27);
+    DRT::UTILS::shape_function_3D_deriv1(derivs,r,s,t,distype);
 
-
-    LINALG::Matrix<27,3> xrefe;
-    for (int i=0; i<27; ++i)
+    LINALG::Matrix<nn,ndim> xrefe;
+    for (int i=0; i<nn; ++i)
     {
       DRT::Node** nodes=ele.Nodes();
       if(!nodes) dserror("Nodes() returned null pointer");
@@ -320,29 +403,214 @@ double Jacobian(const double* xi, DRT::Element& ele)
       xrefe(i,2) = nodes[i]->X()[2];
     }
 
-    LINALG::Matrix<3,3> invJ;
+    LINALG::Matrix<ndim,ndim> invJ;
     invJ.Clear();
 
     invJ.Multiply(derivs,xrefe);
     jac = invJ.Invert();
     if (jac <= 0.0)
       dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
+
+    break;
   }
-  // unknown case
-  else
-    dserror("ERROR: Jacobian called for unknown element type!");
+
+  default:
+      dserror("shape unknown\n");
+  }
 
   return jac;
 }
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Jacobian determinant for NURBS                  farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+double nurbs_Jacobian(
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  )
+{
+  //! nn_: number of master element nodes
+  static const int nn = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  //! number of space dimensions ("+1" due to considering only interface elements)
+  static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  double jac = 0.0;
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
+
+  switch(distype)
+  {
+  case DRT::Element::nurbs2:
+  case DRT::Element::nurbs3:
+  {
+    // build basis vectors gxi and geta
+    for (int i=0;i<nn;++i)
+    {
+      // first local basis vector
+      gxi[0] += deriv(0,i)*ele.Nodes()[i]->X()[0];
+      gxi[1] += deriv(0,i)*ele.Nodes()[i]->X()[1];
+      gxi[2] += deriv(0,i)*ele.Nodes()[i]->X()[2];
+    }
+
+    // second local basis vector
+    geta[0] = 0.0;
+    geta[1] = 0.0;
+    geta[2] = 1.0;
+
+    // cross product of gxi and geta
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+    jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+
+    break;
+  }
+  case DRT::Element::nurbs9:
+  case DRT::Element::nurbs4:
+  {
+    // build basis vectors gxi and geta
+    for (int i=0;i<nn;++i)
+    {
+      // first local basis vector
+      gxi[0] += deriv(0,i)*ele.Nodes()[i]->X()[0];
+      gxi[1] += deriv(0,i)*ele.Nodes()[i]->X()[1];
+      gxi[2] += deriv(0,i)*ele.Nodes()[i]->X()[2];
+
+      // second local basis vector
+      geta[0] += deriv(1,i)*ele.Nodes()[i]->X()[0];
+      geta[1] += deriv(1,i)*ele.Nodes()[i]->X()[1];
+      geta[2] += deriv(1,i)*ele.Nodes()[i]->X()[2];
+    }
+
+    // cross product of gxi and geta
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+    jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+
+    break;
+  }
+  case DRT::Element::nurbs8:
+  case DRT::Element::nurbs27:
+  {
+    LINALG::Matrix<nn,ndim> xrefe;
+    for (int i=0; i<nn; ++i)
+    {
+      DRT::Node** nodes=ele.Nodes();
+      if(!nodes) dserror("Nodes() returned null pointer");
+
+      xrefe(i,0) = nodes[i]->X()[0];
+      xrefe(i,1) = nodes[i]->X()[1];
+      xrefe(i,2) = nodes[i]->X()[2];
+    }
+
+    LINALG::Matrix<ndim,ndim> invJ;
+    invJ.Clear();
+
+    invJ.Multiply(deriv,xrefe);
+    jac = invJ.Invert();
+    if (jac <= 0.0)
+      dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
+
+    break;
+  }
+
+  default:
+      dserror("shape unknown\n");
+  }
+
+  return jac;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate std. shape 1D                                   farah 09/14|
+ *----------------------------------------------------------------------*/
+template<class V>
+void volmortar_shape_function_1D(
+  V&                                 funct,  ///< to be filled with shape function values
+  const double&                            xi0,    ///< xi0 coordinate
+  DRT::Element::DiscretizationType   shape   ///< distinguish between mortar shape
+  )
+{
+  switch (shape)
+  {
+  // *********************************************************************
+  // 1D standard linear shape functions (line2)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case DRT::Element::line2:
+  {
+    funct(0) = 0.5*(1.0-xi0);
+    funct(1) = 0.5*(1.0+xi0);
+    break;
+  }
+  // *********************************************************************
+  // 1D standard quadratic shape functions (line3)
+  // (used for interpolation of displacement field)
+  // *********************************************************************
+  case DRT::Element::line3:
+  {
+    funct(0) = 0.5*xi0*(xi0-1.0);
+    funct(1) = 0.5*xi0*(xi0+1.0);
+    funct(2) = (1.0-xi0)*(1.0+xi0);
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate std. nurbs shape 1D                             farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_shape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
+  )
+{
+  switch (distype)
+  {
+  case DRT::Element::nurbs2:
+  case DRT::Element::nurbs3:
+  {
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
+    (funct,
+     deriv,
+     xi,
+     knots,
+     weights,
+     distype);
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  evaluate std. shape 2D                                   farah 01/14|
  *----------------------------------------------------------------------*/
 template<class V>
 void volmortar_shape_function_2D(
   V&                                 funct,  ///< to be filled with shape function values
-  double&                            xi0,    ///< xi0 coordinate
-  double&                            xi1,    ///< xi1 coordinate
-  DRT::Element::DiscretizationType  shape    ///< distinguish between mortar shape
+  const double&                      xi0,    ///< xi0 coordinate
+  const double&                      xi1,    ///< xi1 coordinate
+  DRT::Element::DiscretizationType   shape   ///< distinguish between mortar shape
   )
 {
   switch (shape)
@@ -378,14 +646,47 @@ void volmortar_shape_function_2D(
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate std. nurbs shape 2D                             farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_shape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
+  )
+{
+  switch (distype)
+  {
+  case DRT::Element::nurbs4:
+  case DRT::Element::nurbs9:
+  {
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+    (funct,
+     deriv,
+     xi,
+     knots,
+     weights,
+     distype);
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate std. shape 3D                                   farah 01/14|
  *----------------------------------------------------------------------*/
 template<class V>
 void volmortar_shape_function_3D(
   V&                                 funct,   ///< to be filled with shape function values
-  double&                            r,       ///< xi0 coordinate
-  double&                            s,       ///< xi1 coordinate
-  double&                            t,       ///< xi2 coordinate
+  const double&                      r,       ///< xi0 coordinate
+  const double&                      s,       ///< xi1 coordinate
+  const double&                      t,       ///< xi2 coordinate
   DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
   )
 {
@@ -532,6 +833,38 @@ void volmortar_shape_function_3D(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  evaluate std. nurbs shape 3D                             farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_shape_function_3D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
+  )
+{
+  switch (distype)
+  {
+  case DRT::Element::nurbs8:
+  case DRT::Element::nurbs27:
+  {
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+    (funct,
+     deriv,
+     xi,
+     knots,
+     weights,
+     distype);
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate modified shape 3D (for quadr. dual elements)    farah 05/14|
@@ -539,9 +872,9 @@ void volmortar_shape_function_3D(
 template<class V>
 void volmortar_shape_function_3D_modified(
   V&                                 funct,   ///< to be filled with shape function values
-  double&                            r,       ///< xi0 coordinate
-  double&                            s,       ///< xi1 coordinate
-  double&                            t,       ///< xi2 coordinate
+  const double&                      r,       ///< xi0 coordinate
+  const double&                      s,       ///< xi1 coordinate
+  const double&                      t,       ///< xi2 coordinate
   DRT::Element::DiscretizationType  shape     ///< distinguish between mortar shape
   )
 {
@@ -666,18 +999,188 @@ void volmortar_shape_function_3D_modified(
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate dual shape 2D                                   farah 01/14|
+ |  evaluate dual shape 1D                                   farah 09/14|
  *----------------------------------------------------------------------*/
-template<class V>
-void volmortar_dualshape_function_2D(
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void volmortar_dualshape_function_1D(
+    V&                                       funct,   ///< to be filled with shape function values
+    DRT::Element&                            ele,     ///< element which is considered
+    const T*                                 xi,      ///< para. coordinates
+    INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
+    )
+{
+  switch (distype)
+  {
+  // *********************************************************************
+  // 1D dual linear shape functions (line2)
+  // (used for interpolation of Lagrange multiplier field)
+  // *********************************************************************
+  case DRT::Element::line2:
+  {
+    funct(0) = 0.5*(1-3.0*xi[0]);
+    funct(1) = 0.5*(1+3.0*xi[0]);
+
+    break;
+  }
+  // *********************************************************************
+  // *********************************************************************
+  case DRT::Element::line3:
+  {
+    // establish fundamental data
+    //! number of space dimensions
+    static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    //! number of element nodes
+    static const int nnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    // get gauss rule
+    const DRT::UTILS::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
+
+    double detg = 0.0;
+
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
+
+    LINALG::Matrix<nnodes,1> stdval;
+
+    for(int i=0;i<nnodes;++i)
+      funct(i)=0.0;
+
+    for (int i=0;i<intpoints.IP().nquad;++i)
+    {
+      double gpc[1] = {intpoints.IP().qxg[i][0]};
+
+      shape_function<distype>(stdval,gpc);
+      detg = Jacobian<distype>(gpc,ele);
+
+      for (int j=0;j<nnodes;++j)
+      {
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=intpoints.IP().qwgt[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*intpoints.IP().qwgt[i]*stdval(j)*detg;
+        }
+      }
+    }
+
+    // get solution matrix with dual parameters
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
+
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    volmortar_shape_function_1D(stdval,xi[0],DRT::Element::line3);
+
+    // evaluate dual shape functions
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        funct(i)+=ae(i,j)*stdval(j);
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual NURBS shapes 1D                            farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_dualshape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,
-  const double&                            xi0,     ///< xi0 coordinate
-  const double&                            xi1,     ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape    ///< distinguish between mortar shape
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
   )
 {
-  switch (shape)
+  switch (distype)
+  {
+  // *********************************************************************
+  // *********************************************************************
+  case DRT::Element::nurbs2:
+  case DRT::Element::nurbs3:
+  {
+    //! number of space dimensions
+    static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    //! number of element nodes
+    static const int nnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    // get gauss rule
+    const DRT::UTILS::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
+
+    // get solution matrix with dual parameters
+    LINALG::Matrix<nnodes,1> stdval;
+    W refderiv = deriv;
+
+    // establish fundamental data
+    double detg = 0.0;
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
+
+    for (int i=0;i<intpoints.IP().nquad;++i)
+    {
+      double gpc[1] = {intpoints.IP().qxg[i][0]};
+      nurbs_shape_function<distype>(stdval,refderiv,gpc,weights,knots);
+      detg = nurbs_Jacobian<distype>(refderiv,gpc,weights,knots,ele);
+
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=intpoints.IP().qwgt[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*intpoints.IP().qwgt[i]*stdval(j)*detg;
+        }
+    }
+
+    // calcute coefficient matrix
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
+
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    nurbs_shape_function<distype>(stdval,refderiv,xi,weights,knots);
+
+    // evaluate dual shape functions
+    for (int i=0;i<nnodes;++i)
+    {
+      funct(i)   = 0.0;
+      deriv(0,i) = 0.0;
+    }
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+      {
+        funct(i)   += ae(i,j)*stdval(j);
+        deriv(0,i) += ae(i,j)*refderiv(0,j);
+      }
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual shape 2D                                   farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void volmortar_dualshape_function_2D(
+    V&                                       funct,   ///< to be filled with shape function values
+    DRT::Element&                            ele,     ///< element which is considered
+    const T*                                 xi,      ///< para. coordinates
+    INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
+    )
+{
+  switch (distype)
   {
   // *********************************************************************
   // 2D dual linear shape functions (tri3)
@@ -685,25 +1188,31 @@ void volmortar_dualshape_function_2D(
   // *********************************************************************
   case DRT::Element::tri3:
   {
-    funct(0) = 3.0 - 4.0*xi0 - 4.0*xi1;
-    funct(1) = 4.0 * xi0     - 1.0;
-    funct(2) = 4.0 * xi1     - 1.0;
+    funct(0) = 3.0 - 4.0*xi[0] - 4.0*xi[1];
+    funct(1) = 4.0 * xi[0]     - 1.0;
+    funct(2) = 4.0 * xi[1]     - 1.0;
 
     break;
   }
   // *********************************************************************
-  // 2D dual bilinear shape functions (quad4)
-  // (used for interpolation of Lagrange mutliplier field)
-  // (including adaption process for distorted elements)
   // *********************************************************************
+  case DRT::Element::tri6:
   case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  case DRT::Element::nurbs9:
   {
-    const int nnodes = 4;
+    //! number of space dimensions
+    static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    //! number of element nodes
+    static const int nnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    // get gauss rule
+    const DRT::UTILS::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
+
     // get solution matrix with dual parameters
     LINALG::Matrix<nnodes,1>      stdval;
-
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::ElementIntegrator integrator(ele.Shape());
 
     // establish fundamental data
     double detg = 0.0;
@@ -711,27 +1220,26 @@ void volmortar_dualshape_function_2D(
     LINALG::Matrix<nnodes,nnodes> de(true);
     LINALG::Matrix<nnodes,nnodes> ae;
 
-    for (int i=0;i<integrator.nGP();++i)
+    for (int i=0;i<intpoints.IP().nquad;++i)
     {
-      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-      volmortar_shape_function_2D(stdval,gpc[0],gpc[1],DRT::Element::quad4);
-      detg = Jacobian<DRT::Element::quad4>(gpc,ele);
+      double gpc[2] = {intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1]};
+      shape_function<distype>(stdval,gpc);
+
+      detg = Jacobian<distype>(gpc,ele);
 
       for (int j=0;j<nnodes;++j)
         for (int k=0;k<nnodes;++k)
         {
-          me(j,k)+=integrator.Weight(i)*stdval(j)*stdval(k)*detg;
-          de(j,k)+=(j==k)*integrator.Weight(i)*stdval(j)*detg;
+          me(j,k)+=intpoints.IP().qwgt[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*intpoints.IP().qwgt[i]*stdval(j)*detg;
         }
     }
-
     // invert bi-ortho matrix me
     LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
-    double xi[2] = {xi0,xi1};
-    volmortar_shape_function_2D(stdval,xi[0],xi[1],DRT::Element::quad4);
+    shape_function<distype>(stdval,xi);
 
     // evaluate dual shape functions
     for (int i=0;i<nnodes;++i)
@@ -751,196 +1259,122 @@ void volmortar_dualshape_function_2D(
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate dual shape 3D                                   farah 01/14|
+ |  evaluate dual NURBS shapes 2D                            farah 09/14|
  *----------------------------------------------------------------------*/
-template<class V>
-void volmortar_dualshape_function_3D(
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,     ///< considered element
-  const double&                            xi0,     ///< xi0 coordinate
-  const double&                            xi1,     ///< xi1 coordinate
-  const double&                            xi2,     ///< xi1 coordinate
-  const DRT::Element::DiscretizationType&  shape,   ///< distinguish between mortar shape
-  INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
   )
 {
-  switch (shape)
+  switch (distype)
   {
   // *********************************************************************
-  // 3D dual trilinear shape functions (hex8)
-  // (used for interpolation of Lagrange mutliplier field)
+  // *********************************************************************
+  case DRT::Element::nurbs4:
+  case DRT::Element::nurbs9:
+  {
+    //! number of space dimensions
+    static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+    //! number of element nodes
+    static const int nnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    // get gauss rule
+    const DRT::UTILS::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
+
+    // get solution matrix with dual parameters
+    LINALG::Matrix<nnodes,1> stdval;
+    W refderiv = deriv;
+
+    // establish fundamental data
+    double detg = 0.0;
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    LINALG::Matrix<nnodes,nnodes> me(true);
+    LINALG::Matrix<nnodes,nnodes> de(true);
+    LINALG::Matrix<nnodes,nnodes> ae;
+
+    for (int i=0;i<intpoints.IP().nquad;++i)
+    {
+      double gpc[2] = {intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1]};
+      nurbs_shape_function<distype>(stdval,refderiv,gpc,weights,knots);
+      detg = nurbs_Jacobian<distype>(refderiv,gpc,weights,knots,ele);
+
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=intpoints.IP().qwgt[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*intpoints.IP().qwgt[i]*stdval(j)*detg;
+        }
+    }
+
+    // calcute coefficient matrix
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
+
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    nurbs_shape_function<distype>(stdval,refderiv,xi,weights,knots);
+
+    // evaluate dual shape functions
+    for (int i=0;i<nnodes;++i)
+    {
+      funct(i)   = 0.0;
+      deriv(0,i) = 0.0;
+      deriv(1,i) = 0.0;
+    }
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+      {
+        funct(i)   += ae(i,j)*stdval(j);
+        deriv(0,i) += ae(i,j)*refderiv(0,j);
+        deriv(1,i) += ae(i,j)*refderiv(1,j);
+      }
+
+    break;
+  }
+  default:
+      dserror("shape unknown\n");
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual shape 3D                                   farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void volmortar_dualshape_function_3D(
+    V&                                       funct,   ///< to be filled with shape function values
+    DRT::Element&                            ele,     ///< element which is considered
+    const T*                                 xi,      ///< para. coordinates
+    INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
+    )
+{
+  switch (distype)
+  {
+  // *********************************************************************
   // *********************************************************************
   case DRT::Element::hex8:
-  {
-    // initialize GaußRule
-    Epetra_SerialDenseMatrix coords;
-    std::vector<double> weights;
-    int ngp;
-
-    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_27point;
-
-    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
-    ngp = intpoints.nquad;
-    coords.Reshape(ngp,3);
-    weights.resize(ngp);
-    for (int i=0;i<ngp;++i)
-    {
-      coords(i,0)=intpoints.qxg[i][0];
-      coords(i,1)=intpoints.qxg[i][1];
-      coords(i,2)=intpoints.qxg[i][2];
-      weights[i]=intpoints.qwgt[i];
-    }
-
-    const int nnodes = 8;//ele.NumNode();
-    // get solution matrix with dual parameters
-    LINALG::Matrix<8,1>      stdval;
-
-    // establish fundamental data
-    double detg = 0.0;
-
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    LINALG::Matrix<nnodes,nnodes> me(true);
-    LINALG::Matrix<nnodes,nnodes> de(true);
-    LINALG::Matrix<nnodes,nnodes> ae;
-
-    for (int i=0;i<ngp;++i)
-    {
-      double gpc[3] = {coords(i,0), coords(i,1) , coords(i,2)};
-      volmortar_shape_function_3D(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::hex8);
-      detg = Jacobian<DRT::Element::hex8>(gpc,ele);
-
-      for (int j=0;j<nnodes;++j)
-        for (int k=0;k<nnodes;++k)
-        {
-          me(j,k)+=weights[i]*stdval(j)*stdval(k)*detg;
-          de(j,k)+=(j==k)*weights[i]*stdval(j)*detg;
-        }
-    }
-
-    // calcute coefficient matrix
-    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
-
-    // evaluate dual shape functions at loc. coord. xi
-    // need standard shape functions at xi first
-    double xi[3] = {xi0,xi1,xi2};
-    volmortar_shape_function_3D(stdval,xi[0],xi[1],xi[2],DRT::Element::hex8);
-
-    // evaluate dual shape functions
-    for (int i=0;i<nnodes;++i)
-      funct(i)=0;
-
-    for (int i=0;i<nnodes;++i)
-      for (int j=0;j<nnodes;++j)
-        funct(i)+=ae(i,j)*stdval(j);
-
-    break;
-  }
-  // *********************************************************************
-  // 3D dual quadratic shape functions (hex20)
-  // *********************************************************************
   case DRT::Element::hex20:
-  {
-    // initialize GaußRule
-    Epetra_SerialDenseMatrix coords;
-    std::vector<double> weights;
-    int ngp;
-
-    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
-
-    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
-    ngp = intpoints.nquad;
-    coords.Reshape(ngp,3);
-    weights.resize(ngp);
-    for (int i=0;i<ngp;++i)
-    {
-      coords(i,0)=intpoints.qxg[i][0];
-      coords(i,1)=intpoints.qxg[i][1];
-      coords(i,2)=intpoints.qxg[i][2];
-      weights[i]=intpoints.qwgt[i];
-    }
-
-    const int nnodes = 20;
-    // get solution matrix with dual parameters
-    LINALG::Matrix<20,1>      stdval;
-
-    // establish fundamental data
-    double detg = 0.0;
-
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    LINALG::Matrix<nnodes,nnodes> me(true);
-    LINALG::Matrix<nnodes,nnodes> de(true);
-    LINALG::Matrix<nnodes,nnodes> ae;
-
-    for (int i=0;i<ngp;++i)
-    {
-      double gpc[3] = {coords(i,0), coords(i,1) , coords(i,2)};
-      if (quadtype == INPAR::VOLMORTAR::dualquad_quad_mod)
-        volmortar_shape_function_3D_modified(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::hex20);
-      else if (quadtype == INPAR::VOLMORTAR::dualquad_no_mod)
-        volmortar_shape_function_3D(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::hex20);
-      else
-        dserror("No lin weightings for quadr. problems implemented!");
-
-      detg = Jacobian<DRT::Element::hex20>(gpc,ele);
-
-      for (int j=0;j<nnodes;++j)
-        for (int k=0;k<nnodes;++k)
-        {
-          me(j,k)+=weights[i]*stdval(j)*stdval(k)*detg;
-          de(j,k)+=(j==k)*weights[i]*stdval(j)*detg;
-        }
-    }
-
-    // calcute coefficient matrix
-    LINALG::InvertAndMultiplyByCholesky<nnodes>(me,de,ae);
-
-    // evaluate dual shape functions at loc. coord. xi
-    // need standard shape functions at xi first
-    double xi[3] = {xi0,xi1,xi2};
-    if (quadtype == INPAR::VOLMORTAR::dualquad_quad_mod)
-      volmortar_shape_function_3D_modified(stdval,xi[0],xi[1],xi[2],DRT::Element::hex20);
-    else if (quadtype == INPAR::VOLMORTAR::dualquad_no_mod)
-      volmortar_shape_function_3D(stdval,xi[0],xi[1],xi[2],DRT::Element::hex20);
-    else
-      dserror("No lin weightings for quadr. problems implemented!");
-
-    // evaluate dual shape functions
-    for (int i=0;i<nnodes;++i)
-      funct(i)=0;
-
-    for (int i=0;i<nnodes;++i)
-      for (int j=0;j<nnodes;++j)
-        funct(i)+=ae(i,j)*stdval(j);
-
-    break;
-  }
-  // *********************************************************************
-  // 3D dual tri-quadratic shape functions (hex27)
-  // *********************************************************************
   case DRT::Element::hex27:
+  case DRT::Element::tet10:
   {
-    // initialize GaußRule
-    Epetra_SerialDenseMatrix coords;
-    std::vector<double> weights;
-    int ngp;
+    //! number of space dimensions
+    static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+    //! number of element nodes
+    static const int nnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
-    ngp = intpoints.nquad;
-    coords.Reshape(ngp,3);
-    weights.resize(ngp);
-    for (int i=0;i<ngp;++i)
-    {
-      coords(i,0)=intpoints.qxg[i][0];
-      coords(i,1)=intpoints.qxg[i][1];
-      coords(i,2)=intpoints.qxg[i][2];
-      weights[i]=intpoints.qwgt[i];
-    }
+    // get gauss rule
+    const DRT::UTILS::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
-    const int nnodes = 27;//ele.NumNode();
     // get solution matrix with dual parameters
-    LINALG::Matrix<27,1>      stdval;
+    LINALG::Matrix<nnodes,1>      stdval;
 
     // establish fundamental data
     double detg = 0.0;
@@ -950,17 +1384,17 @@ void volmortar_dualshape_function_3D(
     LINALG::Matrix<nnodes,nnodes> de(true);
     LINALG::Matrix<nnodes,nnodes> ae;
 
-    for (int i=0;i<ngp;++i)
+    for (int i=0;i<intpoints.IP().nquad;++i)
     {
-      double gpc[3] = {coords(i,0), coords(i,1) , coords(i,2)};
-      volmortar_shape_function_3D(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::hex27);
-      detg = Jacobian<DRT::Element::hex27>(gpc,ele);
+      double gpc[3] = {intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1] , intpoints.IP().qxg[i][2]};
+      shape_function<distype>(stdval,gpc,quadtype);
+      detg = Jacobian<distype>(gpc,ele);
 
       for (int j=0;j<nnodes;++j)
         for (int k=0;k<nnodes;++k)
         {
-          me(j,k)+=weights[i]*stdval(j)*stdval(k)*detg;
-          de(j,k)+=(j==k)*weights[i]*stdval(j)*detg;
+          me(j,k)+=intpoints.IP().qwgt[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*intpoints.IP().qwgt[i]*stdval(j)*detg;
         }
     }
 
@@ -969,8 +1403,7 @@ void volmortar_dualshape_function_3D(
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
-    double xi[3] = {xi0,xi1,xi2};
-    volmortar_shape_function_3D(stdval,xi[0],xi[1],xi[2],DRT::Element::hex27);
+    shape_function<distype>(stdval,xi,quadtype);
 
     // evaluate dual shape functions
     for (int i=0;i<nnodes;++i)
@@ -987,40 +1420,52 @@ void volmortar_dualshape_function_3D(
   // *********************************************************************
   case DRT::Element::tet4:
   {
-    funct(0) =  4.0 - 5.0*xi0 - 5.0*xi1 - 5.0*xi2;
-    funct(1) = -1.0 + 5.0*xi0;
-    funct(2) = -1.0 + 5.0*xi1;
-    funct(3) = -1.0 + 5.0*xi2;
+    funct(0) =  4.0 - 5.0*xi[0] - 5.0*xi[1] - 5.0*xi[2];
+    funct(1) = -1.0 + 5.0*xi[0];
+    funct(2) = -1.0 + 5.0*xi[1];
+    funct(3) = -1.0 + 5.0*xi[2];
 
     break;
   }
-  // *********************************************************************
-  // 3D dual quadratic shape functions (tet10)
-  // *********************************************************************
-  case DRT::Element::tet10:
+  default:
+      dserror("shape unknown\n");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual NURBS shapes 3D                            farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void volmortar_nurbs_dualshape_function_3D(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  )
+{
+  switch (distype)
   {
-    // initialize GaußRule
-    Epetra_SerialDenseMatrix coords;
-    std::vector<double> weights;
-    int ngp;
+  // *********************************************************************
+  // *********************************************************************
+  case DRT::Element::nurbs8:
+  case DRT::Element::nurbs27:
+  {
+    //! number of space dimensions
+    static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_tet_45point;
+    //! number of element nodes
+    static const int nnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
-    ngp = intpoints.nquad;
-    coords.Reshape(ngp,3);
-    weights.resize(ngp);
-    for (int i=0;i<ngp;++i)
-    {
-      coords(i,0)=intpoints.qxg[i][0];
-      coords(i,1)=intpoints.qxg[i][1];
-      coords(i,2)=intpoints.qxg[i][2];
-      weights[i]=intpoints.qwgt[i];
-    }
+    // get gauss rule
+    const DRT::UTILS::IntPointsAndWeights<ndim> intpoints(DisTypeToOptGaussRule<distype>::rule);
 
-    const int nnodes = 10;//ele.NumNode();
     // get solution matrix with dual parameters
-    LINALG::Matrix<10,1>      stdval;
+    LINALG::Matrix<nnodes,1> stdval;
+    W refderiv = deriv;
 
     // establish fundamental data
     double detg = 0.0;
@@ -1030,23 +1475,17 @@ void volmortar_dualshape_function_3D(
     LINALG::Matrix<nnodes,nnodes> de(true);
     LINALG::Matrix<nnodes,nnodes> ae;
 
-    for (int i=0;i<ngp;++i)
+    for (int i=0;i<intpoints.IP().nquad;++i)
     {
-      double gpc[3] = {coords(i,0), coords(i,1) , coords(i,2)};
-      if (quadtype == INPAR::VOLMORTAR::dualquad_quad_mod)
-        volmortar_shape_function_3D_modified(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::tet10);
-      else if (quadtype == INPAR::VOLMORTAR::dualquad_no_mod)
-        volmortar_shape_function_3D(stdval,gpc[0],gpc[1],gpc[2],DRT::Element::tet10);
-      else
-        dserror("No lin weightings for quadr. problems implemented!");
-
-      detg = Jacobian<DRT::Element::tet10>(gpc,ele);
+      double gpc[3] = {intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1] , intpoints.IP().qxg[i][2]};
+      nurbs_shape_function<distype>(stdval,refderiv,gpc,weights,knots);
+      detg = nurbs_Jacobian<distype>(refderiv,gpc,weights,knots,ele);
 
       for (int j=0;j<nnodes;++j)
         for (int k=0;k<nnodes;++k)
         {
-          me(j,k)+=weights[i]*stdval(j)*stdval(k)*detg;
-          de(j,k)+=(j==k)*weights[i]*stdval(j)*detg;
+          me(j,k)+=intpoints.IP().qwgt[i]*stdval(j)*stdval(k)*detg;
+          de(j,k)+=(j==k)*intpoints.IP().qwgt[i]*stdval(j)*detg;
         }
     }
 
@@ -1055,28 +1494,31 @@ void volmortar_dualshape_function_3D(
 
     // evaluate dual shape functions at loc. coord. xi
     // need standard shape functions at xi first
-    double xi[3] = {xi0,xi1,xi2};
-    if (quadtype == INPAR::VOLMORTAR::dualquad_quad_mod)
-      volmortar_shape_function_3D_modified(stdval,xi[0],xi[1],xi[2],DRT::Element::tet10);
-    else if (quadtype == INPAR::VOLMORTAR::dualquad_no_mod)
-      volmortar_shape_function_3D(stdval,xi[0],xi[1],xi[2],DRT::Element::tet10);
-    else
-      dserror("No lin weightings for quadr. problems implemented!");
+    nurbs_shape_function<distype>(stdval,refderiv,xi,weights,knots);
 
     // evaluate dual shape functions
     for (int i=0;i<nnodes;++i)
-      funct(i)=0;
+    {
+      funct(i)   = 0.0;
+      deriv(0,i) = 0.0;
+      deriv(1,i) = 0.0;
+      deriv(2,i) = 0.0;
+    }
 
     for (int i=0;i<nnodes;++i)
       for (int j=0;j<nnodes;++j)
-        funct(i)+=ae(i,j)*stdval(j);
+      {
+        funct(i)   += ae(i,j)*stdval(j);
+        deriv(0,i) += ae(i,j)*refderiv(0,j);
+        deriv(1,i) += ae(i,j)*refderiv(1,j);
+        deriv(2,i) += ae(i,j)*refderiv(2,j);
+      }
 
     break;
   }
   default:
       dserror("shape unknown\n");
   }
-
   return;
 }
 
@@ -1287,6 +1729,199 @@ void volmortar_shape_function_3D_deriv(
       dserror("shape unknown\n");
   }
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Get global coords for given local coords (ref pos)       farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool LocalToGlobal(DRT::Element& ele,
+                   const double* xi,
+                   double* globcoord)
+{
+  // check input
+  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
+  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+  if (IsNurbs<distype>()) dserror("ERROR: Lagr. LocalToGlobal called for NURBS!");
+
+  static const int n    = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  DRT::Node** mynodes = ele.Nodes();
+  if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+
+  for (int i=0;i<ndim;++i)
+    globcoord[i]=0.0;
+
+  LINALG::Matrix<n,1>    val;
+  LINALG::Matrix<ndim,n> coord;
+
+  shape_function<distype>(val,xi);
+
+  for (int i=0;i<n;++i)
+  {
+    for(int j=0;j<ndim;++j)
+    {
+      coord(j,i)   = mynodes[i]->X()[j];
+
+      // use shape function values for interpolation
+      globcoord[j] += val(i)*coord(j,i);
+    }
+  }
+
+  return true;
+};
+
+/*----------------------------------------------------------------------*
+ |  evaluate shapes                                          farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void shape_function(
+    V&                             f,
+    const T*                       xi,
+    INPAR::VOLMORTAR::DualQuad     dualquad)
+{
+  switch (DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+  case 1:
+  {
+    volmortar_shape_function_1D(f, xi[0], distype);
+    break;
+  }
+  case 2:
+  {
+    volmortar_shape_function_2D(f, xi[0],xi[1], distype);
+    break;
+  }
+  case 3:
+  {
+    // modified shape function
+    if(dualquad == INPAR::VOLMORTAR::dualquad_quad_mod)
+      volmortar_shape_function_3D_modified(f, xi[0],xi[1], xi[2],distype);
+
+    // non-modified shape function
+    else if (dualquad == INPAR::VOLMORTAR::dualquad_no_mod)
+      volmortar_shape_function_3D(f, xi[0],xi[1], xi[2],distype);
+
+    // not implemented
+    else
+      dserror("No lin modification for quadratic elements possible!");
+
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+    break;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate NURBS shapes                                    farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void nurbs_shape_function(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots    ///< knot vectors
+  )
+{
+  switch (DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+  case 1:
+  {
+    volmortar_nurbs_shape_function_1D<distype>(funct,deriv,xi,weights,knots);
+    break;
+  }
+  case 2:
+  {
+    volmortar_nurbs_shape_function_2D<distype>(funct,deriv,xi,weights,knots);
+    break;
+  }
+  case 3:
+  {
+    volmortar_nurbs_shape_function_3D<distype>(funct,deriv,xi,weights,knots);
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+    break;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual shapes                                     farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class T>
+void dual_shape_function(
+    V&                             f,
+    const T&                       xi,
+    DRT::Element&                  ele,
+    INPAR::VOLMORTAR::DualQuad     dualquad)
+{
+  switch (DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+  case 1:
+  {
+    volmortar_dualshape_function_1D<distype>(f,ele, xi,dualquad);
+    break;
+  }
+  case 2:
+  {
+    volmortar_dualshape_function_2D<distype>(f,ele, xi,dualquad);
+    break;
+  }
+  case 3:
+  {
+    volmortar_dualshape_function_3D<distype>(f,ele, xi,dualquad);
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+    break;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual NURBS shapes                               farah 09/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
+void nurbs_dualshape_function(
+  V&                                       funct,   ///< to be filled with shape function values
+  W&                                       deriv,   ///< to be filled with shape function derivs
+  const U*                                 xi,      ///< xi coordinates
+  T&                                       weights, ///< control point weights
+  std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
+  DRT::Element&                            ele      ///< element which is considered
+  )
+{
+  switch (DRT::UTILS::DisTypeToDim<distype>::dim)
+  {
+  case 1:
+  {
+    volmortar_nurbs_dualshape_function_1D<distype>(funct,deriv,xi,weights,knots,ele);
+    break;
+  }
+  case 2:
+  {
+    volmortar_nurbs_dualshape_function_2D<distype>(funct,deriv,xi,weights,knots,ele);
+    break;
+  }
+  case 3:
+  {
+    volmortar_nurbs_dualshape_function_3D<distype>(funct,deriv,xi,weights,knots,ele);
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+    break;
+  }
   return;
 }
 
