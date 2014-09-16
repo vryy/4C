@@ -3097,6 +3097,22 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
   case INPAR::FLUID::tau_shakib_hughes_codina:
   case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
+  {
+    /*
+
+    literature:
+       R. Codina, Stabilized finite element approximations of transient
+       incompressible flows using orthogonal subscales, Comput. Methods
+       Appl. Mech. Engrg. 191 (2002) 4295-4321.
+
+       -> see respective definitions for computation of tau_M above
+
+    */
+
+    tau_(2) = DSQR(h_p)/(sqrt(c3)*tau_(1));
+  }
+  break;
+
   case INPAR::FLUID::tau_codina:
   case INPAR::FLUID::tau_codina_wo_dt:
   {
