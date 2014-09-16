@@ -479,7 +479,7 @@ shape_(shape)
 
   // check dimensions of coords_
   if (coords_.M() != 3) dserror("ERROR: Inconsistent coord matrix");
-  if (coords_.N() != nvertices_) dserror("ERROR: Inconsistent coord matrix");
+  if (coords_.N() != (unsigned)nvertices_) dserror("ERROR: Inconsistent coord matrix");
 #endif
 
   // store auxiliary plane normal

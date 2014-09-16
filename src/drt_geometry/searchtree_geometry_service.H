@@ -280,16 +280,6 @@ const std::map<int, std::set<int> >& elementList,
 std::set<int>& collisions);
 
 /*!
- \brief Computes a 2D extended axis-aligned bounding box for an element (XAABB)
- This is for CONTACT search!
- \param element        (in)  element
- \param xyze           (in)  nodal position array (3,numnode)
- \return extended axis-aligned bounding box (XAABB) as LINALG::Matrix<3,2>
- */
-LINALG::Matrix<3, 2> computeContactXAABB(DRT::Element* element,
-    const LINALG::SerialDenseMatrix& xyze);
-
-/*!
  \brief Returns the nearest object to a point
  \param dis                  discretization
  \param currentpositions     current nodal positions in discretization

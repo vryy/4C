@@ -4645,16 +4645,17 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
 
   for (int i=0;i<nrow;++i)
   {
-    FriNode* mymrtrnode = dynamic_cast<FriNode*> (snodes[i]);
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
     gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
     gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
     gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
     if (WearType() == INPAR::CONTACT::wear_discr)
     {
-      sgpx[0]+=sval[i] * (scoord(0,i)-(mymrtrnode->MoData().n()[0]) * mymrtrnode->FriDataPlus().wcurr()[0]);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(mymrtrnode->MoData().n()[1]) * mymrtrnode->FriDataPlus().wcurr()[0]);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(mymrtrnode->MoData().n()[2]) * mymrtrnode->FriDataPlus().wcurr()[0]);
+      FriNode* myfrinode = dynamic_cast<FriNode*> (snodes[i]);
+      sgpx[0]+=sval[i] * (scoord(0,i)-(myfrinode->MoData().n()[0]) * myfrinode->FriDataPlus().wcurr()[0]);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(myfrinode->MoData().n()[1]) * myfrinode->FriDataPlus().wcurr()[0]);
+      sgpx[2]+=sval[i] * (scoord(2,i)-(myfrinode->MoData().n()[2]) * myfrinode->FriDataPlus().wcurr()[0]);
     }
     else
     {

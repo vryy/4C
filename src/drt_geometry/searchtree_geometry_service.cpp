@@ -19,7 +19,6 @@
 #include "position_array.H"
 #include "searchtree_geometry_service.H"
 #include "searchtree_nearestobject.H"
-#include "../drt_contact/contact_element.H"
 #include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
@@ -652,49 +651,6 @@ void GEO::searchCollisions(
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- | compute XAABB for contact search                          u.may 02/09|
- | of a given query element (CONTACT)                                   |                             |
- *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> GEO::computeContactXAABB(DRT::Element* element,
-    const LINALG::SerialDenseMatrix& xyze)
-{
-
-  const int nsd = 2;
-  LINALG::Matrix<3, 2> XAABB;
-
-  CONTACT::CoElement* selement = static_cast<CONTACT::CoElement*>(element);
-  double area = selement->MoData().Area();
-
-  // first node
-  for (int dim = 0; dim < nsd; ++dim)
-  {
-    XAABB(dim, 0) = xyze(dim, 0) - 0.1 * area;
-    XAABB(dim, 1) = xyze(dim, 0) + 0.1 * area;
-  }
-  XAABB(2, 0) = 0.0;
-  XAABB(2, 1) = 0.0;
-
-  // remaining nodes
-  for (int i = 1; i < element->NumNode(); ++i)
-  {
-    for (int dim = 0; dim < nsd; dim++)
-    {
-      XAABB(dim, 0) = std::min(XAABB(dim, 0), xyze(dim, i) - 0.1 * area);
-      XAABB(dim, 1) = std::max(XAABB(dim, 1), xyze(dim, i) + 0.1 * area);
-    }
-  }
-
-  /*
-   printf("\n");
-   printf("axis-aligned bounding box:\n minX = %f\n minY = %f\n minZ = %f\n maxX = %f\n maxY = %f\n maxZ = %f\n",
-   XAABB(0,0), XAABB(1,0), XAABB(2,0), XAABB(0,1), XAABB(1,1), XAABB(2,1));
-   printf("\n");
-   */
-
-  return XAABB;
 }
 
 /*----------------------------------------------------------------------*
