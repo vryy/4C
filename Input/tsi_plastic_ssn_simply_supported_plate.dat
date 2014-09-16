@@ -111,7 +111,7 @@ UPRES                           1                  // 5
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-07
 TOLINC                          1e-08
-CALC_NECKING_TSI_VALUES         Yes                 // Yes,No
+CALC_NECKING_TSI_VALUES         No                 // Yes,No
 ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
 NORMCOMBI_RESFINC               Coupl_And_Singl    // And,Or,{Coupl_}{Or,And}_Singl

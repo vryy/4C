@@ -278,7 +278,8 @@ private:
         const int gp,                       ///< gauss point
         LINALG::Matrix<6,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
         LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
-        LINALG::Matrix<6,1>* dHdDp          ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
+        LINALG::Matrix<6,1>* dHdDp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
+        const double dt                     ///< time step size
         );
 
     /// evaluate everything needed for the condensation of the plastic deformation
@@ -297,7 +298,8 @@ private:
         const int gp,                      ///< gauss point
         LINALG::Matrix<9,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
         LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
-        LINALG::Matrix<9,1>* dHdLp          ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
+        LINALG::Matrix<9,1>* dHdLp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
+        const double dt                     ///< time step size
         );
 
     /// hyperelastic stress response plus elasticity tensor
@@ -504,7 +506,8 @@ private:
                              bool* as_converged,
                              LINALG::Matrix<6,1>* dHdC,
                              LINALG::Matrix<6,1>* dHdDp,
-                             Teuchos::ParameterList& params
+                             Teuchos::ParameterList& params,
+                             const double dt
     );
 
     virtual void EvaluateNCPandSpin(const LINALG::Matrix<3,3>* mStr,

@@ -544,7 +544,7 @@ void TSI::Monolithic::NewtonFull()
     // iter==1 is after predictor, i.e. no solver call yet
     if (iter_==1)
       if (StructureField()->HaveSemiSmoothPlasticity())
-        StructureField()->GetPlasticityManager()->SetTSIpredictor(true);
+        StructureField()->GetPlasticityManager()->SetData().no_recovery_=true;
 
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented

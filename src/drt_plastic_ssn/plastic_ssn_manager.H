@@ -39,7 +39,7 @@ struct PlastSsnData {
   int num_active_;
   INPAR::STR::PredEnum pred_type_;
   bool no_pl_condensation_;
-  bool tsi_pred_;
+  bool no_recovery_;
   double scale_timint_;
   double dt_;
   bool split_res_;
@@ -159,7 +159,7 @@ public:
   /*
   \brief Is this a TSI problem
   */
-  void SetTSIpredictor(const bool pred) { data_.tsi_pred_=pred; return; };
+  DRT::UTILS::PlastSsnData& SetData() { return data_; };
 
 private:
 

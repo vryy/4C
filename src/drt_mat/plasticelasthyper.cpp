@@ -769,7 +769,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     const int gp,
     LINALG::Matrix<6,1>* dNCPdT,
     LINALG::Matrix<6,1>* dHdC,
-    LINALG::Matrix<6,1>* dHdDp)
+    LINALG::Matrix<6,1>* dHdDp,
+    const double dt)
 {
   LINALG::Matrix<6,1> Cpi;
   LINALG::Matrix<6,1> CpiCCpi;
@@ -823,7 +824,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   else
     dserror("only isotropic hypereleastic materials");
 
-  EvaluateNCP(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaDp,gp,temp,NCP,dNCPdC,dNCPdDp,dNCPdT,dPK2dDp,active,elast,as_converged,dHdC,dHdDp,params);
+  EvaluateNCP(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaDp,gp,temp,NCP,dNCPdC,dNCPdDp,dNCPdT,dPK2dDp,active,elast,as_converged,dHdC,dHdDp,params,dt);
 
   return;
 }
@@ -850,7 +851,8 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     bool* as_converged,
     LINALG::Matrix<6,1>* dHdC,
     LINALG::Matrix<6,1>* dHdDp,
-    Teuchos::ParameterList& params
+    Teuchos::ParameterList& params,
+    const double dt
     )
 {
   double sq=sqrt(2./3.);
@@ -1013,9 +1015,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     //TSI
     if (dNCPdT!=NULL)
     {
-      // get time step size from time integration via parameter list
-      double time_step_size =  params.get<double>("time_step_size");
-
       // plastic heating
       double plHeating=0.;
       plHeating = (0.
@@ -1086,10 +1085,10 @@ void MAT::PlasticElastHyper::EvaluateNCP(
       }
 
       // scaling with time step
-      plHeating          /=time_step_size;
-      dPlHeatingDT       /=time_step_size;
-      dHdC-> Scale(1./time_step_size);
-      dHdDp->Scale(1./time_step_size);
+      plHeating          /=dt;
+      dPlHeatingDT       /=dt;
+      dHdC-> Scale(1./dt);
+      dHdDp->Scale(1./dt);
 
       // communicate to the element via params (not nice)
       HepDiss(gp)+=plHeating;
@@ -1213,7 +1212,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     const int gp,
     LINALG::Matrix<9,1>* dNCPdT,
     LINALG::Matrix<6,1>* dHdC,
-    LINALG::Matrix<9,1>* dHdLp
+    LINALG::Matrix<9,1>* dHdLp,
+    const double dt
     )
 {
   LINALG::Matrix<6,1> Cpi;

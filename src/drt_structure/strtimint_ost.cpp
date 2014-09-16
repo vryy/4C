@@ -281,8 +281,8 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
     if (HaveSemiSmoothPlasticity())
       if (plastman_->TSI())
       {
-        params.set("scale_timint", theta_);
-        params.set("time_step_size", (*dt_)[0]);
+        plastman_->SetData().scale_timint_=theta_;
+        plastman_->SetData().dt_=(*dt_)[0];
       }
 
     // ordinary internal force and stiffness

@@ -120,26 +120,6 @@ void DRT::UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& param
   data_.num_active_=0;
   data_.unconverged_active_set_=false;
 
-  if (params.isParameter("predict_type"))
-    data_.pred_type_ = params.get<INPAR::STR::PredEnum>("predict_type");
-  else
-    data_.pred_type_= INPAR::STR::pred_vague;
-
-  if (params.isParameter("no_plastic_condensation"))
-    data_.no_pl_condensation_=params.get<bool>("no_plastic_condensation");
-  else
-    data_.no_pl_condensation_=false;
-
-  if (params.isParameter("scale_timint"))
-    data_.scale_timint_=params.get<double>("scale_timint");
-  else
-    data_.scale_timint_=0.;
-
-  if (params.isParameter("time_step_size"))
-    data_.dt_=params.get<double>("time_step_size");
-  else
-    data_.dt_=0.;
-
   data_.split_res_=params.isParameter("cond_rhs_norm");
 
   data_.ls_=params.isParameter("alpha_ls");
@@ -189,7 +169,12 @@ void DRT::UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& param
     eas_residual_norm_global_=sqrt(eas_residual_norm_global_);
   }
 
-  data_.tsi_pred_=false;
+  // reset for next evaluation
+  data_.no_recovery_=false;
+  data_.pred_type_=INPAR::STR::pred_vague;
+  data_.no_pl_condensation_=false;
+  data_.scale_timint_=0.;
+  data_.dt_=0.;
 
   return;
 }

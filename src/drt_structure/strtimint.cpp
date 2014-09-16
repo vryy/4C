@@ -935,8 +935,9 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     //plastic parameters
     if (HaveSemiSmoothPlasticity())
     {
-      p.set<bool>("no_plastic_condensation",true);
       plastman_->SetPlasticParams(p);
+      plastman_->SetData().no_pl_condensation_=true;
+      plastman_->SetData().no_recovery_=true;
     }
 
     // set vector values needed by elements

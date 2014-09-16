@@ -207,8 +207,8 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   if (HaveSemiSmoothPlasticity())
     if (plastman_->TSI())
     {
-      params.set("scale_timint", 1.0);
-      params.set("time_step_size", (*dt_)[0]);
+      plastman_->SetData().scale_timint_=1.;
+      plastman_->SetData().dt_=(*dt_)[0];
 
       // pseudo-velocity for quasi-static tsi with Gough-Joule Effect
       veln_->Update(1./Dt(), *Dispnp(), -1./Dt(),*Dispn(),0.);

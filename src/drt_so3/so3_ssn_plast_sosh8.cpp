@@ -983,7 +983,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
   bool no_condensation = data_->no_pl_condensation_;
 
   // do not recover condensed variables if it is a TSI predictor step
-  bool tsi_pred=data_->tsi_pred_;
+  bool no_recovery=data_->no_recovery_;
   // time integration factor (for TSI)
   double theta=data_->scale_timint_;
   // time step size (for TSI)
@@ -1018,7 +1018,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     /* end of EAS Update ******************/
     // add Kda . res_d to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    if (stiffmatrix!=NULL && !tsi_pred)
+    if (stiffmatrix!=NULL && !no_recovery)
     {
       // this is a line search step, i.e. the direction of the eas increments
       // has been calculated by a Newton step and now it is only scaled
@@ -1415,16 +1415,16 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     if (HavePlasticSpin())
     {
       if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred),&(*alpha_eas_inc_));
+        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
       else
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred));
+        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
     }
     else
     {
       if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred),&(*alpha_eas_inc_));
+        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
       else
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !tsi_pred));
+        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
     }
 
     // calculate deformation gradient consistent with modified GL strain tensor

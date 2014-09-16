@@ -98,7 +98,7 @@ UPRES                           5                  // 5
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-05
 TOLINC                          1e-02
-CALC_NECKING_TSI_VALUES         Yes                 // Yes,No
+CALC_NECKING_TSI_VALUES         No                 // Yes,No
 ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
 NORMCOMBI_RESFINC               And_Singl    // And,Or,{Coupl_}{Or,And}_Singl
@@ -138,7 +138,7 @@ MAT 2 ELAST_Iso1Pow C 40.096899225 D 1.
 MAT 3 ELAST_VolOgden KAPPA 164.2063492 BETA -2.0
 MAT 4 THERM_FourierIso CAPA 3.588e-3 CONDUCT 4.5e-5
 ----------------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 8000 FACTOR 0 8
+CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 9000 FACTOR 0 9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5
@@ -464,9 +464,10 @@ NODE 63    COORD  3.0000000000000000e+00  3.0000000000000000e+00  -1.33335000000
    23 SOLIDH8PLAST HEX8  20 24 40 38 52 54 62 61    MAT 1 KINEM nonlinear EAS none FBAR yes
    24 SOLIDH8PLAST HEX8  24 28 42 40 54 56 63 62    MAT 1 KINEM nonlinear EAS none FBAR yes
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE -2.90940779978385056e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE -2.90940779978400066e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE -2.90893666826228792e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE -2.90893666826257080e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1e-8
-THERMAL DIS thermo NODE 63 QUANTITY temp VALUE 3.58526556624331647e+02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 58 QUANTITY dispz VALUE 8.00000000000000000e+00 TOLERANCE 1e-8
+THERMAL DIS thermo NODE 63 QUANTITY temp VALUE 3.58546639290262135e+02 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

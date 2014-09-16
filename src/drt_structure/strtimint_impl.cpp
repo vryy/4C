@@ -341,7 +341,8 @@ void STR::TimIntImpl::Predict()
   params.set<bool>("predict",true);
 
   // set predictor type
-  params.set<INPAR::STR::PredEnum>("predict_type",pred_);
+  if (HaveSemiSmoothPlasticity())
+    plastman_->SetData().pred_type_=pred_;
 
   // residual of condensed variables (e.g. EAS) for NewtonLS
   if (fresn_str_!=Teuchos::null)
@@ -561,8 +562,10 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 
   // hand in flag indicating tangential predictor
   if (HaveSemiSmoothPlasticity())
-    params.set<bool>("no_plastic_condensation",true);
-
+  {
+    plastman_->SetData().pred_type_=INPAR::STR::pred_tangdis;
+    plastman_->SetData().no_pl_condensation_=true;
+  }
   // compute residual forces fres_ and stiffness stiff_
   // at disn_, etc which are unchanged
   EvaluateForceStiffResidual(params);

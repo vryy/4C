@@ -325,8 +325,8 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   if (HaveSemiSmoothPlasticity())
     if (plastman_->TSI())
     {
-      params.set("scale_timint", beta_/gamma_);
-      params.set("time_step_size", (*dt_)[0]);
+      plastman_->SetData().scale_timint_=beta_/gamma_;
+      plastman_->SetData().dt_=(*dt_)[0];
     }
 
   // ************************** (2) INTERNAL FORCES ***************************
