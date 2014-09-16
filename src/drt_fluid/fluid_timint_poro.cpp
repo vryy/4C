@@ -41,12 +41,7 @@ FLD::TimIntPoro::TimIntPoro(
 void FLD::TimIntPoro::Init()
 {
   Teuchos::ParameterList *  stabparams;
-  if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-    stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  else if (discret_->Name()=="porofluid")
-    stabparams=&(params_->sublist("POROUS-FLOW STABILIZATION"));
-  else
-    stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
   if(stabparams->get<std::string>("STABTYPE")=="residual_based")
     if(stabparams->get<std::string>("TDS") == "time_dependent")
@@ -157,7 +152,6 @@ void FLD::TimIntPoro::SetElementCustomParameter()
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
   eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
-  eleparams.sublist("POROUS-FLOW STABILIZATION") = params_->sublist("POROUS-FLOW STABILIZATION");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -284,23 +278,6 @@ void FLD::TimIntPoro::Output()
 *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
-  if (discret_->Name()=="porofluid")
-  {
-      std::string ptype = DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("PHYSICAL_TYPE");
-      if(ptype == (std::string)"Poro_P1")
-        physicaltype_=INPAR::FLUID::poro_p1;
-      else if(ptype == (std::string)"Poro_P2")
-        physicaltype_=INPAR::FLUID::poro_p2;
-      else if(ptype == (std::string)"Poro")
-        physicaltype_=INPAR::FLUID::poro;
-  }
-  else if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType() == prb_fpsi)
-  {
-    physicaltype_ = INPAR::FLUID::incompressible;
-  }
-  else
-    dserror("Poro but neither 'porofluid' nor 'fluid and prb_fpsi'");
-
   eleparams.set<int>("physical type",physicaltype_);
 
   if (alefluid_)

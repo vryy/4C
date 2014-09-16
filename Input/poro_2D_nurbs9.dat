@@ -26,8 +26,7 @@ TIMEINTEGR                      One_Step_Theta
 THETA                           0.66
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
-PHYSICAL_TYPE                   Poro
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -50,6 +49,7 @@ LINEAR_SOLVER                   2
 THETA                           0.66
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+PHYSICAL_TYPE                   Poro
 ITEMAX                          40
 ITEMIN                          1
 MAXTIME                         800

@@ -2923,6 +2923,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                               &poroelastdyn);
 
+  // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+  setStringToIntegralParameter<int>("PHYSICAL_TYPE","Poro",
+                                    "Physical Type of Porofluid",
+                                    tuple<std::string>(
+                                      "Poro",
+                                      "Poro_P1",
+                                      "Poro_P2"
+                                      ),
+                                    tuple<int>(
+                                      INPAR::FLUID::poro,
+                                      INPAR::FLUID::poro_p1,
+                                      INPAR::FLUID::poro_p2),
+                                    &poroelastdyn);
+
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&poroelastdyn);
   // Time loop control
@@ -3196,9 +3210,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "Varying_density",
                                       "Loma",
                                       "Boussinesq",
-                                      "Poro",
-                                      "Poro_P1",
-                                      "Poro_P2",
                                       "Topology_optimization",
                                       "Stokes",
                                       "Oseen"
@@ -3209,9 +3220,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::FLUID::varying_density,
                                       INPAR::FLUID::loma,
                                       INPAR::FLUID::boussinesq,
-                                      INPAR::FLUID::poro,
-                                      INPAR::FLUID::poro_p1,
-                                      INPAR::FLUID::poro_p2,
                                       INPAR::FLUID::topopt,
                                       INPAR::FLUID::stokes,
                                       INPAR::FLUID::oseen),

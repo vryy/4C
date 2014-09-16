@@ -144,8 +144,11 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     if(damping != "Material")
       dserror("Material damping has to be used for porous media! Set DAMPING to 'Material' in the STRUCTURAL DYNAMIC section.");
 
+
+    // access the problem-specific parameter lists
+    const Teuchos::ParameterList& pedyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     INPAR::FLUID::PhysicalType physicaltype
-    = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
+    = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE");
     if(porositydof_ and physicaltype != INPAR::FLUID::poro_p1)
       dserror("Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the FLUID DYNAMIC section!");
   }

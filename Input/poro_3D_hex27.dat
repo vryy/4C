@@ -30,12 +30,11 @@ CALCERROR                       no
 CONVFORM                        convective
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-PHYSICAL_TYPE                   Poro
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 LINEAR_SOLVER                   3
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -68,6 +67,7 @@ THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
+PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         8

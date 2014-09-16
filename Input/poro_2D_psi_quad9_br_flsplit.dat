@@ -27,13 +27,12 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
-PHYSICAL_TYPE                   Poro
 PREDICTOR                       steady_state
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 LINEAR_SOLVER                   3
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -49,6 +48,7 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithicfluidsplit
+PHYSICAL_TYPE                   Poro
 ITEMAX                          50
 ITEMIN                          1
 MAXTIME                         2000

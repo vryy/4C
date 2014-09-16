@@ -75,53 +75,6 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   reaction_topopt_= false;
   graddiv_=false;
 
-  if (DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-  {
-    Teuchos::ParameterList stablist = params.sublist("POROUS-FLOW STABILIZATION");
-
-    // no safety check necessary since all options are used
-    tds_      = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
-    transient_= DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
-    pspg_     = DRT::INPUT::IntegralValue<int>(stablist,"PSPG");
-    supg_     = DRT::INPUT::IntegralValue<int>(stablist,"SUPG");
-    vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
-    rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
-    cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
-    reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
-
-    // overrule higher_order_ele if input-parameter is set
-    // this might be interesting for fast (but slightly
-    // less accurate) computations
-    is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist,"INCONSISTENT");
-    //-------------------------------
-    // get tau definition
-    //-------------------------------
-
-    whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
-    // check if tau can be handled
-    if (not(whichtau_ ==
-        INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-        INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
-      dserror("Definition of Tau cannot be handled by the element");
-
-    // set correct stationary definition of stabilization parameter automatically
-    if (fldparatimint_->IsStationary())
-    {
-      if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-        whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
-    }
-
-    //---------------------------------
-    // set flags for potential evaluation of tau and material law at int. point
-    // default value: evaluation at element center
-    const std::string tauloc = stablist.get<std::string>("EVALUATION_TAU");
-    if (tauloc == "integration_point") tau_gp_ = true;
-    else                               tau_gp_ = false;
-    const std::string matloc = stablist.get<std::string>("EVALUATION_MAT");
-    if (matloc == "integration_point") mat_gp_ = true;
-    else                               mat_gp_ = false;
-  }
-
 }
 
 //----------------------------------------------------------------------*/

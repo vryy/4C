@@ -95,6 +95,7 @@ MESH_ADAPTIVE_CN                no
 MESH_ADAPTIVE_CT                no
 ---------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
+PHYSICAL_TYPE                   Poro
 RESTARTEVRY                     1
 NUMSTEP                         10
 MAXTIME                         1000
@@ -113,7 +114,6 @@ SECONDORDER                     Yes
 CONTIPARTINT                    Yes
 LINEAR_SOLVER                   2
 ------------------------------------------------------FLUID DYNAMIC
-PHYSICAL_TYPE                   Poro
 LINEAR_SOLVER                   2
 SIMPLER_SOLVER                  -1
 TIMEINTEGR                      One_Step_Theta // One_Step_Theta
@@ -125,7 +125,7 @@ CONVFORM                        convective
 GRIDVEL                         BE
 START_THETA                     1
 THETA                           1.0
--------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+-------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    No
 TDS                             quasistatic
