@@ -484,8 +484,9 @@ void CONTACT::CoNode::InitializeDataContainer()
   }
 
   // this is a hack for hermit elements
-  if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
-    dentries_ = 4*dentries_;
+  if (NumElement())
+    if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
+      dentries_ = 4*dentries_;
 
   // only initialize if not yet done
   if (modata_==Teuchos::null && codata_==Teuchos::null)
