@@ -136,22 +136,6 @@ namespace NLNSOL
 
     //@}
 
-    //! @name Access routines
-    //@{
-
-    //! Get max allowed number of iterations
-    virtual const int GetMaxIter() const { return maxiter_; }
-
-    //@}
-
-    //! @name Algorithmic parameters
-    //@{
-
-    //! max number of iterations
-    int maxiter_;
-
-    //@}
-
     //! Access to hierarchy of multigrid levels
     const Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> Hierarchy() const;
 

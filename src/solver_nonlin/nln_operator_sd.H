@@ -109,14 +109,6 @@ namespace NLNSOL
 
     //@}
 
-    //! @name Access routines
-    //@{
-
-    //! Get max allowed number of iterations
-    virtual const int GetMaxIter() const { return maxiter_; }
-
-    //@}
-
     //! @name Search Direction
     //@{
 
@@ -125,21 +117,19 @@ namespace NLNSOL
         Epetra_MultiVector& inc ///< increment (to be filled)
         ) const;
 
+    virtual const double ComputeStepLength(
+        const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& inc, ///< search direction
+        double fnorm2 ///< current L2-norm of residual
+        ) const;
+
     //@}
 
     //! @name Necessary sub-algorithms
     //@{
 
-    //! line search object
+    //! Line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
-
-    //@}
-
-    //! @name Algorithmic parameters
-    //@{
-
-    //! max number of iterations
-    int maxiter_;
 
     //@}
 

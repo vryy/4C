@@ -152,14 +152,14 @@ namespace NLNSOL
     //! @name Setup
     //@{
 
-    //! Setup nonlinear preconditioner
-    virtual void SetupPreconditioner();
-
     //! Setup linear solver
     virtual void SetupLinearSolver();
 
     //! Setup line search
     virtual void SetupLineSearch();
+
+    //! Setup nonlinear preconditioner
+    virtual void SetupPreconditioner();
 
     //@}
 
@@ -203,11 +203,8 @@ namespace NLNSOL
     //! @name Access routines
     //@{
 
-    //! Get max allowed number of iterations
-    virtual const unsigned int GetMaxIter() const { return itermax_; }
-
     //! Get the maximally allowed window size
-    virtual const unsigned int GetMaxWindowSize() const { return windowsizemax_; }
+    virtual const unsigned int GetMaxWindowSize() const { return Params().get<int>("NGMRES: Max Window Size"); }
 
     //@}
 
@@ -222,17 +219,6 @@ namespace NLNSOL
 
     //! Nonlinear preconditioner
     Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
-
-    //@}
-
-    //! @name Algorithmic parameters
-    //@{
-
-    //! max number of iterations
-    int itermax_;
-
-    //! max window size
-    int windowsizemax_;
 
     //@}
 

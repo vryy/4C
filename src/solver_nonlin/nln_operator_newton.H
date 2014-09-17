@@ -119,44 +119,24 @@ namespace NLNSOL
 
     //@}
 
-    //! @name Access routines
-    //@{
-
-    //! Get max allowed number of iterations
-    virtual const int GetMaxIter() const { return maxiter_; }
-
-    //@}
-
-    //! @name Search Direction
-    //@{
-
+    //! Compute the search direction
     virtual const int ComputeSearchDirection(
         Teuchos::RCP<Epetra_MultiVector>& rhs, ///< residual
         Teuchos::RCP<Epetra_MultiVector>& inc, ///< increment (to be filled)
         const int iter ///< current Newton iteration
         ) const;
 
-    //@}
+    //! Use a fixed Jacobian (true) or update it in every iteration (false)?
+    virtual const bool FixedJacobian() const { return Params().get<bool>("Newton: Fixed Jacobian"); }
 
     //! @name Necessary sub-algorithms
     //@{
 
-    //! linear solver from baci
+    //! Linear solver from baci
     Teuchos::RCP<LINALG::Solver> linsolver_;
 
-    //! line search object
+    //! Line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
-
-    //@}
-
-    //! @name Algorithmic parameters
-    //@{
-
-    //! max number of iterations
-    int maxiter_;
-
-    //! Use a fixed jacobian?
-    bool fixedjacobian_;
 
     //@}
 

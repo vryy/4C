@@ -40,8 +40,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorFas::NlnOperatorFas()
-: maxiter_(1),
-  hierarchy_(Teuchos::null)
+: hierarchy_(Teuchos::null)
 {
   return;
 }
@@ -57,9 +56,6 @@ void NLNSOL::NlnOperatorFas::Setup()
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
   hierarchy_->Init(Comm(), Params(), NlnProblem());
   hierarchy_->Setup();
-
-  if (Params().isParameter("max fas cycles"))
-    maxiter_ = Params().get<int>("max fas cycles");
 
   // Setup() has been called
   SetIsSetup();
@@ -83,7 +79,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   double fnorm2 = 1.0e+12;
 
   int iter = 0;
-  while (not converged and iter < GetMaxIter())
+  while (ContinueIterations(iter, converged))
   {
     ++iter;
 
@@ -100,18 +96,8 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     PrintIterSummary(iter, fnorm2);
   }
 
-  if (converged)
-  {
-    if (Comm().MyPID() == 0)
-      IO::cout << "FAS converged after " << iter << " V-cycles." << IO::endl;
-  }
-  else
-  {
-    if (IsSolver())
-      dserror("FAS failed to converge in %d V-cycles!", iter);
-  }
-
-  return 0; // ToDO (mayr) provide meaningful error code
+  // return error code
+  return (not CheckSuccessfulConvergence(iter, converged));
 }
 
 /*----------------------------------------------------------------------------*/

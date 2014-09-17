@@ -47,9 +47,9 @@ namespace NLNSOL
 {
   /*! \brief General nonlinear operator base class
    *
-   *  This is a base class for all kinds of nonlinear solution and preconditioning
-   *  algorithms. The central method is ApplyInverse(), where the actual work is
-   *  done.
+   *  This is a base class for all kinds of nonlinear solution and
+   *  preconditioning algorithms. The central method is ApplyInverse(), where
+   *  the actual work is done.
    *
    *  The operator is fed with:
    *  - an Epetra_Comm
@@ -79,13 +79,13 @@ namespace NLNSOL
       //! @name Setup
       //@{
 
-      // fill base class member variables
+      //! Fill base class member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           const Teuchos::ParameterList& params, ///< parameter list
           Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< nonlinear problem to solve
           );
 
-      // setup the specific nonlinear operator
+      //! Setup the specific nonlinear operator
       virtual void Setup() = 0;
 
       //@}
@@ -144,13 +144,34 @@ namespace NLNSOL
       //! Access to the nonlinear problem
       virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
 
-      //! Is this nonlinear operator a solver?
-      virtual bool IsSolver() const { return issolver_; }
+      /*! \brief Is this nonlinear operator a solver or a smoother?
+       *
+       *  If this nonlinear operator is a solver, we perform a convergence check
+       *  and throw an dserror() if convergence fails. If this nonlinear
+       *  operator is a smoother, we do not care about convergence and just
+       *  advance with the smoothed solution.
+       */
+      virtual const bool IsSolver() const { return Params().get<bool>("Nonlinear Operator: Is Solver"); }
+
+      //! Get maximally allowed number of iterations
+      virtual const int GetMaxIter() const { return Params().get<int>("Nonlinear Operator: Max Iter"); }
 
       //@}
 
       //! @name Utilities
       //@{
+
+      //! Check if we still continue to iterate
+      virtual const bool ContinueIterations(
+          const int iter, ///< current iteration counter
+          const bool converged ///< convergence flag
+          ) const;
+
+      //! Check if iteration loop converged successfully
+      virtual const bool CheckSuccessfulConvergence(
+          const int iter, ///< number of performed iterations
+          const bool converged ///< convergence flag
+          ) const;
 
       //! Print summary of current iteration
       virtual void PrintIterSummary(const int iter, ///< iteration counter
@@ -167,23 +188,14 @@ namespace NLNSOL
       //! Setup() has been called
       bool issetup_;
 
-      //! communicator
+      //! Communicator
       Teuchos::RCP<const Epetra_Comm> comm_;
 
-      //! parameter list
+      //! Parameter list
       Teuchos::RCP<const Teuchos::ParameterList> params_;
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
-
-      /*! \brief Is this nonlinear operator a solver or a smoother?
-       *
-       *  If this nonlinear operator is a solver, we perform a convergence check
-       *  and throw an dserror() if convergence fails. If this nonlinear
-       *  operator is a smoother, we do not care about convergence and just
-       *  advance with the smoothed solution.
-       */
-      bool issolver_;
 
   }; // class NlnOperatorBase
 } // namespace NLNSOL

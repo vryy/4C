@@ -26,6 +26,8 @@ Maintainer: Matthias Mayr
 // baci
 #include "linesearch_base.H"
 #include "linesearch_factory.H"
+#include "nln_operator_base.H"
+#include "nln_operator_factory.H"
 #include "nln_operator_nonlincg.H"
 #include "nln_problem.H"
 
@@ -43,8 +45,7 @@ Maintainer: Matthias Mayr
 /* Constructor (empty) */
 NLNSOL::NlnOperatorNonlinCG::NlnOperatorNonlinCG()
 : linsolver_(Teuchos::null),
-  linesearch_(Teuchos::null),
-  maxiter_(1)
+  linesearch_(Teuchos::null)
 {
   return;
 }
@@ -56,11 +57,9 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  if (Params().isParameter("Nonlinear CG: Max Iter"))
-    maxiter_ = Params().get<int>("Nonlinear CG: Max Iter");
-
   SetupLinearSolver();
   SetupLineSearch();
+  SetupPreconditioner();
 
   // Setup() has been called
   SetIsSetup();
@@ -97,6 +96,20 @@ void NLNSOL::NlnOperatorNonlinCG::SetupLineSearch()
 }
 
 /*----------------------------------------------------------------------------*/
+/* Setup of the preconditioner */
+void NLNSOL::NlnOperatorNonlinCG::SetupPreconditioner()
+{
+  const Teuchos::ParameterList& precparams = Params().sublist("Nonlinear CG: Nonlinear Preconditioner");
+
+  NlnOperatorFactory nlnopfactory;
+  nlnprec_ = nlnopfactory.Create(precparams);
+  nlnprec_->Init(Comm(), precparams, NlnProblem());
+  nlnprec_->Setup();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
 /* Apply the preconditioner */
 int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
@@ -125,13 +138,10 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // prepare vector for residual from previous iteration
   Teuchos::RCP<Epetra_MultiVector> fold = Teuchos::rcp(new Epetra_MultiVector(*fnew));
 
-  // initial search direction
-  Teuchos::RCP<Epetra_MultiVector> p = Teuchos::rcp(new Epetra_MultiVector(*fnew));
-
-  int linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), p, fold, true, false, Teuchos::null);
-  if (linsolve_error != 0) { dserror("Linear solver failed."); }
-
-  p->Scale(-1.0);
+  // compute preconditioned search direction
+  Teuchos::RCP<Epetra_MultiVector> p = Teuchos::rcp(new Epetra_MultiVector(x));
+  ApplyPreconditioner(*fnew, x);
+  p->Update(1.0, x, -1.0);
 
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
@@ -141,7 +151,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   // the nonlinear CG loop
   // ---------------------------------------------------------------------------
-  while (iter < GetMaxIter() && not converged)
+  while (ContinueIterations(iter, converged))
   {
     // compute line search parameter alpha
     linesearch_->Init(NlnProblem(), Params().sublist("Nonlinear CG: Line Search"), x, *p, fnorm2);
@@ -163,33 +173,40 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 
     Teuchos::RCP<Epetra_MultiVector> pnew = Teuchos::rcp(new Epetra_MultiVector(p->Map(), true));
 
-    // do not refactor since matrix has not changed
-    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), pnew, fnew, false, false, Teuchos::null);
-    if (linsolve_error != 0) { dserror("Linear solver failed."); }
+    // compute preconditioned search direction
+    pnew->Update(1.0, x, 0.0);
+    ApplyPreconditioner(*fnew, x);
+    pnew->Update(1.0, x, -1.0);
 
     // Update
-    err = p->Update(-1.0, *pnew, beta);
+    err = p->Update(1.0, *pnew, beta);
     if (err != 0) { dserror("Update failed."); }
 
     ++iter;
 
-    if (Params().get<bool>("Nonlinear CG: Print Iterations"))
-      PrintIterSummary(iter, fnorm2);
+    PrintIterSummary(iter, fnorm2);
   }
 
-  // ---------------------------------------------------------------------------
-  // check successful convergence
-  // ---------------------------------------------------------------------------
-  if (iter < GetMaxIter() && converged)
-    return 0;
-  else
-  {
-    if (IsSolver())
-      dserror("Nonlinear CG did not converge in %d iterations.", iter);
-  }
+  CheckSuccessfulConvergence(iter, converged);
 
-  // suppose non-convergence
-  return 1;
+  // return error code
+  return (not CheckSuccessfulConvergence(iter, converged));
+}
+
+/*----------------------------------------------------------------------------*/
+/* Apple the preconditioner */
+void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner
+(
+    const Epetra_MultiVector& f,
+    Epetra_MultiVector& x
+) const
+{
+  if (nlnprec_.is_null())
+    dserror("Nonlinear preconditioner has not been initialized, yet. Has SetupPreconditioner been called?");
+
+  nlnprec_->ApplyInverse(f, x);
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/

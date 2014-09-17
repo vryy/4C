@@ -44,8 +44,7 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
   issetup_(false),
   comm_(Teuchos::null),
   params_(Teuchos::null),
-  nlnproblem_(Teuchos::null),
-  issolver_(false)
+  nlnproblem_(Teuchos::null)
 {
   return;
 }
@@ -64,9 +63,6 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
   nlnproblem_ = nlnproblem;
-
-  if (Params().isParameter("Nonlinear Operator: Is Solver"))
-    issolver_ = Params().get<bool>("Nonlinear Operator: Is Solver");
 
   // Init() has been called
   SetIsInit();
@@ -113,11 +109,54 @@ void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
     ) const
 {
   // print only on one processor
-  if (Comm().MyPID() == 0)
+  if (Comm().MyPID() == 0 && Params().get<bool>("Nonlinear Operator: Print Iterations"))
   {
     IO::cout << std::setprecision(6)
              << Label() << " iteration " << iter
              << ": |f| = " << fnorm2
              << IO::endl;
   }
+}
+
+/*----------------------------------------------------------------------------*/
+/* Check if we still continue to iterate */
+const bool NLNSOL::NlnOperatorBase::ContinueIterations(const int iter,
+    const bool converged) const
+{
+  // initialize return value
+  bool retval = false;
+
+  if (iter < GetMaxIter() && not converged)
+    retval = true;
+
+  return retval;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Check if iteration loop converged successfully */
+const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
+    const int iter,
+    const bool converged
+    ) const
+{
+  // initialize return value
+  bool successful = false;
+
+  // make the decision
+  if (IsSolver())
+  {
+    if (converged && iter < GetMaxIter()) // successful convergence
+      return true;
+    else // convergence failed
+    {
+      dserror("%s did not converge in %d iterations.", Label(), iter);
+      return false;
+    }
+  }
+  else // no solver, so we don't care for convergence
+  {
+    return true;
+  }
+
+  return successful;
 }

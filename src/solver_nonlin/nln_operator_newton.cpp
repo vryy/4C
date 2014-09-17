@@ -48,9 +48,7 @@ Maintainer: Matthias Mayr
 /* Constructor (empty) */
 NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 : linsolver_(Teuchos::null),
-  linesearch_(Teuchos::null),
-  maxiter_(1),
-  fixedjacobian_(false)
+  linesearch_(Teuchos::null)
 {
   return;
 }
@@ -62,19 +60,8 @@ void NLNSOL::NlnOperatorNewton::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // ---------------------------------------------------------------------------
-  // initialize member variables from parameter list
-  // ---------------------------------------------------------------------------
-  if (Params().isParameter("Newton: Max Iter"))
-    maxiter_ = Params().get<int>("Newton: Max Iter");
-
-  if (Params().isParameter("Newton: Fixed Jacobian"))
-    fixedjacobian_ = Params().get<bool>("Newton: Fixed Jacobian");
-
-  if (fixedjacobian_)
+  if (FixedJacobian())
     jac_ = NlnProblem()->GetJacobianOperator();
-
-  // ---------------------------------------------------------------------------
 
   SetupLinearSolver();
   SetupLineSearch();
@@ -140,13 +127,12 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   double fnorm2 = 1.0e+12; // residual L2 norm
   bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
 
-  if (Params().get<bool>("Newton: Print Iterations"))
-    PrintIterSummary(iter, fnorm2);
+  PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
   // do a Newton-type iteration loop
   // ---------------------------------------------------------------------------
-  while (iter < GetMaxIter() && not converged)
+  while (ContinueIterations(iter, converged))
   {
     ++iter;
 
@@ -171,23 +157,12 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
     converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
 
-    if (Params().get<bool>("Newton: Print Iterations"))
-      PrintIterSummary(iter, fnorm2);
+    PrintIterSummary(iter, fnorm2);
   }
 
-  // ---------------------------------------------------------------------------
-  // check successful convergence
-  // ---------------------------------------------------------------------------
-  if (iter <= GetMaxIter() && converged)
-    return 0;
-  else
-  {
-    if (IsSolver())
-      dserror("Newton-type algorithm did not converge in %d iterations.", iter);
-  }
 
-  // suppose non-convergence
-  return 1;
+  // return error code
+  return (not CheckSuccessfulConvergence(iter, converged));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -201,7 +176,7 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
   int linsolve_error = 0;
 
   // compute search direction with either fixed or most recent, updated jacobian
-  if (fixedjacobian_)
+  if (FixedJacobian())
   {
     linsolve_error = linsolver_->Solve(jac_, inc, rhs, iter==1, iter==1, Teuchos::null);
   }

@@ -47,8 +47,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /* Constructor (empty) */
 NLNSOL::NlnOperatorSD::NlnOperatorSD()
-: linesearch_(Teuchos::null),
-  maxiter_(1)
+: linesearch_(Teuchos::null)
 {
   return;
 }
@@ -59,14 +58,6 @@ void NLNSOL::NlnOperatorSD::Setup()
 {
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
-
-  // ---------------------------------------------------------------------------
-  // initialize member variables from parameter list
-  // ---------------------------------------------------------------------------
-  if (Params().isParameter("SD: Max Iter"))
-    maxiter_ = Params().get<int>("SD: Max Iter");
-
-  // ---------------------------------------------------------------------------
 
   SetupLineSearch();
 
@@ -119,7 +110,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   // iteration loop
   // ---------------------------------------------------------------------------
-  while (iter < GetMaxIter() && not converged)
+  while (ContinueIterations(iter, converged))
   {
     ++iter;
 
@@ -127,9 +118,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
     ComputeSearchDirection(*rhs, *inc);
 
     // line search
-    linesearch_->Init(NlnProblem(), Params().sublist("SD: Line Search"), x, *inc, fnorm2);
-    linesearch_->Setup();
-    steplength = linesearch_->ComputeLSParam();
+    steplength = ComputeStepLength(x, *inc, fnorm2);
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
@@ -140,23 +129,11 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
 
     converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
 
-    if (Params().get<bool>("SD: Print Iterations"))
-      PrintIterSummary(iter, fnorm2);
+    PrintIterSummary(iter, fnorm2);
   }
 
-  // ---------------------------------------------------------------------------
-  // check successful convergence
-  // ---------------------------------------------------------------------------
-  if (iter <= GetMaxIter() && converged)
-    return 0;
-  else
-  {
-    if (IsSolver())
-      dserror("Steepest descent algorithm did not converge in %d iterations.", iter);
-  }
-
-  // suppose non-convergence
-  return 1;
+  // return error code
+  return (not CheckSuccessfulConvergence(iter, converged));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -171,4 +148,17 @@ const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
   if (err != 0) { dserror("Update failed."); }
 
   return err;
+}
+
+/*----------------------------------------------------------------------------*/
+/* Compute step length parameter */
+const double NLNSOL::NlnOperatorSD::ComputeStepLength(
+    const Epetra_MultiVector& x,
+    const Epetra_MultiVector& inc,
+    double fnorm2
+    ) const
+{
+  linesearch_->Init(NlnProblem(), Params().sublist("SD: Line Search"), x, inc, fnorm2);
+  linesearch_->Setup();
+  return linesearch_->ComputeLSParam();
 }

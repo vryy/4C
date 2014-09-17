@@ -116,15 +116,17 @@ namespace NLNSOL
     //! Setup of line search
     virtual void SetupLineSearch();
 
-    //@}
-
-    //! @name Access routines
-    //@{
-
-    //! Get max allowed number of iterations
-    virtual const int GetMaxIter() const { return maxiter_; }
+    //! Setup nonlinear preconditioner
+    virtual void SetupPreconditioner();
 
     //@}
+
+    //! Apply the preconditioner once
+    virtual void ApplyPreconditioner
+    (
+        const Epetra_MultiVector& f, ///< residual
+        Epetra_MultiVector& x ///< solution
+    ) const;
 
     //! @name Computation of beta
     //@{
@@ -181,13 +183,8 @@ namespace NLNSOL
     //! line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
-    //@}
-
-    //! @name Algorithmic parameters
-    //@{
-
-    //! max number of iterations
-    int maxiter_;
+    //! Nonlinear preconditioner
+    Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
 
     //@}
 

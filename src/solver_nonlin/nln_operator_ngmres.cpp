@@ -56,9 +56,7 @@ Maintainer: Matthias Mayr
 NLNSOL::NlnOperatorNGmres::NlnOperatorNGmres()
 : linsolver_(Teuchos::null),
   linesearch_(Teuchos::null),
-  nlnprec_(Teuchos::null),
-  itermax_(1),
-  windowsizemax_(5)
+  nlnprec_(Teuchos::null)
 {
   return;
 }
@@ -75,12 +73,9 @@ void NLNSOL::NlnOperatorNGmres::Setup()
   SetupLineSearch();
   SetupPreconditioner();
 
-  if (Params().isParameter("NGMRES: Max Iter"))
-    itermax_ = Params().get<int>("NGMRES: Max Iter");
-  if (Params().isParameter("NGMRES: Max Window Size"))
-    windowsizemax_ = Params().get<int>("NGMRES: Max Window Size");
-
-  std::cout << "Max window size has been set to " << GetMaxWindowSize() << "." << std::endl;
+  if (Comm().MyPID() == 0)
+    IO::cout << "Max window size has been set to " << GetMaxWindowSize()
+             << "." << IO::endl;
 
   // Setup() has been called
   SetIsSetup();
@@ -160,7 +155,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
              << "Starting iteration count is " << iter << "." << IO::endl;
   }
 
-  // declare some vectors
+  // get local copies of solution and residual
   Teuchos::RCP<Epetra_MultiVector> xbar = Teuchos::rcp(new Epetra_MultiVector(x));
   Teuchos::RCP<Epetra_MultiVector> fbar = Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
   NlnProblem()->Evaluate(*xbar, *fbar);
@@ -171,7 +166,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   PrintIterSummary(iter, fnorm2);
 
   // outer iteration loop
-  while ((not converged) and (iter <= GetMaxIter()))
+  while (ContinueIterations(iter, converged))
   {
     // reset the restart flag
     restart = false;
@@ -266,22 +261,17 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       // print stuff
       PrintIterSummary(iter, fnorm2);
 
-      if (iter > GetMaxIter() or converged)
+      if (iter > (unsigned int)GetMaxIter() or converged)
         break;
     } // end of while for window
   } // end of while for outer iteration loop
-
-  if (IsSolver() and iter > GetMaxIter() and not converged)
-  {
-    dserror("Nonlinear Krylov acceleration did not converge in %i iterations", GetMaxIter());
-  }
 
   // update solution that is passed back to the calling algorithm
   err = x.Update(1.0, *xbar, 0.0);
   if (err != 0) { dserror("Update failed."); }
 
   // return error code
-  return 0; // ToDo (mayr) return meaningful error code
+  return (not CheckSuccessfulConvergence(iter, converged));
 }
 
 /*----------------------------------------------------------------------------*/
