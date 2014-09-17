@@ -1090,7 +1090,7 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
         pxyze(1,inode) = pelenodes[inode]->X()[1];
         pxyze(2,inode) = pelenodes[inode]->X()[2];
 
-        if (sourcedis->Name() == "xfluid") // embedded fluid
+        if (sourcedis->Name() == "fluid") // embedded fluid
         {
           DRT::UTILS::ExtractMyValues(*embeddeddisp,mydisp,pgdofs);
           disp(0,inode) = mydisp[0];

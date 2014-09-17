@@ -132,7 +132,7 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1
 MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 0.1
 MAT 5 ELAST_CoupNeoHooke YOUNG 2.5e6 NUE 0.35
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1/2(sin(pi/2.0*t/2.5-pi/2)+1) t1 0.0 t2 2.5
 CURVE1 on EXPR FUNC 1 t1 2.5 t2 3.5
@@ -16728,7 +16728,7 @@ NODE 6336 COORD 1.36494889432 1.49156612093 -0.03
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 8 QUANTITY velx VALUE -3.08459399564079917e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 8 QUANTITY pressure VALUE -4.08731907412382744e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 8 QUANTITY velx VALUE -3.08459399564079917e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 8 QUANTITY pressure VALUE -4.08731907412382744e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

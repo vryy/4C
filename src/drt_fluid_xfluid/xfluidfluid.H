@@ -112,6 +112,9 @@ namespace FLD
                        Teuchos::RCP<Epetra_Vector> alevel,
                        Teuchos::RCP<Epetra_Vector> disptotal );
 
+      /// background fluid dof-map
+      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
+
       /// (standard) system matrix for background fluid
       Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
 
@@ -182,10 +185,30 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>        rhC_ui_;
       //@}
 
+
+      /// vector with Newton increments (used for monolithic fully newton fsi approach)
+      Teuchos::RCP<Epetra_Vector>    stepinc_;
+
+      /// edge stabilization and ghost penalty object
+      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
+
+      XFluidFluid & xfluid_;
+
+      /// provides access to the xfem-dofsets of the background fluid
+      Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
+
+      //@name State variables of the merged system
+      //@{
+      /// Extractor used for splitting fluid and ale_fluid
+      Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> fluidfluidsplitter_;
+
+      /// extractor used for splitting between velocity and pressure dof from
+      /// the combined background & embedded fluid dof-map
+      LINALG::MapExtractor fluidfluidvelpressplitter_;
+
       //! @name dof-row maps
       //@{
-      /// background fluid dof-map
-      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
+
       /// combined background and embedded fluid dof-map
       Teuchos::RCP<Epetra_Map>       fluidfluiddofrowmap_;
       /// background fluid dof-map for output
@@ -210,29 +233,13 @@ namespace FLD
       //@{
       /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
       Teuchos::RCP<Epetra_Vector>    fluidfluidvelnp_;
-      /// \f$ \mathbf{u}^{b\cup e,n} \f$
+      /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
       Teuchos::RCP<Epetra_Vector>    fluidfluidveln_;
       /// \f$ \Delta \mathbf{u}^{b\cup e,n+1}_{i+1} \f$
       Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
       //@}
 
-      /// vector with Newton increments (used for monolithic fully newton fsi approach)
-      Teuchos::RCP<Epetra_Vector>    stepinc_;
-
-      /// Extractor used for splitting fluid and ale_fluid
-      Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> fluidfluidsplitter_;
-
-      /// extractor used for splitting between velocity and pressure dof from
-      /// the combined background & embedded fluid dof-map
-      LINALG::MapExtractor fluidfluidvelpressplitter_;
-
-      /// edge stabilization and ghost penalty object
-      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
-
-      XFluidFluid & xfluid_;
-
-      /// provides access to the xfem-dofsets of the background fluid
-      Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
+      //@}
 
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
@@ -386,10 +393,23 @@ namespace FLD
     /// read restart data for embedded discretization
     void ReadRestartEmb(int step);
 
+    /*!
+     * \brief save the old state, do new cut for this time step and save
+     * status of background fluid (node-to-dofset mapping)
+     */
     void CutAndSaveBgFluidStatus();
 
-    void SetBgStateVectors(Teuchos::RCP<Epetra_Vector> disp);
+    /*!
+     * \brief as part of time integration: determine new background state vectors
+     * \param aledisp displacement of the ALE-fluid at the time we want to interpolate
+     * values from it
+     */
+    void SetBgStateVectors(Teuchos::RCP<Epetra_Vector> aledisp);
 
+    /*!
+     * \brief in fixed-ALE-partitioned XFFSI: update the fluid solution by
+     * solving fluid problem with FSI velocities as dirichlet values
+     */
     void UpdateMonolithicFluidSolution();
 
     void SetInitialFlowField(
@@ -408,10 +428,11 @@ namespace FLD
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { return aletrueresidual_; }
-    Teuchos::RCP<const Epetra_Vector> Velnp() { return alevelnp_; }
-    Teuchos::RCP<      Epetra_Vector> ViewofVelnp() { return alevelnp_; }
+
+    Teuchos::RCP<const Epetra_Vector> Velnp() { return state_->fluidfluidvelnp_; }
+    Teuchos::RCP<      Epetra_Vector> ViewofVelnp() { return state_->fluidfluidvelnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf() { dserror("Gen. alpha not implemented for XFluidFluid problems."); return Teuchos::null; }
-    Teuchos::RCP<const Epetra_Vector> Veln() { return aleveln_; }
+    Teuchos::RCP<const Epetra_Vector> Veln() { return state_->fluidfluidveln_; }
     Teuchos::RCP<const Epetra_Vector> GridVel() {return gridv_; }
     Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() {return gridv_; }
     Teuchos::RCP<const Epetra_Vector> Stepinc() {return state_->stepinc_;}
@@ -438,7 +459,7 @@ namespace FLD
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_; }
     //! get background fluid dirichlet map extractor
     const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_; }
-    //! get combined background and embedded fluid dirichlet map extractor
+    //! get combined background and embedded fluid dirichlet map
     virtual const Teuchos::RCP<const Epetra_Map>&  FluidDirichMaps() { return state_->fluidfluiddbcmaps_; }
     //@}
 
@@ -531,7 +552,7 @@ namespace FLD
 
     /// create new discretization from all embedded fluid elements,
     /// that contribute to the fluid-fluid interface with at least one face
-    void CreateEmbeddedBoundarydis();
+    void CreateEmbeddedBoundaryDiscretization();
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!

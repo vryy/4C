@@ -202,15 +202,15 @@ void fluid_fluid_ale_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // create a communicator
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetDis("fluid")->Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetDis("xfluid")->Comm().Clone());
 
-  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("xfluid");
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
 
-  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
+  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
@@ -411,7 +411,7 @@ void fluid_fluid_ale_drt()
 void fluid_fluid_fsi_drt()
 {
   // create a communicator
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("xfluid")->Comm().Clone());
 
   /* |--str dofs--|--bgfluid dofs--|--embfluid dofs--|--ale dofs--|-> */
 
@@ -420,13 +420,13 @@ void fluid_fluid_fsi_drt()
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   structdis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("xfluid");
   bgfluiddis->FillComplete();
 
   // reserve max size of dofs for the background fluid
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
-  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
+  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------

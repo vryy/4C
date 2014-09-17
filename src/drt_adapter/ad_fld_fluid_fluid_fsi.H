@@ -182,10 +182,10 @@ namespace ADAPTER {
     /// type cast pointer to XFluidFluid
     Teuchos::RCP<FLD::XFluidFluid>         xfluidfluid_;
 
-    /// map extractor for the embedded fluid discretization
-    Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
+    /// fsi map extractor for embedded fluid
+    Teuchos::RCP<FLD::UTILS::MapExtractor> embfluidinterface_;
 
-    /// map extractor for merged fluid maps (to keep fsi interface-DOF apart from
+    /// fsi map extractor for merged fluid maps (to keep fsi interface-DOF apart from
     /// merged inner DOF (inner embedded fluid together with background fluid)
     Teuchos::RCP<FLD::UTILS::MapExtractor> mergedfluidinterface_;
 

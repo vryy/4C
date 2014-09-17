@@ -226,6 +226,11 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
   }
 }
 
+int GEO::CUT::VolumeCell::GetParentElementId() const
+{
+  return element_->GetParentId();
+}
+
 void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
 {
 //   if ( Empty() )

@@ -64,6 +64,11 @@ public:
    */
   Element * ParentElement() { return element_; }
 
+  /*!
+  \brief Return the ID of the parent element, from which this volumecell is generated
+   */
+  int GetParentElementId() const;
+
   void GetAllPoints( Mesh & mesh, PointSet & cut_points );
 
   void CreateTet4IntegrationCells( Mesh & mesh, const std::vector<std::vector<Point*> > & tets, const std::map<Facet*, std::vector<Point*> > & sides_xyz );

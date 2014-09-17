@@ -58,7 +58,7 @@ SIMPLER                         No
 CALCERROR                       kimmoin_stat_navier_stokes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no// yes                      //
@@ -79,14 +79,14 @@ GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    yes
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation 
-BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation 
+VOLUME_GAUSS_POINTS_BY          Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeSigma // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
 IS_PSEUDO_2D                    yes
-VISC_STAB_FAC                   24.40282794                   // 35/CT(2d) 
+VISC_STAB_FAC                   24.40282794                   // 35/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
 XFF_CONV_STAB_SCALING           none
@@ -135,7 +135,7 @@ CURVE3 on EXPR FUNC 2.0*pi/3.0*cos(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // veloc
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 1    
+FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
@@ -9576,20 +9576,20 @@ NODE 3509 COORD 1.9256652534522772e-01 1.6104242373388949e-01 -3.333333333333333
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 118 QUANTITY velx VALUE 6.04155268205922691e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 118 QUANTITY vely VALUE 3.95258598752362356e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 118 QUANTITY pressure VALUE -6.47722273873043985e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 159 QUANTITY velx VALUE 8.19448655288902956e-17 TOLERANCE 1e-6
-FLUID DIS fluid NODE 159 QUANTITY vely VALUE 7.43144825477394466e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 159 QUANTITY pressure VALUE -3.12322867833966455e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 250 QUANTITY velx VALUE 4.40586048818062195e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 250 QUANTITY vely VALUE 9.12300400521979471e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 250 QUANTITY pressure VALUE 6.65675194968429751e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1817 QUANTITY velx VALUE -6.62291814505775234e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1817 QUANTITY vely VALUE -8.04902703407303632e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1817 QUANTITY pressure VALUE 2.62831296765592137e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1851 QUANTITY velx VALUE -6.97281796995739667e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1851 QUANTITY vely VALUE -2.96048942486319855e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1851 QUANTITY pressure VALUE 4.18813444289827530e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 118 QUANTITY velx VALUE 6.04155268205922691e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 118 QUANTITY vely VALUE 3.95258598752362356e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 118 QUANTITY pressure VALUE -6.47722273873043985e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 159 QUANTITY velx VALUE 8.19448655288902956e-17 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 159 QUANTITY vely VALUE 7.43144825477394466e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 159 QUANTITY pressure VALUE -3.12322867833966455e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 250 QUANTITY velx VALUE 4.40586048818062195e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 250 QUANTITY vely VALUE 9.12300400521979471e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 250 QUANTITY pressure VALUE 6.65675194968429751e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1817 QUANTITY velx VALUE -6.62291814505775234e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1817 QUANTITY vely VALUE -8.04902703407303632e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1817 QUANTITY pressure VALUE 2.62831296765592137e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1851 QUANTITY velx VALUE -6.97281796995739667e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1851 QUANTITY vely VALUE -2.96048942486319855e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1851 QUANTITY pressure VALUE 4.18813444289827530e-02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

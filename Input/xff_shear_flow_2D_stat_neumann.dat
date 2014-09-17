@@ -62,7 +62,7 @@ STABTYPE                        residual_based                // edge_based //
 DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes //no /                   
+PSPG                            yes //no /
 SUPG yes //no//yes
 VSTAB                           no_vstab
 GRAD_DIV no //yes
@@ -113,7 +113,7 @@ COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 //GHOST_PENALTY_STAB            Yes
 //GHOST_PENALTY_FAC             0.001
-//MSH_L2_PROJ                   part_ele_proj //full_ele_proj (K_ss whole element or just partial) 
+//MSH_L2_PROJ                   part_ele_proj //full_ele_proj (K_ss whole element or just partial)
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
@@ -787,19 +787,19 @@ NODE 206 COORD 8.3940122065326062e-01 5.2806696067726866e-01 0.0000000000000000e
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 18 QUANTITY velx VALUE 8.000000000e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 18 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 25 QUANTITY velx VALUE 0.000000000e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 25 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 34 QUANTITY velx VALUE 1.000000000e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 34 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 51 QUANTITY velx VALUE 2.00000000e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 51 QUANTITY pressure VALUE 9.0e00TOLERANCE 1e-6
-FLUID DIS fluid NODE 53 QUANTITY velx VALUE 4.00000000e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 53 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 61 QUANTITY velx VALUE 0.000000000e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 61 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 139 QUANTITY velx VALUE 4.714321811e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 139 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 8.000000000e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 25 QUANTITY velx VALUE 0.000000000e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 25 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 34 QUANTITY velx VALUE 1.000000000e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 34 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 51 QUANTITY velx VALUE 2.00000000e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 51 QUANTITY pressure VALUE 9.0e00TOLERANCE 1e-6
+FLUID DIS xfluid NODE 53 QUANTITY velx VALUE 4.00000000e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 53 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 61 QUANTITY velx VALUE 0.000000000e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 61 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 139 QUANTITY velx VALUE 4.714321811e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 139 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
