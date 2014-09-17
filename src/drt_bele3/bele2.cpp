@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const int id, const
 void DRT::ELEMENTS::Bele2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 2;
-  dimns = 3;
+  dimns = 2;
   nv = 2;
 }
 

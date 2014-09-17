@@ -15,6 +15,8 @@ Maintainer: Raffaela Kruse
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 #include <sstream>
 
 
@@ -34,18 +36,28 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const std::string e
                                                              const int id,
                                                              const int owner )
 {
-  std::size_t pos = eletype.rfind("_");
+  // Search for "BELE3". If found, search for "_"
+  // the number after "_" is numdof: so BELE3_4 is a BELE3 element
+  // with numdof=4
+  std::size_t pos = eletype.rfind("BELE3");
   if (pos!=std::string::npos)
   {
-    if(eletype.substr(0, pos) == "BELE3")
+    if(eletype.substr(pos+5,1) == "_")
     {
-      std::istringstream is(eletype.substr(pos+1));
+      std::istringstream is(eletype.substr(pos+6,1));
 
       int numdof = -1;
       is >> numdof;
+      if(numdof!=3 and numdof!=4)
+        dserror("ERROR: Chosen number of dofs for BELE3 element invalid!");
+
       Teuchos::RCP<DRT::ELEMENTS::Bele3> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id,owner));
       ele->SetNumDofPerNode(numdof);
       return ele;
+    }
+    else
+    {
+      dserror("ERROR: Found BELE3 element without specified number of dofs!");
     }
   }
 
@@ -62,10 +74,61 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const int id, const
 
 void DRT::ELEMENTS::Bele3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
+  numdf = 3;
+  dimns = 3;
+  nv    = 3;
 }
 
 void DRT::ELEMENTS::Bele3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Bele3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs3 = definitions["BELE3_3"];
+
+  defs3["TRI3"]
+    .AddIntVector("TRI3",3)
+    ;
+
+  defs3["TRI6"]
+    .AddIntVector("TRI6",6)
+    ;
+
+  defs3["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    ;
+
+  defs3["QUAD8"]
+  .AddIntVector("QUAD8",8)
+  ;
+
+  defs3["QUAD9"]
+  .AddIntVector("QUAD9",9)
+  ;
+
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs4 = definitions["BELE3_4"];
+
+  defs4["TRI3"]
+    .AddIntVector("TRI3",3)
+    ;
+
+  defs4["TRI6"]
+    .AddIntVector("TRI6",6)
+    ;
+
+  defs4["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    ;
+
+  defs4["QUAD8"]
+  .AddIntVector("QUAD8",8)
+  ;
+
+  defs4["QUAD9"]
+  .AddIntVector("QUAD9",9)
+  ;
 }
 
 
@@ -228,4 +291,11 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Ele
   return rule;
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Bele3::ReadElement(const std::string& eletype,
+                                       const std::string& distype,
+                                       DRT::INPUT::LineDefinition* linedef)
+{
+  return true;
+}

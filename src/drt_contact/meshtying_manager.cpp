@@ -536,7 +536,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     mtparams.set<std::string>("PARALLEL_REDIST","static");
     mtparams.set<std::string>("SHAPEFCN","dual");
     mtparams.set<std::string>("REDUNDANT_STORAGE","Master");
-    mtparams.set<std::string>("INTTYPE","Segments");
     mtparams.set<std::string>("SYSTEM","condensed");
     mtparams.set<bool>("NURBS",false);
   }

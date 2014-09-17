@@ -53,6 +53,8 @@ public:
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
 private:
 
   static Bele3Type instance_;
@@ -151,7 +153,10 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-
+  /// Read input for this element
+  virtual bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
   //@}
 
   //! @name Other
