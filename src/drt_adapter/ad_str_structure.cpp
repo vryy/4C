@@ -488,7 +488,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
             DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       if (tmpstr->HaveConstraint())
       {
-        if (coupling == INPAR::POROELAST::Monolithic_structuresplit or coupling == INPAR::POROELAST::Monolithic_fluidsplit)
+        if (   coupling == INPAR::POROELAST::Monolithic_structuresplit
+            or coupling == INPAR::POROELAST::Monolithic_fluidsplit
+            or coupling == INPAR::POROELAST::Monolithic_nopenetrationsplit
+            )
           structure_ = Teuchos::rcp(new FPSIStructureWrapper(tmpstr));
         else
           structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));

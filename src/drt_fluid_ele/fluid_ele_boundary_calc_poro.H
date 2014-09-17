@@ -201,6 +201,23 @@ protected:
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseVector&  elevec1);
 
+  void NoPenetrationMatAndRHS(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseMatrix&  elemat2,
+      Epetra_SerialDenseVector&  elevec1);
+
+  void NoPenetrationMatOD(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseMatrix&  elemat2);
+
   /*!
   \brief compute flow rate over boundary for porous media problems
 

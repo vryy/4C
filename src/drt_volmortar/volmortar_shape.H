@@ -28,6 +28,7 @@ Maintainer: Philipp Farah
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_inpar/inpar_volmortar.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |

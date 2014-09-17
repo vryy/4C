@@ -208,10 +208,6 @@ void POROELAST::Monolithic::Solve()
     dserror("Newton unconverged in %d iterations", iter_);
   }
 
-  // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
-  // (i.e. condensed forces onto the structure) needed for rhs in next time step
-  RecoverLagrangeMultiplier();
-
 }    // Solve()
 
 /*----------------------------------------------------------------------*
@@ -259,7 +255,7 @@ void POROELAST::Monolithic::Evaluate(
   FluidField()->Evaluate(Teuchos::null);
   //std::cout << "  fluid time for calling Evaluate: " << timerfluid.ElapsedTime() << "\n";
 
-  //fill off diagonal blocks
+  //fill off diagonal blocks and fill global system matrix
   SetupSystemMatrix();
 }
 
@@ -1025,8 +1021,7 @@ void POROELAST::Monolithic::PrintNewtonConv()
  |  evaluate mechanical-fluid system matrix at state                    |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::ApplyStrCouplMatrix(
-    Teuchos::RCP<
-    LINALG::SparseOperator> k_sf //!< off-diagonal tangent matrix term
+    Teuchos::RCP<LINALG::SparseOperator> k_sf //!< off-diagonal tangent matrix term
 )
 {
   k_sf->Zero();

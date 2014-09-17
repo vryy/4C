@@ -53,6 +53,8 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
   case FLD::no_penetrationIDs:
   case FLD::poro_boundary:
   case FLD::poro_prescoupl:
+  case FLD::poro_splitnopenetration:
+  case FLD::poro_splitnopenetration_OD:
   case FLD::fpsi_coupling:
   {
   DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),impltype)->EvaluateAction(

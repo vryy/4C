@@ -2913,13 +2913,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "poro_partitioned",
                                  "poro_monolithic",
                                  "poro_monolithicstructuresplit",
-                                 "poro_monolithicfluidsplit"
+                                 "poro_monolithicfluidsplit",
+                                 "poro_monolithicnopenetrationsplit"
                                 ),
                               tuple<int>(
                                 INPAR::POROELAST::Partitioned,
                                 INPAR::POROELAST::Monolithic,
                                 INPAR::POROELAST::Monolithic_structuresplit,
-                                INPAR::POROELAST::Monolithic_fluidsplit
+                                INPAR::POROELAST::Monolithic_fluidsplit,
+                                INPAR::POROELAST::Monolithic_nopenetrationsplit
                                 ),
                               &poroelastdyn);
 

@@ -22,6 +22,7 @@
 #include "poroelast_monolithic.H"
 #include "poro_monolithicstructuresplit.H"
 #include "poro_monolithicfluidsplit.H"
+#include "poro_monolithicsplit_nopenetration.H"
 #include "poroelast_utils.H"
 #include "poro_utils_clonestrategy.H"
 #include "../drt_inpar/inpar_poroelast.H"
@@ -163,6 +164,12 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     {
       // create an POROELAST::MonolithicFluidSplit instance
       poroalgo = Teuchos::rcp(new POROELAST::MonolithicFluidSplit(comm, timeparams));
+      break;
+    }
+    case INPAR::POROELAST::Monolithic_nopenetrationsplit:
+    {
+      // create an POROELAST::MonolithicSplitNoPenetration instance
+      poroalgo = Teuchos::rcp(new POROELAST::MonolithicSplitNoPenetration(comm, timeparams));
       break;
     }
     case INPAR::POROELAST::Partitioned:

@@ -36,7 +36,8 @@ namespace POROELAST
     Partitioned,
     Monolithic,
     Monolithic_structuresplit,
-    Monolithic_fluidsplit
+    Monolithic_fluidsplit,
+    Monolithic_nopenetrationsplit
   };
 
   /// @name Solution technique and related

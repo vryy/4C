@@ -168,7 +168,7 @@ namespace POROELAST
       bool Converged();
 
       //! inner newton iteration
-      void Solve();
+      virtual void Solve();
 
       //! perform one time step (setup + solve + output)
       void DoTimeStep();
@@ -225,11 +225,11 @@ namespace POROELAST
       //! @name Apply current field state to system
 
       //! Evaluate mechanical-fluid system matrix
-      void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
+      virtual void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
           );
 
       //! Evaluate fluid-mechanical system matrix
-      void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
+      virtual void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
             );
 
       //@}

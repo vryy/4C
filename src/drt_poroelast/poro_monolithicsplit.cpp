@@ -70,7 +70,7 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
   if (evaluateinterface_)
   {
     //here we account for DBCs and preconditioning on the FSI-Interface. In both cases the structure field decides, what to do
-    //(I don't thing this is the best solution, but at least the easiest one)
+    //(I don't think this is the best solution, but at least the easiest one)
 
     double timescale = FluidField()->TimeScaling();
 
@@ -249,4 +249,17 @@ void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
   combinedDBCMap_ = LINALG::MultiMapExtractor::IntersectMaps(vectordbcmaps);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | solution with full Newton-Raphson iteration            vuong 01/12   |
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplit::Solve()
+{
+  //solve monolithic system by newton iteration
+  Monolithic::Solve();
+
+  // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
+  // (i.e. condensed forces onto the structure) needed for rhs in next time step
+  RecoverLagrangeMultiplier();
 }

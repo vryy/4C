@@ -48,8 +48,18 @@ namespace POROELAST
     /// setup composed right hand side from field solvers (depends on which field is splitted)
     virtual void SetupRHS(bool firstcall=false)=0;
 
+    /// setup composed system matrix from field solvers (depends on which field is splitted)
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)=0;
+
     //! start a new time step
     virtual void PrepareTimeStep();
+
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
+    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier()=0;
+
+    //! inner newton iteration
+    virtual void Solve();
 
   protected:
 

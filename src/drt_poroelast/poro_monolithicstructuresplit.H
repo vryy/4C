@@ -47,6 +47,9 @@ namespace POROELAST
       //! create using a Epetra_Comm
       explicit MonolithicStructureSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
+      //! virtual destructor to support polymorph destruction
+      virtual ~MonolithicStructureSplit(){};
+
       /*! do the setup for the monolithic system
 
        <pre>

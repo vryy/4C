@@ -98,6 +98,8 @@ enum BoundaryAction {
     no_penetrationIDs,
     poro_boundary,
     poro_prescoupl,
+    poro_splitnopenetration,
+    poro_splitnopenetration_OD,
     ba_calc_adjoint_neumann,
     fpsi_coupling,
     interpolatetoimmersednodes

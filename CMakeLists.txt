@@ -1835,6 +1835,7 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_monolithicsplit.cpp
   src/drt_poroelast/poro_monolithicstructuresplit.cpp
   src/drt_poroelast/poro_monolithicfluidsplit.cpp
+  src/drt_poroelast/poro_monolithicsplit_nopenetration.cpp
   src/drt_poroelast/poro_scatra_base.cpp
   src/drt_poroelast/poro_scatra_part.cpp
   src/drt_poroelast/poro_scatra_part_1wc.cpp
