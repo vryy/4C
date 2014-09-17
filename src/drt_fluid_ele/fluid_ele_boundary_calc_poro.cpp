@@ -3013,9 +3013,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
                                                  Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
                                                  std::vector<int>&                lm,
-                                                 Epetra_SerialDenseMatrix&        elemat1,
-                                                 Epetra_SerialDenseMatrix&        elemat2,
-                                                 Epetra_SerialDenseVector&        elevec1)
+                                                 Epetra_SerialDenseMatrix&        k_fluid,
+                                                 Epetra_SerialDenseMatrix&        k_D,
+                                                 Epetra_SerialDenseVector&        rhs)
 {
   // This function is only implemented for 3D
   if(my::bdrynsd_!=2 and my::bdrynsd_!=1)
@@ -3078,9 +3078,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     }
 
   //allocate convective velocity at node
-  LINALG::Matrix<my::nsd_,my::bdrynen_> convvel(true);
-  convvel+=evelnp;
-  convvel-=egridvel;
+  LINALG::Matrix<my::nsd_,my::bdrynen_> econvvel(true);
+  econvvel+=evelnp;
+  econvvel-=egridvel;
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -3108,6 +3108,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   //! array for shape functions for boundary element
   LINALG::Matrix<my::bdrynen_,1> dualfunct(true);
 
+  //allocate convective velocity at gauss point
+  LINALG::Matrix<my::nsd_,1> convvel(true);
+
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
@@ -3132,6 +3135,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     if (IsNurbs<distype>::isnurbs)
       my::unitnormal_.Scale(normalfac);
 
+
+    convvel.Multiply(econvvel,my::funct_);
+
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
     // Therefore it cancels out!!
@@ -3143,9 +3149,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       for (int idof=0;idof<my::nsd_;idof++)
       {
         //residual for normal direction. Tangential directions are equal to zero.
-        elevec1(inode*my::nsd_) -=
-            dualfunct(inode) * my::unitnormal_(idof) * convvel(idof,inode) * fac;
-        elemat2(inode*my::nsd_+idof,inode*my::numdofpernode_+idof) +=
+        rhs(inode*my::nsd_) -=
+            my::funct_(inode) * my::unitnormal_(idof) * convvel(idof) * fac;
+        k_D(inode*my::nsd_+idof,inode*my::numdofpernode_+idof) +=
             dualfunct(inode)* my::funct_(inode) * fac;
       }
 
@@ -3153,8 +3159,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       {
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
-          elemat1(inode*my::nsd_,nnod*my::numdofpernode_+idof2) +=
-              dualfunct(inode)* my::unitnormal_(idof2) * my::funct_(nnod) * fac;
+          k_fluid(inode*my::nsd_,nnod*my::numdofpernode_+idof2) +=
+              my::funct_(inode)* my::unitnormal_(idof2) * my::funct_(nnod) * fac;
         }
       }
     }
@@ -3172,8 +3178,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
                                                  Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
                                                  std::vector<int>&                lm,
-                                                 Epetra_SerialDenseMatrix&        elemat1,
-                                                 Epetra_SerialDenseMatrix&        elemat2)
+                                                 Epetra_SerialDenseMatrix&        k_struct,
+                                                 Epetra_SerialDenseMatrix&        k_lambda)
 {
   // This function is only implemented for 3D
   if(my::bdrynsd_!=2 and my::bdrynsd_!=1)
@@ -3240,11 +3246,28 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
      egridvel(idim,inode) = mygridvel[idim+(inode*my::numdofpernode_)];
    }
 
-  //allocate convective velocity at node
-  LINALG::Matrix<my::nsd_,my::bdrynen_> convvel(true);
+  Teuchos::RCP<const Epetra_Vector>      glambda = discretization.GetState("lambda");
 
-  convvel+=evelnp;
-  convvel-=egridvel;
+  if (velnp == Teuchos::null)
+    dserror("Cannot get state vector 'lambda'");
+
+  std::vector<double> mylambda(lm.size());
+  DRT::UTILS::ExtractMyValues(*glambda,mylambda,lm);
+
+  LINALG::Matrix<my::nsd_,my::bdrynen_> elambda(true);
+
+  // split velocity and pressure, insert into element arrays
+  for (int inode=0;inode<my::bdrynen_;inode++)
+    for (int idim=0; idim< my::nsd_; idim++)
+    {
+      elambda(idim,inode) = mylambda[idim+(inode*my::numdofpernode_)];
+    }
+
+  //allocate convective velocity at node
+  LINALG::Matrix<my::nsd_,my::bdrynen_> econvvel(true);
+
+  econvvel+=evelnp;
+  econvvel-=egridvel;
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -3271,6 +3294,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   //tangent vectors
   LINALG::Matrix<my::nsd_,1> tangent1(true);
   LINALG::Matrix<my::nsd_,1> tangent2(true);
+
+  //allocate convective velocity at gauss point
+  LINALG::Matrix<my::nsd_,1> convvel(true);
+  LINALG::Matrix<my::nsd_,1> lambda(true);
 
   //! array for dual shape functions for boundary element
   LINALG::Matrix<my::bdrynen_,1> dualfunct(true);
@@ -3304,6 +3331,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
    if (IsNurbs<distype>::isnurbs)
      my::unitnormal_.Scale(normalfac);
 
+   convvel.Multiply(econvvel,my::funct_);
+   lambda.Multiply(elambda,dualfunct);
+
    //  derivatives of surface normals wrt mesh displacements
    LINALG::Matrix<my::nsd_,my::bdrynen_*my::nsd_> normalderiv(true);
    LINALG::Matrix<my::nsd_,my::bdrynen_*my::nsd_> tangent1deriv(true);
@@ -3330,6 +3360,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
        normalderiv(2,3*node+1) += (my::deriv_(1,node)*dxyzdrs(0,0)-my::deriv_(0,node)*dxyzdrs(1,0));
        normalderiv(2,3*node+2) += 0.;
      }
+
+     // in the case of nurbs the normal vector must be scaled with a special factor
+     if (IsNurbs<distype>::isnurbs)
+       normalderiv.Scale(normalfac);
 
      if (abs(my::unitnormal_(0))>1.0e-6 || abs(my::unitnormal_(1))>1.0e-6 )
      {
@@ -3409,6 +3443,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
        normalderiv(1,my::nsd_*node+1) += 0.;
      }
 
+     // in the case of nurbs the normal vector must be scaled with a special factor
+     if (IsNurbs<distype>::isnurbs)
+       normalderiv.Scale(normalfac);
+
      // simple definition for txi
      tangent1(0) = -my::unitnormal_(1);
      tangent1(1) =  my::unitnormal_(0);
@@ -3423,22 +3461,61 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
      }
    }
 
-   // in the case of nurbs the normal vector must be scaled with a special factor
-   if (IsNurbs<distype>::isnurbs)
-     normalderiv.Scale(normalfac);
+   static LINALG::Matrix<1,my::bdrynen_*my::nsd_> convvel_normalderiv(true);
+   convvel_normalderiv.MultiplyTN(convvel,normalderiv);
 
    //fill element matrix
    for (int inode=0;inode<my::bdrynen_;inode++)
    {
+     const double funct_fac = my::funct_(inode) * fac;
      for (int nnod=0;nnod<my::bdrynen_;nnod++)
      {
        for (int idof=0;idof<my::nsd_;idof++)
        {
-         elemat1(inode*my::nsd_,nnod*my::nsd_+idof) +=
-             - dualfunct(inode) * my::unitnormal_(idof)*timescale*my::funct_(nnod) * fac;
-         for (int idof2=0;idof2<my::nsd_;idof2++)
-           elemat1(inode*my::nsd_,nnod*my::nsd_+idof) +=
-               normalderiv(idof2,nnod*my::nsd_+idof) * dualfunct(inode) * convvel(idof2,nnod) * fac;
+         k_struct(inode*my::nsd_,nnod*my::nsd_+idof) +=
+             - my::unitnormal_(idof)*timescale*my::funct_(nnod) * funct_fac
+             + convvel_normalderiv(0,nnod*my::nsd_+idof) * funct_fac;
+       }
+     }
+   }
+
+   if(my::nsd_==3)
+   {
+     static LINALG::Matrix<1,my::bdrynen_*my::nsd_> lambda_tangent1deriv(true);
+     lambda_tangent1deriv.MultiplyTN(lambda,tangent1deriv);
+     static LINALG::Matrix<1,my::bdrynen_*my::nsd_> lambda_tangent2deriv(true);
+     lambda_tangent2deriv.MultiplyTN(lambda,tangent2deriv);
+
+     for (int inode=0;inode<my::bdrynen_;inode++)
+     {
+       const double funct_fac = my::funct_(inode) * fac;
+       for (int nnod=0;nnod<my::bdrynen_;nnod++)
+       {
+         for (int idof=0;idof<my::nsd_;idof++)
+         {
+           k_struct(inode*my::nsd_+1,nnod*my::nsd_+idof) +=
+               lambda_tangent1deriv(0,nnod*my::nsd_+idof) * funct_fac;
+           k_struct(inode*my::nsd_+2,nnod*my::nsd_+idof) +=
+               lambda_tangent2deriv(0,nnod*my::nsd_+idof) * funct_fac;
+         }
+       }
+     }
+   }
+   else if(my::nsd_==2)
+   {
+     LINALG::Matrix<1,my::bdrynen_*my::nsd_> lambda_tangent1deriv(true);
+     lambda_tangent1deriv.MultiplyTN(lambda,tangent1deriv);
+
+     for (int inode=0;inode<my::bdrynen_;inode++)
+     {
+       const double funct_fac = my::funct_(inode) * fac;
+       for (int nnod=0;nnod<my::bdrynen_;nnod++)
+       {
+         for (int idof=0;idof<my::nsd_;idof++)
+         {
+           k_struct(inode*my::nsd_+1,nnod*my::nsd_+idof) +=
+               lambda_tangent1deriv(0,nnod*my::nsd_+idof) * funct_fac;
+         }
        }
      }
    }
@@ -3447,14 +3524,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
    {
      for (int inode=0;inode<my::bdrynen_;inode++)
      {
+       const double funct_fac = my::funct_(inode) * fac;
        for (int nnod=0;nnod<my::bdrynen_;nnod++)
        {
          for (int idof=0;idof<my::nsd_;idof++)
          {
-           elemat2(inode*my::nsd_+1,nnod*my::nsd_+idof) +=
-               dualfunct(inode)* tangent1(idof) * dualfunct(nnod) * fac;
-           elemat2(inode*my::nsd_+2,nnod*my::nsd_+idof) +=
-               dualfunct(inode)* tangent2(idof) * dualfunct(nnod) * fac;
+           k_lambda(inode*my::nsd_+1,nnod*my::nsd_+idof) +=
+               tangent1(idof) * dualfunct(nnod) * funct_fac;
+           k_lambda(inode*my::nsd_+2,nnod*my::nsd_+idof) +=
+               tangent2(idof) * dualfunct(nnod) * funct_fac;
          }
        }
      }
@@ -3463,12 +3541,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
    {
      for (int inode=0;inode<my::bdrynen_;inode++)
      {
+       const double funct_fac = my::funct_(inode) * fac;
        for (int nnod=0;nnod<my::bdrynen_;nnod++)
        {
          for (int idof=0;idof<my::nsd_;idof++)
          {
-           elemat2(inode*my::nsd_+1,nnod*my::nsd_+idof) +=
-               dualfunct(inode)* tangent1(idof) * dualfunct(nnod) * fac;
+           k_lambda(inode*my::nsd_+1,nnod*my::nsd_+idof) +=
+               tangent1(idof) * dualfunct(nnod) * funct_fac;
          }
        }
      }

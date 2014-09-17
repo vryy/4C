@@ -41,7 +41,7 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
 {
 
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap()));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
 
   return;
 }
@@ -246,6 +246,9 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     FluidField()->Discretization()->SetState(0,"velnp",FluidField()->Velnp());
     FluidField()->Discretization()->SetState(0,"scaaf",FluidField()->Scaaf());
 
+//    FluidField()->Discretization()->SetState(0,"lambda",
+//        FluidField()->Interface()->InsertFSICondVector(StructureToFluidAtInterface(lambda_)));
+
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
@@ -279,6 +282,9 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     FluidField()->Discretization()->SetState(0,"gridv",FluidField()->GridVel());
     FluidField()->Discretization()->SetState(0,"velnp",FluidField()->Velnp());
     FluidField()->Discretization()->SetState(0,"scaaf",FluidField()->Scaaf());
+
+    FluidField()->Discretization()->SetState(0,"lambda",
+        FluidField()->Interface()->InsertFSICondVector(StructureToFluidAtInterface(lambda_)));
 
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
