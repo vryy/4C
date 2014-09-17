@@ -39,6 +39,10 @@ NLNSOL::UTILS::CreateParamListFromXML()
 
   std::string xmlfilename = DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>("XML_FILE");
 
+  // check for reasonable xml file
+  if (xmlfilename == "none")
+    dserror("Seems like you forgot to set the XML file for configuration of the nonlinear solver.");
+
   if(xmlfilename.length())
   {
     Teuchos::updateParametersFromXmlFile(xmlfilename, inoutArg(*params));
