@@ -85,7 +85,7 @@ BEAMS_BOXESINOCT                6
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std
-GMSHOUTPUT                      Yes
+GMSHOUTPUT                      No
 FRICTION_MODEL                  anisotropicconsistent
 ETA                             1e-3
 KT                              0.0
