@@ -1701,6 +1701,8 @@ void CONTACT::CoInterface::ExportNodalNormals()
   teta_y_val.clear();
   teta_z_val.clear();
 
+  //std::cout << "---------- nodal normals ----------------------------------------------------------" << std::endl;
+
   // print nodal normals
   /*for (int p=0;p<Comm().NumProc();++p)
   {
@@ -1728,16 +1730,16 @@ void CONTACT::CoInterface::ExportNodalNormals()
 
         // print linearizations at each slave node
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
-        for (iter=cnode->CoData().GetDerivN()[0].begin();iter!=cnode->CoData().GetDerivN()[0].end();++iter)
-          std::cout << "\n" << iter->first << "\t" << iter->second;
+        for (_iter=cnode->CoData().GetDerivN()[0].begin();_iter!=cnode->CoData().GetDerivN()[0].end();++_iter)
+          std::cout << "\n" << _iter->first << "\t" << _iter->second;
         std::cout << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
-        for (iter=cnode->CoData().GetDerivTxi()[0].begin();iter!=cnode->CoData().GetDerivTxi()[0].end();++iter)
-          std::cout << "\n" << iter->first << "\t" << iter->second;
+        for (_iter=cnode->CoData().GetDerivTxi()[0].begin();_iter!=cnode->CoData().GetDerivTxi()[0].end();++_iter)
+          std::cout << "\n" << _iter->first << "\t" << _iter->second;
         std::cout << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
-        for (iter=cnode->CoData().GetDerivTeta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
-          std::cout << "\n" << iter->first << "\t" << iter->second;
+        for (_iter=cnode->CoData().GetDerivTeta()[0].begin();_iter!=cnode->CoData().GetDerivTeta()[0].end();++_iter)
+          std::cout << "\n" << _iter->first << "\t" << _iter->second;
         std::cout << std::endl;
       }
       std::cout << std::endl << std::endl;
