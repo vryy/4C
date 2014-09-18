@@ -857,7 +857,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(
 {
   double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
-  LINALG::Matrix<1,1> tmp11;
   const double dT=temp-InitTemp();
 
   // deviatoric projection tensor
@@ -898,18 +897,15 @@ void MAT::PlasticElastHyper::EvaluateNCP(
   // different tensor norms
   tmp61.Multiply(PlAniso_full_,eta_v);
   double absHeta=NormStressLike(tmp61);
-  tmp11.MultiplyTN(eta_v_strainlike,tmp61);
-  double abseta_H=0.;
-  if (tmp11(0,0)<-1.e-16) dserror("this should not happen. eta : H : eta =%f < 0",tmp11(0,0));
-  else if (tmp11(0,0)>=0.) abseta_H=sqrt(tmp11(0,0));
+  double abseta_H=tmp61.Dot(eta_v_strainlike);;
+  if (abseta_H<-1.e-16) dserror("this should not happen. eta : H : eta =%f < 0",abseta_H);
+  else if (abseta_H>=0.) abseta_H=sqrt(abseta_H);
   else abseta_H=0.;
-  tmp11.MultiplyTN(deltaDp_v_strainlike,tmp61);
-  double dDpHeta=tmp11(0,0);
+  double dDpHeta=tmp61.Dot(deltaDp_v_strainlike);
   tmp61.Multiply(PlAniso_full_,etatr_v);
-  tmp11.MultiplyTN(etatr_v_strainlike,tmp61);
-  double absetatr_H=0.;
-  if (tmp11(0,0)<-1.e-16) dserror("this should not happen. eta_tr : H : eta_tr =%f < 0",tmp11(0,0));
-  else if (tmp11(0,0)>=0.) absetatr_H=sqrt(tmp11(0,0));
+  double absetatr_H=tmp61.Dot(etatr_v_strainlike);
+  if (absetatr_H<-1.e-16) dserror("this should not happen. eta_tr : H : eta_tr =%f < 0",absetatr_H);
+  else if (absetatr_H>=0.) absetatr_H=sqrt(absetatr_H);
   else absetatr_H=0.;
   LINALG::Matrix<6,1> HdDp;
   HdDp.Multiply(PlAniso_full_,deltaDp_v);
@@ -1016,17 +1012,16 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     if (dNCPdT!=NULL)
     {
       // plastic heating
-      double plHeating=0.;
-      plHeating = (0.
+      double plHeating = (0.
           -Isohard()*HardSoft()*aI
           -(Infyield()*HardSoft()-Inityield()*YieldSoft())
           *(1.-exp(-Expisohard()*aI))
       )*temp*delta_alpha_i_[gp]
-                            +delta_alpha_i_[gp]*(0.
-                                +Inityield()*(1.-YieldSoft()*dT)
-                                +Isohard()*(1.-HardSoft()*dT)*aI
-                                +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-                                *(1.-exp(-Expisohard()*aI))
+      +delta_alpha_i_[gp]*(0.
+          +Inityield()*(1.-YieldSoft()*dT)
+          +Isohard()*(1.-HardSoft()*dT)*aI
+          +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
+          *(1.-exp(-Expisohard()*aI))
                             )
                             ;
 
@@ -1293,7 +1288,6 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
 {
   double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
-  LINALG::Matrix<1,1> tmp11;
 
   // deviatoric projection tensor
   LINALG::Matrix<6,6> pdev(true);
@@ -1347,19 +1341,16 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
 
   tmp61.Multiply(PlAniso_full_,eta_v);
   double absHeta=NormStressLike(tmp61);
-  tmp11.MultiplyTN(eta_v_strainlike,tmp61);
-  double abseta_H=0.;
-  if (tmp11(0,0)<-1.e-16) dserror("this should not happen. tmp=%f",tmp11(0,0));
-  else if (tmp11(0,0)>=0.) abseta_H=sqrt(tmp11(0,0));
-  else dserror("this should not happen. tmp=%f",tmp11(0,0));
-  tmp11.MultiplyTN(deltaDp_v_strainlike,tmp61);
-  double dDpHeta=tmp11(0,0);
+  double abseta_H=tmp61.Dot(eta_v_strainlike);
+  if (abseta_H<-1.e-16) dserror("this should not happen. tmp=%f",abseta_H);
+  else if (abseta_H>=0.) abseta_H=sqrt(abseta_H);
+  else dserror("this should not happen. tmp=%f",abseta_H);
+  double dDpHeta=tmp61.Dot(deltaDp_v_strainlike);
   tmp61.Multiply(PlAniso_full_,etatr_v);
-  tmp11.MultiplyTN(etatr_v_strainlike,tmp61);
-  double absetatr_H=0.;
-  if (tmp11(0,0)<-1.e-16) dserror("this should not happen. tmp=%f",tmp11(0,0));
-  else if (tmp11(0,0)>=0.) absetatr_H=sqrt(tmp11(0,0));
-  else dserror("this should not happen. tmp=%f",tmp11(0,0));
+  double absetatr_H=tmp61.Dot(etatr_v_strainlike);
+  if (absetatr_H<-1.e-16) dserror("this should not happen. tmp=%f",absetatr_H);
+  else if (absetatr_H>=0.) absetatr_H=sqrt(absetatr_H);
+  else dserror("this should not happen. tmp=%f",absetatr_H);
   LINALG::Matrix<6,1> HdDp;
   HdDp.Multiply(PlAniso_full_,deltaDp_v);
   LINALG::Matrix<6,1> HdDp_strainlike;
