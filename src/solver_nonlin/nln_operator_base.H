@@ -81,7 +81,7 @@ namespace NLNSOL
 
       //! Fill base class member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
-          const Teuchos::ParameterList& params, ///< parameter list
+          const Teuchos::ParameterList& params, ///< parameter list for configuration
           Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< nonlinear problem to solve
           );
 
@@ -158,16 +158,50 @@ namespace NLNSOL
 
       //@}
 
-      //! @name Utilities
+      /*! @name Iteration loop Utilities
+       *
+       *  To enable efficient implementations of nonlinear solvers, the
+       *  iteration loops have to be implemented by each nonlinear operator
+       *  itself. This is important especially in the case when history
+       *  quantities are needed (as in NLNSOL::NlnOperatorNGmres or
+       *  NLNSOL::NlnOperatorNonlinCG). To have a common base of these iteration
+       *  loops, these helper routines provide actions that are needed in every
+       *  iteration loop.
+       *
+       *  For future implementation of additional nonlinear operators, please
+       *  make use of these generalized routines to make the code as unified
+       *  as possible
+       *
+       *  \author mayr.mt \date 09/2014
+       */
       //@{
 
-      //! Check if we still continue to iterate
+      /*! \brief Check if we still continue to iterate
+       *
+       *  Use this in the while-statement of the iteration loop.
+       *
+       *  \return Bool that indicates whether iterations have to be continued or
+       *  stopped
+       *
+       *  \author mayr.mt \date 09/2014
+       */
       virtual const bool ContinueIterations(
           const int iter, ///< current iteration counter
           const bool converged ///< convergence flag
           ) const;
 
-      //! Check if iteration loop converged successfully
+      /*! \brief Check successful convergence within max number of iterations
+       *
+       *  Use this after exiting the iteration loop to check whether it
+       *  converged successfully or not. The routine takes care of the decision
+       *  whether the current nonlinear operator is used as a solver or just as
+       *  a smoother.
+       *
+       *  \return Bool that indicates whether iteration loop converged
+       *  successfully within the given number of maximally allowed iterations
+       *
+       *  \author mayr.mt \date 09/2014
+       */
       virtual const bool CheckSuccessfulConvergence(
           const int iter, ///< number of performed iterations
           const bool converged ///< convergence flag
@@ -191,7 +225,7 @@ namespace NLNSOL
       //! Communicator
       Teuchos::RCP<const Epetra_Comm> comm_;
 
-      //! Parameter list
+      //! Parameter list for configuration of this nonlinear operator
       Teuchos::RCP<const Teuchos::ParameterList> params_;
 
       //! Nonlinear problem to be evaluated and solved

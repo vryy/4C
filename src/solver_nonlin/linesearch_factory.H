@@ -40,11 +40,16 @@ namespace NLNSOL
   /*!
    * \brief Line search factory class
    *
-   * Choose from parameter list, which line search object is needed. Create the
-   * line search algorithmic object and deliver it.
+   *  Factory class to create any kind of line search algorithm. This class just
+   *  implements a Create()-routine that creates the wanted object and returns
+   *  it as a NLNSOL::LineSearchBase. The choice which object has to be created
+   *  is based on an entry in an Teuchos::ParameterList.
    *
-   * \author mayr.mt
-   * \date 05/2014
+   *  Add any future line search algorithms to this factory class. Use only the
+   *  NLNSOL::LineSearchFactory to create line search objects, never call there
+   *  constructors explicitly.
+   *
+   * \author mayr.mt \date 05/2014
    */
   class LineSearchFactory
   {

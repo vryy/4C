@@ -44,6 +44,15 @@ namespace NLNSOL
 {
   /*! \brief Factory for nonlinear operators
    *
+   *  Factory class to create any kind of nonlinear operator. This class just
+   *  implements a Create()-routine that creates the wanted object and returns
+   *  it as a NLNSOL::NlnOperatorBase. The choice which object has to be created
+   *  is based on an entry in an Teuchos::ParameterList.
+   *
+   *  Add any future nonlinear operator to this factory class. Use only the
+   *  NLNSOL::NlnOperatorFactory to create nonlinear operators, never call there
+   *  constructors explicitly.
+   *
    *  \author mayr.mt \date 06/2014
    */
   class NlnOperatorFactory
