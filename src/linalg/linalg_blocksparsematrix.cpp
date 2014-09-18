@@ -451,7 +451,6 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
       dserror("LINALG::BlockSparseMatrixBase::MatrixMultiply: A and B not compatible");
     }
 
-    if(A.Cols() != 2 || A.Rows() !=2) dserror("only 2x2 block matrices supported up to now");
 
     int npr = 81; // estimated number of entries per row in each block
 
