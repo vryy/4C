@@ -1473,7 +1473,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     // default: material call in structural function is purely deformation dependent
-    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant) 
+    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
          and (young_temp == true) )
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
@@ -2092,12 +2092,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
 
         if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
         {
-          const double stepsize = params.get<double>("delta time");
-          // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . 1/Dt . dCmat/dT . N_temp) . detJ . w(gp)
+          // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . dCmat/dT . N_temp) . detJ . w(gp)
           // (24x8)                            (24x6)         (6x1)    (1x8)
           LINALG::Matrix<numstr_,nen_> cmatn(false);
           cmatn.MultiplyNT(Cmat_kdT, shapefunct); // (6x8)=(6x1)(1x8)
-          stiffmatrix_kdT->MultiplyTN( (detJ_w / (f_bar_factor*stepsize)), bop, cmatn, 1.0);
+          stiffmatrix_kdT->MultiplyTN( (detJ_w / f_bar_factor), bop, cmatn, 1.0);
 
           // Be careful: scaling with time factor is done in tsi_monolithic!!
         }
