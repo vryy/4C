@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
+#include "tsi_utils.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -32,6 +33,7 @@ Maintainer: Caroline Danowski
 
 //for coupling of nonmatching meshes
 #include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "../drt_volmortar/volmortar_utils.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -57,8 +59,9 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     // Scheme: non matching meshes --> volumetric mortar coupling...
     volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
+    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy= Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy() );
     //setup projection matrices
-    volcoupl_->Setup(structdis, thermodis);
+    volcoupl_->Setup(structdis, thermodis,materialstrategy);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator

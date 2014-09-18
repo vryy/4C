@@ -17,6 +17,7 @@ Maintainer: Philipp Farah
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_volmortar/volmortar_coupling.H"
+#include "../drt_volmortar/volmortar_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -36,7 +37,8 @@ ADAPTER::MortarVolCoupl::MortarVolCoupl()
  |  setup                                                    farah 10/13|
  *----------------------------------------------------------------------*/
 void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
-                                    Teuchos::RCP<DRT::Discretization> masterdis)
+                                    Teuchos::RCP<DRT::Discretization> masterdis,
+                                    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy)
 {
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -56,9 +58,11 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
         Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis));
   }
 
+  if(materialstrategy==Teuchos::null)
+    materialstrategy= Teuchos::rcp(new VOLMORTAR::UTILS::DefaultMaterialStrategy() );
   // create coupling instance
   Teuchos::RCP<VOLMORTAR::VolMortarCoupl> coupdis =
-      Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(dim,slavedis,masterdis));
+      Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(dim,slavedis,masterdis,materialstrategy));
 
   //-----------------------
   // Evaluate volmortar coupling:

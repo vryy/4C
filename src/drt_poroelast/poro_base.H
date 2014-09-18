@@ -48,6 +48,7 @@ namespace ADAPTER
   class FluidPoro;
   class Coupling;
   class FPSIStructureWrapper;
+  class MortarVolCoupl;
 }
 
 /*----------------------------------------------------------------------*
@@ -211,6 +212,15 @@ namespace POROELAST
 
       //! true if the poroelast problem is only part of a larger problem (like e.g. in FPSI)
       bool PartOfMultifieldProblem_;
+
+      //! @name Volume Mortar stuff
+
+      //! flag for matchinggrid
+      const bool matchinggrid_;
+
+      //! volume coupling (using mortar) adapter
+      Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_;
+      //@}
 
     private:
 

@@ -24,6 +24,8 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
 
+#include "../drt_volmortar/volmortar_utils.H"
+
 namespace DRT
 {
   class Element;
@@ -83,6 +85,31 @@ namespace UTILS
   void SetMaterialPointersMatchingGrid(
       Teuchos::RCP<const DRT::Discretization> sourcedis,
       Teuchos::RCP<const DRT::Discretization> targetdis);
+
+  //! strategy for material assignment for non matching meshes with TSI
+  class TSIMaterialStrategy: public VOLMORTAR::UTILS::DefaultMaterialStrategy
+  {
+  public:
+    //! constructor
+    TSIMaterialStrategy(){};
+
+    //! destructor
+    virtual ~TSIMaterialStrategy(){};
+
+    //! assignment of thermo material to structure material
+    virtual void AssignMaterialBToA(const VOLMORTAR::VolMortarCoupl* volmortar,
+                                DRT::Element* Aele,
+                                const std::vector<int>& Bids,
+                                Teuchos::RCP<DRT::Discretization> disA,
+                                Teuchos::RCP<DRT::Discretization> disB);
+
+    //! assignment of structure material to thermo material
+    virtual void AssignMaterialAToB(const VOLMORTAR::VolMortarCoupl* volmortar,
+                                DRT::Element* Bele,
+                                const std::vector<int>& Aids,
+                                Teuchos::RCP<DRT::Discretization> disA,
+                                Teuchos::RCP<DRT::Discretization> disB);
+  };
 
 } // namespace UTILS
 

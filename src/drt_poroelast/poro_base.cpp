@@ -19,7 +19,6 @@
 /*----------------------------------------------------------------------*
  | headers                                                  vuong 01/12 |
  *----------------------------------------------------------------------*/
-#include "poro_base.H"
 #include "poroelast_defines.H"
 
 #include "../drt_adapter/adapter_coupling.H"
@@ -53,16 +52,25 @@
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_structure/stru_aux.H"
 
+//contact
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
+
+//for coupling of nonmatching meshes
+#include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "../drt_volmortar/volmortar_utils.H"
+
+#include "poro_base.H"
+
 /*----------------------------------------------------------------------*
  | constructor (public)                                    vuong 01/12  |
  *----------------------------------------------------------------------*/
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                               const Teuchos::ParameterList& timeparams) :
       AlgorithmBase(comm, timeparams),
-      PartOfMultifieldProblem_(false)
+      PartOfMultifieldProblem_(false),
+      matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroelastDynamicParams(),"MATCHINGGRID"))
 {
   if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
     PartOfMultifieldProblem_=true;
@@ -93,6 +101,15 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   //as this is a two way coupled problem, every discretization needs to know the other one.
   // For this we use DofSetProxies and coupling objects which are setup here
   SetupProxiesAndCoupling();
+
+  if(!matchinggrid_)
+  {
+    // Scheme: non matching meshes --> volumetric mortar coupling...
+    volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+    //setup projection matrices
+    volcoupl_->Setup(structure_->Discretization(), fluid_->Discretization());
+  }
 
   //extractor for constraints on structure phase
   //
@@ -292,20 +309,30 @@ void POROELAST::PoroBase::SetStructSolution()
 
   Teuchos::RCP<const Epetra_Vector> velnp = StructureField()->Velnp();
 
-  // transfer the current structure displacement to the fluid field
-  Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);
-  FluidField()->ApplyMeshDisplacement(structdisp);
+  if (matchinggrid_)
+  {
+    // transfer the current structure displacement to the fluid field
+    Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);
+    FluidField()->ApplyMeshDisplacement(structdisp);
 
-  // transfer the current structure velocity to the fluid field
-  Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(velnp);
-  FluidField()->ApplyMeshVelocity(structvel);
+    // transfer the current structure velocity to the fluid field
+    Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(velnp);
+    FluidField()->ApplyMeshVelocity(structvel);
+  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetFluidSolution()
 {
-  StructureField()->Discretization()->SetState(1,"fluidvel",FluidField()->Velnp());
+  if (matchinggrid_)
+  {
+    StructureField()->Discretization()->SetState(1,"fluidvel",FluidField()->Velnp());
+  }
+  else
+  {
+    StructureField()->Discretization()->SetState(1,"fluidvel",volcoupl_->ApplyVectorMappingAB(FluidField()->Velnp()));
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -378,27 +405,42 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
   // if the porosity is a primary variable, we get one more dof
   if(porositydof_) ndof++;
 
-  if(submeshes_)
-    //for submeshes we only couple a part of the structure disc. with the fluid disc.
-    // we use the fact, that we have matching grids and matching gids
-    coupfs_->SetupCoupling(*structdis,
-                           *fluiddis,
-                           *fluidnoderowmap,
-                           *fluidnoderowmap,
-                           ndof,
-                            not submeshes_);
+  if(matchinggrid_)
+  {
+    if(submeshes_)
+    {
+      //for submeshes we only couple a part of the structure disc. with the fluid disc.
+      // we use the fact, that we have matching grids and matching gids
+      coupfs_->SetupCoupling(*structdis,
+                             *fluiddis,
+                             *fluidnoderowmap,
+                             *fluidnoderowmap,
+                             ndof,
+                              not submeshes_);
+    }
+    else
+    {
+      coupfs_->SetupCoupling(*structdis,
+                             *fluiddis,
+                             *structurenoderowmap,
+                             *fluidnoderowmap,
+                             ndof,
+                              not submeshes_);
+    }
+
+    FluidField()->SetMeshMap(coupfs_->SlaveDofMap());
+
+    if(submeshes_)
+      psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
+  }
   else
-    coupfs_->SetupCoupling(*structdis,
-                           *fluiddis,
-                           *structurenoderowmap,
-                           *fluidnoderowmap,
-                           ndof,
-                            not submeshes_);
+  {
+    if(submeshes_)
+      dserror("submeshes not yet supported for non matching grid!");
 
-  if(submeshes_)
-    psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
+    dserror("poro with non matching grids not yet implemented");
+  }
 
-  FluidField()->SetMeshMap(coupfs_->SlaveDofMap());
 
   //p1splitter_ = Teuchos::rcp(new LINALG::MapExtractor( *StructureField()->DofRowMap(),coupfs_->MasterDofMap() ));
 }

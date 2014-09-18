@@ -85,27 +85,8 @@ void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
-  //1.2.-Set degrees of freedom in the str. discretization
-  if (!structdis->Filled() or !structdis->HaveDofs())
-    structdis->FillComplete();
-
-  //2.- Access the fluid discretization, make sure it's empty, and fill it cloning the structural one.
-  if (!fluiddis->Filled())
-    fluiddis->FillComplete();
-
-  if (structdis->NumGlobalNodes() == 0)
-    dserror("Structure discretization is empty!");
-
-  if (fluiddis->NumGlobalNodes()==0)
-  {
-    // create the fluid discretization
-    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
-
-    //set material pointers
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
-  }
-  else
-    dserror("Structure AND Fluid discretization present. This is not supported.");
+  // setup of the discretizations, including clone strategy
+  POROELAST::UTILS::SetupPoro();
 
   //3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the structural one.
   if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");

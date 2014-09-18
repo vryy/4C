@@ -39,6 +39,8 @@ Maintainer: Caroline Danowski
 
 #include "../drt_fluid/drt_periodicbc.H"
 
+#include "../drt_volmortar/volmortar_utils.H"
+
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
@@ -272,6 +274,65 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(
     sourceele->AddMaterial(targetele->Material());
   }
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::UTILS::TSIMaterialStrategy::AssignMaterialBToA(
+    const VOLMORTAR::VolMortarCoupl* volmortar,
+    DRT::Element* Aele,
+    const std::vector<int>& Bids,
+    Teuchos::RCP<DRT::Discretization> disA,
+    Teuchos::RCP<DRT::Discretization> disB)
+{
+  //call default assignment
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(volmortar,Aele,Bids,disA,disB);
+
+  //done
+  return;
+};
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
+    const VOLMORTAR::VolMortarCoupl* volmortar,
+    DRT::Element* Bele,
+    const std::vector<int>& Aids,
+    Teuchos::RCP<DRT::Discretization> disA,
+    Teuchos::RCP<DRT::Discretization> disB)
+{
+  //call default assignment
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
+
+  //only row elements
+  if(disB->ElementRowMap()->MyGID(Bele->Id()) == -1)
+    return;
+
+  // initialise kinematic type to geo_linear.
+  // kintype is passed to the corresponding thermo element
+  GenKinematicType kintype = geo_linear;
+
+  //default strategy: take only material of first element found
+  DRT::Element* Aele = disA->gElement(Aids[0]);
+
+  // if Aele is a so3_base element
+  DRT::ELEMENTS::So3_Base* so3_base =
+      dynamic_cast<DRT::ELEMENTS::So3_Base*>(Aele);
+  if (so3_base != NULL)
+    kintype = so3_base->GetKinematicType();
+  else
+    dserror("Aele is not a so3_thermo element!");
+
+  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(Bele);
+  if (therm != NULL)
+  {
+    therm->SetKinematicType(kintype); // set kintype in cloned thermal element
+  }
+
+  //done
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | print TSI-logo                                            dano 03/10 |

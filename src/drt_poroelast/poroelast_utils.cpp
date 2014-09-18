@@ -97,6 +97,11 @@ void POROELAST::UTILS::SetupPoro()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
+  // access the problem-specific parameter list
+  const Teuchos::ParameterList& porodyn
+    = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const bool matchinggrid = DRT::INPUT::IntegralValue<bool>(porodyn,"MATCHINGGRID");
+
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = problem->GetDis("structure");
@@ -117,6 +122,9 @@ void POROELAST::UTILS::SetupPoro()
   // create fluid elements if the fluid discretization is empty
   if (fluiddis->NumGlobalNodes()==0)
   {
+    if(!matchinggrid)
+      dserror("MATCHINGGRID is set to 'no' in POROELASTICITY DYNAMIC section, but fluid discretization is empty!");
+
     //create fluid discretization
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
 
@@ -124,7 +132,34 @@ void POROELAST::UTILS::SetupPoro()
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
   }
   else
-    dserror("Structure AND Fluid discretization present. This is not supported.");
+  {
+    if(matchinggrid)
+      dserror("MATCHINGGRID is set to 'yes' in POROELASTICITY DYNAMIC section, but fluid discretization is not empty!");
+
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structdis->FillComplete();
+    fluiddis->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_fluid = DRT::Problem::Instance()->NDim()+1;
+    const int ndofperelement_fluid  = 0;
+    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofperelement_struct = 0;
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (fluiddis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+      dserror("unexpected dof sets in fluid field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. fluiddis dofs
+    // 3. structure auxiliary dofs
+    // 4. fluiddis auxiliary dofs
+    structdis->FillComplete(true, false,false);
+    fluiddis->FillComplete(true, false,false);
+  }
 }
 
 /*----------------------------------------------------------------------*

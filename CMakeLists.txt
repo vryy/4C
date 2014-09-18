@@ -1378,6 +1378,7 @@ set(OBJS_DRT_VOLMORTAR
 src/drt_volmortar/volmortar_cell.cpp
 src/drt_volmortar/volmortar_coupling.cpp
 src/drt_volmortar/volmortar_integrator.cpp
+src/drt_volmortar/volmortar_utils.cpp
 )
 set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimada.cpp

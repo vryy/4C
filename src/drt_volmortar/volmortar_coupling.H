@@ -54,6 +54,11 @@ namespace VOLMORTAR
 {
 class Cell;
 
+namespace UTILS
+{
+class DefaultMaterialStrategy;
+}
+
 /// Class for generating projection matrices for 3D mortar
 /*!
  The idea is to glue two non-matching meshes together using the mortar method.
@@ -72,14 +77,17 @@ class Cell;
  */
 class VolMortarCoupl
 {
+
 public:
 
   /*!
    \brief Constructor
 
    */
-  VolMortarCoupl(int dim, Teuchos::RCP<DRT::Discretization> slavedis,
-      Teuchos::RCP<DRT::Discretization> masterdis);
+  VolMortarCoupl(int dim,
+                 Teuchos::RCP<DRT::Discretization> slavedis,
+                 Teuchos::RCP<DRT::Discretization> masterdis,
+                 Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy);
 
   /*!
    \brief Destructor
@@ -428,12 +436,10 @@ protected:
   //input
   INPAR::VOLMORTAR::DualQuad         dualquad_;        /// type of quadratic weighting interpolation
 
-
+  Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
 };
 
 }//namespace...
 
-// << operator
-std::ostream& operator << (std::ostream& os, const VOLMORTAR::VolMortarCoupl& coupl);
 
 #endif /* VOLMORTAR_COUPLING_H_ */

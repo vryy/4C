@@ -18,6 +18,7 @@
 #include "volmortar_cell.H"
 #include "volmortar_defines.H"
 #include "volmortar_shape.H"
+#include "volmortar_utils.H"
 
 #include "../drt_inpar/inpar_volmortar.H"
 
@@ -53,10 +54,16 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,
+VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
+    int dim,
     Teuchos::RCP<DRT::Discretization> Adis, // should be structure
-    Teuchos::RCP<DRT::Discretization> Bdis) : // other field...
-    dim_(dim), Adiscret_(Adis), Bdiscret_(Bdis)
+    Teuchos::RCP<DRT::Discretization> Bdis, // other field...
+    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy
+    ) :
+    dim_(dim),
+    Adiscret_(Adis),
+    Bdiscret_(Bdis),
+    materialstrategy_(materialstrategy)
 {
   //check
   if (not Adiscret_->Filled() or not Bdiscret_->Filled())
@@ -116,11 +123,6 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
    * initialize global matrices                              *
    ***********************************************************/
   Initialize();
-
-  /***********************************************************
-   * Assign materials                                        *
-   ***********************************************************/
-  AssignMaterials();
 
   /***********************************************************
    * Segment-based integration                               *
@@ -741,6 +743,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
     Integrate3DEleBased_ADis(*Aele, found);
 
+    /***********************************************************
+     * Assign materials                                        *
+     ***********************************************************/
+    materialstrategy_->AssignMaterialBToA(this,Aele,found,Adiscret_,Bdiscret_);
+
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
       CreateTrafoOperator(*Aele, Adiscret_, true, donebeforea);
@@ -768,6 +775,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 
     std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
     Integrate3DEleBased_BDis(*Bele, found);
+
+    /***********************************************************
+     * Assign materials                                        *
+     ***********************************************************/
+    materialstrategy_->AssignMaterialAToB(this,Bele,found,Adiscret_,Bdiscret_);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
@@ -803,6 +815,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
     // get found elements from other discr.
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
 
+    /***********************************************************
+     * Assign materials                                        *
+     ***********************************************************/
+    materialstrategy_->AssignMaterialBToA(this,Aele,found,Adiscret_,Bdiscret_);
+
     /**************************************************
      * loop over all master elements                  *
      **************************************************/
@@ -810,6 +827,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
     {
       //get b element
       DRT::Element*Bele = Bdiscret_->gElement(found[foundeles]);
+
+      /***********************************************************
+       * Assign materials                                        *
+       ***********************************************************/
+      materialstrategy_->AssignMaterialAToB(this,Bele,std::vector<int>(1,Aele->Id()),Adiscret_,Bdiscret_);
 
       /**************************************************
        *                    2D                          *

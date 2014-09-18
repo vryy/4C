@@ -33,6 +33,14 @@ namespace LINALG
   class SparseMatrix;
 }
 
+namespace VOLMORTAR
+{
+  namespace UTILS
+  {
+    class DefaultMaterialStrategy;
+  }
+}
+
 namespace ADAPTER
 {
   /// Class for calling volmortar coupling and proper parallel redistr.
@@ -51,7 +59,9 @@ namespace ADAPTER
 
     */
     void Setup(Teuchos::RCP<DRT::Discretization> slavedis,
-               Teuchos::RCP<DRT::Discretization> masterdis);
+               Teuchos::RCP<DRT::Discretization> masterdis,
+               Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null
+               );
 
     /*!
     \brief Get coupling matrices for field A and B

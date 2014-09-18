@@ -3038,6 +3038,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "No-Penetration Condition on active contact surface in case of poro contact problem!",
                                yesnotuple,yesnovalue,&poroelastdyn);
 
+  BoolParameter("MATCHINGGRID","Yes","is matching grid",&poroelastdyn);
 
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);
