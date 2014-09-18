@@ -162,7 +162,7 @@ ML_SMOTIMES                     0 0 0 0 1                     // no. smoothing s
 ML_DAMPFINE                     1.0                           // damping fine grid
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid //header_02 end (settings by M. Gee)
---------------------------------------------------------------------SOLVER2
+--------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER Aztec_MSR //Amesos_KLU_nonsym
 ----------------------------------------------------------DESIGN DESCRIPTION
