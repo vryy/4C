@@ -94,6 +94,13 @@ namespace IO
         std::ostream&                           s
         );
 
+    //! write scalar field to Gmsh postprocessing file
+    void ScalarElementFieldToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret,
+        const Teuchos::RCP<Epetra_Vector>       scalarfield,
+        std::ostream&                           s
+        );
+
     //! write dof-based vector field to Gmsh postprocessing file
     //! when writing the given vectorfield is displacement, displacenodes can be set true
     //! then it writes the nodal coordinates at the present time step.

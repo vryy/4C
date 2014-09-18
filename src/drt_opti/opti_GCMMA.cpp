@@ -2307,9 +2307,7 @@ void OPTI::GCMMA::Output()
   else
     dserror("undefined type of optimization field");
 
-  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true)
-      and (total_iter_%upres_ == 0)
-      and (dens_type_==INPAR::TOPOPT::dens_node_based))
+  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and (total_iter_%upres_ == 0))
     OutputToGmsh(); // TODO look at this: total_iter_,false);
 
   // write domain decomposition for visualization (only once!)
@@ -2413,8 +2411,15 @@ void OPTI::GCMMA::OutputToGmsh()
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "X \" {" << std::endl;
-    // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(discret_,x_,gmshfilecontent);
+
+    // draw scalar field 'x' for every element for element or node-based field
+    if (dens_type_==INPAR::TOPOPT::dens_node_based)
+      IO::GMSH::ScalarFieldToGmsh(discret_,x_,gmshfilecontent);
+    else if (dens_type_==INPAR::TOPOPT::dens_ele_based)
+      IO::GMSH::ScalarElementFieldToGmsh(discret_,x_,gmshfilecontent);
+    else
+      dserror("not implemented");
+
     gmshfilecontent << "};" << std::endl;
   }
 

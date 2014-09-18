@@ -80,6 +80,60 @@ void IO::GMSH::ScalarFieldToGmsh(
 }
 
 /*------------------------------------------------------------------------------------------------*
+ | write scalar element-based field to Gmsh postprocessing file                  winklmaier 12/09 |
+ *------------------------------------------------------------------------------------------------*/
+void IO::GMSH::ScalarElementFieldToGmsh(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<Epetra_Vector>       scalarfield_ele_row,
+    std::ostream&                           s
+)
+{
+  if (scalarfield_ele_row->Map().SameAs(*discret->ElementRowMap()) == false)
+  {
+    std::cout << scalarfield_ele_row->Map() << std::endl << *discret->ElementRowMap() << std::endl;
+    dserror("The written field should be based on the element row map");
+  }
+
+  // currently the element value is used for every node of the element so that
+  // we result in the correct solution - gmsh writes nodal values for every
+  // element, so that the same node can get different values for different
+  // elements (similar to discontinuous methods)
+  for (int iele=0; iele<discret->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discret->lRowElement(iele);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+
+    LINALG::SerialDenseMatrix xyze(3,numnode);
+
+    const DRT::Node*const* nodes = ele->Nodes();
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      xyze(0,inode) = nodes[inode]->X()[0];
+      xyze(1,inode) = nodes[inode]->X()[1];
+      xyze(2,inode) = nodes[inode]->X()[2];
+    }
+
+    s << "S"; // scalar field indicator
+    s << distypeToGmshElementHeader(distype);
+
+    // write node coordinates to Gmsh stream
+    CoordinatesToStream(xyze, distype, s);
+
+    double eleval = (*scalarfield_ele_row)[iele];
+
+    // constant value for all nodes
+    Epetra_SerialDenseVector myscalarfield(ele->NumNode());
+    for(int inode = 0; inode < numnode; ++inode) myscalarfield(inode) = eleval;
+
+    // write scalar field to Gmsh stream
+    ScalarFieldToStream(myscalarfield, distype, s);
+
+    s << "\n";
+  }
+}
+
+/*------------------------------------------------------------------------------------------------*
  | write dof-based vector field to Gmsh postprocessing file                           henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void IO::GMSH::VectorFieldDofBasedToGmsh(
