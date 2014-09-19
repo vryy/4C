@@ -6,10 +6,10 @@
        the structure field equation and temperature field equations
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
 </pre>
 */
 
@@ -448,7 +448,7 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
                                            //!< \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> vel_;  //!< global velocities
+    Teuchos::RCP<const Epetra_Vector> vel_;  //!< global velocities
                                        //!< \f${V}_{n+1}\f at \f$t_{n+1}\f$
 
     //! Dirichlet BCs with local co-ordinate system

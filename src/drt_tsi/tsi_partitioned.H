@@ -6,10 +6,10 @@
        structural field equation and temperature field equations
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
 </pre>
 */
 
@@ -145,7 +145,7 @@ namespace TSI
     //! displacements at time step (t_n) or (t_n+1)
     Teuchos::RCP<Epetra_Vector> disp_;
     //! velocities at time step (t_n) or (t_n+1)
-    Teuchos::RCP<Epetra_Vector> vel_;
+    Teuchos::RCP<const Epetra_Vector> vel_;
 
     //! temperature at time step (t_n) or (t_n+1)
     Teuchos::RCP<Epetra_Vector> temp_;

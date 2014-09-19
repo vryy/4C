@@ -6,10 +6,10 @@
         momentum equation and the heat conduction equation
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
 </pre>
 */
 
@@ -460,7 +460,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
 
     // get the velocities needed as predictor for the thermo field for the next
     // time step
-    if (quasistatic_) 
+    if (quasistatic_)
       vel_ = CalcVelocity(disp_);
     // else vel_ = StructureField()->WriteAccessVelnp();
 
@@ -578,8 +578,8 @@ void TSI::Partitioned::OuterIterationLoop()
         = LINALG::CreateVector(*(StructureField()->DofRowMap(0)),true);
       if (Step() == 1)
       {
-        dispnp->Update(1.0,*(StructureField()->WriteAccessDispn()),0.0);
-        vel_ = StructureField()->WriteAccessVeln();
+        dispnp->Update(1.0,*(StructureField()->Dispn()),0.0);
+        vel_ = StructureField()->Veln() ;
       }
       // else: use the velocity of the last converged step
 
@@ -641,7 +641,7 @@ void TSI::Partitioned::OuterIterationLoop()
         if (quasistatic_)
           vel_ = CalcVelocity(dispnp);
         else
-          vel_ = StructureField()->WriteAccessVelnp();
+          vel_ = StructureField()->Velnp();
 
         // check convergence of both field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum, itmax_, ittol_);
@@ -1403,7 +1403,7 @@ bool TSI::Partitioned::ConvergenceCheck(
       dserror("Cannot check for convergence of residual values!");
       break;
   }
-  
+
   return stopnonliniter;
 
 }  // ConvergenceCheck()

@@ -6,10 +6,10 @@
         the linear momentum equation and the heat conduction equation
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
 </pre>
 */
 
@@ -123,7 +123,6 @@ TSI::Monolithic::Monolithic(
 
   // initialise internal varible with new velocities V_{n+1} at t_{n+1}
   vel_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-  vel_->PutScalar(0.0);
 
   // --------------------------------- TSI solver: create a linear solver
 
@@ -954,7 +953,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   }
   // else: use velnp
   else
-    vel_ = StructureField()->WriteAccessVelnp();
+    vel_ = StructureField()->Velnp();
 
 #ifndef MonTSIwithoutSTR
   // pass the structural values to the thermo field

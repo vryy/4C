@@ -6,10 +6,10 @@
         momentum equation and the heat conduction equation
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
 </pre>
 */
 
@@ -292,13 +292,13 @@ void  TSI::Algorithm::OutputDeformationInThr(
  | calculate velocities                                      dano 12/10 |
  | like InterfaceVelocity(disp) in FSI::DirichletNeumann                |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
+Teuchos::RCP<const Epetra_Vector> TSI::Algorithm::CalcVelocity(
   Teuchos::RCP<const Epetra_Vector> dispnp
   )
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector( *(StructureField()->WriteAccessDispn()) ) );
+  vel = Teuchos::rcp(new Epetra_Vector( *(StructureField()->Dispn()) ) );
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1./Dt(), *dispnp, -1./Dt());
