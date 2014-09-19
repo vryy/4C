@@ -321,8 +321,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
               double dp = pplCond->GetDouble("TAU");
               double RV    = pplCond->GetDouble("VFR");
               double TLC   = pplCond->GetDouble("TLC");
-              const double lungVolumenp = params.get<double>("lungVolume_n") - RV;
-              const double TLCnp= lungVolumenp/(TLC-RV);
+              const double lungVolumenp = params.get<double>("lungVolume_n");
+              const double vitalCap = lungVolumenp- RV;
+              const double TLCnp= vitalCap/(TLC-RV);
 
 
               if (ppl_Type == "Exponential")
@@ -341,6 +342,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             }
             else
             {
+              std::cout << "Node " << ele->Nodes()[i]->Id()+1 << "is not on corresponding DLINE " << std::endl;
               dserror("No volume dependent pleural pressure condition was defined");
             }
             BCin += Pp_np;

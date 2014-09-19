@@ -788,14 +788,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           // Get the type of prescribed bc
           Bc = *(condition->Get<std::string>("boundarycond"));
 
-          const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
-          double curvefac = 1.0;
           const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
+          const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
           const std::vector<int>*     functions = condition->Get<std::vector<int> >("funct");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
           // -----------------------------------------------------------------
+          // Get factor of first CURVE
+          double curvefac = 1.0;
           if((*curve)[0]>=0)
           {
             curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
@@ -807,6 +808,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
+          // Get factor of FUNCT
           int functnum = -1;
           if (functions) functnum = (*functions)[0];
           else functnum = -1;
@@ -817,17 +819,18 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
           }
 
-          // get curve2
+          // Get factor of second CURVE
           int curve2num = -1;
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num>=0 )
             curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
 
+          // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac*curve2fac;
 
           // -----------------------------------------------------------------------------
-          // get the local id of the node to whome the bc is prescribed
+          // get the local id of the node to whom the bc is prescribed
           // -----------------------------------------------------------------------------
           int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id< 0 )

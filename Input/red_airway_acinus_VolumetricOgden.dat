@@ -37,8 +37,8 @@ CURVE1 on EXPR FUNC 500*(1-cos(pi*t)) t1 0.0 t2 1.0
 ----------------------------------------------------------------------CURVE5
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          2
-E 1 -     flow 1.0 1 none
-E 2 - pressure 0.0000 1 none
+E 1 -     flow 1.0 1 none none
+E 2 - pressure 0.0000 1 none none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
 1 RED_AIRWAY LINE2  1  2 MAT 1 ElemSolvingType NonLinear TYPE Resistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 1.0 Generation 0
 2 RED_ACINUS LINE2  2  3 MAT 2 TYPE VolumetricOgden AcinusVolume 523.6 AlveolarDuctVolume 0.0372 KAPPA 9000.0 BETA -6.0 Area 1.0

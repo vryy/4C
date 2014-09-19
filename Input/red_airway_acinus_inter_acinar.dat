@@ -70,8 +70,8 @@ CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ----------------------------------------------------------------------CURVE5
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          2
-E 1 - pressure 0.0 2 0
-E 2 - pressure 1.0 2 0
+E 1 - pressure 0.0 2 0 none
+E 2 - pressure 1.0 2 0 none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
  1 RED_AIRWAY LINE2 1 2 MAT 1 ElemSolvingType NonLinear TYPE Resistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.02827 Area 0.2827 Generation 0
  2 RED_AIRWAY LINE2 2 3 MAT 1 ElemSolvingType NonLinear TYPE Resistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
