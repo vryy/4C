@@ -23,6 +23,7 @@
 #include "../drt_mat/plasticelasthyper.H"
 #include "so_surface.H"
 #include "so_line.H"
+#include "../drt_inpar/inpar_tsi.H"
 
 // include this thermo-implementation to make sure, that the same Gauss-rule
 // is used in the structural and the thermal part in a TSI problem
@@ -709,8 +710,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::
     else
       dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
+    // get dissipation mode
+    INPAR::TSI::DissipationMode mode =
+        DRT::INPUT::IntegralValue<INPAR::TSI::DissipationMode>(*plparams,"DISSIPATION_MODE");
+
     // prepare material for tsi
-    plmat->SetupTSI(numgpt_,numdofperelement_,(eastype_!=soh8p_easnone));
+    plmat->SetupTSI(numgpt_,numdofperelement_,(eastype_!=soh8p_easnone),mode);
 
     // setup element data
     dFintdT_=Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_,1> >(numgpt_));

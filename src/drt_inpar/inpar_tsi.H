@@ -144,6 +144,13 @@ namespace TSI
     }
   }
 
+  //! Method used to calculate plastic dissipation
+  enum DissipationMode
+  {
+    pl_multiplier,   //!< Dissipation = yield stress times plastic multipler
+    pl_flow          //!< Dissipation = Mandel stress : sym(L^p)
+  };
+
   //@}
 
 

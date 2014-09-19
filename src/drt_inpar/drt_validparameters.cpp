@@ -2123,6 +2123,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "tolerance in the EAS increment norm for the Newton iteration",
                   &iplast);
 
+  setStringToIntegralParameter<int>("DISSIPATION_MODE","pl_multiplier",
+      "method to calculate the plastic dissipation",
+      tuple<std::string>(
+        "pl_multiplier",
+        "pl_flow"),
+      tuple<int>(
+        INPAR::TSI::pl_multiplier,
+        INPAR::TSI::pl_flow),
+      &iplast
+      );
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 

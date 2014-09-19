@@ -20,6 +20,7 @@ Maintainer: Alexander Seitz
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "elasthyper.H"
+#include "../drt_inpar/inpar_tsi.H"
 
 #define AS_CONVERGENCE_TOL 1.e-12
 
@@ -103,6 +104,8 @@ namespace MAT
       double cpl_;
       ///stabilization parameter "s" controlling the shape of the NCP function
       double stab_s_;
+      /// method to calculate plastic dissipation in TSI problem
+      INPAR::TSI::DissipationMode dis_mode_;
 
 
       /// create material instance of matching type with my parameters
@@ -236,6 +239,13 @@ private:
     /// isotropic Hardening softening with temperature
     virtual double HardSoft() const {return params_->hardsoft_;}
 
+    /// set dissipation mode
+    virtual void SetDissipationMode(INPAR::TSI::DissipationMode mode)
+    {if (params_!=NULL) params_->dis_mode_=mode;}
+
+    /// get dissipation mode
+    virtual INPAR::TSI::DissipationMode DisMode() const {return params_->dis_mode_; }
+
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
     virtual void EvaluateElast(const LINALG::Matrix<3,3>*defgrd,
@@ -316,7 +326,8 @@ private:
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// setup material TSI data
-    virtual void SetupTSI(const int numgp, const int numdofperelement, const bool eas);
+    virtual void SetupTSI(const int numgp, const int numdofperelement, const bool eas,
+        const INPAR::TSI::DissipationMode mode);
 
     /// setup plastic orthotropy tensor H
     virtual void SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef);
