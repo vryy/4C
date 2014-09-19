@@ -40,6 +40,9 @@ public:
   /// destructor
   virtual ~ScatraFluidCloneStrategy() {}
 
+  /// returns conditions names to be copied (source and target name)
+  virtual std::map<std::string,std::string> ConditionsToCopy();
+
 protected:
 
   /// determine element type std::string and whether element is copied or not
@@ -51,9 +54,6 @@ protected:
       DRT::Element* oldele,
       const int matid,
       const bool isnurbs);
-
-  /// returns conditions names to be copied (source and target name)
-  virtual std::map<std::string,std::string> ConditionsToCopy();
 
   /// check for correct material
   void CheckMaterialType(const int matid);

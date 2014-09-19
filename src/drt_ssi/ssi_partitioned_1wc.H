@@ -40,6 +40,10 @@ namespace SSI
 
     //! perform one time step of scatra field
     void DoScatraStep();
+
+    // Flag for reading scatra result from restart files
+     bool isscatrafromfile_;
+
   };
 
   class SSI_Part1WC_SolidToScatra : public SSI_Part1WC

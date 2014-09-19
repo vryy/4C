@@ -827,8 +827,13 @@ double Myocard_Inada::GetInternalState(const int k) const
  *----------------------------------------------------------------------*/
 void Myocard_Inada::SetInternalState(const int k, const double val)
 {
-  s0_[k] = val;
-  s_[k] = val;
+  if (k == -1) {
+    s0_[19]  = val;
+    s_[19]  = val;
+  }else{
+      s0_[k] = val;
+      s_[k] = val;
+  }
   return;
 }
 

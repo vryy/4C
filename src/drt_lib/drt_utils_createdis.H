@@ -53,6 +53,11 @@ public:
   /// destructor
   virtual ~DiscretizationCreatorBase() {}
 
+  void CopyConditions(
+      const Teuchos::RCP<DRT::Discretization> sourcedis,
+      Teuchos::RCP<DRT::Discretization> targetdis,
+      const std::map<std::string,std::string>& conditions_to_copy);
+
 protected:
 
   void CreateNodes(
@@ -71,11 +76,6 @@ protected:
   void InitialChecks(
       Teuchos::RCP<DRT::Discretization> sourcedis,
       Teuchos::RCP<DRT::Discretization> targetdis);
-
-  void CopyConditions(
-      const Teuchos::RCP<DRT::Discretization> sourcedis,
-      Teuchos::RCP<DRT::Discretization> targetdis,
-      const std::map<std::string,std::string>& conditions_to_copy);
 
   void Finalize(
       const Teuchos::RCP<DRT::Discretization> sourcedis,

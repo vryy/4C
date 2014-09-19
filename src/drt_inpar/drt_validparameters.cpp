@@ -3185,6 +3185,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UPRES",1,"increment for writing solution",&ssidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&ssidyn);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&ssidyn);
+  BoolParameter("SCATRA_FROM_RESTART_FILE","No","read scatra result from restart files (use option 'restartfromfile' during execution of baci)",&ssidyn);
 
   // Coupling strategy for SSI solvers
   setStringToIntegralParameter<int>(

@@ -115,9 +115,7 @@ Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::strin
   }
 
   // Variables for electromechanical coupling
-   mechanical_activation_ = 0.0;; // to store the variable for activation (phi in this case=)
-   act_thres_ = 0.5; // activation threshold (so that activation = 1.0 if mechanical_activation_ >= act_thres_)
-
+   mechanical_activation_ = 0.0; // to store the variable for activation (phi in this case=)
 
 }
 
@@ -178,10 +176,7 @@ double Myocard_Minimal::GetInternalState(const int k) const
 {
   double val=0.0;
   switch(k){
-    case -1:{ // Compute activation function for electromechanical coupling
-      if(mechanical_activation_>=act_thres_) val = 1.0;
-      break;
-    }
+    case -1: {val =mechanical_activation_; break;}
     case 0: {val=v_; break;}
     case 1: {val=w_; break;}
     case 2: {val=s_; break;}
@@ -195,10 +190,11 @@ double Myocard_Minimal::GetInternalState(const int k) const
 void Myocard_Minimal::SetInternalState(const int k, const double val)
 {
   switch(k){
+    case -1: {mechanical_activation_ = val; break;}
     case 0: {v0_ = val; v_ = val; break;}
     case 1: {w0_ = val; w_ = val; break;}
     case 2: {s0_ = val; s_ = val; break;}
-    default: {dserror("There are only 3 internal variables in this material!"); break;}
+    default: {dserror("There are only 3 internal variables in this myocard material!"); break;}
   }
 }
 

@@ -379,8 +379,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   }
   else if (probtype == prb_cardiac_monodomain or sctrtype == INPAR::SCATRA::scatratype_cardiac_monodomain)
   {
-    std::cout << "We're in the right scheme :)" << std::endl;
-
     Teuchos::RCP<Teuchos::ParameterList> cmonoparams = Teuchos::null;
     switch(timintscheme)
     {

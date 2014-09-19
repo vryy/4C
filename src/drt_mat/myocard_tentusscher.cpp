@@ -662,8 +662,14 @@ double Myocard_TenTusscher::GetInternalState(const int k) const
  *----------------------------------------------------------------------*/
 void Myocard_TenTusscher::SetInternalState(const int k, const double val)
 {
-  s0_[k] = val;
-  s_[k] = val;
+  if(k==-1)
+  {
+    s0_[3] = val; // Free cytoplasmatic calcium concentration
+    s_[3] = val;
+  }else{
+    s0_[k] = val;
+    s_[k] = val;
+  }
   return;
 }
 

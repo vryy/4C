@@ -72,6 +72,9 @@ namespace ADAPTER
     /// total number of time steps
     int NStep() const { return nstep_;}
 
+    /// return current step
+    int CurrStep() const { return step_;}
+
     /// maximum simulation time
     double MaxTime() const { return maxtime_;}
 
@@ -112,7 +115,7 @@ namespace ADAPTER
     /// method name prepared for output
     std::string method_;
 
-		/// print infos to standard out every printscreen_ steps
+    /// print infos to standard out every printscreen_ steps
     int printscreen_;
 
     //! @name Time stepping variables

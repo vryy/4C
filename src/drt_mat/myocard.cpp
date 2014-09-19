@@ -108,7 +108,7 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
   // pack history data
   if (myocard_mat_ != Teuchos::null)
     {
-      for(int k=0; k<nb_state_variables_;++k)
+      for(int k=-1; k<nb_state_variables_;++k) // Starting from -1 for mechanical activation
         {
           AddtoPack(data, myocard_mat_->GetInternalState(k));
         }
@@ -152,12 +152,13 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
       Initialize();
 
       // unpack history data
-     double state_var;
-     for(int k=0; k<nb_state_variables_;++k)
+     double val;
+     for(int k=-1; k<nb_state_variables_;++k) // Starting from -1 for mechanical activation
      {
-       ExtractfromPack(position, data, state_var);
-       myocard_mat_->SetInternalState(k,state_var);
+       ExtractfromPack(position, data, val);
+       myocard_mat_->SetInternalState(k,val);
      }
+
      if (position != data.size())
      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 

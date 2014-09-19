@@ -86,11 +86,8 @@ double Myocard_Fitzhugh_Nagumo::GetInternalState(const int k) const
 {
   double val = 0.0;
   switch(k){
-  case -1:{ // Compute activation function for electromechanical coupling
-    if(mechanical_activation_>=act_thres_) val = 1.0;
-    break;
-  }
-  case 0: {val = r_; break;}
+    case -1: {val =mechanical_activation_; break;}
+    case 0: {val = r_; break;}
   }
   return val;
 }
@@ -101,6 +98,7 @@ double Myocard_Fitzhugh_Nagumo::GetInternalState(const int k) const
 void Myocard_Fitzhugh_Nagumo::SetInternalState(const int k, const double val)
 {
   switch(k){
+    case -1: {mechanical_activation_ = val; break;}
     case 0: {r0_ = val; r_ = val; break;}
     default: {dserror("There are only 1 internal variables in this material!"); break;}
   }

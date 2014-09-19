@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "ssi_base.H"
 #include "ssi_partitioned.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
@@ -53,9 +54,16 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra", problem->SolverParams(linsolvernumber)));
 
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+
+  // Set isale to false what should be the case in scatratosolid algorithm
+  const INPAR::SSI::SolutionSchemeOverFields coupling
+      = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
+  bool isale = true;
+  if(coupling == INPAR::SSI::Part_ScatraToSolid) isale = false;
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
+
 }
 
 
@@ -68,8 +76,8 @@ void SSI::SSI_Base::ReadRestart( int restart)
   {
     scatra_->ScaTraField()->ReadRestart(restart);
     structure_->ReadRestart(restart);
-
     SetTimeStep(structure_->TimeOld(), restart);
+
   }
 
   return;
@@ -106,29 +114,12 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
   }
   else
   {
-   // dserror("Structure AND ScaTra discretization present. This is not supported.");
 
-    std::map<std::string,std::string> conditions_to_copy;
-
-    conditions_to_copy.insert(std::pair<std::string,std::string>("TransportDirichlet","Dirichlet"));
-    conditions_to_copy.insert(std::pair<std::string,std::string>("TransportPointNeumann","PointNeumann"));
-
-    // copy selected conditions to the new discretization (and rename them if desired)
-    for (std::map<std::string,std::string>::const_iterator conditername = conditions_to_copy.begin();
-        conditername != conditions_to_copy.end();
-        ++conditername)
-    {
-      std::vector<DRT::Condition*> conds;
-      scatradis->GetCondition((*conditername).first, conds);
-      for (unsigned i=0; i<conds.size(); ++i)
-      {
-        // We use the same nodal ids and therefore we can just copy the conditions.
-        // The string-map gives the new condition names
-        // (e.g. renaming from TransportDirichlet to Dirichlet)
-        scatradis->SetCondition((*conditername).second, Teuchos::rcp(new DRT::Condition(*conds[i])));
-      }
-      conds.clear();
-    }
+   std::map<std::string,std::string> conditions_to_copy;
+   SCATRA::ScatraFluidCloneStrategy clonestrategy;
+   conditions_to_copy = clonestrategy.ConditionsToCopy();
+   DRT::UTILS::DiscretizationCreatorBase creator;
+   creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
 
     // redistribute discr. with help of binning strategy
     if(scatradis->Comm().NumProc()>1)

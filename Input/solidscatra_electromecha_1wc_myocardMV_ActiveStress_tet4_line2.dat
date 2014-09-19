@@ -32,7 +32,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure_Scalar_Interaction // Cardiac_Monodomain //
+PROBLEMTYP                       Structure_Scalar_Interaction // Cardiac_Monodomain //      // TO CHANGE WHEN DOING ONLY SCATRA OR SSI
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
@@ -94,10 +94,10 @@ TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1
 NUMSTEP                         1000000
-MAXTIME                         500
+MAXTIME                         5.0
 TIMESTEP                        0.05
-THETA                           1.0
-VELOCITYFIELD                   Navier_Stokes //zero //
+THETA                           0.5
+VELOCITYFIELD                    Navier_Stokes  // zero //     // TO CHANGE WHEN DOING ONLY SCATRA OR SSI
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
@@ -105,9 +105,10 @@ WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
 SCATRATYPE                      Cardiac_Monodomain
-
+ACTTHRES                        0.5
+WRITEMAXINTSTATE                0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          20
+ITEMAX                          10
 ABSTOLRES                       1e-8
 CONVTOL                         1e-8
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -117,15 +118,16 @@ EVALUATION_MAT                  element_center
 UPRES                           1
 RESTARTEVRY                     1
 NUMSTEP                         100000000
-MAXTIME                         0.5
+MAXTIME                         1.0
 TIMESTEP                        0.05
 COUPALGO                        scatra_to_solid  // two_way // solid_to_scatra //
 ITEMAX                          10
 CONVTOL                         1e-3
+SCATRA_FROM_RESTART_FILE        No
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1
-MAT 20 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0.02 MIN_ACTIVATION -0.03 SOURCE_ACTIVATION -1 ACTIVATION_THRES 0.0
+MAT 20 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0.02 MIN_ACTIVATION -0.03 SOURCE_ACTIVATION -1 ACTIVATION_THRES 0.5
 MAT 101 MAT_myocard DIFF1 0.1 DIFF2 0.1 DIFF3 0.1 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 MAT 102 MAT_myocard DIFF1 2.0 DIFF2 2.0 DIFF3 2.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------CURVE1
@@ -143,10 +145,7 @@ NDPOINT                         3
 NDLINE                          0
 NDSURF                          3
 NDVOL                           0
-//-----------------------------------DESIGN POINT NEUMANN CONDITIONS  // This is for scatra for the pure Scatra case
-//DPOINT                          1
-//E 3 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
+-----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS  // This is for scatra for the pure Scatra case
 DPOINT                          1
 E 3 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
@@ -238,7 +237,7 @@ NODE 882 DNODE 2
 NODE 926 DNODE 2
 NODE 919 DNODE 2
 NODE 917 DNODE 2
-NODE 929 DNODE 3
+NODE 948 DNODE 3
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 141 DSURFACE 1
@@ -9969,29 +9968,28 @@ NODE 950 COORD 1.9021   -0.6180    5.0000
 4151 TRANSP TET4 363 250 365 313 MAT 101 FIBER1 0.0 0.0 1.0
 4152 TRANSP TET4 107 210 198 196 MAT 101 FIBER1 0.0 0.0 1.0
 4153 TRANSP TET4 325 447 333 335 MAT 101 FIBER1 0.0 0.0 1.0
-4154 TRANSP LINE2 929 931 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4155 TRANSP LINE2 931 932 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4156 TRANSP LINE2 932 933 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4157 TRANSP LINE2 933 934 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4158 TRANSP LINE2 934 935 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4159 TRANSP LINE2 935 936 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4160 TRANSP LINE2 936 937 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4161 TRANSP LINE2 937 938 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4162 TRANSP LINE2 938 939 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4163 TRANSP LINE2 939 940 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4164 TRANSP LINE2 940 941 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4165 TRANSP LINE2 941 942 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4166 TRANSP LINE2 942 943 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4167 TRANSP LINE2 943 944 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4168 TRANSP LINE2 944 945 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4169 TRANSP LINE2 945 946 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4170 TRANSP LINE2 946 947 MAT 102 FIBER1 1.0 0.0 0.0 // small line
-4171 TRANSP LINE2 947 948 MAT 102 FIBER1 1.0 0.0 0.0 // small line
 4172 TRANSP LINE2 948 949 MAT 102 FIBER1 1.0 0.0 0.0 // small line
 4173 TRANSP LINE2 949 348 MAT 102 FIBER1 1.0 0.0 0.0 // small line
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE  2.72910500886400708e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 122 QUANTITY dispy VALUE -1.37770361781462051e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 122 QUANTITY dispz VALUE -1.24692686655128188e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 348 QUANTITY dispz VALUE -1.96208248532155852e-03 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 348 QUANTITY phi VALUE 1.63455882421563170e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
+// 4154 TRANSP LINE2 929 931 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4155 TRANSP LINE2 931 932 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4156 TRANSP LINE2 932 933 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4157 TRANSP LINE2 933 934 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4158 TRANSP LINE2 934 935 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4159 TRANSP LINE2 935 936 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4160 TRANSP LINE2 936 937 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4161 TRANSP LINE2 937 938 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4162 TRANSP LINE2 938 939 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4163 TRANSP LINE2 939 940 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4164 TRANSP LINE2 940 941 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4165 TRANSP LINE2 941 942 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4166 TRANSP LINE2 942 943 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4167 TRANSP LINE2 943 944 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4168 TRANSP LINE2 944 945 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4169 TRANSP LINE2 945 946 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4170 TRANSP LINE2 946 947 MAT 102 FIBER1 1.0 0.0 0.0 // small line
+// 4171 TRANSP LINE2 947 948 MAT 102 FIBER1 1.0 0.0 0.0 // small line

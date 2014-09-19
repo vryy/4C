@@ -67,7 +67,9 @@ void SSI::SSI_Part1WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField()->Solve();
+  if(isscatrafromfile_) scatra_->ScaTraField()->ReadRestart(CurrStep()); // read results from restart file
+  else scatra_->ScaTraField()->Solve(); // really solve scatra problem
+
 
   // -------------------------------------------------------------------
   //                         update solution
@@ -141,6 +143,11 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
   // check if structure field has 2 discretizations, so that coupling is possible
   if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
     dserror("unexpected dof sets in structure field");
+
+  // Flag for reading scatra result from restart file instead of computing it
+  DRT::Problem* problem = DRT::Problem::Instance();
+  isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(problem->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -152,7 +159,6 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
   while (NotFinished())
   {
     PrepareTimeStep();
-
     DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
     SetScatraSolution();
     DoStructStep(); // It has its own time and timestep variables, and it increments them by itself.
