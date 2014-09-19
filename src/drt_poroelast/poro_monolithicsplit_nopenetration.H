@@ -79,10 +79,16 @@ namespace POROELAST
     /// (i.e. condensed forces onto the structure) needed for rhs in next time step
     virtual void RecoverLagrangeMultiplier();
 
+
+    //! start a new time step
+    virtual void PrepareTimeStep();
+
+    //! output
+    virtual void Output();
+
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
     //! evalutated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
     Teuchos::RCP<Epetra_Vector> lambdanp_;
-
     //@}
   private:
 
@@ -91,9 +97,6 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector> sv, //!< vector containing only structural dofs
         Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
         );
-
-    //! start a new time step
-    virtual void PrepareTimeStep();
 
     //! @name Global matrixes and vectors
 

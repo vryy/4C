@@ -38,6 +38,8 @@
 
 #include "poro_monolithicsplit_nopenetration.H"
 
+#include "../drt_io/io.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -490,7 +492,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   //Transform also colum map of D-Matrix
   (*k_D_transform_)(*FluidField()->Interface()->FSICondMap(),
-                      *FluidField()->Interface()->FSICondMap(),
+                    FluidField()->BlockSystemMatrix()->Matrix(1,1).ColMap(),
                       *tmp_k_D,
                       1.0,
                       ADAPTER::CouplingSlaveConverter(*icoupfs_),
@@ -553,3 +555,15 @@ void POROELAST::MonolithicSplitNoPenetration::PrepareTimeStep()
   PoroBase::PrepareTimeStep();
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplitNoPenetration::Output()
+{
+  //call base class
+  Monolithic::Output();
+
+  Teuchos::RCP<Epetra_Vector> fulllambda = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*StructureField()->DofRowMap()));
+  LINALG::Export(*lambda_,*fulllambda);
+  StructureField()->DiscWriter()->WriteVector("poronopencond_lambda",fulllambda);
+} // MonolithicSplitNoPenetration::Output()

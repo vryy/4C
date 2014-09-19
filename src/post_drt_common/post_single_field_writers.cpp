@@ -122,6 +122,7 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   //additional output for poro problems
   writer_->WriteResult("porosity_p1", "porosity_p1", dofbased, 1);
+  writer_->WriteResult("poronopencond_lambda", "poronopencond_lambda", dofbased, field->problem()->num_dim());
 
   //additional output for tsi (non-matching grid)
   writer_->WriteResult("struct_temperature", "struct_temperature", nodebased, 1);
