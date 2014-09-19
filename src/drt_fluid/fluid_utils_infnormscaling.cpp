@@ -154,6 +154,8 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 
     srowsum_ = Teuchos::rcp(new Epetra_Vector(smat->RowMap(),false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(smat->RowMap(),false));
+    prowsum_ = Teuchos::null;
+    pcolsum_ = Teuchos::null;
 
 #if 1
     smat->EpetraMatrix()->InvRowSums(*srowsum_);
@@ -195,23 +197,26 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 
 
   // do output
-  double srownorm, scolnorm, prownorm;
+  double srownorm, scolnorm, prownorm=0.0;
   srowsum_->MeanValue(&srownorm);
   scolsum_->MeanValue(&scolnorm);
-  prowsum_->MeanValue(&prownorm);
+  if(prowsum_ != Teuchos::null)
+    prowsum_->MeanValue(&prownorm);
 
   if (myrank_==0)
     std::cout<<"MEAN: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<std::endl;
 
   srowsum_->MinValue(&srownorm);
   scolsum_->MinValue(&scolnorm);
-  prowsum_->MinValue(&prownorm);
+  if(prowsum_ != Teuchos::null)
+    prowsum_->MinValue(&prownorm);
   if (myrank_==0)
     std::cout<<"MIN: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<std::endl;
 
   srowsum_->MaxValue(&srownorm);
   scolsum_->MaxValue(&scolnorm);
-  prowsum_->MaxValue(&prownorm);
+  if(prowsum_ != Teuchos::null)
+    prowsum_->MaxValue(&prownorm);
   if (myrank_==0)
     std::cout<<"MAX: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<std::endl;
 
