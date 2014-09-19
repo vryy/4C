@@ -207,7 +207,7 @@ namespace POROELAST
 
       /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-      void RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x);
+      virtual void RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x);
 
       //Setup solver for monolithic system
       virtual bool SetupSolver();

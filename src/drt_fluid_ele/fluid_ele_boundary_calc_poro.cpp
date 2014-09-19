@@ -3047,7 +3047,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     {
       for (int idim=0; idim<my::nsd_; ++idim)
       {
-        my::xyze_(idim,inode)+=mydispnp[my::numdofpernode_*inode+idim];
+        my::xyze_(idim,inode)+=mydispnp[my::nsd_*inode+idim];
       }
     }
   }
@@ -3073,8 +3073,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   for (int inode=0;inode<my::bdrynen_;inode++)
     for (int idim=0; idim< my::nsd_; idim++)
     {
-      evelnp(idim,inode) = myvelnp[idim+(inode*my::numdofpernode_)];
-      egridvel(idim,inode) = mygridvel[idim+(inode*my::numdofpernode_)];
+      evelnp(idim,inode) = myvelnp[idim+(inode*my::nsd_)];
+      egridvel(idim,inode) = mygridvel[idim+(inode*my::nsd_)];
     }
 
   //allocate convective velocity at node
@@ -3151,7 +3151,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
         //residual for normal direction. Tangential directions are equal to zero.
         rhs(inode*my::nsd_) -=
             my::funct_(inode) * my::unitnormal_(idof) * convvel(idof) * fac;
-        k_D(inode*my::nsd_+idof,inode*my::numdofpernode_+idof) +=
+        k_D(inode*my::nsd_+idof,inode*my::nsd_+idof) +=
             dualfunct(inode)* my::funct_(inode) * fac;
       }
 
@@ -3159,7 +3159,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       {
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
-          k_fluid(inode*my::nsd_,nnod*my::numdofpernode_+idof2) +=
+          k_fluid(inode*my::nsd_,nnod*my::nsd_+idof2) +=
               my::funct_(inode)* my::unitnormal_(idof2) * my::funct_(nnod) * fac;
         }
       }
@@ -3216,7 +3216,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
    {
      for (int idim=0; idim<my::nsd_; ++idim)
      {
-       my::xyze_(idim,inode)+=mydispnp[my::numdofpernode_*inode+idim];
+       my::xyze_(idim,inode)+=mydispnp[my::nsd_*inode+idim];
      }
    }
   }
@@ -3242,8 +3242,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   for (int inode=0;inode<my::bdrynen_;inode++)
    for (int idim=0; idim< my::nsd_; idim++)
    {
-     evelnp(idim,inode) = myvelnp[idim+(inode*my::numdofpernode_)];
-     egridvel(idim,inode) = mygridvel[idim+(inode*my::numdofpernode_)];
+     evelnp(idim,inode) = myvelnp[idim+(inode*my::nsd_)];
+     egridvel(idim,inode) = mygridvel[idim+(inode*my::nsd_)];
    }
 
   Teuchos::RCP<const Epetra_Vector>      glambda = discretization.GetState("lambda");
@@ -3260,7 +3260,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   for (int inode=0;inode<my::bdrynen_;inode++)
     for (int idim=0; idim< my::nsd_; idim++)
     {
-      elambda(idim,inode) = mylambda[idim+(inode*my::numdofpernode_)];
+      elambda(idim,inode) = mylambda[idim+(inode*my::nsd_)];
     }
 
   //allocate convective velocity at node

@@ -100,7 +100,7 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(
 {
   // get the action required
   const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params,"action");
-
+  int dim;
   switch(act)
   {
   case FLD::poro_boundary:
@@ -110,6 +110,20 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector
     ParentElement()->LocationVector(dis,la,doDirichlet);
+    break;
+  case FLD::poro_splitnopenetration:
+  case FLD::poro_splitnopenetration_OD:
+    //Remove pressure dofs from location vector!!!
+    // call standard fluid boundary element
+    FluidBoundary::LocationVector(dis,la,doDirichlet,condstring,params);
+    dim = la[0].stride_[0] - 1;
+    //extract velocity dofs from first dofset
+    for(int i=NumNode(); i>0;--i)
+    {
+      la[0].lm_.erase(la[0].lm_.begin()+(i-1)*(dim+1)+dim);
+      la[0].lmowner_.erase(la[0].lmowner_.begin()+(i-1)*(dim+1)+dim);
+      la[0].stride_[i-1] = dim;
+    }
     break;
   case FLD::ba_none:
     dserror("No action supplied");

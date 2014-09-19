@@ -23,6 +23,18 @@
 
 #include "poro_monolithicsplit.H"
 
+namespace FSI
+{
+  //class OverlappingBlockMatrix;
+
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
+}
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -59,6 +71,18 @@ namespace POROELAST
     virtual void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
           );
 
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
+    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    void RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x);
+
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
+    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier();
+
+    //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
+    //! evalutated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
+    Teuchos::RCP<Epetra_Vector> lambdanp_;
+
     //@}
   private:
 
@@ -68,19 +92,44 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
         );
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
-    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier();
+    //! start a new time step
+    virtual void PrepareTimeStep();
 
     //! @name Global matrixes and vectors
 
     Teuchos::RCP<LINALG::SparseOperator> k_struct_;
     Teuchos::RCP<LINALG::SparseOperator> k_fluid_;
 
-    Teuchos::RCP<LINALG::SparseOperator> k_lambda_;
-    Teuchos::RCP<LINALG::SparseOperator> k_D_;
+    Teuchos::RCP<LINALG::SparseMatrix> k_lambda_;
+    Teuchos::RCP<LINALG::SparseMatrix> k_D_;
+    Teuchos::RCP<LINALG::SparseMatrix> k_invD_;
+
+    Teuchos::RCP<LINALG::SparseMatrix> k_Dn_;
+
+    Teuchos::RCP<LINALG::SparseMatrix> k_lambdainvD_;
 
     Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
+
+    //! transform object for k_D matrix \f$D\f$
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_D_transform_;
+    //! transform object for k_D matrix \f$D\f$
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> k_invD_transform_;
+
+    /// @name Some quantities to recover the Langrange multiplier at the end of each iteration step
+
+    //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
+
+    //! block \f$S_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fggcur_;
+
+    //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> cfsgicur_;
+
+    //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> cfsggcur_;
+
+    Teuchos::RCP<Epetra_Vector> rhs_fgcur_;
 
     //@}
   };
