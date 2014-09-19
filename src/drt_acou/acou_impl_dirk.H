@@ -37,6 +37,9 @@ public:
   /// call elements to calculate system matrix
   void AssembleMatAndRHS(int stage);
 
+  /// update: current solution becomes old solution of next timestep
+  virtual void TimeUpdate();
+
   /// p-adaptivity
   virtual void UpdatePolyAndState();
 

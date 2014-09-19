@@ -9,7 +9,7 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 Test for problem type acoustics, no coupling with scatra, initial
-field is given by function. The chosen time integration scheme 
+field is given by function. The chosen time integration scheme
 DIRK23 is tested.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    250
@@ -87,8 +87,8 @@ MAT 1 MAT_Acoustic DENSITY 1000.0 C 1500.0
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION exp(400000*(-(x-0.005)^2.0))
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 3.35096460027266951e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 3.35096460027266951e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 3.35243556513159846e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 3.35243556513157515e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

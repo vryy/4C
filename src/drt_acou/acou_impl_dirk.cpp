@@ -36,6 +36,7 @@ ACOU::TimIntImplDIRK::TimIntImplDIRK(
   // fill the scheme specific coefficients
   FillDIRKValues(dyna_,dirk_a_,dirk_b_,dirk_q_);
   t_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
+  velnp_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
   resonly_ = false;
   // that's it. the standard constructor did everything else
 } // TimIntImplDIRK
@@ -86,6 +87,19 @@ void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, T
 
   return;
 } // Integrate
+
+
+/*----------------------------------------------------------------------*
+ |  Update Vectors (public)                              schoeder 01/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::TimIntImplDIRK::TimeUpdate()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::TimeUpdate");
+
+  velnp_->Update(1.0,*t_,0.0);
+
+  return;
+} // TimeUpdate
 
 /*----------------------------------------------------------------------*
  |  Calculate system matrix (public)                     schoeder 01/14 |
@@ -220,7 +234,12 @@ void ACOU::TimIntImplDIRK::Solve()
 
     // solve the linear equation
     const double tcpusolve = Teuchos::Time::wallTime();
-    if(step_<=1)std::cout<<"LINALG::Condest"<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,500)<<std::endl;
+
+    //if(step_<=1)
+    //  std::cout<<"LINALG::Condest  "<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,500)<<std::endl;
+    //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
+    //LINALG::PrintMatrixInMatlabFormat("xxx_mat.mat",*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()));
+
     solver_->Solve(sysmat_->EpetraOperator(),t_,residual_,true,false,Teuchos::null);
     dtsolve_ += Teuchos::Time::wallTime()-tcpusolve;
     // update interior variables

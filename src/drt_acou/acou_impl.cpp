@@ -794,14 +794,13 @@ void ACOU::AcouImplicitTimeInt::Solve()
 {
   // solve linear equation and timing
   const double tcpusolve=Teuchos::Time::wallTime();
-
   solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
+  dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
 
   // update interior variables
   UpdateInteriorVariablesAndAssemebleRHS();
   ApplyDirichletToSystem();
 
-  dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
   return;
 } // Solve
 

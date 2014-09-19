@@ -2448,7 +2448,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double c = actmat->SpeedofSound();
-  double tau = 1.0 / c / c / dt; // / 1.0e6;
+  double tau = 1.0 / (c) ;/// dt; // / 1.0e6;
 
   // loop over number of shape functions
   for (unsigned int p = 0; p < shapesface_->nfdofs_; ++p)
@@ -2491,7 +2491,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
       {
         tempG += shapesface_->jfac(i) * shapesface_->shfunct(p, i) * shapesface_->shfunct(q, i);
       }
-      Gmat(indexstart + p, indexstart + q) = Gmat(indexstart + q,indexstart + p) += tau * tempG;
+      Gmat(indexstart + p, indexstart + q) = Gmat(indexstart + q,indexstart + p) -= tau * tempG;
 
     } // for (unsigned int q=0; q<nfdofs_; ++q)
   } // for (unsigned int p=0; p<nfdofs_; ++p)
@@ -2506,7 +2506,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
       {
         tempD += shapesface_->jfac(i) * shapesface_->shfunctI[face](p, i) * shapesface_->shfunctI[face](q, i);
       }
-      Dmat(p, q) = Dmat(q, p) -= tau * tempD;
+      Dmat(p, q) = Dmat(q, p) += tau * tempD;
     }
   }
 
@@ -2620,7 +2620,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
   default:
     break;
   }
-  double tau = 1.0 / c / c / dt;
+  double tau = 1.0 / (c)  ;/// dt;
 
   ComputeInteriorMatrices(mat, dt, dyna);
 
@@ -2642,15 +2642,15 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
   {
     Bmat.Scale(-1.0 * rho);
     Cmat.Scale(rho);
-    Emat.Scale(-tau);
+    Emat.Scale(tau);
     Hmat.Scale(-1.0 / rho);
-    Jmat.Scale(tau);
+    Jmat.Scale(-tau);
   }
   else
   {
     Imat.Scale(rho);
-    Emat.Scale(tau);
-    Jmat.Scale(-tau);
+    Emat.Scale(-tau);
+    Jmat.Scale(tau);
   }
 
   return;
