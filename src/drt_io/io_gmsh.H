@@ -89,34 +89,34 @@ namespace IO
 
     //! write scalar field to Gmsh postprocessing file
     void ScalarFieldToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<Epetra_Vector>       scalarfield,
-        std::ostream&                           s
+        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> scalarfield, ///< scalar field to output
+        std::ostream&                           s ///< output stream
         );
 
     //! write scalar field to Gmsh postprocessing file
     void ScalarElementFieldToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<Epetra_Vector>       scalarfield,
-        std::ostream&                           s
+        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> scalarfield, ///< scalar field to output
+        std::ostream&                           s ///< output stream
         );
 
     //! write dof-based vector field to Gmsh postprocessing file
     //! when writing the given vectorfield is displacement, displacenodes can be set true
     //! then it writes the nodal coordinates at the present time step.
     void VectorFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<const Epetra_Vector> vectorfield,
-        std::ostream&                           s,
+        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> vectorfield, ///< vector field to output
+        std::ostream&                           s, ///< output stream
         bool                                    displacenodes = false
         );
 
     //! write dof-based vector field to Gmsh postprocessing file
     void SurfaceVectorFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<const Epetra_Vector> vectorfield,
+        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> vectorfield, ///< vector field to output
         std::map<int,LINALG::Matrix<3,1> >&     currpos,
-        std::ostream&                           s,
+        std::ostream&                           s, ///< output stream
         const int                               nsd,
         const int                               numdofpernode
         );
@@ -124,33 +124,33 @@ namespace IO
     //! write dof-based velocity / pressure field to Gmsh postprocessing file
     //!
     void VelocityPressureFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<Epetra_Vector>       vectorfield,
-        const std::string                            field,  //< "velocity" or "pressure"
-        std::ostream&                           s
+        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<Epetra_Vector>       vectorfield, ///< vector field to output
+        const std::string                       field,  //< "velocity" or "pressure"
+        std::ostream&                           s ///< output stream
         );
 
     //! write node-based vector field to Gmsh postprocessing file
     void VectorFieldNodeBasedToGmsh(
-        const Teuchos::RCP<const DRT::Discretization> discret,
-        const Teuchos::RCP<const Epetra_MultiVector>  vectorfield,
-        std::ostream&                           s
+        const Teuchos::RCP<const DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_MultiVector>  vectorfield, ///< vector field to output
+        std::ostream&                                 s ///< output stream
         );
 
     //! write node-based scalar field to Gmsh postprocessing file
     void ScalarFieldNodeBasedToGmsh(
-        const Teuchos::RCP<const DRT::Discretization> discret,
-        const Teuchos::RCP<const Epetra_Vector>  scalarfield,
-        std::ostream&                           s
+        const Teuchos::RCP<const DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_Vector>       scalarfield, ///< scalar field to output
+        std::ostream&                                 s ///< output stream
         );
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
     template<class M>
     inline
     void CoordinatesToStream(
-        const M&                               coord,     ///< position array (3, numnode)
-        const DRT::Element::DiscretizationType distype,   ///< element shape
-        std::ostream&                          s
+        const M&                               coord, ///< position array (3, numnode)
+        const DRT::Element::DiscretizationType distype, ///< element shape
+        std::ostream&                          s ///< output stream
     )
     {
       s.setf(std::ios::scientific,std::ios::floatfield);

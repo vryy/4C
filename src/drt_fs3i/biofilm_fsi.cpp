@@ -835,7 +835,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct", step_bio, 701, false, structdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 
-  Teuchos::RCP<Epetra_Vector> structdisp = fsi_->StructureField()->WriteAccessDispn();
+  Teuchos::RCP<const Epetra_Vector> structdisp = fsi_->StructureField()->Dispn();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "struct displacement \" {" << std::endl;
@@ -844,7 +844,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> structaledisp = ale_->WriteAccessDispnp();
+  Teuchos::RCP<const Epetra_Vector> structaledisp = ale_->Dispnp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "struct ale displacement \" {" << std::endl;
@@ -853,7 +853,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> structphi = scatravec_[1]->ScaTraField()->Phinp();
+  Teuchos::RCP<const Epetra_Vector> structphi = scatravec_[1]->ScaTraField()->Phinp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "struct phi \" {" << std::endl;

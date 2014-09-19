@@ -352,30 +352,22 @@ namespace ADAPTER
     //@}
 
 
-    //! @name Access routines with writing access
+    //! @name Write access to field solution variables at \f$t^{n+1}\f$
     //@{
 
-    /// extract displacements
+    /// write access to extract displacements at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp()
     { return structure_->WriteAccessDispnp(); }
 
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn()
-    { return structure_->WriteAccessDispn(); }
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln()
-    { return structure_->WriteAccessVeln(); }
-
-    /// extract velocities
+    /// write access to extract velocities at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
     { return structure_->WriteAccessVelnp(); }
+
+    //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
     virtual Teuchos::RCP<Epetra_Vector> Freact()
     { return structure_->Freact(); }
-
-    //@}
 
     //! @name Structure with ale specific methods
     //@{

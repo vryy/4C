@@ -29,7 +29,7 @@ Maintainer: Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 void IO::GMSH::ScalarFieldToGmsh(
     const Teuchos::RCP<DRT::Discretization> discret,
-    const Teuchos::RCP<Epetra_Vector>       scalarfield_row,
+    const Teuchos::RCP<const Epetra_Vector> scalarfield_row,
     std::ostream&                           s
 )
 {
@@ -84,7 +84,7 @@ void IO::GMSH::ScalarFieldToGmsh(
  *------------------------------------------------------------------------------------------------*/
 void IO::GMSH::ScalarElementFieldToGmsh(
     const Teuchos::RCP<DRT::Discretization> discret,
-    const Teuchos::RCP<Epetra_Vector>       scalarfield_ele_row,
+    const Teuchos::RCP<const Epetra_Vector> scalarfield_ele_row,
     std::ostream&                           s
 )
 {

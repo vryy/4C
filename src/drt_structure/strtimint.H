@@ -885,19 +885,13 @@ namespace STR
 
     //@}
 
-    //! @name Extract methods
+    //! @name Write access to field solution variables at \f$t^{n+1}\f$
     //@{
 
-    /// extract displacements
+    /// write access to displacements at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return DisNew(); }
 
-    //! extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn(){ return Dis(); }
-
-    //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln(){ return Vel(); }
-
-    //! extract velocities
+    //! write access to extract velocities at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return VelNew(); }
 
     //@}

@@ -1969,7 +1969,7 @@ void STR::TimInt::writeGmshStrucOutputStep()
   // add 'View' to Gmsh postprocessing file
   gmshfilecontent << "View \" " << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  IO::GMSH::VectorFieldDofBasedToGmsh(discret_,WriteAccessDispn(),gmshfilecontent,true);
+  IO::GMSH::VectorFieldDofBasedToGmsh(discret_,Dispn(),gmshfilecontent,true);
   gmshfilecontent << "};" << std::endl;
 }
 
