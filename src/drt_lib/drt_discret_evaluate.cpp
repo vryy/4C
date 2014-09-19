@@ -855,7 +855,14 @@ void DRT::Discretization::EvaluateCondition
           if (err) dserror("error while evaluating elements");
 
           // assembly
-          int eid = curr->second->Id();
+          //If BlockMatrixes are used, the decision which assemble strategy is used, is based on the element id.
+          //As this id is compared to a list of conditioned volume elements, always the volume element id should
+          //be given to the Assembling! (comment: eid is not used by sysmat.assemble(...,eid,...))
+          int eid;
+          if (!curr->second->IsFaceElement())
+            eid = curr->second->Id();
+          else
+            eid = curr->second->ParentElement()->Id();
           strategy.AssembleMatrix1( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
           strategy.AssembleMatrix2( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
           strategy.AssembleVector1( la[row].lm_, la[row].lmowner_ );
