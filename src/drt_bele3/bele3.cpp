@@ -48,9 +48,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const std::string e
 
       int numdof = -1;
       is >> numdof;
-      if(numdof!=3 and numdof!=4)
-        dserror("ERROR: Chosen number of dofs for BELE3 element invalid!");
-
       Teuchos::RCP<DRT::ELEMENTS::Bele3> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id,owner));
       ele->SetNumDofPerNode(numdof);
       return ele;
