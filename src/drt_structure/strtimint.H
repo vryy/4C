@@ -127,7 +127,7 @@ namespace STR
    * is needed in environments in which a independent time loop is provided.
    * This happens e.g. in fluid-structure-interaction.
    *
-   * <h3> Responsibilties </h3>
+   * <h3> Responsibilities </h3>
    * Most importantly the base integrator manages the system state vectors and
    * matrices. It also deals with the output to files and offers method to
    * determine forces and stiffnesses (tangents).
@@ -141,7 +141,7 @@ namespace STR
     //! Structural time adaptivity is friend
     friend class TimAda;
 
-    //! Joint auxiliar schemes are friends
+    //! Joint auxiliary schemes are friends
     template <typename T> friend class TimAdaJoint;
 
   public:
@@ -201,7 +201,7 @@ namespace STR
     {
       // copy it
       *this = tis;
-      // A slice of lemon?
+
       return;
     }
 
@@ -226,7 +226,7 @@ namespace STR
                                         //!< (may be Teuchos::null)
       Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
                                        //!< (may be Teuchos::null)
-      bool recreatemap  //!< recreate mapextractor/toggle-vector
+      bool recreatemap  //!< recreate map extractor/toggle-vector
                         //!< which stores the DOF IDs subjected
                         //!< to Dirichlet BCs
                         //!< This needs to be true if the bounded DOFs
@@ -313,7 +313,7 @@ namespace STR
     //! energy during contact. Further details can be found in the original
     //! paper by Laursen and Love (IJNME, 2002) and in the more recent and
     //! mortar-related paper by Hartmann et al. (IJNME, 2007).
-    //! CAUTION: The VUM is only available for Gen-Alpha and GEMM.
+    //! CAUTION: The VUM is only available for GenAlpha and GEMM.
     void UpdateStepContactVUM();
 
     //! Update step for beam contact
@@ -569,9 +569,6 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const = 0;
 
-    //! return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const = 0;
-
     //! Give order of accuracy
     int MethodOrderOfAccuracy()
     {
@@ -699,31 +696,38 @@ namespace STR
     //@{
 
     //! unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() const { return disn_; }
 
     //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
+    Teuchos::RCP<const Epetra_Vector> Dispn() const { return (*dis_)(0); }
 
     //! unknown velocity at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp() const { return veln_; }
 
     //! unknown velocity at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
+    Teuchos::RCP<const Epetra_Vector> Veln() const { return (*vel_)(0); }
 
     //! known velocity at \f$t_{n-1}\f$
-    Teuchos::RCP<const Epetra_Vector> Velnm() { return (*vel_)(-1); }
+    Teuchos::RCP<const Epetra_Vector> Velnm() const { return (*vel_)(-1); }
 
     //! unknown accelerations at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
+    Teuchos::RCP<const Epetra_Vector> Accnp() const { return accn_; }
 
     //! known accelerations at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
-
-    //! known FSI force for immersed FSI
-    Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)
-        { ApplyForceInternal(time,dt,dis,Teuchos::null,Teuchos::null,fint); return fint; }
+    Teuchos::RCP<const Epetra_Vector> Accn() const { return (*acc_)(0); }
 
     //@}
+
+    //! known FSI force for immersed FSI
+    Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector
+    (
+      double time,
+      double dt,
+      Teuchos::RCP<const Epetra_Vector> dis,
+      Teuchos::RCP<Epetra_Vector> fint
+        )
+    { ApplyForceInternal(time,dt,dis,Teuchos::null,Teuchos::null,fint); return fint; }
+
 
     //! Access from inside of the structural time integrator
     //@{
@@ -795,7 +799,7 @@ namespace STR
     //! are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
-    //! are there any Windkessel bcs?
+    //! are there any Windkessel BCs?
     virtual bool HaveWindkessel() = 0;
 
     //! get constraint manager defined in the structure
@@ -959,10 +963,6 @@ namespace STR
     //! create manager object + initialize all relevant stuff if so
     void PrepareBeamContact(const Teuchos::ParameterList& sdynparams);
 
-
-
-    //@}
-
     //@}
 
     //! @name Statistical Mechanics methods
@@ -1027,14 +1027,14 @@ namespace STR
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
     Teuchos::RCP<LINALG::Solver> contactsolver_;  //!< linear algebraic solver (for contact/meshtying)
     bool solveradapttol_;  //!< adapt solver tolerance
-    double solveradaptolbetter_;  //!< tolerance to which is adpated ????
+    double solveradaptolbetter_;  //!< tolerance to which is adapted ????
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;    //!< old style dirichtoggle vector
                                                   //!< (only used for contact and supposed
-                                                  //!< to go away sonner or later)
+                                                  //!< to go away sooner or later)
     enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
     //@}
 
@@ -1042,7 +1042,7 @@ namespace STR
     //@{
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     int printscreen_;  //!< print infos to standard out every n steps
-    bool printlogo_;  //!< true: enjoy your cuppa
+    bool printlogo_;  //!< print the logo (or not)?
     FILE* errfile_;  //!< error file handle
     bool printerrfile_;  //!< print infos to error file #errfile_
     bool printiter_;  //!< print intermediate iterations during solution

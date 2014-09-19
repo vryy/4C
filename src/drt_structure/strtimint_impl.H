@@ -89,9 +89,6 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const = 0;
 
-    //! return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const = 0;
-
     //@}
 
     //! Do time integration of single step
@@ -309,7 +306,7 @@ namespace STR
     //! state of the displacement solution
     void NewtonModified() { dserror("Not impl."); }
 
-		//! Do Line search iteration
+    //! Do Line search iteration
     //!
     //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
@@ -691,7 +688,7 @@ namespace STR
     //! update all EpetraVectors as discretization changes after crack insertion
     void updateEpetraVectorsCrack( std::map<int,int>& oldnew );
 
-	  /// update all the field vectors to account for new node introduced by crack
+    /// update all the field vectors to account for new node introduced by crack
     virtual void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ) = 0;
 
         //! Prepare system for solving with Newton's method

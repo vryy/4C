@@ -202,10 +202,6 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const {return 1.0 - theta_; }
 
-    //! return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const
-    { dserror("Cannot return Newmark-beta. This is not a Newmark-type time integrator!"); return -1.0; }
-
     //! Linear error coefficient if 1st order accurate
     double MethodLinErrCoeff1()
     {
@@ -310,7 +306,7 @@ namespace STR
 
     //@}
 
-	  /// update all the field vectors to account for new node introduced by crack
+    /// update all the field vectors to account for new node introduced by crack
     void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ){dserror("not yet implemented for this scheme");}
 
   protected:

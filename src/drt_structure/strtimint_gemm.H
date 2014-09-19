@@ -99,9 +99,6 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const { return alphaf_; }
 
-    //! return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const { return beta_; }
-
     //! Return linear error coefficient of displacements
     double MethodLinErrCoeffDis()
     {
@@ -256,7 +253,7 @@ namespace STR
     );
     //@}
 
-	  /// update all the field vectors to account for new node introduced by crack
+    /// update all the field vectors to account for new node introduced by crack
     void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ){dserror("not yet implemented for this scheme");}
 
   protected:

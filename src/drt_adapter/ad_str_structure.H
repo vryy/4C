@@ -124,25 +124,25 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
 
     /// known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
 
     /// known velocity at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
 
     /// known velocity at \f$t_{n-1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm() const = 0;
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() const = 0;
 
     /// known acceleration at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Accn() const = 0;
 
     /// known fsi force vector for immersed fsi
     virtual Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)=0;
@@ -234,9 +234,6 @@ namespace ADAPTER {
 
     /// return time integration factor
     virtual const double TimIntParam() const = 0;
-
-    /// return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const = 0;
 
     //! Return current time \f$t_{n}\f$
     virtual double TimeOld() const = 0;

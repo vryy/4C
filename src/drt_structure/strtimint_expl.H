@@ -149,10 +149,6 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const { dserror("TimeFac not yet implemented"); return -1.0; }
 
-    //! return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const
-    { dserror("Cannot return Newmark-beta. This is not a Newmark-type time integrator!"); return -1.0; }
-
     //@}
 
     //! @name System vectors
@@ -253,7 +249,7 @@ namespace STR
       return Teuchos::null;
     }
 
-	  /// update all the field vectors to account for new node introduced by crack
+    /// update all the field vectors to account for new node introduced by crack
     void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) { dserror( "not implemented yet" ); }
 
     /// are there any algebraic constraints?

@@ -42,36 +42,32 @@ namespace ADAPTER
     { return structure_->RHS(); }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const
     { return structure_->Dispnp(); }
 
     /// known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn()
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const
     { return structure_->Dispn(); }
 
     /// unknown velocity at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp()
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const
     { return structure_->Velnp(); }
 
     /// known velocity at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Veln()
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() const
     { return structure_->Veln(); }
 
     /// known velocity at \f$t_{n-1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm() const
     { return structure_->Velnm(); }
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp()
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() const
     { return structure_->Accnp(); }
 
     /// known acceleration at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accn()
+    virtual Teuchos::RCP<const Epetra_Vector> Accn() const
     { return structure_->Accn(); }
-
-    /// known FSI force for immersed FSI
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)
-    { return structure_->ExtractInternalForceVector(time,dt,dis,fint); }
 
     /// return displacements at all the time steps
     virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep()
@@ -83,6 +79,9 @@ namespace ADAPTER
 
     //@}
 
+    /// known FSI force for immersed FSI
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)
+    { return structure_->ExtractInternalForceVector(time,dt,dis,fint); }
 
     //! @name Misc
     //@{
@@ -192,10 +191,6 @@ namespace ADAPTER
     /// return time integration factor
     virtual const double TimIntParam() const
     { return structure_->TimIntParam(); }
-
-    /// return Newmark parameter \f$beta\f$
-    virtual const double GetNewmarkBeta() const
-    { return structure_->GetNewmarkBeta(); }
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time)
