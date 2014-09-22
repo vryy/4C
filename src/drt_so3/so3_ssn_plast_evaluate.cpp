@@ -895,8 +895,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
     plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
-    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
-
+  {
+    if (tsi_==true)
+      dserror("TSI with so3Plast elements only with PlasticElastHyper material");
+  }
   // get references from parameter list
   double& lp_inc = data_->pl_inc_;
   double& lp_res = data_->pl_res_;
@@ -1191,27 +1193,45 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     // plastic flow increment
     LINALG::Matrix<nsd_,nsd_> deltaLp;
 
-    // recover plastic variables
-    if (HavePlasticSpin())
+    if (plmat!=NULL)
     {
-      if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
+      // recover plastic variables
+      if (HavePlasticSpin())
+      {
+        if (eastype_!=soh8p_easnone)
+          RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
+        else
+          RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
+      }
       else
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
+      {
+        if (eastype_!=soh8p_easnone)
+          RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
+        else
+          RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
+      }
     }
-    else
-    {
-      if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
-      else
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-    }
-
     // material call *********************************************
     LINALG::Matrix<numstr_,1> pk2;
     LINALG::Matrix<numstr_,numstr_> cmat;
-    plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp);
-    if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp);
+    if (plmat!=NULL)
+    {
+      plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp);
+      if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp);
+    }
+    else
+    {
+      LINALG::Matrix<numstr_,1> total_glstrain(false);
+      total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
+      total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
+      total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
+      total_glstrain(3) = total_cauchygreen(0,1);
+      total_glstrain(4) = total_cauchygreen(1,2);
+      total_glstrain(5) = total_cauchygreen(2,0);
+      params.set<int>("gp",gp);
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->Evaluate(&defgrd_mod,&total_glstrain,params,&pk2,&cmat,Id());
+    }
     // material call *********************************************
 
     // return gp stresses
@@ -1393,7 +1413,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       }
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    if (eval_tsi && (stiffmatrix!=NULL || force!=NULL))
+    if (eval_tsi && (stiffmatrix!=NULL || force!=NULL) && plmat!=NULL)
     {
       // volumetric part of K_dT = Gough-Joule effect**********************************
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1530,7 +1550,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     } // if (eval_tsi)
 
     // plastic modifications
-    if ( (stiffmatrix!=NULL || force!=NULL) && !no_condensation)
+    if ( (stiffmatrix!=NULL || force!=NULL) && !no_condensation && plmat!=NULL)
     {
       if (HavePlasticSpin())
       {
@@ -2274,35 +2294,43 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType spintype)
 {
-  // loop over all Gauss points
-  for (int gp=0; gp<numgpt_; gp++)
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
   {
-    LINALG::Matrix<3,3> deltaLp;
-    deltaLp(0,0) = dDp_last_iter_[gp](0);
-    deltaLp(1,1) = dDp_last_iter_[gp](1);
-    deltaLp(2,2) = -1.0*(dDp_last_iter_[gp](0)+dDp_last_iter_[gp](1));
-    deltaLp(0,1) = dDp_last_iter_[gp](2);
-    deltaLp(1,0) = dDp_last_iter_[gp](2);
-    deltaLp(1,2) = dDp_last_iter_[gp](3);
-    deltaLp(2,1) = dDp_last_iter_[gp](3);
-    deltaLp(0,2) = dDp_last_iter_[gp](4);
-    deltaLp(2,0) = dDp_last_iter_[gp](4);
-    if (spintype==plspin)
+    // loop over all Gauss points
+    for (int gp=0; gp<numgpt_; gp++)
     {
-      deltaLp(0,1) += dDp_last_iter_[gp](5);
-      deltaLp(1,0) -= dDp_last_iter_[gp](5);
-      deltaLp(1,2) += dDp_last_iter_[gp](6);
-      deltaLp(2,1) -= dDp_last_iter_[gp](6);
-      deltaLp(0,2) += dDp_last_iter_[gp](7);
-      deltaLp(2,0) -= dDp_last_iter_[gp](7);
-    }
-    static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp,&deltaLp);
+      LINALG::Matrix<3,3> deltaLp;
+      deltaLp(0,0) = dDp_last_iter_[gp](0);
+      deltaLp(1,1) = dDp_last_iter_[gp](1);
+      deltaLp(2,2) = -1.0*(dDp_last_iter_[gp](0)+dDp_last_iter_[gp](1));
+      deltaLp(0,1) = dDp_last_iter_[gp](2);
+      deltaLp(1,0) = dDp_last_iter_[gp](2);
+      deltaLp(1,2) = dDp_last_iter_[gp](3);
+      deltaLp(2,1) = dDp_last_iter_[gp](3);
+      deltaLp(0,2) = dDp_last_iter_[gp](4);
+      deltaLp(2,0) = dDp_last_iter_[gp](4);
+      if (spintype==plspin)
+      {
+        deltaLp(0,1) += dDp_last_iter_[gp](5);
+        deltaLp(1,0) -= dDp_last_iter_[gp](5);
+        deltaLp(1,2) += dDp_last_iter_[gp](6);
+        deltaLp(2,1) -= dDp_last_iter_[gp](6);
+        deltaLp(0,2) += dDp_last_iter_[gp](7);
+        deltaLp(2,0) -= dDp_last_iter_[gp](7);
+      }
+      static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp,&deltaLp);
 
-    KbbInv_[gp].Scale(0.);
-    Kbd_[gp].Scale(0.);
-    fbeta_[gp].Scale(0.);
-    if (tsi_)
-      (*KbT_)[gp].Scale(0.);
+      KbbInv_[gp].Scale(0.);
+      Kbd_[gp].Scale(0.);
+      fbeta_[gp].Scale(0.);
+      if (tsi_)
+        (*KbT_)[gp].Scale(0.);
+    }
+  }
+  else
+  {
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->Update();
   }
 
   if (eastype_!=soh8p_easnone)

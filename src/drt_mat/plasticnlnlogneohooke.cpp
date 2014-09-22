@@ -132,7 +132,7 @@ void MAT::PlasticNlnLogNeoHooke::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,accplstrainlast_->at(var));
     AddtoPack(data,invplrcglast_->at(var));
   }
-  
+
   return;
 }  // Pack()
 
@@ -163,7 +163,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
-    
+
   // history data
   int histsize;
   ExtractfromPack(position,data,histsize);
@@ -436,7 +436,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
 
       if (abs(res)<tol)
         break;
-        
+
       tan = -3.*G- isohard - (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma));
       gamma -= res/tan;
     }
@@ -591,7 +591,7 @@ bool MAT::PlasticNlnLogNeoHooke::VisData(
       temp += AccumulatedStrain(iter);
     data[0] = temp/numgp;
   }
-  return true;
+  return false;
 
 }  // VisData()
 

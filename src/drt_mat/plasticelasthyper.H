@@ -380,6 +380,12 @@ private:
     // (only EAS contribution)
     virtual Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDTeas() {return dHepDissdTeas_;}
 
+    //! return names of visualization data
+    virtual void VisNames(std::map<std::string,int>& names);
+
+    //! return visualization data
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+
 
   protected:
 

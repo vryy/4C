@@ -2098,6 +2098,53 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
   return ;
 }
 
+/*---------------------------------------------------------------------*
+ | return names of visualization data (public)                         |
+ *---------------------------------------------------------------------*/
+void MAT::PlasticElastHyper::VisNames(std::map<std::string,int>& names)
+{
+  std::string accumulatedstrain = "accumulatedstrain";
+  names[accumulatedstrain] = 1; // scalar
+  std::string plastic_zone = "plastic_zone";
+  names[plastic_zone] = 1; // scalar
+
+}  // VisNames()
+
+
+/*---------------------------------------------------------------------*
+ | return visualization data (public)                                  |
+ *---------------------------------------------------------------------*/
+bool MAT::PlasticElastHyper::VisData(
+  const std::string& name,
+  std::vector<double>& data,
+  int numgp,
+  int eleID
+  )
+{
+  if (name == "accumulatedstrain")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    double tmp=0.;
+    for (unsigned gp=0; gp<last_alpha_isotropic_.size(); gp++)
+      tmp+= AccumulatedStrain(gp);
+    data[0] = tmp/last_alpha_isotropic_.size();
+  }
+  if (name == "plastic_zone")
+  {
+    bool plastic_history=false;
+    bool curr_active=false;
+    if ((int)data.size()!=1) dserror("size mismatch");
+    for (unsigned gp=0; gp<last_alpha_isotropic_.size(); gp++)
+    {
+      if (AccumulatedStrain(gp)!=0.) plastic_history=true;
+      if (Active(gp))                curr_active=true;
+    }
+    data[0] = plastic_history+curr_active;
+  }
+  return false;
+
+}  // VisData()
+
 /*----------------------------------------------------------------------*
  |                                                          seitz 09/13 |
  *----------------------------------------------------------------------*/

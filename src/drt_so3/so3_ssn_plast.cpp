@@ -536,6 +536,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
 
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
   so3mat->Setup(numgpt_, linedef);
+  if (so3mat->MaterialType()!=INPAR::MAT::m_plelasthyper)
+    std::cout << "*** warning *** so3plast used w/o PlasticElastHyper material. Better use standard solid element!\n";
   if (HavePlasticSpin())
     plspintype_=plspin;
   else
@@ -636,10 +638,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string,int>& names)
 {
-  std::string accumulatedstrain = "accumulatedstrain";
-  names[accumulatedstrain] = 1; // scalar
-  std::string plastic_zone = "plastic_zone";
-  names[plastic_zone] = 1; // scalar
+  DRT::Element::VisNames(names);
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->VisNames(names);
 
   return;
 }  // VisNames()
@@ -654,33 +655,9 @@ bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::ve
   if (DRT::Element::VisData(name,data))
     return true;
 
-  // get plastic hyperelastic material
-     MAT::PlasticElastHyper* plmat = NULL;
-  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
-    plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
-  else
-    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
-
-  if (name == "accumulatedstrain")
-  {
-    if ((int)data.size()!=1) dserror("size mismatch");
-    double tmp=0.;
-    for (int gp=0; gp<numgpt_; gp++)
-      tmp+= plmat->AccumulatedStrain(gp);
-    data[0] = tmp/numgpt_;
-  }
-  if (name == "plastic_zone")
-  {
-    bool plastic_history=false;
-    bool curr_active=false;
-    if ((int)data.size()!=1) dserror("size mismatch");
-    for (int gp=0; gp<numgpt_; gp++)
-    {
-      if (plmat->AccumulatedStrain(gp)!=0.) plastic_history=true;
-      if (plmat->Active(gp))                curr_active=true;
-    }
-    data[0] = plastic_history+curr_active;
-  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  if(so3mat->VisData(name,data,numgpt_,Id()))
+    return true;
 
   return false;
 
@@ -694,7 +671,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::
 {
   double cpl=plparams->get<double>("SEMI_SMOOTH_CPL");
   double s=plparams->get<double>("STABILIZATION_S");
-  static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s,cpl);
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s,cpl);
   if (eastype_!=soh8p_easnone)
     plparams->get<int>("have_EAS")=1;
 
@@ -834,10 +812,11 @@ bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
   MAT::PlasticElastHyper* plmat = NULL;
   if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
     plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
-  else
-    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
-  return plmat->HavePlasticSpin();
+  if (plmat!=NULL)
+    return plmat->HavePlasticSpin();
+
+  return false;
 }
 
 #include "so3_ssn_plast_fwd.hpp"
