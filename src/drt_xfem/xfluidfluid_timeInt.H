@@ -25,7 +25,6 @@ Maintainer:
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_dofset_transparent_xfem.H"
 
 
 class Epetra_Map;
