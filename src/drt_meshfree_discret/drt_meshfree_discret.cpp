@@ -143,7 +143,7 @@ int DRT::MESHFREE::MeshfreeDiscretization::NumMyColPoints() const
  *--------------------------------------------------------------------------*/
 bool DRT::MESHFREE::MeshfreeDiscretization::HaveGlobalPoint(int gid) const
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = point_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::Node> >:: const_iterator curr = point_.find(gid);
   if (curr == point_.end()) return false;
   else                     return true;
 }
@@ -151,10 +151,10 @@ bool DRT::MESHFREE::MeshfreeDiscretization::HaveGlobalPoint(int gid) const
 /*--------------------------------------------------------------------------*
  | get node with global id                               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeNode* DRT::MESHFREE::MeshfreeDiscretization::gPoint(int gid) const
+DRT::Node* DRT::MESHFREE::MeshfreeDiscretization::gPoint(int gid) const
 {
 #ifdef DEBUG
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = point_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::Node> >:: const_iterator curr = point_.find(gid);
   if (curr == point_.end()) dserror("Point with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
@@ -166,7 +166,7 @@ DRT::MESHFREE::MeshfreeNode* DRT::MESHFREE::MeshfreeDiscretization::gPoint(int g
 /*--------------------------------------------------------------------------*
  | add a point                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::AddPoint(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> point)
+void DRT::MESHFREE::MeshfreeDiscretization::AddPoint(Teuchos::RCP<DRT::Node> point)
 {
   point_[point->Id()] = point;
   Reset();
@@ -176,9 +176,9 @@ void DRT::MESHFREE::MeshfreeDiscretization::AddPoint(Teuchos::RCP<DRT::MESHFREE:
 /*--------------------------------------------------------------------------*
  | delete an point                                        (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeDiscretization::DeletePoint(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> point)
+bool DRT::MESHFREE::MeshfreeDiscretization::DeletePoint(Teuchos::RCP<DRT::Node> point)
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = point_.find(point->Id());
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator fool = point_.find(point->Id());
   if (fool==point_.end()) return false;
   point_.erase(fool);
   Reset();
@@ -190,7 +190,7 @@ bool DRT::MESHFREE::MeshfreeDiscretization::DeletePoint(Teuchos::RCP<DRT::MESHFR
  *--------------------------------------------------------------------------*/
 bool DRT::MESHFREE::MeshfreeDiscretization::DeletePoint(const int gid)
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = point_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator fool = point_.find(gid);
   if (fool==point_.end()) return false;
   point_.erase(fool);
   Reset();
@@ -206,21 +206,21 @@ Teuchos::RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyPo
 
   DRT::PackBuffer buffer;
 
-  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=pointrowptr_.begin();
+  for (std::vector<DRT::Node*>::const_iterator i=pointrowptr_.begin();
        i!=pointrowptr_.end();
        ++i)
   {
-    DRT::MESHFREE::MeshfreeNode * k = *i;
+    DRT::Node * k = *i;
     k->Pack(buffer);
   }
 
   buffer.StartPacking();
 
-  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=pointrowptr_.begin();
+  for (std::vector<DRT::Node*>::const_iterator i=pointrowptr_.begin();
        i!=pointrowptr_.end();
        ++i)
   {
-    DRT::MESHFREE::MeshfreeNode * k = *i;
+    DRT::Node * k = *i;
     k->Pack(buffer);
   }
 
@@ -427,7 +427,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToPointsAndCells()
 
     bool init;               // boolean, whether an initial point was found for recursive search
     int init_pointid;         // id of point to start recursive search with
-    MeshfreeNode* init_point = NULL; // point to start recursive search with
+    DRT::Node* init_point = NULL; // point to start recursive search with
     int nodeid;              // id of current node
     DRT::Node* node;         // current node
 
@@ -666,7 +666,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
 
     int nummypoints = 0;
-    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator pcurr;
+    std::map<int,Teuchos::RCP<DRT::Node> >::const_iterator pcurr;
     for (pcurr=point_.begin(); pcurr != point_.end(); ++pcurr)
       if (pcurr->second->Owner() == Comm().MyPID()) nummypoints++;
 
@@ -748,7 +748,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     {
       if ((int)point_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Node> >:: const_iterator curr;
       for (curr = point_.begin(); curr != point_.end(); ++curr)
       {
         os << *(curr->second);

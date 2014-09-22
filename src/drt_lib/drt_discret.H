@@ -2002,7 +2002,8 @@ protected:
   \note This is a collective call
   */
   // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis) Jan12
-  virtual void Reset(bool killdofs = true, bool killcond = true);
+  virtual void Reset(bool killdofs, bool killcond);
+  virtual void Reset() { this->Reset(true, true); }
 
   /*!
   \brief Initialize element routines

@@ -270,7 +270,7 @@ public:
    * \return Adress of point if point is stored on calling proc
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual MeshfreeNode* gPoint(int gid) const;
+  virtual DRT::Node* gPoint(int gid) const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -283,7 +283,7 @@ public:
    * \return Adress of point if point is owned and stored by calling proc
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual inline MeshfreeNode* lRowPoint(int lid) const
+  virtual inline DRT::Node* lRowPoint(int lid) const
   {
   #ifdef DEBUG
     if (!Filled())
@@ -303,7 +303,7 @@ public:
    * \return Adress of point if point is stored by calling proc
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual inline MeshfreeNode* lColPoint(int lid) const
+  virtual inline DRT::Node* lColPoint(int lid) const
   {
     #ifdef DEBUG
       if (!Filled())
@@ -327,7 +327,7 @@ public:
    * \note Sets Filled()=false
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void AddPoint(Teuchos::RCP<MeshfreeNode> point);
+  virtual void AddPoint(Teuchos::RCP<DRT::Node> point);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -347,7 +347,7 @@ public:
    * \note Sets Filled()=false and calls Reset() upon discretization.
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual bool DeletePoint(Teuchos::RCP<MeshfreeNode> point);
+  virtual bool DeletePoint(Teuchos::RCP<DRT::Node> point);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -655,7 +655,8 @@ protected:
    * \note This is a collective call
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void Reset(bool killdofs = true);
+  virtual void Reset(bool killdofs, bool killcond);
+  virtual void Reset() { this->Reset(true, true); }
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -730,17 +731,17 @@ protected:
 
   Teuchos::RCP<Epetra_Map> pointrowmap_;            //!< unique distribution of nodal ownerships
   Teuchos::RCP<Epetra_Map> pointcolmap_;            //!< distribution of points including ghost points
-  std::vector<MeshfreeNode*> pointrowptr_;          //!< vector of pointers to row points for faster access
-  std::vector<MeshfreeNode*> pointcolptr_;          //!< vector of pointers to column points for faster access
-  std::map<int,Teuchos::RCP<MeshfreeNode> > point_; //!< map from point Gid to point pointers
+  std::vector<DRT::Node*> pointrowptr_;             //!< vector of pointers to row points for faster access
+  std::vector<DRT::Node*> pointcolptr_;             //!< vector of pointers to column points for faster access
+  std::map<int,Teuchos::RCP<DRT::Node> > point_;    //!< map from point Gid to point pointers
 
-  Teuchos::RCP<MeshfreeApprox> solutionapprox_;    //!< defines the meshfree approximation for the (basis) solution function
+  Teuchos::RCP<MeshfreeApprox> solutionapprox_;     //!< defines the meshfree approximation for the (basis) solution function
 
   Teuchos::RCP<MeshfreeApprox> weightingapprox_;    //!< defines the meshfree approximation for the (basis) weighting function
 
-  Teuchos::RCP<LINALG::Solver> dbcsolver_;         //!< linear solver to strongly enforce non-constant DirichletBC
+  Teuchos::RCP<LINALG::Solver> dbcsolver_;          //!< linear solver to strongly enforce non-constant DirichletBC
 
-  std::vector<std::vector<Face> > domaintopology_; //!< the highest dimensional face, i.e. the domain
+  std::vector<std::vector<Face> > domaintopology_;  //!< the highest dimensional face, i.e. the domain
 
 }; // class MeshfreeDiscretization
 

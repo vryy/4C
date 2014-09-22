@@ -135,14 +135,14 @@ void DRT::MESHFREE::Cell::SetPointIds(const std::string& distype, DRT::INPUT::Li
 /*----------------------------------------------------------------------*
  |  Build point pointers (protected)                           nis Jan12 |
  *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& points)
+bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::Node> >& points)
 {
   int        npoint   = NumPoint();
   const int* pointids = PointIds();
   point_.resize(npoint);
   for (int i=0; i<npoint; ++i)
   {
-    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator curr = points.find(pointids[i]);
+    std::map<int,Teuchos::RCP<DRT::Node> >::const_iterator curr = points.find(pointids[i]);
     // this point is not on this proc
     if (curr==points.end()) dserror("Meshfree cell %d cannot find point %d",Id(),pointids[i]);
     else
@@ -154,7 +154,7 @@ bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::MESH
 /*----------------------------------------------------------------------*
  |  Build point pointers (protected)                           nis Jan12 |
  *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildPointPointers(DRT::MESHFREE::MeshfreeNode** points)
+bool DRT::MESHFREE::Cell::BuildPointPointers(DRT::Node** points)
 {
   point_.resize(NumPoint());
   for (int i=0; i<NumPoint(); ++i) point_[i] = points[i];

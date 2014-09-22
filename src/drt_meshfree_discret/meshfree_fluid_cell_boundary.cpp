@@ -58,14 +58,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(
   DRT::MESHFREE::Cell(id,owner)
 {
   SetPointIds(npoint,pointids);
-  // this can be done since MeshfreeFluidBoundary is derived from MeshfreeFluid which has MeshfreeNodes
-  DRT::MESHFREE::MeshfreeNode* meshfreepoint = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(points[0]);
-  // check if subsequent reinterpret_cast is REALLY valid
-  if (meshfreepoint==NULL)
-    dserror("Points in of meshfree fluid boundary cell could not be casted to from Node to MeshfreeNode.");
-  // heavily persuade compiler that this is valid
-  DRT::MESHFREE::MeshfreeNode** meshfreepoints = reinterpret_cast<DRT::MESHFREE::MeshfreeNode**>(points);
-  BuildPointPointers(meshfreepoints);
+  BuildPointPointers(points);
   SetParentMasterElement(parent,lsurface);
 
   // temporary assignement of nodes for call in DRT::Discretization::BuildLinesinCondition)

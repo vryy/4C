@@ -534,14 +534,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
   DRT::MESHFREE::Cell(id,owner)
 {
   SetPointIds(npoint,pointids);
-  // this can be done since MeshfreeTransportBoundary is derived from MeshfreeTransport which has MeshfreeNodes
-  DRT::MESHFREE::MeshfreeNode* meshfreepoint = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(points[0]);
-  // check if subsequent reinterpret_cast is REALLY valid
-  if (meshfreepoint==NULL)
-    dserror("Points in of meshfree transport boundary cell could not be casted to from Node to MeshfreeNode.");
-  // heavily persuade compiler that this is valid
-  DRT::MESHFREE::MeshfreeNode** meshfreepoints = reinterpret_cast<DRT::MESHFREE::MeshfreeNode**>(points);
-  BuildPointPointers(meshfreepoints);
+  BuildPointPointers(points);
   SetParentMasterElement(parent,lbeleid);
 
   // temporary assignement of nodes for call in DRT::Discretization::BuildLinesinCondition)

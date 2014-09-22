@@ -31,7 +31,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Unassign()
 /*--------------------------------------------------------------------------*
  | Reset all maps and conditions                         (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs)
+void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs, bool killcond)
 {
   assigned_ = false;
 
@@ -42,7 +42,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs)
   pointcolptr_.clear();
 
   // call Reset() of base class Discretisation
-  DRT::Discretization::Reset(killdofs);
+  DRT::Discretization::Reset(killdofs, killcond);
 
   return;
 }
@@ -102,7 +102,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildPointMaps()
 {
   const int myrank = Comm().MyPID();
   int numrowpoints     = 0;
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
   for (curr=point_.begin(); curr != point_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++numrowpoints;
@@ -160,16 +160,15 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToPointPointers()
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeDiscretization::BuildPointToElementPointers()
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator pointcurr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator pointcurr;
   for (pointcurr=point_.begin(); pointcurr != point_.end(); ++pointcurr)
     pointcurr->second->ClearMyElementTopology();
 
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true);
-    const int  npoint = cell->NumPoint();
-    const int* points = cell->PointIds();
+    const int  npoint = elecurr->second->NumPoint();
+    const int* points = elecurr->second->PointIds();
     for (int j=0; j<npoint; ++j)
     {
       DRT::Node* point = gPoint(points[j]);

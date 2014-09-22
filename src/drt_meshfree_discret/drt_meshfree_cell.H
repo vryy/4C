@@ -279,7 +279,7 @@ public:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual bool BuildPointPointers(
-    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& points //!< (in): A map of all points of a discretization
+    std::map<int,Teuchos::RCP<DRT::Node> >& points //!< (in): A map of all points of a discretization
     );
 
   /*------------------------------------------------------------------------*/
@@ -297,7 +297,7 @@ public:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual bool BuildPointPointers(
-    MeshfreeNode** points //!< (in): Pointer to array of pointers to points.
+    DRT::Node** points //!< (in): Pointer to array of pointers to points.
     );
 
   /*------------------------------------------------------------------------*/
@@ -311,7 +311,7 @@ private:
   std::vector<int> pointid_;
 
   //! \brief Pointers to points adjacent to cell in local ordering
-  std::vector<MeshfreeNode*> point_;
+  std::vector<DRT::Node*> point_;
 
   //! meshfree parameter settings
   Teuchos::RCP<Teuchos::ParameterList> params_;
