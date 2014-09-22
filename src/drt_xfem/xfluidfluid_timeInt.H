@@ -1,15 +1,19 @@
-
-
 /*!-----------------------------------------------------------------------------------------------*
 \file xfluidfluid_timeInt.H
 
-\brief provides the basic xfluidfluid time integration
+\brief class provides the following functionalities for
+       xfluid-fluid time integration:
+       - mapping of state vectors from old intersection states (interface positions) to new ones
+       - reconstruction of missing / unreasonable ghost values
+       - subsequent enforcement of incompressibility on xfluid element patch
+         after projection step
 
 <pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
+Maintainer:
+             Raffaela Kruse
+             kruse@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -20,6 +24,8 @@ Maintainer: Shadan Shahmiri
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_lib/drt_dofset_transparent_xfem.H"
 
 
 class Epetra_Map;
@@ -49,180 +55,205 @@ namespace XFEM
   class FluidWizardMesh;
 
 /*!
-\brief this class is the basic TIMEINT class for the projection, adaption or
-       something else in XFEM-problems between consecutive time steps
+\brief basic time integration class for xfluid-fluid problems
  */
 class XFluidFluidTimeIntegration
 {
 public:
 
   //! constructor
+  /*!
+   * \param bgdis xfem fluid discretization
+   * \param embdis embedded fluid discretization
+   * \param wizard xfem fluid wizard
+   * \param step time step
+   * \param xfem_timeintapproach type of xfluid-fluid time integration approach (projection,etc.)
+   * \param params parameter list
+   */
   explicit XFluidFluidTimeIntegration(
-    const Teuchos::RCP<DRT::Discretization> bgdis,
-    const Teuchos::RCP<DRT::Discretization> embdis,
-    Teuchos::RCP<XFEM::FluidWizardMesh>         wizard,
-    int                            step,
-    enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach,
+    const Teuchos::RCP<DRT::Discretization> &  bgdis,
+    const Teuchos::RCP<DRT::Discretization> &  embdis,
+    Teuchos::RCP<XFEM::FluidWizardMesh>        wizard,
+    int                                        step,
+    enum INPAR::XFEM::XFluidFluidTimeInt       xfem_timeintapproach,
     const Teuchos::ParameterList&              params
     );
 
   //! destructor
   ~XFluidFluidTimeIntegration()
   {
-    return;
   }
 
 
-  /// Create maps of bgfluid's nodes needed for time integration
-  void CreateBgNodeMaps(const Teuchos::RCP<DRT::Discretization> bgdis,
-                        Teuchos::RCP<XFEM::FluidWizardMesh>         wizard);
+  /*!
+   * \brief Save the old state (maps of node-ids to dof-ids) and create a new one
+   * \return true, if the maps have changed compared to the old state
+   */
+  bool SaveBgNodeMapsAndCreateNew(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
 
-  /// Save the old state
+  //! Create the background node maps
+  void CreateBgNodeMapsForRestart(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+
+
+  /*!
+   * \brief Determine state vectors for background fluid nodes (either by projection from emb.
+   * fluid discretization or by keeping the ghost values)
+   */
+  void SetNewBgStateVectors(
+    const Teuchos::RCP<Epetra_Vector>        bgstate_velnp,
+    const Teuchos::RCP<Epetra_Vector>        bgstate_veln,
+    const Teuchos::RCP<Epetra_Vector>        bgstate_velnm,
+    const Teuchos::RCP<Epetra_Vector>        bgstate_accnp,
+    const Teuchos::RCP<Epetra_Vector>        bgstate_accn,
+    const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
+    const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
+    const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
+    const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
+    const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
+    const Teuchos::RCP<const Epetra_Vector>  embstate_velnp,
+    const Teuchos::RCP<const Epetra_Vector>  embstate_veln,
+    const Teuchos::RCP<const Epetra_Vector>  embstate_velnm,
+    const Teuchos::RCP<const Epetra_Vector>  embstate_accnp,
+    const Teuchos::RCP<const Epetra_Vector>  embstate_accn,
+    const Teuchos::RCP<const Epetra_Vector>  aledispn);
+
+  /*!
+   * \brief Determine embedded state vectors after ALE-relaxation in interpolation-based fluid-fluid FSI
+   */
+  void SetNewEmbStateVectors(const Teuchos::RCP<const Epetra_Vector> & bgfluid_staten,
+                             Teuchos::RCP<Epetra_Vector> &             embfluid_state,
+                             const Teuchos::RCP<const Epetra_Vector> & aledispnp,
+                             const Teuchos::RCP<const Epetra_Vector> & aledispnpoldstate);
+
+
+  /*!
+   * \brief Subsequent enforcement of incompressibility on background element patch after projection
+   * by solution of an optimization problem
+   */
+  void EnforceIncompAfterProjection(
+      Teuchos::RCP<XFEM::FluidWizardMesh>               wizard,         ///< xfem fluid wizard
+      Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_n,       ///< xfem fluid wizard from timestep n
+      Teuchos::RCP<Epetra_Vector> &                     bgstate_velnp,  ///< background fluid velocity at timestep n+1
+      Teuchos::RCP<Epetra_Vector> &                     bgstate_veln,   ///< background fluid velocity at timestep n
+      Teuchos::RCP<Epetra_Vector> &                     bgstate_velnm,  ///< background fluid velocity at timestep n-1
+      const Teuchos::RCP<const LINALG::MapExtractor> &  dbcmaps         ///< background fluid dirichlet map extractor
+      );
+
+  //! @name Gmsh-output
+  //@{
+  void GmshOutput();
+
+  void GmshOutputForInterpolateFSI(const Teuchos::RCP<const Epetra_Vector> & aledispnp,
+                                   const Teuchos::RCP<const Epetra_Vector> & aledispnpoldstate);
+  //@}
+
+private:
+
+  /*!
+   * \brief Container class for source state vectors, accessed by encapsulating class
+   */
+  class SourceState
+  {
+
+  public:
+
+    //! ctor
+    SourceState(
+      Teuchos::RCP<const Epetra_Vector> velnp,
+      Teuchos::RCP<const Epetra_Vector> veln  = Teuchos::null,
+      Teuchos::RCP<const Epetra_Vector> velnm = Teuchos::null,
+      Teuchos::RCP<const Epetra_Vector> accnp = Teuchos::null,
+      Teuchos::RCP<const Epetra_Vector> accn  = Teuchos::null
+    ) :
+      velnp_(velnp),
+      veln_(veln),
+      velnm_(velnm),
+      accnp_(accnp),
+      accn_(accn)
+    {
+    }
+
+    //! @name State vectors
+    //@{
+    Teuchos::RCP<const Epetra_Vector> velnp_;
+    Teuchos::RCP<const Epetra_Vector> veln_;
+    Teuchos::RCP<const Epetra_Vector> velnm_;
+    Teuchos::RCP<const Epetra_Vector> accnp_;
+    Teuchos::RCP<const Epetra_Vector> accn_;
+    //@}
+
+  };
+
+  /*!
+   * \brief Container class for target state vectors, accessed by encapsulating class
+   */
+  class TargetState
+  {
+
+  public:
+
+    //! ctor
+    TargetState(
+      Teuchos::RCP<Epetra_Vector> velnp,
+      Teuchos::RCP<Epetra_Vector> veln  = Teuchos::null,
+      Teuchos::RCP<Epetra_Vector> velnm = Teuchos::null,
+      Teuchos::RCP<Epetra_Vector> accnp = Teuchos::null,
+      Teuchos::RCP<Epetra_Vector> accn  = Teuchos::null
+    ) :
+      velnp_(velnp),
+      veln_(veln),
+      velnm_(velnm),
+      accnp_(accnp),
+      accn_(accn)
+    {
+    }
+
+    //! @name State vectors
+    //@{
+    Teuchos::RCP<Epetra_Vector> velnp_;
+    Teuchos::RCP<Epetra_Vector> veln_;
+    Teuchos::RCP<Epetra_Vector> velnm_;
+    Teuchos::RCP<Epetra_Vector> accnp_;
+    Teuchos::RCP<Epetra_Vector> accn_;
+    //@}
+
+  };
+
+  /// Create maps of bgfluid's nodes needed for time integration
+  void CreateBgNodeMaps(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+
+  /// Save the state (maps of node-ids to dof-ids)
   void SaveBgNodeMaps();
 
-  /// Save the old maps of bg nodes and create new map of bg nodes
-  int SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DRT::Discretization> bgdis,
-                                 Teuchos::RCP<XFEM::FluidWizardMesh>   wizard);
+  /*!
+   * \brief Determine state vectors for background fluid nodes (either by projection from emb.
+   * fluid discretization or by keeping the ghost values)
+   */
+  void SetNewBgStateVectors(const TargetState &                       bgfluid_state,
+                            const SourceState &                       bgfluid_state_n,
+                            const SourceState &                       embfluid_state,
+                            const Teuchos::RCP<const Epetra_Vector> & aledispn);
 
-  void CreateBgNodeMapsForRestart(Teuchos::RCP<DRT::Discretization> bgdis,
-                                  Teuchos::RCP<XFEM::FluidWizardMesh>   wizard);
+  /// set values of background state vector (do not do the projection if ghost-values are available)
+  void SetNewBgStateVectorKeepGhostValues(const TargetState &                       bgfluid_state,
+                                          const SourceState &                       bgfluid_state_n,
+                                          const SourceState &                       embfluid_state,
+                                          const Teuchos::RCP<const Epetra_Vector> & aledispn);
 
-  void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>   bgdis,
-                                        Teuchos::RCP<Epetra_Vector>               bgstatevn1,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp1,
-                                            Teuchos::RCP<Epetra_Vector>               embstatevn1,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevn2,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp2,
-                                            Teuchos::RCP<Epetra_Vector>               embstatevn2,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevn3,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp3,
-                                            Teuchos::RCP<Epetra_Vector>               embstatevn3,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevn4,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp4,
-                                            Teuchos::RCP<Epetra_Vector>               embstatevn4,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevn5,
-                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp5,
-                                            Teuchos::RCP<Epetra_Vector>               embstatevn5,
-                                            Teuchos::RCP<Epetra_Vector>               aledispn);
-
-  /// set values to background state vector. Do not do the projection if
-  /// ghost-values are available.
-  void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>     bgdis,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn1,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp1,
-                                      Teuchos::RCP<Epetra_Vector>                 embstatevn1,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn2,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp2,
-                                      Teuchos::RCP<Epetra_Vector>               embstatevn2,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn3,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp3,
-                                      Teuchos::RCP<Epetra_Vector>                 embstatevn3,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn4,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp4,
-                                      Teuchos::RCP<Epetra_Vector>                 embstatevn4,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevn5,
-                                      Teuchos::RCP<Epetra_Vector>                 bgstatevnp5,
-                                      Teuchos::RCP<Epetra_Vector>                 embstatevn5,
-                                      Teuchos::RCP<Epetra_Vector>                 aledispn);
-
-  /// set values to background state vector. Always project values from
-  /// embedded discretization if no history values are available.
-  void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>      bgdis,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn1,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp1,
-                                     Teuchos::RCP<Epetra_Vector>                  embstatevn1,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn2,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp2,
-                                     Teuchos::RCP<Epetra_Vector>                  embstatevn2,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn3,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp3,
-                                     Teuchos::RCP<Epetra_Vector>                  embstatevn3,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn4,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp4,
-                                     Teuchos::RCP<Epetra_Vector>                  embstatevn4,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevn5,
-                                     Teuchos::RCP<Epetra_Vector>                  bgstatevnp5,
-                                     Teuchos::RCP<Epetra_Vector>                  embstatevn5,
-                                     Teuchos::RCP<Epetra_Vector>                  aledispn);
-
-  void SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                            Teuchos::RCP<Epetra_Vector>              statevbg_n,
-                            Teuchos::RCP<Epetra_Vector>              statevemb_n,
-                            Teuchos::RCP<Epetra_Vector>              statevembnew_n,
-                            Teuchos::RCP<Epetra_Vector>              aledispnp,
-                            Teuchos::RCP<Epetra_Vector>              aledispnpoldstate);
-
-  /// Write the values of node from bgstatevn to bgstatevnp
-  void WriteValuestoBgStateVector(const Teuchos::RCP<DRT::Discretization>   bgdis,
-                                  DRT::Node*                                bgnode,
-                                  std::vector<int>                          gdofs_n,
-                                  Teuchos::RCP<Epetra_Vector>               bgstatevnp,
-                                  Teuchos::RCP<Epetra_Vector>               bgstatevn);
-
-  ///  Check whether the unknown node lies in the patch-element.If yes fill the
-  ///  interpolatedvec and return true.
-  bool ComputeSpacialToElementCoordAndProject(DRT::Element*                       pele,
-                                              LINALG::Matrix<3,1>&                x,
-                                              LINALG::Matrix<20,1>&               interpolatedvec,
-                                              Teuchos::RCP<Epetra_Vector>         embstate_n1,
-                                              Teuchos::RCP<Epetra_Vector>         embstate_n2,
-                                              Teuchos::RCP<Epetra_Vector>         embstate_n3,
-                                              Teuchos::RCP<Epetra_Vector>         embstate_n4,
-                                              Teuchos::RCP<Epetra_Vector>         embstate_n5,
-                                              Teuchos::RCP<Epetra_Vector>         embeddeddisp,
-                                              Teuchos::RCP<DRT::Discretization>   sourcedis);
-
-  bool ComputeSpacialToElementCoordAndProject2(DRT::Element*                       pele,
-                                               LINALG::Matrix<3,1>&                x,
-                                               LINALG::Matrix<4,1>&                interpolatedvec,
-                                               Teuchos::RCP<Epetra_Vector>         embstate_n,
-                                               Teuchos::RCP<Epetra_Vector>         embeddeddisp,
-                                               Teuchos::RCP<DRT::Discretization>   sourcedis);
-
-
-  void GmshOutput(const Teuchos::RCP<DRT::Discretization>        bgdis);
-
-  void GmshOutputForInterpolateFSI(const Teuchos::RCP<DRT::Discretization>    bgdis,
-                                   Teuchos::RCP<Epetra_Vector>                aledispnp,
-                                   Teuchos::RCP<Epetra_Vector>                aledispnpoldstate);
-
-  void PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                        Teuchos::RCP<XFEM::FluidWizardMesh>          wizard_n,
-                                        Teuchos::RCP<XFEM::FluidWizardMesh>          wizard_np,
-                                        Teuchos::RCP<LINALG::MapExtractor>       dbcmaps);
-
-  /// build an incompressibility discretization
-  void PrepareIncompDiscret(const Teuchos::RCP<DRT::Discretization>     bgdis,
-                            Teuchos::RCP<XFEM::FluidWizardMesh>             wizard_np);
-
-
-  void EvaluateIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                 Teuchos::RCP<XFEM::FluidWizardMesh>          wizard);
-
-  void SolveIncompOptProb(Teuchos::RCP<Epetra_Vector>     initialvel);
-
+  /// set values of background state vector (always project values from embedded discretization if no history values are available)
+  void SetNewBgStateVectorFullProjection( const TargetState &                       bgfluid_state,
+                                          const SourceState &                       bgfluid_state_n,
+                                          const SourceState &                       embfluid_state,
+                                          const Teuchos::RCP<const Epetra_Vector> & aledispn);
 
   /// Transfer data in the round robin communication pattern
-  void CommunicateNodes(const Teuchos::RCP<DRT::Discretization>    bgdis,
-                        std::vector<LINALG::Matrix<3,1> >        & bgnodes_coords,
-                        std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
-                        std::vector<int>                         & bgnodeidwithnohistory,
-                        Teuchos::RCP<Epetra_Vector>                aledispn,
-                        Teuchos::RCP<Epetra_Vector>          embstatevn1,
-                        Teuchos::RCP<Epetra_Vector>              bgstatevnp1,
-                        Teuchos::RCP<Epetra_Vector>      bgstatevn1,
-                        Teuchos::RCP<Epetra_Vector>                embstatevn2,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevnp2,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevn2,
-                        Teuchos::RCP<Epetra_Vector>                embstatevn3,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevnp3,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevn3,
-                        Teuchos::RCP<Epetra_Vector>                embstatevn4,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevnp4,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevn4,
-                        Teuchos::RCP<Epetra_Vector>                embstatevn5,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevnp5,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevn5);
+  void CommunicateNodes(std::vector<LINALG::Matrix<3,1> >  &      bgnodes_xyz,
+                        std::vector<LINALG::Matrix<20,1> > &      interpolated_vecs,
+                        std::vector<int>  &                       bgnodes_nohistory,
+                        const Teuchos::RCP<const Epetra_Vector> & aledispn,
+                        const TargetState &                       bgfluid_state,
+                        const SourceState &                       bgfluid_state_n,
+                        const SourceState &                       embfluid_state);
 
   /// receive a block in the round robin communication pattern
   void ReceiveBlock(std::vector<char>  & rblock,
@@ -235,79 +266,155 @@ public:
                  MPI_Request        & request );
 
   /// pack values in the round robin communication pattern
-  void PackValues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
-                  std::vector<LINALG::Matrix<20,1> >& interpolatedvec,
-                  std::vector<int>                  & bgnodeidwithnohistory,
-                  std::vector<int>                  & NodeDone,
-                  std::vector<char>                 & sblock);
+  void PackValues(std::vector<LINALG::Matrix<3,1> >  & bgnodes_xyz,
+                  std::vector<LINALG::Matrix<20,1> > & interpolatedvec,
+                  std::vector<int>                   & bgnodes_nohistory,
+                  std::vector<int>                   & have_values,
+                  std::vector<char>                  & sblock);
+
+  /// determine the embedded element, that previously covered the background nodes and
+  /// interpolate values
+  void FindEmbEleAndInterpolateValues(
+    std::vector<LINALG::Matrix<3,1> >        & bgnodes_xyz,
+    std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
+    std::vector<int>                         & have_values,
+    const Teuchos::RCP<const Epetra_Vector>  & aledispn,
+    const SourceState                        & embfluid_state);
+
+  /// determine the search radius for the search tree
+  template<DRT::Element::DiscretizationType distype>
+  void FindSearchRadius();
+
+  /// Write the values of node from old to new background fluid state vector
+  void WriteValuesToBgStateVector(const DRT::Node*                           bgnode,
+                                  std::vector<int>                           gdofs_n,
+                                  const Teuchos::RCP<Epetra_Vector> &        bgstatevec_np,
+                                  const Teuchos::RCP<const Epetra_Vector> &  bgstatevec_n);
+
+  /*!
+   * \brief check whether the unknown background fluid node is covered by the embedded element -
+   * if yes, interpolate the state vectors and return true
+   *
+   * \param (in) src_ele the projection source (embedded) element, the node is possibly covered by
+   * \param (in) src_state src_state container with the state vectors from projection source
+   * \param (in) src_disp displacements of the projection source (ALE-)element
+   * \param src_dis source discretization (embedded ALE-fluid, this is checked!)
+   * \param bgnode_xyz the coordinates of the xfem fluid node without values
+   * \param interpolatedvec the vector with the values after state vector interpolation
+   * \return true, if the node is covered by the embedded element, false otherwise
+   */
+  template<DRT::Element::DiscretizationType distype>
+  bool ComputeSpatialToElementCoordAndProject(
+    const DRT::Element *                      src_ele,
+    const SourceState &                       src_state,
+    const Teuchos::RCP<const Epetra_Vector> & src_disp,
+    const DRT::Discretization &               src_dis,
+    const LINALG::Matrix<3,1> &               bgnode_xyz,
+    LINALG::Matrix<20,1> &                    interpolatedvec
+  );
+
+  /*!
+   * \brief project values from embedded element or other background element
+   * to embedded elements nodes (just used in case of fixed-ALE interpolation approach
+   * in XFFSI)
+   */
+  template<DRT::Element::DiscretizationType distype>
+  bool ComputeSpatialToElementCoordAndProject(
+    const DRT::Element *                      src_ele,
+    const Teuchos::RCP<const Epetra_Vector> & srcstate_n,
+    const Teuchos::RCP<const Epetra_Vector> & src_disp,
+    const DRT::Discretization &               src_dis,
+    const LINALG::Matrix<3,1> &               node_xyz,
+    LINALG::Matrix<4,1>&                      interpolatedvec
+  );
 
 
-  void FindEmbeleAndInterpolatevalues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
-                                  std::vector<LINALG::Matrix<20,1> > & interpolated_vecs,
-                                  std::vector<int>                  & NodeDone,
-                                  Teuchos::RCP<Epetra_Vector>         aledispn,
-                                  Teuchos::RCP<Epetra_Vector>         embstatevn1,
-                                  Teuchos::RCP<Epetra_Vector>         embstatevn2,
-                                  Teuchos::RCP<Epetra_Vector>         embstatevn3,
-                                  Teuchos::RCP<Epetra_Vector>         embstatevn4,
-                                  Teuchos::RCP<Epetra_Vector>         embstatevn5);
+  //! @name Methods for subsequent enforcement of incompressibility on background element patch after projection
+  //@{
+  void BuildElementPatchForIncompOpt( Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_n,
+                                      Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_np,
+                                      const Teuchos::RCP<const LINALG::MapExtractor>  & dbcmaps);
 
-  void SearchRadius();
 
-  private:
+  /// build a discretization from the element patch, on which incompressibility shall be enforced
+  void PrepareIncompOptDiscret(Teuchos::RCP<XFEM::FluidWizardMesh> wizard_np);
 
-  Teuchos::RCP<DRT::Discretization> embdis_; // embedded  discretization
-  Teuchos::RCP<DRT::Discretization> incompdis_; // incompressibility  discretization
+  /// evaluate incompressibility on element level
+  void EvaluateIncompOpt(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
 
-  /// maps needed for xfem time integration
-  std::map<int, std::vector<int> > stdnoden_;
-  std::map<int, std::vector<int> > stdnodenp_;
+  /// solve optimization problem
+  void SolveIncompOptProblem(Teuchos::RCP<Epetra_Vector> initialvel);
+  //@}
 
-  std::map<int, std::vector<int> > enrichednoden_;
-  std::map<int, std::vector<int> > enrichednodenp_;
+  const Teuchos::RCP<DRT::Discretization> & bgdis_;   ///< xfem fluid discretization
+  const Teuchos::RCP<DRT::Discretization> & embdis_;  ///< embedded fluid discretization
+  Teuchos::RCP<DRT::Discretization> incompdis_;       ///< auxiliary discretization to enforce incompressibility after projection
 
-  // map of every node to it's parent elements. This could be more
-  // than one if we have more than one volume cells for the node
-  std::map<int, std::vector<int> > nodetoparentele_;
+  //! @name map of node-gid to dof-gid for standard nodes
+  //@{
+  //! map for current time
+  std::map<int, std::vector<int> > nodeToDof_std_np_;
+  //! map for previous time
+  std::map<int, std::vector<int> > nodeToDof_std_n_;
+  //@}
 
-  // map of the parent elements (from the map above) to their nds
-  // vectos
-  std::map<int, std::vector< std::vector< int > > > parenteletondsset_;
+  //! @name map of node-gid to dof-gid for enriched nodes
+  //@{
+  //! map for current time
+  std::map<int, std::vector<int> > nodeToDof_enriched_np_;
+  //! map for previous time
+  std::map<int, std::vector<int> > nodeToDof_enriched_n_;
+  //@}
 
-  std::set<int> projectednodeids_;
+  //! map of every node id to the ids of it's parent elements
+  std::map<int, std::set<int> > nodeToParentEle_;
 
-  // current processor id
-  int myrank_;
+  //! map of the parent elements (from the map above) to a vector of nodal dofsets
+  std::map<int, std::vector< std::vector< int > > > parentEleToNds_;
 
-  int numproc_;
+  //! set of IDs of projected nodes
+  std::set<int> projectedNodes_;
 
-  const Epetra_Map* currentbgdofmap_;
-  const Epetra_Map* oldbgdofmap_;
-
-  // if the status of nodes remains the same don't do any
-  // interpolation from the embedded fluid
-  bool samemaps_;
-
-  enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;
-
-  Teuchos::RCP<Epetra_Vector> C_; // incompressibility vector
-
-  // incompressibility elements and nodes
-  std::set<int> incompnodeids_set_;
-  std::set<int> incompelementids_set_;
-
-  Teuchos::ParameterList        params_;
-
+  //! current time step
   int step_;
 
+  //! current proc id
+  int myrank_;
+
+  //! number of procs
+  int numproc_;
+
+  //! current xfluid dof-rowmap
+  const Epetra_Map* currentbgdofmap_;
+
+  //! old xfluid dof-rowmap
+  const Epetra_Map* oldbgdofmap_;
+
+  //! if the status of nodes remains the same don't do any interpolation from the embedded fluid
+  bool samemaps_;
+
+  //! the type of time integration approach
+  enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;
+
+  //! incompressibility vector
+  Teuchos::RCP<Epetra_Vector> C_;
+
+  //! set of node ids for incompressibility problem
+  std::set<int> incompnodeids_set_;
+  //! set of element ids for incompressibility problem
+  std::set<int> incompelementids_set_;
+
+  //! parameter list
+  Teuchos::ParameterList params_;
+
+  //! flag for gmsh-output
   bool gmsh_debug_out_;
 
-  // min radius needed for the search tree
+  //! min. radius needed for the search tree
   double minradius_;
 
-  // search radius factor
+  //! search radius factor
   double searchradius_fac_;
-
 };
 
 } // namespace XFEM

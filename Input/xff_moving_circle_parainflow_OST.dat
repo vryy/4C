@@ -58,7 +58,7 @@ SIMPLER                         no
 STARTFUNCNO                     2
 START_THETA                     1
 THETA                           1.0
-TIMEINTEGR One_Step_Theta //BDF2
+TIMEINTEGR                      One_Step_Theta //BDF2
 TIMESTEP                        1
 UPRES                           1
 NONLINEARBC                     no
@@ -74,7 +74,7 @@ MAXTIME                         50
 NUMSTEP                         8
 RESTARTEVRY                     20
 SECONDORDER                     Yes
-TIMESTEP 1 //0.01
+TIMESTEP                        1 //0.01
 UPRES                           1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -118,6 +118,8 @@ COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0

@@ -407,6 +407,12 @@ namespace FLD
     void SetBgStateVectors(Teuchos::RCP<Epetra_Vector> aledisp);
 
     /*!
+     * \brief in fixed-ALE-interpolation XFFSI: interpolate embedded state vectors
+     * from embedded elements at previous position
+     */
+    void SetEmbStateVectors(Teuchos::RCP<Epetra_Vector> aledisp);
+
+    /*!
      * \brief in fixed-ALE-partitioned XFFSI: update the fluid solution by
      * solving fluid problem with FSI velocities as dirichlet values
      */

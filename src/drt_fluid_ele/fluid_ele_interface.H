@@ -236,7 +236,7 @@ namespace ELEMENTS
         const GEO::CUT::plain_volumecell_set &                            cells) = 0;
 
     virtual void CalculateContinuityXFEM(
-        DRT::ELEMENTS::Fluid *              ele,
+        DRT::ELEMENTS::Fluid *               ele,
         DRT::Discretization &                dis,
         const std::vector<int> &             lm,
         Epetra_SerialDenseVector&            elevec1_epetra,

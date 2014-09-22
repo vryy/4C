@@ -2632,6 +2632,9 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
     }
   }
 
+  if (monotype_ == FixedALEInterpolation)
+    SetEmbStateVectors(aledispnpoldstate_);
+
   SetHistoryValues();
   SetDirichletNeumannBC();
 
@@ -3426,7 +3429,7 @@ void FLD::XFluidFluid::CutAndSaveBgFluidStatus()
   // if restart
   if (restart and ((restart+1) == step_))
   {
-    xfluidfluid_timeint_->CreateBgNodeMapsForRestart(bgdis_,staten_->wizard_);
+    xfluidfluid_timeint_->CreateBgNodeMapsForRestart(staten_->wizard_);
   }
 
   // new cut for this time step
@@ -3438,7 +3441,7 @@ void FLD::XFluidFluid::CutAndSaveBgFluidStatus()
 
   // map of background-fluid's standard and enriched node-ids and
   // their dof-gids for new cut
-  samemaps_ = xfluidfluid_timeint_->SaveAndCreateNewBgNodeMaps(bgdis_,state_->wizard_);
+  samemaps_ = xfluidfluid_timeint_->SaveBgNodeMapsAndCreateNew(state_->wizard_);
 }//CutAndSaveBgFluidStatus()
 
 // -------------------------------------------------------------------
@@ -3478,50 +3481,52 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector> aledisp)
       LINALG::Export(*alevelnm_,*alevelnmcol);
       LINALG::Export(*aleaccn_, *aleaccncol);
       LINALG::Export(*aleaccnp_,*aleaccnpcol);
-      LINALG::Export(*aledisp,  *aledispcol);
+      LINALG::Export(*aledisp,     *aledispcol);
 
       // we have five state vectors, which need values from the last time step
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,
-                                                             staten_->velnp_,state_->velnp_,alevelnpcol,
-                                                             staten_->veln_,state_->veln_,alevelncol,
-                                                             staten_->velnm_,state_->velnm_,alevelnmcol,
-                                                             staten_->accn_,state_->accn_,aleaccncol,
-                                                             staten_->accnp_,state_->accnp_,aleaccnpcol,
-                                                             aledispcol);
+      xfluidfluid_timeint_->SetNewBgStateVectors(state_->velnp_,
+                                                 state_->veln_,
+                                                 state_->velnm_,
+                                                 state_->accnp_,
+                                                 state_->accn_,
+                                                 staten_->velnp_,
+                                                 staten_->veln_,
+                                                 staten_->velnm_,
+                                                 staten_->accnp_,
+                                                 staten_->accn_,
+                                                 alevelnpcol,
+                                                 alevelncol,
+                                                 alevelnmcol,
+                                                 aleaccnpcol,
+                                                 aleaccncol,
+                                                 aledispcol);
 
       //-------------------------
       // Enforce incompressibility
       if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
       {
-        // find the incompressibility patch
-        xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
-
-        // prepare the incompressibility discretization and evaluate
-        // incompressibility condition
-        xfluidfluid_timeint_->PrepareIncompDiscret(bgdis_,state_->wizard_);
-        xfluidfluid_timeint_->EvaluateIncompressibility(bgdis_,state_->wizard_);
-
-        //solve the optimization problem for the state vectors
-        xfluidfluid_timeint_->SolveIncompOptProb(state_->velnp_);
-        xfluidfluid_timeint_->SolveIncompOptProb(state_->veln_);
-        xfluidfluid_timeint_->SolveIncompOptProb(state_->velnm_);
+        xfluidfluid_timeint_->EnforceIncompAfterProjection(
+            state_->wizard_,
+            staten_->wizard_,
+            state_->velnp_,
+            state_->veln_,
+            state_->velnm_,
+            state_->dbcmaps_);
 
         if (gmsh_debug_out_)
           state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "incomvel", 0,  step_,  state_->velnp_, alevelnp_, aledispnp_);
       }
-
     }
     // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
     // (TODO: they remain the same just for one dofset)
     // the enriched values are not projected from the embedded fluid anymore.
-    else if(xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
+    else if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
     {
       // we use the old velocity as start value
-      IO::cout << "samemaps ..." << IO::endl;
       state_->velnp_->Update(1.0,*staten_->velnp_,0.0);
-      state_->veln_->Update(1.0,*staten_->veln_,0.0);
+      state_->veln_->Update( 1.0,*staten_->veln_, 0.0);
       state_->velnm_->Update(1.0,*staten_->velnm_,0.0);
-      state_->accn_->Update(1.0,*staten_->accn_,0.0);
+      state_->accn_->Update( 1.0,*staten_->accn_, 0.0);
       state_->accnp_->Update(1.0,*staten_->accnp_,0.0);
     }
   }
@@ -3529,7 +3534,16 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector> aledisp)
   {
     SetInitialFlowField(initfield,startfuncno);
   }
+}//SetBgStateVectors()
 
+// -------------------------------------------------------------------
+// for interpolation-based fluid-fluid FSI:
+// instead of solving fluid field with FSI velocities as Dirichlet
+// values, we just interpolate from the embedded elements at
+// previous position
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::SetEmbStateVectors(Teuchos::RCP<Epetra_Vector> aledisp)
+{
   if (monotype_ == FixedALEInterpolation)
   {
     // adapt the embedded state vectors according to the new ale displacement
@@ -3544,9 +3558,9 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector> aledisp)
 
     if (embdis_->Comm().NumProc() == 1)
     {
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnp_, alevelnp_, aledispnp_, aledisp);
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , aleveln_ , aleveln_ , aledispnp_, aledisp);
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->accnp_, aleaccnp_, aleaccnp_, aledispnp_, aledisp);
+      xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->velnp_, alevelnp_, aledispnp_, aledisp);
+      xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->veln_ , aleveln_ , aledispnp_, aledisp);
+      xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->accnp_, aleaccnp_, aledispnp_, aledisp);
     }
     else
     {
@@ -3565,12 +3579,12 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector> aledisp)
       LINALG::Export(*aledisp,   *aledispcol);
       LINALG::Export(*aledispnp_,*aledispnpcol);
 
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnpcol, alevelnpcol, aledispnpcol, aledispcol);
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , alevelncol , alevelncol, aledispnpcol, aledispcol);
-      xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->accnp_, aleaccnpcol, aleaccnpcol, aledispnpcol, aledispcol);
+      xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->velnp_, alevelnpcol, aledispnpcol, aledispcol);
+      xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->veln_ , alevelncol , aledispnpcol, aledispcol);
+      xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->accnp_, aleaccnpcol, aledispnpcol, aledispcol);
     }
   }
-}// SetBgStateVectors
+}// SetEmbStateVectors
 
 // -------------------------------------------------------------------
 // Update the fluid solution for the monolithic timestep
