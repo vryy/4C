@@ -94,7 +94,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::RHS()
 
 /*----------------------------------------------------------------------*/
 /* get current displacements D_{n+1} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp() const
 {
   //get current state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispnp();
@@ -111,7 +111,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp()
 
 /*----------------------------------------------------------------------*/
 /* get last converged displacements D_{n} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn() const
 {
   //get last converged state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Dispn();
@@ -127,7 +127,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn()
 
 /*----------------------------------------------------------------------*/
 /* get last converged velocities V_{n} with zeroed Lagrange multiplier */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Veln()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Veln() const
 {
   //get last converged state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Veln();
@@ -144,7 +144,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Veln()
 
 /*----------------------------------------------------------------------*/
 /* get last converged accelerations A_{n} with zeroed Lagrange multiplier */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Accn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Accn() const
 {
   //get last converged state from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strudis = structure_->Accn();
@@ -176,7 +176,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix(
   Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81));
   Teuchos::RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
   strustiff->Complete();
-  
+
   Teuchos::RCP<LINALG::SparseOperator> constiff = structure_->GetConstraintManager()->GetConstrMatrix();
   constiff->Complete();
 

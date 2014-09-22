@@ -43,8 +43,8 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 }
 
 /*------------------------------------------------------------------------------------*
- * Rebuild FSI interface on structure side																			sudhakar 09/13
- * This is necessary if elements are added/deleted from interface 
+ * Rebuild FSI interface on structure side                                      sudhakar 09/13
+ * This is necessary if elements are added/deleted from interface
  *------------------------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapper::RebuildInterface()
 {
@@ -155,6 +155,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn()
 {
+  dsassert(interface_->FullMap()->PointSameAs(Dispn()->Map()),
+      "Full map of map extractor and Dispn() do not match.");
+
   // prestressing business
   double time = 0.0;
   double pstime = -1.0;
@@ -181,6 +184,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp()
 {
+  dsassert(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
+      "Full map of map extractor and Dispnp() do not match.");
+
   // prestressing business
   double time = 0.0;
   double pstime = -1.0;

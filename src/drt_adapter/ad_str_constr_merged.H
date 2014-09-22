@@ -75,24 +75,24 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> RHS();
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
 
     /// known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const;
 
     /*! \brief known velocity at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    virtual Teuchos::RCP<const Epetra_Vector> Veln();
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
 
     /*! known acceleration at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    virtual Teuchos::RCP<const Epetra_Vector> Accn();
+    virtual Teuchos::RCP<const Epetra_Vector> Accn() const;
 
     /// dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
