@@ -77,8 +77,9 @@ namespace INPAR
     /// (this enum represents the input file parameter NBCTYPE)
     enum NBCType
     {
-      nbctype_std,          ///< standard Neumann Boundary conditions defined by input file
-      nbctype_constcreep    ///< constant Neumann Boundary condition
+      nbctype_std,             ///< standard Neumann Boundary conditions defined by input file
+      nbctype_constcreep,      ///< constant Neumann Boundary condition
+      nbctype_randompointforce ///< application of time-dependent Neumann term at a random node
     };
 
     /// (this enum represents the input file parameter BINDINGSITESEARCH)

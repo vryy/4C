@@ -42,7 +42,7 @@ RESULTSEVRY            0    // write results every n-th step (Attention: problem
 RESTARTEVRY            1000 // set restart points every n-th step
 RESEVRYERGY            0    // output energy evry n-th step
 NLNSOL                 ptc     // fullnewton modnewton nlncg ptc
-DIVERCONT              continue     // Continue even if results are divergent 
+DIVERCONT              continue     // Continue even if results are divergent
 TIMESTEP               0.01    // step size
 NUMSTEP                2 // total number of steps  //rumpf2.txt end
 MAXTIME                10000
@@ -50,7 +50,7 @@ DAMPING                No
 M_DAMP                 0
 K_DAMP                 0
 PREDICT                ConstDis  //  ConstDisVelAcc ConstDis
-TOLDISP                1.0e-8   // 5.5e-05 1.0E-06 
+TOLDISP                1.0e-8   // 5.5e-05 1.0E-06
 TOLRES                 1.0E-05
 TOLCONSTR              1.0E-03
 ADAPTCONV              No
@@ -72,7 +72,7 @@ THERMALBATH         uniform
 FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
 DBCTYPE             none                   // none shearfixed sheartrans pinnodes,  choose DBC type
 NBCTYPE             std                   // constcreep, choose NBC type
-NETWORKTYPE         std                   // specify network / simulation type 
+NETWORKTYPE         std                   // specify network / simulation type
 BINDINGSITESEARCH   binning                    // search routine: volpart, binning, octree
 SEARCHRES           50                    // resolution for search routine linkers x binding spots
 CHECKORIENT         Yes                   // check orientation betw. two filaments before linking them
@@ -89,11 +89,11 @@ OUTPUTINTERVALS     5000                  // specialoutput interval
 STARTTIMEOUT        0                     // start writing output
 ACTIONTIME          0 0 10000              // start actions equilibration time, kt switch time,...,starttimeact
 ACTIONDT            0.01 0.01 0.01       // time step sizes corresponding to actiontime
-DBCTIMEINDEX        2                     // controls entry in actiontime at which DBCs are applied
+BCTIMEINDEX        2                     // controls entry in actiontime at which DBCs are applied
 //============= SIMULATION SPECS ============
 PERIODLENGTH        5 5 5          // edge lengths of the cuboid volume
 HISTOGRAMBINS       60                    // number of bins for specialoutput densitydensitycorr
-NUMRASTERPOINTS     15                    // creates numrasterpoints^3 rasterpoints, preferably numrasterpoints=2*n+1, n=1,2,3,... 
+NUMRASTERPOINTS     15                    // creates numrasterpoints^3 rasterpoints, preferably numrasterpoints=2*n+1, n=1,2,3,...
 SHEARAMPLITUDE      0.1                   // amplitude of shear in micrometers
 ETA                 0.00044022           // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
 KT                  0.00404531            // thermal energy
@@ -106,7 +106,7 @@ K_OFF_end           3                     // in analogy to k_on
 DBCDISPDIR          1                     // direction of dbc displacement after starttimeact_ (x==1, y==2, z==3)
 CURVENUMBER         1                     // applied time curve for DBC after starttimeact_
 NBCCURVENUMBER      2                     // applied time curve for NBC after starttimeact_
-NBCCREEPFORCE       0.0                   // absolute value of applied constant creep force
+NBCFORCEAMP         0.0                   // absolute value of applied constant creep force
 //============== FILAMENT MODEL =============
 FILAMENTMODEL         std                  // select filament model: std, helical
 FILAMENTPOLARITY        No                   // toggles filament polarity
@@ -129,7 +129,7 @@ ILINK               4.4918e-11            // ilink=0 ->Stab!
 IPLINK              8.9836e-11            // 2xilink
 ELINK               2560000              // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
 LINKERSCALEFACTOR   1            // length compression factor for active crosslinkers
-DELTABELLSEQ        0                   // deltaD in Bell's equation, change in reaction variable   
+DELTABELLSEQ        0                   // deltaD in Bell's equation, change in reaction variable
 CORIENT             0                     // stiffness of the potential which determines probability of a certain crosslinker orientation
 PHI0                0                     // preferred binding angle betw. two filaments
 PHI0DEV             6.283185307     // deviation from phi0
@@ -159,8 +159,8 @@ AZGRAPH           1            // unused
 AZPOLY            5            // polynomial order for Neumann
 IFPACKFILL        1.0          // fill-in for ILUT
 IFPACKGFILL       1           // graph fill for ILU
-IFPACKOVERLAP	  1            // amount of ASM overlap for ILU, ILU, ICC, LU
-IFPACKCOMBINE	  Zero	    // Add, Insert
+IFPACKOVERLAP   1            // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKCOMBINE   Zero     // Add, Insert
 AZSCAL            sym      // none sym infnorm scaling of the system
 ML_PRINT          0         // ML print-out level (0-10)
 ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
@@ -178,7 +178,7 @@ ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid //header_02 end (settings by M. Gee)
 ----------------------------------------------------SOLVER 2
 NAME              Contact_Solver
-SOLVER            Aztec_MSR	//Amesos_KLU_nonsym
+SOLVER            Aztec_MSR //Amesos_KLU_nonsym
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  104

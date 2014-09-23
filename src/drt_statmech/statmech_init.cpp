@@ -282,8 +282,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     }
   }
 
-  // set dbctimeindex_ (position in actiontime_ where DBCs start being applied
-  dbctimeindex_ = statmechparams_.get<int>("DBCTIMEINDEX", -1);
+  // set bctimeindex_ (position in actiontime_ where DBCs start being applied
+  bctimeindex_ = statmechparams_.get<int>("BCTIMEINDEX", -1);
 
   // BC sanity checks
   BCSanityCheck();
@@ -292,12 +292,12 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   {
     std::cout<<"t_equilib  = t(0) = "<<std::setprecision(10)<<actiontime_->at(0)<<" @ dt = "<<timestepsizes_->at(0)<<std::endl;
     std::cout<<"t_ktswitch = t(1) = "<<std::setprecision(10)<<actiontime_->at(1)<<" @ dt = "<<timestepsizes_->at(1)<<std::endl;
-    if(dbctimeindex_>-1)
-      std::cout<<"t_dbc     = t("<<dbctimeindex_<<") ="<<std::setprecision(10)<<actiontime_->at(dbctimeindex_)<<" @ dt = "<<timestepsizes_->at(dbctimeindex_)<<std::endl;
+    if(bctimeindex_>-1)
+      std::cout<<"t_dbc     = t("<<bctimeindex_<<") ="<<std::setprecision(10)<<actiontime_->at(bctimeindex_)<<" @ dt = "<<timestepsizes_->at(bctimeindex_)<<std::endl;
     if(actiontime_->size()>3)
       std::cout<<"other action times..."<<std::endl;
     for(int i=0; i<(int)actiontime_->size(); i++)
-      if(i>1 && i!=dbctimeindex_)
+      if(i>1 && i!=bctimeindex_)
         std::cout<<"t("<<i<<")        = "<<std::setprecision(10)<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(i)<<std::endl;
     std::cout<<"================================================================"<<std::endl;
   }

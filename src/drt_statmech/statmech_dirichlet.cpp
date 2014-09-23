@@ -152,7 +152,7 @@ bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
   double eps = 2.0e-11;
   // get the current time
   double time = params.get<double>("total time", 0.0);
-  double starttime = actiontime_->at(dbctimeindex_);
+  double starttime = actiontime_->at(bctimeindex_);
   //double dt = params.get<double>("delta time", 0.01);
   if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The absolute time should be positive!", time);
 
@@ -167,14 +167,14 @@ bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::BCSanityCheck()
 {
-  if(dbctimeindex_<0) // default
-    dbctimeindex_ = (int)actiontime_->size()-1;
-  else if(dbctimeindex_==0)
-    dserror("Given index DBCTIMEINDEX = %i ! Start counting at 1!", dbctimeindex_);
-  else if(dbctimeindex_>(int)actiontime_->size())
-    dserror("Given index DBCTIMEINDEX = %i lies outside the ACTIONTIME vector! Check your input file!", dbctimeindex_);
+  if(bctimeindex_<0) // default
+    bctimeindex_ = (int)actiontime_->size()-1;
+  else if(bctimeindex_==0)
+    dserror("Given index BCTIMEINDEX = %i ! Start counting at 1!", bctimeindex_);
+  else if(bctimeindex_>(int)actiontime_->size())
+    dserror("Given index BCTIMEINDEX = %i lies outside the ACTIONTIME vector! Check your input file!", bctimeindex_);
   else
-    dbctimeindex_--;
+    bctimeindex_--;
 
   INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
   switch(dbctype)
@@ -202,8 +202,8 @@ void STATMECH::StatMechManager::BCSanityCheck()
       {
         if((int)actiontime_->size()<3)
           dserror("For affine deformation, give three time values for ACTIONTIME! 1. equilibration time 2. dbc application time 3. release of DBC nodes other than nodes of elements shifted in z-direction!");
-        else if(dbctimeindex_!=1)
-          dserror("DBCTIMEINDEX must be set to 2 for affine shear displacement!");
+        else if(bctimeindex_!=1)
+          dserror("BCTIMEINDEX must be set to 2 for affine shear displacement!");
       }
     }
   }
@@ -223,6 +223,15 @@ void STATMECH::StatMechManager::BCSanityCheck()
       if(nbccurvenumber<0)
         dserror("Please give a Neumann BC curve number >0");
     }
+    break;
+    case INPAR::STATMECH::nbctype_randompointforce:
+    {
+      // for now: hard-coded number of (ten) consecutive nodes that are probed
+      int N = 10;
+      if((int)actiontime_->size()-bctimeindex_<N)
+        dserror("Starting from BCTIMEINDEX %i, only %i values in ACTIONTIME are given! Ten values are required!");
+    }
+    break;
     default:
       break;
   }
@@ -603,7 +612,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
         LINALG::SerialDenseMatrix coord(numdof,(int)discret_->lRowElement(lid)->NumNode(), true);
         LINALG::SerialDenseMatrix cut(numdof,(int)discret_->lRowElement(lid)->NumNode()-1,true);
         std::vector<int> doflids;
-        GetElementNodeCoords(element, dis, coord, &doflids);
+        GetElementNodeCoords(element, discol, coord, &doflids);
         for(int n=0; n<cut.N(); n++)
         {
           for(int m=n; m<n+2; m++)

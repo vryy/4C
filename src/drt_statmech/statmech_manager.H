@@ -339,6 +339,23 @@ public:
                                Teuchos::RCP<Epetra_Vector>          disn,
                                Teuchos::RCP<Epetra_Vector>          systemvector,
                                Teuchos::RCP<LINALG::SparseOperator> systemmatrix);
+
+  // ! \brief determine Neumann BC nodeset
+  void GetNBCNodes(Teuchos::ParameterList&   params);
+  /*! \brief adjusted Point Neumann value for Statmech
+   *  \param params      (in) parameter list
+   *  \param onoff       (in) a parameter list
+   *  \param curve       (in) new displacement state
+   *  \param val         (in) new displacement state
+   *  \param systemvector (in) force vector
+   *  */
+  void ApplyNeumannValueStatMech(Teuchos::ParameterList&      params,
+                                 std::vector<int>&            onoff,
+                                 std::vector<int>&            curve,
+                                 std::vector<double>&         val,
+                                 Teuchos::RCP<Epetra_Vector>  systemvector,
+                                 int                          nodesetindex=0);
+
   //! \brief decision whether to start Neumann BC application or not
   bool NBCStart(Teuchos::ParameterList& params);
 
@@ -986,8 +1003,8 @@ protected:
   //! \brief holds current position in ACTIONTIME / ACTIONDT
   int timeintervalstep_;
 
-  //! \brief holds position in ACTIONTIME from where on DBCs are applied
-  int dbctimeindex_;
+  //! \brief holds position in ACTIONTIME from where on BCs are applied
+  int bctimeindex_;
 
   //! \brief end to end distance of a single filament at the beginning of statistical output
   double endtoendref_;
@@ -1185,6 +1202,8 @@ protected:
   std::vector<int> freenodes_;
   //! \brief vector of node sets for DBC application
   std::vector<std::vector<int> > dbcnodesets_;
+  //! \brief vector of node sets for DBC application
+  std::vector<std::vector<int> > nbcnodesets_;
   //! \brief flag signaling the use of the initially found DBC node set throughout the simulation
   bool useinitdbcset_;
 }; // class StatMechManager

@@ -12,7 +12,7 @@ Test of specific Dirichlet boundary conditions for rheological sims
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      32                            // nfil=2 periodlength=[5 5 5] um fiber_division=32 fiber_length=[4 4 4]um
 //NODES                         33                            // ca=0.0383769uM n=4.79711e-21mol V=1.25e-13l -->elementlength=0.125um
-DIM                             3 //rumpf2.txt /begin        
+DIM                             3 //rumpf2.txt /begin
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
@@ -58,7 +58,7 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         15
 ITERNORM                        L2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           1 //header_01 end            
+THETA                           1 //header_01 end
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     none
@@ -67,26 +67,26 @@ PENALTYPARAM                    25
 UZAWACONSTRTOL                  0.25
 UZAWAMAXSTEPS                   20
 -------------------------------------------------------STATISTICAL MECHANICS
-//====                          GENERAL STATMECH SIMULATION FLAGS ==== 
+//====                          GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH                     uniform
 FRICTION_MODEL                  anisotropicconsistent         // isotropicconsistent isotropiclumped
-DBCTYPE                         shearfixed //affineshear none shearfixed sheartrans pinnodes, choose DBC type 
+DBCTYPE                         shearfixed //affineshear none shearfixed sheartrans pinnodes, choose DBC type
 CHECKORIENT                     Yes                           // check orientation betw. two filaments before linking them
 FIXEDSEED                       Yes                           // (de)activate pesudo-randomness
 INITIALSEED                     1                             // manipulate initial seed of pseudo random numbers
-//==============                OUTPUT SET UP ============== 
+//==============                OUTPUT SET UP ==============
 GMSHOUTPUT                      No                            // visualization via Gmsh
 GMSHNETSTRUCT                   No                            // visualize structure detection
 PlotFactorThick                 0                             // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT                  none                          // viscoelasticity densitydensitycorr
 GMSHOUTINTERVALS                1                             // gmsh output interval
 OUTPUTINTERVALS                 1                             // specialoutput interval
-//==============                EVENT TRIGGERS ============= 
+//==============                EVENT TRIGGERS =============
 ACTIONTIME                      0.0 0.01 10000 //0.0105       // start actions equilibration time, kt switch time,...,STARTTIMEACT
 ACTIONDT                        0.01 5e-6 0.01                // time step sizes corresponding to ACTIONTIME
-DBCTIMEINDEX                    2
+BCTIMEINDEX                     2
 STARTTIMEOUT                    0                             // start writing output
-//=============                 SIMULATION SPECS ============ 
+//=============                 SIMULATION SPECS ============
 PERIODLENGTH                    5 5 5                         // edge lengths of the cuboid volume
 SEARCHRES                       50                            // resolution for search routine linkers x binding spots
 HISTOGRAMBINS                   60                            // number of bins for specialoutput densitydensitycorr
@@ -102,7 +102,7 @@ K_OFF_start                     3                             // in analogy to k
 K_OFF_end                       3                             // in analogy to k_on
 DBCDISPDIR                      1                             // direction of oscillation after starttimeact_ (x==1, y==2, z==3)
 CURVENUMBER                     1                             // applied time curve after starttimeact_
-//==============                FILAMENT MODEL ============= 
+//==============                FILAMENT MODEL =============
 FILAMENTMODEL                   std
 NUM_EVAL_ELEMENTS               32                            // number of (initial) beam elements
 RISEPERBSPOT                    0.00277                       // rise per monomer in the actin helix
@@ -110,7 +110,7 @@ ROTPERBSPOT                     -2.8999                       // rotation per mo
 BSPOTOFFSET                     -1.5707963                    // angular offset of binding spots per filament with respect to the nodes' material triads
 PHIBSPOT                        0.5234                        // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
 BSPOTINTERVAL                   1                             // every n-th binding spot is available for binding
-//============                  CROSSLINKER MODEL ============ 
+//============                  CROSSLINKER MODEL ============
 LINKERMODEL                     std
 N_crosslink                     6                             // number of crosslinkers in the simulated volume
 INITOCCUPIEDBSPOTS              0                             // number of crosslinker elements set up before the first time step
@@ -124,7 +124,7 @@ CORIENT                         0                             // stiffness of th
 PHI0                            0                             // preferred binding angle betw. two filaments
 PHI0DEV                         0.392699081698724             // deviation from phi0
 REDUCECROSSLINKSBY              0                             // reduce the linker number by this number at starttimeact_
-//==============                PTC parameters ============= 
+//==============                PTC parameters =============
 CTRANSPTC0                      0                             // translational PTC damping
 CROTPTC0                        0.145                         // rotational PTC damping
 ALPHAPTC                        6                             // PTC damping exponent

@@ -1612,3 +1612,79 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
 
   return;
 }
+
+/*------------------------------------------------------------------------------*
+ | Output of Creep displacement                           (public) mueller 05/13|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::CreepDisplacementOutput(Epetra_Vector&      discol,
+                                                        std::ostringstream& filename)
+{
+  FILE* fp = NULL;
+  std::stringstream filecontent;
+  fp = fopen(filename.str().c_str(), "w");
+
+  int freedir = statmechparams_.get<int>("DBCDISPDIR", -1)-1;
+
+  // write only the reference position and the displacement of the unconstrained direction
+  for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
+  {
+    DRT::Node* dbcnode = discret_->gNode(dbcnodesets_[0].at(i));
+    std::vector<int> dofnode = discret_->Dof(dbcnode);
+    int freedof = dofnode.at(freedir);
+    filecontent << dbcnode->Id() <<"\t"<<std::scientific<<std::setprecision(8)<<dbcnode->X()[freedir]<<"\t"<<discol[freedof]<<std::endl;
+  }
+
+  fputs(filecontent.str().c_str(), fp);
+  fclose(fp);
+
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+| distribution of spherical coordinates                  (public) mueller 11/12|
+*------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      disrow,
+                                                    const std::ostringstream& filename,
+                                                    const double&             dt)
+{
+  if(!discret_->Comm().MyPID() && unbindingprobability_!=Teuchos::null)
+  {
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+
+    double tol = 1e-9;
+    for(int i=0; i<unbindingprobability_->MyLength(); i++)
+      if((*unbindingprobability_)[0][i]>tol) // there are either two non-zero entries or none
+        filecontent<<std::scientific<<std::setprecision(6)<<(*unbindingprobability_)[0][i]<<" "<<(*unbindingprobability_)[1][i]<<" "<<(*crosslinkerpositions_)[0][i]<<" "<<(*crosslinkerpositions_)[1][i]<<" "<<(*crosslinkerpositions_)[2][i]<<std::endl;
+
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+  }
+
+  return;
+}
+
+/*------------------------------------------------------------------------------*                                                 |
+ | Output of linker unbinding times, i.e. time that a linker stays bound        |
+ |                                                      (private) mueller 01/13 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::LinkerUnbindingTimes(const std::ostringstream& filename)
+{
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
+
+    std::stringstream unbindingtimes;
+
+    for(int i=0; i<crosslinkunbindingtimes_->MyLength(); i++)
+    {
+      if((*crosslinkunbindingtimes_)[0][i]<-0.9 && (*crosslinkunbindingtimes_)[1][i]>=0.0)
+        unbindingtimes << (*crosslinkunbindingtimes_)[1][i] <<std::endl;
+    }
+    fputs(unbindingtimes.str().c_str(), fp);
+    fclose(fp);
+  }
+  return;
+}

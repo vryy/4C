@@ -84,7 +84,7 @@ OUTPUTINTERVALS                 1                             // specialoutput i
 //==============                EVENT TRIGGERS =============
 ACTIONTIME                      0.0 0.01 0.0105               // start actions equilibration time, kt switch time,...,STARTTIMEACT
 ACTIONDT                        0.01 5e-6 0.01                // time step sizes corresponding to ACTIONTIME
-DBCTIMEINDEX                    2
+BCTIMEINDEX                     2
 STARTTIMEOUT                    0                             // start writing output
 //=============                 SIMULATION SPECS ============
 PERIODLENGTH                    5 5 5                         // edge lengths of the cuboid volume

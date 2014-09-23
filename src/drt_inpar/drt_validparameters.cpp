@@ -2281,10 +2281,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("NBCTYPE","std","Neumann BC type applied",
                                  //listing possible std::strings in input file in category DBCTYPE
                                  tuple<std::string>("std",
-                                                    "constcreep"),
+                                                    "constcreep",
+                                                    "randompointforce"),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::nbctype_std,
-                                            INPAR::STATMECH::nbctype_constcreep),
+                                            INPAR::STATMECH::nbctype_constcreep,
+                                            INPAR::STATMECH::nbctype_randompointforce),
                                             &statmech);
   //Reading which kind of biopolymer network will be simulated
   setStringToIntegralParameter<int>("NETWORKTYPE","std","Network type simulated",
@@ -2351,8 +2353,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("ACTIONTIME","-1.0","Points in time (corresponding to ACTIONDT values), where certain actions are carried out. Order: [t_equilib; t_ktswitch; ...; t_act]",&statmech);
   // time step sizes corresponding to ACTIONTIME
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
-  // index controlling the start of DBC application (see ACTIONTIME)
-  IntParameter("DBCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of DBC application. Starts counting at '1' !",&statmech);
+  // index controlling the start of BC application (see ACTIONTIME)
+  IntParameter("BCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of BC application. Starts counting at '1' !",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FILAMENTPOLARITY","No","toggles filament polarity",yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
@@ -2458,8 +2460,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("CURVENUMBER",0,"Specifies Time Curve number of imposed Dirichlet BCs",&statmech);
   //Reading time curve number for Neumann boundary conditions
   IntParameter("NBCCURVENUMBER",0,"Specifies Time Curve number of Neumann BCs",&statmech);
-  // absolute value of constant force in creeping experiments
-  DoubleParameter("NBCCREEPFORCE",0.0,"constant creep force in NBCs",&statmech);
+  // amplitude of Neumann boundary force
+  DoubleParameter("NBCFORCEAMP",0.0,"constant creep force in NBCs",&statmech);
   //Reading number of elements that are taken into account when applying Dirichlet Conditions (useful to avoid redundant evaluation)
   // when Crosslink elements are added or the bead-spring-model is used
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);

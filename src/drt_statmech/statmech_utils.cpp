@@ -786,10 +786,10 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
   // note CURVENUMBER and DBCDISPDIR follow the counting convention 1,2,3,... (not C++). They are internally decremented
   params.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
   params.set("DBCDISPDIR",statmechparams_.get<int>("DBCDISPDIR",-1));
-  params.set("STARTTIMEACT",actiontime_->at(dbctimeindex_));
+  params.set("STARTTIMEACT",actiontime_->at(bctimeindex_));
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE")==INPAR::STATMECH::dbctype_affineshear)
-  params.set("STARTTIMEACT",actiontime_->at(dbctimeindex_));
-  params.set("DELTA_T_NEW",timestepsizes_->at(dbctimeindex_));
+  params.set("STARTTIMEACT",actiontime_->at(bctimeindex_));
+  params.set("DELTA_T_NEW",timestepsizes_->at(bctimeindex_));
   params.set("PERIODLENGTH",GetPeriodLength());
 
   if(linkermodel_ == statmech_linker_bellseq || linkermodel_ == statmech_linker_bellseqintpol ||

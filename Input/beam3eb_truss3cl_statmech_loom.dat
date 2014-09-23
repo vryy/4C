@@ -75,7 +75,7 @@ OUTPUTINTERVALS     1                  // specialoutput interval
 STARTTIMEOUT        0                     // start writing output
 ACTIONTIME          0 0 1000              // start actions equilibration time, kt switch time,...,starttimeact
 ACTIONDT            0.01 0.01 0.01       // time step sizes corresponding to actiontime
-DBCTIMEINDEX        2                     // controls entry in actiontime at which DBCs are applied
+BCTIMEINDEX        2                     // controls entry in actiontime at which DBCs are applied
 //============= SIMULATION SPECS ============
 PERIODLENGTH        10 10 10          // edge lengths of the cuboid volume
 HISTOGRAMBINS       60                    // number of bins for specialoutput densitydensitycorr
@@ -92,7 +92,7 @@ K_OFF_end           3                     // in analogy to k_on
 DBCDISPDIR          1                     // direction of dbc displacement after starttimeact_ (x==1, y==2, z==3)
 CURVENUMBER         1                     // applied time curve for DBC after starttimeact_
 NBCCURVENUMBER      2                     // applied time curve for NBC after starttimeact_
-NBCCREEPFORCE       0.0                   // absolute value of applied constant creep force
+NBCFORCEAMP         0.0                   // absolute value of applied constant creep force
 //============== FILAMENT MODEL =============
 FILAMENTMODEL         std                  // select filament model: std, helical
 FILAMENTPOLARITY     No                   // toggles filament polarity

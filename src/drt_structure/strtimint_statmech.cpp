@@ -146,6 +146,9 @@ void STR::TimIntStatMech::StatMechPrintBCType()
       case INPAR::STATMECH::nbctype_constcreep:
         std::cout<<"- constant shear Neumann boundary condition on a nodal subset" << std::endl;
         break;
+      case INPAR::STATMECH::nbctype_randompointforce:
+        std::cout<<"- random time-dependent Neumann point force on single nodes" << std::endl;
+        break;
       default:
         std::cout<<"- standard input file based definition of Neumann boundary conditions / no NBCs"<< std::endl;
         break;

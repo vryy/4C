@@ -82,6 +82,9 @@ useinitdbcset_(false)
   // initial clearing of dbc management vectors
   dbcnodesets_.clear();
 
+  // initial clearing of dbc management vectors
+  nbcnodesets_.clear();
+
   // filament number conditions: quick reference which node belongs to which filament
   InitializeFilamentNumbers();
 
@@ -1770,7 +1773,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     // interpolated crosslinker elements transport mechanical information across the periodic boundary, which
                     // is not intended or sometimes unwanted. Hence, no crosslinks are established across the boundary
                     // Finding such a potential connection results in break -> leaving the current loop step and continuing with next linker
-                    if(timen>=actiontime_->at(dbctimeindex_))
+                    if(timen>=actiontime_->at(bctimeindex_))
                     {
                       if(CheckCrossPeriodicBCLink(LID,discol))
                         break;
@@ -2645,7 +2648,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
             if ((*uniformgen_)() < (*punlink)[jrandom][irandom])
             {
               // after start of DBC application, (in B3CL case, do NOT delete any initial cross boundary elements anymore. Leads to the reverse effect of network softening (don't want that)
-              if(timen>=actiontime_->at(dbctimeindex_))
+              if(timen>=actiontime_->at(bctimeindex_))
               {
                 LINALG::SerialDenseMatrix LID(2,1);
                 LID(0,0) = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][irandom]);
