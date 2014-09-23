@@ -3372,19 +3372,6 @@ const Epetra_Map* STR::TimInt::DofRowMapView()
   return discret_->DofRowMap();
 }
 
-/*----------------------------------------------------------------------
- Shorten the Dirichlet DOF set
- ----------------------------------------------------------------------*/
-void STR::TimInt::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
-{
-  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
-  othermaps.push_back(maptoremove);
-  othermaps.push_back(dbcmaps_->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
-  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
-  return;
-}
-
 /*----------------------------------------------------------------------*/
 /* reset everything (needed for biofilm simulations)                    */
 void STR::TimInt::Reset()

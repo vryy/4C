@@ -214,9 +214,6 @@ namespace ADAPTER {
     /// Return dirichlet boundray condition (used for fluidfluid)
     virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps() = 0;
 
-    /// Shorten the Dirichlet DOF set
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) = 0;
-
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
 

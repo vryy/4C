@@ -137,8 +137,6 @@ namespace ADAPTER {
 
     virtual void UseBlockMatrix(bool splitmatrix);
 
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
-
     //! Project the velocity field into a divergence free subspace
     //!
     //! Project the velocity field into a divergence free subspace

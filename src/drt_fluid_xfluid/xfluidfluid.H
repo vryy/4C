@@ -477,11 +477,6 @@ namespace FLD
     /// interface are prescribed by the other fields.
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-    /// removes a set of dof from the embedded fluid dirichlet dof-map
-    /// \param (in) maptoremove map of dof, that have to be removed
-    /// from the dirichlet-map
-    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
-
     /*!
      * \brief return fluid-fluid system matrix as block matrix
      * (required in the context of monolithic fluidsplit-XFFSI)

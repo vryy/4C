@@ -866,17 +866,6 @@ namespace STR
       return dbcmaps_;
     }
 
-    /*
-    \brief Shorten the Dirichlet DOF set
-
-    The method shortens the DOF set (map) which contains the DOFs
-    subjected to Dirichlet boundary conditions. For instance, the method is
-    called by the monolithic FSI where fluid boundary conditions on the
-    FSI interface have to be removed if it is a fluid split.
-
-    */
-    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
-
     //! Return (rotatory) transformation matrix of local co-ordinate systems
     Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 

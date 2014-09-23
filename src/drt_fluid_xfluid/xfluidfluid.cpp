@@ -5430,25 +5430,6 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
 }
 
 /*------------------------------------------------------------------------------------------------*
- | remove dirichlet-constrained dof from dirichlet map
- *------------------------------------------------------------------------------------------------*/
-void FLD::XFluidFluid::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
-{
-  // the removal works as follows:
-  // add the map of dirichlet dof that shall be removed
-  // to othermap and setup with the new othermap and iscondmap=false
-  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
-  othermaps.push_back(maptoremove);
-  othermaps.push_back(aledbcmaps_->OtherMap());
-  // the new map of non-dirichlet dof
-  Teuchos::RCP<Epetra_Map> new_othermap = LINALG::MultiMapExtractor::MergeMaps(othermaps);
-  *(aledbcmaps_)=LINALG::MapExtractor(*(embdis_->DofRowMap()),new_othermap,false);
-
-  // update the combined fluid dirichlet maps immediately
-  state_->CreateFluidFluidDBCMaps();
-}
-
-/*------------------------------------------------------------------------------------------------*
  | prepare fluid-fluid coupling matrices for evaluation routine
  *------------------------------------------------------------------------------------------------*/
 void FLD::XFluidFluid::XFluidFluidState::PrepareCouplingMatrices(bool initial_call)

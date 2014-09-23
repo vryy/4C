@@ -165,9 +165,6 @@ namespace ADAPTER {
     /// (indicated monolithic XFFSI with fluidsplit)
     virtual void UseBlockMatrix(bool split_fluidsysmat = false);
 
-    /// remove Dirichlet conditions: legacy method for the case of coincident fluid/structure FSI nodes
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
-
   private:
 
     /// setup of map extractor to distinguish between FSI DOF-map and

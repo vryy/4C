@@ -280,16 +280,6 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> 
 }
 
 /*----------------------------------------------------------------------*
- * Remove passed DOFs from Dirichlet map (required for the monolithic
- * fluid-fluid fluidsplit algorithm)
- *----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
-{
-  xfluidfluid_->RemoveDirichCond(maptoremove);
-  return;
-}
-
-/*----------------------------------------------------------------------*
  * Returns the embedded fluid DBC-MapExtractor() in the case of
  * monolithic fluid-split
  *----------------------------------------------------------------------*/

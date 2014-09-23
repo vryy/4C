@@ -59,19 +59,22 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(co
   // It is not allowed, that slave DOFs at the interface hold a Dirichlet
   if (intersectionmap->NumGlobalElements() != 0)
   {
-      std::stringstream errormsg;
-      FluidField().RemoveDirichCond(intersectionmap);
+    std::stringstream errormsg;
+    errormsg  << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  |                DIRICHLET BOUNDARY CONDITIONS ON SLAVE SIDE OF FSI INTERFACE                 |" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | This is a fluid split scheme. Hence, master and slave field are chosen as follows:          |" << std::endl
+              << "  |     MASTER  = STRUCTURE                                                                     |" << std::endl
+              << "  |     SLAVE   = FLUID                                                                         |" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | Dirichlet boundary conditions were detected on slave interface degrees of freedom. Please   |" << std::endl
+              << "  | remove Dirichlet boundary conditions from the slave side of the FSI interface.              |" << std::endl
+              << "  | Only the master side of the FSI interface is allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl;
 
-      if (Comm().MyPID() == 0)
-      {
-        IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
-        IO::cout << "  |                                        PLEASE NOTE:                                         |" << IO::endl;
-        IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
-        IO::cout << "  | You run a monolithic fluid split scheme. Hence, there are no structural interface DOFs.     |" << IO::endl;
-        IO::cout << "  | Structure Dirichlet boundary conditions on the interface will be neglected.                 |" << IO::endl;
-        IO::cout << "  | Check whether you have prescribed appropriate DBCs on structural interface DOFs.            |" << IO::endl;
-        IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
-      }
+    dserror(errormsg.str());
   }
 
   // Initialization of row/column transformation objects

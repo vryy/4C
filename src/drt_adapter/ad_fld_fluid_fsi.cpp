@@ -479,13 +479,6 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
-{
-  fluidimpl_->RemoveDirichCond(maptoremove);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::Reset(bool completeReset, bool newFiles, int iter)
 
 {

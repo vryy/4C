@@ -43,7 +43,7 @@ Maintainer:  Shadan Shahmiri
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplitNoNOX(const Epetra_Comm& comm,
-                                                                            const Teuchos::ParameterList& timeparams)
+                                                                                      const Teuchos::ParameterList& timeparams)
   : MonolithicNoNOX(comm,timeparams)
 {
   // Throw an error if there are DBCs on structural interface DOFs.
@@ -54,20 +54,22 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
 
   if (intersectionmap->NumGlobalElements() != 0)
   {
-    // remove interface DOFs from structural DBC map
-    StructureField()->RemoveDirichCond(intersectionmap);
+    std::stringstream errormsg;
+    errormsg  << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  |                DIRICHLET BOUNDARY CONDITIONS ON SLAVE SIDE OF FSI INTERFACE                 |" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | This is a structure split scheme. Hence, master and slave field are chosen as follows:      |" << std::endl
+              << "  |     MASTER  = FLUID                                                                         |" << std::endl
+              << "  |     SLAVE   = STRUCTURE                                                                     |" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | Dirichlet boundary conditions were detected on slave interface degrees of freedom. Please   |" << std::endl
+              << "  | remove Dirichlet boundary conditions from the slave side of the FSI interface.              |" << std::endl
+              << "  | Only the master side of the FSI interface is allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl;
 
-    // give a warning to the user that Dirichlet boundary conditions might not be correct
-    if (comm.MyPID() == 0)
-    {
-      IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
-      IO::cout << "  |                                        PLEASE NOTE:                                         |" << IO::endl;
-      IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
-      IO::cout << "  | You run a monolithic structure split scheme. Hence, there are no structural interface DOFs. |" << IO::endl;
-      IO::cout << "  | Structure Dirichlet boundary conditions on the interface will be neglected.                 |" << IO::endl;
-      IO::cout << "  | Check whether you have prescribed appropriate DBCs on structural interface DOFs.            |" << IO::endl;
-      IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
-    }
+    dserror(errormsg.str());
   }
 
 #ifdef DEBUG
