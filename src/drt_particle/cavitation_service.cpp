@@ -98,7 +98,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
     for(std::set<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
     {
       // extract bins from discretization
-      DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->gElement(*i) );
+      DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->gElement(*i) );
       DRT::Element** currfluideles = currbin->AssociatedFluidEles();
 
       for(int ifluidele=0; ifluidele<currbin->NumAssociatedFluidEle(); ++ifluidele)

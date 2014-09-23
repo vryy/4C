@@ -150,12 +150,6 @@ namespace ADAPTER
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() = 0;
 
-    //! extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() = 0;
-
-    //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln() = 0;
-
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 

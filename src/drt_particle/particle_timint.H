@@ -270,12 +270,6 @@ namespace PARTICLE
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return disn_; }
 
-    //! extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn(){ return (*dis_)(0); }
-
-    //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln(){ return (*vel_)(0); }
-
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
 

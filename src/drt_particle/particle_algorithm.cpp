@@ -359,7 +359,7 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
   for (int ibin=0; ibin<numrowbin; ++ibin)
   {
     DRT::Element* actele = particledis_->lColElement(ibin);
-    static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele)->DeleteNodes();
+    dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele)->DeleteNodes();
   }
 
   // 2nd) initial particles need to be removed from particledis_
@@ -908,7 +908,7 @@ void PARTICLE::Algorithm::TransferParticles(bool ghosting)
     // finally remove nodes from their old bin
     for(size_t iter=0; iter<tobemoved.size(); iter++)
     {
-      static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(tobemoved[iter]);
+      dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(tobemoved[iter]);
     }
 
   } // end for ibin
@@ -1087,7 +1087,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
   for(int binlid=0; binlid<numcolbins; ++binlid)
   {
     DRT::Element *currentbin = particledis_->lColElement(binlid);
-    static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currentbin)->RemoveAssociatedWallEles();
+    dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currentbin)->RemoveAssociatedWallEles();
   }
 
   std::map<int,LINALG::Matrix<3,1> > currentpositions;

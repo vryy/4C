@@ -224,7 +224,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   {
     // get pointer to current bin
     DRT::Element* actele = particledis_->lRowElement(ibin);
-    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
     // get pointer to associated scatra elements
     DRT::Element** scatraelesinbin = actbin->AssociatedFluidEles();
@@ -541,7 +541,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
     for (int idim=0; idim<3; ++idim)
       (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
-    
+
     // initialize increment position vector, i.e., multiply by lambda*(phi_target-current_phi_particle)
     // note lambda is set to 1.0 at the beginning and skipped here
     const double fac = local_phi_target - current_phi_particle;
@@ -1329,7 +1329,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   {
     // get pointer to current bin
     DRT::Element* actele = particledis_->lRowElement(ibin);
-    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
     // get pointer to associated scatra elements
     DRT::Element** scatraelesinbin = actbin->AssociatedFluidEles();
@@ -2497,7 +2497,7 @@ void PARTICLE::ScatraParticleCoupling::DeleteParticles(
     DRT::Element* currbin = currele[0];
 
     // remove particle from bin
-    static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(gid);
+    dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(gid);
 
     // remove particle from discretization
     particledis_->DeleteNode(gid);
@@ -2544,7 +2544,7 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinates(
   DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
   if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
-  DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
   DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
   int numscatraelesinbin = currbin->NumAssociatedFluidEle();
 
@@ -2825,7 +2825,7 @@ void PARTICLE::ScatraParticleCoupling::BuildElementToBinPointers()
   for (int ibin=0; ibin<numcolbin; ++ibin)
   {
     DRT::Element* actele = particledis_->lColElement(ibin);
-    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
     const int numfluidele = actbin->NumAssociatedFluidEle();
     const int* fluideleids = actbin->AssociatedFluidEleIds();
     std::vector<DRT::Element*> fluidelements(numfluidele);

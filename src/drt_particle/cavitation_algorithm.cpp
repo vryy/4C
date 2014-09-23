@@ -302,7 +302,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
-    DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
     DRT::Element** fluidelesinbin = currbin->AssociatedFluidEles();
     int numfluidelesinbin = currbin->NumAssociatedFluidEle();
 
@@ -849,7 +849,7 @@ void CAVITATION::Algorithm::BuildElementToBinPointers(bool wallpointer)
   for (int ibin=0; ibin<numcolbin; ++ibin)
   {
     DRT::Element* actele = particledis_->lColElement(ibin);
-    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
     const int numfluidele = actbin->NumAssociatedFluidEle();
     const int* fluideleids = actbin->AssociatedFluidEleIds();
     std::vector<DRT::Element*> fluidelements(numfluidele);

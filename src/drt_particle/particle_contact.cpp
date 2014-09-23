@@ -143,8 +143,9 @@ void PARTICLE::ParticleCollisionHandlerBase::GetBinContent(
     DRT::Element *neighboringbin = discret_->gElement(*bin);
 
     // gather wall elements
-    DRT::Element** walleles = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(neighboringbin)->AssociatedWallEles();
-    int numwalls = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(neighboringbin)->NumAssociatedWallEle();
+    DRT::MESHFREE::MeshfreeMultiBin* nbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(neighboringbin);
+    DRT::Element** walleles = nbin->AssociatedWallEles();
+    int numwalls = nbin->NumAssociatedWallEle();
     for(int iwall=0;iwall<numwalls; ++iwall)
       walls.insert(walleles[iwall]);
 
