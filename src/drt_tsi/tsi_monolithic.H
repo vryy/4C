@@ -445,11 +445,14 @@ namespace TSI
 
     //! @name Various global forces
 
-    Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
-    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
-                                           //!< \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> vel_;  //!< global velocities
-                                       //!< \f${V}_{n+1}\f at \f$t_{n+1}\f$
+    //! rhs of TSI system
+    Teuchos::RCP<Epetra_Vector> rhs_;
+
+    //! increment between Newton steps k and k+1 \f$\Delta{x}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> iterinc_;
+
+    //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> vel_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
@@ -458,10 +461,10 @@ namespace TSI
 
     //! @name contact
 
-    // contact manager
+    //! contact manager
     Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
 
-    // thermo contact manager
+    //! thermo contact manager
     Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
 
     Teuchos::RCP<Epetra_Vector> zstruct_ ;
