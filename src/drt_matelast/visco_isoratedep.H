@@ -7,8 +7,9 @@ of a viscos rate dependent material law, modified from Pioletti,1997
 
 <pre>
 Maintainer: Anna Birzle
-            anna.birzle@tum.de
-            089/289 15255
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -1,21 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file viscogenmax.cpp
-
 \brief
+
 This file contains the Generalized Maxwell model consisting of one spring
-in parallel to a sequential branch of a spring and a dashpot. This model can
+in parallel to one sequential branch of a spring and a dashpot. This model can
 be applied to any hyperelastic law of the Elasthyper toolbox. The viscous
-effect can be applied to any part of the SEF (isotropic,isotropic isochoric,
-isotropic volumetric, anisotropic, anisotropic isochoric, anisotropic
-volumetric).
+effect can be applied to any part of the SEF (isotropic coupled,
+isotropic isochoric, isotropic volumetric, anisotropic).
+Original form Aline Bel-Brunon.
 
 The input line should read
-MAT 0   MAT_ViscoGenMax   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 0 RELAX_ISOT_MOD_VOL 0 BETA_ISOT_MOD_VOL 0 RELAX_ISOT_MOD_ISOC 0 BETA_ISOT_MOD_ISOC 0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 RELAX_ANISOT_MOD_VOL 0 BETA_ANISOT_MOD_VOL 0 RELAX_ANISOT_MOD_ISOC 0 BETA_ANISOT_MOD_ISOC 0 INIT_MODE -1
+MAT 0   MAT_ViscoGenMax   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 0 RELAX_ISOT_MOD_VOL 0 BETA_ISOT_MOD_VOL 0 RELAX_ISOT_MOD_ISOC 0 BETA_ISOT_MOD_ISOC 0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 INIT_MODE -1
 
 <pre>
-Maintainer: Aline Bel
-            bel@lnm.mw.tum.de
+Maintainer: Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
 </pre>
@@ -560,8 +560,10 @@ void MAT::ViscoGenMax::Evaluate(
         artscalar2=tau_isoprinc/(tau_isoprinc + theta*dt);
 
         // factor to calculate visco stiffness matrix from elastic stiffness matrix
-//        scalarvisco = 1+beta_isoprinc*exp(-dt/(2*tau_isoprinc));//+alpha1*tau/(tau+theta*dt);
-        scalarvisco = beta_isoprinc*exp(-dt/(2*tau_isoprinc));//+alpha1*tau/(tau+theta*dt);
+        // old Version: scalarvisco = 1+beta_isoprinc*exp(-dt/(2*tau_isoprinc));//+alpha1*tau/(tau+theta*dt);
+        // Alines' version: scalarvisco = beta_isoprinc*exp(-dt/(2*tau_isoprinc));//+alpha1*tau/(tau+theta*dt);
+        // Scalar consistent to derivation of Q with one-step-theta-schema (AB 09/14):
+        scalarvisco = beta_isoprinc*artscalar2;
 
         // viscous part of the stress
         // read history
@@ -585,7 +587,8 @@ void MAT::ViscoGenMax::Evaluate(
         stress->Update(1.0,Q,1.0);
 
         // constitutive tensor
-        // viscous contribution : Cmat = Cmatx(1+delta) with (1+delta)=scalarvisco
+        // viscous contribution : Cmat = Cmat_inf(1+delta) with delta=scalarvisco
+        // elastic (inf) contribution added before
         cmatisoprinc.Scale(scalarvisco);
         cmat->Update(1.0,cmatisoprinc,1.0);
       }
@@ -634,7 +637,9 @@ void MAT::ViscoGenMax::Evaluate(
 
 
         // factor to calculate visco stiffness matrix from elastic stiffness matrix
-        scalarvisco = beta_isomod_iso*exp(-dt/(2*tau_isomod_iso));
+        // Alines' version: beta_isomod_iso*exp(-dt/(2*tau_isomod_iso));
+        // Scalar consistent to derivation of Q with one-step-theta-schema (AB 09/14):
+        scalarvisco = beta_isomod_iso*artscalar2;
 
         // read history
         LINALG::Matrix<NUM_STRESS_3D,1> Siso_n (histstressisomodisolast_->at(gp));
@@ -687,7 +692,9 @@ void MAT::ViscoGenMax::Evaluate(
         artscalar2=tau_isomod_vol/(tau_isomod_vol + theta*dt);
 
         // factor to calculate visco stiffness matrix from elastic stiffness matrix
-        scalarvisco = beta_isomod_vol*exp(-dt/(2*tau_isomod_vol));
+        // Alines' version: beta_isomod_vol*exp(-dt/(2*tau_isomod_vol));
+        // Scalar consistent to derivation of Q with one-step-theta-schema (AB 09/14):
+        scalarvisco = beta_isomod_vol*artscalar2;
 
         // read history
         LINALG::Matrix<NUM_STRESS_3D,1> Svol_n (histstressisomodvollast_->at(gp));
@@ -713,7 +720,7 @@ void MAT::ViscoGenMax::Evaluate(
         // constitutive tensor
 
         // Cmat = Cmat_iso_inf(1+delta_iso) + Cmat_vol_inf(1+delta_vol)
-        // 1+delta = scalarvisco ; could be two different scalars for iso and vol contributions
+        // delta = scalarvisco ; could be two different scalars for iso and vol contributions
         // overall contributions by taking into account the viscous contribution
         cmatisomodvol.Scale(scalarvisco);
         cmat->Update(1.0,cmatisomodvol,1.0);
@@ -762,7 +769,9 @@ void MAT::ViscoGenMax::Evaluate(
 
           // factor to calculate visco stiffness matrix from elastic stiffness matrix
 //          scalarvisco = 1+beta_anisoprinc*exp(-dt/(2*tau_anisoprinc));//+alpha1*tau/(tau+theta*dt);
-          scalarvisco = beta_anisoprinc*exp(-dt/(2*tau_anisoprinc));
+          // Alines' version: beta_anisoprinc*exp(-dt/(2*tau_anisoprinc));
+          // Scalar consistent to derivation of Q with one-step-theta-schema (AB 09/14):
+          scalarvisco = beta_anisoprinc*artscalar2;
 
           // viscous part of the stress
           // read history
@@ -786,8 +795,8 @@ void MAT::ViscoGenMax::Evaluate(
           stress->Update(1.0,Q,1.0);
 
           // constitutive tensor
-          // viscous contribution : Cmat = Cmatx(1+delta) with (1+delta)=scalarvisco
-          cmat->Scale(scalarvisco);
+          // viscous contribution : Cmat = Cmat_inf(1+delta) with delta=scalarvisco
+          cmatanisoprinc.Scale(scalarvisco);
           cmat->Update(1.0, cmatanisoprinc, 1.0);
         }
   }

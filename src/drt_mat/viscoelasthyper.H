@@ -4,8 +4,9 @@
 
 <pre>
 Maintainer: Anna Birzle
-	    anna.birzle@tum.de
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 
@@ -179,7 +180,7 @@ private:
     /// Check if history variables are already initialized
     virtual bool Initialized() const
     {
-    	return isinitvis_&&(histmodrcgcurr_!=Teuchos::null);
+      return isinitvis_&&(histmodrcgcurr_!=Teuchos::null);
     }
 
     /// number of materials

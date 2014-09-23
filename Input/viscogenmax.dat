@@ -15,10 +15,10 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.47095224531976104e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.73151016707556449e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 1641 QUANTITY dispx VALUE 5.17766878985431167e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.28734335550616807e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.47095224531971358e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.73151016707545180e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1641 QUANTITY dispx VALUE 5.17766878985427170e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.28734335550589690e-01 TOLERANCE 1e-6
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
@@ -73,13 +73,13 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop

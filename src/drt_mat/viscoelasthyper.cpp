@@ -13,8 +13,9 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
 
 <pre>
 Maintainer: Anna Birzle
-            anna.birzle@tum.de
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 
@@ -83,11 +84,10 @@ MAT::ViscoElastHyper::ViscoElastHyper()
   : params_(NULL),
     potsum_(0)
 {
-	// history data 09/13
-	isinitvis_=false;
-	histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-	histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-
+  // history data 09/13
+  isinitvis_=false;
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
 }
 
 
@@ -376,9 +376,9 @@ void MAT::ViscoElastHyper::ResetAll(const int numgp)
   return ;
 }
 
-/*-------------------------------------------------------------------------------*
-|  Setup time variables - special for the inverse analysis (public)         09/13|
-*-------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+/*  Setup time variables - special for the inverse analysis (public)      09/13 */
+/*------------------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::SetupTimeVariables()
 {
   return ;
@@ -623,9 +623,9 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   EvaluateGammaDelta(rcg,prinv,modinv,gamma,delta,modgamma,moddelta);
   if (isomodvisco_)
   {
-	  // calculate viscos quantities
-	  EvaluateKinQuantVis(rcg,modrcg,icg,params,prinv,modrcgrate,modrateinv);
-	  EvaluateMyXi(modinv,modmy,modxi,modrateinv,params);
+    // calculate viscos quantities
+    EvaluateKinQuantVis(rcg,modrcg,icg,params,prinv,modrcgrate,modrateinv);
+    EvaluateMyXi(modinv,modmy,modxi,modrateinv,params);
   }
 
   // blank resulting quantities
@@ -647,43 +647,43 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // for decoupled potentials
   if (isomod_)
   {
-	  if (!isomodvisco_)
-	  {
-		  // just hyperelastic part
-		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
-		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
-		  EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-		  stress->Update(1.0, stressisomodiso, 1.0);
-		  stress->Update(1.0, stressisomodvol, 1.0);
-		  cmat->Update(1.0,cmatisomodiso,1.0);
-		  cmat->Update(1.0,cmatisomodvol,1.0);
-	  }
-	  else
-	  {
-		  // first hyperelastic part
-		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
-		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
-		  EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-		  stress->Update(1.0, stressisomodiso, 1.0);
-		  stress->Update(1.0, stressisomodvol, 1.0);
-		  cmat->Update(1.0,cmatisomodiso,1.0);
-		  cmat->Update(1.0,cmatisomodvol,1.0);
+    if (!isomodvisco_)
+      {
+      // just hyperelastic part
+      LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
+      LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
+      EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
+      stress->Update(1.0, stressisomodiso, 1.0);
+      stress->Update(1.0, stressisomodvol, 1.0);
+      cmat->Update(1.0,cmatisomodiso,1.0);
+      cmat->Update(1.0,cmatisomodvol,1.0);
+      }
+    else
+      {
+      // first hyperelastic part
+      LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
+      LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
+      EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
+      stress->Update(1.0, stressisomodiso, 1.0);
+      stress->Update(1.0, stressisomodvol, 1.0);
+      cmat->Update(1.0,cmatisomodiso,1.0);
+      cmat->Update(1.0,cmatisomodvol,1.0);
 
-		  // add viscos part
-		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodisovisco(true);
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodisovisco(true);
-		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvolvisco(true) ;
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvolvisco(true) ;
-		  EvaluateIsoModVisco(stressisomodisovisco,stressisomodvolvisco,cmatisomodisovisco,cmatisomodvolvisco,prinv,modinv,modmy,modxi,rcg,id2,icg,id4,modrcgrate);
-		  stress->Update(1.0, stressisomodisovisco, 1.0);
-		  stress->Update(1.0, stressisomodvolvisco, 1.0);
-		  cmat->Update(1.0,cmatisomodisovisco,1.0);
-		  cmat->Update(1.0,cmatisomodvolvisco,1.0);
-	  }
+      // add viscos part
+      LINALG::Matrix<NUM_STRESS_3D,1> stressisomodisovisco(true);
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodisovisco(true);
+      LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvolvisco(true) ;
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvolvisco(true) ;
+      EvaluateIsoModVisco(stressisomodisovisco,stressisomodvolvisco,cmatisomodisovisco,cmatisomodvolvisco,prinv,modinv,modmy,modxi,rcg,id2,icg,id4,modrcgrate);
+      stress->Update(1.0, stressisomodisovisco, 1.0);
+      stress->Update(1.0, stressisomodvolvisco, 1.0);
+      cmat->Update(1.0,cmatisomodisovisco,1.0);
+      cmat->Update(1.0,cmatisomodvolvisco,1.0);
+      }
   }
 
 
@@ -777,7 +777,7 @@ void MAT::ViscoElastHyper::EvaluateKinQuant(
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate Quantities for Viscos Part							09/13	*/
+/* Evaluate Quantities for Viscos Part                            09/13 */
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::EvaluateKinQuantVis(
     LINALG::Matrix<6,1> rcg,
@@ -790,58 +790,60 @@ void MAT::ViscoElastHyper::EvaluateKinQuantVis(
     )
 
 {
-	  // modrcg : \overline{C} = J^{-\frac{2}{3}} C
-	  const double modscale = std::pow(prinv(2),-1./3.);
-	  modrcg.Update(modscale,rcg);
+  // modrcg : \overline{C} = J^{-\frac{2}{3}} C
+  const double modscale = std::pow(prinv(2),-1./3.);
+  modrcg.Update(modscale,rcg);
 
-	  // get gauss point number of this element
-	  const int gp = params.get<int>("gp",-1);
-	  // get time algorithmic parameters
-	  double dt = params.get<double>("delta time");
+  // get gauss point number of this element
+  const int gp = params.get<int>("gp",-1);
+  // get time algorithmic parameters
+  double dt = params.get<double>("delta time");
 
-      // read history
-	  LINALG::Matrix<6,1> modrcglast (histmodrcglast_->at(gp));
+  // read history
+  LINALG::Matrix<6,1> modrcglast (histmodrcglast_->at(gp));
 
-	  // rate of Cauchy-Green Tensor \dot{C} = \frac {overline{C}^n - \overline{C}^{n-1}} {\Delta t}
-	  // REMARK: strain-like 6-Voigt vector
-	  modrcgrate.Update(1.0,modrcg,1.0);
-	  modrcgrate.Update(-1.0,modrcglast,1.0);
-	  modrcgrate.Scale(1/dt);
+  // rate of Cauchy-Green Tensor \dot{C} = \frac {overline{C}^n - \overline{C}^{n-1}} {\Delta t}
+  // REMARK: strain-like 6-Voigt vector
+  modrcgrate.Update(1.0,modrcg,1.0);
+  modrcgrate.Update(-1.0,modrcglast,1.0);
+  modrcgrate.Scale(1/dt);
 
-	  // in the first time step, set modrcgrate to zero (--> first time step is just hyperelastic, not viscos)
-	  const LINALG::Matrix<6,1> emptyvec(true);
-	  if(modrcglast == emptyvec)
-	  {
-		  modrcgrate=emptyvec;
-	  }
+  // in the first time step, set modrcgrate to zero (--> first time step is just hyperelastic, not viscos)
+  const LINALG::Matrix<6,1> emptyvec(true);
+  if(modrcglast == emptyvec)
+    {
+    modrcgrate=emptyvec;
+    }
 
-	  // Update history of Cauchy-Green Tensor
-      histmodrcgcurr_->at(gp) = modrcg;
+  // Update history of Cauchy-Green Tensor
+  histmodrcgcurr_->at(gp) = modrcg;
 
-      // Second Invariant of modrcgrate \bar{J}_2 = \frac{1}{2} \tr (\dot{\overline{C^2}}
-      modrateinv(1) = 0.5*( modrcgrate(0)*modrcgrate(0) + modrcgrate(1)*modrcgrate(1) + modrcgrate(2)*modrcgrate(2)
-    		                   + .5*modrcgrate(3)*modrcgrate(3) + .5*modrcgrate(4)*modrcgrate(4) + .5*modrcgrate(5)*modrcgrate(5) );
+  // Second Invariant of modrcgrate \bar{J}_2 = \frac{1}{2} \tr (\dot{\overline{C^2}}
+  modrateinv(1) = 0.5*( modrcgrate(0)*modrcgrate(0) + modrcgrate(1)*modrcgrate(1) + modrcgrate(2)*modrcgrate(2)
+      + .5*modrcgrate(3)*modrcgrate(3) + .5*modrcgrate(4)*modrcgrate(4) + .5*modrcgrate(5)*modrcgrate(5) );
 
-      // For further extension of material law (not necassary at the moment)
-      /*
-      // necassary transfer variable: LINALG::Matrix<6,1>& modicgrate
-      // \overline{J}_3 = determinant of modified rate of right Cauchy-Green-Tensor
-      modrateinv(2) = modrcgrate(0)*modrcgrate(1)*modrcgrate(2)
-        + 0.25 * modrcgrate(3)*modrcgrate(4)*modrcgrate(5)
-        - 0.25 * modrcgrate(1)*modrcgrate(5)*modrcgrate(5)
-        - 0.25 * modrcgrate(2)*modrcgrate(3)*modrcgrate(3)
-        - 0.25 * modrcgrate(0)*modrcgrate(4)*modrcgrate(4);
+  // For further extension of material law (not necassary at the moment)
+  /*
+  // necassary transfer variable: LINALG::Matrix<6,1>& modicgrate
+  // \overline{J}_3 = determinant of modified rate of right Cauchy-Green-Tensor
+  modrateinv(2) = modrcgrate(0)*modrcgrate(1)*modrcgrate(2)
+      + 0.25 * modrcgrate(3)*modrcgrate(4)*modrcgrate(5)
+      - 0.25 * modrcgrate(1)*modrcgrate(5)*modrcgrate(5)
+      - 0.25 * modrcgrate(2)*modrcgrate(3)*modrcgrate(3)
+      - 0.25 * modrcgrate(0)*modrcgrate(4)*modrcgrate(4);
 
-      // invert modified rate of right Cauchy-Green tensor
-      // REMARK: stress-like 6-Voigt vector
-      {
-        modicgrate(0) = ( modrcgrate(1)*modrcgrate(2) - 0.25*modrcgrate(4)*modrcgrate(4) ) / modrateinv(2);
-        modicgrate(1) = ( modrcgrate(0)*modrcgrate(2) - 0.25*modrcgrate(5)*modrcgrate(5) ) / modrateinv(2);
-        modicgrate(2) = ( modrcgrate(0)*modrcgrate(1) - 0.25*modrcgrate(3)*modrcgrate(3) ) / modrateinv(2);
-        modicgrate(3) = ( 0.25*modrcgrate(5)*modrcgrate(4) - 0.5*modrcgrate(3)*modrcgrate(2) ) / modrateinv(2);
-        modicgrate(4) = ( 0.25*modrcgrate(3)*modrcgrate(5) - 0.5*modrcgrate(0)*modrcgrate(4) ) / modrateinv(2);
-        modicgrate(5) = ( 0.25*modrcgrate(3)*modrcgrate(4) - 0.5*modrcgrate(5)*modrcgrate(1) ) / modrateinv(2);
-      }*/
+  // invert modified rate of right Cauchy-Green tensor
+  // REMARK: stress-like 6-Voigt vector
+  {
+    modicgrate(0) = ( modrcgrate(1)*modrcgrate(2) - 0.25*modrcgrate(4)*modrcgrate(4) ) / modrateinv(2);
+    modicgrate(1) = ( modrcgrate(0)*modrcgrate(2) - 0.25*modrcgrate(5)*modrcgrate(5) ) / modrateinv(2);
+    modicgrate(2) = ( modrcgrate(0)*modrcgrate(1) - 0.25*modrcgrate(3)*modrcgrate(3) ) / modrateinv(2);
+    modicgrate(3) = ( 0.25*modrcgrate(5)*modrcgrate(4) - 0.5*modrcgrate(3)*modrcgrate(2) ) / modrateinv(2);
+    modicgrate(4) = ( 0.25*modrcgrate(3)*modrcgrate(5) - 0.5*modrcgrate(0)*modrcgrate(4) ) / modrateinv(2);
+    modicgrate(5) = ( 0.25*modrcgrate(3)*modrcgrate(4) - 0.5*modrcgrate(5)*modrcgrate(1) ) / modrateinv(2);
+  }
+  */
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -880,7 +882,7 @@ void MAT::ViscoElastHyper::EvaluateGammaDelta(
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate Factors for Viscos Quantities					09/13	*/
+/* Evaluate Factors for Viscos Quantities                         09/13 */
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::EvaluateMyXi(
     LINALG::Matrix<3,1> modinv,
@@ -894,7 +896,7 @@ void MAT::ViscoElastHyper::EvaluateMyXi(
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-	  potsum_[p]->AddCoefficientsViscoModified(modinv,modmy,modxi,modrateinv,params);
+    potsum_[p]->AddCoefficientsViscoModified(modinv,modmy,modxi,modrateinv,params);
   }
 }
 
@@ -1042,57 +1044,57 @@ void MAT::ViscoElastHyper::EvaluateIsoModVisco(
     LINALG::Matrix<6,1> modrcgrate
     )
 {
-	// define necessary variables
-	const double modscale = std::pow(prinv(2),-1./3.);
+  // define necessary variables
+  const double modscale = std::pow(prinv(2),-1./3.);
 
-	// 2nd Piola Kirchhoff stresses
+  // 2nd Piola Kirchhoff stresses
 
-	// isochoric contribution
-	LINALG::Matrix<6,1> modstress(true);
-	modstress.Update(modmy(1), id2);
-	modstress.Update(modmy(2), modrcgrate, 1.0);
-	// build 4-tensor for projection as 6x6 tensor
-	LINALG::Matrix<6,6> Projection;
-	Projection.MultiplyNT(1./3., icg, rcg);
-	Projection.Update(1.0, id4, -1.0);
-	// isochoric stress
-	stressisomodisovisco.MultiplyNN(modscale,Projection,modstress,1.0);
+  // isochoric contribution
+  LINALG::Matrix<6,1> modstress(true);
+  modstress.Update(modmy(1), id2);
+  modstress.Update(modmy(2), modrcgrate, 1.0);
+  // build 4-tensor for projection as 6x6 tensor
+  LINALG::Matrix<6,6> Projection;
+  Projection.MultiplyNT(1./3., icg, rcg);
+  Projection.Update(1.0, id4, -1.0);
+  // isochoric stress
+  stressisomodisovisco.MultiplyNN(modscale,Projection,modstress,1.0);
 
-	// volumetric contribution:
-	// with visco_isoratedep: no volumetric part added --> always 0
+  // volumetric contribution:
+  // with visco_isoratedep: no volumetric part added --> always 0
 
 
-	// Constitutive Tensor
+  // Constitutive Tensor
 
-	//isochoric contribution
-	// modified constitutive tensor
-	LINALG::Matrix<6,6> modcmat(true);
-	LINALG::Matrix<6,6> modcmat2(true);
-    // contribution:  Id \otimes \overline{\dot{C}} + \overline{\dot{C}} \otimes Id
-	modcmat.MultiplyNT(modxi(1), id2, modrcgrate);
-	modcmat.MultiplyNT(modxi(1), modrcgrate, id2, 1.0);
-	// contribution: Id4
-	modcmat.Update(modxi(2), id4, 1.0);
-    //scaling
-	modcmat.Scale(std::pow(modinv(2),-4./3.));
-	//contribution: P:\overline{C}:P
-	modcmat2.MultiplyNN(Projection,modcmat);
-	cmatisomodisovisco.MultiplyNT(1.0,modcmat2,Projection,1.0);
-	// contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
-	modcmat.Clear();
-	modcmat.MultiplyNT(-1.0/3.0,icg,icg);
-	AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
-	LINALG::Matrix<1,1> tracemat;
-	tracemat.MultiplyTN(2./3.*std::pow(modinv(2),-2./3.),modstress,rcg);
-	cmatisomodisovisco.Update(tracemat(0,0),modcmat,1.0);
-	//contribution: -2/3 (Cinv \otimes S_iso^v + S_iso^v \otimes Cinv)
-	cmatisomodisovisco.MultiplyNT(-2./3.,icg,stressisomodisovisco,1.0);
-	cmatisomodisovisco.MultiplyNT(-2./3.,stressisomodisovisco,icg,1.0);
+  //isochoric contribution
+  // modified constitutive tensor
+  LINALG::Matrix<6,6> modcmat(true);
+  LINALG::Matrix<6,6> modcmat2(true);
+  // contribution:  Id \otimes \overline{\dot{C}} + \overline{\dot{C}} \otimes Id
+  modcmat.MultiplyNT(modxi(1), id2, modrcgrate);
+  modcmat.MultiplyNT(modxi(1), modrcgrate, id2, 1.0);
+  // contribution: Id4
+  modcmat.Update(modxi(2), id4, 1.0);
+  //scaling
+  modcmat.Scale(std::pow(modinv(2),-4./3.));
+  //contribution: P:\overline{C}:P
+  modcmat2.MultiplyNN(Projection,modcmat);
+  cmatisomodisovisco.MultiplyNT(1.0,modcmat2,Projection,1.0);
+  // contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
+  modcmat.Clear();
+  modcmat.MultiplyNT(-1.0/3.0,icg,icg);
+  AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
+  LINALG::Matrix<1,1> tracemat;
+  tracemat.MultiplyTN(2./3.*std::pow(modinv(2),-2./3.),modstress,rcg);
+  cmatisomodisovisco.Update(tracemat(0,0),modcmat,1.0);
+  //contribution: -2/3 (Cinv \otimes S_iso^v + S_iso^v \otimes Cinv)
+  cmatisomodisovisco.MultiplyNT(-2./3.,icg,stressisomodisovisco,1.0);
+  cmatisomodisovisco.MultiplyNT(-2./3.,stressisomodisovisco,icg,1.0);
 
-	// volumetric contribution:
-	// with visco_isoratedep: no volumetric part added --> always 0
+  // volumetric contribution:
+  // with visco_isoratedep: no volumetric part added --> always 0
 
-	return;
+  return;
 }
 
 

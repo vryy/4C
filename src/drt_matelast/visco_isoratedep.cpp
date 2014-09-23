@@ -1,16 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file visco_isofreqratedep.cpp
+\file visco_isoratedep.cpp
 \brief
 
 
 the input line should read
-  MAT 1 VISCO_IsRateDep N 1
+  MAT 1 VISCO_IsoRateDep N 1
 
 <pre>
 Maintainer: Anna Birzle
-            anna.birzle@tum.de
-            089/289 15255
+            birzle@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 </pre>
 */
 

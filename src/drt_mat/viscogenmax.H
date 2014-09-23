@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file viscogenmax.H
-
+\brief
 <pre>
-Maintainer: Aline Brunon
-            bel@lnm.mw.tum.de
+Maintainer: Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
 </pre>
@@ -104,6 +104,45 @@ namespace MAT
 
   }  // namespace PAR
 
+  /*----------------------------------------------------------------------*/
+  /// Material Viscogenmax
+  ///
+  /// This material offers a viscous and hyperelastic part. The model consists
+  /// of one spring in parallel to one sequential branch of a spring and a dashpot.
+  ///
+  /// The hyperelasic part is possibly any hyperelastic law of the Hyperelastic
+  /// toolbox. The materials of the hyperelastic toolbox are composed
+  /// of (Helmholtz free energy density) potentials.  Effectively, we want
+  ///\f[
+  ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
+  ///\f]
+  ///
+  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
+  ///
+  ///
+  /// The stress tensor of the viscous part is calculated from the evolution equation
+  ///\f[
+  ///  \dot{\boldsymbol{Q}} = 1 / \tau \boldsymbol{Q} = \beta \dot{\boldsymbol{S}}
+  ///\f]
+  /// with elastic stress tensor S. S contains isochoric and volumetric contribution,
+  /// so Q is also isochoric and volumetric.
+  /// The viscous elasicity tensor is calculated from \f$\boldsymbol{Q}$ with
+  /// derivation to \f$\boldsymbol{C}\f$.
+  /// The viscous effect can be applied to any part of the SEF (isotropic coupled,
+  /// isotropic isochoric, isotropic volumetric, anisotropic).
+  ///
+  /// <h3>References</h3>
+  /// <ul>
+  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  /// <li> [2] Bul-Brunon et.al., "Numerical identification method for the non-linear
+  ///         viscoelastic compressible behavior of soft tissue using uniaxial tensile
+  ///         tests and image registration - Application to rat lung parenchyma, 2013
+  /// </ul>
+  ///
+  /// \author bel, birzle
+  /// \date 09/14
+
+
 class ViscoGenMaxType : public DRT::ParObjectType
 {
 public:
@@ -119,34 +158,6 @@ private:
   static ViscoGenMaxType instance_;
 };
 
-
-  /*----------------------------------------------------------------------*/
-  /// Collection of hyperelastic materials
-  ///
-  /// This collection offers to additively compose a stress response
-  /// based on summands defined separately.  This is possible, because
-  /// we deal with hyperelastic materials, which are composed
-  /// of (Helmholtz free energy density) potentials.  Effectively, we want
-  ///\f[
-  ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
-  ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
-  ///
-  /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
-  /// is replaced by its various invariant forms as argument.
-  ///
-  /// The task of ElastHyper is the evaluation of the
-  /// potential energies and their derivatives to obtain the actual
-  /// stress response and the elasticity tensor. The storage is located
-  /// at the associated member #params_.
-  ///
-  /// <h3>References</h3>
-  /// <ul>
-  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-  /// </ul>
-  ///
-  /// \author rausch,tk,bborn
-  /// \date 05/09
   class Material;
 
   class ViscoGenMax : public ElastHyper
