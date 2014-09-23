@@ -51,9 +51,9 @@ namespace FSI
 
     In the sense of mortar coupling, structure split means that
     the structure field is chosen as slave field.
-    Hence, the structural displacement interface degrees of freedom are condensed
-    from the system along with the condensation of the Lagrange multiplier
-    field, that is used to enforce the coupling conditions.
+    Hence, the structural displacement interface degrees of freedom are
+    condensed from the system along with the condensation of the Lagrange
+    multiplier field, that is used to enforce the coupling conditions.
 
     The structural interface displacements are computed based on the
     fluid interface velocities. The conversion is done by
@@ -98,15 +98,23 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(
+        LINALG::BlockSparseMatrixBase& mat, ///< Jacobian matrix
+        Epetra_Vector& b ///< right hand side
+        );
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    virtual void UnscaleSolution(
+        LINALG::BlockSparseMatrixBase& mat, ///< Jacobian matrix
+        Epetra_Vector& x, ///< solution vector
+        Epetra_Vector& b ///< right hand side
+        );
 
     //@}
 
     /// read restart
-    virtual void ReadRestart(int step);
+    virtual void ReadRestart(int step ///< step where we resatart from
+        );
 
     /*! \brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
      *
@@ -131,33 +139,33 @@ namespace FSI
      */
     virtual void CalculateInterfaceEnergyIncrement();
 
-    //! Additional safety check of kinematic constraint during a single time step:
-    //!
-    //! Constraint equation:
-    //!
-    //! \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
-    //!
-    //! with interface time integration factor
-    //! \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
-    //!
-    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
-    //! condensed nonlinear system of equations. We expect really small violation norms.
-    //!
-    //! \author mayr.mt
-    //! \date 10/2012
+    /*! \briefAdditional safety check of kinematic constraint during a single time step:
+     *
+     *  Constraint equation:
+     *
+     *  \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
+     *
+     *  with interface time integration factor
+     *  \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
+     *
+     *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
+     *  condensed nonlinear system of equations. We expect really small violation norms.
+     *
+     *  \author mayr.mt \date 10/2012
+     */
     virtual void CheckKinematicConstraint();
 
-    //! Additional safety check of dynamic equilibrium during a single time step:
-    //!
-    //! Dynamic equilibrium at the interface:
-    //!
-    //! \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
-    //!
-    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
-    //! condensed nonlinear system of equations. We expect really small violation norms.
-    //!
-    //! \author mayr.mt
-    //! \date 10/2012
+    /*! \brief Additional safety check of dynamic equilibrium during a single time step:
+     *
+     *  Dynamic equilibrium at the interface:
+     *
+     *  \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
+     *
+     *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
+     *  condensed nonlinear system of equations. We expect really small violation norms.
+     *
+     *  \author mayr.mt \date 10/2012
+     */
     virtual void CheckDynamicEquilibrium();
 
     //! @name Time Adaptivity
@@ -192,32 +200,35 @@ namespace FSI
 
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                       NOX::Epetra::Vector& noxSoln,
-                       Teuchos::RCP<NOX::Utils> utils);
+    CreateLinearSystem(Teuchos::ParameterList& nlParams, ///< parameter list
+        NOX::Epetra::Vector& noxSoln, ///< solution vector
+        Teuchos::RCP<NOX::Utils> utils ///< printing utilities
+        );
 
     /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
-    CreateStatusTest(Teuchos::ParameterList& nlParams,
-                     Teuchos::RCP<NOX::Epetra::Group> grp);
+    CreateStatusTest(Teuchos::ParameterList& nlParams, ///< parameter list
+        Teuchos::RCP<NOX::Epetra::Group> grp ///< the NOX group
+        );
 
-    //! Extract the three field vectors from a given composed vector
-    //!
-    //! The condensed ale degrees of freedom have to be recovered
-    //! from the fluid solution using a suitable velocity-displacement
-    //! conversion. After that, the ale solution increment is projected onto the
-    //! structure in mortar style where a possible structural predictor has to
-    //! be considered.
-    //!
-    //! We are dealing with NOX here, so we get absolute values. x is the sum of
-    //! all increments up to this point.
-    //!
-    //! \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
+    /*! \brief Extract the three field vectors from a given composed vector
+     *
+     *  The condensed ale degrees of freedom have to be recovered
+     *  from the fluid solution using a suitable velocity-displacement
+     *  conversion. After that, the ale solution increment is projected onto the
+     *  structure in mortar style where a possible structural predictor has to
+     *  be considered.
+     *
+     *  We are dealing with NOX here, so we get absolute values. x is the sum of
+     *  all increments up to this point.
+     *
+     *  \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
+     */
     virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
+        Teuchos::RCP<const Epetra_Vector> x, ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Epetra_Vector>& sx, ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector>& fx, ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector>& ax ///< ale displacements
     );
 
   private:
@@ -251,17 +262,18 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void SetupRHSFirstiter(Epetra_Vector& f);
 
-    //! Put three field vectors together to a monolithic vector
-    //!
-    //! If all input vectors contain interface DOFs, we first have to extract
-    //! the inner portion of the slave vectors. Then, we just put them together.
-    //! As usual, the ordering is: structure --  fluid -- ALE
+    /*! \brief Put three field vectors together to a single monolithic vector
+     *
+     *  If all input vectors contain interface DOFs, we first have to extract
+     *  the inner portion of the slave vectors. Then, we just put them together.
+     *  As usual, the ordering is: structure --  fluid -- ALE
+     */
     void CombineFieldVectors(
-          Epetra_Vector &v,                       ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv,         ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av,         ///< ale DOFs
-          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+          Epetra_Vector &v, ///< composed vector containing all field vectors
+          Teuchos::RCP<const Epetra_Vector> sv, ///< structural DOFs
+          Teuchos::RCP<const Epetra_Vector> fv, ///< fluid DOFs
+          Teuchos::RCP<const Epetra_Vector> av, ///< ale DOFs
+          bool fullvectors ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
     );
 
     /// block system matrix
@@ -348,12 +360,12 @@ namespace FSI
     /// ale movement relative to structure (none, slide_curr, slide_ref)
     INPAR::FSI::SlideALEProj aleproj_;
 
-    bool notsetup_;  ///< indicates if Setup has not been called yet
+    bool notsetup_; ///< indicates if Setup has not been called yet
 
-    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
+    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_; ///< Sliding Ale helper class
 
-    Teuchos::RCP<Epetra_Vector> iprojdispinc_;          ///<displacement of fluid side of the interface
-    Teuchos::RCP<Epetra_Vector> iprojdisp_;             ///<displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdispinc_; ///<displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdisp_; ///<displacement of fluid side of the interface
 
   };
 }

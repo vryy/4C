@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file fsi_mortarmonolithic_fluidsplit.H
 
@@ -12,7 +12,7 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #ifndef FSI_MORTARMONOLITHICFLUID_H
 #define FSI_MORTARMONOLITHICFLUID_H
@@ -99,10 +99,17 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(
+        LINALG::BlockSparseMatrixBase& mat, ///< Jacobian matrix
+        Epetra_Vector& b ///< right hand side
+        );
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    virtual void UnscaleSolution(
+        LINALG::BlockSparseMatrixBase& mat, ///< Jacobian matrix
+        Epetra_Vector& x, ///< solution vector
+        Epetra_Vector& b ///< right hand side
+        );
 
     //@}
 
@@ -123,8 +130,9 @@ namespace FSI
 
     /*! \brief Compute spurious interface energy increment due to temporal discretization
      *
-     *  Due to the temporal discretization, spurious energy \f$\Delta E_\Gamma^{n\rightarrow n+1}\f$
-     *  might be produced at the interface. It can be computed as
+     *  Due to the temporal discretization, spurious energy
+     *  \f$\Delta E_\Gamma^{n\rightarrow n+1}\f$ might be produced at the
+     *  interface. It can be computed as
      *  \f[
      *  \Delta E_\Gamma^{n\rightarrow n+1}
      *  = \left((a-b)\lambda^n + (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right)
@@ -135,43 +143,47 @@ namespace FSI
      */
     virtual void CalculateInterfaceEnergyIncrement();
 
-    //! Additional safety check of kinematic constraint during a single time step:
-    //!
-    //! Constraint equation:
-    //!
-    //! \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
-    //!
-    //! with interface time integration factor
-    //! \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
-    //!
-    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
-    //! condensed nonlinear system of equations. We expect really small violation norms.
-    //!
-    //! \author mayr.mt
-    //! \date 10/2012
+    /*! \brief Additional safety check of kinematic constraint during a single time step:
+     *
+     *  Constraint equation:
+     *
+     *  \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
+     *
+     *  with interface time integration factor
+     *  \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
+     *
+     *  Do this check only for safety reasons. Basically, the constraint is
+     *  satisfied due to solving the condensed nonlinear system of equations.
+     *  We expect really small violation norms.
+     *
+     *  \author mayr.mt \date 10/2012
+     */
     virtual void CheckKinematicConstraint();
 
-    //! Additional safety check of dynamic equilibrium during a single time step:
-    //!
-    //! Dynamic equilibrium at the interface:
-    //!
-    //! \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
-    //!
-    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
-    //! condensed nonlinear system of equations. We expect really small violation norms.
-    //!
-    //! \author mayr.mt
-    //! \date 10/2012
+    /*! \brief Additional safety check of dynamic equilibrium during a single time step:
+     *
+     *  Dynamic equilibrium at the interface:
+     *
+     *  \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
+     *
+     *  Do this check only for safety reasons. Basically, the constraint is
+     *  satisfied due to solving the condensed nonlinear system of equations.
+     *  We expect really small violation norms.
+     *
+     *  \author mayr.mt \date 10/2012
+     */
     virtual void CheckDynamicEquilibrium();
 
     //! @name Time Adaptivity
     //@{
 
-    /*! \brief Select \f$\Delta t_{min}\f$ of all proposed time step sizes based on error estimation
+    /*! \brief Select \f$\Delta t_{min}\f$ of all proposed time step sizes
+     *         based on error estimation
      *
      *  Depending on the chosen method (fluid or structure split), only 3 of the
      *  6 available norms are useful. Each of these three norms delivers a new
-     *  time step size. Select the minimum of these three as the new time step size.
+     *  time step size. Select the minimum of these three as the new time step
+     *  size.
      *
      *  \author mayr.mt \date 08/2013
      */
@@ -179,8 +191,8 @@ namespace FSI
 
     /*! \brief Check whether time step is accepted or not
      *
-     *  In case that the local truncation error is small enough, the time step is
-     *  accepted.
+     *  In case that the local truncation error is small enough, the time step
+     *  is accepted.
      *
      *  \author mayr.mt \date 08/2013
      */
@@ -205,25 +217,26 @@ namespace FSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
 
-    //! Extract the three field vectors from a given composed vector
-    //!
-    //! The condensed ale degrees of freedom have to be recovered
-    //! from the structure solution by a mortar mapping across the interface.
-    //! The condensed fluid degrees of freedom have to be recovered
-    //! from the ale solution using a suitable displacement-velocity
-    //! conversion.
-    //!
-    //! We are dealing with NOX here, so we get absolute values. x is the sum of
-    //! all increments up to this point within this time step. Hence, the
-    //! solution increments due to predictors have to be treated in a special
-    //! way.
-    //!
-    //! \sa  ADAPTER::FluidFSI::DisplacementToVelocity()
+    /* \brief Extract the three field vectors from a given composed vector
+     *
+     *  The condensed ale degrees of freedom have to be recovered
+     *  from the structure solution by a mortar mapping across the interface.
+     *  The condensed fluid degrees of freedom have to be recovered
+     *  from the ale solution using a suitable displacement-velocity
+     *  conversion.
+     *
+     *  We are dealing with NOX here, so we get absolute values. x is the sum of
+     *  all increments up to this point within this time step. Hence, the
+     *  solution increments due to predictors have to be treated in a special
+     *  way.
+     *
+     *  \sa  ADAPTER::FluidFSI::DisplacementToVelocity()
+     */
     virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
+        Teuchos::RCP<const Epetra_Vector> x, ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Epetra_Vector>& sx, ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector>& fx, ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector>& ax ///< ale displacements
     );
 
   private:
@@ -241,8 +254,8 @@ namespace FSI
      *
      *  Create a map extractor #dbcmaps_ for the Dirichlet degrees of freedom
      *  for the entire FSI problem. This is done just by combining the
-     *  condition maps and other maps from structure, fluid and ALE to a FSI-global
-     *  condition map and other map.
+     *  condition maps and other maps from structure, fluid and ALE to a
+     *  FSI-global condition map and other map.
      *
      *  \author mayr.mt \date 05/2014
      */
@@ -257,26 +270,28 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void SetupRHSFirstiter(Epetra_Vector& f);
 
-    //! Put three field vectors together to a monolithic vector
-    //!
-    //! If all input vectors contain interface DOFs, we first have to extract
-    //! the inner portion of the slave vectors. Then, we just put them together.
-    //! As usual, the ordering is: structure --  fluid -- ALE
+    /*! \brief Put three field vectors together to a single monolithic vector
+     *
+     *  If all input vectors contain interface DOFs, we first have to extract
+     *  the inner portion of the slave vectors. Then, we just put them together.
+     *  As usual, the ordering is: structure --  fluid -- ALE
+     */
     void CombineFieldVectors(
-          Epetra_Vector &v,                       ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
-          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+          Epetra_Vector &v, ///< composed vector containing all field vectors
+          Teuchos::RCP<const Epetra_Vector> sv, ///< structural DOFs
+          Teuchos::RCP<const Epetra_Vector> fv, ///< fluid DOFs
+          Teuchos::RCP<const Epetra_Vector> av, ///< ale DOFs
+          bool fullvectors ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
     );
 
-    //! block system matrix
-    //! System matrix has a 4x4-block structure corresponding to the vector of unknowns
-    //!
-    //! \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta d_I^{G,n+1}]\f$
+    /*! block system matrix
+     *  System matrix has a 4x4-block structure corresponding to the vector of unknowns
+     *
+     *  \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta d_I^{G,n+1}]\f$
+     */
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
-    ///communicator
+    /// communicator
     const Epetra_Comm& comm_;
 
     /// @name Matrix block transform objects
