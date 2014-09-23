@@ -45,17 +45,22 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
 
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->VolmortarParams();
 
+  // create vector of discr.
+  std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+  dis.push_back(slavedis);
+  dis.push_back(masterdis);
+
+  //binning strategy for parallel redistribution
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+
+  std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+  std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
   // redistribute discr. with help of binning strategy
   if(slavedis->Comm().NumProc()>1)
   {
-    // create vector of discr.
-    std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-    dis.push_back(slavedis);
-    dis.push_back(masterdis);
-
     /// binning strategy is created and parallel redistribution is performed
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis));
+    binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
   }
 
   if(materialstrategy==Teuchos::null)
@@ -81,6 +86,39 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
   // get the P operators
   pmatrixA_ = coupdis->GetPMatrixAB();
   pmatrixB_ = coupdis->GetPMatrixBA();
+
+  if(slavedis->Comm().NumProc()>1)
+  {
+    /// revert extended ghosting
+    if (not DRT::INPUT::IntegralValue<int>(params, "KEEP_EXTENDEDGHOSTING"))
+      binningstrategy->RevertExtendedGhosting(dis,stdelecolmap,stdnodecolmap);
+  }
+
+  //assign materials from one discretization to the other
+  coupdis->AssignMaterials();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  AssignMaterials                                          vuong 09/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::MortarVolCoupl::AssignMaterials(
+    Teuchos::RCP<DRT::Discretization> slavedis,
+    Teuchos::RCP<DRT::Discretization> masterdis,
+    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy)
+{
+  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  const int dim = DRT::Problem::Instance()->NDim();
+
+  if(materialstrategy==Teuchos::null)
+    materialstrategy= Teuchos::rcp(new VOLMORTAR::UTILS::DefaultMaterialStrategy() );
+  // create coupling instance
+  Teuchos::RCP<VOLMORTAR::VolMortarCoupl> coupdis =
+      Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(dim,slavedis,masterdis,materialstrategy));
+
+  //assign materials from one discretization to the other
+  coupdis->AssignMaterials();
 
   return;
 }

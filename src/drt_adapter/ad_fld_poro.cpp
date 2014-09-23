@@ -158,4 +158,11 @@ void ADAPTER::FluidPoro::AddDirichCond(const Teuchos::RCP<const Epetra_Map> mapt
   fluidimpl_->AddDirichCond(maptoadd);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+LINALG::MapExtractor& ADAPTER::FluidPoro::VelPresSplitter()
+{
+  return fluidimpl_->VelPresSplitter();
+}
+
 /*----------------------------------------------------------------------*/

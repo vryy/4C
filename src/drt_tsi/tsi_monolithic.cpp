@@ -213,8 +213,16 @@ void TSI::Monolithic::ReadRestart(int step)
 
   // Material pointers to other field were deleted during ReadRestart().
   // They need to be reset.
-  TSI::UTILS::SetMaterialPointersMatchingGrid(StructureField()->Discretization(),
-                                              ThermoField()->Discretization());
+  if(matchinggrid_)
+    TSI::UTILS::SetMaterialPointersMatchingGrid(StructureField()->Discretization(),
+                                                ThermoField()->Discretization());
+  else
+  {
+    Teuchos::RCP<TSI::UTILS::TSIMaterialStrategy> strategy = Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
+    volcoupl_->AssignMaterials(StructureField()->Discretization(),
+                               ThermoField()->Discretization(),
+                               strategy);
+  }
 
   return;
 }  // ReadRestart()

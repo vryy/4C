@@ -99,11 +99,16 @@ void DRT::Discretization::Evaluate(
 
   Element::LocationArray la(dofsets_.size());
 
+  const int mypid = Comm().MyPID();
+
   // loop over column elements
   const int numcolele = NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
     DRT::Element* actele = lColElement(i);
+
+    //if the element has only ghosted nodes it will not assemble -> skip evaluation
+    if(actele->HasOnlyGhostNodes(mypid)) continue;
 
     {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
@@ -121,14 +126,14 @@ void DRT::Discretization::Evaluate(
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
-    // call the element evaluate method
-    int err = actele->Evaluate(params,*this,la,
-                               strategy.Elematrix1(),
-                               strategy.Elematrix2(),
-                               strategy.Elevector1(),
-                               strategy.Elevector2(),
-                               strategy.Elevector3());
-    if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
+      // call the element evaluate method
+      int err = actele->Evaluate(params,*this,la,
+                                 strategy.Elematrix1(),
+                                 strategy.Elematrix2(),
+                                 strategy.Elevector1(),
+                                 strategy.Elevector2(),
+                                 strategy.Elevector3());
+      if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
     }
 
     {
@@ -177,6 +182,7 @@ void DRT::Discretization::Evaluate(
   Epetra_SerialDenseVector elevector3;
 
   Element::LocationArray la(dofsets_.size());
+  const int mypid = Comm().MyPID();
 
   // loop over column elements
   const int numcolele = NumMyColElements();
@@ -184,6 +190,8 @@ void DRT::Discretization::Evaluate(
   {
     DRT::Element* actele = lColElement(i);
 
+    //if the element has only ghosted nodes it will not assemble -> skip evaluation
+    if(actele->HasOnlyGhostNodes(mypid)) continue;
     // call the element evaluate method
     const int err = actele->Evaluate(params,*this,la,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
@@ -789,6 +797,8 @@ void DRT::Discretization::EvaluateCondition
 
   Element::LocationArray la(dofsets_.size());
 
+  const int mypid = Comm().MyPID();
+
   std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
 
   //----------------------------------------------------------------------
@@ -833,6 +843,9 @@ void DRT::Discretization::EvaluateCondition
 
         for (curr=geom.begin(); curr!=geom.end(); ++curr)
         {
+          //if the element has only ghosted nodes it will not assemble -> skip evaluation
+          if(curr->second->HasOnlyGhostNodes(mypid)) continue;
+
           // get element location vector and ownerships
           // the LocationVector method will return the the location vector
           // of the dofs this condition is meant to assemble into.

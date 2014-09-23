@@ -170,20 +170,20 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
         << std::endl;
     std::cout << "**************************************************"
         << std::endl;
-  }
 
-  //output
-  std::cout << "required evaluation time: " << inttime << std::endl;
-//  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
-//  std::cout << "Created Cells      = " << cellcounter_    << std::endl;
-//  std::cout << "Integr. Elements   = " << inteles_        << std::endl;
-//  std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
+    //output
+    std::cout << "required evaluation time: " << inttime << std::endl;
+  //  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
+  //  std::cout << "Created Cells      = " << cellcounter_    << std::endl;
+  //  std::cout << "Integr. Elements   = " << inteles_        << std::endl;
+  //  std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
+  }
 
   // reset counter
   polygoncounter_ = 0;
-  cellcounter_ = 0;
-  inteles_ = 0;
-  volume_ = 0.0;
+  cellcounter_    = 0;
+  inteles_        = 0;
+  volume_         = 0.0;
 
   // coupling done
   return;
@@ -367,46 +367,51 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
 }
 
 /*----------------------------------------------------------------------*
- |  Assign materials for both fields                         farah 04/14|
+ |  Assign materials for both fields                         vuong 09/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::AssignMaterials()
 {
-  //loop over all adis elements
-  for (int i = 0; i < Adiscret_->NumMyRowElements(); ++i)
+  if(Adiscret_==Teuchos::null or Bdiscret_==Teuchos::null)
+    dserror("no discretization for assigning materials!");
+
+  // init search trees
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+
+  // calculate DOPs for search algorithm
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(Adiscret_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
+
+  /**************************************************
+   * loop over all Adis elements                    *
+   **************************************************/
+  for (int j = 0; j < Adiscret_->NumMyColElements(); ++j)
   {
-    //get slave element
-    DRT::Element* Aele = Adiscret_->lRowElement(i);
+    //get master element
+    DRT::Element* Aele = Adiscret_->lColElement(j);
 
-    //loop over all bdis elements
-    for (int j = 0; j < Bdiscret_->NumMyColElements(); ++j)
-    {
-      //get master element
-      DRT::Element* Bele = Bdiscret_->lColElement(j);
+    std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
 
-      // exchange material pointers
-      //TODO: make this more general
-      Bele->AddMaterial(Aele->Material());
-      Aele->AddMaterial(Bele->Material());
+    /***********************************************************
+     * Assign materials                                        *
+     ***********************************************************/
+    materialstrategy_->AssignMaterialBToA(this,Aele,found,Adiscret_,Bdiscret_);
+  }
 
-      // initialise kinematic type to geo_linear.
-      // kintype is passed to the cloned thermo element
-      GenKinematicType kintype = geo_linear;
+  /**************************************************
+   * loop over all Bdis elements                    *
+   **************************************************/
+  for (int j = 0; j < Bdiscret_->NumMyColElements(); ++j)
+  {
+    //get master element
+    DRT::Element* Bele = Bdiscret_->lColElement(j);
 
-      // if oldele is a so3_base element
-      DRT::ELEMENTS::So3_Base* so3_base =
-          dynamic_cast<DRT::ELEMENTS::So3_Base*>(Aele);
-      if (so3_base != NULL)
-        kintype = so3_base->GetKinematicType();
-      else
-        dserror("oldele is not a so3_thermo element!");
+    std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
 
-      // note: SetMaterial() was reimplemented by the thermo element!
-      DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(Bele);
-      if (therm != NULL)
-      {
-        therm->SetKinematicType(kintype); // set kintype in cloned thermal element
-      }
-    }
+    /***********************************************************
+     * Assign materials                                        *
+     ***********************************************************/
+    materialstrategy_->AssignMaterialAToB(this,Bele,found,Adiscret_,Bdiscret_);
   }
 
   return;
@@ -714,20 +719,20 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
   if (dim_ == 2)
     dserror("Element-based integration only for 3D coupling!");
 
-    // output
-    if(myrank_== 0)
-    {
-      std::cout << "*****       Element-based Integration        *****" << std::endl;
-      std::cout << "*****       Calc First Projector:            *****" << std::endl;
-    }
+  // output
+  if(myrank_== 0)
+  {
+    std::cout << "*****       Element-based Integration        *****" << std::endl;
+    std::cout << "*****       Calc First Projector:            *****" << std::endl;
+  }
 
-    // init search trees
-    Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
-    Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+  // init search trees
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
 
-    // calculate DOPs for search algorithm
-    std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(Adiscret_);
-    std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
+  // calculate DOPs for search algorithm
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(Adiscret_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
 
   /**************************************************
    * loop over all Adis elements                    *
@@ -742,11 +747,6 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
     Integrate3DEleBased_ADis(*Aele, found);
-
-    /***********************************************************
-     * Assign materials                                        *
-     ***********************************************************/
-    materialstrategy_->AssignMaterialBToA(this,Aele,found,Adiscret_,Bdiscret_);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
@@ -775,11 +775,6 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 
     std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
     Integrate3DEleBased_BDis(*Bele, found);
-
-    /***********************************************************
-     * Assign materials                                        *
-     ***********************************************************/
-    materialstrategy_->AssignMaterialAToB(this,Bele,found,Adiscret_,Bdiscret_);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)

@@ -168,11 +168,11 @@ namespace POROELAST
 
       //! field transform
       Teuchos::RCP<Epetra_Vector> StructureToFluidField(Teuchos::RCP<
-          const Epetra_Vector> iv) const;
+          const Epetra_Vector> iv);
 
       //! field transform
       Teuchos::RCP<Epetra_Vector> FluidToStructureField(Teuchos::RCP<
-          const Epetra_Vector> iv) const;
+          const Epetra_Vector> iv);
 
       //@}
 
@@ -225,7 +225,8 @@ namespace POROELAST
     private:
 
       //! setup of everything, that is needed for the volumetric coupling
-      void SetupProxiesAndCoupling();
+      //void SetupProxies();
+      void SetupCoupling();
 
       //! add dof set of structure/fluid discretization to fluid/structure discretization
       void AddDofSets(bool replace =false);

@@ -66,7 +66,9 @@ namespace BINSTRATEGY
       );
 
     /// repartitioning constructor
-    BinningStrategy(std::vector<Teuchos::RCP<DRT::Discretization> > dis);
+    BinningStrategy(std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+                    std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+                    std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap);
 
     /// destructor
     virtual ~BinningStrategy(){};
@@ -92,7 +94,9 @@ namespace BINSTRATEGY
 
     /// elements/nodes from all provided discr. are distributed according to bin distrib.
     void WeightedRepartitioning(
-      std::vector<Teuchos::RCP<DRT::Discretization> > dis
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+      std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+      std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
       );
 
     /// element map with extended ghosting for master side of mortar problem is returned
@@ -114,6 +118,10 @@ namespace BINSTRATEGY
     Teuchos::RCP<Epetra_Map> ExtendGhosting(
       const Epetra_Map* initial_elecolmap,
       std::map<int, std::set<int> >& binelemap
+      );
+
+    virtual void ExtendGhosting(
+        std::vector<Teuchos::RCP<DRT::Discretization> > dis
       );
 
     /// collect information of content in bins from other procs via Round Robin loop
@@ -172,7 +180,7 @@ namespace BINSTRATEGY
     virtual void GetBinConnectivity(
       int binId,   ///< bin id whose connectivity is asked for
       std::vector<int>& binIds   ///< all neighboring bins on axes
-      );  
+      );
 
     /// get nodal coordinates of bin with given id
     virtual void GetBinCorners(
@@ -184,6 +192,10 @@ namespace BINSTRATEGY
     virtual LINALG::Matrix<3,1> GetBinCentroid(
       int binId   ///< bin id of which centroid is calculated
       );
+
+    virtual void RevertExtendedGhosting(std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+        std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+        std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap);
 
   protected:
 

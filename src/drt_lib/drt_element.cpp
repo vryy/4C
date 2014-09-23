@@ -961,3 +961,24 @@ int DRT::Element::Degree() const
   return DRT::UTILS::getDegree(Shape());
 }
 
+/*----------------------------------------------------------------------*
+ |  check if the element has only ghost nodes (public)       vuong 09/14|
+ *----------------------------------------------------------------------*/
+bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
+{
+  const int numnode = NumNode();
+  const DRT::Node*const* nodes = Nodes();
+
+  //check for 'purely ghosted' element, i.e. only ghost nodes
+  bool allghostnodes = true;
+  for (int i=0;i<numnode;++i)
+  {
+    if(nodes[i]->Owner() == mypid)
+    {
+      //one node is not ghosted ->leave
+      allghostnodes = false;
+      break;
+    }
+  }
+  return allghostnodes;
+}

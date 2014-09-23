@@ -26,6 +26,7 @@ Maintainer: Philipp Farah
 namespace DRT
 {
   class Discretization;
+  class Element;
 }
 
 namespace LINALG
@@ -85,6 +86,13 @@ namespace ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMappingBA(Teuchos::RCP<const LINALG::SparseMatrix> mat) const ;
 
     //@}
+
+    //! assign materials
+    void AssignMaterials(Teuchos::RCP<DRT::Discretization> slavedis,
+               Teuchos::RCP<DRT::Discretization> masterdis,
+               Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null
+               );
+
   private:
     Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;             /// P matrix for field A
     Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;             /// P matrix for field B

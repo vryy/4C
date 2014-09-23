@@ -119,13 +119,15 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
  | Repartitioning Binning strategy constructor              ghamm 06/14 |
  *----------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy::BinningStrategy(
-  std::vector<Teuchos::RCP<DRT::Discretization> > dis
+  std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+  std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+  std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
   ) :
   particledis_(Teuchos::null),
   cutoff_radius_(0.0),
   myrank_(dis[0]->Comm().MyPID())
 {
-  WeightedRepartitioning(dis);
+  WeightedRepartitioning(dis,stdelecolmap,stdnodecolmap);
 
   return;
 }
@@ -277,7 +279,9 @@ void BINSTRATEGY::BinningStrategy::DistributeNodesToBins(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::WeightedRepartitioning(
-  std::vector<Teuchos::RCP<DRT::Discretization> > dis
+  std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+  std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+  std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
   )
 {
   // Careful: At the moment only reference configuration is considered
@@ -396,6 +400,9 @@ void BINSTRATEGY::BinningStrategy::WeightedRepartitioning(
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
   Teuchos::RCP<Epetra_Map> newrowbins = Teuchos::rcp(new Epetra_Map(-1,rbinstmp.NumMyElements(),rbinstmp.MyGlobalElements(),0,dis[0]->Comm()));
 
+  stdelecolmap.resize(dis.size());
+  stdnodecolmap.resize(dis.size());
+
   // rebuild discretizations including extended ghosting
   for(size_t i=0; i<dis.size(); ++i)
   {
@@ -434,16 +441,15 @@ void BINSTRATEGY::BinningStrategy::WeightedRepartitioning(
 
     // the column map will become the new ghosted distribution of nodes (standard ghosting)
     const Epetra_BlockMap cntmp = newnodegraph->ColMap();
-    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,dis[0]->Comm()));
+    stdnodecolmap[i] = Teuchos::rcp(new Epetra_Map(-1,cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,dis[0]->Comm()));
 
     // rebuild of the discretizations with new maps for standard ghosting
     Teuchos::RCP<Epetra_Map> roweles;
-    Teuchos::RCP<Epetra_Map> coleles;
-    dis[i]->BuildElementRowColumn(*newnoderowmap,*newnodecolmap,roweles,coleles);
+    dis[i]->BuildElementRowColumn(*newnoderowmap,*stdnodecolmap[i],roweles,stdelecolmap[i]);
     dis[i]->ExportRowNodes(*newnoderowmap);
     dis[i]->ExportRowElements(*roweles);
-    dis[i]->ExportColumnNodes(*newnodecolmap);
-    dis[i]->ExportColumnElements(*coleles);
+    dis[i]->ExportColumnNodes(*stdnodecolmap[i]);
+    dis[i]->ExportColumnElements(*stdelecolmap[i]);
     dis[i]->FillComplete(false,false,false);
     if(myrank_ == 0)
       std::cout << "parallel distribution with standard ghosting" << std::endl;
@@ -696,6 +702,84 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
   return Teuchos::rcp(new Epetra_Map(-1,(int)colgids.size(),&colgids[0],0,initial_elecolmap->Comm()));
 }
 
+
+/*-------------------------------------------------------------------*
+| extend ghosting according to bin distribution          ghamm 11/13 |
+ *-------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::ExtendGhosting(
+    std::vector<Teuchos::RCP<DRT::Discretization> > dis)
+{
+  for(size_t i=0; i<dis.size(); ++i)
+  {
+    //----------------------------
+    // start with extended ghosting
+    //----------------------------
+    // fill elements into bins
+    std::map<int, std::set<int> > binelemap;
+    DistributeElesToBins(dis[i], binelemap);
+
+    // ghosting is extended
+    Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap);
+
+    // adapt layout to extended ghosting in discret
+    // first export the elements according to the processor local element column maps
+    dis[i]->ExportColumnElements(*extendedelecolmap);
+
+    // get the node ids of the elements that are to be ghosted and create a proper node column map for their export
+    std::set<int> nodes;
+    for (int lid=0; lid<extendedelecolmap->NumMyElements(); ++lid)
+    {
+      DRT::Element* ele = dis[i]->gElement(extendedelecolmap->GID(lid));
+      const int* nodeids = ele->NodeIds();
+      for(int inode=0; inode<ele->NumNode(); ++inode)
+        nodes.insert(nodeids[inode]);
+    }
+
+    std::vector<int> colnodes(nodes.begin(),nodes.end());
+    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,dis[i]->Comm()));
+
+    // now ghost the nodes
+    dis[i]->ExportColumnNodes(*nodecolmap);
+
+    // fillcomplete discret with extended ghosting
+    dis[i]->FillComplete();
+    if(myrank_ == 0)
+      std::cout << "parallel distribution with extended ghosting" << std::endl;
+    DRT::UTILS::PrintParallelDistribution(*dis[i]);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
+  std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+  std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+  std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
+  )
+{
+  for(size_t i=0; i<dis.size(); ++i)
+  {
+    //----------------------------
+    // revert extended ghosting
+    //----------------------------
+
+    // adapt layout to standard ghosting in discret
+    // first export the elements according to the processor local element column maps
+    dis[i]->ExportColumnElements(*(stdelecolmap[i]));
+
+    // now ghost the nodes
+    dis[i]->ExportColumnNodes(*(stdnodecolmap[i]));
+
+    // fillcomplete discret with standard ghosting
+    dis[i]->FillComplete();
+    if(myrank_ == 0)
+      std::cout << "parallel distribution with reverted ghosting" << std::endl;
+    DRT::UTILS::PrintParallelDistribution(*dis[i]);
+  }
+}
 
 /*-------------------------------------------------------------------*
 | extend ghosting according to bin distribution          ghamm 11/13 |

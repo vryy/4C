@@ -1913,6 +1913,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("MESH_INIT","No","If chosen, mesh initialization procedure is performed",
                                yesnotuple,yesnovalue,&volmortar);
 
+  setStringToIntegralParameter<int>("KEEP_EXTENDEDGHOSTING","Yes","If chosen, extended ghosting is kept for simulation",
+                               yesnotuple,yesnovalue,&volmortar);
+
   /*----------------------------------------------------------------------*/
   /* parameters for wear */
   Teuchos::ParameterList& wear = list->sublist("WEAR",false,"");

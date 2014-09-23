@@ -36,6 +36,9 @@ namespace POROELAST
       /// destructor
       virtual ~PoroelastCloneStrategy() {}
 
+      /// returns conditions names to be copied (source and target name)
+      std::map<std::string, std::string> ConditionsToCopy();
+
     protected:
 
       /// determine element type string and whether element is copied or not
@@ -49,9 +52,6 @@ namespace POROELAST
           DRT::Element*              oldele,
           const int                  matid,
           const bool                 isnurbs);
-
-      /// returns conditions names to be copied (source and target name)
-      std::map<std::string, std::string> ConditionsToCopy();
 
       /// check for correct material
       void CheckMaterialType(const int matid);

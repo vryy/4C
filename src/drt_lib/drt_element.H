@@ -711,11 +711,24 @@ public:
 
   \param nummat (in): number of requested material
   */
-  Teuchos::RCP<MAT::Material> Material(int nummat=0) const
+  virtual Teuchos::RCP<MAT::Material> Material(int nummat=0) const
   {
     dsassert(nummat<(int)mat_.size(),"invalid material number");
     return mat_[nummat];
   }
+
+  /*!
+  \brief Check whether the element has only ghost nodes
+
+  Note: If the element has only ghost nodes, the element will not be allowed
+        to assemble in any global vectors or matrixes, and, hence, can be
+        skiped during Evaluate(). The only reason why it is ghosted on this
+        proc is to provide access to its data. This might be necessary for volumetric
+        coupling of non conforming meshes.
+
+  \param mypid (in): id of calling processor
+  */
+  virtual bool HasOnlyGhostNodes(const int mypid) const;
 
   /*!
   \brief Query names of element data to be visualized using BINIO

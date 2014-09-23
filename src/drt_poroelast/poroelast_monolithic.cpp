@@ -19,7 +19,6 @@
 /*----------------------------------------------------------------------*
  | headers                                                  vuong 01/12 |
  *----------------------------------------------------------------------*/
-#include "poroelast_monolithic.H"
 #include "poroelast_defines.H"
 
 #include "../drt_adapter/adapter_coupling.H"
@@ -48,9 +47,16 @@
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+//contact
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
+
+//for coupling of nonmatching meshes
+#include "../drt_adapter/adapter_coupling_volmortar.H"
+
+#include "poroelast_monolithic.H"
+
 /*----------------------------------------------------------------------*
  | monolithic                                              vuong 01/12  |
  *----------------------------------------------------------------------*/
@@ -418,6 +424,16 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
 
+  if(!matchinggrid_)
+  {
+    k_sf->Complete(
+            *(StructureField()->Discretization()->DofRowMap(1)),
+            *(StructureField()->Discretization()->DofRowMap(0))
+            );
+
+    k_sf=volcoupl_->ApplyMatrixMappingAB(k_sf);
+  }
+
   // Uncomplete mechanical-fluid matrix to be able to deal with slightly
   // defective interface meshes.
 
@@ -451,6 +467,16 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
 
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs);
+
+  if(!matchinggrid_)
+  {
+    k_fs->Complete(
+            *(FluidField()->Discretization()->DofRowMap(1)),
+            *(FluidField()->Discretization()->DofRowMap(0))
+            );
+
+    k_fs=volcoupl_->ApplyMatrixMappingBA(k_fs);
+  }
 
   // uncomplete because the fluid interface can have more connections than the
   // structural one. (Tet elements in fluid can cause this.) We should do

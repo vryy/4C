@@ -129,6 +129,12 @@ public:
   }
   ;
 
+  /*!
+   \brief assign materials
+
+   */
+  virtual void AssignMaterials();
+
 protected:
   /*!
    \brief Get discretization of A-field
@@ -150,12 +156,6 @@ protected:
 
    */
   virtual void AssembleConsistentInterpolation_BDis(DRT::Node* node);
-
-  /*!
-   \brief check initial coupling constraint
-
-   */
-  virtual void AssignMaterials();
 
   /*!
    \brief Get discretization of B-field
@@ -437,6 +437,7 @@ protected:
   INPAR::VOLMORTAR::DualQuad         dualquad_;        /// type of quadratic weighting interpolation
 
   Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
+
 };
 
 }//namespace...

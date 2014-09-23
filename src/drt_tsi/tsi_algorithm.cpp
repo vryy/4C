@@ -120,31 +120,40 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   ApplyThermoCouplingState(ThermoField()->Tempnp());
   StructureField()->Output(forced_writerestart);
 
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  // Get the parameters for the Newton iteration
+  int upres = tsidyn.get<int>("UPRES");
+  int uprestart = tsidyn.get<int>("RESTARTEVRY");
+
   // mapped temperatures for structure field
-  if(!matchinggrid_)
-  {
-    //************************************************************************************
-    Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMappingAB(ThermoField()->Tempnp());
-
-    // loop over all local nodes of thermal discretisation
-    for (int lnodeid=0; lnodeid<(StructureField()->Discretization()->NumMyRowNodes()); lnodeid++)
+  if ( (upres!=0 and (Step()%upres == 0))
+    or ( (uprestart != 0) and (Step()%uprestart == 0) )
+    or forced_writerestart == true )
+    if(!matchinggrid_)
     {
-      DRT::Node* structnode = StructureField()->Discretization()->lRowNode(lnodeid);
-      std::vector<int> structdofs = StructureField()->Discretization()->Dof(1,structnode);
+      //************************************************************************************
+      Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMappingAB(ThermoField()->Tempnp());
 
-      // global and processor's local fluid dof ID
-      const int sgid = structdofs[0];
-      const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
+      // loop over all local nodes of thermal discretisation
+      for (int lnodeid=0; lnodeid<(StructureField()->Discretization()->NumMyRowNodes()); lnodeid++)
+      {
+        DRT::Node* structnode = StructureField()->Discretization()->lRowNode(lnodeid);
+        std::vector<int> structdofs = StructureField()->Discretization()->Dof(1,structnode);
 
-      // get value of corresponding displacement component
-      double temp = (*dummy1)[slid];
-      // insert velocity value into node-based vector
-      int err = tempnp_->ReplaceMyValue(lnodeid, 0, temp);
-      if (err!= 0) dserror("error while inserting a value into tempnp_");
-    } // for lnodid
+        // global and processor's local fluid dof ID
+        const int sgid = structdofs[0];
+        const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
 
-    StructureField()->DiscWriter()->WriteVector("struct_temperature",tempnp_,IO::DiscretizationWriter::nodevector);
-  }
+        // get value of corresponding displacement component
+        double temp = (*dummy1)[slid];
+        // insert velocity value into node-based vector
+        int err = tempnp_->ReplaceMyValue(lnodeid, 0, temp);
+        if (err!= 0) dserror("error while inserting a value into tempnp_");
+      } // for lnodid
+
+      StructureField()->DiscWriter()->WriteVector("struct_temperature",tempnp_,IO::DiscretizationWriter::nodevector);
+    }
 
   //========================
   // output for thermofield:
@@ -152,11 +161,6 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
   ThermoField()->Output(forced_writerestart);
 
-  // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-  // Get the parameters for the Newton iteration
-  int upres = tsidyn.get<int>("UPRES");
-  int uprestart = tsidyn.get<int>("RESTARTEVRY");
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
   if( forced_writerestart == true and

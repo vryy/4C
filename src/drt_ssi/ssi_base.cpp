@@ -131,12 +131,13 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
       dis.push_back(structdis);
       dis.push_back(scatradis);
 
+      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
       /// binning strategy is created and parallel redistribution is performed
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis));
+        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
     }
   }
-
-
 
 }

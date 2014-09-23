@@ -30,10 +30,6 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(
   if(Aele==NULL)
     dserror("got NULL pointer for AssignMaterial for element!");
 
-  //only row elements
-  if(disA->ElementRowMap()->MyGID(Aele->Id()) == -1)
-    return;
-
   //if no corresponding element found -> leave
   if(Bids.empty())
     return;
@@ -58,10 +54,6 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(
 {
   if(Bele==NULL)
     dserror("got NULL pointer for AssignMaterial for element!");
-
-  //only row elements
-  if(disB->ElementRowMap()->MyGID(Bele->Id()) == -1)
-    return;
 
   //if no corresponding element found -> leave
   if(Aids.empty())
