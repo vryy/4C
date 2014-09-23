@@ -40,6 +40,7 @@
 
 #include "../drt_io/io.H"
 
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -158,6 +159,8 @@ void POROELAST::MonolithicSplitNoPenetration::SetupVector(Epetra_Vector &f,
   k_lambdainvD_->Multiply(false,*Dlam,*couprhs);
 
   couprhs->Update(1.0,*nopenetration_rhs_,1.0);
+
+  //std::cout << "nopenetration_rhs_: " << *nopenetration_rhs_ << std::endl;
 
   Teuchos::RCP<Epetra_Vector> fullcouprhs = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(),true));
   LINALG::Export(*couprhs,*fullcouprhs);
@@ -381,6 +384,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   k_D_->Zero();
   k_struct_->Zero();
   k_lambda_->Zero();
+  nopenetration_rhs_->Scale(0.0);
 
    Teuchos::RCP<LINALG::SparseMatrix> tmp_k_D = Teuchos::rcp(new LINALG::SparseMatrix(
           *(FluidField()->Interface()->FSICondMap()), 81, false, false));
@@ -545,18 +549,6 @@ void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplier()
 }
 
 /*----------------------------------------------------------------------*
- | prepare time step (protected)                                        |
- *----------------------------------------------------------------------*/
-void POROELAST::MonolithicSplitNoPenetration::PrepareTimeStep()
-{
-  //here to avoid PrepareTimeStep() of POROELAST::MonolithicSplit!!!
-
-  //call base class
-  PoroBase::PrepareTimeStep();
-  return;
-}
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::Output()
 {
@@ -567,3 +559,51 @@ void POROELAST::MonolithicSplitNoPenetration::Output()
   LINALG::Export(*lambda_,*fulllambda);
   StructureField()->DiscWriter()->WriteVector("poronopencond_lambda",fulllambda);
 } // MonolithicSplitNoPenetration::Output()
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+  icoupfs_->SetupConditionCoupling( *StructureField()->Discretization(),
+                                    StructureField()->Interface()->FSICondMap(),
+                                    *FluidField()->Discretization(),
+                                    FluidField()->Interface()->FSICondMap(),
+                                   "FSICoupling",
+                                   ndim);
+
+  evaluateinterface_ = false;
+
+  // initialize Poroelasticity-systemmatrix_
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                              *Extractor(),
+                              *Extractor(),
+                              81,
+                              false,
+                              true));
+
+  // initialize coupling matrixes
+  k_fs_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
+            LINALG::DefaultBlockMatrixStrategy>(*(StructureField()->Interface()),
+                                                *(FluidField()->Interface()),
+                                                81,
+                                                false,
+                                                true));
+
+  k_sf_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
+            LINALG::DefaultBlockMatrixStrategy>(*(FluidField()->Interface()),
+                                                *(StructureField()->Interface()),
+                                                81,
+                                                false,
+                                                true));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplitNoPenetration::PrepareTimeStep()
+{
+  //call base class
+  POROELAST::PoroBase::PrepareTimeStep();
+}
+

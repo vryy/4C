@@ -3138,11 +3138,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 
     convvel.Multiply(econvvel,my::funct_);
 
-    // The integration factor is not multiplied with drs
-    // since it is the same as the scaling factor for the unit normal derivatives
-    // Therefore it cancels out!!
-    const double fac = intpoints.IP().qwgt[gpid];
-
     //fill element matrix
     for (int inode=0;inode<my::bdrynen_;inode++)
     {
@@ -3150,9 +3145,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       {
         //residual for normal direction. Tangential directions are equal to zero.
         rhs(inode*my::nsd_) -=
-            my::funct_(inode) * my::unitnormal_(idof) * convvel(idof) * fac;
+            my::funct_(inode) * my::unitnormal_(idof) * convvel(idof) * my::fac_;
+
         k_D(inode*my::nsd_+idof,inode*my::nsd_+idof) +=
-            dualfunct(inode)* my::funct_(inode) * fac;
+            dualfunct(inode)* my::funct_(inode) * my::fac_;
       }
 
       for (int nnod=0;nnod<my::bdrynen_;nnod++)
@@ -3160,7 +3156,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
           k_fluid(inode*my::nsd_,nnod*my::nsd_+idof2) +=
-              my::funct_(inode)* my::unitnormal_(idof2) * my::funct_(nnod) * fac;
+              my::funct_(inode)* my::unitnormal_(idof2) * my::funct_(nnod) * my::fac_;
         }
       }
     }
@@ -3473,7 +3469,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
        for (int idof=0;idof<my::nsd_;idof++)
        {
          k_struct(inode*my::nsd_,nnod*my::nsd_+idof) +=
-             - my::unitnormal_(idof)*timescale*my::funct_(nnod) * funct_fac
+             - my::unitnormal_(idof)*timescale*my::funct_(nnod) * my::funct_(inode) * my::fac_
              + convvel_normalderiv(0,nnod*my::nsd_+idof) * funct_fac;
        }
      }
@@ -3524,7 +3520,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
    {
      for (int inode=0;inode<my::bdrynen_;inode++)
      {
-       const double funct_fac = my::funct_(inode) * fac;
+       const double funct_fac = my::funct_(inode) * my::fac_;
        for (int nnod=0;nnod<my::bdrynen_;nnod++)
        {
          for (int idof=0;idof<my::nsd_;idof++)
@@ -3541,7 +3537,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
    {
      for (int inode=0;inode<my::bdrynen_;inode++)
      {
-       const double funct_fac = my::funct_(inode) * fac;
+       const double funct_fac = my::funct_(inode) * my::fac_;
        for (int nnod=0;nnod<my::bdrynen_;nnod++)
        {
          for (int idof=0;idof<my::nsd_;idof++)

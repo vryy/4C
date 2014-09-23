@@ -79,12 +79,14 @@ namespace POROELAST
     /// (i.e. condensed forces onto the structure) needed for rhs in next time step
     virtual void RecoverLagrangeMultiplier();
 
+    //! output
+    virtual void Output();
+
+    //! setup of coupling object and systemmatrixes
+    virtual void SetupCouplingAndMatrixes();
 
     //! start a new time step
     virtual void PrepareTimeStep();
-
-    //! output
-    virtual void Output();
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
     //! evalutated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step

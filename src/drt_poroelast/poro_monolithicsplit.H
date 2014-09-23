@@ -83,7 +83,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> FSIDBCMap();
 
     //! setup of coupling object and systemmatrixes
-    void SetupCouplingAndMatrixes();
+    virtual void SetupCouplingAndMatrixes();
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a split, i.e.
     //! structure or fluid split.

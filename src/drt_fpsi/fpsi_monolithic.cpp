@@ -90,8 +90,8 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   // 3. as there are no entries in of the overlapping interface in the FPSI block, FillComplete() removes them and the FPSI block has no overlapping
   //    entries!
 
-  // --> It's clear that this is not really easiy comprehensible, but as the alternatives to this approach require quite some modifications in baci
-  //     (e.g. extra interface for FSI and FPSI for every Field ...), this should be used at the moment.
+  // --> It's clear that this is not really easily comprehensible, but as the alternatives to this approach requires quite some modifications in BACI
+  //     (e.g. extra interface for FSI and FPSI for every Field ...), therefore this version should be used at the moment.
 
 
   // create instance of poroelast subproblem
