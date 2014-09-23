@@ -60,6 +60,9 @@ void ntainp_ccadiscret(
   // input of materials
   problem->ReadMaterials(reader);
 
+  // input of materials of cloned fields (if needed)
+  problem->ReadCloningMaterialMap(reader);
+
   // input of time curves, functions and result tests
   problem->ReadTimeFunctionResult(reader);
 
@@ -70,9 +73,6 @@ void ntainp_ccadiscret(
   case separate_dat_files:
     // input of fields
     problem->ReadFields(reader);
-
-    // input of materials of cloned fields (if needed)
-    problem->ReadCloningMaterialMap(reader);
 
     // read all types of geometry related conditions (e.g. boundary conditions)
     // Also read time and space functions and local coord systems
