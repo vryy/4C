@@ -122,7 +122,8 @@ void POROELAST::MonolithicSplitNoPenetration::SetupRHS( bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplitNoPenetration::SetupRHS");
 
   // create full monolithic rhs vector
-  rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+  if(rhs_==Teuchos::null)
+    rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
   SetupVector(*rhs_,
               StructureField()->RHS(),
