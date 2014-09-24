@@ -2214,11 +2214,6 @@ void FLD::XFluidFluid::TimeLoop()
     }
 
     // -----------------------------------------------------------------
-    //        prepare nonlinear solve (used for Solve())
-    // -----------------------------------------------------------------
-    PrepareNonlinearSolve();
-
-    // -----------------------------------------------------------------
     //                     solve nonlinear equation
     // -----------------------------------------------------------------
     Solve();
@@ -2605,7 +2600,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
 // ----------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void FLD::XFluidFluid::PrepareNonlinearSolve()
+void FLD::XFluidFluid::PrepareSolve()
 {
   // do the cut for this timestep, if the embedded fluid is an ALE-fluid
   if (alefluid_)
@@ -2638,13 +2633,13 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
   SetHistoryValues();
   SetDirichletNeumannBC();
 
-}//FLD::XFluidFluid::PrepareNonlinearSolve()
+}//FLD::XFluidFluid::PrepareSolve()
 
 // ----------------------------------------------------------------
 // Prepare monolithic step (called in TimeUpdate)
 // - set time parameters
 // - do the cut and xfluidfluid time integration
-// - do the nonlinearsolve with fsi-dofs as dirichlet values
+// - solve the fluid problem with FSI velocities as dirichlet values
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::PrepareMonolithicFixedAle()
 {
@@ -2660,7 +2655,7 @@ void FLD::XFluidFluid::PrepareMonolithicFixedAle()
   SetElementTimeParameter();
 
   // cut and do xfluidfluid time integration.
-  PrepareNonlinearSolve();
+  PrepareSolve();
 
   // solve fluid problem with fixed velocities at FSI interface
   // to obtain new fluid solution
@@ -2673,10 +2668,13 @@ void FLD::XFluidFluid::PrepareMonolithicFixedAle()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::Solve()
 {
+  // cut and set state vectors
+  PrepareSolve();
+
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double  ittol     =params_->get<double>("tolerance for nonlin iter");
+  const double  ittol     = params_->get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_->get<bool>("ADAPTCONV",true);
@@ -2927,7 +2925,7 @@ void FLD::XFluidFluid::Solve()
 
     // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat;
     state_->fluidfluidsysmat_->Zero();
-    state_-> fluidfluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
+    state_->fluidfluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
     state_->fluidfluidsysmat_->Add(*alesysmat_,false,1.0,1.0);
     state_->fluidfluidsysmat_->Add(*state_->Cuui_,false,1.0,1.0);
     state_->fluidfluidsysmat_->Add(*state_->Cuiu_,false,1.0,1.0);
@@ -3008,14 +3006,6 @@ void FLD::XFluidFluid::Solve()
 }//FLD::XFluidFluid::Solve()
 
 // -------------------------------------------------------------------
-//
-// -------------------------------------------------------------------
-void FLD::XFluidFluid::LinearSolve()
-{
-
-}
-
-// -------------------------------------------------------------------
 // evaluate method for monolithic fluid-fluid-fsi
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::Evaluate(
@@ -3066,7 +3056,7 @@ void FLD::XFluidFluid::Evaluate(
     if (monotype_ == FullyNewton)
     {
       // cut and set state vectors
-      PrepareNonlinearSolve();
+      PrepareSolve();
 
       stepinc_bg = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
 

@@ -342,14 +342,11 @@ namespace FLD
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
-    /// new cut and xfem-Timeintegration happens here
-    void PrepareNonlinearSolve();
+    /// new cut and xfem-time integration happen here
+    void PrepareSolve();
 
-    /// new cut, xfem-Timeintegration and solving fluid for monolithic fixed-ale
+    /// new cut, xfem-time integration and fluid solution for monolithic fixed-ale approach
     void PrepareMonolithicFixedAle();
-
-    /// Implement ADAPTER::Fluid
-    void PrepareSolve() { PrepareNonlinearSolve(); }
 
     /// do nonlinear iteration, e.g. full Newton, Newton-like or Fixpoint iteration
     void Solve();
