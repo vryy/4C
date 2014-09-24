@@ -10,7 +10,7 @@ Maintainer: Kei Müller
 </pre>
 
 *----------------------------------------------------------------------*/
-
+//yeehaaa!
 #include "statmech_manager.H"
 #include "statmech_search.H"
 
