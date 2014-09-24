@@ -70,7 +70,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   finertn_(Teuchos::null),
   fvisct_(Teuchos::null)
 {
-  // info to user
+  // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
     VerifyCoeff();
@@ -112,7 +112,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
   finert_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -265,12 +265,16 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
 
+  // ************************** (1) EXTERNAL FORCES ***************************
+
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  ApplyForceStiffExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -286,7 +290,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
       }
 
     // ordinary internal force and stiffness
-    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_,params, damp_);
+    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params, damp_);
   }
   else
   {
@@ -332,6 +336,8 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   // potential forces
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
 
+  // ************************** (3) INERTIAL FORCES ***************************
+
   // build new internal forces and stiffness
   if (!HaveNonlinearMass())
   {
@@ -344,11 +350,15 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
     finertt_->Update(theta_, *finertn_, (1.0-theta_), *finert_, 0.0);
   }
 
+  // ************************** (4) DAMPING FORCES ****************************
+
   // viscous forces due Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velt_, *fvisct_);
   }
+
+  // ******************** Finally, put everything together ********************
 
   // build residual  Res = M . A_{n+theta}
   //                     + C . V_{n+theta}
@@ -390,7 +400,6 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   // close stiffness matrix
   stiff_->Complete();
 
-  // hallelujah
   return;
 }
 
@@ -404,6 +413,76 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidualRelax(Teuchos::Parameter
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-theta_, *fifc_, 0.0);
+}
+
+/*----------------------------------------------------------------------*/
+/* Evaluate residual */
+void STR::TimIntOneStepTheta::EvaluateForceResidual()
+{
+  // theta-interpolate state vectors
+  EvaluateMidState();
+
+  // ************************** (1) EXTERNAL FORCES ***************************
+
+  // build new external forces
+  fextn_->PutScalar(0.0);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+
+  // additional external forces are added (e.g. interface forces)
+  fextn_->Update(1.0, *fifc_, 1.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
+
+  // initialise internal forces
+  fintn_->PutScalar(0.0);
+
+  // build new internal forces and stiffness
+  if (!HaveNonlinearMass())
+  {
+    // ordinary internal force and stiffness
+    ApplyForceInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
+  }
+  else
+  {
+    dserror("Not implemented, yet.");
+  }
+
+  // ************************** (3) INERTIAL FORCES ***************************
+
+  // build new internal forces and stiffness
+  if (!HaveNonlinearMass())
+  {
+    // inertial forces #finertt_
+    mass_->Multiply(false, *acct_, *finertt_);
+  }
+  else
+  {
+    dserror("Not implemented, yet.");
+  }
+
+  // ************************** (4) DAMPING FORCES ****************************
+
+  // viscous forces due Rayleigh damping
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Multiply(false, *velt_, *fvisct_);
+  }
+
+  // ******************** Finally, put everything together ********************
+
+  // build residual  Res = M . A_{n+theta}
+  //                     + C . V_{n+theta}
+  //                     + F_{int;n+theta}
+  //                     - F_{ext;n+theta}
+  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
+  fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    fres_->Update(1.0, *fvisct_, 1.0);
+  }
+  fres_->Update(1.0, *finertt_, 1.0);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -424,30 +503,6 @@ void STR::TimIntOneStepTheta::EvaluateMidState()
 
   // jump
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/* calculate characteristic/reference norms for displacements
- * originally by lw */
-double STR::TimIntOneStepTheta::CalcRefNormDisplacement()
-{
-  // The reference norms are used to scale the calculated iterative
-  // displacement norm and/or the residual force norm. For this
-  // purpose we only need the right order of magnitude, so we don't
-  // mind evaluating the corresponding norms at possibly different
-  // points within the timestep (end point, generalized midpoint).
-
-  double charnormdis = 0.0;
-  if (pressure_ != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-  }
-  else
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-
-  // rise your hat
-  return charnormdis;
 }
 
 /*----------------------------------------------------------------------*/

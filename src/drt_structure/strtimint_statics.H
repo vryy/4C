@@ -135,9 +135,8 @@ namespace STR
     //! relaxation solution with SolveRelaxationLinear
     void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params);
 
-    //! Determine characteristic norm for displacements
-    //! \author lw (originally)
-    double CalcRefNormDisplacement();
+    //! Evaluate residual #fres_
+    void EvaluateForceResidual();
 
     //! Determine characteristic norm for force
     //! \author lw (originally)

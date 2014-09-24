@@ -249,25 +249,24 @@ namespace STR
     virtual int IntegrateStep() = 0;
 
 
-    /// non-linear solve
-    ///
-    /// Do the nonlinear solve, i.e. (multiple) corrector,
-    /// for the time step. All boundary conditions have
-    /// been set.
+    /*! \brief Non-linear solve
+     *
+     *  Do the nonlinear solve, i.e. (multiple) corrector,
+     *  for the time step. All boundary conditions have been set.
+     */
     virtual int Solve() = 0;
 
     //! Linear structure solve with just an interface load
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
 
-    /// update displacement and evaluate elements
-    ///
-    /// there are two displacement increments possible
-    ///
-    /// x^n+1_i+1 = x^n+1_i + disiterinc  (sometimes referred to as residual increment), and
-    ///
-    /// x^n+1_i+1 = x^n     + disstepinc
-    ///
-    /// with n and i being time and Newton iteration step
+    /*! \brief Update displacement and evaluate elements in case of coupled problems
+     *
+     *  We always need iterative displacement increments here:
+     *
+     *  x^n+1_i+1 = x^n+1_i + disiterinc (sometimes referred to as residual increment)
+     *
+     *  with n and i being time and Newton iteration step
+     */
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
 
     /// update at time step end
@@ -453,88 +452,71 @@ namespace STR
 
     //@}
 
-    //! @name Forces and Stiffnesses
+    /*! @name Forces
+     *
+     *  Apply all sets of forces (external, internal, damping, inertia, ...)
+     *  based on the current solution state.
+     *
+     *  On the level of STR::TimInt, we only deal with forces. There are no
+     *  stiffnesses since thay are not needed in a general time integration
+     *  scheme, but only in an implicit one.
+     *
+     *  For the application of forces AND
+     *  stiffnesses, see STR::TimIntImpl.
+     *
+     *  \sa STR::TimIntImpl
+     */
     //@{
 
     //! Apply external force
     void ApplyForceExternal
     (
       const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< old displacement state
-      const Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
-      Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
+      const Teuchos::RCP<Epetra_Vector> dis, //!< old displacement state
+      const Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
+      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
+      Teuchos::RCP<Epetra_Vector>& fext //!< external force
     );
 
-    //! Evaluate ordinary internal force, its stiffness at state
-    void ApplyForceStiffInternal
-    (
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-      Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
-      Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
-    );
-
-    //! Evaluate internal and inertia forces and their linearizations
-    void ApplyForceStiffInternalAndInertial
-    (
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const double timintfac_dis,  //!< time integration factor for d(Res) / d dis
-      const double timintfac_vel,  //!< time integration factor for d(Res) / d vel
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      const Teuchos::RCP<Epetra_Vector> acc,  // acceleration state
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
-      Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> mass,  //!< mass matrix
-      Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
-      const double beta=1000.0,
-      const double gamma=1000.0,
-      const double alphaf=1000.0,
-      const double alpham=1000.0
-    );
-
-
-    //! Return bool indicating if we have nonlinear inertia forces
-    int HaveNonlinearMass();
-
-    //! check wether the initial conditions are fulfilled */
-    void NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
-                                   Teuchos::RCP<Epetra_Vector> dis,
-                                   Teuchos::RCP<Epetra_Vector> vel,
-                                   Teuchos::RCP<Epetra_Vector> acc,
-                                   const Teuchos::ParameterList* sdynparams=NULL
-                                  );
-
-    //! Evaluate ordinary internal force
-    //!
-    //! We need incremental displacements, because the internal variables,
-    //! chiefly EAS parameters with an algebraic constraint, are treated
-    //! as well. They are not treated perfectly, ie they are not iteratively
-    //! equilibriated according to their (non-linear) constraint and
-    //! the pre-determined displacements -- we talk explicit time integration
-    //! here, but they are applied in linearised manner. The linearised
-    //! manner means the static condensation is applied once with
-    //! residual displacements replaced by the full-step displacement
-    //! increment \f$D_{n+1}-D_{n}\f$.
+    /*! \brief Evaluate ordinary internal force
+     *
+     *  We need incremental displacements, because the internal variables,
+     *  chiefly EAS parameters with an algebraic constraint, are treated
+     *  as well. They are not treated perfectly, i.e. they are not iteratively
+     *  equilibrated according to their (non-linear) constraint and
+     *  the pre-determined displacements -- we talk explicit time integration
+     *  here, but they are applied in linearised manner. The linearised
+     *  manner means the static condensation is applied once with
+     *  residual displacements replaced by the full-step displacement
+     *  increment \f$D_{n+1}-D_{n}\f$.
+     */
     void ApplyForceInternal
     (
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      Teuchos::RCP<const Epetra_Vector> dis,  //!< displacement state
+      const double time, //!< evaluation time
+      const double dt, //!< step size
+      Teuchos::RCP<const Epetra_Vector> dis, //!< displacement state
       Teuchos::RCP<const Epetra_Vector> disi, //!< incremental displacements
-      Teuchos::RCP<const Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector> fint  //!< internal force
+      Teuchos::RCP<const Epetra_Vector> vel, // velocity state
+      Teuchos::RCP<Epetra_Vector> fint //!< internal force
     );
+
+    //@}
+
+    //! @name Nonlinear mass
+    //@{
+
+    //! Return bool indicating if we have nonlinear inertia forces
+    int HaveNonlinearMass() const;
+
+    //! check whether the initial conditions are fulfilled */
+    void NonlinearMassSanityCheck
+    (
+      Teuchos::RCP<const Epetra_Vector> fext, ///< external forces
+      Teuchos::RCP<const Epetra_Vector> dis, ///< displacements
+      Teuchos::RCP<const Epetra_Vector> vel, ///< velocities
+      Teuchos::RCP<const Epetra_Vector> acc, ///< accelerations
+      const Teuchos::ParameterList* sdynparams=NULL ///< structural dynamics parameter list
+    ) const;
 
     //@}
 
@@ -592,7 +574,7 @@ namespace STR
     //! @name Access methods
     //@{
 
-    //! Access dicretisation
+    //! Access discretisation
     Teuchos::RCP<DRT::Discretization> Discretization()
     {
       // Here a 'false' must be used. This is due to
@@ -814,7 +796,7 @@ namespace STR
     //! Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
 
-    //! extract displacements (! not only (*dis_)(0) but all time steps
+    //! extract displacements (! not only (*dis_)(0) but all time steps)
     virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep() { return dis_; };
 
     //! times for all the steps
@@ -842,7 +824,7 @@ namespace STR
     virtual double GetTimeEnd() const { return timemax_; }
 
     //! Set upper limit of time range of interest
-    virtual void SetTimeEnd(double timemax){timemax_=timemax; }
+    virtual void SetTimeEnd(double timemax) {timemax_=timemax; }
 
     //! Get time step size \f$\Delta t_n\f$
     virtual double Dt() const { return (*dt_)[0]; }
@@ -878,10 +860,10 @@ namespace STR
     //@{
 
     /// write access to displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return DisNew(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() { return DisNew(); }
 
-    //! write access to extract velocities at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return VelNew(); }
+    //! write access to velocities at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return VelNew(); }
 
     //@}
 
@@ -977,14 +959,20 @@ namespace STR
 
     //! @name Biofilm methods
     //@{
+
     // reset everything (needed for biofilm simulations)
     void Reset();
 
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
+
+    virtual const bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()) ; }
+
     //@}
 
     //! @name Crack propagation methods
+    //@{
+
     //! check for crack propagation and do preparations
     void PrepareCrackSimulation();
 
@@ -999,6 +987,7 @@ namespace STR
 
     //! Get the crack tip nodes
     std::vector<int> GetCrackTipNodes();
+
     //@}
 
   protected:
@@ -1078,19 +1067,19 @@ namespace STR
     Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
 
     //! potential conditions
-    Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
+    Teuchos::RCP<POTENTIAL::PotentialManager> potman_;
 
     //! bridge for meshtying and contact
-    Teuchos::RCP<CONTACT::MeshtyingContactBridge>   cmtbridge_;
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge> cmtbridge_;
 
     //! beam contact
-    Teuchos::RCP<CONTACT::Beam3cmanager>   beamcman_;
+    Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;
 
     //! semi-smooth plasticity
-    Teuchos::RCP<DRT::UTILS::PlastSsnManager>   plastman_;
+    Teuchos::RCP<DRT::UTILS::PlastSsnManager> plastman_;
 
     //! statistical mechanics
-    Teuchos::RCP<STATMECH::StatMechManager>   statmechman_;
+    Teuchos::RCP<STATMECH::StatMechManager> statmechman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
@@ -1098,7 +1087,7 @@ namespace STR
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
-    //!  Holds class that propagates crack within the discretiztion
+    //!  Holds class that propagates crack within the discretization
     Teuchos::RCP<DRT::CRACK::CrackDyn> propcrack_;
 
     //! elements with micro-materials
@@ -1187,11 +1176,11 @@ namespace STR
 
     //! @name Time measurement
     //@{
-    Teuchos::RCP<Epetra_Time>  timer_;           //!< timer for solution technique
-    double            dtsolve_;         //!< linear solver time
-    double            dtele_;           //!< element evaluation time
-    double            dtcmt_;           //!< contact / meshtying evaluation time
-    double            inttime_global_;  //!< global integration time for contact evaluation
+    Teuchos::RCP<Epetra_Time> timer_; //!< timer for solution technique
+    double dtsolve_; //!< linear solver time
+    double dtele_; //!< element evaluation time
+    double dtcmt_; //!< contact / meshtying evaluation time
+    double inttime_global_; //!< global integration time for contact evaluation
     //@}
 
     //! @name Patient specific stuff
@@ -1206,7 +1195,7 @@ namespace STR
 
     //! @name porous media specific stuff
     //@{
-    Teuchos::RCP<LINALG::MapExtractor>      porositysplitter_;
+    Teuchos::RCP<LINALG::MapExtractor> porositysplitter_;
     //@}
   };
 

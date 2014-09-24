@@ -202,12 +202,14 @@ namespace STR
       return;
     }
 
-    /// has to be renamed either here or IntegrateStep()
+    //!  Evaluate routine for coupled problems with monolithic approach
     virtual void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> disiterinc
+      Teuchos::RCP<const Epetra_Vector> disiterinc ///< iterative solution increment
     )
     {
-      dserror("just here for overloading reasons, should go as soon as possible");
+      dserror("All monolithically coupled problems work with implicit time "
+          "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+          "is not possible.");
     }
 
     //! Apply external force

@@ -152,45 +152,122 @@ namespace STR
 
     //@}
 
-    //! @name Forces and stiffnesses
+    /*! @name Forces
+     *
+     *  Apply all sets of forces (external, internal, damping, inertia, ...)
+     *  and corresponding stiffnesses based on the current solution state.
+     *
+     *  On the level of STR::TimIntImpl, we deal with forces and their stiffness
+     *  contributions since an implicit time integration in BACI often requires
+     *  full linearization.
+     *
+     *  For application of forces only (without stiffness), see STR::TimInt.
+     *
+     *  \sa STR::TimInt
+     */
     //@{
 
-    //! Do residual force due to global balance of momentum
-    //! and its tangent with respect to the current
-    //! displacements \f$D_{n+1}\f$
-    //!
-    //! This is <i>the</i> central method which is different for each
-    //! derived implicit time integrator. The time integrator implementation
-    //! is expected to set members #fres_ and #stiff_.
-    //! The residual #fres_ is expected to follow the <i>same</i> sign
-    //! convention like its tangent #stiff_, i.e. to use
-    //! Newton--Raphson's method the residual will be scaled by -1.
-    //!
-    //! A parameter list is used to pass on additional information
-    //! from from the non-linear solution procedure. For instance,
-    //! in structural contact simulations and semi-smooth newton plasticity,
-    //! it is of importance whether this method is called from a predictor step
-    //! or from a regular Newton step.
+    /*! \brief Evaluate forces, stiffness #stiff_ and residual #fres_
+     *
+     *  Do residual force due to global balance of momentum
+     *  and its tangent with respect to the current
+     *  displacements \f$D_{n+1}\f$
+     *
+     *  This is <i>the</i> central method which is different for each
+     *  derived implicit time integrator. The time integrator implementation
+     *  is expected to set members #fres_ and #stiff_.
+     *  The residual #fres_ is expected to follow the <i>same</i> sign
+     *  convention like its tangent #stiff_, i.e. to use
+     *  Newton--Raphson's method the residual will be scaled by -1.
+     *
+     *  A parameter list is used to pass on additional information
+     *  from from the non-linear solution procedure. For instance,
+     *  in structural contact simulations and semi-smooth newton plasticity,
+     *  it is of importance whether this method is called from a predictor step
+     *  or from a regular Newton step.
+     */
     virtual void EvaluateForceStiffResidual(Teuchos::ParameterList& params) = 0;
+
+    /*! \brief Evaluate forces and residual #fres_
+     *
+     *  Do residual force due to global balance of momentum.
+     *
+     *  This is <i>the</i> central method which is different for each
+     *  derived implicit time integrator. The time integrator implementation
+     *  is expected to set members #fres_.
+     *
+     *  For now, this only provides basic functionalities, i.e. pure solid
+     *  dynamics without contact, plasticity, constraints, ...
+     *
+     *  \author mayr.mt \date 09/2014
+     */
+    virtual void EvaluateForceResidual() = 0;
+
+    //! Apply external force, its stiffness at state
+    void ApplyForceStiffExternal
+    (
+      const double time, //!< evaluation time
+      const Teuchos::RCP<Epetra_Vector> dis, //!< old displacement state
+      const Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
+      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
+      Teuchos::RCP<Epetra_Vector>& fext, //!< external force
+      Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
+    );
+
+    //! Evaluate ordinary internal force, its stiffness at state
+    void ApplyForceStiffInternal
+    (
+      const double time, //!< evaluation time
+      const double dt, //!< step size
+      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> disi, //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
+      Teuchos::RCP<Epetra_Vector> fint, //!< internal force
+      Teuchos::RCP<LINALG::SparseOperator> stiff, //!< stiffness matrix
+      Teuchos::ParameterList& params, //!< parameters from nonlinear solver
+      Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null //!< material damping matrix
+    );
+
+    //! Evaluate internal and inertia forces and their linearizations
+    void ApplyForceStiffInternalAndInertial
+    (
+      const double time, //!< evaluation time
+      const double dt, //!< step size
+      const double timintfac_dis, //!< time integration factor for d(Res) / d dis
+      const double timintfac_vel, //!< time integration factor for d(Res) / d vel
+      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> disi, //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel, //! velocity state
+      const Teuchos::RCP<Epetra_Vector> acc, //! acceleration state
+      Teuchos::RCP<Epetra_Vector> fint, //!< internal force
+      Teuchos::RCP<Epetra_Vector> finert, //!< inertia force
+      Teuchos::RCP<LINALG::SparseOperator> stiff, //!< stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> mass, //!< mass matrix
+      Teuchos::ParameterList& params, //!< parameters from nonlinear solver
+      const double beta=1000.0, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+      const double gamma=1000.0, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+      const double alphaf=1000.0, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+      const double alpham=1000.0 //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+    );
 
     //! Evaluate forces due to constraints
     void ApplyForceStiffConstraint
     (
       const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< last evaluated displacements
-      const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
-      Teuchos::RCP<Epetra_Vector>& fint,  //!< forces are added onto
-      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is added onto
-      Teuchos::ParameterList pcon   //!< Parameterlist containing scale factors for matrix entries
+      const Teuchos::RCP<Epetra_Vector> dis, //!< last evaluated displacements
+      const Teuchos::RCP<Epetra_Vector> disn, //!< evaluation displacements
+      Teuchos::RCP<Epetra_Vector>& fint, //!< forces are added onto
+      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is added onto
+      Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
-    //! Evaluate forces due to Windkessel bcs
+    //! Evaluate forces due to Windkessel BCs
     void ApplyForceStiffWindkessel
     (
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< last evaluated displacements
-      const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
-      Teuchos::ParameterList pcon   //!< Parameterlist containing scale factors for matrix entries
+      const double time, //!< evaluation time
+      const Teuchos::RCP<Epetra_Vector> dis, //!< last evaluated displacements
+      const Teuchos::RCP<Epetra_Vector> disn, //!< evaluation displacements
+      Teuchos::ParameterList pcon //!< parameter list containing scale factors for matrix entries
     );
 
     //! Evaluate _certain_ surface stresses and stiffness
@@ -198,11 +275,11 @@ namespace STR
     //! The Evaluation happens internal-force-like.
     void ApplyForceStiffSurfstress
     (
-      const double time,                         //!< evaluation time
-      const double dt,                           //!< time step size
-      const Teuchos::RCP<Epetra_Vector> disn,    //!< displacement state at n+1
-      Teuchos::RCP<Epetra_Vector>& fint,         //!< internal force
-      Teuchos::RCP<LINALG::SparseOperator>& stiff  //! stiffness
+      const double time, //!< evaluation time
+      const double dt, //!< time step size
+      const Teuchos::RCP<Epetra_Vector> disn, //!< displacement state at n+1
+      Teuchos::RCP<Epetra_Vector>& fint, //!< internal force
+      Teuchos::RCP<LINALG::SparseOperator>& stiff //! stiffness
     );
 
     //! evaluate certain potential forces and its stiffness
@@ -213,11 +290,10 @@ namespace STR
     void ApplyForceStiffPotential
     (
       const double time, //!< total time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force vector
-      Teuchos::RCP<LINALG::SparseOperator>& stiff  //!< stiffness
+      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state
+      Teuchos::RCP<Epetra_Vector>& fint, //!< internal force vector
+      Teuchos::RCP<LINALG::SparseOperator>& stiff //!< stiffness
     );
-
 
     //! evaluate certain potential forces and its stiffness
     //! and computes an analytical solution
@@ -227,38 +303,38 @@ namespace STR
     //! at DRT::PotentialManager
     void TestForceStiffPotential
     (
-      const double                      time,
+      const double time,
       const Teuchos::RCP<Epetra_Vector> dis,
-      const int                         step
+      const int step
     );
 
     //! Evaluate forces and stiffness due to contact / meshtying
     void ApplyForceStiffContactMeshtying
     (
-      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector>& fres,  //!< residual forces are modified
-      Teuchos::RCP<Epetra_Vector>& dis,   //!< current displacement state
-      bool predict                        //!< flag indicating predictor step
+      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is modified
+      Teuchos::RCP<Epetra_Vector>& fres, //!< residual forces are modified
+      Teuchos::RCP<Epetra_Vector>& dis, //!< current displacement state
+      bool predict //!< flag indicating predictor step
     );
 
     //! Evaluate forces and stiffness due to beam contact
     void ApplyForceStiffBeamContact
     (
-      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector>& fres,  //!< residual forces are modified
-      Teuchos::RCP<Epetra_Vector>& dis,   //!< current displacement state
-      bool predict                        //!< flag indicating predictor step
+      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is modified
+      Teuchos::RCP<Epetra_Vector>& fres, //!< residual forces are modified
+      Teuchos::RCP<Epetra_Vector>& dis, //!< current displacement state
+      bool predict //!< flag indicating predictor step
     );
 
-    //! Evaluate forces and stiffness due to spring dashpot boundary condition
+    //! Evaluate forces and stiffness due to spring dash-pot boundary condition
     void ApplyForceStiffSpringDashpot
     (
-      Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal forces are modified
-      Teuchos::RCP<Epetra_Vector> dis,   //!< current displacement state
-      Teuchos::RCP<Epetra_Vector> vel,   //!< current velocity state
-      bool predict,                      //!< flag indicating predictor step
-      Teuchos::ParameterList psprdash    //!< Parameterlist containing scale factors for matrix entries
+      Teuchos::RCP<LINALG::SparseOperator> stiff, //!< stiffness is modified
+      Teuchos::RCP<Epetra_Vector> fint, //!< internal forces are modified
+      Teuchos::RCP<Epetra_Vector> dis, //!< current displacement state
+      Teuchos::RCP<Epetra_Vector> vel, //!< current velocity state
+      bool predict, //!< flag indicating predictor step
+      Teuchos::ParameterList psprdash //!< parameter list containing scale factors for matrix entries
     );
 
     //@}
@@ -269,7 +345,7 @@ namespace STR
     //! determine characteristic norms for relative
     //! error checks of residual displacements
     //! \author lw  \date 12/07
-    virtual double CalcRefNormDisplacement() = 0;
+    virtual double CalcRefNormDisplacement();
 
     //! determine characteristic norms for relative
     //! error checks of residual forces
@@ -511,18 +587,6 @@ namespace STR
     //! Do non-linear solve with NOX
     int NoxSolve();
 
-    //! moved from the ADAPTER to here, to be checked carefully
-//    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-//      Teuchos::RCP<Epetra_Vector> iforce
-//    )
-//    {
-//      Teuchos::RCP<Epetra_Vector> relax = interface_->InsertFSICondVector(iforce);
-//      SetForceInterface(relax);
-//      Teuchos::RCP<Epetra_Vector> idisi = SolveRelaxationLinear();
-//
-//      // we are just interested in the incremental interface displacements
-//      return interface_->ExtractFSICondVector(idisi);
-//    }
     // check for success of nonlinear solve otherwise return error code
     int NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
     //@}
@@ -594,7 +658,7 @@ namespace STR
 
     //@}
 
-    // export contact integration time and active set into textfiles
+    // export contact integration time and active set into text files
     // xxx.time and xxx.active
     void ExportContactQuantities();
 

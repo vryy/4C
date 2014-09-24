@@ -1195,7 +1195,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
                             &sdyn);
 
-  setStringToIntegralParameter<int>("LOADLIN","no",
+  setStringToIntegralParameter<int>("LOADLIN","yes",
                                     "Use linearization of external follower load in Newton",
                                     yesnotuple,yesnovalue,&sdyn);
 

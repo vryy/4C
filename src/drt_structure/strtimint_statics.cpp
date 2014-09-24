@@ -60,7 +60,7 @@ STR::TimIntStatics::TimIntStatics
   // info to user
   if (myrank_ == 0 && bool (printscreen_))
   {
-    // check if we are in prestressin mode
+    // check if we are in prestressing mode
     if (pstype == INPAR::STR::prestress_mulf) IO::cout << "with static MULF prestress" << IO::endl;
     else if (pstype == INPAR::STR::prestress_id) IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
     else IO::cout << "with statics" << IO::endl;
@@ -194,12 +194,16 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
 
+  // ************************** (1) EXTERNAL FORCES ***************************
+
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  ApplyForceStiffExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
 
   // initialize internal forces
   fintn_->PutScalar(0.0);
@@ -229,6 +233,14 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   Teuchos::ParameterList psprdash;
   ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
 
+  // ************************** (3) INERTIAL FORCES ***************************
+  // This is statics, so there are no intertial forces.
+
+  // ************************** (4) DAMPING FORCES ****************************
+  // This is statics, so there are no viscous damping forces.
+
+  // ******************** Finally, put everything together ********************
+
   // build residual  Res = F_{int;n+1}
   //                     - F_{ext;n+1}
   fres_->Update(-1.0, *fextn_, 0.0);
@@ -255,7 +267,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // close stiffness matrix
   stiff_->Complete();
 
-  // hallelujah
   return;
 }
 
@@ -272,27 +283,49 @@ void STR::TimIntStatics::EvaluateForceStiffResidualRelax(Teuchos::ParameterList&
 }
 
 /*----------------------------------------------------------------------*/
-/* calculate characteristic/reference norms for displacements
- * originally by lw */
-double STR::TimIntStatics::CalcRefNormDisplacement()
+/* Evaluate residual */
+void STR::TimIntStatics::EvaluateForceResidual()
 {
-  // The reference norms are used to scale the calculated iterative
-  // displacement norm and/or the residual force norm. For this
-  // purpose we only need the right order of magnitude, so we don't
-  // mind evaluating the corresponding norms at possibly different
-  // points within the timestep (end point, generalized midpoint).
 
-  double charnormdis = 0.0;
-  if (pressure_ != Teuchos::null)
+  // ************************** (1) EXTERNAL FORCES ***************************
+
+  // build new external forces
+  fextn_->PutScalar(0.0);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+
+  // additional external forces are added (e.g. interface forces)
+  fextn_->Update(1.0, *fifc_, 1.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
+
+  // initialize internal forces
+  fintn_->PutScalar(0.0);
+
+  // ordinary internal force and stiffness
+  ApplyForceInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
+
+  // ************************** (3) INERTIAL FORCES ***************************
+  // This is statics, so there are no inertial forces.
+
+  // ************************** (4) DAMPING FORCES ****************************
+  // This is statics, so there are no viscous damping forces.
+
+  // ******************** Finally, put everything together ********************
+
+  // build residual  Res = F_{int;n+1}
+  //                     - F_{ext;n+1}
+  fres_->Update(-1.0, *fextn_, 0.0);
+  fres_->Update(1.0, *fintn_, 1.0);
+
+  // build pure structural residual (only LS with EAS)
+  if (fresn_str_!=Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    fresn_str_->Update(1.,*fintn_str_,0.);
+    fresn_str_->Update(-1.,*fextn_,1.);
+    LINALG::ApplyDirichlettoSystem(fresn_str_,zeros_,*(dbcmaps_->CondMap()));
   }
-  else
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
 
-  // rise your hat
-  return charnormdis;
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -429,10 +462,10 @@ void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter
   return;
 }
 
-/*---------------------------------------------------------------------------------------------*
- * Update all field vectors defined specific for this method, to take into account        sudhakar 12/13
- * of the new nodes introduced by crack propagation
- *---------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * Update all field vectors defined specific for this method,     sudhakar 12/13
+ * to take into account of the new nodes introduced by crack propagation
+ *----------------------------------------------------------------------------*/
 void STR::TimIntStatics::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
 {
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintn_, oldnew );

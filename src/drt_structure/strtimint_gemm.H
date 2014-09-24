@@ -170,9 +170,8 @@ namespace STR
     //! relaxation solution with SolveRelaxationLinear
     void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params);
 
-    //! Determine characteristic norm for displacements
-    //! \author lw (originally)
-    double CalcRefNormDisplacement();
+    //! Evaluate residual #fres_
+    void EvaluateForceResidual();
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
@@ -242,15 +241,28 @@ namespace STR
     //! Evaluate ordinary internal force, its stiffness at mid-state
     void ApplyForceStiffInternalMid
     (
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state at t_n
-      const Teuchos::RCP<Epetra_Vector> disn,  //!< displacement state at t_{n+1}
-      const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseOperator> stiff  //!< stiffness matrix
+      const double time, //!< evaluation time
+      const double dt, //!< step size
+      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state at t_n
+      const Teuchos::RCP<Epetra_Vector> disn, //!< displacement state at t_{n+1}
+      const Teuchos::RCP<Epetra_Vector> disi, //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
+      Teuchos::RCP<Epetra_Vector> fint, //!< internal force
+      Teuchos::RCP<LINALG::SparseOperator> stiff //!< stiffness matrix
     );
+
+    //! Evaluate ordinary internal force at mid-state
+    void ApplyForceInternalMid
+    (
+      const double time, //!< evaluation time
+      const double dt, //!< step size
+      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state at t_n
+      const Teuchos::RCP<Epetra_Vector> disn, //!< displacement state at t_{n+1}
+      const Teuchos::RCP<Epetra_Vector> disi, //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
+      Teuchos::RCP<Epetra_Vector> fint //!< internal force
+    );
+
     //@}
 
     /// update all the field vectors to account for new node introduced by crack
@@ -275,12 +287,16 @@ namespace STR
 
     //! @name Global mid-state vectors
     //@{
-    Teuchos::RCP<Epetra_Vector> dism_;  //!< mid-displacements
-                                        //!< \f$D_m = D_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Epetra_Vector> velm_;  //!< mid-velocities
-                                        //!< \f$V_m = V_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Epetra_Vector> accm_;  //!< mid-accelerations
-                                        //!< \f$A_m = A_{n+1-\alpha_m}\f$
+
+    //! mid-displacements \f$D_m = D_{n+1-\alpha_f}\f$
+    Teuchos::RCP<Epetra_Vector> dism_;
+
+    //! mid-velocities \f$V_m = V_{n+1-\alpha_f}\f$
+    Teuchos::RCP<Epetra_Vector> velm_;
+
+    //! mid-accelerations \f$A_m = A_{n+1-\alpha_m}\f$
+    Teuchos::RCP<Epetra_Vector> accm_;
+
     //@}
 
     //! @name Global force vectors

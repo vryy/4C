@@ -59,7 +59,7 @@ STR::TimIntGEMM::TimIntGEMM
   finertm_(Teuchos::null),
   fviscm_(Teuchos::null)
 {
-  // info to user : OST --- your oriental scheme
+  // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
     std::cout << "with generalised energy-momentum method" << std::endl
@@ -95,16 +95,17 @@ STR::TimIntGEMM::TimIntGEMM
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertia mid-point force vector F_inert
   finertm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
   fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // gemm time integrator cannot handle nonlinear inertia forces
+  // GEMM time integrator cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
-    dserror("Gemm time integrator cannot handle nonlinear inertia forces (flag: MASSLIN)");
+    dserror("Gemm time integrator cannot handle nonlinear inertia forces "
+        "(flag: MASSLIN)");
 
   // have a nice day
   return;
@@ -194,9 +195,11 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   // the predicted mid-state
   EvaluateMidState();
 
-  // add forces and stiffness due to Windkessel bcs
-  // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls an EvaluateNeumann
-  // function and thus the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
+  /* add forces and stiffness due to Windkessel bcs
+   * necessarily has to be done BEFORE fextm_ is built, since the Windkessel
+   * manager calls an EvaluateNeumann function and thus the correct application
+   * and linearization of the follower load is needed !!! (mhv 11/2013)
+   */
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", (1.-alphaf_));
   pwindk.set("time_step_size", (*dt_)[0]);
@@ -205,9 +208,11 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   // initialise stiffness matrix to zero
   stiff_->Zero();
 
+  // ************************** (1) EXTERNAL FORCES ***************************
+
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  ApplyForceStiffExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -216,6 +221,8 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
 
   // initialise internal forces
   fintm_->PutScalar(0.0);
@@ -239,14 +246,20 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   psprdash.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffSpringDashpot(stiff_,fintm_,disn_,veln_,predict,psprdash);
 
+  // ************************** (3) INERTIAL FORCES ***************************
+
   // inertial forces #finertm_
   mass_->Multiply(false, *accm_, *finertm_);
+
+  // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
+
+  // ******************** Finally, put everything together ********************
 
   // build residual
   //    Res = M . A_{n+1-alpha_m}
@@ -299,6 +312,68 @@ void STR::TimIntGEMM::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& pa
 }
 
 /*----------------------------------------------------------------------*/
+/* Evaluate residual */
+void STR::TimIntGEMM::EvaluateForceResidual()
+{
+  // build predicted mid-state by last converged state and predicted target state
+  EvaluateMidState();
+
+  // ************************** (1) EXTERNAL FORCES ***************************
+
+  // build new external forces
+  fextn_->PutScalar(0.0);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+
+  // additional external forces are added (e.g. interface forces)
+  fextn_->Update(1.0, *fifc_, 1.0);
+
+  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
+  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
+  //                         + alpha_f * F_{ext;n}
+  fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
+
+  // initialise internal forces
+  fintm_->PutScalar(0.0);
+
+  // ordinary internal force and stiffness
+  disi_->Scale(1.-alphaf_);  // CHECK THIS
+  ApplyForceInternalMid(timen_, (*dt_)[0], (*dis_)(0), disn_, disi_, veln_,
+      fintm_);
+
+  // ************************** (3) INERTIAL FORCES ***************************
+
+  // inertial forces #finertm_
+  mass_->Multiply(false, *accm_, *finertm_);
+
+  // ************************** (4) DAMPING FORCES ****************************
+
+  // viscous forces due Rayleigh damping
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Multiply(false, *velm_, *fviscm_);
+  }
+
+  // ******************** Finally, put everything together ********************
+
+  // build residual
+  //    Res = M . A_{n+1-alpha_m}
+  //        + C . V_{n+1-alpha_f}
+  //        + F_{int;m}
+  //        - F_{ext;n+1-alpha_f}
+  fres_->Update(-1.0, *fextm_, 0.0);
+  fres_->Update(1.0, *fintm_, 1.0);
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    fres_->Update(1.0, *fviscm_, 1.0);
+  }
+  fres_->Update(1.0, *finertm_, 1.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
 void STR::TimIntGEMM::EvaluateMidState()
 {
@@ -316,30 +391,6 @@ void STR::TimIntGEMM::EvaluateMidState()
 
   // jump
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/* calculate characteristic/reference norms for displacements
- * originally by lw */
-double STR::TimIntGEMM::CalcRefNormDisplacement()
-{
-  // The reference norms are used to scale the calculated iterative
-  // displacement norm and/or the residual force norm. For this
-  // purpose we only need the right order of magnitude, so we don't
-  // mind evaluating the corresponding norms at possibly different
-  // points within the timestep (end point, generalized midpoint).
-
-  double charnormdis = 0.0;
-  if (pressure_ != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-  }
-  else
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-
-  // rise your hat
-  return charnormdis;
 }
 
 /*----------------------------------------------------------------------*/
@@ -539,7 +590,51 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   dtele_ = timer_->WallTime() - dtcpu;
   // *********** time measurement ***********
 
-  // that's it
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* evaluate ordinary internal force at mid-state */
+void STR::TimIntGEMM::ApplyForceInternalMid
+(
+  const double time,
+  const double dt,
+  const Teuchos::RCP<Epetra_Vector> dis,
+  const Teuchos::RCP<Epetra_Vector> disn,
+  const Teuchos::RCP<Epetra_Vector> disi,
+  const Teuchos::RCP<Epetra_Vector> vel,
+  Teuchos::RCP<Epetra_Vector> fint
+)
+{
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // action for elements
+  const std::string action = "calc_struct_nlnstiff_gemm";
+  p.set("action", action);
+  // other parameters that might be needed by the elements
+  p.set("total time", time);
+  p.set("delta time", dt);
+  p.set("alpha f", alphaf_);
+  p.set("xi", xi_);
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("old displacement", dis);
+  discret_->SetState("displacement", disn);
+  discret_->SetState("residual displacement", disi);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
+  //fintn_->PutScalar(0.0);  // initialise internal force vector
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     fint, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
+
+  // *********** time measurement ***********
+  dtele_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
+
   return;
 }
 

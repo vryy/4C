@@ -90,7 +90,6 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     output
   ),
   midavg_(DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"),"GENAVG")),
-  /* iterupditer_(false), */
   beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
   gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
   alphaf_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
@@ -110,7 +109,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   fviscm_(Teuchos::null),
   fint_str_(Teuchos::null)
 {
-  // info to users
+  // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
     IO::cout << "with generalised-alpha" << IO::endl;
@@ -128,8 +127,10 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   }
   else
   {
-    // the case of nonlinear inertia terms works so far only for examples with vanishing initial accelerations, i.e. the initial external
-    // forces and initial velocities have to be chosen consistently!!!
+    /* the case of nonlinear inertia terms works so far only for examples with
+     * vanishing initial accelerations, i.e. the initial external
+     * forces and initial velocities have to be chosen consistently!!!
+     */
     (*acc_)(0)->PutScalar(0.0);
   }
 
@@ -158,7 +159,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
   finert_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -199,7 +200,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
 
     NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams);
 
-    if (HaveNonlinearMass()==INPAR::STR::ml_rotations and !SolelyBeam3Elements(actdis))
+    if (HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(actdis))
     {
       dserror("Multiplicative Gen-Alpha time integration scheme only implemented for beam3ii elements so far!");
     }
@@ -312,7 +313,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  ApplyForceStiffExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -333,7 +334,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
 
   fintn_->PutScalar(0.0);
   // build new internal forces and stiffness
-  if (HaveNonlinearMass()==INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == INPAR::STR::ml_none)
   {
     ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_,params);
   }
@@ -392,7 +393,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // ************************** (3) INERTIAL FORCES ***************************
 
   // build new inertia forces and stiffness
-  if (HaveNonlinearMass()==INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == INPAR::STR::ml_none)
   {
     // build new inertia forces and stiffness
     finertm_->PutScalar(0.0);
@@ -413,6 +414,8 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
+
+  // ******************** Finally, put everything together ********************
 
   //build residual and tangent matrix for standard case
   if (HaveNonlinearMass()!=INPAR::STR::ml_rotations)
@@ -501,6 +504,109 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax(Teuchos::ParameterList
 }
 
 /*----------------------------------------------------------------------*/
+/* Evaluate residual */
+void STR::TimIntGenAlpha::EvaluateForceResidual()
+{
+  // build predicted mid-state by last converged state and predicted target state
+  EvaluateMidState();
+
+  // ************************** (1) EXTERNAL FORCES ***************************
+
+  // build new external forces
+  fextn_->PutScalar(0.0);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+
+  // additional external forces are added (e.g. interface forces)
+  fextn_->Update(1.0, *fifc_, 1.0);
+
+  // external mid-forces F_{ext;n+1-alpha_f} ----> TR-like
+  // F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} + alpha_f * F_{ext;n}
+  fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+
+  // ************************** (2) INTERNAL FORCES ***************************
+
+  fintn_->PutScalar(0.0);
+
+  // build new internal forces and stiffness
+  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  {
+    ApplyForceInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
+  }
+  else
+  {
+    dserror("Not implemented, yet.");
+  }
+
+  // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
+  // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
+  fintm_->Update(1.-alphaf_, *fintn_, alphaf_, *fint_, 0.0);
+
+  // ************************** (3) INERTIAL FORCES ***************************
+
+  // build new inertia forces and stiffness
+  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  {
+    // build new inertia forces and stiffness
+    finertm_->PutScalar(0.0);
+    // inertia forces #finertm_
+    mass_->Multiply(false, *accm_, *finertm_);
+  }
+  else
+  {
+    dserror("Not implemented, yet.");
+  }
+
+  // ************************** (4) DAMPING FORCES ****************************
+
+  // viscous forces due to Rayleigh damping
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Multiply(false, *velm_, *fviscm_);
+  }
+
+  // ******************** Finally, put everything together ********************
+
+  // build residual and tangent matrix for standard case
+  if (HaveNonlinearMass() != INPAR::STR::ml_rotations)
+  {
+    // build residual
+    //    Res = M . A_{n+1-alpha_m}
+    //        + C . V_{n+1-alpha_f}
+    //        + F_{int;n+1-alpha_f}
+    //        - F_{ext;n+1-alpha_f}
+    fres_->Update(-1.0, *fextm_, 0.0);
+    fres_->Update( 1.0, *fintm_, 1.0);
+    fres_->Update( 1.0, *finertm_, 1.0);
+    if (damping_ == INPAR::STR::damp_rayleigh)
+    {
+      fres_->Update(1.0, *fviscm_, 1.0);
+    }
+  }
+  else /* build residual vector and tangent matrix if a multiplicative Gen-Alpha
+          scheme for rotations is applied */
+  {
+    dserror("Not implemented, yet.");
+  }
+
+  // calculate RHS without local condensations (for NewtonLs)
+  if (fresn_str_ != Teuchos::null)
+  {
+    // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
+    // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
+    fresn_str_->Update(1., *fintn_str_, 0.);
+    fresn_str_->Update(alphaf_, *fint_str_, 1.-alphaf_);
+    fresn_str_->Update(-1.0, *fextm_, 1.0);
+    fresn_str_->Update( 1.0, *finertm_, 1.0);
+    if (damping_ == INPAR::STR::damp_rayleigh)
+      fresn_str_->Update(1.0, *fviscm_, 1.0);
+
+    LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
 void STR::TimIntGenAlpha::EvaluateMidState()
 {
@@ -518,30 +624,6 @@ void STR::TimIntGenAlpha::EvaluateMidState()
 
   // jump
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/* calculate characteristic/reference norms for displacements
- * originally by lw */
-double STR::TimIntGenAlpha::CalcRefNormDisplacement()
-{
-  // The reference norms are used to scale the calculated iterative
-  // displacement norm and/or the residual force norm. For this
-  // purpose we only need the right order of magnitude, so we don't
-  // mind evaluating the corresponding norms at possibly different
-  // points within the timestep (end point, generalized midpoint).
-
-  double charnormdis = 0.0;
-  if (pressure_ != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-  }
-  else
-    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-
-  // rise your hat
-  return charnormdis;
 }
 
 /*----------------------------------------------------------------------*/
@@ -713,10 +795,12 @@ void STR::TimIntGenAlpha::UpdateStepElement()
   }
   else
   {
-    // In the NonlinearMass-case its possible to make an update of displacements, velocities
-    // and accelerations at the end of time step (currently only necessary for Kirchhoff beams)
-    // An corresponding update rule has to be implemented in the element, otherwise
-    // displacements, velocities and accelerations remain unchange.
+    /* In the NonlinearMass-case its possible to make an update of
+     * displacements, velocities and accelerations at the end of time step
+     * (currently only necessary for Kirchhoff beams). An corresponding update
+     * rule has to be implemented in the element, otherwise displacements,
+     * velocities and accelerations remain unchanged.
+     */
     discret_->SetState("velocity",(*vel_)(0));
     discret_->SetState("acceleration",(*acc_)(0));
 
@@ -766,10 +850,10 @@ void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrite
   return;
 }
 
-/*---------------------------------------------------------------------------------------------*
- * Update all field vectors defined specific for this method, to take into account        sudhakar 12/13
- * of the new nodes introduced by crack propagation
- *---------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * Update all field vectors defined specific for this method,     sudhakar 12/13
+ *  to take into account of the new nodes introduced by crack propagation
+ *----------------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
 {
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dism_, oldnew );
@@ -796,12 +880,14 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
   }
   else
   {
-    // the case of nonlinear inertia terms works so far only for examples with vanishing initial accelerations, i.e. the initial external
-    // forces and initial velocities have to be chosen consistently!!!
+    /* the case of nonlinear inertia terms works so far only for examples with
+     * vanishing initial accelerations, i.e. the initial external forces and
+     * initial velocities have to be chosen consistently!!!
+     */
     (*acc_)(0)->PutScalar(0.0);
   }
 
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
+  ApplyForceStiffExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
     // create parameter list
     Teuchos::ParameterList params;
@@ -809,7 +895,7 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
   if (!HaveNonlinearMass())
   {
     // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_,params);
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_, params);
   }
   else
   {
@@ -823,37 +909,45 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
   }
 }
 
-/*---------------------------------------------------------------------------------------------*
- * Build total residual vector and effective tangential stiffness                    meier 05/14
+/*-----------------------------------------------------------------------------*
+ * Build total residual vector and effective tangential stiffness    meier 05/14
  * matrix in case of nonlinear, rotational inertia effects
- *---------------------------------------------------------------------------------------------*/
-void STR::TimIntGenAlpha::BuildResStiffNLMassRot( Teuchos::RCP<Epetra_Vector> fres_,
-                                                  Teuchos::RCP<Epetra_Vector> fextn_,
-                                                  Teuchos::RCP<Epetra_Vector> fintn_,
-                                                  Teuchos::RCP<Epetra_Vector> finertn_,
-                                                  Teuchos::RCP<LINALG::SparseOperator> stiff_,
-                                                  Teuchos::RCP<LINALG::SparseOperator> mass_)
+ *----------------------------------------------------------------------------*/
+void STR::TimIntGenAlpha::BuildResStiffNLMassRot(
+    Teuchos::RCP<Epetra_Vector> fres_,
+    Teuchos::RCP<Epetra_Vector> fextn_,
+    Teuchos::RCP<Epetra_Vector> fintn_,
+    Teuchos::RCP<Epetra_Vector> finertn_,
+    Teuchos::RCP<LINALG::SparseOperator> stiff_,
+    Teuchos::RCP<LINALG::SparseOperator> mass_
+    )
 {
-  // build residual
-  //    Res = F_{inert;n+1}
-  //        + F_{int;n+1}
-  //        - F_{ext;n+1}
-  //Remark: In the case of an multiplicative Gen-Alpha time integration scheme, all forces are evaluated at the end point n+1.
+  /* build residual
+   *    Res = F_{inert;n+1}
+   *        + F_{int;n+1}
+   *        - F_{ext;n+1}
+   * Remark: In the case of an multiplicative Gen-Alpha time integration scheme,
+   * all forces are evaluated at the end point n+1.
+   */
   fres_->Update(-1.0, *fextn_, 0.0);
   fres_->Update( 1.0, *fintn_, 1.0);
   fres_->Update( 1.0, *finertn_, 1.0);
 
-  // build tangent matrix : effective dynamic stiffness matrix
-  //    K_{Teffdyn} = M
-  //                + K_{T}
-  //Remark: So far, all time integration pre-factors (only necessary for the mass matrix since internal forces are evaluated at n+1)
-  //are already considered at element level (see, e.g., beam3ii_evaluate.cpp). Therefore, we don't have to apply them here.
+  /* build tangent matrix : effective dynamic stiffness matrix
+   *    K_{Teffdyn} = M
+   *                + K_{T}
+   * Remark: So far, all time integration pre-factors (only necessary for the
+   * mass matrix since internal forces are evaluated at n+1) are already
+   * considered at element level (see, e.g., beam3ii_evaluate.cpp). Therefore,
+   * we don't have to apply them here.
+   */
   stiff_->Add(*mass_, false, 1.0 , 1.0);
 }
 
-/*---------------------------------------------------------------------------------------------*
- * Check, if there are solely beam elements in the whole discretization              meier 05/14
- *---------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * Check, if there are solely beam elements in the whole             meier 05/14
+ * discretization
+ *----------------------------------------------------------------------------*/
 bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis)
 {
   bool solelybeameles=true;

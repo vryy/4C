@@ -44,7 +44,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
-#include "../drt_contact/contact_abstract_strategy.H" // for feeding contactsolver with maps
+#include "../drt_contact/contact_abstract_strategy.H" // for feeding contact solver with maps
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -78,15 +78,15 @@ Maintainer: Alexander Popp
 /* print tea time logo */
 void STR::TimInt::Logo()
 {
- IO::cout << "Welcome to Structural Time Integration " <<IO::endl;
- IO::cout << "     __o__                          __o__" <<IO::endl;
- IO::cout << "__  /-----\\__                  __  /-----\\__" <<IO::endl;
- IO::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" <<IO::endl;
- IO::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" <<IO::endl;
- IO::cout << "  \\|       |_/    |       /      \\|       |_/" <<IO::endl;
- IO::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" <<IO::endl;
- IO::cout << "              | |                            | | |   |" <<IO::endl;
- IO::cout <<IO::endl;
+ IO::cout << "Welcome to Structural Time Integration " << IO::endl;
+ IO::cout << "     __o__                          __o__" << IO::endl;
+ IO::cout << "__  /-----\\__                  __  /-----\\__" << IO::endl;
+ IO::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" << IO::endl;
+ IO::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" << IO::endl;
+ IO::cout << "  \\|       |_/    |       /      \\|       |_/" << IO::endl;
+ IO::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" << IO::endl;
+ IO::cout << "              | |                            | | |   |" << IO::endl;
+ IO::cout << IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ STR::TimInt::TimInt
   myrank_(actdis->Comm().MyPID()),
   solver_(solver),
   contactsolver_(contactsolver),
-  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV") == 1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
@@ -153,8 +153,8 @@ STR::TimInt::TimInt
   step_(0),
   stepn_(0),
   firstoutputofrun_(true),
-  lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS")==1),
-  young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT")==1),
+  lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS") == 1),
+  young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT") == 1),
   zeros_(Teuchos::null),
   dis_(Teuchos::null),
   dism_(Teuchos::null),
@@ -240,11 +240,11 @@ STR::TimInt::TimInt
 
 
   // initialize Windkessel manager
-  windkman_ = Teuchos::rcp( new UTILS::WindkesselManager(discret_,
-                                                         (*dis_)(0),
-                                                         sdynparams,
-                                                         *solver_,
-                                                         dbcmaps_));
+  windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
+                                                        (*dis_)(0),
+                                                        sdynparams,
+                                                        *solver_,
+                                                        dbcmaps_));
 
 
   // initialize constraint solver if constraints are defined
@@ -383,7 +383,7 @@ STR::TimInt::TimInt
     }
   }
 
-  //Check for porosity dofs within the structure and build a mapextractor if neccessary
+  // Check for porosity dofs within the structure and build a map extractor if necessary
   porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(discret_);
 
   // stay with us
@@ -395,7 +395,6 @@ STR::TimInt::TimInt
  * modified as in crack propagation simulations,  this function creates fields whose    sudhakar 12/13
  * values at previous time step are not important
  *-------------------------------------------------------------------------------------------*/
-
 void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
 {
   // a zero vector of full length
@@ -903,8 +902,9 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   // overwrite initial state vectors with DirichletBCs
   ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0), false);
 
-  // get external force
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext, stiff_);
+  /* get external force (no linearization since we assume Rayleigh damping
+   * to be independent of follower loads) */
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext);
 
   // get initial internal force and stiffness and mass
   {
@@ -947,14 +947,15 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"displacement", (*dis_)(0));
     discret_->SetState(0,"velocity", (*vel_)(0));
     discret_->SetState(0,"acceleration", (*acc_)(0));
-    if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
+    if (damping_ == INPAR::STR::damp_material)
+      discret_->SetState(0,"velocity", (*vel_)(0));
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
 
-  //plastic parameters
-  if (HaveSemiSmoothPlasticity())
-    plastman_->GetPlasticParams(p);
+    //plastic parameters
+    if (HaveSemiSmoothPlasticity())
+      plastman_->GetPlasticParams(p);
   }
 
   // finish mass matrix
@@ -989,10 +990,12 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     mass = mass_;
   }
 
-  // calculate consistent initial accelerations
-  // WE MISS:
-  //   - surface stress forces
-  //   - potential forces
+  /* calculate consistent initial accelerations
+   * WE MISS:
+   *   - surface stress forces
+   *   - potential forces
+   *   - linearization of follower loads
+   */
   {
     Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*DofRowMapView(), true);
     if (damping_ == INPAR::STR::damp_rayleigh)
@@ -1035,11 +1038,11 @@ void STR::TimInt::ApplyDirichletBC
   if (locsysman_ != Teuchos::null)
   {
     if (dis != Teuchos::null)
-        locsysman_->RotateGlobalToLocal(dis,true);
+      locsysman_->RotateGlobalToLocal(dis, true);
     if (vel != Teuchos::null)
-        locsysman_->RotateGlobalToLocal(vel);
+      locsysman_->RotateGlobalToLocal(vel);
     if (acc != Teuchos::null)
-        locsysman_->RotateGlobalToLocal(acc);
+      locsysman_->RotateGlobalToLocal(acc);
   }
 
   // Apply DBCs
@@ -1053,13 +1056,11 @@ void STR::TimInt::ApplyDirichletBC
   discret_->ClearState();
   if (recreatemap)
   {
-    discret_->EvaluateDirichlet(p, dis, vel, acc,
-                                Teuchos::null, dbcmaps_);
+    discret_->EvaluateDirichlet(p, dis, vel, acc, Teuchos::null, dbcmaps_);
   }
   else
   {
-    discret_->EvaluateDirichlet(p, dis, vel, acc,
-                               Teuchos::null, Teuchos::null);
+    discret_->EvaluateDirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
   }
   discret_->ClearState();
 
@@ -1068,11 +1069,11 @@ void STR::TimInt::ApplyDirichletBC
   if (locsysman_ != Teuchos::null)
   {
     if (dis != Teuchos::null)
-        locsysman_->RotateLocalToGlobal(dis,true);
+      locsysman_->RotateLocalToGlobal(dis, true);
     if (vel != Teuchos::null)
-        locsysman_->RotateLocalToGlobal(vel);
+      locsysman_->RotateLocalToGlobal(vel);
     if (acc != Teuchos::null)
-        locsysman_->RotateLocalToGlobal(acc);
+      locsysman_->RotateLocalToGlobal(acc);
   }
 
   return;
@@ -1089,7 +1090,6 @@ void STR::TimInt::UpdateStepTime()
   timen_ += (*dt_)[0];
   stepn_ += 1;
 
-  // new deal
   return;
 }
 
@@ -1098,9 +1098,8 @@ void STR::TimInt::UpdateStepTime()
 void STR::TimInt::UpdateStepContactMeshtying()
 {
   if(HaveContactMeshtying())
-    cmtbridge_->Update(stepn_,disn_);
+    cmtbridge_->Update(stepn_, disn_);
 
-   // ciao
    return;
 }
 
@@ -1109,9 +1108,8 @@ void STR::TimInt::UpdateStepContactMeshtying()
 void STR::TimInt::UpdateStepBeamContact()
 {
    if (HaveBeamContact())
-     beamcman_->Update(*disn_,stepn_,99);
+     beamcman_->Update(*disn_, stepn_, 99);
 
-   // ciao
    return;
 }
 
@@ -1647,27 +1645,37 @@ void STR::TimInt::SetRestart
 
   SetRestartState(disn,veln,accn,elementdata,nodedata);
 
+  // ---------------------------------------------------------------------------
   // set restart is only for simple structure problems
   // hence we put some security measures in place
-  // surface stress
 
-  if (surfstressman_->HaveSurfStress()) dserror("Set restart not implemented for surface stress");
+  // surface stress
+  if (surfstressman_->HaveSurfStress())
+    dserror("Set restart not implemented for surface stress");
 
   // constraints
-  if (conman_->HaveConstraint()) dserror("Set restart not implemented for constraints");
+  if (conman_->HaveConstraint())
+    dserror("Set restart not implemented for constraints");
 
   // Windkessel
-  if (windkman_->HaveWindkessel()) dserror("Set restart not implemented for Windkessel");
+  if (windkman_->HaveWindkessel())
+    dserror("Set restart not implemented for Windkessel");
 
   // contact / meshtying
-  if (HaveContactMeshtying()) dserror("Set restart not implemented for contact / meshtying");
+  if (HaveContactMeshtying())
+    dserror("Set restart not implemented for contact / meshtying");
 
   // statistical mechanics
-  if (HaveStatMech()) dserror("Set restart not implemented forstatistical mechanics");
+  if (HaveStatMech())
+    dserror("Set restart not implemented for statistical mechanics");
 
-  //biofilm growth
-  if (strgrdisp_!=Teuchos::null) dserror("Set restart not implemented for biofilm growth");
+  // biofilm growth
+  if (HaveBiofilmGrowth())
+    dserror("Set restart not implemented for biofilm growth");
 
+  // ---------------------------------------------------------------------------
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2001,19 +2009,24 @@ void STR::TimInt::GetRestartData
   // hence
 
   // surface stress
-  if (surfstressman_->HaveSurfStress()) dserror("Get restart data not implemented for surface stress");
+  if (surfstressman_->HaveSurfStress())
+    dserror("Get restart data not implemented for surface stress");
 
   // constraints
-  if (conman_->HaveConstraint()) dserror("Get restart data not implemented for constraints");
+  if (conman_->HaveConstraint())
+    dserror("Get restart data not implemented for constraints");
 
   // contact / meshtying
-  if (HaveContactMeshtying()) dserror("Get restart data not implemented for contact / meshtying");
+  if (HaveContactMeshtying())
+    dserror("Get restart data not implemented for contact / meshtying");
 
   // statistical mechanics
-  if (HaveStatMech()) dserror("Get restart data not implemented for statistical mechanics");
+  if (HaveStatMech())
+    dserror("Get restart data not implemented for statistical mechanics");
 
-  //biofilm growth
-  if (strgrdisp_!=Teuchos::null) dserror("Get restart data not implemented for biofilm growth");
+  // biofilm growth
+  if (HaveBiofilmGrowth())
+    dserror("Get restart data not implemented for biofilm growth");
 
   return;
 }
@@ -2091,8 +2104,8 @@ void STR::TimInt::OutputRestart
     statmechman_->WriteRestart(output_, (*dt_)[0]);
   }
 
-  //biofilm growth
-  if (strgrdisp_!=Teuchos::null)
+  // biofilm growth
+  if (HaveBiofilmGrowth())
   {
     output_->WriteVector("str_growth_displ", strgrdisp_);
   }
@@ -2147,8 +2160,8 @@ void STR::TimInt::OutputState
     output_->WriteVector("acceleration", (*acc_)(0));
   }
 
-  //biofilm growth
-  if (strgrdisp_!=Teuchos::null)
+  // biofilm growth
+  if (HaveBiofilmGrowth())
   {
     output_->WriteVector("str_growth_displ", strgrdisp_);
   }
@@ -2834,12 +2847,11 @@ void STR::TimInt::OutputPatspec()
 /* evaluate external forces at t_{n+1} */
 void STR::TimInt::ApplyForceExternal
 (
-  const double time,  //!< evaluation time
-  const Teuchos::RCP<Epetra_Vector> dis,  //!< old displacement state
-  const Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
-  const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
-  Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
-  Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
+  const double time,
+  const Teuchos::RCP<Epetra_Vector> dis,
+  const Teuchos::RCP<Epetra_Vector> disn,
+  const Teuchos::RCP<Epetra_Vector> vel,
+  Teuchos::RCP<Epetra_Vector>& fext
 )
 {
   Teuchos::ParameterList p;
@@ -2848,184 +2860,20 @@ void STR::TimInt::ApplyForceExternal
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0,"displacement", dis);
+  discret_->SetState(0, "displacement", dis);
+  discret_->SetState(0, "displacement new", disn);
 
   if (damping_ == INPAR::STR::damp_material)
     discret_->SetState(0,"velocity", vel);
-  // get load vector
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  bool loadlin = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "LOADLIN");
-  if (!loadlin)
-    discret_->EvaluateNeumann(p, *fext);
-  else
-  {
-    discret_->SetState(0,"displacement new", disn);
-    discret_->EvaluateNeumann(p, fext, fextlin);
-  }
 
-  // go away
+  discret_->EvaluateNeumann(p, *fext);
+
   return;
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate ordinary internal force, its stiffness at state */
-void STR::TimInt::ApplyForceStiffInternal
-(
-  const double time,
-  const double dt,
-  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
-  const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
-  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-  Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseOperator> stiff,  // stiffness matrix
-  Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
-  Teuchos::RCP<LINALG::SparseOperator> damp   // material damping matrix
-)
-{
-  // *********** time measurement ***********
-  double dtcpu = timer_->WallTime();
-  // *********** time measurement ***********
-  // action for elements
-  const std::string action = "calc_struct_nlnstiff";
-  params.set("action", action);
-  // other parameters that might be needed by the elements
-  params.set("total time", time);
-  params.set("delta time", dt);
-  params.set("damping", damping_);
-  params.set<int>("young_temp", young_temp_);
-  if (pressure_ != Teuchos::null) params.set("volume", 0.0);
-
-  // compute new inner radius
-  discret_->ClearState();
-  discret_->SetState(0,"displacement",dis);
-  PATSPEC::ComputeEleInnerRadius(discret_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState(0,"residual displacement", disi);
-  discret_->SetState(0,"displacement", dis);
-  if (damping_ == INPAR::STR::damp_material)
-    discret_->SetState(0,"velocity", vel);
-  //fintn_->PutScalar(0.0);  // initialise internal force vector
-
-  // Set material displacement state for ale-wear formulation
-  if( (dismatn_!=Teuchos::null) )
-    discret_->SetState(0,"material_displacement",dismatn_);
-
-  // set plasticity data
-  if (HaveSemiSmoothPlasticity())
-  {
-    plastman_->SetPlasticParams(params);
-    if (DRT::Problem::Instance()->ProblemType() == prb_tsi)
-      discret_->SetState(0,"velocity",vel);
-  }
-
-  // Additionally we hand in "fint_str_"
-  // This is usually Teuchos::null unless we do line search in
-  // combination with elements that perform a local condensation
-  // e.g. hex8 with EAS or semi-smooth Newton plasticity.
-  // In such cases, fint_str_ contains the right hand side
-  // without the modifications due to the local condenation procedure.
-  if (fintn_str_!=Teuchos::null)
-    fintn_str_->PutScalar(0.);
-  discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
-  discret_->ClearState();
-
-  // get plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
-
-#if 0
-  if (pressure_ != Teuchos::null)
-    std::cout << "Total volume=" << std::scientific << p.get<double>("volume") << std::endl;
-#endif
-
-  // *********** time measurement ***********
-  dtele_ = timer_->WallTime() - dtcpu;
-  // *********** time measurement ***********
-
-  // that's it
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* evaluate inertia force and its linearization */
-void STR::TimInt::ApplyForceStiffInternalAndInertial
-(
-  const double time,  //!< evaluation time
-  const double dt,  //!< step size
-  const double timintfac_dis,  //!< additional parameter from time integration 1
-  const double timintfac_vel,  //!< additional parameter from time integration 2
-  const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-  const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-  const Teuchos::RCP<Epetra_Vector> acc,  // acceleration state
-  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-  Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
-  Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-  Teuchos::RCP<LINALG::SparseOperator> mass,  //!< mass matrix
-  Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
-  const double beta, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-  const double gamma, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-  const double alphaf, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-  const double alpham //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-)
-{
-    //dis->Print(std::cout);
-    //vel->Print(std::cout);
-
-    // action for elements
-    const std::string action = "calc_struct_nlnstiffmass";
-    params.set("action", action);
-    // other parameters that might be needed by the elements
-    params.set("total time", time);
-    params.set("delta time", dt);
-
-    params.set("timintfac_dis", timintfac_dis);
-    params.set("timintfac_vel", timintfac_vel);
-
-    if (HaveNonlinearMass()==INPAR::STR::ml_rotations)
-    {
-      params.set("rot_beta", beta);
-      params.set("rot_gamma", gamma);
-      params.set("rot_alphaf", alphaf);
-      params.set("rot_alpham", alpham);
-    }
-
-    // set plasticity data
-    if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(params);
-
-    // compute new inner radius
-    discret_->ClearState();
-    discret_->SetState(0,"displacement",dis);
-    PATSPEC::ComputeEleInnerRadius(discret_);
-
-    discret_->ClearState();
-    discret_->SetState(0,"residual displacement", disi);
-    discret_->SetState(0,"displacement", dis);
-    discret_->SetState(0,"velocity", vel);
-    discret_->SetState(0,"acceleration", acc);
-
-
-    // Additionally we hand in "fint_str_"
-    // This is usually Teuchos::null unless we do line search in
-    // combination with elements that perform a local condensation
-    // e.g. hex8 with EAS or semi-smooth Newton plasticity.
-    // In such cases, fint_str_ contains the right hand side
-    // without the modifications due to the local condenation procedure.
-    discret_->Evaluate(params, stiff, mass, fint, finert, fintn_str_);
-    discret_->ClearState();
-
-    // get plasticity data
-    if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
-
-    mass->Complete();
-
-  return;
-};
-
-/*----------------------------------------------------------------------*/
-/* check wether we have nonlinear inertia forces or not */
-int STR::TimInt::HaveNonlinearMass()
+/* check whether we have nonlinear inertia forces or not */
+int STR::TimInt::HaveNonlinearMass() const
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   int masslin = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN");
@@ -3035,11 +2883,12 @@ int STR::TimInt::HaveNonlinearMass()
 
 /*----------------------------------------------------------------------*/
 /* check whether the initial conditions are fulfilled */
-void STR::TimInt::NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
-                                            Teuchos::RCP<Epetra_Vector> dis,
-                                            Teuchos::RCP<Epetra_Vector> vel,
-                                            Teuchos::RCP<Epetra_Vector> acc,
-                                            const Teuchos::ParameterList* sdynparams)
+void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fext,
+    Teuchos::RCP<const Epetra_Vector> dis,
+    Teuchos::RCP<const Epetra_Vector> vel,
+    Teuchos::RCP<const Epetra_Vector> acc,
+    const Teuchos::ParameterList* sdynparams
+    ) const
 {
   double fextnorm;
   fext->Norm2(&fextnorm);
@@ -3054,18 +2903,31 @@ void STR::TimInt::NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
   acc->Norm2(&accnorm);
 
   if (fextnorm > 1.0e-14)
-    dserror("Initial configuration does not fulfill equilibrium, check your initial external forces, velocities and accelerations!!!");
+  {
+    dserror("Initial configuration does not fulfill equilibrium, check your "
+        "initial external forces, velocities and accelerations!!!");
+  }
 
   if ((dispnorm > 1.0e-14) or (velnorm > 1.0e-14) or (accnorm > 1.0e-14))
-    dserror("Nonlinear inertia terms (input flag 'MASSLIN' not set to 'none') are only possible for vanishing initial displacements, velocities and accelerations so far!!!");
-
-  if(HaveNonlinearMass()==INPAR::STR::ml_rotations and DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdynparams,"PREDICT") != INPAR::STR::pred_constdis)
-    dserror("Only constant displacement consistent velocity and acceleration predictor possible for multiplicative Genalpha time integration!");
-
-  if(sdynparams!=NULL)
   {
-    if(HaveNonlinearMass()==INPAR::STR::ml_rotations and DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdynparams,"DYNAMICTYP") != INPAR::STR::dyna_genalpha)
-      dserror("Nonlinear inertia forces for rotational DoFs only implemented for GenAlpha time integration so far!");
+    dserror("Nonlinear inertia terms (input flag 'MASSLIN' not set to 'none') "
+        "are only possible for vanishing initial displacements, velocities and "
+        "accelerations so far!!!");
+  }
+
+  if (HaveNonlinearMass() == INPAR::STR::ml_rotations
+     and DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdynparams,"PREDICT") != INPAR::STR::pred_constdis)
+  {
+    dserror("Only constant displacement consistent velocity and acceleration "
+        "predictor possible for multiplicative Genalpha time integration!");
+  }
+
+  if (sdynparams != NULL)
+  {
+    if(HaveNonlinearMass() == INPAR::STR::ml_rotations
+       and DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdynparams,"DYNAMICTYP") != INPAR::STR::dyna_genalpha)
+      dserror("Nonlinear inertia forces for rotational DoFs only implemented "
+          "for GenAlpha time integration so far!");
   }
 
   return;
@@ -3077,10 +2939,10 @@ void STR::TimInt::ApplyForceInternal
 (
   const double time,
   const double dt,
-  Teuchos::RCP<const Epetra_Vector> dis,  // displacement state
-  Teuchos::RCP<const Epetra_Vector> disi,  // incremental displacements
-  Teuchos::RCP<const Epetra_Vector> vel,  // velocity state
-  Teuchos::RCP<Epetra_Vector> fint  // internal force
+  Teuchos::RCP<const Epetra_Vector> dis,
+  Teuchos::RCP<const Epetra_Vector> disi,
+  Teuchos::RCP<const Epetra_Vector> vel,
+  Teuchos::RCP<Epetra_Vector> fint
 )
 {
   // create the parameters for the discretization
@@ -3099,7 +2961,7 @@ void STR::TimInt::ApplyForceInternal
 
   // compute new inner radius
   discret_->ClearState();
-  discret_->SetState("displacement",dis);
+  discret_->SetState("displacement", dis);
   PATSPEC::ComputeEleInnerRadius(discret_);
 
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
@@ -3128,7 +2990,7 @@ int STR::TimInt::Integrate()
 {
   // error checking variables
   int lnonlinsoldiv = 0;
-  int nonlinsoldiv  = 0;
+  int nonlinsoldiv = 0;
 
   // target time #timen_ and step #stepn_ already set
   // time loop
@@ -3145,7 +3007,7 @@ int STR::TimInt::Integrate()
     // since it is possible that the nonlinear solution fails only on some procs
     // we need to communicate the error
     discret_->Comm().Barrier();
-    discret_->Comm().MaxAll(&lnonlinsoldiv,&nonlinsoldiv,1);
+    discret_->Comm().MaxAll(&lnonlinsoldiv, &nonlinsoldiv, 1);
     discret_->Comm().Barrier();
 
     // if everything is fine
@@ -3212,21 +3074,23 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
     }
     case INPAR::STR::divcont_continue:
     {
-    // we should not get here, dserror for safety
+      // we should not get here, dserror for safety
       dserror("Nonlinear solver did not converge! ");
       return 1;
     }
     break;
     case INPAR::STR::divcont_repeat_step:
     {
-      IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
+      IO::cout << "Nonlinear solver failed to converge repeat time step"
+               << IO::endl;
       // do nothing since we didn't update yet
       return 0;
     }
     break;
     case INPAR::STR::divcont_halve_step:
     {
-      IO::cout << "Nonlinear solver failed to converge divide timestep in half" << IO::endl;
+      IO::cout << "Nonlinear solver failed to converge divide timestep in half"
+               << IO::endl;
       // halve the time step size
       (*dt_)[0]=(*dt_)[0]*0.5;
       // update the number of max time steps
@@ -3239,9 +3103,13 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
     case INPAR::STR::divcont_repeat_simulation:
     {
       if(nonlinsoldiv==1)
-        IO::cout << "Nonlinear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
+        IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
+            "repeat_simulation, hence leaving structural time integration "
+            << IO::endl;
       else if (nonlinsoldiv==2)
-        IO::cout << "Linear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
+        IO::cout << "Linear solver failed to converge and DIVERCONT = "
+            "repeat_simulation, hence leaving structural time integration "
+            << IO::endl;
       return 1; // so that time loop will be aborted
     }
     break;
@@ -3313,21 +3181,22 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
   return Teuchos::null;
 }
 
-//! Return stiffness,
-//! i.e. force residual differentiated by displacements
+/*----------------------------------------------------------------------*/
+/* Return stiffness matrix as LINALG::SparseMatrix                      */
 Teuchos::RCP<LINALG::SparseMatrix> STR::TimInt::SystemMatrix()
 {
   return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_);
 }
 
-//! Return stiffness,
-//! i.e. force residual differentiated by displacements
+/*----------------------------------------------------------------------*/
+/* Return stiffness matrix as LINALG::BlockSparseMatrix */
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TimInt::BlockSystemMatrix()
 {
   return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(stiff_);
 }
 
-//! Return sparse mass matrix
+/*----------------------------------------------------------------------*/
+/* Return sparse mass matrix                                            */
 Teuchos::RCP<LINALG::SparseMatrix> STR::TimInt::MassMatrix()
 {
   return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
@@ -3404,7 +3273,7 @@ void STR::TimInt::Reset()
 /* set structure displacement vector due to biofilm growth              */
 void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 {
-  strgrdisp_= struct_growth_disp;
+  strgrdisp_ = struct_growth_disp;
 
   return;
 }
@@ -3426,9 +3295,9 @@ void STR::TimInt::ResizeMStepTimAda()
   return;
 }
 
-/*----------------------------------------------------------------------------------*
- * check for crack propagation, and do preparations                           sudhakar 12/13
- * ---------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * check for crack propagation, and do preparations               sudhakar 12/13
+ * ---------------------------------------------------------------------------*/
 void STR::TimInt::PrepareCrackSimulation()
 {
   if( DRT::Problem::Instance()->ProblemType() == prb_crack
@@ -3442,9 +3311,9 @@ void STR::TimInt::PrepareCrackSimulation()
   }
 }
 
-/*-------------------------------------------------------------------------------------------------*
- * update all the field variables to the new discretization                           sudhakar 01/14
- * ------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * update all the field variables to the new discretization       sudhakar 01/14
+ * ---------------------------------------------------------------------------*/
 bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace )
 {
   if( not isCrack_ )
@@ -3512,10 +3381,10 @@ bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
   return true;
 }
 
-/*---------------------------------------------------------------------------------*
- * During propagation of crack, new nodes corresponding to the old tip        sudhakar 02/14
- * nodes are created. Here we get the map of old and new node ids
- *---------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * During propagation of crack, new nodes corresponding to the    sudhakar 02/14
+ * old tip nodes are created. Here we get the map of old and new node ids
+ *----------------------------------------------------------------------------*/
 std::map<int,int> STR::TimInt::getOldNewCrackNodes()
 {
   if( not isCrack_ )
@@ -3523,9 +3392,9 @@ std::map<int,int> STR::TimInt::getOldNewCrackNodes()
   return propcrack_->GetOldNewNodeIds();
 }
 
-/*------------------------------------------------------------------------------------*
- * Return the current crack tip nodes                                         sudhakar 03/14
- *------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ * Return the current crack tip nodes                             sudhakar 03/14
+ *----------------------------------------------------------------------------*/
 std::vector<int> STR::TimInt::GetCrackTipNodes()
 {
   if( not isCrack_ )

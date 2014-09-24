@@ -191,12 +191,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
 
       // evaluate material configuration
       MaterialConfiguration(xc);
-
     }
     else // standard case
     {
-      if (!loadlin) dserror("No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
-
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
       std::vector<double> mydisp(lm.size());

@@ -178,9 +178,8 @@ namespace STR
     //! relaxation solution with SolveRelaxationLinear
     void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params);
 
-    //! Determine characteristic norm for displacements
-    //! \author lw (originally)
-    double CalcRefNormDisplacement();
+    //! Evaluate residual #fres_
+    void EvaluateForceResidual();
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
@@ -248,12 +247,12 @@ namespace STR
 
     //! Build total residual vector and effective tangential stiffness
     //! matrix in case of nonlinear, rotational inertia effects
-    void BuildResStiffNLMassRot( Teuchos::RCP<Epetra_Vector> fres_,
-                                 Teuchos::RCP<Epetra_Vector> fextn_,
-                                 Teuchos::RCP<Epetra_Vector> fintn_,
-                                 Teuchos::RCP<Epetra_Vector> finertn_,
-                                 Teuchos::RCP<LINALG::SparseOperator> stiff_,
-                                 Teuchos::RCP<LINALG::SparseOperator> mass_);
+    void BuildResStiffNLMassRot(Teuchos::RCP<Epetra_Vector> fres_,
+                                Teuchos::RCP<Epetra_Vector> fextn_,
+                                Teuchos::RCP<Epetra_Vector> fintn_,
+                                Teuchos::RCP<Epetra_Vector> finertn_,
+                                Teuchos::RCP<LINALG::SparseOperator> stiff_,
+                                Teuchos::RCP<LINALG::SparseOperator> mass_);
 
   //!Check, if there are solely beam elements in the whole discretization
   bool SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis);
@@ -298,12 +297,16 @@ namespace STR
 
     //! @name Global mid-state vectors
     //@{
-    Teuchos::RCP<Epetra_Vector> dism_;  //!< mid-displacements
-                                        //!< \f$D_m = D_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Epetra_Vector> velm_;  //!< mid-velocities
-                                        //!< \f$V_m = V_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Epetra_Vector> accm_;  //!< mid-accelerations
-                                        //!< \f$A_m = A_{n+1-\alpha_m}\f$
+
+    //! mid-displacements \f$D_m = D_{n+1-\alpha_f}\f$
+    Teuchos::RCP<Epetra_Vector> dism_;
+
+    //! mid-velocities \f$V_m = V_{n+1-\alpha_f}\f$
+    Teuchos::RCP<Epetra_Vector> velm_;
+
+    //! mid-accelerations \f$A_m = A_{n+1-\alpha_m}\f$
+    Teuchos::RCP<Epetra_Vector> accm_;
+
     //@}
 
     //! @name Global force vectors
