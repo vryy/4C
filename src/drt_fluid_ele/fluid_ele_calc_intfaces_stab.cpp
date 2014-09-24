@@ -446,7 +446,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     timefacpre = 1.0;
     timefacrhs = 1.0;
   }
-  
+
   bool instationary = !(fldparatimint.IsStationary());
 
   //---------------------------------------------------
@@ -554,11 +554,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
   //-----------------------------------------------------------------------
-  // extract displacements for master element and slave element and face element
+  // extract displacements & grid velocities
+  // for master element and slave element and displacements for face element
 
   std::vector<double> myedispnp (face_numdof);
   std::vector<double> mypedispnp(master_numdof);
   std::vector<double> mynedispnp(slave_numdof);
+  std::vector<double> mypegridv(master_numdof);
+  std::vector<double> mynegridv(slave_numdof);
 
   if (pele->IsAle())
   {
@@ -578,18 +581,41 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       patch_dispnp[i] = (*dispnp)[lid];
     }
 
+    // ALE-grid velocities
+    Teuchos::RCP<const Epetra_Vector> gridv = discretization.GetState("gridv");
+    if (gridv==Teuchos::null)
+    {
+      dserror("Cannot get state vector 'gridv'");
+    }
 
-    // get velnp for master element
+    // extract patch dispnp
+    std::vector<double> patch_gridv(ndofinpatch);
+    for (int i=0; i<ndofinpatch; ++i)
+    {
+      int lid = gridv->Map().LID(patchlm[i]);
+      if (lid==-1) dserror("Cannot find degree of freedom on this proc");
+      patch_gridv[i] = (*gridv)[lid];
+    }
+
+    // get dispnp for surface element
     for(int i=0; i<face_numdof; i++)
       myedispnp[i] = patch_dispnp[lm_faceToPatch[i]];
 
-    // get velnp for master element
+    // get dispnp for master element
     for(int i=0; i<master_numdof; i++)
       mypedispnp[i] = patch_dispnp[lm_masterToPatch[i]];
 
-    // get velnp for slave element
+    // get dispnp for slave element
     for(int i=0; i<slave_numdof; i++)
       mynedispnp[i] = patch_dispnp[lm_slaveToPatch[i]];
+
+    // get grid velocity for master element
+    for(int i=0; i<master_numdof; i++)
+      mypegridv[i] = patch_gridv[lm_masterToPatch[i]];
+
+    // get grid velocity for slave element
+    for(int i=0; i<slave_numdof; i++)
+      mynegridv[i] = patch_gridv[lm_slaveToPatch[i]];
   }
 
 
@@ -604,12 +630,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                   mypvelaf,
                   mypvelnp,
                   mypedispnp,
+                  mypegridv,
                   myedispnp,
                   mynvelaf,
                   mynvelnp,
-                  mynedispnp
+                  mynedispnp,
+                  mynegridv
                   );
 
+  // convective velocities
+  LINALG::Matrix<nsd_,piel> peconvvelaf(pevelaf_);
+  LINALG::Matrix<nsd_,niel> neconvvelaf(nevelaf_);
+
+  if (pele->IsAle())
+  {
+    peconvvelaf.Update(1.0,pegridv_,-1.0);
+    neconvvelaf.Update(1.0,negridv_,-1.0);
+  }
 
   //--------------------------------------------------
   // compute element length w.r.t patch of master and slave parent element
@@ -627,14 +664,12 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   {
     for(int c=0; c<piel; c++)
     {
-      if( fabs(pevelaf_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(pevelaf_(r,c));
+      if( fabs(peconvvelaf(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(peconvvelaf(r,c));
     }
-  }
-  for(int r=0; r<nsd_; r++)
-  {
+
     for(int c=0; c<niel; c++)
     {
-      if( fabs(nevelaf_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(nevelaf_(r,c));
+      if( fabs(neconvvelaf(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(neconvvelaf(r,c));
     }
   }
 
@@ -820,7 +855,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     //-----------------------------------------------------
     // get velocity and pressure and derivatives at integration point
 
-    EvalVelPresAndDerivsAtIntPoint(use2ndderiv);
+    EvalVelPresAndDerivsAtIntPoint(use2ndderiv,pele->IsAle());
 
     //-----------------------------------------------------
     LINALG::Matrix<nsd_,nsd_> vderxyaf_diff(true);
@@ -840,8 +875,16 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     //-----------------------------------------------------
     // get the stabilization parameters
 
-    // get normal velocity
-    double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
+    // get convective velocity
+    LINALG::Matrix<nsd_,1> convvelint(velintaf_);
+
+    // in case of an ALE-fluid, we have to subtract the grid velocity,
+    // as we want the normal convective velocity!
+    if(pele->IsAle())
+      convvelint.Update(1.0,gridvelint_,-1.0);
+
+    // normal velocity
+    const double normal_vel_lin_space = fabs(convvelint.Dot(n_));
 
     ComputeStabilizationParams(
         fldintfacepara.EOS_WhichTau(),
@@ -1244,10 +1287,12 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     std::vector<double>&       mypvelaf,         ///< master velaf
     std::vector<double>&       mypvelnp,         ///< master velnp
     std::vector<double>&       mypedispnp,       ///< master dispnp
+    std::vector<double>&       mypgridv,         ///< master grid velocity (ALE)
     std::vector<double>&       myedispnp,        ///< surfele dispnp
     std::vector<double>&       mynvelaf,         ///< slave velaf
     std::vector<double>&       mynvelnp,         ///< slave velnp
-    std::vector<double>&       mynedispnp        ///< slave dispnp
+    std::vector<double>&       mynedispnp,       ///< slave dispnp
+    std::vector<double>&       myngridv          ///< slave grid velocity (ALE)
     )
 {
 
@@ -1275,49 +1320,47 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     for(int j=0; j<nsd_; ++j)
       pevelnp_(j,i) = mypvelnp[j+fi];
 
-    peprenp_(  i) = mypvelnp[nsd_+fi];
-  }
+    peprenp_(i) = mypvelnp[nsd_+fi];
 
-  if (master_ele->IsAle())
-  {
-    for (int i=0;i<piel;++i)
-    {
-      const int fi=numdofpernode_*i;
-
-      for(int j=0; j<nsd_; ++j)
-        pedispnp_(j,i) = mypedispnp[j+fi];
-
-    }
-
-    for (int i=0;i<iel;++i)
-    {
-      const int fi=numdofpernode_*i;
-
-      for(int j=0; j<nsd_; ++j)
-        edispnp_(j,i) = myedispnp[j+fi];
-
-    }
-  }
-
-  // extract node coords
-  for(int i=0;i<piel;++i)
-  {
     for(int j=0; j<nsd_; ++j)
       pxyze_(j,i) = master_ele->Nodes()[i]->X()[j];
 
   }
 
+  // ALE-specific
   if (master_ele->IsAle())
   {
+    // parent element displacements and grid-velocity
+    for (int i=0;i<piel;++i)
+    {
+      const int fi=numdofpernode_*i;
+
+      for(int j=0; j<nsd_; ++j)
+      {
+        pedispnp_(j,i) = mypedispnp[j+fi];
+
+        pegridv_(j,i) = mypgridv[j+fi];
+      }
+    }
+
+    // surface element displacements
+    for (int i=0;i<iel;++i)
+    {
+      const int fi=numdofpernode_*i;
+
+      for(int j=0; j<nsd_; ++j)
+      {
+        edispnp_(j,i) = myedispnp[j+fi];
+      }
+    }
+
+    // add ALE-displacements to element coordinates
     for (int i=0;i<piel;++i)
     {
       for(int j=0; j<nsd_; ++j)
         pxyze_(j,i) += pedispnp_(j,i);
-
     }
   }
-
-
 
   //--------------------------------------------------
   //                GET NEIGHBOR DATA
@@ -1341,37 +1384,36 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     for(int j=0; j<nsd_; ++j)
       nevelnp_(j,i) = mynvelnp[j+fi];
 
-    neprenp_(  i) = mynvelnp[nsd_+fi];
+    neprenp_(i) = mynvelnp[nsd_+fi];
+
+    // extract node coords
+    for(int j=0; j<nsd_; ++j)
+      nxyze_(j,i) = slave_ele->Nodes()[i]->X()[j];
   }
 
+  // ALE-specific
   if (slave_ele->IsAle())
   {
+    // slave element displacements and grid-velocity
     for (int i=0;i<niel;++i)
     {
       const int fi=numdofpernode_*i;
 
       for(int j=0; j<nsd_; ++j)
+      {
         nedispnp_(j,i) = mynedispnp[j+fi];
 
+        negridv_(j,i) = myngridv[j+fi];
+      }
     }
 
-  }
-
-  // extract node coords
-  for(int i=0;i<niel;++i)
-  {
-    for(int j=0; j<nsd_; ++j)
-      nxyze_(j,i) = slave_ele->Nodes()[i]->X()[j];
-
-  }
-
-  if (slave_ele->IsAle())
-  {
+    // add ALE-displacements to element coordinates
     for (int i=0;i<niel;++i)
     {
       for(int j=0; j<nsd_; ++j)
+      {
         nxyze_(j,i) += nedispnp_(j,i);
-
+      }
     }
   }
 
@@ -1634,7 +1676,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvalVelPresAndDerivsAtIntPoint(
-    bool  use2ndderiv           ///< flag to use 2nd order derivatives
+    bool  use2ndderiv,          ///< flag to use 2nd order derivatives
+    bool  isAle                 ///< flag, whether we are on an ALE-fluid
 )
 {
   //-----------------------------------------------------
@@ -1701,7 +1744,27 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvalVe
     }
   }
 
-
+  //-----------------------------------------------------
+  // get velocities (n+alpha_F,i) at integration point
+  //
+  //                     +-----
+  //           n+1       \                       n+1
+  //    gridvel    (x) =   +      N (x) * gridvel
+  //                      /        j             j
+  //                     +-----
+  //                     node j
+  //
+  if (isAle)
+  {
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      gridvelint_(rr)=pfunct_(0)*pegridv_(rr,0);
+      for(int nn=1;nn<piel;++nn)
+      {
+        gridvelint_(rr)+=pfunct_(nn)*pegridv_(rr,nn);
+      }
+    }
+  }
 
   //-----------------------------------------------------
   // get velocity (n+alpha_F,i) derivatives at integration point
@@ -1832,8 +1895,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvalVe
       }
 
     }
-
-
   }
 
   return;

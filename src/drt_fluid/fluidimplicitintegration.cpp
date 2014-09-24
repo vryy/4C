@@ -158,6 +158,8 @@ void FLD::FluidImplicitTimeInt::Init()
   // form of convective term
   convform_ = params_->get<std::string>("form of convective term","convective");
 
+
+
   // -------------------------------------------------------------------
   // flag for potential nonlinear boundary conditions
   // -------------------------------------------------------------------
@@ -489,6 +491,21 @@ void FLD::FluidImplicitTimeInt::Init()
     // checks needed to be put in the corresponding functions, so they are not listed here.
   }
 
+  // for the case of edge-oriented stabilization
+  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+  {
+    // if the definition of internal faces would be included
+    // in the standard discretization, these lines can be removed
+    // and CreateInternalFacesExtension() can be called once
+    // in the constructor of the fluid time integration
+    // since we want to keep the standard discretization as clean as
+    // possible, we create interal faces via an enhanced discretization
+    // including the faces between elements
+    facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    facediscret_->CreateInternalFacesExtension(true);
+  }
+
   return;
 } // FluidImplicitTimeInt::Init()
 
@@ -630,20 +647,6 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
 void FLD::FluidImplicitTimeInt::Integrate()
 {
   PrintStabilizationDetails();
-
-  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
-  {
-    // if the definition of internal faces would be included
-    // in the standard discretization, these lines can be removed
-    // and CreateInternalFacesExtension() can be called once
-    // in the constructor of the fluid time integration
-    // since we want to keep the standard discretization as clean as
-    // possible, we create interal faces via an enhanced discretization
-    // including the faces between elements
-    facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    facediscret_->CreateInternalFacesExtension(true);
-  }
 
   // TimeLoop() calls SolveStationaryProblem() in stationary case
   TimeLoop();
@@ -1833,7 +1836,8 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
 
      if (alefluid_)
      {
-       dserror("Edge-based stabilization not yet supported for ale problems!");
+       discret_->SetState("dispnp", dispnp_);
+       discret_->SetState("gridv", gridv_);
      }
 
      facediscret_->EvaluateEdgeBased(sysmat_,residual_);

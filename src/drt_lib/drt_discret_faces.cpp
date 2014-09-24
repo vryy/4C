@@ -179,7 +179,32 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 
   sysmat_linalg->Complete();
 
-  (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
+  // if the fluid system matrix is of type BlockSparseMatrix, we cannot add
+  // and have to split sysmat_linalg - therefore, we try to cast the fluid system matrix!
+  // we need RTTI here - the type-IDs are compared and the dynamic cast is only performed,
+  // if we really have an underlying BlockSparseMatrix; hopefully that saves some
+  // runtime.. (kruse, 09/14)
+  if (typeid(*systemmatrix1) == typeid(*sysmat_linalg))
+  {
+    (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
+  }
+  else
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> block_sysmat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix1,false);
+    if (block_sysmat == Teuchos::null)
+      dserror("Expected fluid system matrix as BlockSparseMatrix. Failed to cast to it.");
+    Teuchos::RCP<LINALG::SparseMatrix> f00, f01, f10, f11;
+    Teuchos::RCP<Epetra_Map> domainmap_00 = Teuchos::rcp(new Epetra_Map(block_sysmat->DomainMap(0)));
+    Teuchos::RCP<Epetra_Map> domainmap_11 = Teuchos::rcp(new Epetra_Map(block_sysmat->DomainMap(1)));
+
+    // Split sparse system matrix into blocks according to the given maps
+    LINALG::SplitMatrix2x2(sysmat_linalg,domainmap_00,domainmap_11,domainmap_00,domainmap_11,f00,f01,f10,f11);
+    // add the blocks subsequently
+    block_sysmat->Matrix(0,0).Add(*f00,false,1.0,1.0);
+    block_sysmat->Matrix(0,1).Add(*f01,false,1.0,1.0);
+    block_sysmat->Matrix(1,0).Add(*f10,false,1.0,1.0);
+    block_sysmat->Matrix(1,1).Add(*f11,false,1.0,1.0);
+  }
 
   //------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)

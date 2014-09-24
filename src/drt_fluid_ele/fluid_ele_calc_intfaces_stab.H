@@ -232,10 +232,12 @@ namespace DRT
           std::vector<double>&       mypvelaf,         ///< master velaf
           std::vector<double>&       mypvelnp,         ///< master velnp
           std::vector<double>&       mypedispnp,       ///< master dispnp
+          std::vector<double>&       mypgridv,         ///< master grid velocity (ALE)
           std::vector<double>&       myedispnp,        ///< surfele dispnp
           std::vector<double>&       mynvelaf,         ///< slave velaf
           std::vector<double>&       mynvelnp,         ///< slave velnp
-          std::vector<double>&       mynedispnp        ///< slave dispnp
+          std::vector<double>&       mynedispnp,       ///< slave dispnp
+          std::vector<double>&       myngridv          ///< slave grid velocity (ALE)
       );
 
       //! evaluate shape functions and derivatives at integr. point
@@ -258,7 +260,10 @@ namespace DRT
       );
 
       //! evaluate velocity and pressure and derivatives at integr. point
-      void EvalVelPresAndDerivsAtIntPoint(bool use2ndderiv);
+      void EvalVelPresAndDerivsAtIntPoint(
+          bool  use2ndderiv,          ///< flag to use 2nd order derivatives
+          bool  isAle                 ///< flag, whether we are on an ALE-fluid
+      );
 
       //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order derivatives
       void GhostPenalty2nd(
@@ -917,6 +922,8 @@ namespace DRT
       LINALG::Matrix<nsd_,piel> pxyze_;
       //! array of nodal velocities, intermediate time level
       LINALG::Matrix<nsd_,piel> pevelaf_;
+      //! array of nodal grid velocities, time n+1
+      LINALG::Matrix<nsd_,piel> pegridv_;
       //! array of nodal velocities, new time level
       LINALG::Matrix<nsd_,piel> pevelnp_;
       //! array of nodal pressure, new time level
@@ -930,11 +937,13 @@ namespace DRT
       LINALG::Matrix<nsd_,niel> nxyze_;
       //! array of nodal velocities, intermediate time level
       LINALG::Matrix<nsd_,niel> nevelaf_;
+      //! array of nodal grid velocities, time n+1
+      LINALG::Matrix<nsd_,niel> negridv_;
       //! array of nodal velocities, new time level
       LINALG::Matrix<nsd_,niel> nevelnp_;
       //! array of nodal pressure, new time level
       LINALG::Matrix<niel,1> neprenp_;
-      //! array of nodal grid displacements, parent element, new time level
+      //! array of nodal grid displacements, neighbor element, new time level
       LINALG::Matrix<nsd_,niel> nedispnp_;
 
       //! node coordinates of boundary element
@@ -1004,6 +1013,8 @@ namespace DRT
       LINALG::Matrix<nsd_,1> velintaf_;
       //! velocity in gausspoint, time n+1
       LINALG::Matrix<nsd_,1> velintnp_;
+      //! grid velocity in gausspoint, time n+1 (master side, for ALE-fluid)
+      LINALG::Matrix<nsd_,1> gridvelint_;
       //! parent velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<nsd_,nsd_> pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af

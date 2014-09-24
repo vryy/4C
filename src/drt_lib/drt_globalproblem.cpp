@@ -873,9 +873,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
     }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -970,9 +970,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
     }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1020,10 +1020,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       }
       else
       {
-        structdis    = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-        fluiddis     = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-        aledis       = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
-        structaledis = Teuchos::rcp(new DRT::Discretization("structale",reader.Comm()));
+        structdis    = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
+        fluiddis     = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+        aledis       = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
+        structaledis = Teuchos::rcp(new DRT::Discretization("structale" ,reader.Comm()));
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1068,9 +1068,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fluid_xfem:
   case prb_fsi_crack:
   {
-    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
-    aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
@@ -1176,7 +1176,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       }
       else
       {
-        fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+        fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
         scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
       }
 
@@ -1203,9 +1203,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      xfluiddis = Teuchos::rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
-      aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid" ,reader.Comm()));
+      xfluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("xfluid",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"        ,reader.Comm()));
     }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1293,7 +1293,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_loma:
   {
     // create empty discretizations
-    fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1343,9 +1343,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
-      aledis    = Teuchos::rcp(new DRT::Discretization("ale",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",    reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale",       reader.Comm()));
     }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1434,7 +1434,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fluid_topopt:
   {
     // create empty discretizations
-    fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
     optidis = Teuchos::rcp(new DRT::Discretization("opti",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1479,7 +1479,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
     porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
-    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid", reader.Comm()));
+    fluiddis      = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
     aledis        = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1507,7 +1507,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid",   reader.Comm()));
+    fluiddis      = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
@@ -1527,10 +1527,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fpssi:
   {
     // create empty discretizations
-    structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
-    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid",   reader.Comm()));
-    aledis        = Teuchos::rcp(new DRT::Discretization("ale",     reader.Comm()));
+    structdis     = Teuchos::rcp(new DRT::Discretization("structure",  reader.Comm()));
+    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid",  reader.Comm()));
+    fluiddis      = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
+    aledis        = Teuchos::rcp(new DRT::Discretization("ale",        reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
@@ -1631,7 +1631,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_cavitation:
   {
     // create empty discretizations
-    fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
     particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
