@@ -127,7 +127,7 @@ namespace NLNSOL
         ) const;
 
     //! Use a fixed Jacobian (true) or update it in every iteration (false)?
-    virtual const bool FixedJacobian() const { return Params().get<bool>("Newton: Fixed Jacobian"); }
+    virtual const bool FixedJacobian() const;
 
     //! @name Necessary sub-algorithms
     //@{

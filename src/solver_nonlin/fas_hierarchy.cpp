@@ -27,7 +27,8 @@ Maintainer: Matthias Mayr
 #include <MueLu_MLParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 
-// MueLu typedefs: header files for default types, must be included after all other MueLu/Xpetra headers
+/* MueLu typedefs: header files for default types, must be included after all
+ *other MueLu/Xpetra headers */
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
 #include <MueLu_UseShortNames.hpp>
 
@@ -70,10 +71,9 @@ Maintainer: Matthias Mayr
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_sparseoperator.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
 : isinit_(false),
   issetup_(false),
@@ -86,7 +86,6 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialization of member variables */
 void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
@@ -104,7 +103,6 @@ void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of multigrid hierarchy */
 void NLNSOL::FAS::AMGHierarchy::Setup()
 {
 #ifdef HAVE_MueLu
@@ -122,10 +120,10 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   Teuchos::RCP<Epetra_CrsMatrix> mymatrix = Teuchos::rcp(A, false);
 
   // wrap Epetra_CrsMatrix to Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node,LocalMatOps> > mueluA
-    = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
-  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node,LocalMatOps> > mueluOp
-    = Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node,LocalMatOps>(mueluA));
+  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node,LocalMatOps> > mueluA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
+  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node,LocalMatOps> > mueluOp =
+      Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node,LocalMatOps>(mueluA));
 
   // ---------------------------------------------------------------------------
   // Setup MueLue Hierarchy based on user specified parameters
@@ -189,7 +187,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     }
     else  // any coarse level
     {
-      Teuchos::RCP<Teuchos::ParameterList> coarseprobparams = Teuchos::rcp(new Teuchos::ParameterList(NlnProblem()->Params()));
+      Teuchos::RCP<Teuchos::ParameterList> coarseprobparams =
+          Teuchos::rcp(new Teuchos::ParameterList(NlnProblem()->Params()));
       coarseprobparams->set<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >("AMG Hierarchy", Teuchos::rcp(this, false));
       coarseprobparams->set<int>("Level ID", level);
 
@@ -199,7 +198,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     }
 
     // create a single level and initialize
-    Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel = Teuchos::rcp(new NLNSOL::FAS::NlnLevel());
+    Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel =
+        Teuchos::rcp(new NLNSOL::FAS::NlnLevel());
     newlevel->Init(muelulevel->GetLevelID(), H->GetNumLevels(), myAcrs, myR, myP, Comm(), levelparams, nlnproblem);
     newlevel->Setup();
     // -------------------------------------------------------------------------
@@ -226,7 +226,6 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Restrict fine level vector to given coarse level */
 Teuchos::RCP<Epetra_MultiVector>
 NLNSOL::FAS::AMGHierarchy::RestrictToCoarseLevel(const Epetra_MultiVector& vec,
     const int targetlevel
@@ -249,16 +248,17 @@ NLNSOL::FAS::AMGHierarchy::RestrictToCoarseLevel(const Epetra_MultiVector& vec,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Prolongate vector from a given coarse level to fine level */
 Teuchos::RCP<Epetra_MultiVector>
-NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel(const Epetra_MultiVector& veccoarse,
+NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel(
+    const Epetra_MultiVector& veccoarse,
     const int sourcelevel
     ) const
 {
   CheckLevelID(sourcelevel);
 
   // copy input vector
-  Teuchos::RCP<Epetra_MultiVector> vecfine = Teuchos::rcp(new Epetra_MultiVector(veccoarse));
+  Teuchos::RCP<Epetra_MultiVector> vecfine =
+      Teuchos::rcp(new Epetra_MultiVector(veccoarse));
 
   // loop over levels and do recursive prolongations
   for (int i = sourcelevel; i > 0; --i)
@@ -272,7 +272,6 @@ NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel(const Epetra_MultiVector& vecco
 }
 
 /*----------------------------------------------------------------------------*/
-/* Print all levels */
 void NLNSOL::FAS::AMGHierarchy::PrintNlnLevels(std::ostream& os) const
 {
   // print only on one processor
@@ -312,7 +311,6 @@ void NLNSOL::FAS::AMGHierarchy::PrintNlnLevels(std::ostream& os) const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check validity of multigrid hierarchy */
 const bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
 {
   // prepare return value
@@ -361,7 +359,6 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* check if level ID is admissible */
 const bool NLNSOL::FAS::AMGHierarchy::CheckLevelID(const int level) const
 {
   if (level < 0 and level > NumLevels())
@@ -377,7 +374,6 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckLevelID(const int level) const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to communicator */
 const Epetra_Comm& NLNSOL::FAS::AMGHierarchy::Comm() const
 {
   if (comm_.is_null())
@@ -387,7 +383,6 @@ const Epetra_Comm& NLNSOL::FAS::AMGHierarchy::Comm() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to parameter list */
 const Teuchos::ParameterList& NLNSOL::FAS::AMGHierarchy::Params() const
 {
   // check if parameter list has already been set
@@ -398,8 +393,8 @@ const Teuchos::ParameterList& NLNSOL::FAS::AMGHierarchy::Params() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to a certain level */
-Teuchos::RCP<NLNSOL::FAS::NlnLevel> NLNSOL::FAS::AMGHierarchy::NlnLevel(const int i) const
+Teuchos::RCP<NLNSOL::FAS::NlnLevel>
+NLNSOL::FAS::AMGHierarchy::NlnLevel(const int i) const
 {
   if (nlnlevels_[i].is_null())
     dserror("Level %d does not exist or is not initialized properly", i);
@@ -408,7 +403,6 @@ Teuchos::RCP<NLNSOL::FAS::NlnLevel> NLNSOL::FAS::AMGHierarchy::NlnLevel(const in
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to nonlinear problem */
 Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::AMGHierarchy::NlnProblem() const
 {
   // check if nonlinear problem has already been set

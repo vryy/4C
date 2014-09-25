@@ -39,7 +39,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::LineSearchBacktracking::LineSearchBacktracking()
  : NLNSOL::LineSearchBase(),
    trialstepsize_(1.0)
@@ -48,13 +47,13 @@ NLNSOL::LineSearchBacktracking::LineSearchBacktracking()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of line search object */
 void NLNSOL::LineSearchBacktracking::Setup()
 {
   // make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  trialstepsize_ = Params().sublist("Backtracking").get<double>("trial step size");
+  trialstepsize_ =
+      Params().sublist("Backtracking").get<double>("trial step size");
 
   // SetupLineSearch() has been called
   SetIsSetup();
@@ -63,7 +62,6 @@ void NLNSOL::LineSearchBacktracking::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the line search parameter */
 const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
 {
   // make sure that Init() and Setup() has been called
@@ -74,10 +72,12 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
   double lsparam = 1.0;
 
   // take a full step
-  Teuchos::RCP<Epetra_MultiVector> xnew = Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> xnew =
+      Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
 
-  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew =
+      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
   Evaluate(*xnew, *fnew);
 
   double fnorm2 = 1.0e+12;
@@ -97,7 +97,9 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
     // evaluate and compute L2-norm of residual
     ConvergenceCheck(*fnew, fnorm2);
 
-    std::cout << "\tfnorm2 = " << fnorm2 << "\tinitnorm = " << GetFNormOld() << std::endl;
+    std::cout << "\tfnorm2 = " << fnorm2
+              << "\tinitnorm = " << GetFNormOld()
+              << std::endl;
   }
 
   // check for successful line search

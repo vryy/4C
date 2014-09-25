@@ -54,7 +54,8 @@ namespace NLNSOL
    *  The operator is fed with:
    *  - an Epetra_Comm
    *  - a Teuchos::ParameterList for configuration
-   *  - a Teuchos::RCP to the nonlinear problem interface class (connection to time integration)
+   *  - a Teuchos::RCP to the nonlinear problem interface class (connection to
+   *    time integration)
    *
    *  Setup() constructs the actual algorithm and has to be implemented by every
    *  specific algorithm itself.
@@ -93,7 +94,8 @@ namespace NLNSOL
       //! @name Mathematical functions
       //@{
 
-      /*! \brief Returns the result of a NlnOperator inverse applied to an Epetra_MultiVector X in Y.
+      /*! \brief Returns the result of a NlnOperator inverse applied to an
+       *  Epetra_MultiVector X in Y.
        *
        *  \return Integer error code, set to 0 if successful.
        *
@@ -151,10 +153,10 @@ namespace NLNSOL
        *  operator is a smoother, we do not care about convergence and just
        *  advance with the smoothed solution.
        */
-      virtual const bool IsSolver() const { return Params().get<bool>("Nonlinear Operator: Is Solver"); }
+      virtual const bool IsSolver() const;
 
       //! Get maximally allowed number of iterations
-      virtual const int GetMaxIter() const { return Params().get<int>("Nonlinear Operator: Max Iter"); }
+      virtual const int GetMaxIter() const;
 
       //@}
 

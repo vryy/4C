@@ -52,7 +52,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnOperatorNGmres::NlnOperatorNGmres()
 : linsolver_(Teuchos::null),
   linesearch_(Teuchos::null),
@@ -62,7 +61,6 @@ NLNSOL::NlnOperatorNGmres::NlnOperatorNGmres()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the algorithm */
 void NLNSOL::NlnOperatorNGmres::Setup()
 {
   // Make sure that Init() has been called
@@ -84,7 +82,6 @@ void NLNSOL::NlnOperatorNGmres::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the linear solver */
 void NLNSOL::NlnOperatorNGmres::SetupLinearSolver()
 {
   // get the solver number used for structural problems
@@ -102,7 +99,6 @@ void NLNSOL::NlnOperatorNGmres::SetupLinearSolver()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the line search */
 void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
@@ -112,7 +108,6 @@ void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the preconditioner */
 void NLNSOL::NlnOperatorNGmres::SetupPreconditioner()
 {
   const Teuchos::ParameterList& precparams = Params().sublist("NGMRES: Nonlinear Preconditioner");
@@ -126,7 +121,6 @@ void NLNSOL::NlnOperatorNGmres::SetupPreconditioner()
 }
 
 /*----------------------------------------------------------------------------*/
-/* ApplyInverse of nonlinear Krylov solver */
 int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x
     ) const
@@ -275,7 +269,6 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute a new tentative iterate */
 int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(const Epetra_MultiVector& fbar,
     Epetra_MultiVector& xbar
     ) const
@@ -287,8 +280,8 @@ int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(const Epetra_MultiVector&
 }
 
 /*----------------------------------------------------------------------------*/
-/* Solve the least squares problem */
-Teuchos::RCP<Epetra_MultiVector> NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate
+Teuchos::RCP<Epetra_MultiVector>
+NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate
 (
   const Teuchos::RCP<const Epetra_MultiVector>& xbar,
   const Teuchos::RCP<const Epetra_MultiVector>& fbar,
@@ -406,4 +399,10 @@ Teuchos::RCP<Epetra_MultiVector> NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIt
   }
 
   return xhat;
+}
+
+/*----------------------------------------------------------------------------*/
+const unsigned int NLNSOL::NlnOperatorNGmres::GetMaxWindowSize() const
+{
+  return Params().get<int>("NGMRES: Max Window Size");
 }

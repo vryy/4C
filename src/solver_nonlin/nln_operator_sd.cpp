@@ -45,7 +45,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnOperatorSD::NlnOperatorSD()
 : linesearch_(Teuchos::null)
 {
@@ -53,7 +52,6 @@ NLNSOL::NlnOperatorSD::NlnOperatorSD()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the algorithm  / operator */
 void NLNSOL::NlnOperatorSD::Setup()
 {
   // Make sure that Init() has been called
@@ -68,7 +66,6 @@ void NLNSOL::NlnOperatorSD::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of line search */
 void NLNSOL::NlnOperatorSD::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
@@ -78,7 +75,6 @@ void NLNSOL::NlnOperatorSD::SetupLineSearch()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Apply the preconditioner */
 int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
@@ -92,10 +88,12 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
   // initialize stuff for iteration loop
   // ---------------------------------------------------------------------------
   // solution increment vector
-  Teuchos::RCP<Epetra_MultiVector> inc = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> inc =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // residual vector
-  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> rhs =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   NlnProblem()->Evaluate(x, *rhs);
 
   // some scalars
@@ -137,7 +135,6 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the search direction */
 const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
     const Epetra_MultiVector& rhs,
     Epetra_MultiVector& inc
@@ -151,7 +148,6 @@ const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute step length parameter */
 const double NLNSOL::NlnOperatorSD::ComputeStepLength(
     const Epetra_MultiVector& x,
     const Epetra_MultiVector& inc,

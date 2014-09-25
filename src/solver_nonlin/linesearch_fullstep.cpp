@@ -39,7 +39,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::LineSearchFullStep::LineSearchFullStep()
  : NLNSOL::LineSearchBase()
 {
@@ -47,7 +46,6 @@ NLNSOL::LineSearchFullStep::LineSearchFullStep()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of line search object */
 void NLNSOL::LineSearchFullStep::Setup()
 {
   // make sure that Init() has been called
@@ -60,7 +58,6 @@ void NLNSOL::LineSearchFullStep::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the line search parameter */
 const double NLNSOL::LineSearchFullStep::ComputeLSParam() const
 {
   // make sure that Init() and Setup() has been called

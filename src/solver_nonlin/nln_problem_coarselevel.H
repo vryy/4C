@@ -84,14 +84,14 @@ namespace NLNSOL
 
     /*! \brief Evaluate the residual on a coarse level
      *
-     *  This is an Evaluate() in a variational way. Hence, we compute \f$Rf(Px)\f$,
-     *  i.e. we first prolongate the current coarse level solution to the fine
-     *  level, then call Evaluate() on the fine level using the fine level
-     *  nonlinear problem NLNSOL::NlnProblem, and finally restrict the residual
-     *  to the current coarse level.
+     *  This is an Evaluate() in a variational way. Hence, we compute
+     *  \f$Rf(Px)\f$, i.e. we first prolongate the current coarse level solution
+     *  to the fine level, then call Evaluate() on the fine level using the fine
+     *  level nonlinear problem NLNSOL::NlnProblem, and finally restrict the
+     *  residual to the current coarse level.
      *
-     *  The current coarse level ID is stored internally. Thus, the Evaluate()-call
-     *  looks exactly like in the fine level case.
+     *  The current coarse level ID is stored internally. Thus, the
+     *  Evaluate()-call looks exactly like in the fine level case.
      *
      *  \author mayr.mt \date 06/2014
      */

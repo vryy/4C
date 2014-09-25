@@ -2,8 +2,6 @@
 /*!
 \file fas_nlnlevel.cpp
 
-\brief Nonlinear level containing the representation and operations for a single nonlinear multigrid level
-
 <pre>
 Maintainer: Matthias Mayr
             mayr@mhpc.mw.tum.de
@@ -44,7 +42,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::FAS::NlnLevel::NlnLevel()
 : isinit_(false),
   issetup_(false),
@@ -65,16 +62,15 @@ NLNSOL::FAS::NlnLevel::NlnLevel()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialization */
 void NLNSOL::FAS::NlnLevel::Init(const int levelid,
-                                 const int numlevels,
-                                 Teuchos::RCP<const Epetra_CrsMatrix> A,
-                                 Teuchos::RCP<const Epetra_CrsMatrix> R,
-                                 Teuchos::RCP<const Epetra_CrsMatrix> P,
-                                 const Epetra_Comm& comm,
-                                 const Teuchos::ParameterList& params,
-                                 Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
-                                 )
+    const int numlevels,
+    Teuchos::RCP<const Epetra_CrsMatrix> A,
+    Teuchos::RCP<const Epetra_CrsMatrix> R,
+    Teuchos::RCP<const Epetra_CrsMatrix> P,
+    const Epetra_Comm& comm,
+    const Teuchos::ParameterList& params,
+    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
+    )
 {
   // store input arguments into member variables
   SetLevelID(levelid);
@@ -94,7 +90,6 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup */
 void NLNSOL::FAS::NlnLevel::Setup()
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
@@ -105,7 +100,8 @@ void NLNSOL::FAS::NlnLevel::Setup()
   // create coarse level solver if this level is the coarsest level
   if (LevelID() == NumLevels() - 1)
   {
-    coarsesolver_ = operatorfactory.Create(Params().sublist("Coarse Level Solver"));
+    coarsesolver_ =
+        operatorfactory.Create(Params().sublist("Coarse Level Solver"));
     coarsesolver_->Init(Comm(), Params().sublist("Coarse Level Solver"), NlnProblem());
     coarsesolver_->Setup();
   }
@@ -128,7 +124,6 @@ void NLNSOL::FAS::NlnLevel::Setup()
   return;
 }
 /*----------------------------------------------------------------------------*/
-/* Set matrix */
 void NLNSOL::FAS::NlnLevel::SetMatrix(Teuchos::RCP<const Epetra_CrsMatrix> myA)
 {
   if (not myA.is_null())
@@ -138,7 +133,6 @@ void NLNSOL::FAS::NlnLevel::SetMatrix(Teuchos::RCP<const Epetra_CrsMatrix> myA)
 }
 
 /*----------------------------------------------------------------------------*/
-/* Set restriction operator */
 void NLNSOL::FAS::NlnLevel::SetROp(Teuchos::RCP<const Epetra_CrsMatrix> myR)
 {
   if (not myR.is_null())
@@ -148,7 +142,6 @@ void NLNSOL::FAS::NlnLevel::SetROp(Teuchos::RCP<const Epetra_CrsMatrix> myR)
 }
 
 /*----------------------------------------------------------------------------*/
-/* Set prolongation operator */
 void NLNSOL::FAS::NlnLevel::SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> myP)
 {
   if (not myP.is_null())
@@ -158,8 +151,9 @@ void NLNSOL::FAS::NlnLevel::SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> myP)
 }
 
 /*----------------------------------------------------------------------------*/
-/* Restriction vector to next coarser level */
-int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(Teuchos::RCP<Epetra_MultiVector>& vec) const
+int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
+    Teuchos::RCP<Epetra_MultiVector>& vec
+    ) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -168,7 +162,8 @@ int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(Teuchos::RCP<Epetra_MultiV
 
   if (HaveROp() and LevelID() > 0)
   {
-    Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(rop_->RowMap(), 1, true));
+    Teuchos::RCP<Epetra_MultiVector> tempvec =
+        Teuchos::rcp(new Epetra_MultiVector(rop_->RowMap(), 1, true));
 
 #ifdef DEBUG
     if (not rop_->DomainMap().PointSameAs(vec->Map()))
@@ -183,7 +178,8 @@ int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(Teuchos::RCP<Epetra_MultiV
   }
   else // no restriction on finest level
   {
-    dserror("You are on the fine level. There is no restriction operator available.");
+    dserror("You are on the fine level. "
+        "There is no restriction operator available.");
     err = 1;
   }
 
@@ -191,8 +187,9 @@ int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(Teuchos::RCP<Epetra_MultiV
 }
 
 /*----------------------------------------------------------------------------*/
-/* Prolongate vector to next finer level */
-int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(Teuchos::RCP<Epetra_MultiVector>& vec) const
+int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
+    Teuchos::RCP<Epetra_MultiVector>& vec
+    ) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -201,7 +198,8 @@ int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(Teuchos::RCP<Epetra_MultiV
 
   if (HavePOp() and (LevelID() > 0))
   {
-    Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(pop_->RowMap(), 1, true));
+    Teuchos::RCP<Epetra_MultiVector> tempvec =
+        Teuchos::rcp(new Epetra_MultiVector(pop_->RowMap(), 1, true));
 
 #ifdef DEBUG
     if (not pop_->DomainMap().PointSameAs(vec->Map()))
@@ -216,7 +214,8 @@ int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(Teuchos::RCP<Epetra_MultiV
   }
   else // no prolongation on finest level
   {
-    dserror("You are on the fine level, already. No further prolongation possible.");
+    dserror("You are on the fine level, already. "
+        "No further prolongation possible.");
     err = 1;
   }
 
@@ -224,7 +223,6 @@ int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(Teuchos::RCP<Epetra_MultiV
 }
 
 /*----------------------------------------------------------------------------*/
-/* Print method */
 void NLNSOL::FAS::NlnLevel::Print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0)
@@ -306,7 +304,6 @@ void NLNSOL::FAS::NlnLevel::Print(std::ostream& os) const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Return communicator */
 const Epetra_Comm& NLNSOL::FAS::NlnLevel::Comm() const
 {
   if (comm_.is_null())
@@ -316,7 +313,6 @@ const Epetra_Comm& NLNSOL::FAS::NlnLevel::Comm() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Return parameter list */
 const Teuchos::ParameterList& NLNSOL::FAS::NlnLevel::Params() const
 {
   if (params_.is_null())
@@ -326,7 +322,6 @@ const Teuchos::ParameterList& NLNSOL::FAS::NlnLevel::Params() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Return dof row map of this level */
 const Epetra_BlockMap& NLNSOL::FAS::NlnLevel::DofRowMap() const
 {
   if (A_.is_null())
@@ -336,7 +331,6 @@ const Epetra_BlockMap& NLNSOL::FAS::NlnLevel::DofRowMap() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to nonlinear problem */
 Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::NlnLevel::NlnProblem() const
 {
   if (nlnproblem_.is_null())
@@ -347,7 +341,6 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::NlnLevel::NlnProblem() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Do presmoothing sweeps on this level */
 int NLNSOL::FAS::NlnLevel::DoPreSmoothing(const Epetra_MultiVector& fhatbar,
                                           Epetra_MultiVector& x
                                           ) const
@@ -366,7 +359,6 @@ int NLNSOL::FAS::NlnLevel::DoPreSmoothing(const Epetra_MultiVector& fhatbar,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Do postsmoothing sweeps on this level */
 int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& fhatbar,
                                            Epetra_MultiVector& x
                                            ) const
@@ -385,7 +377,6 @@ int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& fhatbar,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Do coarse level solve on this level */
 int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& fhatbar,
                                               Epetra_MultiVector& x
                                               ) const
@@ -394,16 +385,17 @@ int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& fhatbar,
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
   if (coarsesolver_.is_null())
-    dserror("There is no coarse level solver on level %d. Perhaps this is not the coarsest level.", LevelID());
+    dserror("There is no coarse level solver on level %d. "
+        "Perhaps this is not the coarsest level.", LevelID());
 
   if (Comm().MyPID() == 0)
-    IO::cout << "*** Do coarse level solve on level " << LevelID() << ", now." << IO::endl;
+    IO::cout << "*** Do coarse level solve on level " << LevelID() << ", now."
+             << IO::endl;
 
   return coarsesolver_->ApplyInverse(fhatbar,x);
 }
 
 /*----------------------------------------------------------------------------*/
-/* Is this level the coarsest level? */
 const bool NLNSOL::FAS::NlnLevel::IsCoarsestLevel() const
 {
   if (LevelID() == NumLevels() - 1)
@@ -422,8 +414,8 @@ const bool NLNSOL::FAS::NlnLevel::IsCoarsestLevel() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute full approximation of coarse level residual */
-Teuchos::RCP<Epetra_MultiVector> NLNSOL::FAS::NlnLevel::EvaluateCoarseLevelResidual
+Teuchos::RCP<Epetra_MultiVector>
+NLNSOL::FAS::NlnLevel::EvaluateCoarseLevelResidual
 (
   const Epetra_MultiVector& x,
   const Epetra_MultiVector& fhatbar
@@ -432,7 +424,8 @@ Teuchos::RCP<Epetra_MultiVector> NLNSOL::FAS::NlnLevel::EvaluateCoarseLevelResid
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  Teuchos::RCP<Epetra_MultiVector> f = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> f =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   int err = f->Update(1.0, fhatbar, 1.0);
   if (err != 0) { dserror("Failed!"); }
@@ -441,8 +434,9 @@ Teuchos::RCP<Epetra_MultiVector> NLNSOL::FAS::NlnLevel::EvaluateCoarseLevelResid
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check for convergence */
-bool NLNSOL::FAS::NlnLevel::ConvergenceCheck(const Epetra_MultiVector& f) const
+bool NLNSOL::FAS::NlnLevel::ConvergenceCheck(
+    const Epetra_MultiVector& f
+    ) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -453,7 +447,6 @@ bool NLNSOL::FAS::NlnLevel::ConvergenceCheck(const Epetra_MultiVector& f) const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check for convergence */
 bool NLNSOL::FAS::NlnLevel::ConvergenceCheck(const Epetra_MultiVector& f,
     double& fnorm2
     ) const

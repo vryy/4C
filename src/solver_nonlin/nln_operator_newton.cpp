@@ -45,7 +45,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 : linsolver_(Teuchos::null),
   linesearch_(Teuchos::null)
@@ -54,7 +53,6 @@ NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the algorithm  / operator */
 void NLNSOL::NlnOperatorNewton::Setup()
 {
   // Make sure that Init() has been called
@@ -73,7 +71,6 @@ void NLNSOL::NlnOperatorNewton::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of linear solver */
 void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 {
   // get the solver number used for structural problems
@@ -91,7 +88,6 @@ void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of line search */
 void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
@@ -101,7 +97,6 @@ void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Apply the preconditioner */
 int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
@@ -166,7 +161,6 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the search direction */
 const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
     Teuchos::RCP<Epetra_MultiVector>& rhs,
     Teuchos::RCP<Epetra_MultiVector>& inc,
@@ -189,4 +183,10 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
   if (linsolve_error != 0) { dserror("Linear solver failed."); }
 
   return linsolve_error;
+}
+
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::NlnOperatorNewton::FixedJacobian() const
+{
+  return Params().get<bool>("Newton: Fixed Jacobian");
 }

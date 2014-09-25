@@ -38,7 +38,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnOperatorFas::NlnOperatorFas()
 : hierarchy_(Teuchos::null)
 {
@@ -46,7 +45,6 @@ NLNSOL::NlnOperatorFas::NlnOperatorFas()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the algorithm  / operator */
 void NLNSOL::NlnOperatorFas::Setup()
 {
   // Make sure that Init() has been called
@@ -64,7 +62,6 @@ void NLNSOL::NlnOperatorFas::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Apply the preconditioner */
 int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
@@ -101,7 +98,6 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Do a standard V-cycle (recursive definition) */
 void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     Epetra_MultiVector& x,
     const int level
@@ -115,15 +111,19 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     IO::cout << IO::endl << IO::endl << "WELCOME to VCycle on level " << level << IO::endl;
 
   // we need at least zeroed vectors, especially on the fine level
-  Teuchos::RCP<Epetra_MultiVector> fbar = Teuchos::rcp(new Epetra_MultiVector(f)); // restriction of fine-level residual
-  Teuchos::RCP<Epetra_MultiVector> xbar = Teuchos::rcp(new Epetra_MultiVector(x)); // restriction of fine-level solution
-  Teuchos::RCP<Epetra_MultiVector> fhat = Teuchos::rcp(new Epetra_MultiVector(f.Map(), 1, true)); // coarse-grid evaluation of residual
+  Teuchos::RCP<Epetra_MultiVector> fbar =
+      Teuchos::rcp(new Epetra_MultiVector(f)); // restriction of fine-level residual
+  Teuchos::RCP<Epetra_MultiVector> xbar =
+      Teuchos::rcp(new Epetra_MultiVector(x)); // restriction of fine-level solution
+  Teuchos::RCP<Epetra_MultiVector> fhat =
+      Teuchos::rcp(new Epetra_MultiVector(f.Map(), 1, true)); // coarse-grid evaluation of residual
 
   /* Leave 'x' untouched on the level since it is needed to approximate the
    * error after the postsmoothing. Use 'xtemp' instead for all operations on
    * this level.
    */
-  Teuchos::RCP<Epetra_MultiVector> xtemp = Teuchos::rcp(new Epetra_MultiVector(x));
+  Teuchos::RCP<Epetra_MultiVector> xtemp =
+      Teuchos::rcp(new Epetra_MultiVector(x));
 
   // compute coarse level contributions
   if (level > 0)
@@ -159,16 +159,21 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
         level, Hierarchy()->NumLevels() - 1);
   }
 
-  Teuchos::RCP<Epetra_MultiVector> fhatbar = Teuchos::rcp(new Epetra_MultiVector(*fhat));
+  Teuchos::RCP<Epetra_MultiVector> fhatbar =
+      Teuchos::rcp(new Epetra_MultiVector(*fhat));
   err = fhatbar->Update(1.0, *fbar, -1.0);
   if (err != 0) { dserror("Failed!"); }
 
 #ifdef DEBUG
   // additional safety checks w.r.t. maps
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fbar->Map())) { dserror("Maps do not match."); }
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(xbar->Map())) { dserror("Maps do not match."); }
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fhat->Map())) { dserror("Maps do not match."); }
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(xtemp->Map())) { dserror("Maps do not match."); }
+  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fbar->Map()))
+    dserror("Maps do not match.");
+  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(xbar->Map()))
+    dserror("Maps do not match.");
+  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fhat->Map()))
+    dserror("Maps do not match.");
+  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(xtemp->Map()))
+    dserror("Maps do not match.");
 #endif
 
   // do further coarsening only in case that we are not on the coarsest level, yet.
@@ -178,7 +183,8 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fhatbar, *xtemp);
 
     // evaluate current residual
-    Teuchos::RCP<Epetra_MultiVector> fsmoothed = Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
+    Teuchos::RCP<Epetra_MultiVector> fsmoothed =
+        Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
     Hierarchy()->NlnLevel(level)->NlnProblem()->Evaluate(*xtemp, *fsmoothed);
 
     // call VCycle on next coarser level recursively
@@ -202,7 +208,8 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     }
 
     // evaluate current residual // ToDo Do we really need to Evaluate() here?
-    Teuchos::RCP<Epetra_MultiVector> fsmoothed = Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
+    Teuchos::RCP<Epetra_MultiVector> fsmoothed =
+        Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
     Hierarchy()->NlnLevel(Hierarchy()->NumLevels()-1)->NlnProblem()->Evaluate(*xtemp, *fsmoothed);
     Hierarchy()->NlnLevel(Hierarchy()->NumLevels()-1)->DoCoarseLevelSolve(*fsmoothed, *xtemp);
   }
@@ -210,7 +217,8 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
   if (level > 0)
   {
     // coarse-grid correction (=approximation of error)
-    Teuchos::RCP<Epetra_MultiVector> correction = Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), 1, true));
+    Teuchos::RCP<Epetra_MultiVector> correction =
+        Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), 1, true));
     err = correction->Update(1.0, *xtemp, -1.0, *xbar, 0.0);
     if (err != 0) { dserror("Failed!"); }
 
@@ -226,7 +234,8 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
 
 #ifdef DEBUG
   // check whether all level transfers handled the maps correctly
-  if (not x.Map().PointSameAs(f.Map())) { dserror("Map failure during recursive calls of V-cycle!"); }
+  if (not x.Map().PointSameAs(f.Map()))
+    dserror("Map failure during recursive calls of V-cycle!");
 #endif
 
   if (Comm().MyPID() == 0)
@@ -236,7 +245,6 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* access the multigrid level hierarchy */
 const Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy>
 NLNSOL::NlnOperatorFas::Hierarchy() const
 {

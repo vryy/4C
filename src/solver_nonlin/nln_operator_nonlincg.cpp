@@ -42,7 +42,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnOperatorNonlinCG::NlnOperatorNonlinCG()
 : linsolver_(Teuchos::null),
   linesearch_(Teuchos::null)
@@ -51,7 +50,6 @@ NLNSOL::NlnOperatorNonlinCG::NlnOperatorNonlinCG()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the algorithm  / operator */
 void NLNSOL::NlnOperatorNonlinCG::Setup()
 {
   // Make sure that Init() has been called
@@ -68,7 +66,6 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of linear solver */
 void NLNSOL::NlnOperatorNonlinCG::SetupLinearSolver()
 {
   // get the solver number used for structural problems
@@ -78,28 +75,28 @@ void NLNSOL::NlnOperatorNonlinCG::SetupLinearSolver()
   if (linsolvernumber == (-1))
     dserror("No valid linear solver defined!");
 
-  linsolver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                                               Comm(),
-                                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+  linsolver_ =
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+      Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of line search */
 void NLNSOL::NlnOperatorNonlinCG::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(Params().sublist("Nonlinear CG: Line Search"));
+  linesearch_ =
+      linesearchfactory.Create(Params().sublist("Nonlinear CG: Line Search"));
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of the preconditioner */
 void NLNSOL::NlnOperatorNonlinCG::SetupPreconditioner()
 {
-  const Teuchos::ParameterList& precparams = Params().sublist("Nonlinear CG: Nonlinear Preconditioner");
+  const Teuchos::ParameterList& precparams =
+      Params().sublist("Nonlinear CG: Nonlinear Preconditioner");
 
   NlnOperatorFactory nlnopfactory;
   nlnprec_ = nlnopfactory.Create(precparams);
@@ -110,7 +107,6 @@ void NLNSOL::NlnOperatorNonlinCG::SetupPreconditioner()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Apply the preconditioner */
 int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
@@ -132,11 +128,13 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // compute initial search direction
   // ---------------------------------------------------------------------------
   // evaluate current residual
-  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   NlnProblem()->Evaluate(x, *fnew);
 
   // prepare vector for residual from previous iteration
-  Teuchos::RCP<Epetra_MultiVector> fold = Teuchos::rcp(new Epetra_MultiVector(*fnew));
+  Teuchos::RCP<Epetra_MultiVector> fold =
+      Teuchos::rcp(new Epetra_MultiVector(*fnew));
 
   // compute preconditioned search direction
   Teuchos::RCP<Epetra_MultiVector> p = Teuchos::rcp(new Epetra_MultiVector(x));
@@ -171,7 +169,8 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     // compute beta
     ComputeBeta(beta, *fnew, *fold);
 
-    Teuchos::RCP<Epetra_MultiVector> pnew = Teuchos::rcp(new Epetra_MultiVector(p->Map(), true));
+    Teuchos::RCP<Epetra_MultiVector> pnew =
+        Teuchos::rcp(new Epetra_MultiVector(p->Map(), true));
 
     // compute preconditioned search direction
     pnew->Update(1.0, x, 0.0);
@@ -194,7 +193,6 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Apple the preconditioner */
 void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner
 (
     const Epetra_MultiVector& f,
@@ -202,7 +200,8 @@ void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner
 ) const
 {
   if (nlnprec_.is_null())
-    dserror("Nonlinear preconditioner has not been initialized, yet. Has SetupPreconditioner been called?");
+    dserror("Nonlinear preconditioner has not been initialized, yet. "
+        "Has SetupPreconditioner been called?");
 
   nlnprec_->ApplyInverse(f, x);
 
@@ -210,7 +209,6 @@ void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the parameter beta */
 void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
     const Epetra_MultiVector& fnew,
     const Epetra_MultiVector& fold
@@ -229,7 +227,6 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the parameter beta according to Fletcher-Reeves formula */
 void NLNSOL::NlnOperatorNonlinCG::ComputeBetaFletcherReeves(double& beta,
   const Epetra_MultiVector& fnew,
   const Epetra_MultiVector& fold
@@ -249,7 +246,6 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBetaFletcherReeves(double& beta,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the parameter beta according to Polak-Ribiere formula */
 void NLNSOL::NlnOperatorNonlinCG::ComputeBetaPolakRibiere(double& beta) const
 {
   dserror("Not implemented, yet.");
@@ -258,7 +254,6 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBetaPolakRibiere(double& beta) const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the parameter beta according to Hestenes-Stiefel formula */
 void NLNSOL::NlnOperatorNonlinCG::ComputeBetaHestenesStiefel(double& beta) const
 {
   dserror("Not implemented, yet.");

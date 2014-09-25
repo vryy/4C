@@ -62,9 +62,9 @@ namespace NLNSOL
    *  Step 1: Generate a new tentative iterate/solution
    *
    *  Step 2: Build a linear combination of the previous iterates and the most
-   *          recent one. The weights of each iterate are determined by solving a
-   *          least squares problem with the goal of reducing the L2-norm of the
-   *          residual.
+   *          recent one. The weights of each iterate are determined by solving
+   *          a least squares problem with the goal of reducing the L2-norm of
+   *          the residual.
    *
    *  Step 3: Line search between tentative solution (cf. step 1) and the one
    *          obtained by linear combination (cf. step 2).
@@ -204,7 +204,7 @@ namespace NLNSOL
     //@{
 
     //! Get the maximally allowed window size
-    virtual const unsigned int GetMaxWindowSize() const { return Params().get<int>("NGMRES: Max Window Size"); }
+    virtual const unsigned int GetMaxWindowSize() const;
 
     //@}
 

@@ -60,9 +60,9 @@ namespace NLNSOL
    *  NOX::Abstract::Group() to access the time integration within BACI for
    *  Evaluate() / computeF().
    *
-   *  Whenever a nonlinear operator wants to call Evaluate() or ConvergenceCheck(),
-   *  the NLNSOL::NlnProblem provides access to the time integration scheme in
-   *  BACI.
+   *  Whenever a nonlinear operator wants to call Evaluate() or
+   *  ConvergenceCheck(), the NLNSOL::NlnProblem provides access to the time
+   *  integration scheme in BACI.
    *
    *  NLNSOL::NlnProblem acts on the DofRowMap() of the (fine) level, only. For
    *  coarse level representations, we use NLNSOL::NlnProblemCoarseLevel().
@@ -218,10 +218,10 @@ namespace NLNSOL
      *  for all matrix types in BACI. We can always extract an Epetra_Operator
      *  when we want to call a Trilinos package/solver.
      *
-     *  \warning Access to time integration WIHTOUT using the NOX group #noxgrp_.
-     *  Seems to be inconsistent since all other accesses to time integration
-     *  are done via the NOX group #noxgrp_. However, usage of NOX group might
-     *  go away at some point.
+     *  \warning Access to time integration WIHTOUT using the NOX group
+     *  #noxgrp_. Seems to be inconsistent since all other accesses to time
+     *  integration are done via the NOX group #noxgrp_. However, usage of NOX
+     *  group might go away at some point.
      */
     Teuchos::RCP<LINALG::SparseOperator> jac_;
 

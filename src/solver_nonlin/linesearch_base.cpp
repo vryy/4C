@@ -34,7 +34,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::LineSearchBase::LineSearchBase()
  : nlnproblem_(Teuchos::null),
    params_(Teuchos::null),
@@ -48,7 +47,6 @@ NLNSOL::LineSearchBase::LineSearchBase()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialization */
 void NLNSOL::LineSearchBase::Init(
     Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem,
     const Teuchos::ParameterList& params,
@@ -68,7 +66,8 @@ void NLNSOL::LineSearchBase::Init(
 
   // some sanity checks
   if (GetFNormOld() < 0.0)
-    dserror("Old residual norm 'resnormold_' = %f, but has to be greater than 0.0!", resnormold_);
+    dserror("Old residual norm 'resnormold_' = %f, but has to be greater than "
+        "0.0!", resnormold_);
 
   // Init() has been called
   SetIsInit();
@@ -77,7 +76,6 @@ void NLNSOL::LineSearchBase::Init(
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check sufficient decrease condition */
 bool NLNSOL::LineSearchBase::IsSufficientDecrease(const double fnorm2,
     const double lsparam
     ) const
@@ -93,7 +91,6 @@ bool NLNSOL::LineSearchBase::IsSufficientDecrease(const double fnorm2,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Safeguard strategy for line search parameter */
 void NLNSOL::LineSearchBase::Safeguard(double& lsparam,
     const double lsparamold
     ) const
@@ -105,7 +102,6 @@ void NLNSOL::LineSearchBase::Safeguard(double& lsparam,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Evaluate residual */
 void NLNSOL::LineSearchBase::Evaluate(const Epetra_MultiVector& x,
     Epetra_MultiVector& f
     ) const
@@ -120,7 +116,6 @@ void NLNSOL::LineSearchBase::Evaluate(const Epetra_MultiVector& x,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check for convergence */
 bool NLNSOL::LineSearchBase::ConvergenceCheck(const Epetra_MultiVector& f,
     double& fnorm2
     ) const
@@ -129,7 +124,6 @@ bool NLNSOL::LineSearchBase::ConvergenceCheck(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------*/
-/* Access to parameter list */
 const Teuchos::ParameterList& NLNSOL::LineSearchBase::Params() const
 {
   // check if parameter list has already been set

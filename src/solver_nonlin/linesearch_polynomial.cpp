@@ -34,7 +34,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::LineSearchPolynomial::LineSearchPolynomial()
  : NLNSOL::LineSearchBase(),
    itermax_(0)
@@ -43,7 +42,6 @@ NLNSOL::LineSearchPolynomial::LineSearchPolynomial()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Setup of line search object */
 void NLNSOL::LineSearchPolynomial::Setup()
 {
   // make sure that Init() has been called
@@ -59,7 +57,6 @@ void NLNSOL::LineSearchPolynomial::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Compute the line search parameter */
 const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 {
   int err = 0;
@@ -73,11 +70,13 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
   double lsparamold = 1.0;
 
   // try a full step first
-  Teuchos::RCP<Epetra_MultiVector> xnew = Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> xnew =
+      Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
   if (err != 0) { dserror("Failed."); }
 
-  Teuchos::RCP<Epetra_MultiVector> residual = Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> residual =
+      Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   Evaluate(*xnew, *residual);
 
   double fnorm2fullstep = 1.0e+12;
@@ -124,7 +123,8 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
         // compute coefficients of 2nd order polynomial
         a = y3 - (y2-y1)/(l2-l1)*l3 - y1 + l1*(y2-y1)/(l2-l1);
-        a = a / (l3*l3 - l3*(l2*l2-l1*l1)/(l2-l1) - l1*l1 + l1*(l2*l2-l1*l1)/(l2-l1));
+        a = a / (l3*l3 - l3*(l2*l2-l1*l1)/(l2-l1) - l1*l1 +
+            l1*(l2*l2-l1*l1)/(l2-l1));
 
         b = (y2-y1)/(l2-l1) - a*(l2*l2-l1*l1)/(l2-l1);
 
@@ -150,7 +150,8 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
       }
 
       if (not IsSufficientDecrease(fnorm2, lsparam) && iter > itermax_)
-        dserror("Polynomial line search cannot satisfy sufficient decrease condition.");
+        dserror("Polynomial line search cannot satisfy sufficient decrease "
+            "condition.");
 
       return lsparam;
     }

@@ -62,11 +62,11 @@ namespace NLNSOL
     //@{
 
     //! Initialize some member variables
-    virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem,  ///< nonlinear problem to solve
+    virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
         const Teuchos::ParameterList& params, ///< parameter list for configuration of line search algorithm
         const Epetra_MultiVector& xold, ///< last iterate
-        const Epetra_MultiVector& inc,  ///< the Newton direction (full step)
-        const double resnormold         ///< residual norm of last iterate
+        const Epetra_MultiVector& inc, ///< the Newton direction (full step)
+        const double resnormold ///< residual norm of last iterate
         );
 
     //! Setup the line search object
@@ -104,14 +104,14 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual bool IsSufficientDecrease(const double fnorm2,  ///< current L2-norm of residual
-                                      const double lsparam  ///< current line search parameter
-                                      ) const;
+    virtual bool IsSufficientDecrease(const double fnorm2, ///< current L2-norm of residual
+        const double lsparam ///< current line search parameter
+        ) const;
 
     /*! \brief Safeguard strategy for line search parameter
      *
-     *  Set upper and lower bound for ration of two subsequent line search parameters
-     *  based on heuristic formulas.
+     *  Set upper and lower bound for ration of two subsequent line search
+     *  parameters based on heuristic formulas.
      *
      *  <h3> References </h3>
      *
@@ -120,9 +120,9 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual void Safeguard(double& lsparam,         ///< current line search parameter
-                           const double lsparamold  ///< previous line search parameter
-                           ) const;
+    virtual void Safeguard(double& lsparam, ///< current line search parameter
+        const double lsparamold ///< previous line search parameter
+        ) const;
 
     /*! \brief Evaluate residual
      *

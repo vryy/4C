@@ -122,10 +122,14 @@ void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
 
   // extract residual from NOX::Abstract::Group
   Teuchos::RCP<const NOX::Abstract::Vector> noxFRcp = NOXGroup().getFPtr();
-  if (noxFRcp.is_null()) { dserror("Could not extract the residual from the NOX Group."); }
-  Teuchos::RCP<const NOX::Epetra::Vector> noxFRcpEpetra = Teuchos::rcp_dynamic_cast<const NOX::Epetra::Vector>(noxFRcp, true);
-  Teuchos::RCP<Epetra_MultiVector> frcp = Teuchos::rcp(new Epetra_MultiVector(noxFRcpEpetra->getEpetraVector()));
-  if (frcp.is_null()) { dserror("Could not extract the Epetra_Vector from the NOX::Epetra::Vector."); }
+  if (noxFRcp.is_null())
+    dserror("Could not extract the residual from the NOX Group.");
+  Teuchos::RCP<const NOX::Epetra::Vector> noxFRcpEpetra =
+      Teuchos::rcp_dynamic_cast<const NOX::Epetra::Vector>(noxFRcp, true);
+  Teuchos::RCP<Epetra_MultiVector> frcp =
+      Teuchos::rcp(new Epetra_MultiVector(noxFRcpEpetra->getEpetraVector()));
+  if (frcp.is_null())
+    dserror("Could not extract the Epetra_Vector from the NOX::Epetra::Vector.");
 
   int err = f.Update(1.0, *frcp, 0.0);
   if (err != 0) { dserror("Update failed."); }

@@ -30,14 +30,12 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::LineSearchFactory::LineSearchFactory()
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-/* Create the line search algorithm */
 Teuchos::RCP<NLNSOL::LineSearchBase>
 NLNSOL::LineSearchFactory::Create(const Teuchos::ParameterList& params)
 {

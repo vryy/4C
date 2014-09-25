@@ -160,3 +160,15 @@ const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
 
   return successful;
 }
+
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::NlnOperatorBase::IsSolver() const
+{
+  return Params().get<bool>("Nonlinear Operator: Is Solver");
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorBase::GetMaxIter() const
+{
+  return Params().get<int>("Nonlinear Operator: Max Iter");
+}

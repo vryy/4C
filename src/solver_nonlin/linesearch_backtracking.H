@@ -63,9 +63,9 @@ namespace NLNSOL
 
     /*! \brief Compute the step length / line search parameter
      *
-     *  During backtracking, we simply try a lot of line search parameters in the
-     *  interval \f$]0.0, 1.0]\f$ and finally select the one with the minimal
-     *  residual norm.
+     *  During backtracking, we simply try a lot of line search parameters in
+     *  the interval \f$]0.0, 1.0]\f$ and finally select the one with the
+     *  minimal residual norm.
      *
      *  The sufficient decrease condition is checked.
      *

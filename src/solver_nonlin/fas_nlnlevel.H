@@ -2,7 +2,8 @@
 /*!
 \file fas_nlnlevel.H
 
-\brief Nonlinear level containing the representation and operations for a single nonlinear multigrid level
+\brief Nonlinear level containing the representation and operations for a single
+nonlinear multigrid level
 
 <pre>
 Maintainer: Matthias Mayr
@@ -78,13 +79,13 @@ namespace FAS
     //@{
 
     //! Initialization
-    virtual void Init(const int levelid,        ///< ID of current level
-        const int numlevels,                    ///< total number of levels
+    virtual void Init(const int levelid, ///< ID of current level
+        const int numlevels, ///< total number of levels
         Teuchos::RCP<const Epetra_CrsMatrix> A, ///< matrix
         Teuchos::RCP<const Epetra_CrsMatrix> R, ///< restriction operator
         Teuchos::RCP<const Epetra_CrsMatrix> P, ///< prolongation operator
-        const Epetra_Comm& comm,                ///< communicator
-        const Teuchos::ParameterList& params,   ///< parameter list
+        const Epetra_Comm& comm, ///< communicator
+        const Teuchos::ParameterList& params, ///< parameter list
         Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< reference to nonlinear problem evaluator
         );
 
@@ -98,8 +99,8 @@ namespace FAS
 
     /*! \brief Restriction vector to next coarser level
      *
-     *  Restriction is performed on coarser level, i.e. from 'level-1' to 'level',
-     *  since only the coarse level knows the transfer operator.
+     *  Restriction is performed on coarser level, i.e. from 'level-1' to
+     *  'level', since only the coarse level knows the transfer operator.
      *
      *  \return integer error code (set to zero if successful)
      *
@@ -109,7 +110,9 @@ namespace FAS
      *  \author mayr.mt
      *  \date 10/2013
      */
-    virtual int RestrictToNextCoarserLevel(Teuchos::RCP<Epetra_MultiVector>& vec) const;
+    virtual int RestrictToNextCoarserLevel(
+        Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be restricted
+        ) const;
 
     /*! \brief Prolongate vector to next finer level
      *
@@ -124,23 +127,26 @@ namespace FAS
      *  \author mayr.mt
      *  \date 11/2013
      */
-    virtual int ProlongateToNextFinerLevel(Teuchos::RCP<Epetra_MultiVector>& vec) const;
+    virtual int ProlongateToNextFinerLevel(
+        Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be prolongated
+        ) const;
 
     /*! \brief Calculate full approximation of coarse level residual
      *
-     *  Full approximation of coarse level residual is calculated as \f$f(x) - \hat{f}(\bar{x}) + \bar{f}\f$
-     *  Therefore, \f$\bar{x}$ and \f$\bar{f}\f$ are constant. \f$f\f$ has to be
-     *  evaluated variationally.
+     *  Full approximation of coarse level residual is calculated as
+     *  \f$f(x) - \hat{f}(\bar{x}) + \bar{f}\f$. Therefore, \f$\bar{x}$ and
+     *  \f$\bar{f}\f$ are constant. \f$f\f$ has to be evaluated variationally.
      *
-     *  \return Full approximation of coarse level residual as Teuchos::RCP<Epetra_Vector>
+     *  \return Full approximation of coarse level residual as
+     *  Teuchos::RCP<Epetra_Vector>
      *
      *  \sa NLNSOL::FAS::NlnPrec::EvaluateFVariationally
      *
      *  \author mayr.mt \date 11/2013
      */
     virtual Teuchos::RCP<Epetra_MultiVector> EvaluateCoarseLevelResidual(
-        const Epetra_MultiVector& x,       ///< current solution
-        const Epetra_MultiVector& fhatbar  ///< residual correction \f$-\hat{F}+\bar{F}\f$
+        const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& fhatbar ///< residual correction \f$-\hat{F}+\bar{F}\f$
         ) const;
 
     //@}
@@ -224,8 +230,8 @@ namespace FAS
      *  \date 10/2013
      */
     virtual int DoPreSmoothing(const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
-                               Epetra_MultiVector& x              ///< solution
-                               ) const;
+        Epetra_MultiVector& x ///< solution
+        ) const;
 
     /*! \brief Do postsmoothing sweeps on this level
      *
@@ -234,9 +240,10 @@ namespace FAS
      *  \author mayr.mt
      *  \date 10/2013
      */
-    virtual int DoPostSmoothing(const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
-                                Epetra_MultiVector& x              ///< solution
-                                ) const;
+    virtual int DoPostSmoothing(
+        const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
+        Epetra_MultiVector& x ///< solution
+        ) const;
 
     /*! \brief Do coarse level solve
      *
@@ -245,9 +252,10 @@ namespace FAS
      *  \author mayr.mt
      *  \date 10/2013
      */
-    virtual int DoCoarseLevelSolve(const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
-                                   Epetra_MultiVector& x              ///< solution
-                                   ) const;
+    virtual int DoCoarseLevelSolve(
+        const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
+        Epetra_MultiVector& x ///< solution
+        ) const;
 
     //@}
 
@@ -258,7 +266,7 @@ namespace FAS
 
   private:
 
-    //! Returns a pointer to the Epetra_Comm communicator associated with this operator.
+    //! Returns pointer to Epetra_Comm associated with this operator.
     virtual const Epetra_Comm& Comm() const;
 
     //! Return parameter list

@@ -32,14 +32,12 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnOperatorFactory::NlnOperatorFactory()
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-/* Create the nonlinear operator */
 Teuchos::RCP<NLNSOL::NlnOperatorBase>
 NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
 {

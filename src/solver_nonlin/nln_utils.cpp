@@ -35,13 +35,16 @@ Maintainer: Matthias Mayr
 Teuchos::RCP<Teuchos::ParameterList>
 NLNSOL::UTILS::CreateParamListFromXML()
 {
-  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> params =
+      Teuchos::rcp(new Teuchos::ParameterList());
 
-  std::string xmlfilename = DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>("XML_FILE");
+  std::string xmlfilename =
+      DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>("XML_FILE");
 
   // check for reasonable xml file
   if (xmlfilename == "none")
-    dserror("Seems like you forgot to set the XML file for configuration of the nonlinear solver.");
+    dserror("Seems like you forgot to set the XML file for configuration of "
+        "the nonlinear solver.");
 
   if(xmlfilename.length())
   {
@@ -49,7 +52,8 @@ NLNSOL::UTILS::CreateParamListFromXML()
   }
   else
   {
-    dserror("The file name '%s' is not a valid XML file name.", xmlfilename.c_str());
+    dserror("The file name '%s' is not a valid XML file name.",
+        xmlfilename.c_str());
   }
 
   return params;

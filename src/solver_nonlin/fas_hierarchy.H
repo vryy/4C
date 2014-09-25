@@ -55,10 +55,11 @@ namespace NLNSOL
   {
     /*! \brief Hierarchy of multigrid levels based on MueLu
      *
-     *  Here, we create and store the hierarchy of multigrid levels. For creation
-     *  of the multigrid hierarchy, Setup() utilizes the MueLu package from Trilinos.
-     *  We then extract level transfer operators and coarse level matrix
-     *  representations and store them in our own NLNSOL::FAS::NlnLevel containers.
+     *  Here, we create and store the hierarchy of multigrid levels. For
+     *  creation of the multigrid hierarchy, Setup() utilizes the MueLu package
+     *  from Trilinos. We then extract level transfer operators and coarse level
+     *  matrix representations and store them in our own NLNSOL::FAS::NlnLevel
+     *  containers.
      *
      *  Level transfer (ProlongateToFineLevel(), RestrictToCurrentLevel()) is
      *  managed by this class.
@@ -68,7 +69,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    class AMGHierarchy // do not name it 'Hierarchy' due to possible trouble with MueLue and the MueLu short names
+    class AMGHierarchy
     {
 
     public:
@@ -104,13 +105,13 @@ namespace NLNSOL
       //! Restrict fine level vector to given coarse level
       Teuchos::RCP<Epetra_MultiVector> RestrictToCoarseLevel(
           const Epetra_MultiVector& vec, ///< vector
-          const int targetlevel          ///< target level (some coarse level)
+          const int targetlevel ///< target level (some coarse level)
       ) const;
 
       //! Prolongate vector from a given coarse level to fine level
       Teuchos::RCP<Epetra_MultiVector> ProlongateToFineLevel(
           const Epetra_MultiVector& veccoarse, ///< vector
-          const int sourcelevel                ///< source level (some coarse level)
+          const int sourcelevel ///< source level (some coarse level)
       ) const;
 
       //@}
@@ -140,9 +141,11 @@ namespace NLNSOL
 
       /*! \brief Check validity of mutligrid hierarchy
        *
-       *  Check important stuff like if maps of matrices and transfer operator match.
+       *  Check important stuff like if maps of matrices and transfer operator
+       *  match.
        *
-       *  \return Boolean flag indicating whether hierarchy has been set up correctly
+       *  \return Boolean flag indicating whether hierarchy has been set up
+       *  correctly
        *
        *  \author mayr.mt \date 06/2014
        */
