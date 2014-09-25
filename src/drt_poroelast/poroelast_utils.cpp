@@ -23,7 +23,6 @@
 #include "poro_monolithicstructuresplit.H"
 #include "poro_monolithicfluidsplit.H"
 #include "poro_monolithicsplit_nopenetration.H"
-#include "poroelast_utils.H"
 #include "poro_utils_clonestrategy.H"
 #include "../drt_inpar/inpar_poroelast.H"
 
@@ -48,7 +47,11 @@
 #include "../drt_w1/wall1_poro_p2_eletypes.H"
 
 #include "../drt_fluid/fluid_utils.H"
+#include "../drt_fluid_ele/fluid_ele_poro.H"
+#include "../drt_mat/fluidporo.H"
+#include "../drt_mat/structporo.H"
 
+#include "poroelast_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -405,3 +408,53 @@ double POROELAST::UTILS::CalculateVectorNorm(
     return 0;
   }
 }  // CalculateVectorNorm()
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialBToA(
+    const VOLMORTAR::VolMortarCoupl* volmortar,
+    DRT::Element* Aele,
+    const std::vector<int>& Bids,
+    Teuchos::RCP<DRT::Discretization> disA,
+    Teuchos::RCP<DRT::Discretization> disB)
+{
+  //call default assignment
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(volmortar,Aele,Bids,disA,disB);
+
+  //default strategy: take only material of first element found
+  DRT::Element* Bele = disB->gElement(Bids[0]);
+
+  // if Bele is a fluid element
+  DRT::ELEMENTS::Fluid* fluid = dynamic_cast<DRT::ELEMENTS::Fluid*>(Bele);
+  if (fluid!=NULL)
+  {
+    //Copy Initial Porosity from StructPoro Material to FluidPoro Material
+    static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())->SetInitialPorosity(
+              Teuchos::rcp_static_cast<MAT::StructPoro>(Aele->Material())->Initporosity());
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*Bele).name());
+  }
+
+  //done
+  return;
+};
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
+    const VOLMORTAR::VolMortarCoupl* volmortar,
+    DRT::Element* Bele,
+    const std::vector<int>& Aids,
+    Teuchos::RCP<DRT::Discretization> disA,
+    Teuchos::RCP<DRT::Discretization> disB)
+{
+  //call default assignment
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
+
+  //done
+  return;
+}

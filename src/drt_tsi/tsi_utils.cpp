@@ -304,10 +304,6 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
   //call default assignment
   VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
 
-  //only row elements
-  if(disB->ElementRowMap()->MyGID(Bele->Id()) == -1)
-    return;
-
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element
   GenKinematicType kintype = geo_linear;

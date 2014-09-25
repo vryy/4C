@@ -20,6 +20,7 @@
  | headers                                                  vuong 01/12 |
  *----------------------------------------------------------------------*/
 #include "poroelast_defines.H"
+#include "poroelast_utils.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
@@ -84,8 +85,11 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     // Scheme: non matching meshes --> volumetric mortar coupling...
     volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
 
+    //build material strategy
+    Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy = Teuchos::rcp(new UTILS::PoroMaterialStrategy());
+
     //setup projection matrices
-    volcoupl_->Setup(structdis,fluiddis);
+    volcoupl_->Setup(structdis,fluiddis,materialstrategy);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -226,7 +230,12 @@ void POROELAST::PoroBase::ReadRestart( int restart)
       POROELAST::UTILS::SetMaterialPointersMatchingGrid(StructureField()->Discretization(),
                                                         FluidField()->Discretization());
     else
-      volcoupl_->AssignMaterials(StructureField()->Discretization(),FluidField()->Discretization());
+    {
+      //build material strategy
+      Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy = Teuchos::rcp(new UTILS::PoroMaterialStrategy());
+
+      volcoupl_->AssignMaterials(StructureField()->Discretization(),FluidField()->Discretization(),materialstrategy);
+    }
   }
 
   return;

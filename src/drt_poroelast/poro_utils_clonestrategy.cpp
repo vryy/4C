@@ -90,12 +90,13 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  DRT::ELEMENTS::Fluid* fluid = dynamic_cast<DRT::ELEMENTS::Fluid*>(newele.get());
-  if (fluid!=NULL)
+  Teuchos::RCP<DRT::ELEMENTS::Fluid> fluid = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Fluid>(newele);
+  if (fluid!=Teuchos::null)
   {
     fluid->SetMaterial(matid);
+    //Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())->SetInitialPorosity(
-              Teuchos::rcp_static_cast<MAT::StructPoro>(oldele->Material())->Initporosity()); //Copy Initial Porosity from StructPoro Material to FluidPoro Material
+              Teuchos::rcp_static_cast<MAT::StructPoro>(oldele->Material())->Initporosity());
     fluid->SetDisType(oldele->Shape()); // set distype as well!
     fluid->SetIsAle(true);
   }

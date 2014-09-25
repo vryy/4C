@@ -23,6 +23,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include "../drt_inpar/inpar_poroelast.H"
 
+#include "../drt_volmortar/volmortar_utils.H"
 
 /*----------------------------------------------------------------------*
  |  forward declaration                                                 |
@@ -91,6 +92,30 @@ namespace POROELAST
       const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
       );
 
+    //! strategy for material assignment for non matching meshes with TSI
+    class PoroMaterialStrategy: public VOLMORTAR::UTILS::DefaultMaterialStrategy
+    {
+    public:
+      //! constructor
+      PoroMaterialStrategy(){};
+
+      //! destructor
+      virtual ~PoroMaterialStrategy(){};
+
+      //! assignment of thermo material to structure material
+      virtual void AssignMaterialBToA(const VOLMORTAR::VolMortarCoupl* volmortar,
+                                  DRT::Element* Aele,
+                                  const std::vector<int>& Bids,
+                                  Teuchos::RCP<DRT::Discretization> disA,
+                                  Teuchos::RCP<DRT::Discretization> disB);
+
+      //! assignment of structure material to thermo material
+      virtual void AssignMaterialAToB(const VOLMORTAR::VolMortarCoupl* volmortar,
+                                  DRT::Element* Bele,
+                                  const std::vector<int>& Aids,
+                                  Teuchos::RCP<DRT::Discretization> disA,
+                                  Teuchos::RCP<DRT::Discretization> disB);
+    };
   } // namespace UTILS
 
   void PrintLogo();
