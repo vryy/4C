@@ -21,6 +21,7 @@ Maintainer: Martin Kronbichler
 #include "../linalg/linalg_utils.H"
 #include "standardtypes_cpp.H"
 #include "drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
@@ -963,7 +964,21 @@ void DatFileReader::ReadDat()
 
   int arraysize = 0;
 
-  if (comm_->MyPID()==0)
+
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+  NP_TYPE npType = problem->GetNPGroup()->NpType();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> comm = comm_;
+  // if we are in copydatafile mode use gcomm and only read in input
+  // file once instead of npgroup times
+  if(npType==copy_dat_file)
+  {
+    comm=gcomm;
+  }
+
+
+  if (comm->MyPID()==0)
   {
     std::ifstream file(filename_.c_str());
     if (not file)
@@ -1067,14 +1082,14 @@ void DatFileReader::ReadDat()
   // Now lets do all the parallel setup. Afterwards all processors
   // have to be the same.
 
-  if (comm_->NumProc()>1)
+  if (comm->NumProc()>1)
   {
     /* Now that we use a variable number of bytes per line we have to
      * communicate the buffer size as well. */
-    comm_->Broadcast(&arraysize,1,0);
-    comm_->Broadcast(&numrows_,1,0);
+    comm->Broadcast(&arraysize,1,0);
+    comm->Broadcast(&numrows_,1,0);
 
-    if (comm_->MyPID()>0)
+    if (comm->MyPID()>0)
     {
       /*--------------------------------------allocate space for copy of file */
       inputfile_.resize(arraysize);
@@ -1082,14 +1097,14 @@ void DatFileReader::ReadDat()
     }
 
     // There are no char based functions available! Do it by hand!
-    //comm_->Broadcast(&inputfile_[0],arraysize,0);
+    //comm->Broadcast(&inputfile_[0],arraysize,0);
 
-    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm_);
+    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm);
 
     MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 
     /* We have not yet set the row pointers on procs > 0. So do it now. */
-    if (comm_->MyPID()>0)
+    if (comm->MyPID()>0)
     {
       lines_.push_back(&inputfile_[0]);
       for (int i=0; i<arraysize; ++i)
@@ -1108,7 +1123,7 @@ void DatFileReader::ReadDat()
     // distribute excluded section positions
     for (std::vector<int>::size_type i=0; i<exclude.size(); ++i)
     {
-      if (comm_->MyPID()==0)
+      if (comm->MyPID()==0)
       {
         std::map<std::string,std::pair<std::ifstream::pos_type,unsigned int> >::iterator ep = excludepositions_.find(exclude[i]);
         if (ep==excludepositions_.end())
@@ -1117,7 +1132,7 @@ void DatFileReader::ReadDat()
         }
       }
       std::pair<std::ifstream::pos_type,unsigned int> & p = excludepositions_[exclude[i]];
-      //comm_->Broadcast(&p.second,1,0);
+      //comm->Broadcast(&p.second,1,0);
       MPI_Bcast(&p.second,1,MPI_INT,0,mpicomm.GetMpiComm());
     }
   }

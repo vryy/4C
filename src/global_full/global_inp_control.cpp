@@ -86,12 +86,8 @@ void ntainp_ccadiscret(
     // group 0 only reads discretization etc
     if (group==0)
     {
-
       // input of fields
       problem->ReadFields(reader);
-
-      // input of materials of cloned fields (if needed)
-      problem->ReadCloningMaterialMap(reader);
 
       // read all types of geometry related conditions (e.g. boundary conditions)
       // Also read time and space functions and local coord systems
