@@ -182,7 +182,6 @@ void DRT::Discretization::Evaluate(
   Epetra_SerialDenseVector elevector3;
 
   Element::LocationArray la(dofsets_.size());
-  const int mypid = Comm().MyPID();
 
   // loop over column elements
   const int numcolele = NumMyColElements();
@@ -190,8 +189,6 @@ void DRT::Discretization::Evaluate(
   {
     DRT::Element* actele = lColElement(i);
 
-    //if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if(actele->HasOnlyGhostNodes(mypid)) continue;
     // call the element evaluate method
     const int err = actele->Evaluate(params,*this,la,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
