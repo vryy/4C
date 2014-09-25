@@ -40,43 +40,12 @@ NOX::STR::Group::Group
 NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 {
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
-  if (ret == NOX::Abstract::Group::Ok)
-  {
-    if (not isValidJacobian)
-    {
-      sharedLinearSystem.getObject(this);
-      isValidJacobian = true;
-    }
-  }
+
+  // Not sure why we call this (historical reasons???)
+  sharedLinearSystem.getObject(this);
+
+  // We just evaluated the residual, so its linearization is not valid anymore.
+  isValidJacobian = false;
+
   return ret;
 }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
-{
-  NOX::Abstract::Group::ReturnType ret
-    = NOX::Epetra::Group::computeJacobian();
-  if (ret == NOX::Abstract::Group::Ok)
-  {
-    if (not isValidRHS)
-    {
-      isValidRHS = true;
-    }
-  }
-  return ret;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::STR::Group::computeNewton
-(
-  Teuchos::ParameterList& p
-)
-{
-  NOX::Abstract::Group::ReturnType status
-    = NOX::Epetra::Group::computeNewton(p);
-  return status;
-}
-
-/*----------------------------------------------------------------------*/

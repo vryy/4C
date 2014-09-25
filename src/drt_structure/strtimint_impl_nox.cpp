@@ -323,15 +323,11 @@ bool STR::TimIntImpl::computeF
   //   brings #disn_ in sync with #x, so we are ready for next call here
   UpdateIter(0);
 
-  // create parameter list
-  Teuchos::ParameterList params;
+  // Evaluate the residual (without its linearization)
+  EvaluateForceResidual();
 
-  // make force residual and tangent, disi is needed for elementwise variables
-  EvaluateForceStiffResidual(params);
-
-  // blank DBC stuff etc.
-  // HINT: a negative residual is returned
-  PrepareSystemForNewtonSolve();
+  // blank DBC stuff. HINT: a negative residual is returned
+  PrepareSystemForNewtonSolve(false);
 
   // associate the RHS and scale back to positive residual as expected by NOX
   RHS.Update(-1.0, *fres_, 0.0);
@@ -347,6 +343,15 @@ bool STR::TimIntImpl::computeJacobian
   Epetra_Operator& Jac
 )
 {
+  // create parameter list
+  Teuchos::ParameterList params;
+
+  // make force residual and tangent, disi is needed for element-wise variables
+  EvaluateForceStiffResidual(params);
+
+  // blank DBC stuff. HINT: a negative residual is returned
+  PrepareSystemForNewtonSolve(true);
+
   // deliver
   return true;
 }

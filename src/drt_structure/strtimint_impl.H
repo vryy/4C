@@ -755,12 +755,16 @@ namespace STR
     /// update all the field vectors to account for new node introduced by crack
     virtual void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ) = 0;
 
-        //! Prepare system for solving with Newton's method
-    //!
-    //! - negative residual
-    //! - blank residual on Dirichlet DOFs
-    //! - apply Dirichlet boundary conditions on system
-    void PrepareSystemForNewtonSolve();
+    /*! \brief Prepare system for solving with Newton's method
+     *
+     *  Blank DOFs with Dirichlet BCs in the residual. By default
+     *  (preparejacobian = true), apply Dirichlet BCs to #stiff_ as well. This
+     *  can be switched off when only the residual has been evaluated
+     *  (\sa EvaluateForceResidual()).
+     */
+    void PrepareSystemForNewtonSolve(
+        const bool preparejacobian = true ///< prepare Jacobian matrix
+        );
 
     //@}
 
@@ -773,15 +777,16 @@ namespace STR
     //! Return external force \f$F_{ext,n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
 
-    //! Return reaction forces
-    //!
-    //! This is a vector of length holding zeros at
-    //! free DOFs and reaction force component at DOFs on DBCs.
-    //! Mark, this is not true for DBCs with local co-ordinate
-    //! systems in which the non-global reaction force
-    //! component is stored in global Cartesian components.
-    //! The reaction force resultant is not affected by
-    //! this operation.
+    /*! \brief Return reaction forces
+     *
+     *  This is a vector of length holding zeros at free DOFs and reaction force
+     *  component at DOFs on DBCs.
+     *
+     *  \note This is not true for DBCs with local coordinate systems in which
+     *  the non-global reaction force  component is stored in global Cartesian
+     *  components. The reaction force resultant is not affected by this
+     *  operation.
+     */
     Teuchos::RCP<Epetra_Vector> Freact() { return freact_; }
 
     //! Read and set external forces from file

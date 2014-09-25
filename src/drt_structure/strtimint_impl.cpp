@@ -4082,7 +4082,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
 /*----------------------------------------------------------------------*/
 /* Prepare system for solving with Newton's method */
-void STR::TimIntImpl::PrepareSystemForNewtonSolve()
+void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
 {
   // rotate residual to local coordinate systems
   if (locsysman_ != Teuchos::null)
@@ -4111,10 +4111,15 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
   // conditions: rows with inclined Dirichlet boundary condition can be blanked
   // and a '1.0' is put at the diagonal term
 
-  // apply Dirichlet BCs to system of equations
+  // blank iterative increment
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-      GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
+  // apply Dirichlet BCs to system of equations
+  if (preparejacobian)
+  {
+    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+        GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+  }
 
   // final sip
   return;

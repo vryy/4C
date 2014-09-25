@@ -62,12 +62,6 @@ namespace NOX
       //! Compute and store \f$F(x)\f$
       virtual NOX::Abstract::Group::ReturnType computeF();
 
-      //! Compute and store Jacobian \f$\frac{\partial F(x)}{\partial x}\f$
-      virtual NOX::Abstract::Group::ReturnType computeJacobian();
-
-      //! Compute the Newton direction, using parameters for the linear solvers
-      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
-
     private:
 
       //! structural time integrator
