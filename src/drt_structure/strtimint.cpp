@@ -3094,7 +3094,7 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
       // halve the time step size
       (*dt_)[0]=(*dt_)[0]*0.5;
       // update the number of max time steps
-      stepmax_= stepmax_ + (stepmax_-stepn_)*2+1;
+      stepmax_= stepmax_ + (stepmax_-stepn_)+1;
       // reset timen_ because it is set in the constructor
       timen_ = (*time_)[0] + (*dt_)[0];;
       return 0;
