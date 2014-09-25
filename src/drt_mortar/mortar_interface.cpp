@@ -54,9 +54,10 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>
 
@@ -65,18 +66,25 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::MortarInterface::MortarInterface(const int id, const Epetra_Comm& comm,
-    const int dim, const Teuchos::ParameterList& imortar,
-    INPAR::MORTAR::RedundantStorage redundant) :
-    id_(id), comm_(comm), lcomm_(Teuchos::null), dim_(dim), imortar_(imortar), shapefcn_(
-        INPAR::MORTAR::shape_undefined), quadslave_(false), lmnodalscale_(
-        DRT::INPUT::IntegralValue<int>(imortar, "LM_NODAL_SCALE")), redundant_(
-        redundant), maxdofglobal_(-1), searchalgo_(
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar,
-            "SEARCH_ALGORITHM")), searchparam_(
-        imortar.get<double>("SEARCH_PARAM")), searchuseauxpos_(
-        DRT::INPUT::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS")), nurbs_(
-        imortar.get<bool>("NURBS"))
+MORTAR::MortarInterface::MortarInterface(
+  const int id,
+  const Epetra_Comm& comm,
+  const int dim,
+  const Teuchos::ParameterList& imortar,
+  INPAR::MORTAR::RedundantStorage redundant)
+  : id_(id),
+    comm_(comm),
+    lcomm_(Teuchos::null),
+    dim_(dim),
+    imortar_(imortar),
+    shapefcn_(INPAR::MORTAR::shape_undefined), quadslave_(false),
+    lmnodalscale_(DRT::INPUT::IntegralValue<int>(imortar, "LM_NODAL_SCALE")),
+    redundant_(redundant),
+    maxdofglobal_(-1),
+    searchalgo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM")),
+    searchparam_(imortar.get<double>("SEARCH_PARAM")),
+    searchuseauxpos_(DRT::INPUT::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS")),
+    nurbs_(imortar.get<bool>("NURBS"))
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(Comm().Clone());
   if (Dim() != 2 && Dim() != 3)
@@ -85,12 +93,30 @@ MORTAR::MortarInterface::MortarInterface(const int id, const Epetra_Comm& comm,
 
   // build interface disretization
   if (!nurbs_)
-    idiscret_ = Teuchos::rcp(
-        new DRT::Discretization((std::string) "mortar interface", com));
+  {
+    if (!imortar_.get<bool>("GEO_DECOUPLED"))
+    {
+      // standard case
+      idiscret_ = Teuchos::rcp(
+          new DRT::Discretization((std::string) "mortar interface", com));
+    }
+    else
+    {
+      // adapt flags in meshfree params
+      Teuchos::RCP<Teuchos::ParameterList> meshfreeparams
+        = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->MeshfreeParams()));
+      meshfreeparams->set("TYPE", "GeoDecoupled");
+
+      idiscret_ = Teuchos::rcp(
+          new DRT::MESHFREE::MeshfreeDiscretization((std::string) "mortar interface", com, *meshfreeparams));
+    }
+  }
   else
+  {
     idiscret_ = Teuchos::rcp(
         new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface",
             com));
+  }
 
   // overwrite shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
@@ -264,6 +290,16 @@ void MORTAR::MortarInterface::AddMortarNode(
 }
 
 /*----------------------------------------------------------------------*
+ |  add mortar node to meshfree discretization (public)      ghamm 09/14|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::AddMortarPoint(
+    Teuchos::RCP<MORTAR::MortarNode> mrtrnode)
+{
+  Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_, true)->AddPoint(mrtrnode);
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  add mortar element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AddMortarElement(
@@ -295,10 +331,11 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
 {
   Teuchos::RCP<Epetra_Map> elecolmap;
   Teuchos::RCP<Epetra_Map> nodecolmap;
+  Teuchos::RCP<Epetra_Map> pointcolmap;
 
   if (idiscret_->Filled())
   {
-    // extract maps before deleting first element/node
+    // extract maps before deleting first element/node/point
     if (slaveside == true)
     {
       elecolmap = SlaveColElements();
@@ -308,6 +345,20 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
     {
       elecolmap = MasterColElements();
       nodecolmap = MasterColNodes();
+    }
+
+    if(imortar_.get<bool>("GEO_DECOUPLED"))
+    {
+      Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> idiscret = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_);
+      pointcolmap = Teuchos::rcp(new Epetra_Map(*idiscret->PointColMap()));
+      // delete points on desired side
+      for (int i = 0; i < pointcolmap->NumMyElements(); ++i)
+      {
+        int gid = pointcolmap->GID(i);
+        bool isslave = dynamic_cast<MORTAR::MortarNode*>(idiscret->gPoint(gid))->IsSlave();
+        if (isslave == slaveside)
+          idiscret->DeletePoint(gid);
+      }
     }
 
     // delete elements on desired side
@@ -327,16 +378,30 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
   else
   {
     idiscret_->FillComplete(false, false, false);
-    // extract maps before deleting first element/node
+    // extract maps before deleting first element/node/point
     elecolmap = Teuchos::rcp(new Epetra_Map(*idiscret_->ElementColMap()));
     nodecolmap = Teuchos::rcp(new Epetra_Map(*idiscret_->NodeColMap()));
+
+    if(imortar_.get<bool>("GEO_DECOUPLED"))
+    {
+      Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> idiscret = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_);
+      pointcolmap = Teuchos::rcp(new Epetra_Map(*idiscret->PointColMap()));
+
+      // delete points on desired side
+      for (int i = 0; i < pointcolmap->NumMyElements(); ++i)
+      {
+        int gid = pointcolmap->GID(i);
+        bool isslave = dynamic_cast<MORTAR::MortarNode*>(idiscret->gPoint(gid))->IsSlave();
+        if (isslave == slaveside)
+          idiscret->DeletePoint(gid);
+      }
+    }
 
     // delete elements on desired side
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
       int gid = elecolmap->GID(i);
-      bool isslave = dynamic_cast<MORTAR::MortarElement*>(idiscret_->gElement(
-          gid))->IsSlave();
+      bool isslave = dynamic_cast<MORTAR::MortarElement*>(idiscret_->gElement(gid))->IsSlave();
       if (isslave == slaveside)
         idiscret_->DeleteElement(gid);
     }

@@ -58,7 +58,7 @@ namespace MESHFREE
  * \date November, 2012
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeBin : public DRT::Element
+class MeshfreeBin : public virtual DRT::Element
 {
 public:
 

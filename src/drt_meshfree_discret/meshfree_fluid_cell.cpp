@@ -146,6 +146,7 @@ void DRT::ELEMENTS::MeshfreeFluidType::SetupElementDefinition(
  |  ctor                                                 (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluid::MeshfreeFluid(int id, int owner) :
+  DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
   DRT::MESHFREE::Cell(id,owner),
   distype_(DRT::Element::dis_none),
   is_ale_(false)
@@ -157,6 +158,7 @@ DRT::ELEMENTS::MeshfreeFluid::MeshfreeFluid(int id, int owner) :
  |  copy-ctor                                            (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluid::MeshfreeFluid(const DRT::ELEMENTS::MeshfreeFluid& old) :
+  DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
   DRT::MESHFREE::Cell(old),
   distype_    (old.distype_),
   is_ale_     (old.is_ale_)

@@ -47,7 +47,8 @@ namespace TSI
   {
     TFSI,
     FSI,
-    ConjHeatTransfer
+    ConjHeatTransfer,
+    NoIncaFSI
   };
 
   //! @name Solution technique and related stuff

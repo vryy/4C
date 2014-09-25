@@ -1370,6 +1370,7 @@ set(OBJS_DRT_MORTAR
 )
 set(OBJS_DRT_MORTAR_LIB
   src/drt_mortar/mortar_element.cpp
+  src/drt_mortar/mortar_element_geo_decoupl.cpp
   src/drt_mortar/mortar_element_integrator.cpp
   src/drt_mortar/mortar_element_shapefct.cpp
   src/drt_mortar/mortar_node.cpp

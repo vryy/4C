@@ -1300,6 +1300,13 @@ protected:
 
 private:
 
+  /*!
+  \brief Default Constructor must not be called
+
+  */
+  Element(){ dserror("Default constructor of DRT::Element must not be called. Due to virtual"
+      "inheritance from DRT::Element it can be necessary to call the non-default constructor explicitly."); }
+
   //! \brief A unique global element id
   int id_;
 

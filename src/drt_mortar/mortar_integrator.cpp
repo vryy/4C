@@ -551,8 +551,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
         {
         case 1:
         {
-          dserror(
-              "Our experience says that 1 GP per slave element is not enough.");
+          mygaussrule = DRT::UTILS::intrule_tri_3point;
           break;
         }
         case 2:

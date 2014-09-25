@@ -153,6 +153,7 @@ void DRT::ELEMENTS::MeshfreeTransportType::SetupElementDefinition(
  |  ctor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransport::MeshfreeTransport(int id, int owner) :
+DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
 DRT::MESHFREE::Cell(id,owner),
 data_(),
 numdofpernode_(-1),
@@ -165,6 +166,7 @@ distype_(DRT::Element::dis_none)
  |  copy-ctor                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransport::MeshfreeTransport(const DRT::ELEMENTS::MeshfreeTransport& old) :
+DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
 DRT::MESHFREE::Cell(old),
 data_(old.data_),
 numdofpernode_(old.numdofpernode_),
@@ -531,6 +533,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
   DRT::Node** points,
   MeshfreeTransport* parent,
   const int lbeleid) :
+  DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
   DRT::MESHFREE::Cell(id,owner)
 {
   SetPointIds(npoint,pointids);
@@ -548,6 +551,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
  |  copy-ctor                                             (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(const DRT::ELEMENTS::MeshfreeTransportBoundary& old) :
+DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
 DRT::MESHFREE::Cell(old)
 {
   return;

@@ -77,7 +77,7 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
   static const int n    = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim + 1;
 
-  DRT::Node** mynodes = ele.Nodes();
+  DRT::Node** mynodes = ele.Points();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
 
   for (int i=0;i<ndim;++i)

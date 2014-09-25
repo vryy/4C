@@ -21,22 +21,13 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_thermo/thermo_element.H"
-#include "../drt_geometry/element_coordtrafo.H"
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_structure/stru_aux.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
-#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_element_geo_decoupl.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../drt_inpar/inpar_tsi.H"
-#include "../drt_io/io_pstream.H"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>
@@ -518,8 +509,11 @@ void FS3I::UTILS::AeroCouplingUtils::MortarParams
   mortarparams.set<std::string>("REDUNDANT_STORAGE","Master");
   // for triangles which will all be lying in a quad element on the master side, this should be a good set of params
   mortarparams.set<std::string>("INTTYPE","Elements");
-  mortarparams.set<int>("NUMGP_PER_DIM",3);
+  // constant load per fluid element assumed --> p0 element for mortar coupling only needs 3 gp per tri
+  mortarparams.set<int>("NUMGP_PER_DIM",1);
   mortarparams.set<bool>("NURBS",false);
+  // elements with decoupled geometry and node information are used
+  mortarparams.set<bool>("GEO_DECOUPLED", true);
 
   return;
 }
@@ -542,37 +536,50 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   // remove all slave nodes and elements for new coupling
   mortarinterface_[interf]->RemoveSingleInterfaceSide(true);
 
-  // feeding slave nodes to the interface
+  // feeding slave nodes and elements (tris) to the interface
   // Note: offset is needed for slave dofs and slave node ids
   double nodalpos[dim_];
   std::vector<int> dofids(dofpernode_);
-  for (int nodeiter = 0; nodeiter<(int)aerocoords.size(); ++nodeiter)
+  // 3 points and 1 node per tri need unique ids
+  int nodepointids[4];
+  const int nodepointoffset = 4*nodeoffset/3;  // point/node offset from proc to proc
+  const int nodeoffsetthird = nodeoffset/3;  // ele offset from proc to proc
+  // three points and one node is necessary for each slave element
+  const int numtris = aerocoords.size()/3;
+  for (int eleiter = 0; eleiter<numtris; ++eleiter)
   {
+    // add single node for the dof information of the mortar element
+
     for (int k=0; k<dim_; ++k)
-      nodalpos[k] = aerocoords[nodeiter](k);
+      nodalpos[k] = 0.0; // dummy values here
     for (int k=0; k<dofpernode_; ++k)
-      dofids[k] = mastermaxdof_ + (nodeiter+nodeoffset)*dofpernode_ + k;
+      dofids[k] = mastermaxdof_ + (eleiter*4+0+nodepointoffset)*dofpernode_ + k;
+    nodepointids[0] = eleiter*4+0+nodepointoffset+mastermaxnodeid_;
 
     Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
-        Teuchos::rcp(new MORTAR::MortarNode(nodeiter+nodeoffset+mastermaxnodeid_, nodalpos, myrank_, dofpernode_, dofids, true));
+        Teuchos::rcp(new MORTAR::MortarNode(nodepointids[0], nodalpos, myrank_, dofpernode_, dofids, true));
 
     mortarinterface_[interf]->AddMortarNode(mrtrnode);
-  }
 
-  // feeding slave elements (tris) to the interface
-  const int numtris = aerocoords.size()/3;
-  const int nodeoffsetthird = nodeoffset/3;
-  std::vector<int> nodeids(3);
-  for (int elemiter = 0; elemiter<numtris; ++elemiter)
-  {
-    for(int k=0; k<3; ++k)
+    // insert three points for the geometry of the mortar element
+
+    for (int nodeiter=1; nodeiter<4; ++nodeiter)
     {
-      int nodeiter = elemiter*3 + k;
-      nodeids[k] = nodeiter + nodeoffset + mastermaxnodeid_;
+      for (int k=0; k<dim_; ++k)
+        nodalpos[k] = aerocoords[eleiter*3+(nodeiter-1)](k);
+      for (int k=0; k<dofpernode_; ++k)
+        dofids[k] = mastermaxdof_ + (eleiter*4+nodeiter+nodepointoffset)*dofpernode_ + k;
+      nodepointids[nodeiter] = eleiter*4+nodeiter+nodepointoffset+mastermaxnodeid_;
+
+      Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
+          Teuchos::rcp(new MORTAR::MortarNode(nodepointids[nodeiter], nodalpos, myrank_, dofpernode_, dofids, true));
+
+      mortarinterface_[interf]->AddMortarPoint(mrtrnode);
     }
 
-    Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(elemiter + nodeoffsetthird + mastermaxeleid_,
-        myrank_, DRT::Element::tri3, (int)nodeids.size(), &nodeids[0], true));
+    Teuchos::RCP<MORTAR::MortarElementGeoDecoupl> mrtrele =
+        Teuchos::rcp(new MORTAR::MortarElementGeoDecoupl(eleiter + nodeoffsetthird + mastermaxeleid_,
+        myrank_, DRT::Element::tri3, 1, &nodepointids[0], 3, &nodepointids[1], true));
 
     mortarinterface_[interf]->AddMortarElement(mrtrele);
   }
@@ -668,13 +675,14 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
 
   // NOTE: There is no dofset available for artificially created fluid nodes
   // Hence: Order is important and values from aeroforces can directly be inserted into interface load vector
-  for(size_t nodeiter=0; nodeiter<aeroforces.size(); ++nodeiter)
+  for(size_t eleiter=0; eleiter<aeroforces.size(); ++eleiter)
   {
     // currload is always filled with three mechanical dofs and one thermal dof
-    LINALG::Matrix<4,1>& currload = aeroforces[nodeiter];
+    // which is assumed constant within one mortar coupling element
+    LINALG::Matrix<4,1>& currload = aeroforces[eleiter];
     for(int k=0; k<dofpernode_; ++k)
     {
-      (*iload_fl)[nodeiter*dofpernode_ + k] = currload(k+offset);
+      (*iload_fl)[eleiter*dofpernode_ + k] = currload(k+offset);
     }
   }
 
@@ -691,15 +699,15 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
       // structural load
       for(int k=0; k<dim_; ++k)
       {
-        int lid = nodeiter*dofpernode_ + k;
-        double val = (*(*iload_solid)(0))[lid];
-        int gid = iload_solid->Map().GID(lid);
+        const int lid = nodeiter*dofpernode_ + k;
+        const double val = (*(*iload_solid)(0))[lid];
+        const int gid = iload_solid->Map().GID(lid);
         (*iforce)[ iforce->Map().LID(gid) ] = val;
       }
       // thermal load
-      int lid = nodeiter*dofpernode_ + dim_;
-      double val = (*(*iload_solid)(0))[lid];
-      int gid = iload_solid->Map().GID(lid);
+      const int lid = nodeiter*dofpernode_ + dim_;
+      const double val = (*(*iload_solid)(0))[lid];
+      const int gid = iload_solid->Map().GID(lid);
       (*ithermoload)[ ithermoload->Map().LID(gid) ] = val;
     }
   }
@@ -710,9 +718,9 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
       // structural load
       for(int k=0; k<dim_; ++k)
       {
-        int lid = nodeiter*dofpernode_ + k;
-        double val = (*(*iload_solid)(0))[lid];
-        int gid = iload_solid->Map().GID(lid);
+        const int lid = nodeiter*dofpernode_ + k;
+        const double val = (*(*iload_solid)(0))[lid];
+        const int gid = iload_solid->Map().GID(lid);
         (*iforce)[ iforce->Map().LID(gid) ] = val;
       }
     }
@@ -722,9 +730,9 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
     for(int nodeiter=0; nodeiter<numnodes; ++nodeiter)
     {
       // thermal load
-      int lid = nodeiter;
-      double val = (*(*iload_solid)(0))[lid];
-      int gid = iload_solid->Map().GID(lid);
+      const int lid = nodeiter;
+      const double val = (*(*iload_solid)(0))[lid];
+      const int gid = iload_solid->Map().GID(lid);
       (*ithermoload)[ ithermoload->Map().LID(gid) ] = val;
     }
   }

@@ -33,7 +33,8 @@ namespace MESHFREE
   //! type of meshfree discretisation
   enum meshfreetype {
     maxent,
-    particle
+    particle,
+    geo_decoupled
   };
 
   //! type of prior

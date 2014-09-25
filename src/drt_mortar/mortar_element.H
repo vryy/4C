@@ -197,7 +197,7 @@ protected:
 
 \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
 */
-class MortarElement : public DRT::Element
+class MortarElement : public virtual DRT::Element
 {
 public:
 
@@ -209,6 +209,7 @@ public:
   */
   enum ShapeType
   {
+    p0,                         // displacements / LM constant per element
     lin1D,                      // displacements / std LM linear 1D
     quad1D,                     // displacements / std LM quadratic 1D
     hermite1D,                  // displacements / std LM hermit 1D
@@ -304,7 +305,7 @@ public:
   \brief Deep copy the derived class and return pointer to it
 
   */
-  virtual MORTAR::MortarElement* Clone() const;
+  virtual DRT::Element* Clone() const;
 
   /*!
   \brief Return unique ParObject id

@@ -961,23 +961,16 @@ void DatFileReader::ReadDat()
   exclude.push_back("--ACOUSTIC ELEMENTS");
   exclude.push_back("--ACOUSTIC DOMAIN");
 
+  Teuchos::RCP<Epetra_Comm> comm = comm_;
 
-  int arraysize = 0;
-
-
-
+  // if we are in copydatafile mode use global comm instead of local comm
+  // and only read in input file once instead of npgroup times
   DRT::Problem* problem = DRT::Problem::Instance();
   NP_TYPE npType = problem->GetNPGroup()->NpType();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
-  Teuchos::RCP<Epetra_Comm> comm = comm_;
-  // if we are in copydatafile mode use gcomm and only read in input
-  // file once instead of npgroup times
   if(npType==copy_dat_file)
-  {
-    comm=gcomm;
-  }
+    comm = problem->GetNPGroup()->GlobalComm();
 
-
+  int arraysize = 0;
   if (comm->MyPID()==0)
   {
     std::ifstream file(filename_.c_str());

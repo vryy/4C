@@ -144,6 +144,14 @@ void EvaluateShape_Displ(const double* xi, V& val,
   DRT::Node** mynodes = ele.Nodes();
   if (!mynodes) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
 
+  // one-noded elements are directly processed here, shape independent evaluation possible
+  // valid for 1- and 2-dimensional interfaces
+  if (nnode == 1)
+  {
+    mortar_shape_function_2D(val,-1.0,-1.0,MortarElement::p0);
+    return;
+  }
+
   // check for boundary nodes
   bool bound = false;
   for (int i=0;i<nnode;++i)
@@ -252,6 +260,14 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // get node number and node pointers
   DRT::Node** mynodes = ele.Nodes();
   if (!mynodes) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+
+  // one-noded elements are directly processed here, shape independent evaluation possible
+  // valid for 1- and 2-dimensional interfaces
+  if (ele.NumNode() == 1)
+  {
+    mortar_shape_function_2D(val,-1.0,-1.0,MortarElement::p0);
+    return;
+  }
 
   switch(ele.Shape())
   {
@@ -912,6 +928,15 @@ void mortar_shape_function_2D(
 {
   switch (shape)
   {
+  // *********************************************************************
+  // constant shape function per element
+  // (used for interpolation of LM field and primary variable)
+  // *********************************************************************
+  case MortarElement::p0:
+  {
+    funct(0) = 1;
+    break;
+  }
   // *********************************************************************
   // 2D standard linear shape functions (tri3)
   // (used for interpolation of displacement field)

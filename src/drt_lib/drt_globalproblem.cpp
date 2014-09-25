@@ -583,7 +583,30 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
     Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> actdis =
       Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(iter->second);
     if (actdis!=Teuchos::null)
-      actdis->AddNodeSetTopology(nodeset);
+    {
+      int foundit = 0;
+      for(unsigned n=0; n<4; ++n)
+      {
+        for(size_t m=0; m<nodeset[n]->size(); ++m)
+        {
+          std::vector<int> nodes = (*nodeset[n])[m];
+          for (unsigned i=0; i<nodes.size(); ++i)
+          {
+            const int node = nodes[i];
+            foundit = actdis->HaveGlobalNode(node);
+            if (foundit)
+              break;
+          }
+        }
+      }
+
+      int found=0;
+      actdis->Comm().SumAll(&foundit,&found,1);
+      if (found)
+      {
+        actdis->AddNodeSetTopology(nodeset);
+      }
+    }
   }
 
   // create list of known conditions
@@ -1243,8 +1266,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("structure", structdis);
     AddDis("thermo", thermdis);
 
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+    nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
+        DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
+    nodereader.AddAdvancedReader(thermdis, reader, "THERMO",
+        DRT::INPUT::IntegralValue<INPAR::GeometryType>(ThermalDynamicParams(),"GEOMETRY"), 0);
 
     break;
   }
@@ -1285,7 +1310,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
-
 
     break;
   }

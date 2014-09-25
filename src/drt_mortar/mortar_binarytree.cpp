@@ -170,11 +170,11 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop()
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     MortarElement* mrtrelement=dynamic_cast<MortarElement*>(element);
-    DRT::Node** nodes = mrtrelement->Nodes();
+    DRT::Node** nodes = mrtrelement->Points();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
-    for (int k=0;k<mrtrelement->NumNode();k++)
+    for (int k=0;k<mrtrelement->NumPoint();k++)
     {
       MortarNode* mrtrnode=dynamic_cast<MortarNode*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
@@ -280,11 +280,11 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     MortarElement* mrtrelement=dynamic_cast<MortarElement*>(element);
-    DRT::Node** nodes = mrtrelement->Nodes();
+    DRT::Node** nodes = mrtrelement->Points();
     if (!nodes) dserror("ERROR: Null pointer!");
 
     // update slabs for every node
-    for (int k=0;k<mrtrelement->NumNode();++k)
+    for (int k=0;k<mrtrelement->NumPoint();++k)
     {
       MortarNode* mrtrnode=dynamic_cast<MortarNode*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
@@ -409,13 +409,13 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       int gid = Elelist()[i];
       DRT::Element* element= idiscret_.gElement(gid);
       if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
-      DRT::Node** nodes = element->Nodes();
+      DRT::Node** nodes = element->Points();
 
       //vector of values of Hesse-Normalform of nodes of elements
       Epetra_SerialDenseVector  axbycz;
-      axbycz.Resize(element->NumNode());
+      axbycz.Resize(element->NumPoint());
 
-      for (int k=0;k<element->NumNode();++k)
+      for (int k=0;k<element->NumPoint();++k)
       {
         MortarNode* mrtrnode = dynamic_cast<MortarNode*>(nodes[k]);
         if (!mrtrnode) dserror("ERROR: Null pointer!");

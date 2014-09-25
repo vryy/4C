@@ -158,7 +158,7 @@ isslave_(old.isslave_)
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::MortarElement* MORTAR::MortarElement::Clone() const
+DRT::Element* MORTAR::MortarElement::Clone() const
 {
   MORTAR::MortarElement* newele = new MORTAR::MortarElement(*this);
   return newele;
@@ -731,15 +731,18 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
 void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
                                            bool isinit)
 {
-  const int nnodes = NumNode();
-  DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
-  if (coord.M()!=3 || coord.N()!=nnodes) dserror("ERROR: GetNodalCoords: Dimensions!");
+  const int nnodes = NumPoint();
+  DRT::Node** mynodes = Points();
+  if (!mynodes)
+    dserror("ERROR: GetNodalCoords: Null pointer!");
+  if (coord.M()!=3 || coord.N()!=nnodes)
+    dserror("ERROR: GetNodalCoords: Dimensions!");
 
   for (int i=0;i<nnodes;++i)
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
-    if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+    if (!mymrtrnode)
+      dserror("ERROR: GetNodalCoords: Null pointer!");
     if (isinit)
     {
       coord(0,i) = mymrtrnode->X()[0];
@@ -763,8 +766,8 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
 void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
                                               bool isinit)
 {
-  const int nnodes = NumNode();
-  DRT::Node** mynodes = Nodes();
+  const int nnodes = NumPoint();
+  DRT::Node** mynodes = Points();
   if (!mynodes) dserror("ERROR: GetNodalCoordsOld: Null pointer!");
   if (coord.M()!=3 || coord.N()!=nnodes) dserror("ERROR: GetNodalCoordsOld: Dimensions!");
 
@@ -811,7 +814,7 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
                                     std::vector<double>& geta)
 {
-  int nnodes = NumNode();
+  int nnodes = NumPoint();
 
   int sstatus = -1;
   int sfeatures[2] = {0,0};
@@ -1025,7 +1028,7 @@ double MORTAR::MortarElement::ComputeArea()
   if (dt==line2 and !IsHermite())
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord(3,NumNode());
+    LINALG::SerialDenseMatrix coord(3,NumPoint());
     GetNodalCoords(coord);
 
     // build vector between the two nodes
@@ -1041,7 +1044,7 @@ double MORTAR::MortarElement::ComputeArea()
   else if (dt==tri3)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord(3,NumNode());
+    LINALG::SerialDenseMatrix coord(3,NumPoint());
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
@@ -1171,7 +1174,7 @@ double MORTAR::MortarElement::MinEdgeSize()
   DRT::Element::DiscretizationType dt = Shape();
 
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3,NumNode());
+  LINALG::SerialDenseMatrix coord(3,NumPoint());
   GetNodalCoords(coord);
 
   // 2D case (2noded and 3noded line elements)
@@ -1322,7 +1325,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
   DRT::Element::DiscretizationType dt = Shape();
 
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3,NumNode());
+  LINALG::SerialDenseMatrix coord(3,NumPoint());
   GetNodalCoords(coord);
 
   // 2D case (2noded and 3noded line elements)

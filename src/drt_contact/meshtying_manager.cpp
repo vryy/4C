@@ -394,6 +394,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
   const Teuchos::ParameterList& wearlist  = DRT::Problem::Instance()->WearParams();
 
+  // read Problem Type and Problem Dimension from DRT::Problem
+  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   int dim = DRT::Problem::Instance()->NDim();
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
 
@@ -497,21 +499,26 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   // element-based vs. segment-based mortar integration
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments &&
-                                         mortar.get<int>("NUMGP_PER_DIM") != 0)
+  INPAR::MORTAR::IntType inttype = DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
+
+  if (inttype == INPAR::MORTAR::inttype_segments && mortar.get<int>("NUMGP_PER_DIM") != 0)
     dserror("It is not possible to choose a Gauss rule with NUMGP_PER_DIM for segment-based integration."
             "\nSegment-based integration always uses pre-defined default values (5 GP per segment in 2D "
             "\nand 7 GP per triangular cell in 3D). Ask a 'contact person' if you want to change this.");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements &&
-                                         mortar.get<int>("NUMGP_PER_DIM") <= 0)
+  if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements_BS &&
-                                         mortar.get<int>("NUMGP_PER_DIM") <= 0)
+  if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration with boundary segmentation."
             "\nPlease note that the value you have to provide only applies to the element-based integration"
             "\ndomain, while pre-defined default values will be used in the segment-based boundary domain.");
+
+  if ((problemtype!=prb_tfsi_aero &&
+      (inttype == INPAR::MORTAR::inttype_elements || inttype == INPAR::MORTAR::inttype_elements_BS) &&
+      mortar.get<int>("NUMGP_PER_DIM") <= 1))
+    dserror(
+        "Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   // *********************************************************************
   // warnings
@@ -523,6 +530,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);
   mtparams.setParameters(wearlist);
+
+  // geometrically decoupled elements cannot be given via input file
+  mtparams.set<bool>("GEO_DECOUPLED", false);
 
   // *********************************************************************
   // predefined params for meshtying and contact

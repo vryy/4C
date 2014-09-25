@@ -49,7 +49,8 @@ Maintainer: Keijo Nissen
  |  ctor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::Cell::Cell(int id, int owner)
-  : DRT::MESHFREE::MeshfreeBin(id,owner)
+  : DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
+    DRT::MESHFREE::MeshfreeBin(id,owner)
 {
   return;
 }
@@ -58,7 +59,8 @@ DRT::MESHFREE::Cell::Cell(int id, int owner)
  |  copy-ctor                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::Cell::Cell(const DRT::MESHFREE::Cell& old)
-  : DRT::MESHFREE::MeshfreeBin(old),
+  : DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
+    DRT::MESHFREE::MeshfreeBin(old),
     pointid_(old.pointid_),
     point_(old.point_)
 {

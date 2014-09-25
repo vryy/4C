@@ -149,7 +149,7 @@ public:
    *   needed
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  DRT::Element* Clone() const;
+  virtual DRT::Element* Clone() const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -637,7 +637,7 @@ public:
     DRT::Element* parent = this->DRT::Element::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent) != NULL, "Parent element is no fluid element");
-    return static_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent);
+    return dynamic_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent);
   }
 
 

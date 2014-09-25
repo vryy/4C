@@ -706,9 +706,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& meshfree = list->sublist("MESHFREE",false,"");
   setStringToIntegralParameter<int>("TYPE","MaxEnt","Type of meshfree discretisation.",
-                                    tuple<std::string>("MaxEnt","Particle"),
+                                    tuple<std::string>("MaxEnt","Particle","GeoDecoupled"),
                                     tuple<int>(INPAR::MESHFREE::maxent,
-                                               INPAR::MESHFREE::particle),
+                                               INPAR::MESHFREE::particle,
+                                               INPAR::MESHFREE::geo_decoupled),
                                     &meshfree);
   setStringToIntegralParameter<int>("NODEPOINTASSIGNMENT","procwise","Type of assignment of nodes to cells/knots.",
                                     tuple<std::string>("procwise","blockwise"),
@@ -1270,6 +1271,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Use temperature-dependent Young's modulus",
                                yesnotuple,yesnovalue,&sdyn);
 
+  // where the geometry comes from
+  setStringToIntegralParameter<int>(
+    "GEOMETRY","full",
+    "How the geometry is specified",
+    tuple<std::string>(
+      "full",
+      "box",
+      "file"),
+    tuple<int>(
+      INPAR::geometry_full,
+      INPAR::geometry_box,
+      INPAR::geometry_file),
+    &sdyn);
+
   /*--------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in structural dynamics */
   Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY",false,"");
@@ -1423,21 +1438,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // scale of the kernel functions used in surface currents
   DoubleParameter("KERNELSCALE", -1.0, "scale of the kernel function", &statinvp);
-
-  // where the geometry comes from
-  setStringToIntegralParameter<int>(
-    "GEOMETRY","full",
-    "How the geometry is specified",
-    tuple<std::string>(
-      "full",
-      "box",
-      "file"),
-    tuple<int>(
-      INPAR::geometry_full,
-      INPAR::geometry_box,
-      INPAR::geometry_file),
-    &sdyn);
-
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
@@ -2651,6 +2651,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of linear solver used for thermal problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for thermal problems",&tdyn);
 
+  // where the geometry comes from
+  setStringToIntegralParameter<int>(
+    "GEOMETRY","full",
+    "How the geometry is specified",
+    tuple<std::string>(
+      "full",
+      "box",
+      "file"),
+    tuple<int>(
+      INPAR::geometry_full,
+      INPAR::geometry_box,
+      INPAR::geometry_file),
+    &tdyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */
   Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");
@@ -2716,11 +2730,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<std::string>(
       "tfsi",
       "fsi",
-      "conj_heat_transfer"),
+      "conj_heat_transfer",
+      "no_inca_fsi"),
     tuple<int>(
         INPAR::TSI::TFSI,
         INPAR::TSI::FSI,
-        INPAR::TSI::ConjHeatTransfer),
+        INPAR::TSI::ConjHeatTransfer,
+        INPAR::TSI::NoIncaFSI),
     &tsidyn
     );
 

@@ -24,7 +24,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Unassign()
 {
   for (size_t i=0; i<elecolptr_.size(); i++)
     dynamic_cast<DRT::MESHFREE::Cell*>(elecolptr_[i])->DeleteNodes();
-  assigned_ = false;
+
   return;
 }
 
@@ -33,8 +33,6 @@ void DRT::MESHFREE::MeshfreeDiscretization::Unassign()
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs, bool killcond)
 {
-  assigned_ = false;
-
   // delete all maps and pointers concerning points
   pointrowmap_ = Teuchos::null;
   pointcolmap_ = Teuchos::null;
@@ -55,10 +53,7 @@ int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(
   bool initelements,
   bool doboundaryconditions)
 {
-  // this rather puzzling return style is copied from base class Discretization
-  int ret = 0;
-
-  if (!Filled())
+  if(meshfreetype_ == INPAR::MESHFREE::maxent)
   {
     // order of fillcompleting is crucial:
     // -> vertices -> line(s) -> surface(s) -> volume
@@ -66,31 +61,34 @@ int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(
     for(int i=0; i<4; ++i)
       for(unsigned j=0; j<domaintopology_[i].size(); ++j)
         domaintopology_[i][j].FillComplete(solutionapprox_->GetRange(), comm_->MyPID(), doboundaryconditions);
+  }
 
-    // fill parent discretization
-    ret = DRT::Discretization::FillComplete(false,false,false);
+  // fill parent discretization
+  int ret = DRT::Discretization::FillComplete(false,false,false);
 
-    // (re)build map of points pointrowmap_, pointcolmap_, pointrowptr, and pointcolptr
-    BuildPointMaps();
+  // (re)build map of points pointrowmap_, pointcolmap_, pointrowptr, and pointcolptr
+  BuildPointMaps();
 
-    // (re)construct element -> node pointers
-    BuildElementToPointPointers();
+  // (re)construct element -> node pointers
+  BuildElementToPointPointers();
 
-    // (re)construct node -> element pointers
-    BuildPointToElementPointers();
+  // (re)construct node -> element pointers
+  BuildPointToElementPointers();
 
+  if(meshfreetype_ == INPAR::MESHFREE::maxent)
+  {
     // assign nodes to geometry
     AssignNodesToPointsAndCells();
-
-    // Assign degrees of freedom to elements and nodes
-    if (assigndegreesoffreedom) AssignDegreesOfFreedom(0);
-
-    // call element routines to initialize
-    if (initelements) InitializeElements();
-
-    // (Re)build the geometry of the boundary conditions
-    if (doboundaryconditions) BoundaryConditionsGeometry();
   }
+
+  // Assign degrees of freedom to elements and nodes
+  if (assigndegreesoffreedom) AssignDegreesOfFreedom(0);
+
+  // call element routines to initialize
+  if (initelements) InitializeElements();
+
+  // (Re)build the geometry of the boundary conditions
+  if (doboundaryconditions) BoundaryConditionsGeometry();
 
   return ret;
 }
@@ -148,9 +146,16 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToPointPointers()
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    bool success = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true)->BuildPointPointers(point_);
-    if (!success)
-      dserror("Building element <-> point topology failed");
+    // only process MESHFREE::Cell and derived classes here
+    // all other elements do not separate between nodes and points and are already processed
+    // in DRT::Discretization::BuildElementToNodePointers
+    Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second, false);
+    if(cell != Teuchos::null)
+    {
+      bool success = cell->BuildPointPointers(point_);
+      if (!success)
+        dserror("Building element <-> point topology failed");
+    }
   }
   return;
 }
@@ -167,13 +172,19 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildPointToElementPointers()
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    const int  npoint = elecurr->second->NumPoint();
-    const int* points = elecurr->second->PointIds();
-    for (int j=0; j<npoint; ++j)
+    // only process MESHFREE::Cell and derived classes here
+    // all other elements do not separate between nodes and points and are already processed
+    // in DRT::Discretization::BuildNodeToElementPointers
+    if(Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second, false) != Teuchos::null)
     {
-      DRT::Node* point = gPoint(points[j]);
-      if (!point) dserror("Point %d is not on this proc %d",j,Comm().MyPID());
-      else point->AddElementPtr(elecurr->second.get());
+      const int  npoint = elecurr->second->NumPoint();
+      const int* points = elecurr->second->PointIds();
+      for (int j=0; j<npoint; ++j)
+      {
+        DRT::Node* point = gPoint(points[j]);
+        if (!point) dserror("Point %d is not on this proc %d",j,Comm().MyPID());
+        else point->AddElementPtr(elecurr->second.get());
+      }
     }
   }
 

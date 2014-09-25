@@ -129,7 +129,7 @@ public:
    \brief Deep copy the derived class and return pointer to it
 
    */
-  virtual CONTACT::CoElement* Clone() const;
+  virtual DRT::Element* Clone() const;
 
   /*!
    \brief Return unique ParObject id

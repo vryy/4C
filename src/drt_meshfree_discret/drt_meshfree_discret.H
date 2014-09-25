@@ -494,13 +494,6 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get flag indicating whether discretization has been filled and assigned
-   *///                                                   (public) nis Jan12
-  /*------------------------------------------------------------------------*/
-  virtual inline bool Filled() const {return (assigned_ and filled_);}
-
-  /*------------------------------------------------------------------------*/
-  /*!
    * \brief Computes values at nodes from nodal values for non-interpolatory
    *        basis function. Needs correct node-to-node assignment which is
    *        done when constructing faces.
@@ -726,8 +719,8 @@ protected:
   /*==========================================================================*/
   //! @name internal data additional to the one in parent Discretization
   /*==========================================================================*/
-  bool assigned_;                                  //!< status for assigned of nodes to cells/points
   INPAR::MESHFREE::NodeAssignType nodeassigntype_; //!< way the neighbourhood search for nodes<>elements is managed
+  INPAR::MESHFREE::meshfreetype meshfreetype_;     //!< type of meshfree discretisation
 
   Teuchos::RCP<Epetra_Map> pointrowmap_;            //!< unique distribution of nodal ownerships
   Teuchos::RCP<Epetra_Map> pointcolmap_;            //!< distribution of points including ghost points

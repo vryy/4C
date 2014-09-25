@@ -29,8 +29,6 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io_pstream.H"
 #include <Teuchos_Time.hpp>
 
-// define flag for debug reasons
-#define INCA_COUPLING
 
 /*----------------------------------------------------------------------*
  | AeroTFSI                                                 ghamm 12/11 |
@@ -56,21 +54,22 @@ FS3I::AeroTFSI::AeroTFSI(
   localBACIleader_ = 0;
   INCAleader_ = 0;
 
-#ifdef INCA_COUPLING
-  // check if INCA is called first when starting the coupled simulation
-  int worldrank = -1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &worldrank);
+  if(tfsi_coupling_ != INPAR::TSI::NoIncaFSI)
+  {
+    // check if INCA is called first when starting the coupled simulation
+    int worldrank = -1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &worldrank);
 
-  if(worldrank == lcomm.MyPID())
-    dserror("ERROR: INCA must!! be always started first in a coupled simulation");
+    if(worldrank == lcomm.MyPID())
+      dserror("ERROR: INCA must!! be always started first in a coupled simulation");
 
-  // intercommunicator is created; tag is important here because the same tag is used in INCA
-  int tag = 0;
-  int remoteleader = INCAleader_;
-  MPI_Intercomm_create(mpilcomm_, 0, MPI_COMM_WORLD, remoteleader, tag, &intercomm_);
+    // intercommunicator is created; tag is important here because the same tag is used in INCA
+    int tag = 0;
+    int remoteleader = INCAleader_;
+    MPI_Intercomm_create(mpilcomm_, 0, MPI_COMM_WORLD, remoteleader, tag, &intercomm_);
 
-  MPI_Barrier(intercomm_);
-#endif
+    MPI_Barrier(intercomm_);
+  }
 
   // setup of the integrator on Baci side and the coupling helper class
   switch(tfsi_coupling_)
@@ -90,6 +89,7 @@ FS3I::AeroTFSI::AeroTFSI(
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     // access the structural discretization
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -143,6 +143,7 @@ void FS3I::AeroTFSI::Timeloop()
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     TimeloopT<ADAPTER::Structure>(structure_);
     break;
@@ -187,25 +188,26 @@ void FS3I::AeroTFSI::TimeloopT(Teuchos::RCP<A> solver)
 
   // it is expected to have identical temperatures in the interface at the beginning
   // --> structural data can always be sent (and applied) to INCA
-#ifdef INCA_COUPLING
-  for(int interf=0; interf<aerocoupling_->NumInterfaces(); interf++)
+  if(tfsi_coupling_ != INPAR::TSI::NoIncaFSI)
   {
-    // sending initial data to INCA
-    Teuchos::RCP<const Epetra_Vector> idispn = Teuchos::null;
-    Teuchos::RCP<const Epetra_Vector> iveln = Teuchos::null;
-    Teuchos::RCP<const Epetra_Vector> itempn = Teuchos::null;
-    GetInterfaceDatan(interf, idispn, iveln, itempn);
+    for(int interf=0; interf<aerocoupling_->NumInterfaces(); interf++)
+    {
+      // sending initial data to INCA
+      Teuchos::RCP<const Epetra_Vector> idispn = Teuchos::null;
+      Teuchos::RCP<const Epetra_Vector> iveln = Teuchos::null;
+      Teuchos::RCP<const Epetra_Vector> itempn = Teuchos::null;
+      GetInterfaceDatan(interf, idispn, iveln, itempn);
 
-    std::vector<double> aerosenddata;
-    aerocoupling_->TransferStructValuesToFluid(interf, idispn, iveln, itempn, aerosenddata, false);
+      std::vector<double> aerosenddata;
+      aerocoupling_->TransferStructValuesToFluid(interf, idispn, iveln, itempn, aerosenddata, false);
 
-    ComputeTiming(time, BACICouplingTime);
+      ComputeTiming(time, BACICouplingTime);
 
-    SendAeroData(aerosenddata);
+      SendAeroData(aerosenddata);
 
-    ComputeTiming(time, CommTime);
+      ComputeTiming(time, CommTime);
+    }
   }
-#endif
 
   // time need to be set correctly in case of pure structural or thermal problems
   ResetInitialTimen();
@@ -422,6 +424,7 @@ void FS3I::AeroTFSI::ApplyInterfaceData(
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     // apply structural interface tractions to the structural field
     structure_->SetForceInterface(strfifc);
@@ -450,16 +453,17 @@ void FS3I::AeroTFSI::GetAndSetDt(Teuchos::RCP<A> solver)
 {
   // this is just a dummy time for debug reasons when INCA is not available
   double timen = (solver->Step()+1)*0.001;
-#ifdef INCA_COUPLING
-  // get time step from INCA
-  if(lcomm_.MyPID() == localBACIleader_)
+  if(tfsi_coupling_ != INPAR::TSI::NoIncaFSI)
   {
-    MPI_Status status;
-    int tag_timestep = 3000;
-    MPI_Recv(&timen, 1, MPI_DOUBLE, INCAleader_, tag_timestep, intercomm_, &status);
-    timen *= aerocoupling_->TimeScaling();
+    // get time step from INCA
+    if(lcomm_.MyPID() == localBACIleader_)
+    {
+      MPI_Status status;
+      int tag_timestep = 3000;
+      MPI_Recv(&timen, 1, MPI_DOUBLE, INCAleader_, tag_timestep, intercomm_, &status);
+      timen *= aerocoupling_->TimeScaling();
+    }
   }
-#endif
   // broadcast time step to all processors in BACI
   lcomm_.Broadcast(&timen, 1 , localBACIleader_);
 
@@ -491,6 +495,7 @@ void FS3I::AeroTFSI::ResetInitialTimen()
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     structure_->SetTimen( structure_->Time() - structure_->Dt() );
     break;
@@ -517,24 +522,25 @@ void FS3I::AeroTFSI::INCAfinshed(
   Teuchos::RCP<A> solver
   )
 {
-#ifdef INCA_COUPLING
-  // get stop tag
-  if(lcomm_.MyPID() == localBACIleader_)
+  if(tfsi_coupling_ != INPAR::TSI::NoIncaFSI)
   {
-    MPI_Status status;
-    int tag_stopflag = 2000;
-    // note here: on INCA side an MPI_LOGICAL is used
-    MPI_Recv(&stopflag_, 1, MPI_INT, INCAleader_, tag_stopflag, intercomm_, &status);
-
-    if(stopflag_ != 0)
+    // get stop tag
+    if(lcomm_.MyPID() == localBACIleader_)
     {
-      FILE* outFile = fopen("result_status_baci.inp", "w");
-      // assumption that restart is always written when simulation is stopped by INCA
-      fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), solver->Step());
-      fclose(outFile);
+      MPI_Status status;
+      int tag_stopflag = 2000;
+      // note here: on INCA side an MPI_LOGICAL is used
+      MPI_Recv(&stopflag_, 1, MPI_INT, INCAleader_, tag_stopflag, intercomm_, &status);
+
+      if(stopflag_ != 0)
+      {
+        FILE* outFile = fopen("result_status_baci.inp", "w");
+        // assumption that restart is always written when simulation is stopped by INCA
+        fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), solver->Step());
+        fclose(outFile);
+      }
     }
   }
-#endif
   // broadcast stop flag to all processors in BACI
   lcomm_.Broadcast(&stopflag_, 1 , localBACIleader_);
 
@@ -570,62 +576,121 @@ int FS3I::AeroTFSI::ReceiveAeroData(
 {
   int lengthRecv = 0;
   std::vector<double> receivebuf;
-#ifdef INCA_COUPLING
-  // ==================================================================
-  // intercommunicator is used to receive data on proc 0
-  if(lcomm_.MyPID() == localBACIleader_)
+  if(tfsi_coupling_ != INPAR::TSI::NoIncaFSI)
   {
-    MPI_Status status;
-    //first: receive length of data from aero code
-    int tag = 4000;
-    MPI_Recv(&lengthRecv, 1, MPI_INT, INCAleader_, tag, intercomm_, &status);
-    if(lengthRecv == 0)
-      dserror("Length of data from INCA is not received correctly!!");
+    // ==================================================================
+    // intercommunicator is used to receive data on proc 0
+    if(lcomm_.MyPID() == localBACIleader_)
+    {
+      MPI_Status status;
+      //first: receive length of data from aero code
+      int tag = 4000;
+      MPI_Recv(&lengthRecv, 1, MPI_INT, INCAleader_, tag, intercomm_, &status);
+      if(lengthRecv == 0)
+        dserror("Length of data from INCA is not received correctly!!");
 
-    //second: receive data
-    tag = 5000;
-    receivebuf.resize(lengthRecv);
-    MPI_Recv(&receivebuf[0], lengthRecv, MPI_DOUBLE, INCAleader_, tag, intercomm_, &status);
+      //second: receive data
+      tag = 5000;
+      receivebuf.resize(lengthRecv);
+      MPI_Recv(&receivebuf[0], lengthRecv, MPI_DOUBLE, INCAleader_, tag, intercomm_, &status);
+    }
   }
-#else
-  // for testing with a flat plate
-  lengthRecv = 26;
-  receivebuf.resize(lengthRecv);
+  else
+  {
+    // for testing without INCA --> patch test
+    // loading of a flat plate coupled at x=[0.1, 0.3], y=0 and z=[0,0.008]
+    // with a constant load in y-direction and represented with 8 triangles
+    lengthRecv = 8*13; // 8 tris with 13 doubles each
+    receivebuf.resize(lengthRecv);
 
-  //tri 1
-  receivebuf[0] = 0.1;
-  receivebuf[1] = 0.0;
-  receivebuf[2] = 0.0;
-  receivebuf[3] = 0.3;
-  receivebuf[4] = 0.0;
-  receivebuf[5] = 0.0;
-  receivebuf[6] = 0.1;
-  receivebuf[7] = 0.0;
-  receivebuf[8] = 0.008;
+    //tri 1
+    receivebuf[0] = 0.1;  receivebuf[1] = 0.0;  receivebuf[2] = 0.0;
+    receivebuf[3] = 0.15; receivebuf[4] = 0.0;  receivebuf[5] = 0.0;
+    receivebuf[6] = 0.1;  receivebuf[7] = 0.0;  receivebuf[8] = 0.05;
 
-  receivebuf[9] = 0.0;
-  receivebuf[10] = 1.0e-3 * 1.2*3.0;
-  receivebuf[11] = 0.0;
+    receivebuf[9] = 0.0;
+    receivebuf[10] = 1.0e-3 * 1.2;
+    receivebuf[11] = 0.0;
 
-  receivebuf[12] = 1.0e-3 * 0.01*3.0;
+    receivebuf[12] = 0.0; //1.0e-3 * 0.01;
 
-  //tri 2
-  receivebuf[13+0] = 0.1;
-  receivebuf[13+1] = 0.0;
-  receivebuf[13+2] = 0.008;
-  receivebuf[13+3] = 0.3;
-  receivebuf[13+4] = 0.0;
-  receivebuf[13+5] = 0.0;
-  receivebuf[13+6] = 0.3;
-  receivebuf[13+7] = 0.0;
-  receivebuf[13+8] = 0.008;
+    //tri 2
+    receivebuf[13+0] = 0.1;  receivebuf[13+1] = 0.0;  receivebuf[13+2] = 0.05;
+    receivebuf[13+3] = 0.15; receivebuf[13+4] = 0.0;  receivebuf[13+5] = 0.0;
+    receivebuf[13+6] = 0.15; receivebuf[13+7] = 0.0;  receivebuf[13+8] = 0.05;
 
-  receivebuf[13+9] = 0.0;
-  receivebuf[13+10] = 1.0e-3 * 1.2*3.0;
-  receivebuf[13+11] = 0.0;
+    receivebuf[13+9] = 0.0;
+    receivebuf[13+10] = 1.0e-3 * 1.2;
+    receivebuf[13+11] = 0.0;
 
-  receivebuf[13+12] = 1.0e-3 * 0.01*3.0;
-#endif
+    receivebuf[13+12] = 0.0; //1.0e-3 * 0.01;
+
+    //tri 3
+    receivebuf[0+26] = 0.15; receivebuf[1+26] = 0.0;  receivebuf[2+26] = 0.0;
+    receivebuf[3+26] = 0.2;  receivebuf[4+26] = 0.0;  receivebuf[5+26] = 0.0;
+    receivebuf[6+26] = 0.15; receivebuf[7+26] = 0.0;  receivebuf[8+26] = 0.05;
+
+    receivebuf[9+26] = 0.0;
+    receivebuf[10+26] = 1.0e-3 * 1.2;
+    receivebuf[11+26] = 0.0;
+
+    receivebuf[12+26] = 0.0; //1.0e-3 * 0.01;
+
+    //tri 4
+    receivebuf[13+0+26] = 0.15; receivebuf[13+1+26] = 0.0;  receivebuf[13+2+26] = 0.05;
+    receivebuf[13+3+26] = 0.2;  receivebuf[13+4+26] = 0.0;  receivebuf[13+5+26] = 0.0;
+    receivebuf[13+6+26] = 0.2;  receivebuf[13+7+26] = 0.0;  receivebuf[13+8+26] = 0.05;
+
+    receivebuf[13+9+26] = 0.0;
+    receivebuf[13+10+26] = 1.0e-3 * 1.2;
+    receivebuf[13+11+26] = 0.0;
+
+    receivebuf[13+12+26] = 0.0; //1.0e-3 * 0.01;
+
+    //tri 5
+    receivebuf[0+52] = 0.2;  receivebuf[1+52] = 0.0;  receivebuf[2+52] = 0.0;
+    receivebuf[3+52] = 0.25; receivebuf[4+52] = 0.0;  receivebuf[5+52] = 0.0;
+    receivebuf[6+52] = 0.2;  receivebuf[7+52] = 0.0;  receivebuf[8+52] = 0.05;
+
+    receivebuf[9+52] = 0.0;
+    receivebuf[10+52] = 1.0e-3 * 1.2;
+    receivebuf[11+52] = 0.0;
+
+    receivebuf[12+52] = 0.0; //1.0e-3 * 0.01;
+
+    //tri 6
+    receivebuf[13+0+52] = 0.2;  receivebuf[13+1+52] = 0.0;  receivebuf[13+2+52] = 0.05;
+    receivebuf[13+3+52] = 0.25; receivebuf[13+4+52] = 0.0;  receivebuf[13+5+52] = 0.0;
+    receivebuf[13+6+52] = 0.25; receivebuf[13+7+52] = 0.0;  receivebuf[13+8+52] = 0.05;
+
+    receivebuf[13+9+52] = 0.0;
+    receivebuf[13+10+52] = 1.0e-3 * 1.2;
+    receivebuf[13+11+52] = 0.0;
+
+    receivebuf[13+12+52] = 0.0; //1.0e-3 * 0.01;
+
+    //tri 7
+    receivebuf[0+78] = 0.25; receivebuf[1+78] = 0.0;  receivebuf[2+78] = 0.0;
+    receivebuf[3+78] = 0.3;  receivebuf[4+78] = 0.0;  receivebuf[5+78] = 0.0;
+    receivebuf[6+78] = 0.25; receivebuf[7+78] = 0.0;  receivebuf[8+78] = 0.05;
+
+    receivebuf[9+78] = 0.0;
+    receivebuf[10+78] = 1.0e-3 * 1.2;
+    receivebuf[11+78] = 0.0;
+
+    receivebuf[12+78] = 0.0; //1.0e-3 * 0.01;
+
+    //tri 8
+    receivebuf[13+0+78] = 0.25; receivebuf[13+1+78] = 0.0;  receivebuf[13+2+78] = 0.05;
+    receivebuf[13+3+78] = 0.3;  receivebuf[13+4+78] = 0.0;  receivebuf[13+5+78] = 0.0;
+    receivebuf[13+6+78] = 0.3;  receivebuf[13+7+78] = 0.0;  receivebuf[13+8+78] = 0.05;
+
+    receivebuf[13+9+78] = 0.0;
+    receivebuf[13+10+78] = 1.0e-3 * 1.2;
+    receivebuf[13+11+78] = 0.0;
+
+    receivebuf[13+12+78] = 0.0; //1.0e-3 * 0.01;
+  }
 
   // ==================================================================
   // scatter received data in BACI to all processors
@@ -675,7 +740,7 @@ int FS3I::AeroTFSI::ReceiveAeroData(
 
   lcomm_.Barrier();
 
-  // returns node offset for mortar
+  // returns node offset from proc to proc for mortar
   return distribution[lcomm_.MyPID()];
 }
 
@@ -700,11 +765,10 @@ double FS3I::AeroTFSI::SplitData(
   const double forcescalingfac = lengthscaling*invtimescaling*invtimescaling;
 
   // incoming data from INCA (x1y1z1 x2y2z2 x3y3z3 fx fy fz hf)
-  // split into coordinates and loads per node
-  // loads are equally divided onto the three nodes of a tri because constant value on fluid side (= Finite Volume scheme)
+  // due to the Finite Volume scheme on fluid side a constant load per tri is a valid assumption
   size_t numtris = aerodata.size()/13;
   aerocoords.resize(numtris*3);
-  aeroloads.resize(numtris*3);
+  aeroloads.resize(numtris);
   const size_t dim = 3;
 
   LINALG::Matrix<3,1> tmp1;
@@ -722,20 +786,23 @@ double FS3I::AeroTFSI::SplitData(
       {
         // pull out fluid position
         tmp1(d) = aerodata[tri*13 + node*dim + d] * lengthscaling;
-
-        // pull out fluid forces
-        tmp2(d) = aerodata[tri*13 + 9 + d] / 3.0 * forcescalingfac;
       }
       aerocoords[nodecounter] = tmp1;
 
-      // pull out fluid heat flux
-      tmp2(3) = aerodata[tri*13 + 12] / 3.0 * heatscalingfac;
-
-      aeroloads[nodecounter] = tmp2;
-      flux_in += tmp2(3);
-
       nodecounter++;
     }
+
+    // pull out fluid forces
+    for(size_t d=0; d<dim; ++d)
+    {
+      tmp2(d) = aerodata[tri*13 + 9 + d] * forcescalingfac;
+    }
+
+    // pull out fluid heat flux
+    tmp2(3) = aerodata[tri*13 + 12] * heatscalingfac;
+
+    aeroloads[tri] = tmp2;
+    flux_in += tmp2(3);
   }
 
   return flux_in;
@@ -749,22 +816,22 @@ void FS3I::AeroTFSI::SendAeroData(
   std::vector<double>& aerosenddata
   )
 {
-#ifdef INCA_COUPLING
-  // ==================================================================
-  // intercommunicator is used to send data to INCA proc 0
-  if(lcomm_.MyPID() == localBACIleader_)
+  if(tfsi_coupling_ != INPAR::TSI::NoIncaFSI)
   {
-    int lengthSend = aerosenddata.size();
-    //first: send length of data from aero code
-    int tag = 6000;
-    MPI_Send(&lengthSend, 1, MPI_INT, INCAleader_, tag, intercomm_);
+    // ==================================================================
+    // intercommunicator is used to send data to INCA proc 0
+    if(lcomm_.MyPID() == localBACIleader_)
+    {
+      int lengthSend = aerosenddata.size();
+      //first: send length of data from aero code
+      int tag = 6000;
+      MPI_Send(&lengthSend, 1, MPI_INT, INCAleader_, tag, intercomm_);
 
-    //second: send data
-    tag = 7000;
-    MPI_Send(&aerosenddata[0], lengthSend, MPI_DOUBLE, INCAleader_, tag, intercomm_);
+      //second: send data
+      tag = 7000;
+      MPI_Send(&aerosenddata[0], lengthSend, MPI_DOUBLE, INCAleader_, tag, intercomm_);
+    }
   }
-
-#endif
 
   return;
 }
@@ -805,7 +872,8 @@ void FS3I::AeroTFSI::Output(Teuchos::RCP<A> solver)
     {
       FILE *outFile;
       outFile = fopen("result_status_baci.inp", "w");
-      fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), solver->Step());
+      // StepOld() is written to file and thus it is necessary here to decrement step
+      fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), (solver->Step()-1));
       fclose(outFile);
     }
   }
@@ -831,6 +899,7 @@ void FS3I::AeroTFSI::ReadRestart()
       break;
     }
     case INPAR::TSI::FSI:
+    case INPAR::TSI::NoIncaFSI:
     {
       structure_->ReadRestart(restart);
       break;
@@ -864,6 +933,7 @@ void FS3I::AeroTFSI::TestResults(const Epetra_Comm& comm)
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     DRT::Problem::Instance()->AddFieldTest(structure_->CreateFieldTest());
     break;
@@ -898,6 +968,7 @@ void FS3I::AeroTFSI::GetFullVectors(Teuchos::RCP<Epetra_Vector>& strfifc, Teucho
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     strfifc = LINALG::CreateVector(*structure_->Discretization()->DofRowMap(), true);
     break;
@@ -936,6 +1007,7 @@ void FS3I::AeroTFSI::GetInterfaceDatanp(
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     idispnp = aerocoupling_->StrExtractInterfaceVal(interf, structure_->Dispnp());
     ivelnp = aerocoupling_->StrExtractInterfaceVal(interf, structure_->Velnp());
@@ -975,6 +1047,7 @@ void FS3I::AeroTFSI::GetInterfaceDatan(
     break;
   }
   case INPAR::TSI::FSI:
+  case INPAR::TSI::NoIncaFSI:
   {
     idispn= aerocoupling_->StrExtractInterfaceVal(interf, structure_->Dispn());
     iveln = aerocoupling_->StrExtractInterfaceVal(interf, structure_->Veln());
@@ -1009,6 +1082,7 @@ void FS3I::AeroTFSI::PrintCouplingStrategy()
       break;
     }
     case INPAR::TSI::FSI:
+    case INPAR::TSI::NoIncaFSI:
     {
       IO::cout << "\nFluid-Structure-Interaction with mortar coupling using dual shape functions for Lagrange multiplier. \n" << IO::endl;
       break;

@@ -32,15 +32,14 @@ DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
   Teuchos::RCP<Epetra_Comm> comm,
   const Teuchos::ParameterList & params)
   : DRT::Discretization::Discretization(name,comm),
-    assigned_(false),
     domaintopology_(4)
 {
   // neighbourhood search
   nodeassigntype_ = DRT::INPUT::IntegralValue<INPAR::MESHFREE::NodeAssignType>(params,"NODEPOINTASSIGNMENT");
 
   // type of meshfree approximation
-  INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(params,"TYPE");
-  switch (meshfreetype)
+  meshfreetype_ = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(params,"TYPE");
+  switch (meshfreetype_)
   {
   case INPAR::MESHFREE::maxent:
   {
@@ -48,7 +47,16 @@ DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
     weightingapprox_  = Teuchos::rcp(new MaxEntApprox(params,1));
     break;
   }
-  default: dserror("No valid meshfree discretization.");
+  case INPAR::MESHFREE::geo_decoupled:
+  {
+    // do nothing
+    break;
+  }
+  default:
+  {
+    dserror("No valid meshfree discretization.");
+    break;
+  }
   }
 
   // create solver for DirichletBC with non-interpolatory basis functions if necessary
@@ -406,16 +414,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToPointsAndCells()
 {
-  if (point_.size()==0)
-  {
-    assigned_ = true;
-    return; // dserror("No point to assign nodes to in meshfree discret.");
-  }
-
-  if (assigned_)
-    return; // dserror("Already assigned nodes in meshfree discret. You shouldn't be here.");
-
-  // clear all nodal information in all cells - just to make sure
+  // clear all nodal information in all cells
   Unassign();
 
   switch (nodeassigntype_)
@@ -509,9 +508,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToPointsAndCells()
   } // end case nodeassigntype_==blockwise
   default:
     dserror("Invalid node assignment type.");
+    break;
   } // end switch (nodeassigntype_)
-
-  assigned_ = true;
 
   return;
 }

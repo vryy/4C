@@ -1083,8 +1083,9 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     LINALG::Matrix<ndim_, ns_> coord;
     coord.Clear();
 
+    DRT::Node** mypoints = gpele.Points();
     DRT::Node** mynodes = gpele.Nodes();
-    if (!mynodes)
+    if (!mypoints)
       dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
@@ -1099,7 +1100,9 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
       val(i)=auxval(i);
     }
     else
-    DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distypeS);
+    {
+      DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distypeS);
+    }
 
     // get interpolated GP normal and GP coordinates
     double gpn[3];
@@ -1112,15 +1115,22 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (int i=0;i<ns_;++i)
     {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mypoints[i]);
 
       for (int j=0;j<ndim_;++j)
       {
-        gpn[j] += val(i)*mymrtrnode->MoData().n()[j];
-
         coord(j,i) = mymrtrnode->xspatial()[j];
 
-        gpx[j] +=val(i)*coord(j,i);
+        gpx[j] += val(i)*coord(j,i);
+      }
+    }
+
+    for (int i=0;i<gpele.NumNode();++i)
+    {
+      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
+      for (int j=0;j<ndim_;++j)
+      {
+        gpn[j] += val(i)*mymrtrnode->MoData().n()[j];
       }
     }
 
