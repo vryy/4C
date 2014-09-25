@@ -675,11 +675,6 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
       new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1), 100));
 
   /***********************************************************
-   * Assign materials                                        *
-   ***********************************************************/
-  AssignMaterials();
-
-  /***********************************************************
    * Create P operators                                      *
    ***********************************************************/
   for (int i = 0; i < Adiscret_->NumMyColNodes(); ++i)

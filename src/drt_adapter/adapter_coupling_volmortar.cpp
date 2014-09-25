@@ -94,6 +94,9 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> slavedis,
       binningstrategy->RevertExtendedGhosting(dis,stdelecolmap,stdnodecolmap);
   }
 
+  /***********************************************************
+   * Assign materials                                        *
+   ***********************************************************/
   //assign materials from one discretization to the other
   coupdis->AssignMaterials();
 
