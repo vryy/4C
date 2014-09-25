@@ -33,6 +33,7 @@ void ssi_drt()
 
   //2.- Parameter reading
   const Teuchos::ParameterList& ssiparams = problem->SSIControlParams();
+
   const INPAR::SSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams,"COUPALGO");
 

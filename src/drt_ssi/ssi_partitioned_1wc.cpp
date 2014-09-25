@@ -120,14 +120,22 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 {
   //InitialCalculations();
 
+  if (structure_->Dt() > scatra_->ScaTraField()->Dt())
+  {
+    dserror("Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra interaction");
+  }
+  int diffsteps = scatra_->ScaTraField()->Dt()/structure_->Dt();
   while (NotFinished())
   {
     PrepareTimeStep();
-
-    DoStructStep(); // It has its own time and timestep variables, and it increments them by itself.
+    DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     SetStructSolution();
-    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+    if (Step() % diffsteps == 0)
+    {
+      DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
+    }
   }
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -154,13 +162,21 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
 {
-  //InitialCalculations();
 
+  if (structure_->Dt() < scatra_->ScaTraField()->Dt())
+  {
+    dserror("Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid interaction");
+  }
+  int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
   while (NotFinished())
   {
     PrepareTimeStep();
-    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+    DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
     SetScatraSolution();
-    DoStructStep(); // It has its own time and timestep variables, and it increments them by itself.
+    if (Step()  % diffsteps ==0)
+    {
+      DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
+    }
   }
+
 }

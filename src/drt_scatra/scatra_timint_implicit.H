@@ -312,6 +312,8 @@ public:
   //! return number of newton iterations in last timestep
   double IterNum() const { return iternum_; }
 
+  //! return time step size
+  double Dt() const { return dta_; }
 
   /*========================================================================*/
   //! @name scalar degrees of freedom and related

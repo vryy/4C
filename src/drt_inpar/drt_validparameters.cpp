@@ -3203,6 +3203,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMSTEP",200,"maximum number of Timesteps",&ssidyn);
   DoubleParameter("MAXTIME",1000.0,"total simulation time",&ssidyn);
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&ssidyn);
+  BoolParameter("DIFFTIMESTEPSIZE","No","use different step size for scatra and solid",&ssidyn);
+  DoubleParameter("TIMESTEPSCATRA",0.05,"time step size for scatra dt",&ssidyn);
+  DoubleParameter("TIMESTEPSOLID",0.05,"time step size for solid dt",&ssidyn);
   IntParameter("UPRES",1,"increment for writing solution",&ssidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&ssidyn);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&ssidyn);

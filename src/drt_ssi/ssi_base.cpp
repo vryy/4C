@@ -51,18 +51,54 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
-
-  zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
   // Set isale to false what should be the case in scatratosolid algorithm
   const INPAR::SSI::SolutionSchemeOverFields coupling
       = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
+
   bool isale = true;
   if(coupling == INPAR::SSI::Part_ScatraToSolid) isale = false;
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
+  bool difftimestep = DRT::INPUT::IntegralValue<int>(timeparams, "DIFFTIMESTEPSIZE");
+
+  if (difftimestep) //Create subproblems with different time steps
+  {
+    double scatrastep = timeparams.get<double>("TIMESTEPSCATRA");
+    double solidstep = timeparams.get<double>("TIMESTEPSOLID");
+    int scst = scatrastep * 1000000;
+    int sost = solidstep * 1000000;
+
+    if (std::min(scatrastep,solidstep) !=  timeparams.get<double>("TIMESTEP"))
+    {
+      dserror("Global timestep must be equal to the smaller timestep of scatra or solid!");
+    }
+
+    if (scst/sost % 1 == 0 or sost/scst % 1 == 0)
+    {
+      Teuchos::ParameterList scatratimeparams = timeparams;
+      scatratimeparams.set<double>   ("TIMESTEP"    ,scatrastep);
+
+      Teuchos::ParameterList solidtimeparams = timeparams;
+      solidtimeparams.set<double>("TIMESTEP"    ,solidstep);
+
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(solidtimeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
+      scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatratimeparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
+
+    }
+    else
+      dserror("Timesteps for scatra and solid must be divisible!");
+
+  }
+  else
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
+    scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
+  }
+  zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+
 
 }
 
