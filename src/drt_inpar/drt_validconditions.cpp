@@ -4290,6 +4290,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
+  // AAA surface condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > aaasurfcomponents;
+  aaasurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("matching id")));
+
+  Teuchos::RCP<ConditionDefinition> aaasurfcond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN AAA SURFACE CONDITION",
+                                         "AAASurface",
+                                         "AAA surface",
+                                         DRT::Condition::AAASurface,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<aaasurfcomponents.size(); ++i)
+  {
+    aaasurfcond->AddComponent(aaasurfcomponents[i]);
+  }
+
+  condlist.push_back(aaasurfcond);
+
+
+
+  /*--------------------------------------------------------------------*/
   // level-set condition for contact points
 
   Teuchos::RCP<ConditionDefinition> linelscontact =

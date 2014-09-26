@@ -653,6 +653,23 @@ void runEnsightVtuFilter(PostProblem    &problem)
       }
       break;
     }
+    case prb_uq:
+    {
+      for (int i=0;i<problem.num_discr();i++)
+      {
+        std::string disname = problem.get_discretization(i)->discretization()->Name();
+        if( (disname.compare("structure") == 0) || (disname.compare("red_airway") == 0 ) ) // 0=true
+        {
+          PostField* field = problem.get_discretization(i);
+          StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
+          writer.WriteFiles();
+        }
+        else
+        {
+           dserror("Unknown discretization type for problem type UQ");
+        }
+      } break;
+    }
     case prb_none:
     {
       // Special problem type that contains one discretization and any number

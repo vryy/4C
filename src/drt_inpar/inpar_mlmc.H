@@ -39,6 +39,18 @@ namespace INPAR
       calc_m_cos, // as cosinus series
       calc_m_fourier, // as fourier series
     };
+    enum UQStrategy
+    {
+        mc_plain,     // do plain and simple MC
+        mc_paracont, //  use parameter continuation scheme in MC
+        mc_scaledthick, // compute mechanical quantities based on scaled thickness
+    };
+
+    enum FWDProblem
+    {
+        structure,   // structure problem
+        red_airways, // reduced airwarys problem
+    };
     /// To be filled with input params
   }  // namespace MLMC
 

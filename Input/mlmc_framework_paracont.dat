@@ -20,7 +20,7 @@ DIM                             3
 MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+PROBLEMTYP                      UQ
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -98,20 +98,12 @@ ML_DAMPFINE                     0.69                          // damping fine gr
 ML_DAMPMED                      0.89                          // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -----------------------------------------------------MULTI LEVEL MONTE CARLO
-CONVTOL                         0.1
-DIFF_TO_LOWER_LEVEL             no
 INITRANDOMSEED                  1000
-ITENODEINELE                    20
-LEVELNUMBER                     0
-MLMC                            yes
 NUMRUNS                         10
-OUTPUT_FILE_OF_LOWER_LEVEL      level0
-PROLONGATERES                   no
 REDUCED_OUTPUT                  no
 START_RUN                       0
-WRITESTATS                      1000
 OUTPUT_ELEMENT_IDS              1 2
-PARAMETERCONTINUATION           yes
+UQSTRATEGY                      MC_PARAMETERCONTINUATION
 NUMCONTSTEPS                    2
 PARAMLIST                       1 BETA
 ------------------------------------------------------------RANDOM FIELD 1

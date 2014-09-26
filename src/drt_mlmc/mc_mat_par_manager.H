@@ -30,9 +30,6 @@ namespace LINALG
 }
 
 
-namespace STR
-{
-
 namespace UQ
 {
 
@@ -132,7 +129,6 @@ private:
 
 };
 } // namespace MLMC
-} // namespace STR
 
 #endif /* PAT_MATPAR_MANAGER_H */
 #endif // FFTW

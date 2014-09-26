@@ -30,8 +30,6 @@ Maintainer: Jonas Biehler
 // random generator type
 typedef boost::mt19937 randnumgen;
 
-namespace STR
-{
 
 namespace UQ
 {
@@ -135,7 +133,6 @@ private:
   int k_trunk_threshold_;
 
 }; // class RandomFieldFourier
-}
 }
 #endif /* RANDOMFIELDFOURIER_H_ */
 #endif // HAVE_FFTw

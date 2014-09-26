@@ -269,6 +269,7 @@ public:
     NeumannIntegration,
     SurfaceCurrent,
     UncertainSurface,
+    AAASurface,
     LsContact,
     Absorb,
     PressureMonitor,

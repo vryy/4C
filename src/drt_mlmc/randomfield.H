@@ -37,8 +37,6 @@ Maintainer: Jonas Biehler
 #include <Epetra_SerialDenseVector.h>
 #include <math.h>
 
-namespace STR
-{
 
 namespace UQ
 {
@@ -99,8 +97,6 @@ private:
 
 }; // class RandomField
 } // namespace UQ
-} //namespace STR
-
 #endif /* RANDOMFIELD_H_ */
 #endif // HAVE_FFTw
 

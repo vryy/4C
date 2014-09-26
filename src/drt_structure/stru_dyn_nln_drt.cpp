@@ -45,10 +45,6 @@ Maintainer: Alexander Popp
 //periodic boundary conditions
 #include "../drt_fluid/drt_periodicbc.H"
 
-#ifdef HAVE_FFTW
-#include "str_mlmc.H"
-#endif
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void caldyn_drt()
@@ -56,8 +52,6 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-  //get list for multi level monte carlo
-  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
   // do we want to do inverse analysis?
   if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
@@ -70,15 +64,6 @@ void caldyn_drt()
      != INPAR::STR::stat_inv_none)
   {
     STR::statinvanalysis();
-  }
-  //do we want multi level monte carlo
-  else if (Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
-  {
-#ifdef HAVE_FFTW
-    STR::mlmc();
-#else
-  std::cout<< RED_LIGHT << "CANNOT PERFORM MLMC WITHOUT FFTW  "<< END_COLOR << std::endl;
-#endif
   }
   else
   {

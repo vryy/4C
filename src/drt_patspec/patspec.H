@@ -44,10 +44,10 @@ namespace PATSPEC
 {
 
   void PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
-	                       Teuchos::RCP<Teuchos::ParameterList> params);
+                         Teuchos::RCP<Teuchos::ParameterList> params);
 
   void ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization> dis,
-	                                 Teuchos::RCP<Teuchos::ParameterList> params);
+                                   Teuchos::RCP<Teuchos::ParameterList> params);
 
   void ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis);
 
@@ -72,8 +72,10 @@ namespace PATSPEC
                       DRT::Discretization& dis);
 
   void PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
-		     Teuchos::RCP<DRT::Discretization> discret_,
-		     Teuchos::RCP<Teuchos::ParameterList> params);
+         Teuchos::RCP<DRT::Discretization> discret_,
+         Teuchos::RCP<Teuchos::ParameterList> params);
+
+  double ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis);
 
 
 }

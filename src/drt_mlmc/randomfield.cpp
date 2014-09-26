@@ -23,7 +23,7 @@ Maintainer: Jonas Biehler
 
 #include "../drt_inpar/inpar_mlmc.H"
 
-STR::UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
+UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
 {
  // initialize some common parameters
 
@@ -38,7 +38,7 @@ STR::UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, con
 
 }
 
-void STR::UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
+void UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
 {
   // root bounding Box
   std::vector<double> maxrbb;
@@ -82,7 +82,6 @@ void STR::UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> 
 
   discret->Comm().MaxAll(&maxrbb[0],&bb_max_[0],3);
   discret->Comm().MinAll(&minrbb[0],&bb_min_[0],3);
-
 
   discret->Comm().Barrier();
 

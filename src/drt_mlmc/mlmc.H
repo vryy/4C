@@ -54,9 +54,6 @@ namespace IO
 }
 
 
-namespace STR
-{
-
 namespace UQ
 {
 class RandomField;
@@ -73,26 +70,8 @@ private:
   //! \brief my structure discretisation to work at
   Teuchos::RCP<DRT::Discretization> discret_;
 
-  //! \brief the fine discretization
-  Teuchos::RCP<DRT::Discretization> actdis_fine_;
-
-  //! \brief the coarse discretization
-  Teuchos::RCP<DRT::Discretization> actdis_coarse_;
-
-  //! \brief linear algebraic solver
-  //Teuchos::RCP<LINALG::Solver> solver_;
-
   //! \brief context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output_;
-
-  //! \brief context for output and restart fine discretization
-  Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
-
-  //! \brief another writer
-  Teuchos::RCP<IO::OutputControl> output_control_fine_;
-
-  //! \brief another writer
-  Teuchos::RCP<IO::OutputControl> output_control_coarse_;
 
   // #########################################################################
   // ##     variables needed for plain  Monte Carlo                         ##
@@ -105,12 +84,6 @@ private:
   std::string meshfilename_;
 
   // Parameters from input file
-
-  //! brief number of Newton iterations
-  int num_newton_it_;
-
-  //! brief convergence tolerance for loop in CheckIfNodeInElement routine
-  double convtol_;
 
   //! brief maximum value of xi_i which is still considered to be "within" the element
   double InEleRange_ ;
@@ -126,15 +99,6 @@ private:
 
   //! brief starting random seed
   int start_random_seed_;
-
-  //! brief use a global deterministic value as material parameter instead of random field
- // bool use_det_value_;
-
-  //! brief global deterministic value that is used instead of random field
- // double det_value_;
-
-  //! brief global deterministic value that is used instead of random field for parameter continuation
-  //double cont_blend_value_;
 
   //! brief how many times do half the stepsize in parameter continuation before we give up
   int cont_num_maxtrials_;
@@ -153,6 +117,9 @@ private:
 
   //! brief vector stores gids of elements in the AAA wall
    std::vector <int> my_wall_elements_;
+
+   //! brief vector store location of elements in the AAA wall
+   std::vector <int> my_wall_elements_ele_c_loc_;
 
   //! brief total number of elements in the AAA wall
    int tot_num_wall_elements_;
@@ -202,38 +169,17 @@ private:
   // ##     variables needed for Multilevel Monte Carlo only                ##
   // #########################################################################
 
-  //! brief output filename of lower level
-  std::string filename_lower_level_;
+  //! brief number of Newton iterations
+  static const int num_newton_it_ = 20;
 
-  //! brief number of current level
-  int num_level_;
+  //! brief convergence tolerance for loop in CheckIfNodeInElement routine
+  static const double convtol_ =10e-6;
 
   //! brief write statistics every write_stats step
   int write_stats_;
 
-  //! brief do we want to calculate difference between the to levels
-  bool calc_diff_;
-
-  //! brief do we want to prolongate the results to the lower levels
-  bool prolongate_res_;
-
   //! brief number of timesteps
   int tsteps_;
-
-
-  //! \brief prolongator which maps displacements to finest grid
-  Teuchos::RCP<Epetra_MultiVector> prolongator_disp_;
-
-  //! \brief prolongator which maps stresses to finest grid
-  Teuchos::RCP<Epetra_MultiVector> prolongator_stress_;
-
-  //! \brief prolongators based on crs which maps displacements to finest grid
-  Teuchos::RCP<Epetra_FECrsMatrix> prolongator_disp_crs_;
-
-  //! \brief prolongators based on crs which maps stresses to finest grid
-  Teuchos::RCP<Epetra_FECrsMatrix> prolongator_stress_crs_;
-
-   // vectors needed to calc this and that
 
   // means
   //! \brief Vector to store mean stresses
@@ -285,72 +231,6 @@ private:
   //! \brief some helper vector
   Teuchos::RCP<Epetra_MultiVector> m2_helper_var_strain_;
 
-
-  // We need all those vectors for the difference between levels again
-
-
-  // vectors to store mean
-
-  //! \brief Vector to store diff of mean stresses
-  Teuchos::RCP<Epetra_MultiVector> diff_mean_stress_;
-
-  //! \brief Vector to store diff of mean strains
-  Teuchos::RCP<Epetra_MultiVector> diff_mean_strain_;
-
-  //! \brief Vector to store diff of mean disp
-  Teuchos::RCP<Epetra_MultiVector> diff_mean_disp_;
-
-
-  // vectors to store standard deviation
-  //! \brief Vector to store standard deviation diff of stress
-  Teuchos::RCP<Epetra_MultiVector> diff_var_stress_;
-
-  //! \brief Vector to store standard deviation diff of strain
-  Teuchos::RCP<Epetra_MultiVector> diff_var_strain_;
-
-  //! \brief Vector to store standard deviation diff of disp
-  Teuchos::RCP<Epetra_MultiVector> diff_var_disp_;
-
-
-  // Vectors needed on the way to calculate std
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_delta_stress_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_delta_strain_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_delta_disp_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_m2_var_stress_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_m2_var_strain_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_m2_var_disp_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_m2_helper_var_disp_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_m2_helper_var_stress_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> diff_m2_helper_var_strain_;
-
-  // vectors to store data from lower level
-  //! \brief vector to store stresses from lower level
-  Teuchos::RCP<Epetra_MultiVector> stress_lower_level_;
-
-  //! \brief vector to store strains from lower level
-  Teuchos::RCP<Epetra_MultiVector> strain_lower_level_;
-
-  //! \brief vector to store disp from lower level
-  Teuchos::RCP<Epetra_MultiVector> disp_lower_level_;
-
   // ###########################################################################
   // ##     variables regarding setup and management of stochastic mat params  ##
   // ###########################################################################
@@ -371,8 +251,12 @@ public:
   //! \brief perform time integration and eval (production version)
   void Integrate();
 
-  //! \brief perform time integration and eval (testing version to try out new stuff, to be merged some day)
+  //! \brief perform time integration and eval using parameter continuation
   void IntegrateNoReset();
+
+  //! \brief do not integrate only scale von Mises stress by thickness
+  void IntegrateScaleByThickness();
+
 
   //! brief compute solution of nonlinear problem using numerical continuation scheme
   int ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, ADAPTER::Structure &structadaptor);
@@ -388,14 +272,6 @@ public:
 
   //! \brief reset prestress deformation gradient F present in discretisation
   void ResetPrestress();
-
-  //! \brief  helper function that writes the displacement and stress values of specific DOFs to a separate outputfile
-  void HelperFunctionOutput(Teuchos::RCP< Epetra_MultiVector> stress,
-      Teuchos::RCP< Epetra_MultiVector> strain,
-      Teuchos::RCP<Epetra_MultiVector> disp);
-
-  //! function to evaluate the discretization at certain nodes which are for now hard coded in this function
-  void EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> displacement_of_discretization );
 
   //! \brief evaluate the discretization at specific elements  vector of elements passed from input file
   void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
@@ -477,22 +353,6 @@ public:
   void CalcStatStressDisp(Teuchos::RCP<Epetra_MultiVector> curr_stress,
       Teuchos::RCP<Epetra_MultiVector> curr_strain,Teuchos::RCP<Epetra_MultiVector> curr_disp);
 
-  //! \brief Setup prolongator to transfer results to finest grid
-  void SetupProlongator();
-
-  //! \brief Setup prolongator to transfer results to finest grid
-  void SetupProlongatorParallel();
-
-  //! brief Map results from one Discretization to another using the prolongator
-  void ProlongateResults();
-
-  //! brief read in results of lower level from file system
-  void ReadResultsFromLowerLevel();
-
-  //! brief calculate difference to lower level discretization
-  void CalcDifferenceToLowerLevel(Teuchos::RCP< Epetra_MultiVector> stress,
-      Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
-
   //! brief write calculated statistics to file
   void WriteStatOutput();
 
@@ -506,7 +366,6 @@ public:
 
 }  // namespace UQ
 
-}  // namespace STR
 
 #endif /*MLMC_H_*/
 #endif // HAVE_FFTw

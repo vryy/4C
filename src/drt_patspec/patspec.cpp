@@ -29,7 +29,7 @@ Maintainer: Michael Gee
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
 void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
-	                              Teuchos::RCP<Teuchos::ParameterList> params)
+                                Teuchos::RCP<Teuchos::ParameterList> params)
 {
   if (!dis->Comm().MyPID())
   {
@@ -118,14 +118,14 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
  |                                                          amaier 07/11|
  *----------------------------------------------------------------------*/
 void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
-	                         Teuchos::RCP<Teuchos::ParameterList> params)
+                           Teuchos::RCP<Teuchos::ParameterList> params)
 {
   const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   double subrendia = pslist.get<double>("AAA_SUBRENDIA");
   int is_male  = DRT::INPUT::IntegralValue<int>(pslist,"MALE_PATIENT");
   int has_familyhist  = DRT::INPUT::IntegralValue<int>(pslist,"FAMILYHIST");
   double spatialconst = 922000.0; //spatial constant strength contrib
-				 //acc. Vande Geest [Pa]
+         //acc. Vande Geest [Pa]
 
   double maxiltthick = params->get<double>("max ilt thick");
 
@@ -161,11 +161,11 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
     {
       for (int j=0; j<elestrength->MyLength(); ++j)
       {
-	// contribution of local ilt thickness to strength; lower and
-	// upper bounds for the ilt thickness are 0 and 36
-	// Careful! ilt thickness is still normalized! Multiply with max
-	// ilt thickness.
-	(*elestrength)[j] = spatialconst - 379000 * (std::pow((std::max(0., std::min(36., (*ilt)[ilt->Map().LID(dis->ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
+  // contribution of local ilt thickness to strength; lower and
+  // upper bounds for the ilt thickness are 0 and 36
+  // Careful! ilt thickness is still normalized! Multiply with max
+  // ilt thickness.
+  (*elestrength)[j] = spatialconst - 379000 * (std::pow((std::max(0., std::min(36., (*ilt)[ilt->Map().LID(dis->ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
 
       }
     }
@@ -179,8 +179,8 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
     {
       for (int j=0; j< elestrength->MyLength(); ++j)
       {
-	// contribution of local diameter to strength; lower and upper bounds for the normalized diameter are 1.0 and 3.9
-	(*elestrength)[j] -= 156000 * (   std::max(1., std::min(3.9, 2 * (*locrad)[locrad->Map().LID(dis->ElementRowMap()->GID(j))] / subrendia)) - 2.46); //from Vande Geeststrength formula
+  // contribution of local diameter to strength; lower and upper bounds for the normalized diameter are 1.0 and 3.9
+  (*elestrength)[j] -= 156000 * (   std::max(1., std::min(3.9, 2 * (*locrad)[locrad->Map().LID(dis->ElementRowMap()->GID(j))] / subrendia)) - 2.46); //from Vande Geeststrength formula
       }
     }
   }
@@ -210,7 +210,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
 void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization> dis,
-	                                        Teuchos::RCP<Teuchos::ParameterList> params)
+                                          Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // find out whether we have a orthopressure or FSI condition
   std::vector<DRT::Condition*> conds;
@@ -294,9 +294,40 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   }
   gcoords.clear();
 
+  // now we need to compute the maximum ILT thickness
+  // historically the maximum ilt thickness was computed based on distance to orthopressure/fsi
+  // surface on luminal side of the ilt. From the maximum an approximate wall thickness
+  // of 1.0 mm is subtrated (hardcoded). This obviously can cause problems
+  // when the wall thickness is not constant e.g. during UQ analysis.
+  // Therefore, a new more accurate method was added which needs the luminal
+  // and the outer surface of the ILT as AAA surface condition.
+  // This can be used by setting the CALC_ACCURATE_MAX_ILT_THICK flag to yes in
+  // the input file.
+  // The old way is kept here only to allow evaluation of the AAA database.
+  // As a safety measure the accurate method must be used if the problem type is UQ
+
+  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  bool accurate_ilt_thick_calc=DRT::INPUT::IntegralValue<int>(pslist ,"CALC_ACCURATE_MAX_ILT_THICK");
+
   double maxiltthick;
-  iltthick->MaxValue(&maxiltthick);
-  maxiltthick -= 1.0; // subtract an approximate arterial wall thickness
+  if(accurate_ilt_thick_calc)
+  {
+    maxiltthick = ComputeMaxILTThickness(dis);
+  }
+  else
+  {
+    if(DRT::Problem::Instance()->ProblemType()==prb_uq)
+      dserror("UQ requires accurate computation of max ILT thickness, Set CALC_ACCURATE_MAX_ILT_THICK to yes");
+    else
+      iltthick->MaxValue(&maxiltthick);
+      maxiltthick -= 1; // subtract an approximate arterial wall thickness
+      if (!dis->Comm().MyPID())
+      {
+        IO::cout << "WARNING: WALL THICKNESS IS CURRENTLY HARDCODED TO 1.0 mm FOR ILT THICK CALC" << IO::endl;
+        IO::cout << "WARNING: THINK ABOUT SWITCHING TO ACCURATE ILT THICK CALCULATION" << IO::endl;
+      }
+  }
+
   iltthick->Scale(1.0/maxiltthick);
   if (!dis->Comm().MyPID())
     IO::cout << "Max ILT thickness " << maxiltthick << IO::endl;
@@ -860,8 +891,8 @@ void PATSPEC::GetInnerRadius(const int eleid,
  |                                                           kehl 03/12|
  *----------------------------------------------------------------------*/
 void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
-	                    Teuchos::RCP<DRT::Discretization> discret_,
-	                    Teuchos::RCP<Teuchos::ParameterList> params)
+                      Teuchos::RCP<DRT::Discretization> discret_,
+                      Teuchos::RCP<Teuchos::ParameterList> params)
 {
 
     std::vector<DRT::Condition*> mypatspeccond;
@@ -915,5 +946,81 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
         (*eleID)[i] = (discret_->ElementRowMap()->GID(i))+1;
       output_->WriteVector("eleID", eleID, vt);
     }
+}
+/*----------------------------------------------------------------------*
+ |                                                          biehler 09/14|
+ *----------------------------------------------------------------------*/
+double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
+{
+  // get the AAA surface conditions
+   std::vector<DRT::Condition* > aaa_surface;
+   dis->GetCondition("AAASurface",aaa_surface);
+   // check wether length of condition is two first condition luminal ILT surface second interface ilt/wall
+   if (aaa_surface.size()==0)
+     dserror("AAA Surface condition condition not set! It must contain two surfaces. One surface of luminal ILT, one interface ILT/wall");
+   // check wether length of condition is two first condition luminal ILT surface second interface ilt/wall
+   if (aaa_surface.size()!=2)
+     dserror("AAA Surface condition must contain two surfaces. One surface of luminal ILT, one interface ILT/wall");
+   const std::vector<int>* luminal_nodes = aaa_surface[0]->Nodes();
+       if (!luminal_nodes) dserror("Cannot find node ids in condition");
+   const std::vector<int>* wall_nodes = aaa_surface[1]->Nodes();
+           if (!wall_nodes) dserror("Cannot find node ids in condition");
+   // now do a nice brute force search for maximum distance
+
+   const int n_lum_itl_nodes = (int)luminal_nodes->size();
+   const int n_lum_wall_nodes = (int)wall_nodes->size();
+   // get coordinates for all nodes on luminla surface of ILT
+   // and communicate them to all procs
+   std::vector<double> lcoords_lum_ilt(n_lum_itl_nodes*3,0.0);
+   std::vector<double> gcoords_lum_ilt(n_lum_itl_nodes*3,0.0);
+   std::set<int>::iterator fool_lum_ilt;
+     int count_lum_ilt=0;
+   for (int i=0; i<(int)luminal_nodes->size(); i++)
+   {
+     if (!dis->NodeRowMap()->MyGID(luminal_nodes->at(i)))
+     {
+       count_lum_ilt++;
+       continue;
+     }
+     DRT::Node* node = dis->gNode(luminal_nodes->at(i));
+     lcoords_lum_ilt[count_lum_ilt*3]   = node->X()[0];
+     lcoords_lum_ilt[count_lum_ilt*3+1] = node->X()[1];
+     lcoords_lum_ilt[count_lum_ilt*3+2] = node->X()[2];
+     count_lum_ilt++;
+   }
+   dis->Comm().SumAll(&lcoords_lum_ilt[0],&gcoords_lum_ilt[0],n_lum_itl_nodes*3);
+   lcoords_lum_ilt.clear();
+   // because we have all nodes of luminal side stored redundant on all procs,
+   // we only need to loop over local nodes of the wall surface
+   // create vector for nodal values of potential maximum ilt thickness
+   // WARNING: This is a brute force expensive minimum distance search!
+   const Epetra_Map* nrowmap = dis->NodeRowMap();
+   Teuchos::RCP<Epetra_Vector> iltthick = LINALG::CreateVector(*nrowmap,true);
+   iltthick->PutScalar(-10.0e12);
+
+   for (int i=0; i<n_lum_wall_nodes; i++)
+   {
+     if (!dis->NodeRowMap()->MyGID(wall_nodes->at(i)))
+     {
+       //count_lum_ilt++;
+       continue;
+     }
+     const double* x = dis->gNode(wall_nodes->at(i))->X();
+     // loop nodes from the condition and find minimum distance
+     double mindist = 10e12;
+     for (int j=0; j<(int)gcoords_lum_ilt.size(); ++j)
+     {
+       double* xorth = &gcoords_lum_ilt[j*3];
+       double dist = sqrt( (x[0]-xorth[0])*(x[0]-xorth[0]) +
+                           (x[1]-xorth[1])*(x[1]-xorth[1]) +
+                           (x[2]-xorth[2])*(x[2]-xorth[2]) );
+       if (dist<mindist) mindist = dist;
+     }
+     (*iltthick)[dis->gNode(wall_nodes->at(i))->LID()] = mindist;
+   }
+   gcoords_lum_ilt.clear();
+   double maxiltthick;
+   iltthick->MaxValue(&maxiltthick);
+   return maxiltthick;
 }
 

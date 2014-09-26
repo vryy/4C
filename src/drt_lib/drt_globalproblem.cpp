@@ -52,6 +52,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_mlmc.H"
 
 /*----------------------------------------------------------------------*/
 // the instances
@@ -1732,6 +1733,58 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
   }
   break;
+  case prb_uq:
+  {
+    // tiny bit brutal
+    //get list for multi level monte carlo
+    const Teuchos::ParameterList& mlmcp = this->MultiLevelMonteCarloParams();
+    INPAR::MLMC::FWDProblem fwdprb = DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp,"FWDPROBLEM");
+
+    // quick check whether to read in structure or airways
+    if (fwdprb==INPAR::MLMC::structure)
+    {
+      if(distype == "Meshfree")
+      {
+        dserror("Meshfree structure not implemented, yet.");
+        structdis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("structure",reader.Comm(),MeshfreeParams()));
+      }
+      else if(distype == "Nurbs")
+      {
+        dserror("Meshfree structure not implemented, yet.");
+        structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      }
+      else
+      {
+        structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+      }
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+
+      AddDis("structure", structdis);
+
+      nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
+
+    }
+    else if (fwdprb==INPAR::MLMC::red_airways)
+    {
+      // create empty discretizations
+      airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway",reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      airwaydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(airwaydis)));
+
+      AddDis("red_airway", airwaydis);
+
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+    }
+    else
+    {
+      dserror("Uncertainty quantification is only implemented for structure or airways ");
+    }
+  }
+  break;
   default:
     dserror("Unknown problem type: %d",ProblemType());
     break;
@@ -2128,8 +2181,8 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
   // check whether multilvel monte carlo is on
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   // should not read in second discretization if not needed
-   if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false && Teuchos::getIntegralValue<int>(mlmcp,"PROLONGATERES")!=false)
-  //if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
+
+  if(DRT::Problem::Instance()->ProblemType()==prb_uq && Teuchos::getIntegralValue<int>(mlmcp,"PROLONGATERES")!=false)
   {
     std::string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
 

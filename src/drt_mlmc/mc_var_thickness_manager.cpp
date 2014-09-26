@@ -41,7 +41,7 @@ Maintainer: Jonas Biehler
 /*----------------------------------------------------------------------*/
 /* constructor                                               jb 05/14   */
 /*----------------------------------------------------------------------*/
-STR::UQ::MCVarThicknessManager::MCVarThicknessManager(Teuchos::RCP<DRT::Discretization> discret, const int my_thickness_field_id):
+UQ::MCVarThicknessManager::MCVarThicknessManager(Teuchos::RCP<DRT::Discretization> discret, const int my_thickness_field_id):
 discret_(discret)
 {
   if (not discret_->Filled() || not discret_->HaveDofs())
@@ -158,7 +158,7 @@ discret_(discret)
 /*----------------------------------------------------------------------*
  |  Compute new realizations of random field and set thickness jb 07/14  |
  *----------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::SetUpThickness(unsigned int myseed, double para_cont_parameter, bool reuse_rf)
+void UQ::MCVarThicknessManager::SetUpThickness(unsigned int myseed, double para_cont_parameter, bool reuse_rf)
 {
   if(!reuse_rf)
     CreateNewRealizationOfRandomField(myseed);
@@ -169,7 +169,7 @@ void STR::UQ::MCVarThicknessManager::SetUpThickness(unsigned int myseed, double 
 /*----------------------------------------------------------------------*/
 /* Compute thickness and adjust geometry                      jb 05/14  */
 /*----------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::SetThickness(double para_cont_parameter)
+void UQ::MCVarThicknessManager::SetThickness(double para_cont_parameter)
 {
   double local_wall_thick;
   // clear map
@@ -186,8 +186,22 @@ void STR::UQ::MCVarThicknessManager::SetThickness(double para_cont_parameter)
        std::vector<double> node_normal = my_uncertain_nodes_normals_.at((*my_uncert_nodeids_)[i]);
        old_node_pos=my_uncertain_nodes_org_pos_.at((*my_uncert_nodeids_)[i]);
        local_wall_thick=randomfield_->EvalFieldAtLocation(old_node_pos,para_cont_parameter,false,false)-initial_wall_thickness_;
-
-
+       //IO::cout << "HACK " << IO::endl;
+       //l/ocal_wall_thick=20;
+       // deal with circular quasi 2D field
+       if (randomfield_->Dimension()==2)
+       {
+         double radius =25.0;
+         //special hack here assuming circular geometry with r=25 mm
+            double phi= acos(old_node_pos[0]/radius);
+            //compute x coord
+            old_node_pos.at(0)=phi*radius;
+            old_node_pos.at(1)=old_node_pos.at(2);
+           // ele_center_temp.push_back(ele_center[2]);
+            //ele_center_temp.push_back(ele_center[2]);
+       }
+       //if(old_node_pos.at(2)>-453)
+       {
         if(local_wall_thick>-initial_wall_thickness_)
         {
           new_node_pos.at(0)=node_normal.at(0)*(local_wall_thick);
@@ -202,7 +216,7 @@ void STR::UQ::MCVarThicknessManager::SetThickness(double para_cont_parameter)
           new_node_pos.at(2)=0.0;
         }
         my_uncertain_nodes_pos_.insert(std::pair<int,std::vector<double> >((*my_uncert_nodeids_)[i],new_node_pos) );
-
+       }
    }
 
    LINALG::GatherAll(my_uncertain_nodes_pos_,discret_->Comm());
@@ -213,7 +227,7 @@ void STR::UQ::MCVarThicknessManager::SetThickness(double para_cont_parameter)
 /*----------------------------------------------------------------------*
  |  Create Random field based on input data                   jb 07/14  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<STR::UQ::RandomField> STR::UQ::MCVarThicknessManager::CreateRandomField(int random_field_id, unsigned int myseed)
+Teuchos::RCP<UQ::RandomField> UQ::MCVarThicknessManager::CreateRandomField(int random_field_id, unsigned int myseed)
 {
   const Teuchos::ParameterList& rfp = DRT::Problem::Instance()->RandomFieldParams(random_field_id);
   // before calling the constructor make a quick safety check whether this random field was activated in
@@ -247,7 +261,7 @@ Teuchos::RCP<STR::UQ::RandomField> STR::UQ::MCVarThicknessManager::CreateRandomF
 /*---------------------------------------------------------------------------------------------------*
  * Set ALE displacement conditions to move the uncertain surface
  *---------------------------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::ModifyConditions( const std::map<int, std::vector<double> >& ale_bc_nodes)
+void UQ::MCVarThicknessManager::ModifyConditions( const std::map<int, std::vector<double> >& ale_bc_nodes)
 {
   AddConditions( ale_->Discretization(), ale_bc_nodes );
   ale_->Discretization()->FillComplete();
@@ -263,7 +277,7 @@ void STR::UQ::MCVarThicknessManager::ModifyConditions( const std::map<int, std::
  * For each node, a separate condition is added. This is helpful to identify
  * these conditions later and delete them at appropriate time
  *------------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::AddConditions( Teuchos::RCP<DRT::Discretization> discret,
+void UQ::MCVarThicknessManager::AddConditions( Teuchos::RCP<DRT::Discretization> discret,
                                        const std::map<int, std::vector<double> >& ale_bc_nodes )
 {
   std::map<int, std::vector<double> >::const_iterator iter;
@@ -287,7 +301,7 @@ void STR::UQ::MCVarThicknessManager::AddConditions( Teuchos::RCP<DRT::Discretiza
  * Delete all Dirichlet conditions that has only one associated node
  * These are the conditions that we added to move the uncertain surface around
  *-----------------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::DeleteConditions( Teuchos::RCP<DRT::Discretization> discret )
+void UQ::MCVarThicknessManager::DeleteConditions( Teuchos::RCP<DRT::Discretization> discret )
 {
   std::vector<std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator> del;
 
@@ -310,7 +324,7 @@ void STR::UQ::MCVarThicknessManager::DeleteConditions( Teuchos::RCP<DRT::Discret
 /*----------------------------------------------------------------------------------*
  * Perform all operations of ALE step
  *----------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::ALEStep( const std::map<int, std::vector<double> >& ale_bc_nodes)
+void UQ::MCVarThicknessManager::ALEStep( const std::map<int, std::vector<double> >& ale_bc_nodes)
 {
   ModifyConditions( ale_bc_nodes );
 
@@ -321,7 +335,7 @@ void STR::UQ::MCVarThicknessManager::ALEStep( const std::map<int, std::vector<do
 /*----------------------------------------------------------------------------------*
  * Build ALE system matrix and solve the system
  *----------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::ALESolve()
+void UQ::MCVarThicknessManager::ALESolve()
 {
   ale_->BuildSystemMatrix();
 
@@ -348,7 +362,7 @@ void STR::UQ::MCVarThicknessManager::ALESolve()
 /*---------------------------------------------------------------------------------*
  |  Compute new realizations of random field                 jb 07/14              |
  *---------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::CreateNewRealizationOfRandomField(unsigned int myseed)
+void UQ::MCVarThicknessManager::CreateNewRealizationOfRandomField(unsigned int myseed)
 {
     randomfield_->CreateNewSample(myseed+174368);
 }
@@ -356,7 +370,7 @@ void STR::UQ::MCVarThicknessManager::CreateNewRealizationOfRandomField(unsigned 
 /*---------------------------------------------------------------------------------*
  | Compute Surface normal for all node in uncertain surface condition   jb 07/14   |
  *---------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::ComputeNormals()
+void UQ::MCVarThicknessManager::ComputeNormals()
 {
   ADAPTER::CouplingMortar mytemp;
   mytemp.SetupForUQAbuseNormalCalculation(discret_,discret_->Comm());
@@ -367,7 +381,7 @@ void STR::UQ::MCVarThicknessManager::ComputeNormals()
 /*-----------------------------------------------------------------------------------*
  * Reset geometry to its original state                                       jb 07/14
  *----------------------------------------------------------------------------------*/
-void STR::UQ::MCVarThicknessManager::ResetGeometry()
+void UQ::MCVarThicknessManager::ResetGeometry()
 {
   const int numnode = (discret_->NodeColMap())->NumMyElements();
 
@@ -406,3 +420,10 @@ void STR::UQ::MCVarThicknessManager::ResetGeometry()
   return;
 }
 
+/*-----------------------------------------------------------------------------------*
+ * Evaluate underlying random field at a specific location                       jb 07/14
+ *----------------------------------------------------------------------------------*/
+double UQ::MCVarThicknessManager::EvalThicknessAtLocation(std::vector<double> myloc,double para_cont_parameter)
+{
+  return randomfield_->EvalFieldAtLocation(myloc,para_cont_parameter,false,false)-initial_wall_thickness_;
+}

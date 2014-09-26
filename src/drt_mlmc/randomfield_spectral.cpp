@@ -54,7 +54,7 @@ using  boost::accumulators::stats;
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret,  const Teuchos::ParameterList& rfp)
+UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret,  const Teuchos::ParameterList& rfp)
 :RandomField(discret,rfp)
 {
    myrank_ = discret->Comm().MyPID();
@@ -164,14 +164,12 @@ STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RC
       break;
   }
 
-
   // create Multidimesional array to store the values
   double mydim= dim_;
   // transform needed because pow does not like to get two ints
   int size_of_field= int(pow(M_,mydim));
   values_ = new double[size_of_field];
   // The random field will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
-
 
   if (myrank_ == 0)
   {
@@ -202,8 +200,7 @@ STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RC
     dserror("Dimension of random field must be 2 or 3, fix your input file");
     break;
   }
-
-  ComputeBoundingBox(discret);
+  //ComputeBoundingBox(discret);
   CreateNewPhaseAngles(seed_);
 
     switch(dim_)
@@ -228,9 +225,8 @@ STR::UQ::RandomFieldSpectral::RandomFieldSpectral(unsigned int  seed,Teuchos::RC
 
 
 
-
 }
-void STR::UQ::RandomFieldSpectral::CreateNewSample(unsigned int seed)
+void UQ::RandomFieldSpectral::CreateNewSample(unsigned int seed)
 {
   // check wether we use fft
   CreateNewPhaseAngles(seed);
@@ -253,7 +249,7 @@ void STR::UQ::RandomFieldSpectral::CreateNewSample(unsigned int seed)
 }
 
 
-void STR::UQ::RandomFieldSpectral::CreateNewPhaseAngles(unsigned int seed)
+void UQ::RandomFieldSpectral::CreateNewPhaseAngles(unsigned int seed)
 {
 
   // This defines a random number genrator
@@ -309,7 +305,7 @@ void STR::UQ::RandomFieldSpectral::CreateNewPhaseAngles(unsigned int seed)
 }
 
 // compute power spectral density
-void STR::UQ::RandomFieldSpectral::CalcDiscretePSD()
+void UQ::RandomFieldSpectral::CalcDiscretePSD()
 {
   // just compute PSD
   //IO::cout<< "sigma_0_" << sigma_0_ << IO::endl;
@@ -362,7 +358,7 @@ void STR::UQ::RandomFieldSpectral::CalcDiscretePSD()
   }
 }
 
-void STR::UQ::RandomFieldSpectral::CalcDiscretePSD3D()
+void UQ::RandomFieldSpectral::CalcDiscretePSD3D()
 {
   // just compute PSD
   for (int j=0;j<N_;j++)
@@ -420,7 +416,7 @@ void STR::UQ::RandomFieldSpectral::CalcDiscretePSD3D()
 }
 
 
-void STR::UQ::RandomFieldSpectral::SimGaussRandomFieldFFT()
+void UQ::RandomFieldSpectral::SimGaussRandomFieldFFT()
 {
   double A; // store some stuff
 
@@ -520,7 +516,7 @@ void STR::UQ::RandomFieldSpectral::SimGaussRandomFieldFFT()
   fftw_destroy_plan(ifft_of_rows2);
   fftw_destroy_plan(ifft_of_collums);
 }
-void STR::UQ::RandomFieldSpectral::SimGaussRandomFieldFFT3D()
+void UQ::RandomFieldSpectral::SimGaussRandomFieldFFT3D()
 {
   double A; // store some stuff
   // store coefficients
@@ -707,7 +703,7 @@ void STR::UQ::RandomFieldSpectral::SimGaussRandomFieldFFT3D()
    fftw_destroy_plan(ifft_of_collums2);
    fftw_destroy_plan(ifft_of_rank);
 }
-double STR::UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y, double z)
+double UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y, double z)
 {
   double result = 0;
   for (int j=0;j<N_;j++)
@@ -731,7 +727,7 @@ double STR::UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y
 }
 
 
-/*double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
+/*double UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
@@ -796,7 +792,7 @@ double STR::UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y
 
 }*/
 
-double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)
+double UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
@@ -881,7 +877,7 @@ double STR::UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> loc
 
 // Translate Gaussian to nonGaussian process based on Mircea Grigoriu's translation process
 // theory
-void STR::UQ::RandomFieldSpectral::TranslateToNonGaussian()
+void UQ::RandomFieldSpectral::TranslateToNonGaussian()
 {
   double dim = dim_;
   // check wether pdf is gaussian
@@ -934,7 +930,7 @@ void STR::UQ::RandomFieldSpectral::TranslateToNonGaussian()
   }
 }
 // Overloaded function to translate single point only
-void STR::UQ::RandomFieldSpectral::TranslateToNonGaussian( double *value)
+void UQ::RandomFieldSpectral::TranslateToNonGaussian( double *value)
 {
   // check wether pdf is gaussian
   switch(marginal_pdf_)
@@ -964,7 +960,7 @@ void STR::UQ::RandomFieldSpectral::TranslateToNonGaussian( double *value)
   }
 }
 // Transform PSD of underlying gauusian process
-void STR::UQ::RandomFieldSpectral::SpectralMatching()
+void UQ::RandomFieldSpectral::SpectralMatching()
 {
   //error to target psd init with 100 %
   double psd_error=100;
@@ -1211,7 +1207,7 @@ void STR::UQ::RandomFieldSpectral::SpectralMatching()
    IO::cout<< "Spectral Matching done "<< IO::endl;
 }
 // Transform PSD of underlying gauusian process
-void STR::UQ::RandomFieldSpectral::SpectralMatching3D()
+void UQ::RandomFieldSpectral::SpectralMatching3D()
 {
   //error to target psd init with 100 %
   double psd_error=100;
@@ -1518,7 +1514,7 @@ void STR::UQ::RandomFieldSpectral::SpectralMatching3D()
 
 // Routine to calculate
 // Transform PSD of underlying gauusian process using direct 3DFFT routine provided by FFTW
-void STR::UQ::RandomFieldSpectral::SpectralMatching3D3D()
+void UQ::RandomFieldSpectral::SpectralMatching3D3D()
 {
   //error to target psd init with 100 %
   double psd_error=100;
@@ -1681,7 +1677,7 @@ void STR::UQ::RandomFieldSpectral::SpectralMatching3D3D()
       discrete_PSD_[h]=0.0;
   }
 }
-double STR::UQ::RandomFieldSpectral::Integrate(double xmin, double xmax, double ymin, double ymax, double rho)
+double UQ::RandomFieldSpectral::Integrate(double xmin, double xmax, double ymin, double ymax, double rho)
 {
   // get trillios gausspoints with high order
   //Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::quad4, 30 );
@@ -1699,7 +1695,7 @@ double STR::UQ::RandomFieldSpectral::Integrate(double xmin, double xmax, double 
   return integral_value;
 }
 
-double STR::UQ::RandomFieldSpectral::Testfunction(double argument_x ,double argument_y, double rho)
+double UQ::RandomFieldSpectral::Testfunction(double argument_x ,double argument_y, double rho)
 {
   double result = 0.0;
   boost::math::normal_distribution<double> my_normal(0,sigma_ul_g_cur_it_);
@@ -1732,7 +1728,7 @@ double STR::UQ::RandomFieldSpectral::Testfunction(double argument_x ,double argu
 }
 
 // Write Random Field to file
-void STR::UQ::RandomFieldSpectral::WriteRandomFieldToFile()
+void UQ::RandomFieldSpectral::WriteRandomFieldToFile()
 {
   if (myrank_ == 0)
   {
@@ -1747,7 +1743,7 @@ void STR::UQ::RandomFieldSpectral::WriteRandomFieldToFile()
   }
 }
 // Compute PSD from current sample
-void STR::UQ::RandomFieldSpectral::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
+void UQ::RandomFieldSpectral::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
 {
   //check wether sample_psd has correct size
   if(sample_psd->length()!=M_*M_)
@@ -1814,7 +1810,7 @@ void STR::UQ::RandomFieldSpectral::GetPSDFromSample(Teuchos::RCP<Teuchos::Array 
   fftw_destroy_plan(fft_of_collums);
 }
 // Compute PSD from current sample
-void STR::UQ::RandomFieldSpectral::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
+void UQ::RandomFieldSpectral::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
 {
   //check wether sample_psd has correct size
   if(sample_psd->length()!=M_*M_*M_)
@@ -1847,7 +1843,7 @@ void STR::UQ::RandomFieldSpectral::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Arra
   fftw_destroy_plan(fft_of_rf);
 }
 // Write Random Field to file
-void STR::UQ::RandomFieldSpectral::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
+void UQ::RandomFieldSpectral::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> > sample_psd)
 {
   if (myrank_ == 0)
   {
@@ -1862,7 +1858,7 @@ void STR::UQ::RandomFieldSpectral::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Ar
   }
 }
 
-void STR::UQ::RandomFieldSpectral::WriteRandomVariablesToFile(std::string filename)
+void UQ::RandomFieldSpectral::WriteRandomVariablesToFile(std::string filename)
 {
   dserror("WriteRandomVariablesToFile not implemented yet for spectral field");
 }

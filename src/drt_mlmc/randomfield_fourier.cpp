@@ -37,7 +37,7 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::UQ::RandomFieldFourier::RandomFieldFourier(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
+UQ::RandomFieldFourier::RandomFieldFourier(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
 :RandomField(discret,rfp)
 {
 
@@ -176,12 +176,12 @@ STR::UQ::RandomFieldFourier::RandomFieldFourier(unsigned int seed,Teuchos::RCP<D
 
 }
 
-void STR::UQ::RandomFieldFourier::CreateNewSample(unsigned int seed)
+void UQ::RandomFieldFourier::CreateNewSample(unsigned int seed)
 {
   CreateNewPhaseAngles(seed);
 }
 
-void STR::UQ::RandomFieldFourier::CreateNewPhaseAngles(unsigned int seed)
+void UQ::RandomFieldFourier::CreateNewPhaseAngles(unsigned int seed)
 {
   randomnumbergen_.seed(seed);
   // draw random amplitudes
@@ -190,7 +190,7 @@ void STR::UQ::RandomFieldFourier::CreateNewPhaseAngles(unsigned int seed)
       xi_->at(i).at(j) = (*normalgen_)();
 }
 
-double STR::UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,double paracont_parameter, bool writetofile, bool output)
+double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,double paracont_parameter, bool writetofile, bool output)
 {
   double tempgp=0.0;
   double temp_rf_val=-1.0;
@@ -215,7 +215,7 @@ double STR::UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> loca
 
   }
   if(marginal_pdf_==normal)
-    temp_rf_val = det_value_paracont_*(1-paracont_parameter)+(paracont_parameter)*(mean_+sigma_0_*tempgp);
+    temp_rf_val = det_value_paracont_*(1.0-paracont_parameter)+(paracont_parameter)*(mean_+sigma_0_*tempgp);
   else if (marginal_pdf_ == lognormal)
     temp_rf_val = det_value_paracont_*(1.0-paracont_parameter)+(paracont_parameter)*exp((mean_+sigma_0_*tempgp));
   else
@@ -237,7 +237,7 @@ double STR::UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> loca
 
 
 
-double STR::UQ::RandomFieldFourier::ComputeLambda3D(int k)
+double UQ::RandomFieldFourier::ComputeLambda3D(int k)
 {
   double lambda;
   if (k==0)
@@ -253,7 +253,7 @@ double STR::UQ::RandomFieldFourier::ComputeLambda3D(int k)
 }
 
 
-void STR::UQ::RandomFieldFourier::WriteRandomVariablesToFile(std::string filename)
+void UQ::RandomFieldFourier::WriteRandomVariablesToFile(std::string filename)
 {
   const char * c = filename.c_str();
   if (myrank_ == 0)

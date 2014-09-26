@@ -37,6 +37,9 @@ Maintainer: Michael Gee
 #include "../drt_stru_multi/microstatic_npsupport.H"
 #include "../drt_acou/acou_dyn.H"
 #include "../drt_two_phase_flow/two_phase_dyn.H"
+#ifdef HAVE_FFTW
+  #include "../drt_mlmc/drt_uq_dyn.H"
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -171,12 +174,20 @@ void ntacal()
       break;
 
     case prb_acou:
-    	acoustics_drt();
-    	break;
+      acoustics_drt();
+      break;
 
     case prb_two_phase_flow:
       two_phase_dyn(restart);
       break;
+
+    case prb_uq:
+#ifdef HAVE_FFTW
+      dyn_uq();
+#else
+      dserror("Uncertainty Quantification only works with FFTW ");
+#endif
+    break;
 
     default:
       dserror("solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());

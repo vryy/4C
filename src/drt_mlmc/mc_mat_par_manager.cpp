@@ -12,6 +12,7 @@ Maintainer: Jonas Biehler
 
 !*/
 
+
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "mc_mat_par_manager.H"
@@ -36,7 +37,7 @@ Maintainer: Jonas Biehler
 /*----------------------------------------------------------------------*/
 /* constructor                                               jb 05/14   */
 /*----------------------------------------------------------------------*/
-STR::UQ::MCMatParManager::MCMatParManager(Teuchos::RCP<DRT::Discretization> discret):
+UQ::MCMatParManager::MCMatParManager(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
 //paramlayoutmap_(Teuchos::null),
 //paramlayoutmapunique_(Teuchos::null),
@@ -140,7 +141,7 @@ params_(Teuchos::null)
 /*----------------------------------------------------------------------*/
 /* Setup map of material parameters that are stochastic       jb 05/14  */
 /*----------------------------------------------------------------------*/
-void STR::UQ::MCMatParManager::InitStochParaMap()
+void UQ::MCMatParManager::InitStochParaMap()
 {
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
@@ -149,7 +150,7 @@ void STR::UQ::MCMatParManager::InitStochParaMap()
 
   if (discret_->Comm().MyPID()==0)
   {
-    IO::cout << "STR::INVANA::MatParManager ... SETUP" << IO::endl;
+    IO::cout << "UQ::MatParManager ... SETUP" << IO::endl;
     IO::cout <<  "Optimizing material with ids: ";
   }
 
@@ -199,7 +200,7 @@ void STR::UQ::MCMatParManager::InitStochParaMap()
 
 }
 
-void STR::UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(Teuchos::RCP<Epetra_MultiVector> params,double para_cont_parameter)
+void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(Teuchos::RCP<Epetra_MultiVector> params,double para_cont_parameter)
 {
   // must have EleRowMap layout
   params->PutScalar(0.0);
@@ -246,7 +247,7 @@ void STR::UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(Teuch
 /*----------------------------------------------------------------------*/
 /* Compute params vector and set Vectors of respective materials jb 05/14  */
 /*----------------------------------------------------------------------*/
-void STR::UQ::MCMatParManager::SetParams(double para_cont_parameter)
+void UQ::MCMatParManager::SetParams(double para_cont_parameter)
 {
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
@@ -279,7 +280,7 @@ void STR::UQ::MCMatParManager::SetParams(double para_cont_parameter)
 /*----------------------------------------------------------------------*
  |  Setup Random fields and store them in map                  jb 05/14  |
  *----------------------------------------------------------------------*/
-void STR::UQ::MCMatParManager::SetupRandomFields(unsigned int myseed)
+void UQ::MCMatParManager::SetupRandomFields(unsigned int myseed)
 {
   // loop over num stoch parameter
   for(int i=0;i<numstochparams_; i++)
@@ -291,7 +292,7 @@ void STR::UQ::MCMatParManager::SetupRandomFields(unsigned int myseed)
 /*----------------------------------------------------------------------*
  |  Write random variables to file                            jb 05/14  |
  *----------------------------------------------------------------------*/
-void STR::UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename, int numrun)
+void UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename, int numrun)
 {
   // loop over num stoch parameter
   for(int i=0;i<numstochparams_; i++)
@@ -312,7 +313,7 @@ void STR::UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename, 
 /*----------------------------------------------------------------------*
  |  Compute new realizations of random fields                 jb 05/14  |
  *----------------------------------------------------------------------*/
-void STR::UQ::MCMatParManager::CreateNewRealizationOfRandomFields(unsigned int myseed)
+void UQ::MCMatParManager::CreateNewRealizationOfRandomFields(unsigned int myseed)
 {
   // loop over num stoch parameter
   for(int i=0;i<numstochparams_; i++)
@@ -324,7 +325,7 @@ void STR::UQ::MCMatParManager::CreateNewRealizationOfRandomFields(unsigned int m
 /*----------------------------------------------------------------------*
  |  Compute new realizations of random fields                 jb 05/14  |
  *----------------------------------------------------------------------*/
-void STR::UQ::MCMatParManager::SetUpStochMats(unsigned int myseed, double para_cont_parameter, bool reuse_rf)
+void UQ::MCMatParManager::SetUpStochMats(unsigned int myseed, double para_cont_parameter, bool reuse_rf)
 {
   if(!reuse_rf)
     CreateNewRealizationOfRandomFields(myseed);
@@ -335,7 +336,7 @@ void STR::UQ::MCMatParManager::SetUpStochMats(unsigned int myseed, double para_c
 /*----------------------------------------------------------------------*
  |  Create Random field based on input data                   jb 05/14  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<STR::UQ::RandomField> STR::UQ::MCMatParManager::CreateRandomField(int random_field_id, unsigned int myseed)
+Teuchos::RCP<UQ::RandomField> UQ::MCMatParManager::CreateRandomField(int random_field_id, unsigned int myseed)
 {
   const Teuchos::ParameterList& rfp = DRT::Problem::Instance()->RandomFieldParams(random_field_id);
   // before calling the construtor make a quick safety check whether this random field was activated in

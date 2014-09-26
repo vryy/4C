@@ -35,9 +35,6 @@ namespace LINALG
 }
 
 
-namespace STR
-{
-
 namespace UQ
 {
 
@@ -64,6 +61,11 @@ public:
 
   //! brief reset geometry
   void ResetGeometry();
+
+  //! brief evaluate underlying randomfield at a specific location
+  double EvalThicknessAtLocation(std::vector<double> myloc, double para_cont_parameter);
+
+  double InitialThickness(){return initial_wall_thickness_;};
 
 
 private:
@@ -131,7 +133,6 @@ private:
 
 };
 } // namespace MLMC
-} // namespace STR
 
 
 

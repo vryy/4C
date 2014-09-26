@@ -1289,11 +1289,12 @@ set(OBJS_STATINV_ANALYSIS_LIB
   src/drt_inv_analysis/smc_particle.cpp
 )
 set(OBJS_MLMC
+	src/drt_mlmc/drt_uq_redairways.cpp
+	src/drt_mlmc/drt_uq_dyn.cpp
   src/drt_mlmc/mlmc.cpp
   src/drt_mlmc/mc_utils.cpp
   src/drt_mlmc/mc_mat_par_manager.cpp
   src/drt_mlmc/mc_var_thickness_manager.cpp
-  src/drt_structure/str_mlmc.cpp
   src/drt_mlmc/randomfield.cpp
   src/drt_mlmc/randomfield_fourier.cpp
   src/drt_mlmc/randomfield_spectral.cpp

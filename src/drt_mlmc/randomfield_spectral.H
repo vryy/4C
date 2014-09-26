@@ -37,9 +37,6 @@ Maintainer: Jonas Biehler
 #include <ctime>
 #include "randomfield.H"
 
-namespace STR
-{
-
 namespace UQ
 {
 
@@ -212,7 +209,6 @@ private:
   double Testfunction(double argument_x, double argument_y, double rho);
 
 }; // class RandomFieldSpectal
-}
 }
 #endif /* RANDOMFIELD_H_ */
 #endif // HAVE_FFTw
