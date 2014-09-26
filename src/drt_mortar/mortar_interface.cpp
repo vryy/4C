@@ -94,7 +94,7 @@ MORTAR::MortarInterface::MortarInterface(
   // build interface disretization
   if (!nurbs_)
   {
-    if (!imortar_.get<bool>("GEO_DECOUPLED"))
+    if (!imortar_.get("GEO_DECOUPLED", false))
     {
       // standard case
       idiscret_ = Teuchos::rcp(
