@@ -1905,10 +1905,6 @@ if (D_ALE_BFLOW)
   add_definitions("-DD_ALE_BFLOW")
 endif(D_ALE_BFLOW)
 
-option (D_RED_AIRWAYS "reduced dimensional airways for calculating flow in lungs" OFF)
-if (D_RED_AIRWAYS)
-  add_definitions("-DD_RED_AIRWAYS")
-endif(D_RED_AIRWAYS)
 
 ###------------------------------------------------------------------ Element flags
 

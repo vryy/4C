@@ -45,8 +45,6 @@ void dyn_red_airways_drt()
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D)
 {
-#ifdef D_RED_AIRWAYS
-
 #if 1
 
   if(DRT::Problem::Instance()->DoesExistDis("red_airway")==false)
@@ -194,9 +192,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     return airwayimplicit;
   }
 
-#else
-  return Teuchos::null;
-#endif
 } // end of dyn_red_airways_drt()
 
 

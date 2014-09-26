@@ -75,7 +75,6 @@ void dyn_uq()
 
 void redairways_uq()
 {
-#ifdef D_RED_AIRWAYS
 
   if(DRT::Problem::Instance()->DoesExistDis("red_airway")==false)
   {
@@ -137,13 +136,6 @@ void redairways_uq()
     break;
     }
 
-
-
-
-
-#else
-    dserror("DEFINES FLAG REDAIRWAYS MUST BE ON");
-#endif
 } // end of redairways_uq()
 
 

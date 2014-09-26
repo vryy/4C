@@ -38,9 +38,6 @@
 #cmakedefine D_ARTNET
 #endif
 
-#ifndef D_RED_AIRWAYS
-#cmakedefine D_RED_AIRWAYS
-#endif
 
 #ifndef BINIO
 #cmakedefine BINIO
