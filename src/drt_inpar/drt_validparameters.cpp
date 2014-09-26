@@ -2465,6 +2465,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NBCCURVENUMBER",0,"Specifies Time Curve number of Neumann BCs",&statmech);
   // amplitude of Neumann boundary force
   DoubleParameter("NBCFORCEAMP",0.0,"constant creep force in NBCs",&statmech);
+  // amplitude of Neumann boundary force
+  IntParameter("NUMNBCNODES",0,"Number of nodes to which Neumann point forces are applied sequentially.",&statmech);
   //Reading number of elements that are taken into account when applying Dirichlet Conditions (useful to avoid redundant evaluation)
   // when Crosslink elements are added or the bead-spring-model is used
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);

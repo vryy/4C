@@ -801,8 +801,10 @@ protected:
                                        const int                       numsections,
                                        std::stringstream&              gmshfilecontent,
                                        const double                    color);
-  //! \brief colored output to Gmsh
-  void GmshOutputForces();
+  //! \brief Gmsh Output of Point Neumann nodes
+  void GmshOutputPointNeumann(const Epetra_Vector&      disrow,
+                              const std::ostringstream* filename,
+                              double&                   color);
 
 
   /*! \brief Handles Crosslinker diffusion

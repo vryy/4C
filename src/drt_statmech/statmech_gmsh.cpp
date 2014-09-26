@@ -354,7 +354,10 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
     center(i) = periodlength_->at(i)/2.0;
   GmshOutputBox(0.0, &center, *periodlength_, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
-  GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
+  double color = 0.125;
+  GmshOutputCrosslinkDiffusion(color, &filename, disrow);
+  // plot Neumann nodes
+  GmshOutputPointNeumann(disrow, &filename, color);
 
   // finish data section of this view by closing curly brackets
   if (discret_->Comm().MyPID() == 0)
@@ -716,7 +719,6 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
     bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
 
   GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
-
 
   if (!discret_->Comm().MyPID())
   {
@@ -1767,6 +1769,59 @@ void STATMECH::StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_Ser
       GmshWedge(1,linepart,discret_->lRowElement(0),gmshfilecontent,color,true,false);
   }
 }//GmshNetworkStructVolumePeriodic()
+
+/*----------------------------------------------------------------------*
+ | Output Point Neumann force nodes              (private) mueller 09/14|
+ *----------------------------------------------------------------------*/
+void  STATMECH::StatMechManager::GmshOutputPointNeumann(const Epetra_Vector&      disrow,
+                                                        const std::ostringstream* filename,
+                                                        double&                   color)
+{
+  // do output to file in c-style
+  if(!nbcnodesets_.empty())
+  {
+    // export row displacement to column map format
+    Epetra_Vector discol(*(discret_->DofColMap()), true);
+    LINALG::Export(disrow, discol);
+
+    //In case of the 4-noded Crosslinker Element we need the following vectors
+    Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    GetBindingSpotPositions(discol, bspotpositions, Teuchos::null);
+
+    FILE* fp = NULL;
+    fp = fopen(filename->str().c_str(), "a");
+    std::stringstream gmshfilecontent;
+
+    double beadcolor = 5.0*color;
+    int nodesetindex = timeintervalstep_-bctimeindex_;
+    if(timeintervalstep_>1)
+      nodesetindex--;
+
+    INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechparams_, "NBCTYPE");
+    switch(nbctype)
+    {
+      case INPAR::STATMECH::nbctype_constcreep:
+      break;
+      case INPAR::STATMECH::nbctype_randompointforce:
+      {
+        //writing element by nodal coordinates as a sphere
+        if(discret_->NodeRowMap()->MyGID(nbcnodesets_[nodesetindex][0]))
+        {
+          gmshfilecontent << "SP(" << std::scientific;
+          gmshfilecontent<< (*bspotpositions)[0][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])]<< ","
+                         << (*bspotpositions)[1][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])] << ","
+                         << (*bspotpositions)[2][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])];
+          gmshfilecontent << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
+        }
+      }
+      break;
+      default: break;
+    }
+    fputs(gmshfilecontent.str().c_str(), fp);
+    fclose(fp);
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | check the visualization mode of a crosslinker depending on the       |

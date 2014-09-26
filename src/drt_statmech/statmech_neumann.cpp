@@ -112,15 +112,16 @@ void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList& 
       {
         GetNBCNodes(params);
 
+        int oscdir = statmechparams_.get<int>("DBCDISPDIR",0)-1;
         int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
         double nbcval = statmechparams_.get<double>("NBCFORCEAMP",0.0);
 
         // some checks
         if(curvenum<0) dserror("Invalid NBC curve number %i! Check NBCCURVENUMBER", curvenum);
-        int numdbclocal = (int)dbcnodesets_[0].size();
-        int numdbcglobal = -1;
-        discret_->Comm().SumAll(&numdbclocal,&numdbcglobal,1);
-        if (!numdbcglobal) dserror("PointNeumann condition does not have nodal cloud");
+        int numnbclocal = (int)nbcnodesets_[0].size();
+        int numnbcglobal = -1;
+        discret_->Comm().SumAll(&numnbclocal,&numnbcglobal,1);
+        if (!numnbcglobal) dserror("PointNeumann condition does not have nodal cloud");
 
         // construct Point Neumann BC definition vector
         std::vector<int> curve(6,0);
@@ -128,14 +129,23 @@ void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList& 
         std::vector<double> val(6,0.0);
 
         // all three spatial direction subject to time-dependent force pattern
-        for(int i=0; i<3; i++)
-        {
-          onoff.at(i) = 1;
-          curve.at(i) = 1;
-          val.at(i) = nbcval;
-        }
+//        for(int i=0; i<3; i++)
+//        {
+//          onoff.at(i) = 1;
+//          curve.at(i) = 1;
+//          val.at(i) = nbcval;
+//        }
+        // only in one direction
+        onoff.at(oscdir) = 1;
+        curve.at(oscdir) = 1;
+        val.at(oscdir) = nbcval;
 
-        ApplyNeumannValueStatMech(params, onoff, curve, val, systemvector,bctimeindex_-timeintervalstep_);
+        int nodesetindex = timeintervalstep_-bctimeindex_;
+        // necessary adjustment beyond the first timeintervalstep_ since timeintervalstep_ does not mark the current position in actiontime_
+        // but the next position to reach (hence --).
+        if(timeintervalstep_>1)
+          nodesetindex--;
+        ApplyNeumannValueStatMech(params, onoff, curve, val, systemvector, nodesetindex);
       }
     }
     break;
@@ -166,14 +176,33 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList& params)
       // only once at the beginning. Each node set will be interpreted according to the current time interval defined by ACTIONTIME
       if(nbcnodesets_.empty())
       {
-        // for now, hard-coded number of nodes that will be subjected to a Neumann loads SEQUENTIALLY
-        int N = 10;
+        int N = statmechparams_.get<int>("NUMNBCNODES",0);
+        if(N<=0)
+          dserror("Provide the number of Neumann nodes by means of the input parameter NUMNBCNODES (>0)!");
+
+        std::vector<int> nbcnodes;
+        nbcnodes.clear();
+        if(!discret_->Comm().MyPID())
+          for(int i=0; i<N; i++)
+            nbcnodes.push_back((int)(floor((*uniformgen_)()*(double)(discret_->NumGlobalNodes()))));
+        discret_->Comm().Barrier();
+        // communicate
+        // gid vector
+        std::vector<int> gids(N,0);
         for(int i=0; i<N; i++)
-        {
-          std::vector<int> id(1,0);
-          id.at(0) = (int)(floor((*uniformgen_)()*(double)(discret_->NumGlobalNodes())));
-          nbcnodesets_.push_back(id);
-        }
+          gids.at(i) = i;
+        Epetra_Map fullmap(-1, N, &gids[0], 0, discret_->Comm());
+        Epetra_Map partmap(N, 0, discret_->Comm());
+        Teuchos::RCP<Epetra_Vector> target(new Epetra_Vector(fullmap,true));
+        Teuchos::RCP<Epetra_Vector> part(new Epetra_Vector(partmap, true));
+        if(!discret_->Comm().MyPID())
+          for(int i=0; i<target->MyLength(); i++)
+            (*target)[i] = (double)nbcnodes.at(i);
+        CommunicateVector(part, target, true, true);
+
+        // give all processors all nodes (the ordering is important information)
+        for(int i=0; i<N; i++)
+          nbcnodesets_.push_back(std::vector<int>(1,(*target)[i]));
       }
     }
     break;
