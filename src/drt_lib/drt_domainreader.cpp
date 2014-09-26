@@ -274,12 +274,14 @@ void DomainReader::Partition(int* nodeoffset)
   // correct processors
   for (int lid = 0; lid < rownodes_->NumMyElements(); ++lid)
   {
-    const int gid = rownodes_->GID(lid) - *nodeoffset;
-    dsassert(gid >= 0, "Tried to access a node gid that was not on this proc");
+    const int gid = rownodes_->GID(lid);
     maxgid = std::max(gid, maxgid);
-    size_t i = gid%nx;
-    size_t j = (gid/nx)%ny;
-    size_t k = gid/(nx*ny);
+
+    const int posid = gid - *nodeoffset;
+    dsassert(posid >= 0, "Tried to access a node gid that was not on this proc");
+    size_t i = posid%nx;
+    size_t j = (posid/nx)%ny;
+    size_t k = posid/(nx*ny);
 
     double coords[3];
     coords[0] = static_cast<double>(i)/interval_[0]*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
