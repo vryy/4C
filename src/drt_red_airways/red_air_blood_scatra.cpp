@@ -81,7 +81,9 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirBloodScatra& old) :
 DRT::Element(old),
-data_(old.data_)
+data_(old.data_),
+elemParams_(old.elemParams_),
+generation_(old.generation_)
 {
   return;
 }

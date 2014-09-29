@@ -80,7 +80,9 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(const DRT::ELEMENTS::RedAirBloodScatraLine3& old) :
 DRT::Element(old),
-data_(old.data_)
+data_(old.data_),
+elemParams_(old.elemParams_),
+generation_(old.generation_)
 {
   return;
 }

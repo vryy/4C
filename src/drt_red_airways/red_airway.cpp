@@ -16,6 +16,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_io/io_pstream.H"
 
 using namespace DRT::UTILS;
 
@@ -91,7 +92,12 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirway::RedAirway(const DRT::ELEMENTS::RedAirway& old) :
 DRT::Element(old),
-data_(old.data_)
+elemType_(old.elemType_),
+resistance_(old.resistance_),
+elemsolvingType_(old.elemsolvingType_),
+data_(old.data_),
+elemParams_(old.elemParams_),
+generation_(old.generation_)
 {
   return;
 }
@@ -264,7 +270,6 @@ bool DRT::ELEMENTS::RedAirway::VisData(const std::string& name, std::vector<doub
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAirway::getParams(std::string name, double & var)
 {
-
   std::map<std::string,double>::iterator it;
   it = elemParams_.find(name);
   if (it == elemParams_.end())
