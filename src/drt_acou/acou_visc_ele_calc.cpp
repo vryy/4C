@@ -1434,7 +1434,7 @@ ComputeFaceMatrices(const int                          face,
       double tempehat = 0.0;
       for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        tempehat += shapesface_.jfac(i) * shapesface_.shfunctI[face](p,i) * shapesface_.shfunctI[face](q,i);
+        tempehat += shapesface_.jfac(i) * shapesface_.shfunctI(p,i) * shapesface_.shfunctI(q,i);
       }
       for (unsigned int d=0; d<nsd_; ++d)
         ehatmat(d*ndofs_+p,d*ndofs_+q) = ehatmat(d*ndofs_+q,d*ndofs_+p) += tempehat;
@@ -1465,7 +1465,7 @@ ComputeFaceMatrices(const int                          face,
       double tempmat = 0.0;
       for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunctI[face](q,i);
+        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunctI(q,i);
         tempmat += temp;
         for(unsigned int j=0; j<nsd_; ++j)
         {
@@ -1963,7 +1963,7 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
       int count = 0;
       for(unsigned int q=0; q<ndofs_; ++q)
       {
-        if((shapesface_.shfunctI[face](q,0))>0.00001 ||(shapesface_.shfunctI[face](q,0))<-0.00001)
+        if((shapesface_.shfunctI(q,0))>0.00001 ||(shapesface_.shfunctI(q,0))<-0.00001)
         {
           sourceterm(q) = trVec(count);
           count++;

@@ -206,7 +206,7 @@ namespace DRT
 
       LINALG::SerialDenseMatrix     shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
       LINALG::SerialDenseMatrix     shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
-      std::vector<LINALG::SerialDenseMatrix> shfunctI;/// evaluated shape functions on face for interior HDG polynomials
+      LINALG::SerialDenseMatrix     shfunctI;/// evaluated shape functions on face for interior HDG polynomials
       LINALG::SerialDenseMatrix     normals; /// normal vectors on a single face for all quadrature points
 
       LINALG::Matrix<nsd_-1,1>      xsi;    /// face quadrature points

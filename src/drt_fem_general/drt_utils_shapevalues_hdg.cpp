@@ -164,8 +164,6 @@ degree_(params.degree_)
 
   shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
   shfunct.LightShape(nfdofs_, nqpoints_);
-  if (shfunctI.size() != nfaces_)
-    shfunctI.resize(nfaces_);
   normals.LightShape(nsd_, nqpoints_);
   jfac.LightResize(nqpoints_);
 
@@ -211,9 +209,6 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
                                                     const unsigned int  face,
                                                     const DRT::UTILS::ShapeValues<distype> shapes)
 {
-  for (unsigned int f=0;f<nfaces_; ++f)
-      shfunctI[f].LightShape(shapes.ndofs_, nqpoints_);
-
   const DRT::Element::DiscretizationType facedis = DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
@@ -247,19 +242,17 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
 
   LINALG::Matrix<nsd_,nsd_> trafo;
   faceValues.LightSize(shapes.ndofs_);
+  shfunctI.LightShape(shapes.ndofs_, nqpoints_);
   LINALG::Matrix<nsd_,1> xsi;
-  for (unsigned int f=0; f<nfaces_; ++f)
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints,trafo,*quadrature_,distype,
+                                         DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, face);
+  for (unsigned int q=0; q<nqpoints_; ++q)
   {
-    DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints,trafo,*quadrature_,distype,
-                                           DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, f);
-    for (unsigned int q=0; q<nqpoints_; ++q)
-    {
-      for (unsigned int d=0; d<nsd_; ++d)
-        xsi(d) = faceQPoints(q,d);
-      shapes.polySpace_->Evaluate(xsi,faceValues);
-      for (unsigned int i=0; i<shapes.ndofs_; ++i)
-        shfunctI[f](i,q) = faceValues(i);
-    }
+    for (unsigned int d=0; d<nsd_; ++d)
+      xsi(d) = faceQPoints(q,d);
+    shapes.polySpace_->Evaluate(xsi,faceValues);
+    for (unsigned int i=0; i<shapes.ndofs_; ++i)
+      shfunctI(i,q) = faceValues(i);
   }
 }
 

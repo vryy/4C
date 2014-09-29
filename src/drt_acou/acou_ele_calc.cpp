@@ -2463,7 +2463,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
       for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
       {
         double temp = shapesface_->jfac(i) * shapesface_->shfunct(p, i)
-            * shapesface_->shfunctI[face](q, i);
+            * shapesface_->shfunctI(q, i);
         tempE += temp;
         for (unsigned int j = 0; j < nsd_; ++j)
         {
@@ -2504,7 +2504,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
       double tempD = 0.0;
       for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
       {
-        tempD += shapesface_->jfac(i) * shapesface_->shfunctI[face](p, i) * shapesface_->shfunctI[face](q, i);
+        tempD += shapesface_->jfac(i) * shapesface_->shfunctI(p, i) * shapesface_->shfunctI(q, i);
       }
       Dmat(p, q) = Dmat(q, p) += tau * tempD;
     }
