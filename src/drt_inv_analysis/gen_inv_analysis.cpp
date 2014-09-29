@@ -1877,92 +1877,96 @@ void STR::GenInvAnalysis::ReadInParameters()
       break;
       }
     }
+  }
 
-    // Read patches
-    if (patches_)
+  // Read patches
+  if (patches_)
+  {
+    if (matset_patches_.size() ==0)
+      dserror("You have to specify a material in INV_LIST_PATCHES");
+
+    // prepare check if only one material law is considered
+    int mattype = -1;
+    int numparams = 1;
+
+    // read in starting values for patches
+    std::vector<double> startvalues;
+    if (which_patches_ == material)
+      startvalues.resize(numpatches_);
+
+    const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(0)->Materials()->Map();
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+
+    for (curr=mats.begin(); curr != mats.end(); ++curr)
     {
-      if (matset_patches_.size() ==0)
-        dserror("You have to specify a material in INV_LIST_PATCHES");
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
 
-      // prepare check if only one material law is considered
-      int mattype = -1;
-      int numparams = 1;
-
-      // read in starting values for patches
-      std::vector<double> startvalues;
-      if (which_patches_ == material)
-        startvalues.resize(numpatches_);
-
-      for (curr=mats.begin(); curr != mats.end(); ++curr)
+      if (matset_patches_.find(actmat->Id())!=matset_patches_.end())
       {
-        const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
+        if (mattype == -1)
+          mattype = actmat->Type();
+        else if (actmat->Type() != mattype)
+          dserror("patchwise inverse analysis can only be performed with one material law");
 
-        if (matset_patches_.find(actmat->Id())!=matset_patches_.end())
+        switch(actmat->Type())
         {
-          if (mattype == -1)
-            mattype = actmat->Type();
-          else if (actmat->Type() != mattype)
-            dserror("patchwise inverse analysis can only be performed with one material law");
-
-          switch(actmat->Type())
+        case INPAR::MAT::m_constraintmixture:
+        {
+          numparams = 2;
+          // in the case of patches defined by materials we want to use the values specified in the material
+          if (which_patches_ == material)
           {
-          case INPAR::MAT::m_constraintmixture:
-          {
-            numparams = 2;
-            // in the case of patches defined by materials we want to use the values specified in the material
-            if (which_patches_ == material)
+            int patchid = 0;
+            int count = 0;
+            for (std::set<int>::const_iterator mat = matset_patches_.begin(); mat!=matset_patches_.end(); mat++)
             {
-              int patchid = 0;
-              int count = 0;
-              for (std::set<int>::const_iterator mat = matset_patches_.begin(); mat!=matset_patches_.end(); mat++)
-              {
-                if (mat == matset_patches_.find(actmat->Id()))
-                  patchid = count;
-                count += 1;
-              }
-              MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              startvalues[patchid] = sqrt(params->GetParameter(params->growthfactor,-1));
-              startvalues.resize(numparams*numpatches_);
-              //startvalues[patchid+numpatches_] = acos(sqrt(params->GetParameter(params->elastin_survival,-1)));
-              startvalues[patchid+numpatches_] = tan(params->GetParameter(params->elastin_survival,-1)*PI-PI/2.0);
+              if (mat == matset_patches_.find(actmat->Id()))
+                patchid = count;
+              count += 1;
             }
-          }
-          break;
-          default:
-            dserror("Material type not implemented for patches");
-          break;
+            MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+            if (!params) dserror("Cannot cast material parameters");
+            startvalues[patchid] = sqrt(params->GetParameter(params->growthfactor,-1));
+            startvalues.resize(numparams*numpatches_);
+            //startvalues[patchid+numpatches_] = acos(sqrt(params->GetParameter(params->elastin_survival,-1)));
+            startvalues[patchid+numpatches_] = tan(params->GetParameter(params->elastin_survival,-1)*PI-PI/2.0);
           }
         }
-      }
-      int numpatchparams = numparams * numpatches_;
-
-      if (which_patches_ != material)
-      {
-        // input parameters inverse analysis
-        const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-        double word1;
-        std::istringstream matliststream(Teuchos::getNumericStringParameter(iap,"STARTVALUESFORPATCHES"));
-        while (matliststream >> word1)
-        {
-          startvalues.push_back(sqrt(word1));
+        break;
+        default:
+          dserror("Material type not implemented for patches");
+        break;
         }
-
-        // check if size of startvalues fits to number of patches
-        int size = startvalues.size();
-        if (size != numpatchparams)
-          dserror("Number of start values %d does fit to number of patches %d and number of parameters %d!",startvalues.size(),numpatches_,numparams);
-      }
-
-      // copy parameters into the full parameter vector
-      startindexpatches_ = p_.Length();
-      p_.Resize(startindexpatches_+numpatchparams);
-      for (int idpatches=0; idpatches < numpatchparams; idpatches++)
-      {
-        p_[startindexpatches_+idpatches] = startvalues[idpatches];
       }
     }
+    int numpatchparams = numparams * numpatches_;
+
+    if (which_patches_ != material)
+    {
+      // input parameters inverse analysis
+      const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+      double word1;
+      std::istringstream matliststream(Teuchos::getNumericStringParameter(iap,"STARTVALUESFORPATCHES"));
+      while (matliststream >> word1)
+      {
+        startvalues.push_back(sqrt(word1));
+      }
+
+      // check if size of startvalues fits to number of patches
+      int size = startvalues.size();
+      if (size != numpatchparams)
+        dserror("Number of start values %d does fit to number of patches %d and number of parameters %d!",startvalues.size(),numpatches_,numparams);
+    }
+
+    // copy parameters into the full parameter vector
+    startindexpatches_ = p_.Length();
+    p_.Resize(startindexpatches_+numpatchparams);
+    for (int idpatches=0; idpatches < numpatchparams; idpatches++)
+    {
+      p_[startindexpatches_+idpatches] = startvalues[idpatches];
+    }
   }
+
   return;
 }
 //--------------------------------------------------------------------------------------
@@ -1996,11 +2000,6 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 
   if (patches_)
   {
-    // in case of micro scale
-    if(subcomm != Teuchos::null)
-    {
-      dserror("microscale not supported with patches");
-    }
     SetMaterialParametersPatches(p_cur);
   }
 
