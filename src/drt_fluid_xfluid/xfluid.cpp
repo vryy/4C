@@ -1910,7 +1910,8 @@ FLD::XFluid::XFluid(
     soliddis_(soliddis),
     fluid_output_(output_),
     levelsetcut_((soliddis==Teuchos::null)),
-    alefluid_(alefluid)
+    alefluid_(alefluid),
+    setTipNodesInCut_(false)
 {
   return;
 }
