@@ -7,13 +7,8 @@
 
 #include <cstdlib>
 
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_inputreader.H"
 #include "../drt_lib/drt_utils.H"
@@ -77,14 +72,11 @@ int main(int argc, char** argv)
   if (datfile=="")
     dserror("dat file name is required");
 
-#ifdef PARALLEL
-  Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(com);
-#else
-  Epetra_SerialComm* com = new Epetra_SerialComm();
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(com);
-#endif
-
+  // create "dummy" NP group which only sets the correct communicators
+  COMM_UTILS::CreateComm(0,NULL);
+  // create a problem instance
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
   // and now the actual reading (no dump to the non-existing error file!)
   DRT::INPUT::DatFileReader reader(datfile.c_str(), comm, 0);
 
