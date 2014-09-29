@@ -85,7 +85,7 @@ namespace ELASTIC
   ///
   /// The material strain energy density function is
   ///\f[
-  /// \Psi = a exp{b(I_1 - 3) - (2b + c)ln{J} + c(J-1) } - a
+  /// \Psi = a \exp[ b(I_1 - 3) - (2b + c)ln{J} + c(J-1) ] - a
   ///\f]
   /// More details at #AddCoefficientsPrincipal()
   ///

@@ -243,7 +243,7 @@ steps 25 nnodes 5
      break;
      default:
        dserror("Unknown update strategy for regularization parameter! Fix your input file");
-		  break;
+       break;
    }
 
   check_neg_params_ = DRT::INPUT::IntegralValue<int>(iap,"PARAM_BOUNDS");
@@ -272,7 +272,7 @@ steps 25 nnodes 5
     // some parameters
     numpatches_ = iap.get<int>("NUMPATCHES");
     smoothingsteps_ = iap.get<int>("SMOOTHINGSTEPSPATCHES");
-  
+
     // read material list
     if (DRT::Problem::NumInstances() > 1)
       dserror("More than one problem instance %d not feasible with patches",DRT::Problem::NumInstances());
@@ -344,6 +344,7 @@ void STR::GenInvAnalysis::Integrate()
     std::vector<double> perturb(np_,0.0);
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
+
     for (int i=0; i<np_; ++i)
     {
       perturb[i] = alpha + beta * p_[i];
@@ -380,9 +381,11 @@ void STR::GenInvAnalysis::Integrate()
       if (!myrank)
         std::cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<std::endl;
       // make current set of material parameters
+
       Epetra_SerialDenseVector p_cur = p_;
       // perturb parameter i
       if (i!= np_) p_cur[i] = p_[i] + perturb[i];
+
 
       // put perturbed material parameters to material laws
       discret_->Comm().Broadcast(&p_cur[0],p_cur.Length(),0);
@@ -651,7 +654,9 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
   mu_o_ = mu_;
   p_o_ = p_;
 
-  // update res based error
+//  // update res based error
+//  for (int i=0; i<nmp_; i++)
+//    rcurve2[i] = (mcurve_[i] - ccurve[i])/mcurve_[i];
   error_   = rcurve.Norm2()/sqrt(nmp_);
   // Gradient based update of mu based on
   //Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
@@ -699,6 +704,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
   PrintStorage(cmatrix, delta_p);
 
   if (check_neg_params_) CheckOptStep();
+
   return;
 }
 
@@ -757,8 +763,6 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
     // get the displacements of the monitored timesteps
     {
-//      std::cout << "time = " << time << std::endl ;
-//      std::cout << "timestep = " << timesteps_[writestep] << std::endl ;
       if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
@@ -848,8 +852,6 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
     // get the displacements of the monitored timesteps
     {
-//      std::cout << "time = " << time << std::endl ;
-//      std::cout << "timestep = " << timesteps_[writestep] << std::endl ;
 
       if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
@@ -931,6 +933,26 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
     delta_p_s_(numb_run_, i)=delta_p(i);
   }
 
+  // This routine runs just for material coupexppol (birzle 08/2014)
+  // Recalculates the material parameters b and c for (and just for) printout
+  // Inverse Analysis is done with ln(b) and ln(c) --> print exp(b) and exp(c)
+  for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
+  {
+    const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+    // loop all materials in problem
+    for (curr=mats.begin(); curr != mats.end(); ++curr)
+    {
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
+      if (actmat->Type() == INPAR::MAT::mes_coupexppol)
+      {
+        int j = numb_run_;
+        p_s_(j,coupexppol_parameter_position_) = exp(p_s_(j,coupexppol_parameter_position_));
+        p_s_(j,coupexppol_parameter_position_+1) = exp(p_s_(j,coupexppol_parameter_position_+1));
+      }
+    }
+  }
+
   // this memory is going to explode, do we really need this? mwgee
   //ccurve_s_.Reshape(nmp_,  numb_run_+1);
   //for (int i=0; i<nmp_; i++)
@@ -943,8 +965,8 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
   error_s_(numb_run_) = error_;
   error_grad_s_.Resize(numb_run_+1);
   error_grad_s_(numb_run_) = error_grad_;
-  // print error and parameter
 
+  // print error and parameter
   if (gmyrank==0) // this if should actually not be necessary since there is only gproc 0 in here
   {
       std::cout << std::endl;
@@ -1206,6 +1228,12 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_[j]   = params2->a_;
               p_[j+1] = params2->b_;
               p_[j+2] = params2->c_;
+
+              // do inverse analysis with ln(b) and ln(c)
+              p_[j+1] = log(p_[j+1]);
+              p_[j+2] = log(p_[j+2]);
+              //remind position of b in p_
+              coupexppol_parameter_position_ = j+1;
               break;
             }
             case INPAR::MAT::mes_coupneohooke:
@@ -1551,6 +1579,22 @@ void STR::GenInvAnalysis::ReadInParameters()
               //p_[j+1] = params2->beta_;
               break;
             }
+            case INPAR::MAT::mes_coupexppol:
+            {
+              filename_=filename_+"_coupexppol";
+              const MAT::ELASTIC::PAR::CoupExpPol* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+3);
+              p_[j]   = params2->a_;
+              p_[j+1] = params2->b_;
+              p_[j+2] = params2->c_;
+              // do inverse analysis with ln(b) and ln(c)
+              p_[j+1] = log(p_[j+1]);
+              p_[j+2] = log(p_[j+2]);
+              //remind position of b in p_
+              coupexppol_parameter_position_ = j+1;
+              break;
+            }
             case INPAR::MAT::mes_isoratedep:
             {
               filename_=filename_+"_isoratedep";
@@ -1655,6 +1699,11 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_[j]   = params2->a_;
               p_[j+1] = params2->b_;
               p_[j+2] = params2->c_;
+              // do inverse analysis with ln(b) and ln(c)
+              p_[j+1] = log(p_[j+1]);
+              p_[j+2] = log(p_[j+2]);
+              //remind position of b in p_
+              coupexppol_parameter_position_ = j+1;
               break;
             }
             case INPAR::MAT::mes_coupneohooke:

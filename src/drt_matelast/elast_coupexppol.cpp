@@ -22,6 +22,7 @@ Maintainer: Anna Birzle
 /* headers */
 #include "elast_coupexppol.H"
 #include "../drt_mat/matpar_material.H"
+#include "../drt_lib/drt_globalproblem.H" //<-- just in this material, because of special use of inv ana
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -53,26 +54,56 @@ void MAT::ELASTIC::CoupExpPol::AddCoefficientsPrincipal(
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  const double a = params_ -> a_;
-  const double b = params_ -> b_;
-  const double c = params_ -> c_;
+  // routine runs when calculation is done during the inverse analysis
+  // inverse analysis runs with ln(b) and ln(c),
+  // but material calculates with real parameters b and c=exp(ln(c))
+  // if no inverse analysis: normal parameters are used
+  std::string ia = DRT::Problem::Instance()->InverseAnalysisParams().get<std::string>("INV_ANALYSIS");
+  if (ia != "none")
+  {
+    const double a = params_ -> a_;
+    const double b = exp(params_->b_);
+    const double c = exp(params_->c_);
 
+    // ln of determinant of deformation gradient
+    const double logdetf = std::log(std::sqrt(prinv(2)));
 
-  // ln of determinant of deformation gradient
-  const double logdetf = log(sqrt(prinv(2)));
+    // exponential function
+    const double expfunc = std::exp(b*(prinv(0)-3.0) - (2.0*b + c)*logdetf + c*(std::sqrt(prinv(2)) - 1.0) );
 
-  // exponential function
-  const double expfunc = exp(b*(prinv(0)-3) - (2*b+c)*logdetf + c*(sqrt(prinv(2))-1) );
+    // gammas
+    gamma(0) += 2.0*a*b*expfunc;
+    gamma(2) += (-2.0*b - c + c*std::sqrt(prinv(2)))*a*expfunc;
 
-  // gammas
-  gamma(0) += 2*a*b*expfunc;
-  gamma(2) += (-2*b -c + c*sqrt(prinv(2)))*a*expfunc;
+    // deltas
+    delta(0) += 4.0*a*b*b*expfunc;
+    delta(2) += (-2.0*b - c + c*std::sqrt(prinv(2)))*2.0*a*b*expfunc;
+    delta(5) += (4.0*b*b + c*c + 4.0*b*c + (c- 2.0*c*c - 4.0*b*c)*std::sqrt(prinv(2)) + c*c*prinv(2))*a*expfunc;
+    delta(6) += (4.0*b + 2*c - 2.0*c*std::sqrt(prinv(2)))*a*expfunc;
+  }
+  else
+    // normal routine
+  {
+    const double a = params_ -> a_;
+    const double b = params_ -> b_;
+    const double c = params_ -> c_;
 
-  // deltas
-  delta(0) += 4*a*b*b*expfunc;
-  delta(2) += (-2*b -c +c*sqrt(prinv(2)))*2*a*b*expfunc;
-  delta(5) += (4*b*b +c*c +4*b*c +(c-2*c*c-4*b*c)*sqrt(prinv(2)) + c*c*prinv(2))*a*expfunc;
-  delta(6) += (4*b +2*c -2*c*sqrt(prinv(2)))*a*expfunc;
+    // ln of determinant of deformation gradient
+    const double logdetf = std::log(std::sqrt(prinv(2)));
+
+    // exponential function
+    const double expfunc = std::exp(b*(prinv(0)-3.0) - (2.0*b + c)*logdetf + c*(std::sqrt(prinv(2)) - 1.0) );
+
+    // gammas
+    gamma(0) += 2.0*a*b*expfunc;
+    gamma(2) += (-2.0*b - c + c*std::sqrt(prinv(2)))*a*expfunc;
+
+    // deltas
+    delta(0) += 4.0*a*b*b*expfunc;
+    delta(2) += (-2.0*b - c + c*std::sqrt(prinv(2)))*2.0*a*b*expfunc;
+    delta(5) += (4.0*b*b + c*c + 4.0*b*c + (c- 2.0*c*c - 4.0*b*c)*std::sqrt(prinv(2)) + c*c*prinv(2))*a*expfunc;
+    delta(6) += (4.0*b + 2*c - 2.0*c*std::sqrt(prinv(2)))*a*expfunc;
+  }
 
 
   return;

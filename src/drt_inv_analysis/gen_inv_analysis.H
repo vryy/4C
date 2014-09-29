@@ -87,8 +87,8 @@ namespace STR
 *     \begin{array}{c}
 *     \ \mathbf J= \left( \begin{array}{ccc}
 *     \frac {\partial \mathbf{u}_1} {\partial p_1} & ... & \frac {\partial \mathbf{u}_1}{\partial p_k} \\
-*     \vdots	 &   & \vdots \\
-*     \frac {\partial \mathbf{u}_{n}} {\partial p_1}	&  ... & \frac {\partial \mathbf{u}_{n}}{\partial p_k}
+*     \vdots  &   &   \vdots \\
+*     \frac {\partial \mathbf{u}_{n}} {\partial p_1} &  ... & \frac {\partial \mathbf{u}_{n}}{\partial p_k}
 *     \end{array} \right).
 *     \end{array}
 * \f]
@@ -147,7 +147,7 @@ private:
   ///  number of measurment points the
   double tstep_;                    // timestep
 
-  int problem_type_;		            // Neumann or Dirichlet Problem
+  int problem_type_;                // Neumann or Dirichlet Problem
   int np_;                          // number of fitted parameters (default 3, 4 with kappa)
   int nmp_;                         // total number of measured dofs
 
@@ -184,7 +184,10 @@ private:
 
   int numb_run_;
 
-  Epetra_SerialDenseVector p_;	           // parameter vector
+  // parameter for finding starting point in p_ of material parameters of coupexppol-material
+  int coupexppol_parameter_position_;
+
+  Epetra_SerialDenseVector p_;             // parameter vector
   Epetra_SerialDenseVector p_o_;           // parameters of the last step
 
   /// @name Storage
