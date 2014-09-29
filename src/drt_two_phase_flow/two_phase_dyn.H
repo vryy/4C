@@ -20,6 +20,9 @@ void two_phase_dyn(
     int restart        /* do we have to perform a restart?  */
     );
 
+/*! entry point for the solution of two phase flow problems utilizing XFEM */
+void fluid_xfem_ls_drt(
+    );
 
 #endif /* #ifndef TWO_PHASE_DYN_H */
 

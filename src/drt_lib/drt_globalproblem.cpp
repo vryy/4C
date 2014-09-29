@@ -1335,6 +1335,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
 
   case prb_two_phase_flow:
+  case prb_fluid_xfem_ls:
     {
 
       // create empty discretizations

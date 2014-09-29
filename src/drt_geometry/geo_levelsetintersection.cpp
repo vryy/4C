@@ -31,7 +31,7 @@ GEO::CutWizardLevelSet::CutWizardLevelSet( const DRT::Discretization & dis )
  * check if element is cut and add element to cut libraries if this is the case.     winter 08/14 *
  * myphinp needs to on the node map for the element. This has to be done before the call.         *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardLevelSet::AddElement(DRT::Element * ele, std::vector<double> myphinp)
+void GEO::CutWizardLevelSet::AddElement(DRT::Element * ele, std::vector<double> myphinp, bool include_inner)
 {
   const int numnode = ele->NumNode();
   const DRT::Node * const * nodes = ele->Nodes();
@@ -46,7 +46,8 @@ void GEO::CutWizardLevelSet::AddElement(DRT::Element * ele, std::vector<double> 
   }
 
   std::vector<int> nids( nodeids, nodeids+numnode );
-  levelsetintersection_->AddElement( ele->Id(), nids, xyze, &myphinp[0], ele->Shape() );
+  //If include_inner == false then add elements with negative level set values to discretization.
+  levelsetintersection_->AddElement( ele->Id(), nids, xyze, &myphinp[0], ele->Shape(), !include_inner );
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -141,7 +142,7 @@ void GEO::CutWizardLevelSet::CutParallel_FindPositionDofSets(bool include_inner,
     m.FindLSNodePositions(); // Prevents this function from being in CutWizard.
 
 
-    //TWO_PHASE_XFEM_FIX_QB: Does this apply for level set cut as well?
+    //TWO_PHASE_XFEM_FIX: Does this apply for level set cut as well?
     // find undecided nodes
     // * for serial simulations all node positions should be set
     // * for parallel simulations there can be some undecided nodes

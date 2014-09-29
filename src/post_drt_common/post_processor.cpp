@@ -369,6 +369,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         break;
     }
     case prb_two_phase_flow:
+    case prb_fluid_xfem_ls:
     {
       std::string basename = problem.outname();
 

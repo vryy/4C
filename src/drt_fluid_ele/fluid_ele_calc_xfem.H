@@ -203,7 +203,7 @@ public:
       DRT::ELEMENTS::Fluid *                                              ele,                ///< fluid element
       DRT::Discretization &                                               dis,               ///< background discretization
       const std::vector<int> &                                            lm,                ///< element local map
-      DRT::Discretization &                                               cutdis,            ///< cut discretization
+      const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices

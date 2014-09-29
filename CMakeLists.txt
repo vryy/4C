@@ -1160,6 +1160,7 @@ set(OBJS_DRT_FLUID_XFLUID
   src/drt_fluid_xfluid/xfluidfluid.cpp
   src/drt_fluid_xfluid/xfluidfluidresulttest.cpp
   src/drt_fluid_xfluid/xfluid_state.cpp
+  src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
 )
 set(OBJS_DRT_SR_LIB
   src/drt_smoothrod/smoothrod.cpp

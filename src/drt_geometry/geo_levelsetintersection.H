@@ -47,7 +47,7 @@ namespace GEO
     /*!
     \brief Add this background mesh element to the cut libraries
     */
-    void AddElement( DRT::Element * ele, std::vector<double> myphinp );
+    void AddElement( DRT::Element * ele, std::vector<double> myphinp, bool include_inner = true );
 
     /*========================================================================*/
     //! @name Cut functionality routines

@@ -28,7 +28,6 @@ namespace CUT
   class Element;
   class Mesh;
   class MeshIntersection;
-  class LevelSetIntersection;
 
 
   /*!
@@ -181,15 +180,11 @@ public:
          std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
          );
 
-#if(0)
-     //! unused
-     void BoundaryCellGaussPointsLevelset(
-         LevelSetIntersection & mesh,
+     //! Without safety check (not possible for level set cuts)
+     void BoundaryCellGaussPointsLin(
          const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
          std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
          );
-#endif
-
      //@}
 
 

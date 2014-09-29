@@ -313,7 +313,7 @@ void XFEM::FluidWizardLevelSet::Cut(
     DRT::Element * element = backdis_.lColElement(lid);
 
     DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, phinpnode);
-    cut_->AddElement(element,myphinp);
+    cut_->AddElement(element,myphinp,include_inner);
   }
 
   // run the (parallel) Cut

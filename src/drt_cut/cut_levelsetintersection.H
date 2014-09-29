@@ -60,7 +60,8 @@ public:
                    const std::vector<int> & nids,
                    const Epetra_SerialDenseMatrix & xyz,
                    const double * lsv,
-                   DRT::Element::DiscretizationType distype );
+                   DRT::Element::DiscretizationType distype,
+                   const bool include_inner_ele = false);
 
   /*========================================================================*/
   //! @name statistics, output

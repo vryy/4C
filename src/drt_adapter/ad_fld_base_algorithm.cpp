@@ -134,7 +134,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     if (probtype == prb_fsi_xfem or
         probtype == prb_fluid_xfem or
         probtype == prb_combust or
-        probtype == prb_fsi_crack)
+        probtype == prb_fsi_crack or
+        probtype == prb_fluid_xfem_ls)
     {
       actdis->FillComplete(false,false,false);
     }
@@ -402,26 +403,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       or probtype == prb_fluid_fluid
       or probtype == prb_fluid_fluid_ale
       or probtype == prb_fluid_fluid_fsi
-      or probtype == prb_fsi_crack )
+      or probtype == prb_fsi_crack
+      or probtype == prb_fluid_xfem_ls)
   {
     // get also scatra stabilization sublist
-    const Teuchos::ParameterList& xdyn =
-      DRT::Problem::Instance()->XFEMGeneralParams();
+    const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
     fluidtimeparams->sublist("XFEM") = xdyn;
-
-  }
-
-  // ----------------------------- sublist for xfem-specific fluid parameters
-  if (   probtype == prb_fluid_xfem
-      or probtype == prb_fsi_xfem
-      or probtype == prb_fluid_fluid
-      or probtype == prb_fluid_fluid_ale
-      or probtype == prb_fluid_fluid_fsi
-      or probtype == prb_fsi_crack )
-  {
-
-    const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
+    // ----------------------------- sublist for xfem-specific fluid parameters
+    const Teuchos::ParameterList& xfdyn = DRT::Problem::Instance()->XFluidDynamicParams();
 
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL")       = xfdyn.sublist("GENERAL");
     fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
@@ -429,6 +419,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<std::string>("MONOLITHIC_XFFSI_APPROACH"));
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("XFLUIDFLUID_TIMEINT",xfdyn.sublist("GENERAL").get<std::string>("XFLUIDFLUID_TIMEINT"));
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xfdyn.sublist("GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"));
+
   }
 
   // sublist for two phase flow specific parameters
@@ -737,7 +728,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         dserror("Unknown time integration for this fluid problem type\n");
     }
       break;
-    case prb_fluid_topopt:
+    case prb_fluid_xfem_ls:
+    {
+      Teuchos::RCP<DRT::Discretization> soliddis = Teuchos::null;
+      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+    }
+    break;
+      case prb_fluid_topopt:
     {
       if(timeint == INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntTopOptStat(actdis, solver, fluidtimeparams, output, isale));

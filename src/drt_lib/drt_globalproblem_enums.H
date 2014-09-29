@@ -37,7 +37,7 @@ typedef enum _PROBLEM_TYP
      prb_fluid_xfem,         // fluid problem including XFEM interfaces
      prb_fluid_fluid_ale,    //fluid_fluid_ale problem
      prb_fluid_fluid,        // fluid_fluid problem
-     prb_fluid_fluid_fsi,    //fluid_fluid fsi problem
+     prb_fluid_fluid_fsi,    // fluid_fluid fsi problem
      prb_fluid_ale,          // fluid on an ale mesh (no structure)
      prb_fluid_redmodels,    // fluid_redairways problem
      prb_freesurf,           // free surface fluid
@@ -67,7 +67,8 @@ typedef enum _PROBLEM_TYP
      prb_acou,               // acoustic problem
      prb_crack,              // crack propagation modeling
      prb_two_phase_flow,     // two phase flow problem using the fluid and levelset modules
-     prb_fpssi,               // fluid porous structure scatra scatra interaction
+     prb_fluid_xfem_ls,      // xfluid calculations using levelset for cut.
+     prb_fpssi,              // fluid porous structure scatra scatra interaction
      prb_uq                  // uncertainty quantification
 } PROBLEM_TYP;
 

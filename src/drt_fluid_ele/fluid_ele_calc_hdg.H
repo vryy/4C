@@ -230,7 +230,7 @@ namespace ELEMENTS
     virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                            ele,
                                              DRT::Discretization &                                             dis,
                                              const std::vector<int> &                                          lm,
-                                             DRT::Discretization &                                             cutdis,
+                                             const Teuchos::RCP<DRT::Discretization> &                               cutdis,
                                              const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
                                              const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
                                              std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,

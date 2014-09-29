@@ -30,7 +30,7 @@ TWOPHASEFLOW::Algorithm::Algorithm(
     const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams) //SCATRA CORRECT HERE?
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams)
 {
   // time-step length, maximum time and maximum number of steps
   dt_      = prbdyn.get<double>("TIMESTEP");
@@ -47,7 +47,6 @@ TWOPHASEFLOW::Algorithm::Algorithm(
   // flag for special flow and start of sampling period from fluid parameter list
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
   //const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-
 
   //Values of velocity field are transfered to ScaTra field. This function overwrites the previous initialization in the constructor
   //of ScaTraFluidCouplingAlgorithm(). This is necessary to correctly initialize a particle algorithm.

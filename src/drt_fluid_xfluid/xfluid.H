@@ -58,6 +58,8 @@ namespace XFEM
 {
   class XFEM_EdgeStab;
   class FluidWizardMesh;
+  class FluidWizardLevelSet;
+  class FluidWizard;
   class FluidDofSet;
   class XFluidTimeInt;
 }
@@ -116,12 +118,12 @@ namespace FLD
 
       /// Constructor
       explicit XFluidState( XFluid & xfluid,          ///< xfluid object
-                            Epetra_Vector & idispcol  ///< col vector of interface diplacements
+                            const Epetra_Vector & cutvector  ///< col vector of interface diplacements
                             );
 
       /// call the loop over elements to assemble volume and interface integrals
       void Evaluate( DRT::Discretization & discret,      ///< background fluid discretization
-                     DRT::Discretization & cutdiscret,   ///< cutter surface discretization
+                     Teuchos::RCP<DRT::Discretization> & cutdiscret,   ///< cutter surface discretization
                      int itnum                           ///< iteration number
                      );
 
@@ -243,6 +245,9 @@ namespace FLD
       /// return the wizard
       Teuchos::RCP<XFEM::FluidWizardMesh> Wizard() { return wizard_; }
 
+      /// return the wizard
+      Teuchos::RCP<XFEM::FluidWizardLevelSet> WizardLS() { return wizardls_; }
+
       /// return edgestab object
       Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
 
@@ -255,8 +260,16 @@ namespace FLD
       /// FluidWizardMesh
       Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
 
+      /// FluidWizardLevelSet
+      Teuchos::RCP<XFEM::FluidWizardLevelSet> wizardls_;
 
     private:
+
+      /// Initialize state variables after cut.
+      void InitStateVariables();
+
+      /// Perform Cut and manage DofSet handling
+      void CutAndSetDofSet(Teuchos::RCP<XFEM::FluidWizard> wizard, const Epetra_Vector & cutvector, bool include_inner);
 
       /// Gmsh output function for elements without an GEO::CUT::ElementHandle
       void GmshOutputElement( DRT::Discretization & discret, ///< background fluid discretization
@@ -293,7 +306,6 @@ namespace FLD
 
       /// Fluid dofset
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
-
 
       /// edge stabilization and ghost penalty object
       Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
@@ -485,10 +497,6 @@ namespace FLD
     /// interface are prescribed by the other fields.
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-    /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
-    const Teuchos::RCP<DRT::Discretization>& Discretization() { return boundarydis_; }
-
-
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
@@ -508,7 +516,8 @@ namespace FLD
 
     /// turbulence statistics manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
-       {dserror("not implemented"); return Teuchos::null;}
+       {//dserror("not implemented");
+       return Teuchos::null;}
 
     /// introduce surface split extractor object
     /*!
@@ -556,6 +565,26 @@ namespace FLD
     /// Properly initialize the DOFs of new nodes introduced after the crack propagation
     void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds );
 
+    //Renamed call for boundarydiscretization from Discretization to BoundaryDiscretization
+    /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
+    //const Teuchos::RCP<DRT::Discretization>& BoundaryDiscretization() { return boundarydis_; }
+    const Teuchos::RCP<DRT::Discretization>& Discretization()
+    {
+      if(!levelsetcut_)
+      {
+        return boundarydis_;
+      }
+      else
+      {
+        return discret_;
+      }
+    }
+
+    Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() {return Teuchos::null;}
+
+    Teuchos::RCP<FLD::Vreman> Vreman() {return Teuchos::null;}
+
+    void SetStateLS( Epetra_Vector & lsvalues );
 
   private:
 
@@ -729,6 +758,8 @@ namespace FLD
     /// extract the nodal vectors and store them in node-vector-map
     void ExtractNodeVectors(DRT::Discretization & dis, Teuchos::RCP<Epetra_Vector> dofrowvec, std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
 
+    /// initialize the needed functionality for the boundary discretization.
+    void InitBoundaryDis(std::string element_name);
 
     //-------------------------------------------------------------------------------
     //! possible inf-norm scaling of linear system / fluid matrix
@@ -839,6 +870,8 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
+    //! do we cut with a level set?
+    bool                          levelsetcut_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     //! do we have a turblence model?

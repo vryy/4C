@@ -57,7 +57,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   FluidField().Init();
 
   // set also initial field
-  if (DRT::Problem::Instance()->ProblemType() != prb_combust)
+  if (DRT::Problem::Instance()->ProblemType() != prb_combust and DRT::Problem::Instance()->ProblemType() != prb_fluid_xfem_ls)
   {
     // set initial field by given function
     // we do this here, since we have direct access to all necessary parameters
@@ -129,7 +129,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   // if available, allow scatra field to access dynamic Smagorinsky filter
   if (FluidField().DynSmagFilter() != Teuchos::null)
     ScaTraField()->AccessDynSmagFilter(FluidField().DynSmagFilter());
-  
+
   // if available, allow scatra field to access dynamic Vreman
   if (FluidField().Vreman() != Teuchos::null)
     ScaTraField()->AccessVreman(FluidField().Vreman());

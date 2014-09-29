@@ -180,6 +180,9 @@ void ntacal()
     case prb_two_phase_flow:
       two_phase_dyn(restart);
       break;
+    case prb_fluid_xfem_ls:
+      fluid_xfem_ls_drt(); //Exists in drt_two_phase_flow subfolder
+      break;
 
     case prb_uq:
 #ifdef HAVE_FFTW

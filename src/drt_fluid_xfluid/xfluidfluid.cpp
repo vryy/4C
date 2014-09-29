@@ -730,7 +730,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
             impl->ElementXfemInterfaceNIT(    ele,
                                               *bgdis,
                                               la[0].lm_,
-                                              *cutdiscret,
+                                              cutdiscret,
                                               bcells,
                                               bintpoints,
                                               side_coupling,

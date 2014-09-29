@@ -119,6 +119,18 @@ namespace DRT
       double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
     };
 
+    /// special implementation level set cut utilizing xfluid
+    class GerstenbergerForwardfacingStep : public Function
+    {
+    public:
+
+      /// ctor
+      GerstenbergerForwardfacingStep();
+
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    };
+
     /// special implementation for the G-function in the ORACLES problem
     class ORACLESGFunction : public Function
     {

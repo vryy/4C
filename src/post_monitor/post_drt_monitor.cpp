@@ -1997,6 +1997,7 @@ int main(int argc, char** argv)
     }
     case prb_loma:
     case prb_two_phase_flow:
+    case prb_fluid_xfem_ls:
     case prb_fluid:
     case prb_fluid_redmodels:
     {

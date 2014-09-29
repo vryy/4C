@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file two_phase_dyn.cpp
-\brief Control routine for two phase flow (TPF) module.
+\brief Control routine for fluid/xfluid and ScaTra coupled routines.
 
 
 <pre>
@@ -16,8 +16,8 @@ Maintainer: Magnus Winter
 #include <string>
 #include <iostream>
 
-#include "two_phase_dyn.H"
 #include "two_phase_algorithm.H"
+#include "../drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -26,6 +26,8 @@ Maintainer: Magnus Winter
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Epetra_Time.h>
 
+#include "../drt_lib/drt_dofset_fixed_size.H"
+#include "two_phase_dyn.H"
 
 /*----------------------------------------------------------------------*/
 // entry point for Two Phase Flow (TPF) in DRT
@@ -171,3 +173,105 @@ void two_phase_dyn(int restart)
   return;
 
 } // two_phase_dyn()
+
+
+void fluid_xfem_ls_drt()
+{
+  // create a communicator
+#ifdef PARALLEL
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  // print warning to screen
+  if (comm.MyPID()==0)
+  {
+    std::cout << "=========================================================" <<std::endl;
+    std::cout << "|                  XFluid with levelset                 |" <<std::endl;
+    std::cout << "=========================================================" <<std::endl;
+    std::cout << "|   Cut is done with level set. Calculations in Xfluid  | " <<std::endl;
+    std::cout << "=========================================================" <<std::endl;
+    std::cout << "|          XFEM is utilized for the computations        | " <<std::endl;
+    std::cout << "=========================================================" <<std::endl;
+  }
+
+  // define abbreviation
+   DRT::Problem* problem = DRT::Problem::Instance();
+
+   // access fluid and (typically empty) scatra discretization
+   Teuchos::RCP<DRT::Discretization> fluiddis  = problem->GetDis("fluid");
+   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+
+//   access parameter for two phase flow
+   const Teuchos::ParameterList& xdyn = problem->XFEMGeneralParams();
+
+   // Reserve DoF's for fluid
+   int numglobalnodes = fluiddis->NumGlobalNodes();
+   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+   fluiddis->ReplaceDofSet(maxdofset,true);
+   fluiddis->FillComplete();
+
+   // access parameter for levelset (Not needed as of yet)
+   //const Teuchos::ParameterList& levelsetcontrol = problem->LevelSetControl();
+
+   // access parameter list for scatra
+   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
+
+   // access parameter list for fluid
+   const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
+
+   // use fluid discretization as layout for scatra discretization
+   if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
+
+   // create scatra elements if scatra discretization is empty (typical case)
+   if (scatradis->NumGlobalNodes()==0)
+   {
+     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
+
+     // Give ScaTra new dofset (starts after fluid)
+     Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
+     scatradis->ReplaceDofSet(newdofset,true);
+     scatradis->FillComplete();
+
+     // print all dofsets
+     //---FLUID---|---SCATRA---|
+     fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());
+
+   }
+   else dserror("Fluid AND ScaTra discretization present. This is not supported.");
+
+   // get linear solver id from SCALAR TRANSPORT DYNAMIC
+   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+   if (linsolvernumber == (-1))
+     dserror("no linear solver defined for two phase flow (TPF) problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
+   Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,fdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+   INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+
+   if (timeintscheme == INPAR::FLUID::timeint_stationary)
+   {
+     xfluid_levelset->SolveStationaryProblem();
+   }
+   else
+   {
+     // every time integration scheme must be either static or dynamic
+     dserror("Only stationary time integration is currently implemented for Fluid_XFEM_LevelSet!");
+   }
+
+   //------------------------------------------------------------------------------------------------
+   // validate the results
+   //------------------------------------------------------------------------------------------------
+   // summarize the performance measurements (already done in Xfluid SolveStationaryProblem())
+   //Teuchos::TimeMonitor::summarize();
+
+
+   // perform the result test
+   xfluid_levelset->TestResults();
+
+
+   return;
+
+} // fluid_xfem_ls_drt()

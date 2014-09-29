@@ -2958,7 +2958,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
-    DRT::Discretization &                                               cutdis,            ///< cut discretization
+    const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
@@ -3000,6 +3000,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   // we distinguish by examination of side_coupling
   bool eval_side_coupling = !side_coupling.empty();
 
+  //flag which indicates whether a level set cut is done or a mesh cut is done.
+  // This implies there is no cutdis and as such no cut sides.
+  bool levelset_cut = (cutdis==Teuchos::null);
+
   //----------------------------------------------------------------------------
   //      surface integral --- build Cuiui, Cuui, Cuiu and Cuu matrix and rhs
   //----------------------------------------------------------------------------
@@ -3032,7 +3036,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     std::vector<int> patchelementslmowner;
 
     // create location vectors for intersecting boundary elements and reshape coupling matrices
-    PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
+    PatchLocationVector(begids,*cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
   }
 
   //-----------------------------------------------------------------------------------
@@ -3069,24 +3073,35 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     if ( bcs.size()!=cutintpoints.size() )
       dserror( "boundary cell integration rules mismatch" );
 
-    // side and location vector
-    DRT::Element * side = cutdis.gElement( sid );
-    side->LocationVector(cutdis,cutla,false);
 
-    // side geometry
-    const int numnodes = side->NumNode();
-    DRT::Node ** nodes = side->Nodes();
-    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
-    for ( int i=0; i<numnodes; ++i )
+    DRT::Element * side = NULL;
+    int numnodes;
+    Epetra_SerialDenseMatrix side_xyze;
+    DRT::Node ** nodes;
+
+    if(!levelset_cut)
     {
-      const double * x = nodes[i]->X();
-      std::copy( x, x+3, &side_xyze( 0, i ) );
-    }
+      // side and location vector
+      side = cutdis->gElement( sid );
+      side->LocationVector(*cutdis,cutla,false);
 
+      // side geometry
+      numnodes = side->NumNode();
+      nodes = side->Nodes();
+      side_xyze.Shape( 3, numnodes );
+
+      for ( int i=0; i<numnodes; ++i )
+      {
+        const double * x = nodes[i]->X();
+        std::copy( x, x+3, &side_xyze( 0, i ) );
+
+      }
+    }
     // create side impl
 
     if (eval_side_coupling)
     {
+
       std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
       std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
 
@@ -3113,16 +3128,26 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     }
     else
     {
-      si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(side,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
+      if(levelset_cut)
+      {
+        si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(fldparaxfem_->IsViscousAdjointSymmetric());
+      }
+      else
+      {
+        si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(side,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
+      }
     }
 
     side_impl[sid] = si;
 
-    // get velocity at integration point of boundary dis
-    si->SetSlaveState(cutdis,"ivelnp",cutla[0].lm_);
+    if(!levelset_cut)
+    {
+      // get velocity at integration point of boundary dis
+      si->SetSlaveState(*cutdis,"ivelnp",cutla[0].lm_);
 
-    // set displacement of side
-    si->AddSlaveEleDisp(cutdis,"idispnp",cutla[0].lm_);
+      // set displacement of side
+      si->AddSlaveEleDisp(*cutdis,"idispnp",cutla[0].lm_);
+    }
 
     // define interface force vector w.r.t side
     Epetra_SerialDenseVector iforce;
@@ -3172,9 +3197,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         pos.Compute();
         rst = pos.LocalCoordinates();
 
-        // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-        LINALG::Matrix<2,1> xi_side(true);
-        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+        //No projection is needed for level set cuts, as the levelset is approximated by a linear function.
+        if(!levelset_cut)
+        {
+          // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
+          LINALG::Matrix<2,1> xi_side(true);
+          si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+        }
 
         const double surf_fac = drs*iquad.Weight();
         const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
@@ -3289,7 +3318,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
 
-    if(assemble_iforce) AssembleInterfaceForce(iforcecol, cutdis, cutla[0].lm_, iforce);
+    if(assemble_iforce) AssembleInterfaceForce(iforcecol, *cutdis, cutla[0].lm_, iforce);
 
   } // end loop cut sides
 

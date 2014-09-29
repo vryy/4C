@@ -492,67 +492,21 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
       cell_points.push_back(bc->gaussRule());
     }
   }
-
-/*  static int eeno=0;
-  eeno++;
-  if(eeno<5)
-  {
-    std::string filename="wrong";
-    std::ofstream file;
-
-    std::stringstream out;
-    out <<"boundary"<<eeno<<".dat";
-    filename = out.str();
-    file.open(filename.c_str());
-    for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
-    {
-      int sid = i->first;
-      std::vector<DRT::UTILS::GaussIntegration> ga1 = intpoints[sid];
-
-      const std::vector<GEO::CUT::BoundaryCell*> cells = i->second;
-      int m=0;
-      for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::BoundaryCell * bc = *i;
-        file<<"boundary cell type = "<<bc->Shape()<<"\n";
-        DRT::UTILS::GaussIntegration ga = ga1[m];
-        for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
-        {
-          const double* gpp = iquad.Point();
-          file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[2]<<"\t";
-          file<<iquad.Weight()<<std::endl;
-        }
-        m++;
-      }
-
-    }
-    file.close();
-  }*/
 }
 
-
-#if(0)
 /*----------------------------------------------------------------------*/
-// unused
+// Collect the Gauss points of all the boundary-cells belong to this element.
+// Used for Level set applications as cutside does not exist here.
 /*----------------------------------------------------------------------*/
-void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersection & mesh,
-                                                               const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
 {
-#if 1
-  dserror( "todo" );
-#else
+
   for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
   {
     int sid = i->first;
     const std::vector<GEO::CUT::BoundaryCell*> & cells = i->second;
     std::vector<DRT::UTILS::GaussIntegration> & cell_points = intpoints[sid];
-
-    SideHandle * side = mesh.GetCutSide( sid, mi );
-    if ( side==NULL )
-    {
-      throw std::runtime_error( "no such side" );
-    }
 
     cell_points.clear();
     cell_points.reserve( cells.size() );
@@ -561,28 +515,12 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersect
     {
       GEO::CUT::BoundaryCell * bc = *i;
 
-      switch ( bc->Shape() )
-      {
-      case DRT::Element::tri3:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = side->CreateProjected<DRT::Element::tri3, GEO::CUT::BoundaryCell *>( bc );
-        cell_points.push_back( DRT::UTILS::GaussIntegration( gp ) );
-        break;
-      }
-      case DRT::Element::quad4:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = side->CreateProjected<DRT::Element::quad4, GEO::CUT::BoundaryCell *>( bc );
-        cell_points.push_back( DRT::UTILS::GaussIntegration( gp ) );
-        break;
-      }
-      default:
-        throw std::runtime_error( "unsupported integration cell type" );
-      }
+      // Create (unmodified) gauss points for integration cell with requested
+      // polynomial order. This is supposed to be fast, since there is a cache.
+      cell_points.push_back(bc->gaussRule());
     }
   }
-#endif
 }
-#endif
 
 
 

@@ -33,7 +33,8 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
                                                  const std::vector<int> & nids,
                                                  const Epetra_SerialDenseMatrix & xyz,
                                                  const double * lsv,
-                                                 DRT::Element::DiscretizationType distype )
+                                                 DRT::Element::DiscretizationType distype,
+                                                 const bool include_inner_ele)
 {
   int numnode = nids.size();
   if ( numnode != xyz.N() )
@@ -65,6 +66,18 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
     // create element
     mesh_.CreateElement( eid, nids, distype );
   }
+  else if(include_inner_ele and ltz)
+  {
+    // add all nodes to mesh
+    for ( int i=0; i<numnode; ++i )
+    {
+      NormalMesh().GetNode( nids[i], &xyz( 0, i ), lsv[i] );
+    }
+
+    // create element
+    mesh_.CreateElement( eid, nids, distype );
+  }
+
 }
 
 /*------------------------------------------------------------------------------------------------*
