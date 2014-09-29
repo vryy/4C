@@ -502,7 +502,7 @@ void DRT::CRACK::CrackDyn::analyzeAndCleanDiscretization()
         notavail.push_back( nid );
     }
 
-    if( not notavail.size() == 0 )
+    if( not (notavail.size() == 0) )
     {
       std::cout<<"The following nodeids are not available in proc "<<myrank_<<" : ";
       for( unsigned i=0; i< notavail.size(); i++ )

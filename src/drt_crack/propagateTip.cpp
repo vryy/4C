@@ -1225,7 +1225,7 @@ void DRT::CRACK::PropagateTip::WriteCrackTipLocation( const std::vector<int>& ne
   std::vector<double> disp(3,0.0);
   int nodeid = newTip[0];
 
-  if( not tip_bc_disp_.size() == 0 )
+  if( not (tip_bc_disp_.size() == 0) )
   {
     std::map<int, std::vector<double> >::iterator it = tip_bc_disp_.begin();
     nodeid = it->first;
