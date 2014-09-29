@@ -126,7 +126,6 @@ THETA                           0.5
 INITRANDOMSEED                  1000
 UQSTRATEGY                      MC_PLAIN
 FWDPROBLEM                      structure
-MLMC                            yes
 NUMRUNS                         1
 REDUCED_OUTPUT                  no
 START_RUN                       0

@@ -170,7 +170,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 INITRANDOMSEED                  1000
 FWDPROBLEM                      structure
 UQSTRATEGY                      MC_PLAIN
-NUMRUNS                         12
+NUMRUNS                         1
 REDUCED_OUTPUT                  no
 START_RUN                       0
 PARAMLIST                       1 BETA
