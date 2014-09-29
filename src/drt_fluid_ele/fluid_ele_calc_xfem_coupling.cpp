@@ -142,8 +142,22 @@ Teuchos::RCP<SlaveElementInterface<distype> > SlaveElementInterface<distype>::Cr
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
+  bool  is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+)
+{
+  NitscheInterface * nit = NULL;
+  typedef NitscheCoupling<distype,DRT::Element::dis_none,3> NitscheCouplType;
+  nit = new NitscheCouplType(is_viscAdjointSymmetric);
+
+  return Teuchos::rcp(nit);
+}
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
   DRT::Element *              bele,           ///< boundary element
-  Epetra_SerialDenseMatrix &  bele_xyz        ///< global node coordinates of boundary element
+  Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
+  bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
 )
 {
   NitscheInterface * nit = NULL;
@@ -174,19 +188,19 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz);
+      nit = new NitscheCouplType(bele_xyz,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad8,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz);
+      nit = new NitscheCouplType(bele_xyz,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad9,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz);
+      nit = new NitscheCouplType(bele_xyz,is_viscAdjointSymmetric);
       break;
     }
     default:
@@ -381,7 +395,8 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
 template<DRT::Element::DiscretizationType distype>
 Teuchos::RCP<HybridLMInterface<distype> > HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
   DRT::Element *              bele,           ///< boundary element
-  Epetra_SerialDenseMatrix &  bele_xyz        ///< global node coordinates of boundary element
+  Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
+  bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
 )
 {
   // get number of dofs for this boundary element
@@ -410,19 +425,19 @@ Teuchos::RCP<HybridLMInterface<distype> > HybridLMInterface<distype>::CreateHybr
     case DRT::Element::quad4:
     {
       typedef HybridLMCoupling<distype,DRT::Element::quad4,3> HybridLMCouplType;
-      return Teuchos::rcp(new HybridLMCouplType(bele_xyz));
+      return Teuchos::rcp(new HybridLMCouplType(bele_xyz,is_viscAdjointSymmetric));
       break;
     }
     case DRT::Element::quad8:
     {
       typedef HybridLMCoupling<distype,DRT::Element::quad8,3> HybridLMCouplType;
-      return Teuchos::rcp(new HybridLMCouplType(bele_xyz));
+      return Teuchos::rcp(new HybridLMCouplType(bele_xyz,is_viscAdjointSymmetric));
       break;
     }
     case DRT::Element::quad9:
     {
       typedef HybridLMCoupling<distype,DRT::Element::quad9,3> HybridLMCouplType;
-      return Teuchos::rcp(new HybridLMCouplType(bele_xyz));
+      return Teuchos::rcp(new HybridLMCouplType(bele_xyz,is_viscAdjointSymmetric));
       break;
     }
     default:

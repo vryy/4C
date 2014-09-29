@@ -964,7 +964,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
-    si->SetSlaveVel(cutdis,"ivelnp",cutla[0].lm_);
+    si->SetSlaveState(cutdis,"ivelnp",cutla[0].lm_);
 
     // set displacement of side
     si->AddSlaveEleDisp(cutdis,"idispnp",cutla[0].lm_);
@@ -1267,9 +1267,9 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
     si = DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>::CreateSlaveElementRepresentation(side,side_xyze);
 
     // set side element velocity at integration point of boundary dis
-    si->SetSlaveVel(cutdis,"ivelnp",cutla[0].lm_);
+    si->SetSlaveState(cutdis,"ivelnp",cutla[0].lm_);
     // set embedded element velocity at integration point
-    emb->SetSlaveVel(embdis,"velaf",alela[0].lm_);
+    emb->SetSlaveState(embdis,"velaf",alela[0].lm_);
 
     // set displacement of side
     si->AddSlaveEleDisp(cutdis,"idispnp",cutla[0].lm_);
@@ -1691,11 +1691,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     }
     else
     {
-      si = DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(side,side_xyze);
+      si = DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(side,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
     }
 
     // get velocity at integration point of boundary dis
-    si->SetSlaveVel(cutdis,"ivelnp",cutla[0].lm_);
+    si->SetSlaveState(cutdis,"ivelnp",cutla[0].lm_);
     // set displacement of side
     si->AddSlaveEleDisp(cutdis,"idispnp",cutla[0].lm_);
 
@@ -1719,12 +1719,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         Epetra_SerialDenseMatrix & C_uiui = conv_side_matrices[3];
 
          si_nit[sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(
-            side, side_xyze, C_uiu, C_uui, rhC_ui, C_uiui, true);
+            side, side_xyze, C_uiu, C_uui, rhC_ui, C_uiui, fldparaxfem_->IsViscousAdjointSymmetric());
       }
       else if (! eval_side_coupling)
       {
         si_nit[sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-                      side, side_xyze);
+                      side, side_xyze, fldparaxfem_->IsViscousAdjointSymmetric());
       }
       else
         dserror("Convective stabilization not yet available for monolithic XFSI!");
@@ -3113,13 +3113,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     }
     else
     {
-      si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(side,side_xyze);
+      si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(side,side_xyze,fldparaxfem_->IsViscousAdjointSymmetric());
     }
 
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
-    si->SetSlaveVel(cutdis,"ivelnp",cutla[0].lm_);
+    si->SetSlaveState(cutdis,"ivelnp",cutla[0].lm_);
 
     // set displacement of side
     si->AddSlaveEleDisp(cutdis,"idispnp",cutla[0].lm_);
@@ -3504,7 +3504,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
-    emb->SetSlaveVel(alediscret,"velaf",alela[0].lm_);
+    emb->SetSlaveState(alediscret,"velaf",alela[0].lm_);
 
     // set displacement of embedded element & side
     emb->AddSlaveEleDisp(alediscret,"dispnp",alela[0].lm_);

@@ -76,7 +76,7 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::AddSlaveEle
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::SetSlaveVel(
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::SetSlaveState(
   const DRT::Discretization &  slavedis,       ///< coupling slave discretization
   const std::string            state,          ///< state
   const std::vector<int>&      lm              ///< local map
@@ -106,47 +106,42 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::SetSlaveVel
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate(
-  const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t slave element
-  LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
-  LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
-  double                          & drs      ///< transformation factor
-)
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetInterfaceVel(
+  LINALG::Matrix<nsd_,1>& ivelint  ///< interface velocity at coupling slave side
+) const
 {
-  // Todo: remove this routine - it goes together with old boundary transformation
-  if (slave_nsd_ == nsd_)
-  {
-    dserror("You called 2D evaluation routine when coupling with a 3D element.");
-    return;
-  }
+  ivelint.Multiply(slave_vel_,slave_funct_);
+}
 
-  LINALG::Matrix<slave_nsd_,slave_nsd_> metrictensor;
-  LINALG::Matrix<slave_nsd_+1,slave_nen_> bele_xyze(true);
-  LINALG::Matrix<slave_nsd_,slave_nen_> bele_deriv(true);
-  // auxiliary variable to match the interface for metric
-  // tensor computation
-  LINALG::Matrix<slave_nsd_+1,1> aux(true);
-  for (unsigned i = 0; i < slave_nsd_+1; ++ i)
-  {
-    if (i < nsd_)
-    {
-        aux(i) = normal(i);
-      for (unsigned j = 0; j < slave_nen_; ++ j)
-        bele_xyze(i,j) = slave_xyze_(i,j);
-    }
-  }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetInterfacePres(
+  double & ipres ///< interface pressure at coupling slave side
+) const
+{
+  // pressure at current gauss-point
+  ipres = slave_funct_.Dot(slave_pres_);
+}
 
-  DRT::UTILS::shape_function_2D( slave_funct_, eta( 0 ), eta( 1 ), slave_distype );
-  DRT::UTILS::shape_function_2D_deriv1( bele_deriv, eta( 0 ), eta( 1 ), slave_distype );
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<slave_distype>( bele_xyze, bele_deriv, metrictensor, drs, &aux);
-  aux.Clear();
-  aux.Multiply(bele_xyze, slave_funct_);
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetInterfaceVelGrad(
+  LINALG::Matrix<nsd_,nsd_>& velgradint  ///< interface velocity gradients at coupling slave side
+) const
+{
+  velgradint = slave_vderxy_;
+}
 
-  for (unsigned i = 0; i < slave_nsd_+1; ++ i)
-  {
-    if (i < nsd_)
-      x(i) = aux(i);
-  }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetSlaveFunct(
+  LINALG::Matrix<slave_nen_,1> & slave_funct ///< coupling slave shape functions
+  ) const
+{
+  slave_funct = slave_funct_;
 }
 
 /*----------------------------------------------------------------------*
@@ -538,6 +533,14 @@ double SlaveElementRepresentation<distype,slave_distype,slave_numdof>::EvalShape
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetSlaveFunctDeriv(LINALG::Matrix<nsd_,slave_nen_>& slave_derxy) const
+{
+  slave_derxy = slave_derxy_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
   const Teuchos::RCP<SlaveElementInterface<distype> > & slave_ele,              ///< associated slave element coupling object
   Epetra_SerialDenseMatrix &                            C_umum,                 ///< standard master-master-matrix
@@ -722,8 +725,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
   funct_m_timefacfac.Scale(timefacfac);
 
   // funct_s * timefac * fac
-  LINALG::Matrix<slave_nen_,1> funct_s;
-  this->GetSlaveFunct(funct_s);
+  LINALG::Matrix<slave_nen_,1> funct_s(true);
+  if (slave_distype != DRT::Element::dis_none)
+    this->GetSlaveFunct(funct_s);
   LINALG::Matrix<slave_nen_,1> funct_s_timefacfac(funct_s);
   funct_s_timefacfac.Scale(timefacfac);
 
@@ -2298,7 +2302,11 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9,3>;
 
-
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,3>;
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;
@@ -2353,6 +2361,12 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex8,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex20,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex27,4>;
+
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::dis_none,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::dis_none,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,4>;
 
 // pairs with numdof=3
 //template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8,  DRT::Element::tri3,3>;

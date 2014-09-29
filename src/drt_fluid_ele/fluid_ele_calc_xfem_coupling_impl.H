@@ -49,15 +49,15 @@ namespace DRT
         SlaveElementRepresentation(Epetra_SerialDenseMatrix &  slave_xyze) :
           slave_xyze_(slave_xyze.A(), true) {};
 
-        //! add coupling slave element's displacements and set current slave element node coordiantes
+        //! add coupling slave element's displacements and set current slave element node coordinates
         void AddSlaveEleDisp(
           const DRT::Discretization &  slavedis,     ///< coupling slave discretization
           const std::string            state,        ///< state
           const std::vector<int>&      lm            ///< local map
           );
 
-        //! set slave element's interface velocity
-        void SetSlaveVel(
+        //! set slave element's interface velocity & pressure
+        void SetSlaveState(
           const DRT::Discretization &  slavedis,     ///< coupling slave discretization
           const std::string            state,        ///< state
           const std::vector<int>&      lm            ///< local map
@@ -69,46 +69,24 @@ namespace DRT
         //! extract interface velocity
         void GetInterfaceVel(
           LINALG::Matrix<nsd_,1>& ivelint  ///< interface velocity at coupling slave side
-        ) const
-        {
-          ivelint.Multiply(slave_vel_,slave_funct_);
-        }
+        ) const;
 
         //! get interface pressure
         void GetInterfacePres(
           double & ipres ///< interface pressure at coupling slave side
-        ) const
-        {
-          // pressure at current gauss-point
-          ipres = slave_funct_.Dot(slave_pres_);
-        }
+        ) const;
 
         //! get interface velocity gradient
         void GetInterfaceVelGrad(
           LINALG::Matrix<nsd_,nsd_>& velgradint  ///< interface velocity gradients at coupling slave side
-        ) const
-        {
-          velgradint = slave_vderxy_;
-        }
+        ) const;
 
         //! get slave elements nodal shape functions
         void GetSlaveFunct(
           LINALG::Matrix<slave_nen_,1> & slave_funct ///< coupling slave shape functions
-          ) const
-        {
-          slave_funct = slave_funct_;
-        }
+          ) const;
 
         //@}
-
-        //! evaluate shape function, derivatives, normal and transformation w.r.t side element at gaussian point
-        //! (old boundary transformation, should be removed)
-        void Evaluate(
-          const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element
-          LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
-          LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
-          double                          & drs      ///< transformation factor
-        );
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
         void Evaluate( LINALG::Matrix<nsd_,1> & xside );
@@ -136,6 +114,9 @@ namespace DRT
 
       protected:
 
+        //! default constructor
+        SlaveElementRepresentation(){};
+
         //! evaluate shape functions and derivatives at integration point
         double EvalShapeFuncAndDerivsAtIntPoint(
           const double* gpcoord,  //< actual integration point (coords)
@@ -146,7 +127,7 @@ namespace DRT
         //@{
 
         //! get spatial derivatives of slave elements nodal shape functions
-        void GetSlaveFunctDeriv(LINALG::Matrix<nsd_,slave_nen_>& slave_derxy) const{ slave_derxy = slave_derxy_; }
+        void GetSlaveFunctDeriv(LINALG::Matrix<nsd_,slave_nen_>& slave_derxy) const;
 
         //@}
 
@@ -160,6 +141,50 @@ namespace DRT
         LINALG::Matrix<slave_nen_,1>    slave_pres_;         ///< coupling slave element's pressure
         LINALG::Matrix<nsd_,nsd_>       slave_vderxy_;       ///< coupling slave element's velocity derivatives
         LINALG::Matrix<nsd_,slave_nen_> slave_disp_;         ///< coupling slave element's displacements
+      };
+
+      /*!
+       * specialized interface class for XFluid weak Dirichlet problems with a interface given by a level-set field
+       * (we then don't couple with a concrete slave element!)
+       */
+      //!
+      template<DRT::Element::DiscretizationType distype, unsigned int slave_numdof>
+      class SlaveElementRepresentation<distype,DRT::Element::dis_none,slave_numdof>
+      {
+      public:
+
+        /// number of nodes per master (xfem-fluid) element
+        static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+        /// number of spatial dimensions of the master element (xfem-fluid)
+        static const unsigned nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+        /// number of spatial dimensions of the slave side
+        static const unsigned slave_nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+        /// just for compatibility...
+        static const unsigned slave_nen_ = nen_;
+
+        //! get slave elements nodal shape functions - if the interface is given as a level-set
+        //! field, the request is unfulfilled
+        void GetSlaveFunct(
+          LINALG::Matrix<slave_nen_,1> & slave_funct ///< coupling slave shape functions
+          ) const
+        {
+          dserror("There is no concrete slave element available.");
+        };
+
+      protected:
+
+        //! default ctor
+        SlaveElementRepresentation(){};
+
+        //! ctor
+        SlaveElementRepresentation(Epetra_SerialDenseMatrix &  slave_xyze){};
+
+        //! get nodal shape function derivatives
+        void GetSlaveFunctDeriv(LINALG::Matrix<nsd_,slave_nen_>& slave_derxy) const
+        {
+          dserror("There is no concrete slave element available.");
+        };
+
       };
 
       //! concrete evaluation class for interface coupling using Nitsche's method
@@ -178,13 +203,22 @@ namespace DRT
         /// number of slave element's nodes
         static const unsigned slave_nen_ = SlaveElementRepresentation<distype,slave_distype,slave_numdof>::slave_nen_;
 
-        //! ctor for one-sided (xfluid weak dirichlet) problems
+        //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by level-set field)
+        NitscheCoupling(bool isViscAdjointSymmetric = true):
+          SlaveElementRepresentation<distype,slave_distype,slave_numdof>(),
+          applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
+        {
+        }
+
+        //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by mesh)
         NitscheCoupling(
-          Epetra_SerialDenseMatrix &  slave_xyze  ///< global node coordinates of slave element
+          Epetra_SerialDenseMatrix &  slave_xyze, ///< global node coordinates of slave element
+          bool isViscAdjointSymmetric = true
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
           applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
-          adj_visc_scale_(1.0)
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
         {
         }
 
@@ -465,15 +499,16 @@ namespace DRT
 
         //! ctor for xfluid weak dirichlet problem
         HybridLMCoupling(
-          Epetra_SerialDenseMatrix &  slave_xyze ///< global node coordinates of slave element
+          Epetra_SerialDenseMatrix &  slave_xyze, ///< global node coordinates of slave element
+          bool isViscAdjointSymmetric = true      ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
           applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
-          adj_visc_scale_(1.0)
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
         {
         }
 
-        //! ctor for fluid-fluid, xfsi or 2-phase flow
+        //! ctor for fluid-fluid
         HybridLMCoupling(
           Epetra_SerialDenseMatrix &  slave_xyz,       ///< global node coordinates of slave element
           Epetra_SerialDenseMatrix &  C_usum,          ///< C_usum coupling matrix

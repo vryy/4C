@@ -86,52 +86,60 @@ namespace DRT
           const DRT::Discretization &  slavedis,     ///< coupling slave discretization
           const std::string            state,        ///< state
           const std::vector<int>&      lm            ///< local map
-        ) = 0;
+        )
+        { dserror("There is no concrete slave element available."); };
 
         //! @name accessors
         //@{
 
         //! set slave element's nodal velocities
-        virtual void SetSlaveVel(
+        virtual void SetSlaveState(
            const DRT::Discretization &  slavedis,     ///< embedded discretization
            const std::string            state,        ///< state
            const std::vector<int>&      lm            ///< local map
-         ) = 0;
+        )
+        { dserror("There is no concrete slave element available."); };
 
-        //! get interface velocity
+        /*!
+         * get interface velocity - return 0 velocity (if we don't have a concrete slave
+         * element (level-set applications), this is correct - otherwise this method is
+         * overloaded!!)
+         */
         virtual void GetInterfaceVel(
-          LINALG::Matrix<nsd_,1>& ivelint ) const = 0;  ///< interface velocity at coupling slave side
+          LINALG::Matrix<nsd_,1>& ivelint             ///< interface velocity at coupling slave side
+        ) const
+        {
+          ivelint = LINALG::Matrix<nsd_,1>(true);
+        };
 
         //! get interface pressure
-        virtual void GetInterfacePres(double & ipres) const = 0;  ///< interface pressure
+        virtual void GetInterfacePres(double & ipres  ///< interface pressure
+        ) const
+        { dserror("There is no concrete slave element available."); };
 
         //! get interface velocity gradient
         virtual void GetInterfaceVelGrad(
-          LINALG::Matrix<nsd_,nsd_>& velgradint ) const = 0;  ///< interface velocity gradients at coupling slave side
+          LINALG::Matrix<nsd_,nsd_>& velgradint       ///< interface velocity gradients at coupling slave side
+        ) const
+        { dserror("There is no concrete slave element available."); };
 
         //@}
 
-        //! evaluate shape function, derivatives, normal and transformation w.r.t side element at gaussian point
-        //! (old!)
-        virtual void Evaluate(
-           const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element
-           LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
-           LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
-           double                          & drs      ///< transformation factor
-           ) = 0;
-
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
-        virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside ) = 0;
+        virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside )
+        { dserror("There is no concrete slave element available."); }
 
         //! compute coupling slave element's characteristic element length (diameter for side element)
-        virtual void ComputeCharElementLength( double & h_k ) = 0;
+        virtual void ComputeCharElementLength( double & h_k )
+        { dserror("There is no concrete slave element available."); }
 
         //! compute interface force for side nodes
         virtual void ComputeInterfaceForce(
            Epetra_SerialDenseVector &   iforce,     ///< interface force vector
            LINALG::Matrix<nsd_,1> &     traction,   ///< traction vector at gaussian point
            const double &               fac         ///< integration factor
-        ) = 0;
+        )
+        { dserror("There is no concrete slave element available."); }
 
         //! project gaussian point from linearized interface in normal direction onto corresponding side
         //! (2D slave element)
@@ -139,11 +147,12 @@ namespace DRT
           LINALG::Matrix<nsd_,1> & x_gp_lin,         ///< global coordinates of gaussian point w.r.t linearized interface
           LINALG::Matrix<nsd_,1> & x_side,           ///< projected gaussian point on side
           LINALG::Matrix<nsd_-1,1> & xi_side         ///< local coordinates of projected gaussian point w.r.t side
-        ) = 0;
+        )
+        { dserror("There is no concrete slave element available."); }
 
         //! evaluate shape functions and derivatives at element center
-        virtual double EvalShapeFuncAndDerivsAtEleCenter() = 0;
-
+        virtual double EvalShapeFuncAndDerivsAtEleCenter()
+        { dserror("There is no concrete slave element available."); return 0.0; }
       };
 
       //! factory class for coupling with Nitsche's method
@@ -160,10 +169,15 @@ namespace DRT
         /// number of nodal DOF for master element (always a xfem-fluid element)
         static const unsigned  master_numdof_ = nsd_ + 1;
 
+        static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
+          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          );
+
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
-          DRT::Element *              bele,           ///< boundary element
-          Epetra_SerialDenseMatrix &  bele_xyz        ///< global node coordinates of boundary element
+          DRT::Element *              bele,                   ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,               ///< global node coordinates of boundary element
+          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
           );
 
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
@@ -264,7 +278,8 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet problems
         static Teuchos::RCP<HybridLMInterface<distype> > CreateHybridLMCoupling_XFluidWDBC(
           DRT::Element *              bele,           ///< boundary element
-          Epetra_SerialDenseMatrix &  bele_xyz        ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
+          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
           );
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid-sided coupling strategy
