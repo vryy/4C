@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file stat_inv_utils.H
+ * \file invana_utils.H
  *
 <pre>
 Maintainer: Sebastian Kehl
@@ -9,9 +9,9 @@ Maintainer: Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include <string>
 
 #include "invana_utils.H"
+
 #include "../drt_lib/drt_dserror.H"
 #include "Epetra_SerialDenseVector.h"
 #include "../linalg/linalg_utils.H"
@@ -21,12 +21,12 @@ Maintainer: Sebastian Kehl
 /* Compute norm of two vectors stored in                    keh 03/14   */
 /* multivector format for storage reasons only                          */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result, const Epetra_Map* uniquemap)
+void STR::INVANA::MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int anorm, double* result)
 {
-  Epetra_SerialDenseVector vnorm(avector->NumVectors());
+  Epetra_SerialDenseVector vnorm(avector.NumVectors());
 
-  Teuchos::RCP<Epetra_MultiVector> unique = Teuchos::rcp(new Epetra_MultiVector(*uniquemap, avector->NumVectors(),true));
-  LINALG::Export(*avector, *unique);
+  Teuchos::RCP<Epetra_MultiVector> unique = Teuchos::rcp(new Epetra_MultiVector(uniquemap, avector.NumVectors(),true));
+  LINALG::Export(avector, *unique);
 
   if (anorm==2)
     unique->Norm2(vnorm.Values());
@@ -45,17 +45,16 @@ void STR::INVANA::MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, do
 /* Compute dot product of two vectors stored in             keh 03/14   */
 /* multivector format for storage reasons only                          */
 /*----------------------------------------------------------------------*/
-//! compute dot product of two vectors stored in multivector fomat for storage reasons only
-void STR::INVANA::MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result, const Epetra_Map* uniquemap)
+void STR::INVANA::MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result)
 {
-  dsassert(avector->NumVectors()==bvector->NumVectors(), "give proper multivectors!");
+  dsassert(avector.NumVectors()==bvector.NumVectors(), "give proper multivectors!");
 
-  Epetra_SerialDenseVector anorm(avector->NumVectors());
+  Epetra_SerialDenseVector anorm(avector.NumVectors());
 
-  Teuchos::RCP<Epetra_MultiVector> uniquea = Teuchos::rcp(new Epetra_MultiVector(*uniquemap, avector->NumVectors(),true));
-  LINALG::Export(*avector, *uniquea);
-  Teuchos::RCP<Epetra_MultiVector> uniqueb = Teuchos::rcp(new Epetra_MultiVector(*uniquemap, bvector->NumVectors(),true));
-  LINALG::Export(*bvector, *uniqueb);
+  Teuchos::RCP<Epetra_MultiVector> uniquea = Teuchos::rcp(new Epetra_MultiVector(uniquemap, avector.NumVectors(),true));
+  LINALG::Export(avector, *uniquea);
+  Teuchos::RCP<Epetra_MultiVector> uniqueb = Teuchos::rcp(new Epetra_MultiVector(uniquemap, bvector.NumVectors(),true));
+  LINALG::Export(bvector, *uniqueb);
 
   // do dot product with unique vectors now
   uniquea->Dot(*uniqueb,anorm.Values());
@@ -64,35 +63,3 @@ void STR::INVANA::MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos
   for (int j=0; j<anorm.Length(); j++) *result+=anorm[j];
 
 }
-
-//! reduce restart number in control file name and strip off ".control"
-std::string STR::INVANA::decreaseControlFileNum(const Epetra_Comm& comm, std::string filein, int restart)
-{
-  if (restart)
-  {
-    if (comm.MyPID()==0)
-    {
-      int number = 0;
-      size_t pos = filein.rfind('-');
-      if (pos!=std::string::npos)
-      {
-        number = atoi(filein.substr(pos+1).c_str());
-        filein = filein.substr(0,pos);
-      }
-      else
-        dserror("control file with at least \"-1\" exists at this point. Something went wrong");
-
-      number -= 1;
-      std::stringstream name;
-      if (number == 0)
-        name << filein;
-      else
-        name << filein << "-" << number;
-
-      filein = name.str();
-    }
-  }
-
-  return filein;
-}
-

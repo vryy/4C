@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file timint_adjoint.H
-\brief Time integration for an hyperleastic quasi static adjoint problem
+ \file timint_adjoint.H
+ \brief Adjoint time integration for a quasi static hyperelasticity
 
-<pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            089 - 289-10361
-</pre>
-*/
+ <pre>
+ Maintainer: Sebastian Kehl
+ kehl@mhpc.mw.tum.de
+ 089 - 289-10361
+ </pre>
+ */
 
 /*----------------------------------------------------------------------*/
 /* definitions */
@@ -17,157 +17,149 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
-
+#include "Teuchos_RCP.hpp"
+#include "Epetra_MultiVector.h"
+#include "Teuchos_ParameterList.hpp"
 
 // forward declarations
 namespace DRT
 {
-  class Discretization;
+class Discretization;
 
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
+namespace UTILS
+{
+class LocsysManager;
+}
 }
 
 namespace LINALG
 {
-  class Solver;
-  class MapExtractor;
-  class SparseMatrix;
-  class SparseOperator;
-  class BlockSparseMatrixBase;
+class Solver;
+class MapExtractor;
+class SparseMatrix;
+class SparseOperator;
+class BlockSparseMatrixBase;
 }
 
 namespace IO
 {
-  class DiscretizationWriter;
+class DiscretizationWriter;
 }
 
-
-
 /*----------------------------------------------------------------------*/
-//! Structural Dynamics
 namespace STR
 {
 
+class TimIntAdjoint
+{
 
-  class TimIntAdjoint
-  {
+public:
 
-  public:
+  //! constructor
+  TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis, std::vector<double> time);
 
-    //! Constructor
-    TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis, std::vector<double> time);
+  //! destructor
+  virtual ~TimIntAdjoint() {}
 
-    //! Empty constructor
-    TimIntAdjoint() { ; }
+  // interface to the calling optimization routine to set up the rhs and the primal variables
+  void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs, Teuchos::RCP<Epetra_MultiVector> dis);
 
-    // interface to the calling optimization routine to set up the rhs and the primal variables
-    void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
-                      Teuchos::RCP<Epetra_MultiVector> dis);
+  //! do reverse time integration
+  void Integrate();
 
-    //! Do time integration of multiple steps
-    void Integrate();
+  // result vector
+  Teuchos::RCP<Epetra_MultiVector> ExtractSolution() {return disdual_;}
 
-    // result vector
-    Teuchos::RCP<Epetra_MultiVector> ExtractSolution() {return disdual_;};
+private:
 
+  //! intro
+  void PrintLogo();
 
-  private:
+  //! solve the linear system
+  void Solve();
 
-    //! Intro
-    void PrintLogo();
+  // evaluate stiffness matrix
+  void EvaluateStiff();
 
-    //! Solve the linear system
-    void Solve();
+  // set up things needed for this timestep
+  void PrepareStep();
 
-    // evaluate stiffness matrix
-    void EvaluateStiff();
+  // update step and time
+  void UpdateStep();
 
-    // set up things needed for this timestep
-    void PrepareStep();
+  // create a linear solver according to sdyn section
+  void CreateLinearSolver(const Teuchos::ParameterList& sdyn);
 
-    // update step and time
-    void UpdateStep();
+  // DBC Map
+  void GetDBCMap();
 
-    // create a linear solver according to sdyn section
-    void CreateLinearSolver(const Teuchos::ParameterList& sdyn);
+  //! return (rotatory) transformation matrix of local co-ordinate systems
+  Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
-    // DBC Map
-    void GetDBCMap();
+  //! print information of time steps to screen
+  int printtoscreen_;
 
-    //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+  //! the discretization
+  Teuchos::RCP<DRT::Discretization> discret_;
 
-    //! print information of time steps to screen
-    int printtoscreen_;
+  //! the dofrowmap of the discretization
+  const Epetra_Map* dofrowmap_;
 
-    //! some funny stuff
-    Teuchos::RCP<DRT::Discretization> discret_;
+  //! a solver
+  Teuchos::RCP<LINALG::Solver> solver_;
 
-    //! a dofrowmap of the discretization
-    const Epetra_Map* dofrowmap_;
+  //! to apply Dirichlet BCs with local co-ordinate system
+  Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
-    //! a solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+  //! map to the dirichlet boundary
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-    //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+  //! DBC toggle
+  Teuchos::RCP<Epetra_Vector> dbctoggle_;
 
-    //! Map to the dirichlet boundary
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+  //! primal variables (displacements)
+  Teuchos::RCP<Epetra_MultiVector> dis_;
 
-    //! DBC toggle
-    Teuchos::RCP<Epetra_Vector> dbctoggle_;
+  //! dual variables (lagrange multiplier)
+  Teuchos::RCP<Epetra_MultiVector> disdual_;
 
-    //! primal variables (displacements)
-    Teuchos::RCP<Epetra_MultiVector> dis_;
+  //! rhs for the adjoints
+  Teuchos::RCP<Epetra_MultiVector> rhs_;
 
-    //! dual variables (lagrange multiplier)
-    Teuchos::RCP<Epetra_MultiVector> disdual_;
+  //! dis_ at step n
+  Teuchos::RCP<Epetra_Vector> disn_;
 
-    //! rhs for the adjoints
-    Teuchos::RCP<Epetra_MultiVector> rhs_;
+  //! disdualn_ at step n
+  Teuchos::RCP<Epetra_Vector> disdualn_;
 
-    //! dis_ at step n
-    Teuchos::RCP<Epetra_Vector> disn_;
+  //! disdualn_ at step n
+  Teuchos::RCP<Epetra_Vector> rhsn_;
 
-    //! disdualn_ at step n
-    Teuchos::RCP<Epetra_Vector> disdualn_;
+  //! stiffness matrix
+  Teuchos::RCP<LINALG::SparseOperator> stiff_;
 
-    //! disdualn_ at step n
-    Teuchos::RCP<Epetra_Vector> rhsn_;
+  //! stiffness matrix with neumann terms
+  Teuchos::RCP<LINALG::SparseOperator> stiffn_;
 
-    //! stiffness matrix
-    Teuchos::RCP<LINALG::SparseOperator> stiff_;
+  //! a vector with zeros
+  Teuchos::RCP<Epetra_Vector> zeros_;
 
-    //! stiffness matrix carrying neumann terms
-    Teuchos::RCP<LINALG::SparseOperator> stiffn_;
+  //! number of simulation steps in the primal problem
+  int msteps_;
 
-    //! a vector with zeros
-    Teuchos::RCP<Epetra_Vector> zeros_;
+  //! time step at time n
+  int stepn_;
 
-    //! number of simulation steps in the primal problem
-    int msteps_;
+  //! timesteps coming from the primal problem
+  std::vector<double> time_;
 
-    //! time step at time n
-    int stepn_;
+  //! current time
+  double timen_;
 
-    //! time from the primal problem
-    std::vector<double> time_;
+  //! rhs and primal variables set?
+  bool isinit_;
 
-    //! current time value
-    double timen_;
-
-    //! rhs and primal variables set?
-    bool isinit_;
-
-
-  };
+};
 
 }
 

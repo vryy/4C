@@ -25,8 +25,8 @@ Maintainer: Jonas Biehler
 #include "../drt_io/io_pstream.H"
 //#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
+//#include <Epetra_Map.h>
+//#include <Epetra_Operator.h>
 
 // only compile this on the workstation as kaisers boost version is outdated an cant run this code
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)

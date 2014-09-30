@@ -38,15 +38,15 @@ ACOU::PatMatParManagerPerElement::PatMatParManagerPerElement(Teuchos::RCP<DRT::D
 /*----------------------------------------------------------------------*/
 void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
-  Teuchos::RCP<const Epetra_Vector> phi = discret_->GetState("phi");
+  Teuchos::RCP<const Epetra_Vector> phi = Discret()->GetState("phi");
 
-  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  for (int i=0; i<Discret()->NumMyRowElements(); i++)
   {
     DRT::Element* actele;
-    actele = discret_->lRowElement(i);
+    actele = Discret()->lRowElement(i);
     int elematid = actele->Material()->Parameter()->Id();
 
-    if (paramap_.find(elematid) == paramap_.end() )
+    if (ParaMap().find(elematid) == ParaMap().end() )
       continue;
 
     // list to define routines at elementlevel
@@ -55,10 +55,10 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
     p.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
     // this works if we optimize only with respect to reac
-    p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,discret_->ElementColMap()->LID(actele->Id()))<0.0);
+    p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("scaleele",false);
 
-    std::vector<int> actparams = paramap_.at( elematid );
+    std::vector<int> actparams = ParaMap().at( elematid );
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
@@ -70,9 +70,9 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
       Epetra_SerialDenseVector elevector2(ndof);
       Epetra_SerialDenseVector elevector3(ndof);
 
-      DRT::Element::LocationArray la(discret_->NumDofSets());
-      actele->LocationVector(*discret_,la,false);
-      actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+      DRT::Element::LocationArray la(Discret()->NumDofSets());
+      actele->LocationVector(*Discret(),la,false);
+      actele->Evaluate(p,*Discret(),la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
       //reuse elevector2
       for (int l=0; l<(int)la[0].lm_.size(); l++)
@@ -85,7 +85,7 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
+      ContractGradient(dfint,val2,actele->Id(),ParaPos().at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 
@@ -99,15 +99,15 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
 /*----------------------------------------------------------------------*/
 void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
-  Teuchos::RCP<const Epetra_Vector> phi = discret_->GetState("phi");
+  Teuchos::RCP<const Epetra_Vector> phi = Discret()->GetState("phi");
 
-  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  for (int i=0; i<Discret()->NumMyRowElements(); i++)
   {
     DRT::Element* actele;
-    actele = discret_->lRowElement(i);
+    actele = Discret()->lRowElement(i);
     int elematid = actele->Material()->Parameter()->Id();
 
-    if (paramap_.find(elematid) == paramap_.end() )
+    if (ParaMap().find(elematid) == ParaMap().end() )
     {
       std::cout<<"Warning, skipping elematid "<<elematid<<" in ele "<<actele->Id()<<std::endl;
       continue;
@@ -118,10 +118,10 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
     p.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
     // this works if we optimize only with respect to reac
-    p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,discret_->ElementColMap()->LID(actele->Id()))<0.0);
+    p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("scaleele",scalegradele_);
 
-    std::vector<int> actparams = paramap_.at( elematid );
+    std::vector<int> actparams = ParaMap().at( elematid );
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
@@ -133,9 +133,9 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
       Epetra_SerialDenseVector elevector2(ndof);
       Epetra_SerialDenseVector elevector3(ndof);
 
-      DRT::Element::LocationArray la(discret_->NumDofSets());
-      actele->LocationVector(*discret_,la,false);
-      actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+      DRT::Element::LocationArray la(Discret()->NumDofSets());
+      actele->LocationVector(*Discret(),la,false);
+      actele->Evaluate(p,*Discret(),la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
       //reuse elevector2
       for (int l=0; l<(int)la[0].lm_.size(); l++)
@@ -148,7 +148,7 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
 
       // Assemble the final gradient; this is parametrization class business
       // (i.e contraction to (optimization)-parameter space:
-      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
+      ContractGradient(dfint,val2,actele->Id(),ParaPos().at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 

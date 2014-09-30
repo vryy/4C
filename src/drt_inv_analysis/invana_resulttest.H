@@ -19,7 +19,7 @@ Maintainer: Sebastian Kehl
 
 
 #include "../drt_lib/drt_resulttest.H"
-#include <Epetra_Vector.h>
+#include "Epetra_MultiVector.h"
 
 namespace DRT
 {
@@ -31,7 +31,7 @@ namespace STR
 namespace INVANA
 {
 // forward declarations
-class StatInvAnalysis;
+class InvanaBase;
 class MatParManager;
 
 
@@ -40,25 +40,25 @@ class MatParManager;
 
 \author keh
 */
-class InvAnaResultTest : public DRT::ResultTest
+class InvanaResultTest : public DRT::ResultTest
 {
 public:
 
     /*!
     \brief not documented yet
     */
-    InvAnaResultTest(StatInvAnalysis& ia);
+    InvanaResultTest(InvanaBase& ia);
+
+    virtual ~InvanaResultTest(){};
 
     /*!
     Possible flag is the name of the material parameter as used by the material, e.g AAAstopro: YOUNG or BETA
     */
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    /*
-    Possible flags are "gradient" and "error"
-    */
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) {return;}
 
 private:
 
@@ -72,7 +72,7 @@ private:
     Teuchos::RCP<MatParManager> matman_;
 
     //! the inverse analysis algorithm object
-    StatInvAnalysis& ia_;
+    InvanaBase& ia_;
 
 
 

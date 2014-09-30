@@ -1376,13 +1376,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // want some regularization
   setStringToIntegralParameter<int>("REGULARIZATION","none",
-                                    "want regularization? ('thikonov', 'none')",
+                                    "want regularization? ('tikhonov', 'totalvariation,'none')",
                                     tuple<std::string>(
                                       "none",
-                                      "thikonov"),
+                                      "tikhonov",
+                                      "totalvariation"),
                                     tuple<int>(
                                       INPAR::STR::stat_inv_reg_none,
-                                      INPAR::STR::stat_inv_reg_thikonov),
+                                      INPAR::STR::stat_inv_reg_tikhonov,
+                                      INPAR::STR::stat_inv_reg_totalvariation),
                                     &statinvp);
 
   // want some regularization

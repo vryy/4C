@@ -1273,19 +1273,27 @@ set(OBJS_INV_ANALYSIS
   src/drt_structure/str_invanalysis.cpp
 )
 set(OBJS_STATINV_ANALYSIS
-  src/drt_inv_analysis/stat_inv_analysis.cpp
   src/drt_structure/str_statinvanalysis.cpp
   src/drt_inv_analysis/timint_adjoint.cpp
   src/drt_inv_analysis/objective_funct_disp.cpp
   src/drt_inv_analysis/objective_funct_surfcurr.cpp
   src/drt_inv_analysis/matpar_manager.cpp
   src/drt_inv_analysis/matpar_manager_uniform.cpp
-  src/drt_inv_analysis/stat_inv_ana_graddesc.cpp
-  src/drt_inv_analysis/stat_inv_ana_mc.cpp
+  src/drt_inv_analysis/matpar_manager_elementwise.cpp
+  src/drt_inv_analysis/regularization_base.cpp
+  src/drt_inv_analysis/regularization_totalvariation.cpp
+  src/drt_inv_analysis/regularization_tikhonov.cpp
   src/drt_inv_analysis/smc_particle_list.cpp
-  src/drt_inv_analysis/stat_inv_ana_lbfgs.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
   src/drt_inv_analysis/invana_utils.cpp
+  src/drt_inv_analysis/invana_factory.cpp
+  src/drt_inv_analysis/invana_base.cpp
+  src/drt_inv_analysis/invana_auglagr.cpp
+  src/drt_inv_analysis/optimizer_factory.cpp
+  src/drt_inv_analysis/optimizer_base.cpp
+  src/drt_inv_analysis/optimizer_lbfgs.cpp
+  src/drt_inv_analysis/optimizer_graddesc.cpp
+  src/drt_inv_analysis/optimizer_mc.cpp
 )
 set(OBJS_STATINV_ANALYSIS_LIB
   src/drt_inv_analysis/smc_particle.cpp

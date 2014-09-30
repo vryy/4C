@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file stat_inv_ana_lbfgs.H
- *
+ * \file optimizer_lbfgs.H
+ * \brief LBFGS optimization algorithm
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
@@ -9,10 +9,10 @@ Maintainer: Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef STAT_INV_ANA_LBFGS_H
-#define STAT_INV_ANA_LBFGS_H
+#ifndef OPTIMIZER_LBFGS_H
+#define OPTIMIZER_LBFGS_H
 
-#include "stat_inv_analysis.H"
+#include "optimizer_base.H"
 
 namespace DRT
 {
@@ -27,8 +27,35 @@ namespace STR
 namespace INVANA
 {
 
-class StatInvAnaLBFGS : public StatInvAnalysis
+/*!
+  \brief Limited memory bfgs algorithm with armijo rule line search
+
+  Documentation will follow.
+
+  \author kehl
+  */
+
+class OptimizerLBFGS : public OptimizerBase
 {
+public:
+
+  //! constructor
+  OptimizerLBFGS(const Teuchos::ParameterList& invp);
+
+  //! destructor
+  virtual ~OptimizerLBFGS() {};
+
+  //! use some specific optimization routine
+  virtual void Integrate();
+
+  //! read restart information
+  virtual void ReadRestart(int run);
+
+  //! write restart information
+  virtual void WriteRestart();
+
+  //! setup algorithm specific stuff
+  virtual void Setup();
 
 private:
 
@@ -56,21 +83,6 @@ private:
   //! compute new direction based on lbfgs formula
   void ComputeDirection();
 
-  //! step size for the gradient scheme
-  double stepsize_;
-
-  //! maximum number of iterations
-  int maxiter_;
-
-  //! iteration counter
-  int runc_;
-
-  //! tolerance for convergence criterion
-  double convtol_;
-
-  //! current convergence criterion value
-  double convcritc_;
-
   //! maximum size of storage (number of multivectors)
   int ssize_;
 
@@ -89,22 +101,8 @@ private:
   //! current step based on direction p_ scaled with a proper stepsize
   Teuchos::RCP<Epetra_MultiVector> step_;
 
-public:
-
-  //! standard constructor
-  StatInvAnaLBFGS(Teuchos::RCP<DRT::Discretization> dis);
-
-  ~StatInvAnaLBFGS() {};
-
-  //! start the optimization routine
-  void Optimize();
-
-  void ReadRestart(int run);
-
-  void WriteRestart();
-
-}; // class StatInvAnaLBFGS
+};
 }  // namespace INVANA
 }  // namespace STR
 
-#endif /*INV_ANALYSIS_LBFGSH*/
+#endif /*OPTIMIZER_LBFGS_H*/

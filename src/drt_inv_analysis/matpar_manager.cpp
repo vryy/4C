@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file matpar_manager.H
+\file matpar_manager.cpp
 \brief manage material parameters during optimization
 
 <pre>
@@ -14,28 +14,28 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "matpar_manager.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-
 #include "../drt_lib/drt_element.H"
-
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
-
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor                                               keh 10/13  */
 /*----------------------------------------------------------------------*/
 STR::INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret):
-discret_(discret),
 optparams_(Teuchos::null),
 optparams_o_(Teuchos::null),
+optparams_initial_(Teuchos::null),
 paramlayoutmap_(Teuchos::null),
 paramlayoutmapunique_(Teuchos::null),
+paramapextractor_(Teuchos::null),
+discret_(discret),
 numparams_(0),
 params_(Teuchos::null)
 {
@@ -74,7 +74,10 @@ void STR::INVANA::MatParManager::InitParams()
         {
           double val = 0.0;
           if (metaparams_)
+          {
             val = sqrt(2*((actmat->Parameter()->GetParameter(*jt,0))-0.1));
+            //val = 2*log(actmat->Parameter()->GetParameter(*jt,0));
+          }
           else
             val = actmat->Parameter()->GetParameter(*jt,0);
 
@@ -88,6 +91,9 @@ void STR::INVANA::MatParManager::InitParams()
       break;
     }
   }
+
+  // keep the inital set of optimization parameters
+  optparams_initial_->Scale(1.0,*optparams_);
 }
 
 
@@ -171,6 +177,15 @@ void STR::INVANA::MatParManager::SetParams()
   {
     params_->PutScalar(0.1);
     params_->Multiply(0.5,*tmp,*tmp,1.0);
+//    double tmp=0.0;
+//    for (int j=0; j<numparams_; j++)
+//    {
+//      for (int i=0; i<params_->MyLength(); i++)
+//      {
+//        tmp=(*(*params_)(j))[i];
+//        params_->ReplaceMyValue(i,j,exp(0.5*tmp));
+//      }
+//    }
   }
 
   //loop materials to be optimized
@@ -204,9 +219,9 @@ void STR::INVANA::MatParManager::UpdateParams(Teuchos::RCP<Epetra_MultiVector> t
 /*----------------------------------------------------------------------*/
 /* replace material parameters AND DONT touch old ones       keh 03/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::ReplaceParams(Teuchos::RCP<Epetra_MultiVector> toreplace)
+void STR::INVANA::MatParManager::ReplaceParams(const Epetra_MultiVector& toreplace)
 {
-  optparams_->Update(1.0,*toreplace,0.0);
+  optparams_->Update(1.0,toreplace,0.0);
 
   // bring updated parameters to the elements
   SetParams();
@@ -229,6 +244,13 @@ void STR::INVANA::MatParManager::ResetParams()
 void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
+
+  // get the actual set of elementwise material parameters from the derived classes
+  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
+  FillParameters(getparams);
+
+  // export to column layout to be able to run column elements
+  LINALG::Export(*getparams,*params_);
 
   // the reason not to do this loop via a discretizations evaluate call is that if done as is,
   // all elements have to be looped only once and evaluation is done only in case when an
@@ -273,7 +295,8 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
       if (metaparams_)
       {
         double val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        elevector1.Scale(sqrt(2*(val1-0.1)));
+        elevector1.Scale(val1);
+        //elevector1.Scale(0.5*val1);
       }
 
       //reuse elevector2

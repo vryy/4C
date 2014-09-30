@@ -42,7 +42,7 @@ MAXITER                         100
 STEPSIZE                        1.0
 CONVTOL                         1.0e-10
 PARAMETRIZATION                 uniform
-REGULARIZATION                  thikonov
+REGULARIZATION                  tikhonov
 REG_WEIGHT                      0.0
 SIZESTORAGE                     100
 METAPARAMS                      yes
@@ -452,7 +452,7 @@ MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 3.200072e-02
 ----------------------------------------------------------RESULT DESCRIPTION
-INVANA DIS structure ELEMENT 1 QUANTITY  BETA  VALUE 9.405e-01 TOLERANCE 1.0e-06 
+INVANA DIS structure ELEMENT 1 QUANTITY  BETA  VALUE 9.405e-01 TOLERANCE 1.0e-06
 INVANA DIS structure ELEMENT 1 QUANTITY  YOUNG VALUE 5.22E-01 TOLERANCE 1.0e-06
 INVANA DIS structure ELEMENT 2 QUANTITY  BETA  VALUE 9.405e-01 TOLERANCE 1.0e-06
 INVANA DIS structure ELEMENT 2 QUANTITY  YOUNG VALUE 5.22E-01 TOLERANCE 1.0e-06

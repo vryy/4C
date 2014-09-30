@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file matpar_manager_uniform.H
+\file matpar_manager_elementwise.H
 \brief Class to handle calls to material parameters from an optimization routine
 
 <pre>
@@ -10,10 +10,11 @@ Maintainer: Sebastian Kehl
             089 - 289-10361
 </pre>
 */
+
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef MATPAR_MANAGER_UNIFORM_H
-#define MATPAR_MANAGER_UNIFORM_H
+#ifndef MATPAR_MANAGER_PERELEMENT_H
+#define MATPAR_MANAGER_PERELEMENT_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -30,20 +31,20 @@ namespace STR
 {
 
 namespace INVANA
-
 {
 
-class MatParManagerUniform  : public MatParManager
+class MatParManagerPerElement  : public MatParManager
 {
+
 public:
 
   //! constructor
-  MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
+  MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret);
 
   //! destructor
-  virtual ~MatParManagerUniform(){}
+  virtual ~MatParManagerPerElement(){};
 
-  int NumVectors(){return NumParams();}
+  int NumVectors(){return 1;};
 
 protected:
 
@@ -53,11 +54,21 @@ protected:
 
   virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
 
-  virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint);
+  //! nothing to be done in case of elementwise parameters
+  virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint){return;}
+
+private:
+
+  //! the two following 'maps' are processor specific: each proc has its own
+  //! map keeping correspondence between params in the parameter vector (parameter LID in optparams_) and
+  //! eleids (i.e gids of the discretizations ele layout)
+  std::vector<int> paramsLIDtoeleGID_;
+
+  //! map keeping correspondence between eleid (GID) + parameter block id and parameter LID
+  std::map< int, std::vector<int> > eleGIDtoparamsLID_;
 
 };
 }  // namespace INVANA
 }  // namespace STR
 
-/*----------------------------------------------------------------------*/
 #endif

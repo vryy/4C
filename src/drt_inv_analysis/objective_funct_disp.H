@@ -15,10 +15,6 @@ Maintainer: Sebastian Kehl
 
 #include "objective_funct.H"
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
 
 // forward declarations
 namespace DRT
@@ -89,10 +85,10 @@ private:
 public:
 
   //! constructor
-  ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret, int steps, Teuchos::RCP<std::vector<double> > timesteps);
+  ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret);
 
   //! standard destructor
-  ~ObjectiveFunctDisp(){};
+  virtual ~ObjectiveFunctDisp(){};
 
   //! evaluate value of the objective function
   virtual void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double& val);

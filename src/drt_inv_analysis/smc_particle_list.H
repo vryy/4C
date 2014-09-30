@@ -20,8 +20,6 @@ Maintainer: Jonas Biehler
 /* headers */
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
-#include "../drt_inpar/inpar_material.H"
-#include "Epetra_SerialDenseVector.h"
 
 // only compile this on the workstation as kaisers boost version is outdated an cant run this code
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)

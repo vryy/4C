@@ -35,8 +35,6 @@ Maintainer: Alexander Popp
 #include "stru_resulttest.H"
 #include "str_invanalysis.H"
 #include "str_statinvanalysis.H"
-#include "../drt_inv_analysis/inv_analysis.H"
-#include "../drt_inv_analysis/stat_inv_analysis.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"

@@ -10,29 +10,25 @@ Maintainer: Sebastian Kehl
 */
 /*----------------------------------------------------------------------*/
 
-
 #include "objective_funct_surfcurr.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include "Epetra_MultiVector.h"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
-
-#include "matpar_manager.H"
 
 
 /*----------------------------------------------------------------------*/
 /* standard constructor of current representation                       */
 /*----------------------------------------------------------------------*/
-STR::INVANA::ObjectiveFunctSurfCurrRepresentation::ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret,
-                                                                                        int steps,
-                                                                                        Teuchos::RCP<std::vector<double> > timesteps):
+STR::INVANA::ObjectiveFunctSurfCurrRepresentation::ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret):
 sourcedis_(discret),
 targetdis_(Teuchos::null),
-timesteps_(timesteps),
-msteps_(steps)
+timesteps_(Teuchos::null),
+msteps_(0)
 {
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
   // set up source discretization
   if (not sourcedis_->Filled() || not sourcedis_->HaveDofs())
     dserror("Discretisation is not complete or has no dofs!");
@@ -72,6 +68,17 @@ msteps_(steps)
       continue;
     else
       dserror("corresponding condition in target not found");
+  }
+
+  // this is supposed to be the number of simulation steps in the primal AND the dual problem
+  msteps_ = sdyn.get<int>("NUMSTEP");
+  double timestep = sdyn.get<double>("TIMESTEP");
+
+  // initialize the vector of time steps according to the structural dynamic params
+  timesteps_ = Teuchos::rcp(new std::vector<double>(msteps_,0.0));
+  for (int i=0; i<=msteps_-1; i++)
+  {
+    (*timesteps_)[i] = (i+1)*timestep;
   }
 
   if (currents_.size()!=scc_source.size())

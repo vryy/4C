@@ -25,7 +25,8 @@ namespace INPAR
     enum StatInvRegularization
     {
       stat_inv_reg_none,              // nothing defined
-      stat_inv_reg_thikonov,          // thikonov regularization
+      stat_inv_reg_tikhonov,          // thikonov regularization
+      stat_inv_reg_totalvariation,
     };
 
     // Parametrization of material parameters

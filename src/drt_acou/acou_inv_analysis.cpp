@@ -138,8 +138,8 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   ssize_ *= matman_->NumVectors();
   actsize_=0;
 
-  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
-  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
+  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap().get(), true));
+  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap().get(), true));
 
   objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
   objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
@@ -634,7 +634,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
   if(alpha_ != 0.0)
   {
     double val = 0.0;
-    STR::INVANA::MVNorm(matman_->GetParams(),2,&val,matman_->ParamLayoutMapUnique());
+    STR::INVANA::MVNorm(*(matman_->GetParams()),*(matman_->ParamLayoutMapUnique()),2,&val);
     J_ += 0.5*alpha_*val*val;
   }
 
@@ -1103,7 +1103,7 @@ void ACOU::InvAnalysis::CalculateGradient()
   if(alpha_ != 0.0)
     objgrad_->Update(alpha_,*(matman_->GetParams()),1.0);
 
-  STR::INVANA::MVNorm(objgrad_,2,&normgrad_,matman_->ParamLayoutMapUnique());
+  STR::INVANA::MVNorm(*objgrad_,*matman_->ParamLayoutMapUnique(),2,&normgrad_);
   if( iter_ == 0)
     normgrad0_ = normgrad_;
 
@@ -1163,7 +1163,7 @@ void ACOU::InvAnalysis::FD_GradientCheck()
       std::cout<<"p "<<p<<" disturbed "<<pn<<std::endl;
       perturb->ReplaceGlobalValue(j+matman_->ParamLayoutMap()->MinAllGID(),i,pn);
       perturb->Print(std::cout);
-      matman_->ReplaceParams(perturb);
+      matman_->ReplaceParams(*perturb);
 
       SolveStandardProblem();
       perturb->Update(1.0,*pcurr,0.0);
@@ -1176,7 +1176,7 @@ void ACOU::InvAnalysis::FD_GradientCheck()
   }
 
   // we pretend this never happened
-  matman_->ReplaceParams(pcurr);
+  matman_->ReplaceParams(*pcurr);
   J_ = J_before;
 
   if(!myrank_)
@@ -1265,8 +1265,8 @@ void ACOU::InvAnalysis::ComputeDirection()
     int ind=0;
     for (int j=matman_->NumVectors(); j>0; j--)
     {
-      STR::INVANA::MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a,matman_->ParamLayoutMapUnique());
-      STR::INVANA::MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*d_)(ind), false),&b,matman_->ParamLayoutMapUnique());
+      STR::INVANA::MVDotProduct(*(*ystore_)(i-j+1),*(*sstore_)(i-j+1),*matman_->ParamLayoutMapUnique(),&a);
+      STR::INVANA::MVDotProduct(*(*sstore_)(i-j+1),*(*d_)(ind),*matman_->ParamLayoutMapUnique(),&b);
       ind++;
       aa += a;
       bb += b;
@@ -1294,8 +1294,8 @@ void ACOU::InvAnalysis::ComputeDirection()
 
     for (int j=0; j<matman_->NumVectors(); j++)
     {
-      STR::INVANA::MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a,matman_->ParamLayoutMapUnique());
-      STR::INVANA::MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*d_)(j), false),&b,matman_->ParamLayoutMapUnique());
+      STR::INVANA::MVDotProduct(*(*ystore_)(i+j),*(*sstore_)(i+j),*matman_->ParamLayoutMapUnique(),&a);
+      STR::INVANA::MVDotProduct(*(*ystore_)(i+j),*(*d_)(j),*matman_->ParamLayoutMapUnique(),&b);
       aa += a;
       bb += b;
     }
@@ -1328,7 +1328,7 @@ bool ACOU::InvAnalysis::LineSearch()
   double alpha = alpha_0 * ls_gd_scal_;
   double J_before = J_;
   double dotproduct = 0.0;
-  STR::INVANA::MVDotProduct(objgrad_,d_,&dotproduct,matman_->ParamLayoutMapUnique());
+  STR::INVANA::MVDotProduct(*objgrad_,*d_,*matman_->ParamLayoutMapUnique(),&dotproduct);
 
   double condition = J_before + ls_c_ * alpha * dotproduct;
 
@@ -1378,7 +1378,7 @@ void ACOU::InvAnalysis::CalculateStatsAndService()
   objgrad_o_->Update(1.0,*objgrad_,0.0);
 
   // calculate the norm of the difference of the given parameters, for the curious user
-  STR::INVANA::MVNorm(step_,0,&normdiffp_,matman_->ParamLayoutMapUnique());
+  STR::INVANA::MVNorm(*step_,*matman_->ParamLayoutMapUnique(),0,&normdiffp_);
 
   // update node based material parameter vector
   ComputeNodeBasedVectors();

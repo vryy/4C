@@ -17,27 +17,28 @@ Maintainer: Sebastian Kehl
 #include <string>
 
 #include "invana_resulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_inv_analysis/stat_inv_analysis.H"
-#include "../drt_inv_analysis/matpar_manager.H"
+#include "invana_base.H"
+#include "matpar_manager.H"
+#include "optimizer_base.H"
+#include "invana_utils.H"
 #include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::INVANA::InvAnaResultTest::InvAnaResultTest(StatInvAnalysis& ia)
+STR::INVANA::InvanaResultTest::InvanaResultTest(InvanaBase& ia)
   : DRT::ResultTest("INVANA"),
     ia_(ia)
 {
-    discret_= ia_.Discretization();
-    matman_ = ia_.MatParManager();
+    discret_= ia_.Discret();
+    matman_ = ia_.Matman();
     mysol_ = matman_->GetMatParams();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvAnaResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void STR::INVANA::InvanaResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -81,7 +82,7 @@ void STR::INVANA::InvAnaResultTest::TestElement(DRT::INPUT::LineDefinition& res,
   }
 }
 
-void STR::INVANA::InvAnaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void STR::INVANA::InvanaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // get the quantity to test
   std::string quantity;
@@ -90,9 +91,9 @@ void STR::INVANA::InvAnaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res,
   double result=0.0;
 
   if (quantity == "gradient")
-    result=ia_.GetGrad2Norm();
+    STR::INVANA::MVNorm(ia_.Optimizer()->GetGradientView(),ia_.Optimizer()->SolLayoutMapUnique(),2,&result);
   else if (quantity == "error")
-    result=ia_.GetError();
+    result=ia_.Optimizer()->GetObjFunctValView();
   else
     dserror("given quantity to test not to be found yet!");
 
@@ -100,4 +101,3 @@ void STR::INVANA::InvAnaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res,
   test_count++;
 
 }
-

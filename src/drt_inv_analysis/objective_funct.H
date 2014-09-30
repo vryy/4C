@@ -14,7 +14,7 @@ Maintainer: Sebastian Kehl
 #define OBJECTIVE_FUNCT_H
 
 #include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
+#include "Epetra_MultiVector.h"
 
 namespace STR
 {

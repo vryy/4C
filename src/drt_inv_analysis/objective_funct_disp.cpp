@@ -10,32 +10,38 @@ Maintainer: Sebastian Kehl
 */
 /*----------------------------------------------------------------------*/
 
-
 #include "objective_funct_disp.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include "Epetra_MultiVector.h"
-
-#include "matpar_manager.H"
-
 
 /*----------------------------------------------------------------------*/
 /* standard constructor                                                 */
 /*----------------------------------------------------------------------*/
-STR::INVANA::ObjectiveFunctDisp::ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret,
-                                                    int steps,
-                                                    Teuchos::RCP<std::vector<double> > timesteps):
+STR::INVANA::ObjectiveFunctDisp::ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
-timesteps_(timesteps),
-msteps_(steps)
+timesteps_(Teuchos::null),
+msteps_(0)
 {
   const Teuchos::ParameterList& invap = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   if (not discret_->Filled() || not discret_->HaveDofs())
     dserror("Discretisation is not complete or has no dofs!");
   else
     dofrowmap_ = discret_->DofRowMap();
+
+  // this is supposed to be the number of simulation steps in the primal AND the dual problem
+  msteps_ = sdyn.get<int>("NUMSTEP");
+  double timestep = sdyn.get<double>("TIMESTEP");
+
+  // initialize the vector of time steps according to the structural dynamic params
+  timesteps_ = Teuchos::rcp(new std::vector<double>(msteps_,0.0));
+  for (int i=0; i<=msteps_-1; i++)
+  {
+    (*timesteps_)[i] = (i+1)*timestep;
+  }
 
   // initialize vectors
   mdisp_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));

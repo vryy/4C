@@ -18,9 +18,8 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_dserror.H"
-
+#include "Epetra_MultiVector.h"
+#include "Epetra_Map.h"
 
 // forward declarations
 namespace DRT
@@ -69,126 +68,153 @@ namespace INVANA
   which is also derived classes business.
 
  */
-  class MatParManager
-  {
+class MatParManager
+{
 
-  public:
+public:
 
-    //! Constructor
-    MatParManager(Teuchos::RCP<DRT::Discretization> discret);
+  //! constructor
+  MatParManager(Teuchos::RCP<DRT::Discretization> discret);
 
-    //!destructor
-    virtual ~MatParManager() { ; };
+  //!destructor
+  virtual ~MatParManager() {}
 
-    //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-    virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
+  //! return number of vectors of the optimization parameter vector layout
+  virtual int NumVectors() = 0;
 
-    //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
-    void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
+  //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
+  virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
 
-    //! update params
-    void UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd);
+  //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
+  void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
 
-    //! update params
-    void ReplaceParams(Teuchos::RCP<Epetra_MultiVector> toreplace);
+  //! update optimization parameters
+  void ReplaceParams(const Epetra_MultiVector& toreplace);
 
-    //! reset params
-    void ResetParams();
+  //! return material parameters
+  Teuchos::RCP<Epetra_MultiVector> GetMatParams(){SetParams(); return params_;}
 
-    //! Return material parameters
-    const Teuchos::RCP<Epetra_MultiVector> GetMatParams(){SetParams(); return params_;};
+  //! return optimization parameters for initial guess
+  const Epetra_MultiVector& InitialParams(){return *optparams_initial_;}
 
-    //! Return optimization parameters
-    const Teuchos::RCP<Epetra_MultiVector> GetParams(){return optparams_;};
+  //! return the map of the optimization parameter layout
+  Teuchos::RCP<Epetra_Map> ParamLayoutMap(){return paramlayoutmap_;}
 
-    //! Return optimization parameters of the last run
-    const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){return optparams_o_;};
+  //! return the unique map of the optimization parameter layout
+  Teuchos::RCP<Epetra_Map> ParamLayoutMapUnique(){return paramlayoutmapunique_;}
 
-    //! Return the map layout for the parameter distribution
-    const Epetra_Map* ParamLayoutMap(){return paramlayoutmap_.get();};
+  //! return mapextractor of material parameters from optimization parameter vector
+  Teuchos::RCP<LINALG::MultiMapExtractor> ParamMapExtractor() {return paramapextractor_;}
 
-    //! Return the uniqueGIDs map layout for the parameter distribution
-    const Epetra_Map* ParamLayoutMapUnique(){return paramlayoutmapunique_.get();};
+  //! put vector index of a given material parameter <string> into loc (used for result testing)
+  int GetParameterLocation(int eleid, std::string name);
 
-    //! Return number of vectors of the parameter vector layout which is possibly Epetra_MultiVector
-    virtual int NumVectors() = 0;
+  /*----------------------------------------------------------------------*/
+  //! functions to go away! only used by ACOU inverse analysis
 
-    //! Put vector index of a given material parameter <string> into loc (used for result testing)
-    int GetParameterLocation(int eleid, std::string name);
+  //! Return optimization parameters
+  const Teuchos::RCP<Epetra_MultiVector> GetParams(){return optparams_;}
 
-  protected:
+  //! Return optimization parameters of the last run
+  const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){return optparams_o_;}
 
-    //! discretization for convenience
-    Teuchos::RCP<DRT::Discretization> discret_;
+  //! update params
+  void UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd);
 
-    //! actual set of material parameters in some parametrization layout
-    Teuchos::RCP<Epetra_MultiVector> optparams_;
+  //! reset params
+  void ResetParams();
 
-    //! old set of material parameters in some parametrization layout
-    Teuchos::RCP<Epetra_MultiVector> optparams_o_;
+protected:
 
-    //! parametrization layout of the optimization parameters
-    Teuchos::RCP<Epetra_Map> paramlayoutmap_;
+  /*----------------------------------------------------------------------*/
+  //! functions to be provided by the derived classes
 
-    //! a uniqueGIDS version to be used for e.g.: writing restart data
-    Teuchos::RCP<Epetra_Map> paramlayoutmapunique_;
+  //! initialize parameters based on parametrization ("local routine")
+  virtual void InitParameters(int parapos, double val) = 0;
 
-    //! map of names for each material parameter
-    //! key: matid, value: value-enum <BR>
-    //! value is of enum type and can be used to set the respective material parameter directly<BR>
-    //! e.g. < 1 ; ( youngs, beta)> <BR>
-    //!      < 2 ; ( k1 , k2 )>
-    std::map<int, std::vector<int> > paramap_;
+  //! let the vector of material parameters be filled from optimization parameters
+  virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
 
-    //! map of matids to parameter-ids for the parameter vector kept in here<BR>
-    //! e.g.  < 1 ; (0 , 1)> <BR>
-    //!       < 2 ; (2 , 3)> <BR>
-    //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
-    std::map<int,std::vector<int> > parapos_;
+  //! apply chain rule for derivation wrt the optimization parameters
+  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+      double val,
+      int elepos,
+      int paraposglobal,
+      int paraposlocal) = 0;
 
-    //! Return number of physically different parameters
-    int NumParams(){ return numparams_; };
+  //! "consolidate" chain rule application among procs
+  virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
 
-    //! set elementwise material parameters
-    virtual void SetParams();
+  Teuchos::RCP<DRT::Discretization> Discret(){return discret_;}
 
-    //! initialze vector of optimization parameters ("global routine")
-    void InitParams();
+  const std::map<int, std::vector<int> >& ParaMap(){return paramap_;}
 
-    //! initialize parameters based on parametrization ("local routine")
-    virtual void InitParameters(int parapos, double val) = 0;
+  const std::map<int,std::vector<int> >& ParaPos(){return parapos_;}
 
-    //! let the vector of material parameters be filled from optimization parameters
-    virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
+  //! actual set of material parameters in some parametrization layout
+  Teuchos::RCP<Epetra_MultiVector> optparams_;
 
-    //! apply chain rule for derivation wrt the optimization parameters
-    virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-                                  double val,
-                                  int elepos,
-                                  int paraposglobal,
-                                  int paraposlocal) = 0;
+  //! old set of material parameters in some parametrization layout
+  Teuchos::RCP<Epetra_MultiVector> optparams_o_;
 
-    //! "consolidate" chain rule application among procs
-    virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
+  //! initial guess of material parameters in some parametrization layout
+  Teuchos::RCP<Epetra_MultiVector> optparams_initial_;
 
-  private:
+  //! parametrization layout of the optimization parameters
+  Teuchos::RCP<Epetra_Map> paramlayoutmap_;
 
-    //! number of physically different material parameters
-    int numparams_;
+  //! a uniqueGIDS version to be used for e.g.: writing restart data
+  Teuchos::RCP<Epetra_Map> paramlayoutmapunique_;
 
-    //! actual set of material parameters in elementwise colmap layout
-    Teuchos::RCP<Epetra_MultiVector> params_;
+  //! Map Extractor to extract Blocks of material parameters from the optimization parameter vector
+  Teuchos::RCP<LINALG::MultiMapExtractor> paramapextractor_;
 
-    //! inidicates meta parametrization of the material parameters. Hard coded: \f$ p_m = 0.5*p_o^2+0.1\f$
-    bool metaparams_;
+  /*----------------------------------------------------------------------*/
+  //! functions used by the derived classes
 
-    //! setup paramap_, parapos_ from input and check for validity
-    void SetupMatOptMap();
+  //! Return number of physically different parameters
+  int NumParams(){ return numparams_; };
 
-  };
+  //! set elementwise material parameters from current set of optimization parameters
+  void SetParams();
 
-}
-}
+  //! initialze vector of optimization parameters ("global routine")
+  void InitParams();
+
+private:
+
+  //! setup paramap_, parapos_ from input and check for validity
+  void SetupMatOptMap();
+
+  //! discretization for convenience
+  Teuchos::RCP<DRT::Discretization> discret_;
+
+  //! map of names for each material parameter
+  //! key: matid, value: value-enum <BR>
+  //! value is of enum type and can be used to set the respective material parameter directly<BR>
+  //! e.g. < 1 ; ( youngs, beta)> <BR>
+  //!      < 2 ; ( k1 , k2 )>
+  std::map<int, std::vector<int> > paramap_;
+
+  //! map of matids to parameter-ids for the material parameter vector<BR>
+  //! e.g.  < 1 ; (0 , 1)> <BR>
+  //!       < 2 ; (2 , 3)> <BR>
+  //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
+  std::map<int,std::vector<int> > parapos_;
+
+  //! number of physically different material parameters
+  int numparams_;
+
+  //! actual set of material parameters in elecolmap layout
+  Teuchos::RCP<Epetra_MultiVector> params_;
+
+  //! inidicates meta parametrization of the material parameters. Hard coded: \f$ p_m = 0.5*p_o^2+0.1\f$
+  bool metaparams_;
+
+
+};
+}  // namespace INVANA
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif

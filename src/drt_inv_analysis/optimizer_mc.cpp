@@ -14,27 +14,13 @@ Maintainer: Jonas Biehler
 #include <fstream>
 #include <cstdlib>
 
-#include "stat_inv_ana_mc.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io_hdf.H"
-#include "../drt_io/io.H"
+#include "optimizer_mc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_invanalysis.H"
-#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/drt_validparameters.H"
 
-// needed to deal with materials
-#include "../drt_mat/material.H"
-#include "../drt_mat/aaaneohooke_stopro.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_inpar/inpar_material.H"
-
-#include "objective_funct.H"
-#include "timint_adjoint.H"
-#include "matpar_manager.H"
 #include "smc_particle.H"
 #include "smc_particle_list.H"
 #include "../linalg/linalg_utils.H"
@@ -44,8 +30,8 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::INVANA::StatInvAnaMC::StatInvAnaMC(Teuchos::RCP<DRT::Discretization> dis):
-  StatInvAnalysis(dis)
+STR::INVANA::OptimizerMC::OptimizerMC(const Teuchos::ParameterList& invp):
+  OptimizerBase(invp)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -59,7 +45,7 @@ STR::INVANA::StatInvAnaMC::StatInvAnaMC(Teuchos::RCP<DRT::Discretization> dis):
 
 /*----------------------------------------------------------------------*/
 /* decide for an optimization algorithm*/
-void STR::INVANA::StatInvAnaMC::Optimize()
+void STR::INVANA::OptimizerMC::Integrate()
 {
   // create particle list
   int numparticles=120;
@@ -109,13 +95,13 @@ void STR::INVANA::StatInvAnaMC::Optimize()
 
 /*----------------------------------------------------------------------*/
 /* do the update of the parameter vector */
-void STR::INVANA::StatInvAnaMC::UpdateOptStep(Epetra_MultiVector* objgrad, int nstep)
+void STR::INVANA::OptimizerMC::UpdateOptStep(Epetra_MultiVector* objgrad, int nstep)
 {
   dserror("this needs to be filled");
   return;
 }
 
-void STR::INVANA::StatInvAnaMC::PropReweight(Teuchos::RCP<SMCParticleList> my_particles, int iteration)
+void STR::INVANA::OptimizerMC::PropReweight(Teuchos::RCP<SMCParticleList> my_particles, int iteration)
 {
   for(int i=0;i<my_particles->GetNumParticles() ;i++)
   {
@@ -135,17 +121,17 @@ void STR::INVANA::StatInvAnaMC::PropReweight(Teuchos::RCP<SMCParticleList> my_pa
     }
   }
  }
-void STR::INVANA::StatInvAnaMC::CheckReweight(Teuchos::RCP<SMCParticleList> my_particles, double& gamma)
+void STR::INVANA::OptimizerMC::CheckReweight(Teuchos::RCP<SMCParticleList> my_particles, double& gamma)
 {
   my_particles->CheckReweight(gamma);
 }
-void STR::INVANA::StatInvAnaMC::PropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
+void STR::INVANA::OptimizerMC::PropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
 {
   my_particle_list->PropMove(seed);
   my_particle_list->CalcLogPriorProp();
 }
 
-void STR::INVANA::StatInvAnaMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
+void STR::INVANA::OptimizerMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
 {
   double alpha=0;
   int counter=0;
@@ -205,7 +191,7 @@ void STR::INVANA::StatInvAnaMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_
 }
 
 
-double STR::INVANA::StatInvAnaMC::LogLike(SMCParticle my_particle, bool eval_prop_pos)
+double STR::INVANA::OptimizerMC::LogLike(SMCParticle my_particle, bool eval_prop_pos)
 {
     // ad some point we need to call the forward problem here. for now we use 2dim Gauss
     double abs_pos_squared = 0;
@@ -228,7 +214,7 @@ double STR::INVANA::StatInvAnaMC::LogLike(SMCParticle my_particle, bool eval_pro
 
 }
 
-double STR::INVANA::StatInvAnaMC::LogLikeRealForwardProblem(SMCParticle my_particle, bool eval_prop_pos)
+double STR::INVANA::OptimizerMC::LogLikeRealForwardProblem(SMCParticle my_particle, bool eval_prop_pos)
 {
 
 
@@ -236,32 +222,30 @@ double STR::INVANA::StatInvAnaMC::LogLikeRealForwardProblem(SMCParticle my_parti
     if(!prop_is_useless)
     {
       // runs fe simulation
-      SolveForwardProblem();
+      // and
       // computes error between measured and calculated displacements and udates objval_
-      EvaluateError();
-    // for now our target distribution is (exp(-objval))^gamma
-    // hence we need gamma*(-objval)
+      Evaluate(GetObjFunctVal(),Teuchos::null);
+
+      // for now our target distribution is (exp(-objval))^gamma
+      // hence we need gamma*(-objval)
       //return (-(250.0/2+2)*log(objval_));
-			double numerator_like = boost::math::lgamma(10/2+2);
-			double denom_like = 7*log(0.000001+objval_  );
-			//IO::cout << "lagamma" << denom_like << IO::endl;
+      double numerator_like = boost::math::lgamma(10/2+2);
+      double denom_like = 7*log(0.000001+GetObjFunctValView());
+      //IO::cout << "lagamma" << denom_like << IO::endl;
       //return (-objval_);
       return (numerator_like-denom_like);
     }
     else
-		{
-			IO::cout << " garbage " << IO::endl;
+    {
+      IO::cout << " garbage " << IO::endl;
       return (-1000000);
-		}
+    }
 }
 
 
-int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_particle,bool eval_prop_pos)
+int STR::INVANA::OptimizerMC::SetMatParamsBasedOnParticle(SMCParticle my_particle,bool eval_prop_pos)
 {
   std::vector<double> my_position(my_particle.GetSizeOfPosition(),0.0);
-
-  // the matman needs this format:
-  Epetra_MultiVector mypos(*(Matman()->ParamLayoutMap()),Matman()->NumVectors(),true);
 
   // get position vector
   if(eval_prop_pos)
@@ -276,15 +260,33 @@ int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_partic
       return(1);
   }
 
-  //rewrite in Epetra_MultiVector Layout to bring to matman:
-  for(int i=0; i< mypos.NumVectors();i++ )
+  //rewrite in Epetra_MultiVector Layout to bring to the format the optimizer base class suggests
+  for(int i=0; i< GetSolutionView().NumVectors();i++ )
   {
-    mypos(i)->PutScalar(my_position[i]);
+    (*GetSolution())(i)->PutScalar(my_position[i]);
   }
 
-  Matman()->ReplaceParams(Teuchos::rcp(&mypos,false));
   return 0;
 
+}
+
+/*----------------------------------------------------------------------*/
+/* Read restart                                               keh 03/14 */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::OptimizerMC::ReadRestart(int run)
+{
+  dserror("no restart for MC optimization yet");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Write restart                                              keh 03/14 */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::OptimizerMC::WriteRestart()
+{
+  dserror("no restart for MC optimization yet");
+  return;
 }
 
 

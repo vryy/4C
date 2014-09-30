@@ -11,23 +11,20 @@ Maintainer: Sebastian Kehl
 </pre>
 */
 
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "str_statinvanalysis.H"
-#include "../drt_inv_analysis/stat_inv_analysis.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
-#include "../drt_inv_analysis/stat_inv_ana_graddesc.H"
-#include "../drt_inv_analysis/stat_inv_ana_mc.H"
-#include "../drt_inv_analysis/stat_inv_ana_lbfgs.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_inv_analysis/invana_factory.H"
+#include "../drt_inv_analysis/optimizer_factory.H"
+#include "../drt_inv_analysis/invana_base.H"
 
 /*======================================================================*/
-/* Statistical inverse analysis of structures */
+/* inverse analysis of structures */
 void STR::statinvanalysis()
 {
   // get input lists
-  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
@@ -37,49 +34,17 @@ void STR::statinvanalysis()
   if (!actdis->Filled()) actdis->FillComplete();
   if (!actdis->HaveDofs()) actdis->FillComplete();
 
+  // create an instance of an optimization problem
+  STR::INVANA::InvanaFactory invfac;
+  Teuchos::RCP<STR::INVANA::InvanaBase> optprob = invfac.Create(actdis,invp);
+
+  // solve
   int restart= DRT::Problem::Instance()->Restart();
+  optprob->Solve(restart);
 
-  switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS"))
-  {
-
-    case INPAR::STR::stat_inv_graddesc:
-    {
-      Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaGradDesc(actdis));
-      if (restart) ia->ReadRestart(restart);
-      ia->Optimize();
-
-      DRT::Problem::Instance()->AddFieldTest(ia->CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(actdis->Comm());
-    }
-    break;
-
-    case INPAR::STR::stat_inv_lbfgs:
-    {
-      Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaLBFGS(actdis));
-      if (restart) ia->ReadRestart(restart);
-      ia->Optimize();
-
-      DRT::Problem::Instance()->AddFieldTest(ia->CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(actdis->Comm());
-    }
-    break;
-    case INPAR::STR::stat_inv_mc:
-    {
-      // only compile this on the workstation as kaisers boost version is outdated an cant run this code
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-    {
-      Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaMC(actdis));
-      ia->Optimize();
-    }
-#else
- dserror("Install new Boost version");
-#endif
-    }
- break;
-    default:
-      dserror("Unknown type of statistical inverse analysis");
-    break;
-  }
+  // test
+  DRT::Problem::Instance()->AddFieldTest(optprob->CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(actdis->Comm());
 
   // done
   return;

@@ -15,6 +15,7 @@ Maintainer: Svenja Schoeder
 #define PAT_MATPAR_MANAGER_H
 
 #include "../drt_inv_analysis/matpar_manager_uniform.H"
+#include "../drt_inv_analysis/matpar_manager_elementwise.H"
 #include "Epetra_MultiVector.h"
 
 namespace ACOU

@@ -15,10 +15,8 @@ Maintainer: Sebastian Kehl
 
 #include "objective_funct.H"
 
-#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
 #include "Epetra_Map.h"
 
 // forward declarations
@@ -80,10 +78,10 @@ private:
 public:
 
   //! constructor
-  ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret, int steps, Teuchos::RCP<std::vector<double> > timesteps);
+  ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret);
 
   //! standard destructor
-  ~ObjectiveFunctSurfCurrRepresentation(){};
+  virtual ~ObjectiveFunctSurfCurrRepresentation(){};
 
   //! set global scale
   void SetScale(double sigmaW);

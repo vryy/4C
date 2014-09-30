@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file stat_inv_ana_mc.H
+ * \file optimizer_mc.H
  *
 <pre>
 Maintainer: Jonas Biehler
@@ -13,10 +13,10 @@ Maintainer: Jonas Biehler
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 
 
-#ifndef STAT_INV_ANA_MC_H
-#define STAT_INV_ANA_MC_H
+#ifndef OPTIMIZER_MC_H
+#define OPTIMIZER_MC_H
 
-#include "stat_inv_analysis.H"
+#include "optimizer_base.H"
 
 namespace STR
 {
@@ -26,28 +26,35 @@ namespace INVANA
 class SMCParticle;
 class SMCParticleList;
 
-class StatInvAnaMC : public StatInvAnalysis
+/*!
+  \brief MonteCarlo optimization algorithm
+
+  Documentation will follow.
+
+  \author biehler
+*/
+
+class OptimizerMC : public OptimizerBase
 {
-
-private:
-
-
-  //! do the update on the parameter vector
-  void UpdateOptStep(Epetra_MultiVector* objgrad, int nstep);
-
-  // deal with communicators
-  Teuchos::RCP<Epetra_Comm> lcomm_ ;
-  Teuchos::RCP<Epetra_Comm> gcomm_ ;
-  int mylocalpid_ ;
-  int myglobalpid_;
 
 public:
 
   //! standard constructor
-  StatInvAnaMC(Teuchos::RCP<DRT::Discretization> dis);
+  OptimizerMC(const Teuchos::ParameterList& invp);
 
-  //! soptimization routine
-  void Optimize();
+  virtual ~OptimizerMC(){};
+
+  //! use some specific optimization routine
+  virtual void Integrate();
+
+  //! setup algorithm specific stuff; empty so far!!
+  virtual void Setup(){};
+
+  //! read restart information
+  virtual void ReadRestart(int run);
+
+  //! write restart information
+  virtual void WriteRestart();
 
   //! \brief propose reweighting of all particles
   void PropReweight(Teuchos::RCP<SMCParticleList> ,int iteration);
@@ -67,16 +74,26 @@ public:
   //! \brief compute Log of Likelihood to the power of gamma but use real forward problem
   double LogLikeRealForwardProblem(SMCParticle my_particle,bool eval_prop_pos);
 
-
   //! brief set optimization parameters using matman
   int SetMatParamsBasedOnParticle(SMCParticle my_particle, bool eval_prop_pos);
 
+private:
 
-}; // class StatInvAnaGradDesc
+  //! do the update on the parameter vector
+  void UpdateOptStep(Epetra_MultiVector* objgrad, int nstep);
+
+  // deal with communicators
+  Teuchos::RCP<Epetra_Comm> lcomm_ ;
+  Teuchos::RCP<Epetra_Comm> gcomm_ ;
+  int mylocalpid_ ;
+  int myglobalpid_;
+
+
+};
 }  // namespace INVANA
 }  // namespace STR
 
-#endif /*INV_ANALYSIS_MC_H*/
+#endif /*OPTIMIZER_MC_H*/
 #else
  // no code here
 #endif

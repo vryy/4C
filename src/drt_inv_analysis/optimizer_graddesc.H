@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file stat_inv_ana_graddesc.H
+ * \file optimizer_graddesc.H
+ * \brief gradient descent optimization algorithm
  *
 <pre>
 Maintainer: Sebastian Kehl
@@ -9,10 +10,10 @@ Maintainer: Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef STAT_INV_ANA_GRADDESC_H
-#define STAT_INV_ANA_GRADDESC_H
+#ifndef OPTIMIZER_GRADDESC_H
+#define OPTIMIZER_GRADDESC_H
 
-#include "stat_inv_analysis.H"
+#include "optimizer_base.H"
 
 namespace STR
 {
@@ -21,9 +22,9 @@ namespace INVANA
 
 
   /*!
-  \brief Steepest descent with armijo rule line search
+  \brief Steepest gradient descent with armijo rule line search
 
-  This is a standard steepest gradient descent implementation derived from StatInvAnalysis.
+  This is a standard steepest gradient descent implementation derived from OptimizerBase.
 
   Stepsize is computed such that the sufficient decrease condition is fulfilled.
 
@@ -31,10 +32,30 @@ namespace INVANA
   in each line search step, i.e a quadratic model is used in the first step, while for
   steps >1 cubic models are applied.
 
+  \author kehl
   */
 
-class StatInvAnaGradDesc : public StatInvAnalysis
+class OptimizerGradDesc : public OptimizerBase
 {
+public:
+
+  //! constructor
+  OptimizerGradDesc(const Teuchos::ParameterList& invp);
+
+  //! destructor
+  virtual ~OptimizerGradDesc() {};
+
+  //! use some specific optimization routine
+  virtual void Integrate();
+
+  //! read restart information
+  virtual void ReadRestart(int run);
+
+  //! write restart information
+  virtual void WriteRestart();
+
+  //! setup algorithm specific stuff
+  virtual void Setup();
 
 private:
 
@@ -56,42 +77,14 @@ private:
   //! Print line search step
   void PrintLSStep(double stepsize, int numsteps);
 
-  //! step size for the gradient scheme
-  double stepsize_;
-
-  //! maximum number of iterations
-  int maxiter_;
-
-  //! iteration counter
-  int runc_;
-
-  //! tolerance for convergence criterion
-  double convtol_;
-
-  //! current convergence criterion value
-  double convcritc_;
-
   //! current direction of steepest descent
   Teuchos::RCP<Epetra_MultiVector> p_;
 
-  //! current step made based on direction p_ sacled with a proper stepsize
+  //! current step based on direction p_ scaled with a proper stepsize
   Teuchos::RCP<Epetra_MultiVector> step_;
 
-public:
-
-  //! standard constructor
-  StatInvAnaGradDesc(Teuchos::RCP<DRT::Discretization> dis);
-
-  ~StatInvAnaGradDesc() {};
-
-  void Optimize();
-
-  void ReadRestart(int run);
-
-  void WriteRestart();
-
-}; // class StatInvAnaGradDesc
+};
 }  // namespace INVANA
 }  // namespace STR
 
-#endif /*INV_ANALYSIS_GRADDESC_H*/
+#endif /*OPTIMIZER_GRADDESC_H*/
