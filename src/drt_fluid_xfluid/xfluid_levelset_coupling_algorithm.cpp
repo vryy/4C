@@ -137,7 +137,7 @@ Teuchos::RCP<Epetra_Vector> XFLUIDLEVELSET::Algorithm::StorePhiVectors(Teuchos::
       // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
       DRT::Node* scatranode = scatradis->lRowNode(lfluidnodeid);
 #ifdef DEBUG
-      if(scatradis_->NumDof(gfuncnode)!=1) dserror("Levelset node should have 1 dof");
+      if(scatradis->NumDof(scatranode)!=1) dserror("Levelset node should have 1 dof");
 #endif
       // find out the local dof id of the dof at the scatra node
       // this assumes the levelset is set at the dofid = 0! Possible to extend this to more scalars.
