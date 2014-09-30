@@ -539,7 +539,7 @@ DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParam
   }
 
   // this is expensive and should not be done too often
-  const unsigned int nsd = DisTypeToDim<distype>::dim;
+  const int nsd = DisTypeToDim<distype>::dim;
 
   PolynomialSpaceParams polyparams(distype,params.degree_,params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd> > polySpace = DRT::UTILS::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
@@ -556,12 +556,12 @@ DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParam
   DRT::UTILS::BoundaryGPToParentGP<nsd>(faceQPoints,trafo,*quadrature,distype,
                                         getEleFaceShapeType(distype,params.face_), params.face_);
   LINALG::SerialDenseVector faceValues(polySpace->Size());
-  for (unsigned int q=0; q<quadrature->NumPoints(); ++q)
+  for (int q=0; q<quadrature->NumPoints(); ++q)
   {
-    for (unsigned int d=0; d<nsd; ++d)
+    for (int d=0; d<nsd; ++d)
       xsi(d) = faceQPoints(q,d);
     polySpace->Evaluate(xsi,faceValues);
-    for (unsigned int i=0; i<faceValues.M(); ++i)
+    for (int i=0; i<faceValues.M(); ++i)
       (*matrix)(i,q) = faceValues(i);
   }
 
