@@ -142,7 +142,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
     // loop over faces
     for (unsigned int f=0; f<nfaces_; ++f) {
-      shapesface_->EvaluateFace(*ele,f,*shapes_);
+      shapesface_->EvaluateFace(*ele,f);
       localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
       localSolver_->ComputeFaceMatrices(f, mat, false, elemat1);
     }
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_);
   localSolver_->ComputeInteriorMatrices(mat, updateLocally);
   for (unsigned int f=0; f<nfaces_; ++f) {
-    shapesface_->EvaluateFace(*ele,f,*shapes_);
+    shapesface_->EvaluateFace(*ele,f);
     localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
     localSolver_->ComputeFaceMatrices(f, mat, updateLocally, elemat1);
   }
@@ -457,7 +457,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       if (*faceConsider != face)
         continue;
     }
-    shapesface_->EvaluateFace(*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face);
     zeroMatrix(mass);
     zeroMatrix(trVec);
 
@@ -725,7 +725,7 @@ shapesface_(shapeValuesFace)
   int onfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
   {
-    shapesface_.EvaluateFace(*ele,i,shapes_);
+    shapesface_.EvaluateFace(*ele,i);
     onfdofs += shapesface_.nfdofs_;
   }
   onfdofs *= nsd_;
@@ -986,7 +986,7 @@ ComputeFaceResidual(const int                           face,
     for (unsigned int d=0; d<nsd_; ++d) {
       double u_d = 0.;
       for (unsigned int i=0; i<ndofs_; ++i)
-        u_d += shapesface_.shfunctI(i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
+        u_d += (*shapesface_.shfunctI)(i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
       velnorm += u_d * u_d * shapesface_.jfac(q);
     }
     vol += shapesface_.jfac(q);
@@ -1005,7 +1005,7 @@ ComputeFaceResidual(const int                           face,
       for (unsigned int e=0; e<nsd_; ++e) {
         velgradnp[d][e] = 0.;
         for (unsigned int i=0; i<ndofs_; ++i)
-          velgradnp[d][e] += shapesface_.shfunctI(i,q) *
+          velgradnp[d][e] += (*shapesface_.shfunctI)(i,q) *
                              val[(d*nsd_+e)*ndofs_+i];
       }
     // interpolate u_np
@@ -1013,12 +1013,12 @@ ComputeFaceResidual(const int                           face,
     for (unsigned int d=0; d<nsd_; ++d) {
       ifvelnp[d] = 0.;
       for (unsigned int i=0; i<ndofs_; ++i)
-        ifvelnp[d] += shapesface_.shfunctI(i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
+        ifvelnp[d] += (*shapesface_.shfunctI)(i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
     }
     // interpolate p_np
     double presnp = 0.;
     for (unsigned int i=0; i<ndofs_; ++i)
-      presnp += shapesface_.shfunctI(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+      presnp += (*shapesface_.shfunctI)(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
 
 
     // interpolate trace value
@@ -1035,7 +1035,7 @@ ComputeFaceResidual(const int                           face,
       for (unsigned int e=0; e<nsd_; ++e) {
         const double res = fvelnp(d,q) * shapesface_.normals(e,q) * shapesface_.jfac(q);
         for (unsigned int i=0; i<ndofs_; ++i)
-          gRes((d*nsd_+e)*ndofs_+i) += shapesface_.shfunctI(i,q) * res;
+          gRes((d*nsd_+e)*ndofs_+i) += (*shapesface_.shfunctI)(i,q) * res;
       }
 
     // residual for u_np
@@ -1055,7 +1055,7 @@ ComputeFaceResidual(const int                           face,
       res += stabilization[face]*(ifvelnp[d]-fvelnp(d,q));
       res *= shapesface_.jfac(q);
       for (unsigned int i=0; i<ndofs_; ++i)
-        upRes(d*ndofs_+i) -= res * shapesface_.shfunctI(i,q);
+        upRes(d*ndofs_+i) -= res * (*shapesface_.shfunctI)(i,q);
       res -= (-traceval[0] + presavg) * shapesface_.jfac(q) * shapesface_.normals(d,q);
       for (unsigned int i=0; i<shapesface_.nfdofs_; ++i)
         elevec(1+face*nsd_*shapesface_.nfdofs_+d*shapesface_.nfdofs_+i) -= res * shapesface_.shfunct(i,q);
@@ -1069,7 +1069,7 @@ ComputeFaceResidual(const int                           face,
     presres *= shapesface_.jfac(q);
     for (unsigned int i=1; i<ndofs_; ++i) {
       upRes(nsd_*ndofs_+i) -=
-          presres*(shapesface_.shfunctI(i,q)-shapes_.shfunctAvg(i));
+          presres*((*shapesface_.shfunctI)(i,q)-shapes_.shfunctAvg(i));
     }
   }
 }
@@ -1126,8 +1126,8 @@ ComputeFaceMatrices (const int                          face,
 
       if (!evaluateOnlyNonlinear)
         for (unsigned int j=0; j<ndofs_; ++j) {
-          const double shape = shapesface_.shfunct(i,q) * jac * shapesface_.shfunctI(j,q);
-          const double shapeAvg = shapesface_.shfunct(i,q) * jac * (shapesface_.shfunctI(j,q)-shapes_.shfunctAvg(j));
+          const double shape = shapesface_.shfunct(i,q) * jac * (*shapesface_.shfunctI)(j,q);
+          const double shapeAvg = shapesface_.shfunct(i,q) * jac * ((*shapesface_.shfunctI)(j,q)-shapes_.shfunctAvg(j));
           for (unsigned int d=0; d<nsd_; ++d) {
             trMat(d*ndofs_+j,i) += shape * shapesface_.normals(d,q);
             trMatAvg(d*ndofs_+j,i) += shapeAvg * shapesface_.normals(d,q);
@@ -1135,7 +1135,7 @@ ComputeFaceMatrices (const int                          face,
         }
 
       for (unsigned int j=0; j<ndofs_; ++j) {
-        const double shape = shapesface_.shfunct(i,q) * shapesface_.shfunctI(j,q) * jac;
+        const double shape = shapesface_.shfunct(i,q) * (*shapesface_.shfunctI)(j,q) * jac;
         for (unsigned int d=0; d<nsd_; ++d) {
           for (unsigned int e=0; e<nsd_; ++e) {
             ufMat(d*ndofs_+j,1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*e+i) += shape * stabvel[d][e];
@@ -1151,14 +1151,14 @@ ComputeFaceMatrices (const int                          face,
 
     for (unsigned int i=0; i<ndofs_; ++i)
       for (unsigned int j=0; j<ndofs_; ++j) {
-        const double shape = shapesface_.shfunctI(i,q) * shapesface_.shfunctI(j,q) * jac * stabilization[face];
+        const double shape = (*shapesface_.shfunctI)(i,q) * (*shapesface_.shfunctI)(j,q) * jac * stabilization[face];
         for (unsigned int d=0; d<nsd_; ++d)
           uuconv(d*ndofs_+i,d*ndofs_+j) += shape;
       }
     if (!evaluateOnlyNonlinear)
       for (unsigned int i=0; i<ndofs_; ++i) {
         for (unsigned int j=0; j<ndofs_; ++j) {
-          const double shape = shapesface_.shfunctI(i,q) * shapesface_.shfunctI(j,q) * jac;
+          const double shape = (*shapesface_.shfunctI)(i,q) * (*shapesface_.shfunctI)(j,q) * jac;
           for (unsigned int d=0; d<nsd_; ++d) {
             const double val = shape * shapesface_.normals(d,q);
             ugMat(d*ndofs_+j,i) -= viscosity*val;

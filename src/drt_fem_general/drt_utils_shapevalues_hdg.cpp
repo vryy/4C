@@ -141,7 +141,9 @@ DRT::UTILS::ShapeValues<distype>::Evaluate (const DRT::Element &ele)
 template <DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
 :
-degree_(params.degree_)
+params_(params),
+degree_(params.degree_),
+shfunctI(NULL)
 {
   if (nsd_ == 2)
     faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
@@ -206,8 +208,7 @@ degree_(params.degree_)
 template <DRT::Element::DiscretizationType distype>
 void
 DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
-                                                    const unsigned int  face,
-                                                    const DRT::UTILS::ShapeValues<distype> shapes)
+                                                    const unsigned int  face)
 {
   const DRT::Element::DiscretizationType facedis = DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
 
@@ -240,20 +241,11 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
 
   AdjustFaceOrientation(ele, face);
 
-  LINALG::Matrix<nsd_,nsd_> trafo;
-  faceValues.LightSize(shapes.ndofs_);
-  shfunctI.LightShape(shapes.ndofs_, nqpoints_);
-  LINALG::Matrix<nsd_,1> xsi;
-  DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints,trafo,*quadrature_,distype,
-                                         DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, face);
-  for (unsigned int q=0; q<nqpoints_; ++q)
-  {
-    for (unsigned int d=0; d<nsd_; ++d)
-      xsi(d) = faceQPoints(q,d);
-    shapes.polySpace_->Evaluate(xsi,faceValues);
-    for (unsigned int i=0; i<shapes.ndofs_; ++i)
-      shfunctI(i,q) = faceValues(i);
-  }
+
+  DRT::UTILS::ShapeValuesFaceParams interiorparams = params_;
+  interiorparams.degree_ = ele.Degree();
+  interiorparams.face_ = face;
+  shfunctI = ShapeValuesInteriorOnFaceCache<distype>::Instance().Create(interiorparams).get();
 }
 
 
@@ -465,7 +457,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
   }
 }
 
-template<DRT::Element::DiscretizationType distype> DRT::UTILS::ShapeValuesFaceCache<distype> * DRT::UTILS::ShapeValuesFaceCache<distype> ::instance_;
+
+
+template<DRT::Element::DiscretizationType distype> DRT::UTILS::ShapeValuesFaceCache<distype> *
+DRT::UTILS::ShapeValuesFaceCache<distype> ::instance_;
 
 template<DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesFaceCache<distype> & DRT::UTILS::ShapeValuesFaceCache<distype>::Instance()
@@ -480,16 +475,18 @@ DRT::UTILS::ShapeValuesFaceCache<distype> & DRT::UTILS::ShapeValuesFaceCache<dis
 template<DRT::Element::DiscretizationType distype>
 void DRT::UTILS::ShapeValuesFaceCache<distype>::Done()
 {
-  delete instance_;
+  if ( instance_ != NULL )
+    delete instance_;
   instance_ = NULL;
 }
 
 template<DRT::Element::DiscretizationType distype>
-Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
+Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> >
+DRT::UTILS::ShapeValuesFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
 
-  typename std::map<ShapeValuesFaceParams, Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > >::iterator
-    i = svf_cache_.find(params);
+  typename std::map<std::size_t, Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > >::iterator
+    i = svf_cache_.find(params.ToInt());
   if ( i!=svf_cache_.end() )
   {
     return i->second;
@@ -499,10 +496,80 @@ Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype> > DRT::UTILS::ShapeValuesFaceC
   Teuchos::RCP<ShapeValuesFace<distype> > svf;
   svf = Teuchos::rcp( new ShapeValuesFace<distype>(params) );
 
-  svf_cache_[params] = svf;
+  svf_cache_[params.ToInt()] = svf;
 
   return svf;
 }
+
+
+
+template<DRT::Element::DiscretizationType distype> DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype> *
+DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype> ::instance_;
+
+template<DRT::Element::DiscretizationType distype>
+DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype> &
+DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Instance()
+{
+  if ( instance_==NULL )
+  {
+    instance_ = new ShapeValuesInteriorOnFaceCache;
+  }
+  return *instance_;
+}
+
+template<DRT::Element::DiscretizationType distype>
+void
+DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Done()
+{
+  if ( instance_ != NULL )
+    delete instance_;
+  instance_ = NULL;
+}
+
+template<DRT::Element::DiscretizationType distype>
+Teuchos::RCP<LINALG::SerialDenseMatrix>
+DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
+{
+
+  typename std::map<std::size_t, Teuchos::RCP<LINALG::SerialDenseMatrix> >::iterator
+    i = cache_.find(params.ToInt());
+  if ( i!=cache_.end() )
+  {
+    return i->second;
+  }
+
+  // this is expensive and should not be done too often
+  const unsigned int nsd = DisTypeToDim<distype>::dim;
+
+  PolynomialSpaceParams polyparams(distype,params.degree_,params.completepoly_);
+  Teuchos::RCP<PolynomialSpace<nsd> > polySpace = DRT::UTILS::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
+  LINALG::SerialDenseVector (polySpace->Size());
+  Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature = DRT::UTILS::GaussPointCache::Instance().
+      Create(getEleFaceShapeType(distype,params.face_), params.quadraturedegree_);
+
+  Teuchos::RCP<LINALG::SerialDenseMatrix> matrix;
+  matrix = Teuchos::rcp( new LINALG::SerialDenseMatrix(polySpace->Size(), quadrature->NumPoints()) );
+
+  LINALG::Matrix<nsd,nsd> trafo;
+  LINALG::Matrix<nsd,1> xsi;
+  LINALG::SerialDenseMatrix faceQPoints;
+  DRT::UTILS::BoundaryGPToParentGP<nsd>(faceQPoints,trafo,*quadrature,distype,
+                                        getEleFaceShapeType(distype,params.face_), params.face_);
+  LINALG::SerialDenseVector faceValues(polySpace->Size());
+  for (unsigned int q=0; q<quadrature->NumPoints(); ++q)
+  {
+    for (unsigned int d=0; d<nsd; ++d)
+      xsi(d) = faceQPoints(q,d);
+    polySpace->Evaluate(xsi,faceValues);
+    for (unsigned int i=0; i<faceValues.M(); ++i)
+      (*matrix)(i,q) = faceValues(i);
+  }
+
+  cache_[params.ToInt()] = matrix;
+
+  return matrix;
+}
+
 
 // explicit instantiation of template classes
 template struct DRT::UTILS::ShapeValues<DRT::Element::hex8>;

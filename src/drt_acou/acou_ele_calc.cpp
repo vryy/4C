@@ -825,7 +825,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
         shapes_.usescompletepoly_,
         2 * ele->Faces()[*faceConsider]->Degree());
     shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
-    shapesface_->EvaluateFace(*ele, *faceConsider, shapes_);
+    shapesface_->EvaluateFace(*ele, *faceConsider);
 
     Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
     Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
@@ -1149,7 +1149,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
           usescompletepoly_,
           2 * ele->Faces()[face]->Degree());
       localSolver_->shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
-      localSolver_->shapesface_->EvaluateFace(*ele, face, *shapes_);
+      localSolver_->shapesface_->EvaluateFace(*ele, face);
 
       fvalues.Resize(localSolver_->shapesface_->nfdofs_);
 
@@ -1777,7 +1777,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ProjectPadapField(
           usescompletepoly_,
           2 * ele.Faces()[face]->Degree());
       localSolver_->shapesface_ =DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
-      localSolver_->shapesface_->EvaluateFace(ele, face, *shapes_);
+      localSolver_->shapesface_->EvaluateFace(ele, face);
       fvalues.Resize(localSolver_->shapesface_->nfdofs_);
 
       for (int i = 0; i < DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
@@ -1934,7 +1934,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputePMonNodeVals(
     int indexstart)
 {
 
-  localSolver_->shapesface_->EvaluateFace(*ele, face, *shapes_);
+  localSolver_->shapesface_->EvaluateFace(*ele, face);
 
   Teuchos::RCP<std::vector<int> > indices;
   if (params.isParameter("nodeindices"))
@@ -1990,7 +1990,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeSourcePressureMoni
     int indexstart)
 {
 
-  shapesface_->EvaluateFace(*ele, face,shapes_);
+  shapesface_->EvaluateFace(*ele, face);
 
   // get the values for the source term!
   Teuchos::RCP<Epetra_MultiVector> adjointrhs = params.get<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs");
@@ -2106,7 +2106,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ComputeAbsorbingBC");
 
-  shapesface_->EvaluateFace(*ele, face,shapes_);
+  shapesface_->EvaluateFace(*ele, face);
 
   bool resonly = params.get<bool>("resonly");
 
@@ -2463,7 +2463,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
       for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
       {
         double temp = shapesface_->jfac(i) * shapesface_->shfunct(p, i)
-            * shapesface_->shfunctI(q, i);
+            * (*shapesface_->shfunctI)(q, i);
         tempE += temp;
         for (unsigned int j = 0; j < nsd_; ++j)
         {
@@ -2504,7 +2504,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
       double tempD = 0.0;
       for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
       {
-        tempD += shapesface_->jfac(i) * shapesface_->shfunctI(p, i) * shapesface_->shfunctI(q, i);
+        tempD += shapesface_->jfac(i) * (*shapesface_->shfunctI)(p, i) * (*shapesface_->shfunctI)(q, i);
       }
       Dmat(p, q) = Dmat(q, p) += tau * tempD;
     }
@@ -2631,7 +2631,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
         ele.Faces()[face]->Degree(),
         shapes_.usescompletepoly_, 2 * ele.Faces()[face]->Degree());
     shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
-    shapesface_->EvaluateFace(ele, face, shapes_);
+    shapesface_->EvaluateFace(ele, face);
 
     ComputeFaceMatrices(face, mat, dt, sumindex);
     sumindex += shapesface_->nfdofs_;

@@ -35,33 +35,27 @@ namespace DRT
       :
       degree_(degree),
       completepoly_(completepoly),
-      quadraturedegree_(quadraturedegree)
+      quadraturedegree_(quadraturedegree),
+      face_ (0)
       {}
 
       unsigned int degree_;
       bool completepoly_;
       unsigned int quadraturedegree_;
+      unsigned int face_;
 
-      bool operator<(const ShapeValuesFaceParams& otherparams) const
+      /// convert the data structure to integers to simplify comparisons
+      /// (rather than implementing operator < with many if statements)
+      std::size_t ToInt() const
       {
-        if(degree_<otherparams.degree_)
-          return true;
-        else if(degree_==otherparams.degree_)
-        {
-          if(quadraturedegree_<otherparams.quadraturedegree_)
-            return true;
-          else if(quadraturedegree_==otherparams.quadraturedegree_)
-          {
-            if(completepoly_<otherparams.completepoly_)
-              return true;
-            else
-              return false;
-          }
-          else
-            return false;
-        }
-        else
-          return false;
+        dsassert(degree_ < 32, "Not implemented");
+        dsassert(quadraturedegree_ < 64, "Not implemented");
+        dsassert(face_ < 8, "Not implemented");
+        // Simply encode the various integer values into a single number, all of
+        // them take small numbers so this is easily possible. Beware about this when
+        // adding further information, tough (might overflow when larger than 4 billion).
+        return std::size_t(degree_) + 32 * completepoly_ + 64 * quadraturedegree_ +
+            4096 * face_;
       }
     };
 
@@ -108,7 +102,7 @@ namespace DRT
       unsigned int degree_;
 
       /// underlying polynomial space for element interior, created in constructor
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_> >  polySpace_;
+      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_> > polySpace_;
 
       /// scalar dofs per element
       unsigned int ndofs_;
@@ -171,14 +165,16 @@ namespace DRT
       \brief Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
       */
       void EvaluateFace(const DRT::Element &ele,
-                        const unsigned int  face,
-                        const DRT::UTILS::ShapeValues<distype> shapes);
+                        const unsigned int  face);
 
       /*!
       \brief Consider the orientation of faces for face degrees of freedom
        */
       void AdjustFaceOrientation (const DRT::Element &ele,
                                   const unsigned int  face);
+
+      /// Parameters underlying this structure, necessary for evaluating element basis functions on faces
+      ShapeValuesFaceParams params_;
 
       /// polynomial degree
       unsigned int degree_;
@@ -206,7 +202,7 @@ namespace DRT
 
       LINALG::SerialDenseMatrix     shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
       LINALG::SerialDenseMatrix     shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
-      LINALG::SerialDenseMatrix     shfunctI;/// evaluated shape functions on face for interior HDG polynomials
+      LINALG::SerialDenseMatrix*    shfunctI;/// evaluated shape functions on face for interior HDG polynomials
       LINALG::SerialDenseMatrix     normals; /// normal vectors on a single face for all quadrature points
 
       LINALG::Matrix<nsd_-1,1>      xsi;    /// face quadrature points
@@ -216,7 +212,6 @@ namespace DRT
       std::vector<std::vector<int> > faceNodeOrder; /// numbering of nodes belonging to faces
 
     private:
-      LINALG::SerialDenseMatrix     faceQPoints; /// Quadrature points projected onto face
       LINALG::SerialDenseVector     faceValues; /// Evaluated basis functions on face
     };
 
@@ -242,8 +237,34 @@ namespace DRT
       static ShapeValuesFaceCache<distype> * instance_;
 
       /// the actual cache; contains all pairs
-      std::map<ShapeValuesFaceParams, Teuchos::RCP<ShapeValuesFace<distype> > > svf_cache_;
+      std::map<std::size_t, Teuchos::RCP<ShapeValuesFace<distype> > > svf_cache_;
     };
+
+    /*!
+    \brief Cache for the interior values of shape velocities
+
+     Author: kronbichler 09/14
+    */
+    template <DRT::Element::DiscretizationType distype>
+    class ShapeValuesInteriorOnFaceCache : public SingletonDestruction
+    {
+    public:
+      /// return instance
+      static ShapeValuesInteriorOnFaceCache & Instance();
+
+      /// cleanup
+      virtual void Done();
+
+      /// give pointer to corresponding shape values face
+      Teuchos::RCP<LINALG::SerialDenseMatrix> Create(ShapeValuesFaceParams params);
+    private:
+      /// instance
+      static ShapeValuesInteriorOnFaceCache * instance_;
+
+      /// the actual cache; contains all pairs
+      std::map<std::size_t, Teuchos::RCP<LINALG::SerialDenseMatrix> > cache_;
+    };
+
   }
 }
 

@@ -149,7 +149,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   case ACOU::calc_abc:
   {
     int face = params.get<int>("face");
-    shapesface_->EvaluateFace(*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face);
     // note: absorbing bcs are treated fully implicitly!
     localSolver_->ComputeAbsorbingBC(ele,params,mat,face,elemat1,elevec1);
     break;
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
 
     ComputeMatrices(mat,*ele,dt,dyna_,true);
 
-    shapesface_->EvaluateFace(*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face);
 
     if(!params.isParameter("nodeindices"))
       localSolver_->ComputeSourcePressureMonitor(ele,params,mat,face,elemat1,elevec1);
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   {
     int face = params.get<int>("face");
     ReadGlobalVectors(ele,discretization,lm);
-    shapesface_->EvaluateFace(*ele,face,*shapes_);
+    shapesface_->EvaluateFace(*ele,face);
     ComputePMonNodeVals(ele,params,mat,face,elemat1,elevec1);
 
     break;
@@ -300,7 +300,7 @@ shapesface_(shapeValuesFace)
   int onfdofs = 0;
   for(unsigned int i=0; i<nfaces_; ++i)
   {
-    shapesface_.EvaluateFace(*ele,i,shapes_);
+    shapesface_.EvaluateFace(*ele,i);
     onfdofs += shapesface_.nfdofs_;
   }
   onfdofs *= nsd_;
@@ -1283,7 +1283,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ComputeMatrices(const Teuchos::RCP
   localSolver_->ComputeInteriorMatrices(mat,dt,dyna_);
   for (unsigned int face=0; face<nfaces_; ++face)
   {
-    shapesface_->EvaluateFace(ele, face, *shapes_);
+    shapesface_->EvaluateFace(ele, face);
 //    std::cout<<"ele "<<ele.Id()<<" face "<<face<<std::endl;
 //    shapes_.normals.Print(std::cout);
 //    const int* nodeids = ele.Faces()[face]->NodeIds();
@@ -1434,7 +1434,7 @@ ComputeFaceMatrices(const int                          face,
       double tempehat = 0.0;
       for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        tempehat += shapesface_.jfac(i) * shapesface_.shfunctI(p,i) * shapesface_.shfunctI(q,i);
+        tempehat += shapesface_.jfac(i) * (*shapesface_.shfunctI)(p,i) * (*shapesface_.shfunctI)(q,i);
       }
       for (unsigned int d=0; d<nsd_; ++d)
         ehatmat(d*ndofs_+p,d*ndofs_+q) = ehatmat(d*ndofs_+q,d*ndofs_+p) += tempehat;
@@ -1465,7 +1465,7 @@ ComputeFaceMatrices(const int                          face,
       double tempmat = 0.0;
       for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunctI(q,i);
+        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * (*shapesface_.shfunctI)(q,i);
         tempmat += temp;
         for(unsigned int j=0; j<nsd_; ++j)
         {
@@ -1963,7 +1963,7 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
       int count = 0;
       for(unsigned int q=0; q<ndofs_; ++q)
       {
-        if((shapesface_.shfunctI(q,0))>0.00001 ||(shapesface_.shfunctI(q,0))<-0.00001)
+        if(((*shapesface_.shfunctI)(q,0))>0.00001 ||((*shapesface_.shfunctI)(q,0))<-0.00001)
         {
           sourceterm(q) = trVec(count);
           count++;
