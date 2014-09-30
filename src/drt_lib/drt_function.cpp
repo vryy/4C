@@ -51,6 +51,7 @@ Maintainer: Martin Kronbichler
 #include "drt_timecurve.H"
 #include "drt_linedefinition.H"
 #include "../drt_combust/combust_functions.H"
+#include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_io/io.H"

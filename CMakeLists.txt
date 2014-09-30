@@ -847,6 +847,7 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/largerotations.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
   src/drt_combust/combust_functions.cpp
+  src/drt_fluid_xfluid/xfluid_functions.cpp
   src/drt_geometry/integrationcell.cpp
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp
