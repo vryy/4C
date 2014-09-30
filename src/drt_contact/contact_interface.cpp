@@ -901,7 +901,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // print old parallel distribution
   PrintParallelDistribution(index);
 
-  // use simple base class method if there are ONLY close elements
+  // use simple base class method if there are ONLY close or non-close elements
   // (return value TRUE, because redistribution performed)
   if (scroweles->NumGlobalElements()==0 || sncroweles->NumGlobalElements()==0)
   {
@@ -937,8 +937,8 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // print message
   if (!myrank)
   {
-    std::cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
-    std::cout << "\nRedistributing interface using 3-PARMETIS.......";
+    std::cout << "\nRedistributing interface using ZOLTAN.........done!\n";
+    std::cout << "Procs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)\n";
   }
 
   //**********************************************************************
@@ -1152,9 +1152,6 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // export nodes and elements to the column map (create ghosting)
   Discret().ExportColumnNodes(*colnodes);
   Discret().ExportColumnElements(*coleles);
-
-  // print message
-  if (!myrank) std::cout << "done!" << std::endl;
 
   return true;
 }
@@ -1701,10 +1698,10 @@ void CONTACT::CoInterface::ExportNodalNormals()
   teta_y_val.clear();
   teta_z_val.clear();
 
-  //std::cout << "---------- nodal normals ----------------------------------------------------------" << std::endl;
+  /*std::cout << "---------- nodal normals ----------------------------------------------------------" << std::endl;
 
   // print nodal normals
-  /*for (int p=0;p<Comm().NumProc();++p)
+  for (int p=0;p<Comm().NumProc();++p)
   {
     // one proc after the other
     if (p==Comm().MyPID())

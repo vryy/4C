@@ -868,9 +868,8 @@ void MORTAR::MortarInterface::Redistribute()
   // print message
   if (!myrank)
   {
-    std::cout << "\nProcs used for redistribution: " << sproc << " / " << mproc
-        << " (S / M)";
-    std::cout << "\nRedistributing interface using 2-PARMETIS.......";
+    std::cout << "\nRedistributing interface using ZOLTAN.........done!\n";
+    std::cout << "Procs used for redistribution: " << sproc << " / " << mproc << " (S / M)\n";
   }
 
   //**********************************************************************
@@ -948,10 +947,6 @@ void MORTAR::MortarInterface::Redistribute()
   // export nodes and elements to the column map (create ghosting)
   Discret().ExportColumnNodes(*colnodes);
   Discret().ExportColumnElements(*coleles);
-
-  // print message
-  if (!myrank)
-    std::cout << "done!" << std::endl;
 
   return;
 }
