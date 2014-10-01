@@ -29,8 +29,6 @@ Maintainer: Martin Kronbichler
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
-#include "../drt_io/io_control.H"
-
 namespace IO
 {
   class OutputControl;

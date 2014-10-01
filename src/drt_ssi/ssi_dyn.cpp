@@ -19,6 +19,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_io/io_control.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 
