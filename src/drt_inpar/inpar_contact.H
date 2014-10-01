@@ -78,6 +78,14 @@ namespace INPAR
       adhesion_bound    ///< fix bounded adhesion
     };
 
+    /// Type of contact algorithm
+    /// (this enum represents the input file parameter ALGORITHM)
+    enum AlgorithmType
+    {
+      contact_mortar,    ///< mortar algorithm
+      contact_nts        ///< node-to-segment algorithm
+    };
+
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy

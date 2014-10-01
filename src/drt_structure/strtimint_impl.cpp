@@ -1119,6 +1119,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     if(cmtbridge_->HaveContact())
       cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
 
+
     // scaling back
     fresm->Scale(-1.0);
 
@@ -1327,8 +1328,8 @@ bool STR::TimIntImpl::Converged()
       {
       case INPAR::STR::convnorm_abs:
         convDispLagrIncr = normlagr_ < tollagr_;
-        convDispWIncr = normw_ < 1e-14; // WEAR
-        convDispWMIncr = normwm_ < 1e-14; // WEAR
+        convDispWIncr = normw_ < 1e-12; // WEAR
+        convDispWMIncr = normwm_ < 1e-12; // WEAR
         break;
       /*case INPAR::STR::convnorm_rel:
         convDispLagrIncr = normlagr_ < tollagr_;

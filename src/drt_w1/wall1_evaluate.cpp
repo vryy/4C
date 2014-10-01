@@ -69,6 +69,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_struct_energy")        act = Wall1::calc_struct_energy;
   else if (action=="calc_struct_errornorms")    act = Wall1::calc_struct_errornorms;
   else if (action=="calc_potential_stiff")      act = Wall1::calc_potential_stiff;
+  else if (action=="calc_struct_mass_volume")   act = Wall1::calc_struct_mass_volume;
   else dserror("Unknown type of action %s for Wall1", action.c_str());
 
   // get the material law
@@ -91,6 +92,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     case Wall1::calc_struct_internalforce:
     case Wall1::calc_struct_stress:
     case Wall1::calc_struct_errornorms:
+    case Wall1::calc_struct_mass_volume:
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis
   =
@@ -636,6 +638,193 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       }
       else
         dserror("ERROR: Error norms only implemented for SVK material");
+    }
+    break;
+    //==================================================================================
+    case calc_struct_mass_volume:
+    {
+      // check length of elevec1
+      if (elevec1.Length() < 6)
+        dserror("The given result vector is too short.");
+
+      // declaration of variables
+      double volume_ref = 0.0;
+      double volume_mat = 0.0;
+      double volume_cur = 0.0;
+      double mass_ref = 0.0;
+      double mass_mat = 0.0;
+      double mass_cur = 0.0;
+      double density  = actmat->Density();
+
+      // some definitions
+      const int numnode = NumNode();
+      const int numdf   = 2;
+
+      Epetra_SerialDenseMatrix xjm;
+      Epetra_SerialDenseMatrix xjmmat;
+      xjm.Shape(2,2);
+      xjmmat.Shape(2,2);
+      double det     = 0.0;
+      double detmat  = 0.0;
+      double detcur  = 0.0;
+      double detFmat = 0.0;//F[0]*F[1]-F[2]*F[3];
+
+      // shape functions, derivatives and integration rule
+      Epetra_SerialDenseVector funct(numnode);
+      Epetra_SerialDenseMatrix deriv;
+      deriv.Shape(2,numnode);
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+
+      // get displacements and extract values of this element
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      std::vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }
+
+      // reference and current geometry (nodal positions)
+      Epetra_SerialDenseMatrix xrefe(2,numnode);
+      Epetra_SerialDenseMatrix xcure(2,numnode);
+      Epetra_SerialDenseMatrix xmat(2,numnode);
+      Epetra_SerialDenseVector strain;
+      strain.Size(4);
+      Epetra_SerialDenseMatrix boplin;
+      boplin.Shape(4,2*numnode);
+      Epetra_SerialDenseVector F;
+      F.Size(4);
+
+      for (int k=0; k<numnode; ++k)
+      {
+        xrefe(0,k) = Nodes()[k]->X()[0];
+        xrefe(1,k) = Nodes()[k]->X()[1];
+        xcure(0,k) = xrefe(0,k) + mydisp[k*numdf+0];
+        xcure(1,k) = xrefe(1,k) + mydisp[k*numdf+1];
+
+        // material displacements for structure with ale
+        if(structale_ == true)
+        {
+          xmat(0,k)  = xrefe(0,k) + mydispmat[k*numdf+0];
+          xmat(1,k)  = xrefe(1,k) + mydispmat[k*numdf+1];
+        }
+      }
+
+      /*------------------------- get node weights for nurbs elements */
+      const DiscretizationType distype = Shape();
+      Epetra_SerialDenseVector weights(numnode);
+      if (distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+      {
+        for (int inode=0; inode<numnode; ++inode)
+        {
+          DRT::NURBS::ControlPoint* cp =
+            dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+          weights(inode) = cp->W();
+        }
+      }
+
+      //----------------------------------------------------------------
+      // loop over all Gauss points
+      //----------------------------------------------------------------
+      for (int ip=0; ip<intpoints.nquad; ++ip)
+      {
+        const double e1  = intpoints.qxg[ip][0];
+        const double e2  = intpoints.qxg[ip][1];
+        const double wgt = intpoints.qwgt[ip];
+
+        // get values of shape functions and derivatives in the gausspoint
+        if (distype != DRT::Element::nurbs4 &&
+            distype != DRT::Element::nurbs9)
+        {
+          // shape functions and their derivatives for polynomials
+          DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+          DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+        }
+        else
+        {
+          // nurbs version
+          Epetra_SerialDenseVector gp(2);
+          gp(0)=e1;
+          gp(1)=e2;
+
+          DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+          (funct  ,
+           deriv  ,
+           gp     ,
+           myknots,
+           weights,
+           distype);
+        }
+
+        //REF ------------------------
+        /*--------------------------------------- compute jacobian Matrix */
+        w1_jacobianmatrix(xrefe,deriv,xjm,&det,numnode);
+
+        /*------------------------------------ integration factor  -------*/
+        double fac = wgt * det * thickness_ ;
+        volume_ref+=fac;
+        fac = wgt * det * thickness_ * density;
+        mass_ref+=fac;
+
+        //MAT ------------------------
+        if(structale_)
+        {
+          w1_jacobianmatrix(xmat,deriv,xjmmat,&detmat,numnode);
+          fac = wgt * detmat * thickness_ ;
+          volume_mat+=fac;
+          fac = wgt * detmat * thickness_ * density;
+          mass_mat+=fac;
+
+          w1_boplin(boplin,deriv,xjmmat,detmat,numnode);
+          w1_defgrad(F,strain,xmat,xcure,boplin,numnode);
+          detFmat = F[0]*F[1]-F[2]*F[3];
+
+          //CUR ------------------------
+          /*--------------------------------------- compute jacobian Matrix */
+          w1_jacobianmatrix(xcure,deriv,xjm,&detcur,numnode);
+
+          /*------------------------------------ integration factor  -------*/
+          fac = wgt * detcur * thickness_ ;
+          volume_cur+=fac;
+          fac = wgt * detcur * thickness_ * density * 1/detFmat;
+          mass_cur+=fac;
+        }
+        else
+        {
+          w1_boplin(boplin,deriv,xjm,det,numnode);
+          w1_defgrad(F,strain,xrefe,xcure,boplin,numnode);
+          detFmat = F[0]*F[1]-F[2]*F[3];
+
+          //CUR ------------------------
+          /*--------------------------------------- compute jacobian Matrix */
+          w1_jacobianmatrix(xcure,deriv,xjm,&detcur,numnode);
+
+          /*------------------------------------ integration factor  -------*/
+          fac = wgt * detcur * thickness_ ;
+          volume_cur+=fac;
+          fac = wgt * detcur * thickness_ * density * 1/detFmat;
+          mass_cur+=fac;
+        }
+      }
+      //----------------------------------------------------------------
+
+      // return results
+      if(!structale_)
+      {
+        volume_mat = volume_ref;
+        mass_mat   = mass_ref;
+      }
+
+      elevec1[0] = volume_ref;
+      elevec1[1] = volume_mat;
+      elevec1[2] = volume_cur;
+      elevec1[3] = mass_ref;
+      elevec1[4] = mass_mat;
+      elevec1[5] = mass_cur;
     }
     break;
     case Wall1::calc_potential_stiff:
@@ -1487,7 +1676,6 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(
 /*----------------------------------------------------------------------*
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(
   const Epetra_SerialDenseMatrix& xrefe,
   const Epetra_SerialDenseMatrix& deriv,
@@ -1496,24 +1684,23 @@ void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(
   const int iel
 )
 {
+  memset(xjm.A(),0,xjm.N()*xjm.M()*sizeof(double));
 
-   memset(xjm.A(),0,xjm.N()*xjm.M()*sizeof(double));
-
-   for (int k=0; k<iel; k++)
-   {
-        xjm(0,0) += deriv(0,k) * xrefe(0,k);
-        xjm(0,1) += deriv(0,k) * xrefe(1,k);
-        xjm(1,0) += deriv(1,k) * xrefe(0,k);
-        xjm(1,1) += deriv(1,k) * xrefe(1,k);
-   }
+  for (int k=0; k<iel; k++)
+  {
+    xjm(0,0) += deriv(0,k) * xrefe(0,k);
+    xjm(0,1) += deriv(0,k) * xrefe(1,k);
+    xjm(1,0) += deriv(1,k) * xrefe(0,k);
+    xjm(1,1) += deriv(1,k) * xrefe(1,k);
+  }
 
 /*------------------------------------------ determinant of jacobian ---*/
-   *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+  *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
 
-   if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
+  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
 /*----------------------------------------------------------------------*/
 
-   return;
+  return;
 } // DRT::ELEMENTS::Wall1::w1_jacobianmatrix
 
 /*----------------------------------------------------------------------*

@@ -71,8 +71,10 @@ wearimpl_(false),
 wearside_(INPAR::CONTACT::wear_slave),
 weartype_(INPAR::CONTACT::wear_expl),
 wearshapefcn_(INPAR::CONTACT::wear_shape_standard),
+sswear_(DRT::INPUT::IntegralValue<int>(imortar_,"SSWEAR")),
 wearcoeff_(-1.0),
-wearcoeffm_(-1.0)
+wearcoeffm_(-1.0),
+ssslip_(imortar_.get<double>("SSSLIP"))
 {
   // init gp
   InitializeGP(eletype);
@@ -688,6 +690,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
+
+  //safety
+  linsize = linsize * 2;
 
   // *********************************************************************
   // Find out about whether start / end of overlap are slave or master!
@@ -2617,6 +2622,120 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Integrate D                                              farah 09/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
+    const Epetra_Comm& comm)
+{
+  // ********************************************************************
+  // Check integrator input for non-reasonable quantities
+  // *********************************************************************
+
+  // explicitely defined shapefunction type needed
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
+    dserror("ERROR: IntegrateD called without specific shape function defined!");
+
+  // *********************************************************************
+  // Define slave quantities
+  // *********************************************************************
+  // number of nodes (slave, master)
+  int ndof = Dim();
+  int nrow = 0 ;
+  int sfeatures[2] = {0,0};
+
+  DRT::Node** mynodes = NULL;
+  DRT::Node* hnodes[4] = {0,0,0,0};
+  // for hermit smoothing
+  if (sele.IsHermite())
+  {
+    sele.AdjEleStatus(sfeatures);
+    nrow    = sfeatures[1];
+    sele.HermitEleNodes(hnodes, sfeatures[0]);
+    mynodes=hnodes;
+  }
+  else
+  {
+    nrow    = sele.NumNode();
+    mynodes = sele.Nodes();
+  }
+
+  // get slave element nodes themselves
+  if(!mynodes)
+    dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,ndof-1);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,ndof-1);
+
+  //*************************************************************************
+  //                loop over all Gauss points for integration
+  //*************************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    double wgt    = Weight(gp);
+    if(ndof==3)
+      eta[1] = Coordinate(gp,1);
+
+    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    double sxi[2] = {0.0, 0.0};
+    sxi[0]= eta[0];
+    sxi[1]= eta[1];
+
+    // evaluate the two slave side Jacobians
+    double dxdsxi = sele.Jacobian(sxi);
+
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    sele.EvaluateShapeLagMult(INPAR::MORTAR::shape_dual,sxi,lmval,lmderiv,nrow);
+
+    // evaluate trace space shape functions
+    sele.EvaluateShape(sxi,sval,sderiv,nrow,false);
+
+    //**********************************************************************
+    // evaluate at GP and lin char. quantities
+    //**********************************************************************
+    // integrate D and M
+    for (int j=0; j<nrow; ++j)
+    {
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+
+      // integrate dseg
+      for (int k=0; k<nrow; ++k)
+      {
+        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j]*sval[k]*dxdsxi*wgt;
+
+        //loop over slave dofs
+        for (int jdof=0;jdof<ndof;++jdof)
+        {
+          int col = snode->Dofs()[jdof];
+
+          if(sele.IsSlave())
+          {
+            if(abs(prod)>MORTARINTTOL)
+              cnode->AddDValue(jdof,col,prod);
+          }
+          else
+          {
+            if (sele.Owner() == comm.MyPID())
+            {
+              if(abs(prod)>MORTARINTTOL)
+                dynamic_cast<CONTACT::FriNode*>(cnode)->AddD2Value(jdof,col,prod);
+            }
+          }
+        }
+      }
+    }
+  } // End Loop over all GP
+
+  return;
+}
 /*----------------------------------------------------------------------*
  |  Compute penalty scaling factor kappa                      popp 11/09|
  *----------------------------------------------------------------------*/
@@ -7183,6 +7302,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   for (int i=0;i<3;++i)
     jumpval[0]+=gpt[i]*jump[i];
 
+  if(sswear_)
+    jumpval[0] =ssslip_;
+
   // no jump --> no wear
   if (abs(jumpval[0])<1e-12)
     return;
@@ -7530,6 +7652,9 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
 
   // absolute value of relative tangential jump
   jumpval[0] = sqrt(jumptan(0,0)*jumptan(0,0)+jumptan(1,0)*jumptan(1,0)+jumptan(2,0)*jumptan(2,0));
+
+  if(sswear_)
+    jumpval[0] = ssslip_;
 
   // no jump --> no wear
   if (abs(jumpval[0])<1e-12)
@@ -8213,7 +8338,7 @@ void inline CONTACT::CoIntegrator::GP_TE(
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if(!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if(!snodes) dserror("ERROR: Null pointer!");
 
   int nrow = sele.NumNode();
 
@@ -8265,7 +8390,7 @@ void inline CONTACT::CoIntegrator::GP_TE(
     }
   }
   else
-    dserror("Choosen wear shape function not supported!");
+    dserror("Chosen wear shape function not supported!");
 
 
   return;
@@ -8591,11 +8716,15 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
         tmmap_jk[p->first] += fac*(p->second);
 
       // (7) Lin(wear)
-      fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxi;
-      for (_CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
+      if(!sswear_)
       {
-        tmmap_jk[p->first] += fac*(p->second);
+        fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxi;
+        for (_CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
+        {
+          tmmap_jk[p->first] += fac*(p->second);
+        }
       }
+
     } // end integrate linT
 
     //********************************************************************************
@@ -8830,9 +8959,12 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
         dtmap_jk[p->first] += fac*(p->second);
 
-      fac = wgt*lmval[j]*sval[iter]*jac;
-      for (_CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
+      if(!sswear_)
+      {
+        fac = wgt*lmval[j]*sval[iter]*jac;
+        for (_CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p)
+          dtmap_jk[p->first] += fac*(p->second);
+      }
     }
 
     //********************************************************************************

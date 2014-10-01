@@ -919,6 +919,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // logarithmic mixed neo-Hooke material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupLogMixNeoHooke",
+                                            "mixed logarithmic neo-Hooke material",
+                                            INPAR::MAT::mes_couplogmixneohooke));
+
+    AddNamedString(m,"MODE","parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)", "YN");
+    AddNamedReal(m,"C1","E or mue");
+    AddNamedReal(m,"C2","nue or lambda");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*--------------------------------------------------------------------*/
   // coupled exponential material for compressible material (according to Weikenmeier_2014)

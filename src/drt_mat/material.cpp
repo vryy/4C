@@ -434,6 +434,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     return params->CreateMaterial();
   }
   case INPAR::MAT::mes_couplogneohooke:
+  case INPAR::MAT::mes_couplogmixneohooke:
   case INPAR::MAT::mes_coupexppol:
   case INPAR::MAT::mes_coupneohooke:
   case INPAR::MAT::mes_coupblatzko:

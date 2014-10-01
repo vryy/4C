@@ -98,6 +98,13 @@ namespace INPAR
       wear_time_equal,
       wear_time_different
     };
+
+    /// Definition of configuration for wear coefficient
+    enum WearConf
+    {
+      wear_conf_mat,
+      wear_conf_sp
+    };
   }  // namespace CONTACT
 }  // namespace INPAR
 

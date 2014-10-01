@@ -27,6 +27,7 @@ Maintainer: Sophie Rausch
 #include "../drt_io/io_control.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
+#include "../drt_matelast/elast_couplogmixneohooke.H"
 #include "../drt_matelast/elast_coupexppol.H"
 #include "../drt_matelast/elast_coupneohooke.H"
 #include "../drt_matelast/elast_isoexpopow.H"

@@ -819,6 +819,14 @@ public:
    */
   void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
       std::vector<MORTAR::MortarElement*> meles, bool *boundary_ele);
+
+  /*!
+   \brief integrate D matrix without lin...
+
+   */
+  void IntegrateD(MORTAR::MortarElement& sele,
+      const Epetra_Comm& comm);
+
   /*!
    \brief Build all integrals and linearizations on a 1D slave /
    master overlap (i.e. M, g, LinM, Ling and possibly D, LinD and
@@ -1175,8 +1183,11 @@ protected:
     INPAR::CONTACT::WearSide                         wearside_;    // definition of wear surface
     INPAR::CONTACT::WearType                         weartype_;    // definition of contact wear algorithm
     INPAR::CONTACT::WearShape                        wearshapefcn_;// type of wear shape function
+    bool                                             sswear_;      // flag for steady state wear
     double                                           wearcoeff_;   // wear coefficient
     double                                           wearcoeffm_;  // wear coefficient master
+    double                                           ssslip_;      // fixed slip for steady state wear
+
 }; // class CoIntegrator
 }  // namespace CONTACT
 

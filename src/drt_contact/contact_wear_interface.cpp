@@ -66,7 +66,8 @@ CONTACT::WearInterface::WearInterface(const int id, const Epetra_Comm& comm,
                                   const Teuchos::ParameterList& icontact,
                                   bool selfcontact,
                                   INPAR::MORTAR::RedundantStorage redundant) :
-CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant)
+CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant),
+sswear_(DRT::INPUT::IntegralValue<int>(icontact,"SSWEAR"))
 {
   // set wear contact status
   INPAR::CONTACT::WearType wtype =
@@ -109,15 +110,28 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
   if (!lComm())
     return;
 
+  //nodes for loop
+  Teuchos::RCP<Epetra_Map> considerednodes;
+
   // nothing to do if no active nodes
-  if (slipnodes_==Teuchos::null)
-    return;
+  if(sswear_)
+  {
+    if (activenodes_==Teuchos::null)
+      return;
+      considerednodes = activenodes_;
+  }
+  else
+  {
+    if (slipnodes_==Teuchos::null)
+      return;
+      considerednodes = slipnodes_;
+  }
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<slipnodes_->NumMyElements();++i)
+  for (int i=0;i<considerednodes->NumMyElements();++i)
   {
-    int gid = slipnodes_->GID(i);
+    int gid = considerednodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
@@ -189,7 +203,7 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
           ++k;
         }
         else
-          dserror("Choosen wear shape function not supported!");
+          dserror("Chosen wear shape function not supported!");
       }
 
       if (k!=colsize)
@@ -332,9 +346,22 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
   if (!lComm())
     return;
 
+  //nodes for loop
+  Teuchos::RCP<Epetra_Map> considerednodes;
+
   // nothing to do if no active nodes
-  if (slipnodes_==Teuchos::null)
-    return;
+  if(sswear_)
+  {
+    if (activenodes_==Teuchos::null)
+      return;
+      considerednodes = activenodes_;
+  }
+  else
+  {
+    if (slipnodes_==Teuchos::null)
+      return;
+      considerednodes = slipnodes_;
+  }
 
   /**********************************************************************/
   // we have: T_wj,c with j = Lagrange multiplier slave dof
@@ -343,9 +370,9 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
   // we compute (LinT)_kc = T_wj,c * z_j
   /**********************************************************************/
 
-  for (int j=0;j<slipnodes_->NumMyElements();++j)
+  for (int j=0;j<considerednodes->NumMyElements();++j)
   {
-    int gid = slipnodes_->GID(j);
+    int gid = considerednodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
@@ -413,9 +440,9 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
   //            Considering linearization of nodal normal vectors                 //
   // *******************************************************************************
   // loop over all LM slave nodes (row map)
-  for (int j=0;j<slipnodes_->NumMyElements();++j)
+  for (int j=0;j<considerednodes->NumMyElements();++j)
   {
-    int gid = slipnodes_->GID(j);
+    int gid = considerednodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
@@ -619,9 +646,23 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
   if (!lComm())
     return;
 
-  // nothing to do if no slip nodes
-  if (slipnodes_->NumMyElements()==0)
-    return;
+  //nodes for loop
+  Teuchos::RCP<Epetra_Map> considerednodes;
+
+  // nothing to do if no active nodes
+  if(sswear_)
+  {
+    if (activenodes_==Teuchos::null)
+      return;
+    considerednodes = activenodes_;
+  }
+  else
+  {
+    if (slipnodes_==Teuchos::null)
+      return;
+    considerednodes = slipnodes_;
+  }
+
 
   /**********************************************************************/
   // we have: E_wj,c with j = Lagrange multiplier slave dof
@@ -631,9 +672,9 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
   /**********************************************************************/
 
   // loop over all LM slave nodes (row map)
-  for (int j=0;j<slipnodes_->NumMyElements();++j)
+  for (int j=0;j<considerednodes->NumMyElements();++j)
   {
-    int gid = slipnodes_->GID(j);
+    int gid = considerednodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
@@ -801,16 +842,29 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
   if (!lComm())
     return;
 
+  //nodes for loop
+  Teuchos::RCP<Epetra_Map> considerednodes;
+
   // nothing to do if no active nodes
-  if (slipnodes_==Teuchos::null)
-    return;
+  if(sswear_)
+  {
+    if (activenodes_==Teuchos::null)
+      return;
+    considerednodes = activenodes_;
+  }
+  else
+  {
+    if (slipnodes_==Teuchos::null)
+      return;
+    considerednodes = slipnodes_;
+  }
 
   //typedef std::map<int,double>::const_iterator CI;
 
   // loop over all LM slave nodes (row map)
-  for (int j=0;j<slipnodes_->NumMyElements();++j)
+  for (int j=0;j<considerednodes->NumMyElements();++j)
   {
-    int gid = slipnodes_->GID(j);
+    int gid = considerednodes->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
@@ -2013,204 +2067,204 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
   return;
 }
 
-  /*----------------------------------------------------------------------*
-  |  Assemble matrix LinSlip with W derivatives               farah 09/13|
-  *----------------------------------------------------------------------*/
-  void CONTACT::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal)
+/*----------------------------------------------------------------------*
+|  Assemble matrix LinSlip with W derivatives               farah 09/13|
+*----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no slip nodes
+  if (slipnodes_->NumMyElements()==0)
+    return;
+
+  // information from interface contact parameter list
+  INPAR::CONTACT::FrictionType ftype =
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+  double frcoeff = IParams().get<double>("FRCOEFF");
+  double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+
+  //**********************************************************************
+  //**********************************************************************
+  //**********************************************************************
+  // Coulomb Friction
+  //**********************************************************************
+  //**********************************************************************
+  //**********************************************************************
+  if (ftype == INPAR::CONTACT::friction_coulomb)
   {
-    // get out of here if not participating in interface
-    if (!lComm())
-      return;
-
-    // nothing to do if no slip nodes
-    if (slipnodes_->NumMyElements()==0)
-      return;
-
-    // information from interface contact parameter list
-    INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
-    double frcoeff = IParams().get<double>("FRCOEFF");
-    double ct = IParams().get<double>("SEMI_SMOOTH_CT");
-    double cn = IParams().get<double>("SEMI_SMOOTH_CN");
-
-    //**********************************************************************
-    //**********************************************************************
-    //**********************************************************************
-    // Coulomb Friction
-    //**********************************************************************
-    //**********************************************************************
-    //**********************************************************************
-    if (ftype == INPAR::CONTACT::friction_coulomb)
+    // loop over all slip nodes of the interface
+    for (int i=0;i<slipnodes_->NumMyElements();++i)
     {
-      // loop over all slip nodes of the interface
-      for (int i=0;i<slipnodes_->NumMyElements();++i)
-      {
-        int gid = slipnodes_->GID(i);
-        DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cnode = dynamic_cast<FriNode*>(node);
+      int gid = slipnodes_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-        if (cnode->Owner() != Comm().MyPID())
-          dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
-        // prepare assembly, get information from node
-        std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
-        std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-        std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
-        double scalefac=1.;
-        std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
+      // prepare assembly, get information from node
+      std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
+      std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+      double scalefac=1.;
+      std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
 
-        // check for Dimension of derivative maps
-        for (int j=0;j<Dim()-1;++j)
-          if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
+      // check for Dimension of derivative maps
+      for (int j=0;j<Dim()-1;++j)
+        if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
+          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+
+       for (int j=0;j<Dim()-1;++j)
+          if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
             dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
+       if (Dim()==3)
+       {
          for (int j=0;j<Dim()-1;++j)
-            if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
-              dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
+            dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
+       }
 
-         if (Dim()==3)
-         {
-           for (int j=0;j<Dim()-1;++j)
-            if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
-              dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
-         }
+      // more information from node
+      double* n = cnode->MoData().n();
+      double* txi = cnode->CoData().txi();
+      double* teta = cnode->CoData().teta();
+      double* z = cnode->MoData().lm();
+      double& wgap = cnode->CoData().Getg();
+      wgap /= scalefac;
 
-        // more information from node
-        double* n = cnode->MoData().n();
-        double* txi = cnode->CoData().txi();
-        double* teta = cnode->CoData().teta();
-        double* z = cnode->MoData().lm();
-        double& wgap = cnode->CoData().Getg();
-        wgap /= scalefac;
+      // iterator for maps
+      std::map<int,double>::iterator colcurr;
 
-        // iterator for maps
-        std::map<int,double>::iterator colcurr;
+      // row number of entries
+      std::vector<int> row (Dim()-1);
+      if (Dim()==2)
+      {
+        row[0] = slipt_->GID(i);
+      }
+      else if (Dim()==3)
+      {
+        row[0] = slipt_->GID(2*i);
+        row[1] = slipt_->GID(2*i)+1;
+      }
+      else
+        dserror("ERROR: AssemblelinSlip: Dimension not correct");
 
-        // row number of entries
-        std::vector<int> row (Dim()-1);
-        if (Dim()==2)
+      // boolean variable if flag "CONTACTFRICTIONLESSFIRST" AND
+      // ActiveOld = true
+      bool friclessandfirst = false;
+
+      // evaluation of specific components of entries to assemble
+      double znor = 0;
+      double ztxi = 0;
+      double zteta = 0;
+      double jumptxi = 0;
+      double jumpteta = 0;
+      double euclidean = 0;
+      double* jump = cnode->FriData().jump();
+
+      // for slip
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+      {
+        jumptxi=cnode->FriData().jump_var()[0];
+
+        if (Dim()==3)
+          jumpteta=cnode->FriData().jump_var()[1];
+
+        for (int i=0;i<Dim();i++)
         {
-          row[0] = slipt_->GID(i);
+          znor += n[i]*z[i];
+          ztxi += txi[i]*z[i];
+          zteta += teta[i]*z[i];
         }
-        else if (Dim()==3)
+      }
+      else
+      {
+        for (int i=0;i<Dim();i++)
         {
-          row[0] = slipt_->GID(2*i);
-          row[1] = slipt_->GID(2*i)+1;
+          znor += n[i]*z[i];
+          ztxi += txi[i]*z[i];
+          zteta += teta[i]*z[i];
+          jumptxi += txi[i]*jump[i];
+          jumpteta += teta[i]*jump[i];
         }
+      }
+
+      // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
+      std::vector<double> sum1 (Dim()-1,0);
+      sum1[0] = ztxi+ct*jumptxi;
+      if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
+      if (Dim()==2) euclidean = abs(sum1[0]);
+      if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
+
+      // check of dimensions
+      if(Dim()==2 and (zteta != 0.0 or jumpteta != 0.0))
+        dserror ("ERROR: AssemblelinSlip: zteta and jumpteta must be zero in 2D");
+
+      // check of euclidean norm
+      if (euclidean==0.0)
+        dserror ("ERROR: AssemblelinSlip: Euclidean norm is zero");
+
+      // this is not evaluated if "FRICTIONLESSFIRST" is flaged on AND the node
+      // is just coming into contact
+      if(friclessandfirst==false)
+      {
+        //****************************************************************
+        // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
+        //****************************************************************
+        // popp 08/2012
+        //
+        // There is a problem with our frictional nonlinear complementarity
+        // function when applied to the limit case frcoeff=0 (frictionless).
+        // In this case, the simple frictionless sliding condition should
+        // be consistently recovered, which unfortunately is not the case.
+        // This fact is well-known (see PhD thesis S. Hüeber) and now
+        // taken care of by a special treatment as can be seen below
+        //
+        //****************************************************************
+        if (frcoeff==0.0)
+        {
+          //coming soon....
+        }
+
+        //****************************************************************
+        // STANDARD TREATMENT OF CASE FRCOEFF!=0 (FRICTIONAL)
+        //****************************************************************
         else
-          dserror("ERROR: AssemblelinSlip: Dimension not correct");
-
-        // boolean variable if flag "CONTACTFRICTIONLESSFIRST" AND
-        // ActiveOld = true
-        bool friclessandfirst = false;
-
-        // evaluation of specific components of entries to assemble
-        double znor = 0;
-        double ztxi = 0;
-        double zteta = 0;
-        double jumptxi = 0;
-        double jumpteta = 0;
-        double euclidean = 0;
-        double* jump = cnode->FriData().jump();
-
-        // for slip
-        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
         {
-          jumptxi=cnode->FriData().jump_var()[0];
+          //**************************************************************
+          // calculation of matrix entries of linearized slip condition
+          //**************************************************************
 
-          if (Dim()==3)
-            jumpteta=cnode->FriData().jump_var()[1];
+          /*** 1 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
+          // prepare assembly
+          std::map<int,double>& dgwmap = cnode->CoData().GetDerivGW();
 
-          for (int i=0;i<Dim();i++)
+          // loop over all entries of the current derivative map
+          for (colcurr=dgwmap.begin();colcurr!=dgwmap.end();++colcurr)
           {
-            znor += n[i]*z[i];
-            ztxi += txi[i]*z[i];
-            zteta += teta[i]*z[i];
+            int col = colcurr->first;
+            double valtxi = frcoeff*cn*(colcurr->second)*(ztxi+ct*jumptxi);
+            double valteta = frcoeff*cn*(colcurr->second)*(zteta+ct*jumpteta);
+
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linslipWglobal.Assemble(valtxi,row[0],col);
+            if (abs(valteta)>1.0e-12) linslipWglobal.Assemble(valteta,row[1],col);
           }
-        }
-        else
-        {
-          for (int i=0;i<Dim();i++)
-          {
-            znor += n[i]*z[i];
-            ztxi += txi[i]*z[i];
-            zteta += teta[i]*z[i];
-            jumptxi += txi[i]*jump[i];
-            jumpteta += teta[i]*jump[i];
-          }
-        }
+        } // if (frcoeff==0.0)
+      } // if (frictionlessandfirst == false)
+    } // loop over all slip nodes of the interface
+  } // Coulomb friction
+  else
+    dserror("linslip wear only for coulomb friction!");
 
-        // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1 (Dim()-1,0);
-        sum1[0] = ztxi+ct*jumptxi;
-        if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
-        if (Dim()==2) euclidean = abs(sum1[0]);
-        if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
-
-        // check of dimensions
-        if(Dim()==2 and (zteta != 0.0 or jumpteta != 0.0))
-          dserror ("ERROR: AssemblelinSlip: zteta and jumpteta must be zero in 2D");
-
-        // check of euclidean norm
-        if (euclidean==0.0)
-          dserror ("ERROR: AssemblelinSlip: Euclidean norm is zero");
-
-        // this is not evaluated if "FRICTIONLESSFIRST" is flaged on AND the node
-        // is just coming into contact
-        if(friclessandfirst==false)
-        {
-          //****************************************************************
-          // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
-          //****************************************************************
-          // popp 08/2012
-          //
-          // There is a problem with our frictional nonlinear complementarity
-          // function when applied to the limit case frcoeff=0 (frictionless).
-          // In this case, the simple frictionless sliding condition should
-          // be consistently recovered, which unfortunately is not the case.
-          // This fact is well-known (see PhD thesis S. Hüeber) and now
-          // taken care of by a special treatment as can be seen below
-          //
-          //****************************************************************
-          if (frcoeff==0.0)
-          {
-            //coming soon....
-          }
-
-          //****************************************************************
-          // STANDARD TREATMENT OF CASE FRCOEFF!=0 (FRICTIONAL)
-          //****************************************************************
-          else
-          {
-            //**************************************************************
-            // calculation of matrix entries of linearized slip condition
-            //**************************************************************
-
-            /*** 1 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
-            // prepare assembly
-            std::map<int,double>& dgwmap = cnode->CoData().GetDerivGW();
-
-            // loop over all entries of the current derivative map
-            for (colcurr=dgwmap.begin();colcurr!=dgwmap.end();++colcurr)
-            {
-              int col = colcurr->first;
-              double valtxi = frcoeff*cn*(colcurr->second)*(ztxi+ct*jumptxi);
-              double valteta = frcoeff*cn*(colcurr->second)*(zteta+ct*jumpteta);
-
-              // do not assemble zeros into matrix
-              if (abs(valtxi)>1.0e-12) linslipWglobal.Assemble(valtxi,row[0],col);
-              if (abs(valteta)>1.0e-12) linslipWglobal.Assemble(valteta,row[1],col);
-            }
-          } // if (frcoeff==0.0)
-        } // if (frictionlessandfirst == false)
-      } // loop over all slip nodes of the interface
-    } // Coulomb friction
-    else
-      dserror("linslip wear only for coulomb friction!");
-
-    return;
-  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
 |  Assemble matrix LinSlip with tangential+D+M derivatives    mgit 02/09|
@@ -3339,9 +3393,9 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
    *  dirichlet bound. cond on master side !!! *                *
    **************************************************************/
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
-      INPAR::CONTACT::wear_slave)
-    dserror("ERROR: AssembleD2 only for mapped both-sided wear!");
+//  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
+//      INPAR::CONTACT::wear_slave)
+//    dserror("ERROR: AssembleD2 only for mapped both-sided wear!");
 
   //*******************************************************
   // assemble second D matrix for both-sided wear :
@@ -3385,20 +3439,13 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
           double val = colcurr->second;
 
           // do the assembly into global D matrix
-          if (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-            // check for diagonality
-            if (row!=col && abs(val)>1.0e-12)
-              dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
+          // check for diagonality
+          if (row!=col && abs(val)>1.0e-12)
+            dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
 
-            // create an explicitly diagonal d matrix
-            if (row==col)
-              dglobal.FEAssemble(val, row, col);
-          }
-          else if (shapefcn_ == INPAR::MORTAR::shape_standard)
-          {
-            dserror("both-sided wear only for dual lagr. mult.");
-          }
+          // create an explicitly diagonal d matrix
+          if (row==col)
+            dglobal.FEAssemble(val, row, col);
 
           ++k;
         }
@@ -3408,8 +3455,6 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
       }
     }
   }
-
-
   return;
 }
 
@@ -4265,8 +4310,14 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
   // i.e. nodes, which were active in the last iteration, are considered. Since you know, that the lagrange
   // multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes  = LINALG::SplitMap(*snoderowmap_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs   = LINALG::SplitMap(*sdofrowmap_, *slipdofs_);
+
+  Teuchos::RCP<Epetra_Map> inactivenodes;
+
+  if(sswear_)
+    inactivenodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  else
+    inactivenodes = LINALG::SplitMap(*snoderowmap_, *slipnodes_);
+
 
   for (int i=0;i<inactivenodes->NumMyElements();++i)
   {
@@ -4389,9 +4440,22 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
   // get out of here if not participating in interface
   if (!lComm()) return;
 
+  //nodes for loop
+  Teuchos::RCP<Epetra_Map> considerednodes;
+
   // nothing to do if no active nodes
-  if (slipnodes_==Teuchos::null)
-    return;
+  if(sswear_)
+  {
+    if (activenodes_==Teuchos::null)
+      return;
+    considerednodes = activenodes_;
+  }
+  else
+  {
+    if (slipnodes_==Teuchos::null)
+      return;
+    considerednodes = slipnodes_;
+  }
 
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(IParams(),"SYSTEM");
 
@@ -4399,9 +4463,9 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
 
   typedef std::map<int,double>::const_iterator CI;
 
-  for (int i=0;i<slipnodes_->NumMyElements();++i)
+  for (int i=0;i<considerednodes->NumMyElements();++i)
   {
-    int gid = slipnodes_->GID(i);
+    int gid = considerednodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);

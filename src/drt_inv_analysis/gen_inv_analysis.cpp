@@ -37,6 +37,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/viscoelasthyper.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
+#include "../drt_matelast/elast_couplogmixneohooke.H"
 #include "../drt_matelast/elast_coupexppol.H"
 #include "../drt_matelast/elast_coupmooneyrivlin.H"
 #include "../drt_matelast/elast_coupneohooke.H"
@@ -1646,7 +1647,9 @@ void STR::GenInvAnalysis::ReadInParameters()
       case INPAR::MAT::mes_genmax:
       case INPAR::MAT::m_struct_multiscale:
         break;
-        }
+      default:
+        break;
+      }
     }
   }
 

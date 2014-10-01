@@ -61,7 +61,7 @@ DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
  |  ctor (public)                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNodeDataContainer::MortarNodeDataContainer():
-    drows_(0,0)
+drows_(0,0)
 {
   for (int i=0;i<3;++i)
   {

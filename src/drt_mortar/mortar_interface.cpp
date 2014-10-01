@@ -1883,7 +1883,7 @@ void MORTAR::MortarInterface::EvaluateNodalNormals()
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate nodal normals and store them in map (public)     jb 07/14|
+ |  evaluate nodal normals and store them in map (public)      jb 07/14 |
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::EvaluateNodalNormals(
     std::map<int, std::vector<double> > & mynormals)
@@ -2748,7 +2748,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
  |  Assemble Mortar matrices                                  popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
-    LINALG::SparseMatrix& mglobal)
+    LINALG::SparseMatrix& mglobal, bool onlyD)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -2832,7 +2832,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     }
 
     /**************************************************** M-matrix ******/
-    if ((mrtrnode->MoData().GetM()).size() > 0)
+    if ((mrtrnode->MoData().GetM()).size() > 0 and !onlyD)
     {
       const std::vector<std::map<int, double> >& mmap =
           mrtrnode->MoData().GetM();
@@ -2882,13 +2882,13 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
         if ((int) mmap[j].size() != (int) mmap[j + 1].size())
           dserror("ERROR: AssembleDM: Column dim. of nodal Mmod-map is inconsistent!");
 
-          Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
-          std::vector<int> lmrow(rowsize);
-          std::vector<int> lmcol(colsize);
-          std::vector<int> lmrowowner(rowsize);
-          std::map<int, double
->      ::const_iterator
-colcurr;for(      int j=0;j<rowsize;++j)
+      Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
+      std::vector<int> lmrow(rowsize);
+      std::vector<int> lmcol(colsize);
+      std::vector<int> lmrowowner(rowsize);
+      std::map<int, double>::const_iterator colcurr;
+
+      for( int j=0;j<rowsize;++j)
       {
         int row = mrtrnode->Dofs()[j];
         int k = 0;

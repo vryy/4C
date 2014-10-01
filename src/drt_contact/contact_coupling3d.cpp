@@ -29,16 +29,17 @@
  </pre>
 
  <pre>
- Maintainer: Alexander Popp
- popp@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15238
+       Maintainer: Alexander Popp
+       popp@lnm.mw.tum.de
+       http://www.lnm.mw.tum.de
+       089 - 289-15238
  </pre>
 
  *----------------------------------------------------------------------*/
 
 #include "contact_coupling3d.H"
 #include "contact_integrator.H"
+#include "contact_interpolator.H"
 #include "../drt_contact_aug/contact_augmented_integrator.H"
 #include "contact_node.H"
 #include "contact_defines.H"
@@ -1148,10 +1149,11 @@ CONTACT::CoCoupling3dQuadManager::CoCoupling3dQuadManager(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Evaluate coupling pairs                                   popp 03/09|
+ |  Evaluate mortar coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
+void CONTACT::CoCoupling3dManager::EvaluateMortar()
 {
   // decide which type of numerical integration scheme
 
@@ -1217,7 +1219,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       || IntType() == INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int) MasterElements().size() == 0)
-      return false;
+      return;
 
     if (!Quad())
     {
@@ -1301,8 +1303,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
     }
     else
     {
-      dserror(
-          "You should not be here! This coupling manager is not able to perform mortar coupling for high-order elements.");
+      dserror("You should not be here! This coupling manager is not able to perform mortar coupling for high-order elements.");
     }
   }
   //**********************************************************************
@@ -1317,13 +1318,61 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate node-to-segment coupling pairs                   popp 03/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling3dManager::EvaluateNTS()
+{
+  // create an interpolator instance
+  Teuchos::RCP<CONTACT::CoInterpolator> interpolator =
+      Teuchos::rcp(new CoInterpolator(imortar_));
+
+  // create contact terms + linearization
+  interpolator->Interpolate3D(SlaveElement(),MasterElements());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling pairs                                 farah 09/14 |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
+{
+  // decide which type of coupling should be evaluated
+  INPAR::CONTACT::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(imortar_, "ALGORITHM");
+
+  //*********************************
+  // Mortar Contact
+  //*********************************
+  if(algo==INPAR::CONTACT::contact_mortar)
+    EvaluateMortar();
+
+  //*********************************
+  // Node-to-Segment Contact
+  //*********************************
+  else if(algo == INPAR::CONTACT::contact_nts)
+    EvaluateNTS();
+
+  //*********************************
+  // Error
+  //*********************************
+  else
+    dserror("ERROR: chose contact algorithm not supported!");
+
   return true;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
+ |  Evaluate mortar coupling pairs for Quad-coupling         farah 09/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
+void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
 {
   // check
   if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_NODAL_SCALE"))
@@ -1381,7 +1430,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
           "ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
 
     if ((int) MasterElements().size() == 0)
-      return false;
+      return;
 
     // create an integrator instance with correct NumGP and Dim
     CONTACT::CoIntegrator integrator(imortar_, SlaveElement().Shape(), Comm());
@@ -1441,6 +1490,53 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   // free memory of consistent dual shape function coefficient matrix
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate NTS coupling pairs for Quad-coupling            farah 09/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling3dQuadManager::EvaluateNTS()
+{
+  // create an interpolator instance
+  Teuchos::RCP<CONTACT::CoInterpolator> interpolator =
+      Teuchos::rcp(new CoInterpolator(imortar_));
+
+  // create contact terms + linearization
+  interpolator->Interpolate3D(SlaveElement(),MasterElements());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
+{
+  // decide which type of coupling should be evaluated
+  INPAR::CONTACT::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(imortar_, "ALGORITHM");
+
+  //*********************************
+  // Mortar Contact
+  //*********************************
+  if(algo==INPAR::CONTACT::contact_mortar)
+    EvaluateMortar();
+
+  //*********************************
+  // Node-to-Segment Contact
+  //*********************************
+  else if(algo == INPAR::CONTACT::contact_nts)
+    EvaluateNTS();
+
+  //*********************************
+  // Error
+  //*********************************
+  else
+    dserror("ERROR: chosen contact algorithm not supported!");
 
   return true;
 }

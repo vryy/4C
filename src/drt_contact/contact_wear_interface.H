@@ -492,9 +492,10 @@ protected:
    Teuchos::RCP<Epetra_Map>      slipmn_;      // row map of all active master nodes (first entries)
 
 
-   bool wearimpl_;  //bool for implicit wear
-   bool weardiscr_;   //bool for wear with own discretization
+   bool wearimpl_;        //bool for implicit wear
+   bool weardiscr_;       //bool for wear with own discretization
    bool wearbothdiscr_;   //bool for wear with own discretization
+   bool sswear_;          //bool steady state wear
 
 }; //class
 

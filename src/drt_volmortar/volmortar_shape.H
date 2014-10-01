@@ -1926,6 +1926,6 @@ void nurbs_dualshape_function(
 }
 
 }//namespace UTILS
-}//namespace MORTAR
+}//namespace VOLMORTAR
 
-#endif /* MORTAR_SHAPE_UTILS_H_ */
+#endif /* VOLMORTAR_SHAPE_H_ */

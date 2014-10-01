@@ -1943,6 +1943,8 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
   // print error norms
   OutputErrorNorms();
 
+  OutputVolumeMass();
+
   // output of nodal positions in current configuration
   OutputNodalPositions();
 
@@ -2719,6 +2721,51 @@ void STR::TimInt::OutputErrorNorms()
   output_->WriteVector("L2_norm", L2_norm);
   output_->WriteVector("H1_norm", H1_norm);
   output_->WriteVector("Energy_norm", Energy_norm);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output volume and mass */
+void STR::TimInt::OutputVolumeMass()
+{
+  const Teuchos::ParameterList& listwear = DRT::Problem::Instance()->WearParams();
+  bool massvol = DRT::INPUT::IntegralValue<int>(listwear,"VOLMASS_OUTPUT");
+  if (!massvol)
+    return;
+
+  // initialize variables
+  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(6));
+  norms->Scale(0.0);
+
+  // call discretization to evaluate error norms
+  Teuchos::ParameterList p;
+  p.set("action", "calc_struct_mass_volume");
+  discret_->ClearState();
+  discret_->SetState("displacement",(*dis_)(0));
+  if( (dismatn_!=Teuchos::null) )
+    discret_->SetState(0,"material_displacement",dismatn_);
+  discret_->EvaluateScalars(p, norms);
+  discret_->ClearState();
+
+  // proc 0 writes output to screen
+  if (!myrank_)
+  {
+    printf("**********************************");
+    printf("\nVOLUMES:");
+    printf("\nVolume ref.:     %.10e",((*norms)(0)));
+    printf("\nVolume mat.:     %.10e",((*norms)(1)));
+    printf("\nDIFF.:           %.10e",((*norms)(0)) - ((*norms)(1)) );
+    printf("\nVolume cur.:     %.10e",((*norms)(2)));
+    printf("\n**********************************");
+    printf("\nMass:");
+    printf("\nMass ref.:       %.10e",((*norms)(3)));
+    printf("\nMass mat.:       %.10e",((*norms)(4)));
+    printf("\nDIFF.:           %.10e",((*norms)(3)) - ((*norms)(4)) );
+    printf("\nMass cur.:       %.10e",((*norms)(5)));
+    printf("\n**********************************\n\n");
+    fflush(stdout);
+  }
 
   return;
 }

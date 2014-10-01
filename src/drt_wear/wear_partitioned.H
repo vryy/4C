@@ -3,7 +3,7 @@
 \file wear_partitioned.H
 
 \brief  Basis of partitioned wear algorithm
-        (Lagrangian step followed by Eulerian step )  
+        (Lagrangian step followed by Eulerian step )
 <pre>
 Maintainer: Philipp Farah
             farah@lnm.mw.tum.de
@@ -73,13 +73,13 @@ namespace WEAR
 
     // transform from ale to structure dofs
     virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<Epetra_Vector> vec) const;
-    
+
     // transform from ale to structure dofs
     virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> vec) const;
 
     /// Application of mesh displacements (frictional contact)
     void ApplyMeshDisplacement(bool iterated=false);
-    
+
     /// material coordinates evaluated from spatial ones
     void AdvectionMap(double* XMat,
                       double* XMesh,
@@ -115,6 +115,9 @@ namespace WEAR
       int step  ///< step number where the calculation is continued
       );
 
+    // redistribute material interfaces according to current interfaces
+    void RedistributeMatInterfaces();
+
     // transform from ale to structure dofs
     virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<Epetra_Vector> vec) const;
 
@@ -136,11 +139,27 @@ namespace WEAR
     // update spatial displacements due to mat. displ
     void UpdateDispnp();
 
+    /// pull-back operation for wear from current to material conf.
+    void WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
+
+    /// pull-back operation for wear from current to material conf.
+    void WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m);
+
+    /// wear in sp conf.
+    void WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m);
+
+    /// wear in sp conf. with mortar map
+    void WearSpatialMasterMap(Teuchos::RCP<Epetra_Vector>& disinterface_s,
+                              Teuchos::RCP<Epetra_Vector>& disinterface_m);
+
+    /// wear in sp conf.
+    void WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
+
   protected:
     //nothing
 
   private:
-    
+
     Teuchos::RCP<Epetra_Vector>                      wearnp_i_;     // wear in timestep n+1 and nonlin iter i
     Teuchos::RCP<Epetra_Vector>                      wearnp_ip_;    // wear in timestep n+1 and nonlin iter i+1
     Teuchos::RCP<Epetra_Vector>                      wearincr_;     // wear incr between wearnp_i_ and wearnp_ip_
@@ -150,7 +169,9 @@ namespace WEAR
     Teuchos::RCP< ::ADAPTER::Coupling>               coupalestru_;   // ale struct cpupling
     Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface
 
-    Teuchos::ParameterList                           alepara_;
+    Teuchos::ParameterList                           alepara_;       // ale parameter list
+
+
  };  // Algorithm
 
 }  // namespace WEAR

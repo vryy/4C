@@ -76,6 +76,7 @@ namespace INPAR
       m_elasthyper,    ///< collection of hyperelastic materials
       m_viscoelasthyper, ///< viscohyperelastic material
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
+      mes_couplogmixneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       mes_coupneohooke,  ///< Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
       mes_coupmooneyrivlin,  ///< Mooney-Rivlin  material as hyperelastic potential summand

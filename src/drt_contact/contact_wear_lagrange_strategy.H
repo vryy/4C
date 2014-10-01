@@ -300,10 +300,12 @@ protected:
   bool weardiscr_;                                  // bool for wear with own discretization
   bool wearbothdiscr_;                              // bool for both-sided discrete wear
   bool weartimescales_;                             // bool for different time scales
+  bool sswear_;                                     // bool steady state wear
 
   // discrete wear algorithm (SLAVE)
   Teuchos::RCP<LINALG::SparseMatrix> twmatrix_;     // global Mortar wear matrix T
   Teuchos::RCP<LINALG::SparseMatrix> ematrix_;      // global Mortar wear matrix E
+  Teuchos::RCP<LINALG::SparseMatrix> eref_;         // global Mortar wear matrix E
   Teuchos::RCP<LINALG::SparseMatrix> lintdis_;      // Lin T w.r.t. displ: Lin(T*n*lm)
   Teuchos::RCP<LINALG::SparseMatrix> lintlm_;       // Lin T w.r.t. lm: (T*n)
   Teuchos::RCP<LINALG::SparseMatrix> linedis_;      // Lin E w.r.t. displ: Lin(E*w)

@@ -64,7 +64,7 @@ SEMI_SMOOTH_CT                  50
 GP_SLIP_INCR                    yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        incr_lin
+ALE_TYPE                        classic_lin
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
 SEARCH_ALGORITHM                BinaryTree
@@ -93,19 +93,10 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 2.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 -1.0
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR -1.0 -1.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -2.58551561163344878e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -2.59366438397123922e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  3.78269160005180183e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -3.02653814812827728e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -3.02514298386736256e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  3.39003155711790835e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2
@@ -597,9 +588,5 @@ NODE 155 COORD 1.0000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000
 55 SOLIDH8 HEX8 134 139 140 135 148 151 152 149 MAT 1 KINEM nonlinear EAS none
 56 SOLIDH8 HEX8 136 135 143 144 150 149 153 154 MAT 1 KINEM nonlinear EAS none
 57 SOLIDH8 HEX8 135 140 146 143 149 152 155 153 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

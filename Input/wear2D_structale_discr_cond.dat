@@ -13,7 +13,7 @@ General Data File BACI
 // - first-order interpolation (quad4 elements)
 // - dual Lagrange multiplier interpolation
 // - solution check done by material displacements (wear)
-// - condensation of lagr. mult. and wear 
+// - condensation of lagr. mult. and wear
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      123
 //NODES                         158
@@ -75,6 +75,7 @@ WEARTYPE                        wear_discrete
 WEAR_SHAPEFCN                   dual
 BOTH_SIDED_WEAR                 none
 WEARCOEFF                       0.0003
+WEARCOEFF_CONF                  mat
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 --------------------------------------------------------------------SOLVER 1
@@ -103,10 +104,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 2.01860094664918499e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.93491880135821248e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 2.96799401326097723e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.87926287391811386e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 2.00882532090166597e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.49813998345948024e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 8.56628080083790631e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.46586885640237804e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          16
@@ -513,9 +514,5 @@ NODE 158 COORD -1.0000000000000000e+00 -1.5000000000000000e+00 0.000000000000000
 121 WALL QUAD4 155 156 140 144 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 122 WALL QUAD4 156 157 134 140 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 123 WALL QUAD4 157 158 131 134 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

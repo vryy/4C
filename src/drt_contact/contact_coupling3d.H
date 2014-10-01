@@ -404,6 +404,18 @@ public:
   virtual bool EvaluateCoupling();
 
   /*!
+   \brief Evaluate mortar coupling pairs
+
+   */
+  virtual void EvaluateMortar();
+
+  /*!
+   \brief Evaluate NTS coupling pairs
+
+   */
+  virtual void EvaluateNTS();
+
+  /*!
    \brief Return the LM shape fcn type
 
    */
@@ -482,6 +494,18 @@ public:
 
    */
   virtual bool EvaluateCoupling();
+
+  /*!
+   \brief Evaluate mortar coupling pairs
+
+   */
+  virtual void EvaluateMortar();
+
+  /*!
+   \brief Evaluate NTS coupling pairs
+
+   */
+  virtual void EvaluateNTS();
 
   // @
 

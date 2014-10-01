@@ -79,6 +79,7 @@ WEAR_COUPALGO                   stagg
 WEAR_SHAPEFCN                   std
 WEAR_TIMESCALE                  different
 WEAR_TIMERATIO                  5
+WEARCOEFF_CONF                  sp
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 --------------------------------------------------------------------SOLVER 1
@@ -517,9 +518,5 @@ NODE 158 COORD -1.0000000000000000e+00 -1.5000000000000000e+00 0.000000000000000
 121 WALL QUAD4 155 156 140 144 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 122 WALL QUAD4 156 157 134 140 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 123 WALL QUAD4 157 158 131 134 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

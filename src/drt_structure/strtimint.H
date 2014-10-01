@@ -431,6 +431,9 @@ namespace STR
     //! Nodal positions output
     void OutputNodalPositions();
 
+    //! Error norm output
+    void OutputVolumeMass();
+
     //! Output on the micro-scale (multi-scale analysis)
     void OutputMicro();
 

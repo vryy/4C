@@ -29,10 +29,10 @@
  </pre>
 
  <pre>
- Maintainer: Alexander Popp
- popp@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15238
+       Maintainer: Alexander Popp
+       popp@lnm.mw.tum.de
+       http://www.lnm.mw.tum.de
+       089 - 289-15238
  </pre>
 
  *----------------------------------------------------------------------*/
@@ -50,6 +50,8 @@
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "contact_node.H"
+#include "contact_interpolator.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
@@ -66,6 +68,7 @@ stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATE
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Integrate slave / master overlap (public)                 popp 04/08|
@@ -163,6 +166,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   return true;
 }
 
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
@@ -183,6 +187,7 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
@@ -191,13 +196,59 @@ const Epetra_Comm& CONTACT::CoCoupling2dManager::Comm() const
   return idiscret_.Comm();
 }
 
+
 /*----------------------------------------------------------------------*
- |  Evaluate coupling pairs                                   popp 03/09|
+ |  Evaluate coupling pairs                                 farah 09/14 |
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
 {
-  // decide which type of numerical integration scheme
+  // decide which type of coupling should be evaluated
+  INPAR::CONTACT::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(imortar_, "ALGORITHM");
 
+  //*********************************
+  // Mortar Contact
+  //*********************************
+  if(algo==INPAR::CONTACT::contact_mortar)
+    EvaluateMortar();
+
+  //*********************************
+  // Node-to-Segment Contact
+  //*********************************
+  else if(algo == INPAR::CONTACT::contact_nts)
+    EvaluateNTS();
+
+  //*********************************
+  // Error
+  //*********************************
+  else
+    dserror("ERROR: chose contact algorithm not supported!");
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate node-to-segment coupling pairs                 farah 09/14 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling2dManager::EvaluateNTS()
+{
+  // create an interpolator instance
+  Teuchos::RCP<CONTACT::CoInterpolator> interpolator =
+      Teuchos::rcp(new CoInterpolator(imortar_));
+
+  // create contact terms + linearization
+  interpolator->Interpolate2D(SlaveElement(),MasterElements());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate mortar coupling pairs                           Popp 03/09 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling2dManager::EvaluateMortar()
+{
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
   //**********************************************************************
@@ -267,7 +318,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       || IntType() == INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int) MasterElements().size() == 0)
-      return false;
+      return;
 
     // create an integrator instance with correct NumGP and Dim
     Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
@@ -407,9 +458,8 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   {
     dserror("ERROR: Invalid type of numerical integration");
   }
-
-  return true;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|

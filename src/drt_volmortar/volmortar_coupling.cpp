@@ -1224,12 +1224,12 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
         *idispcol, // interface displacements
         INPAR::CUT::VCellGaussPts_Tessellation, // how to create volume cell Gauss points?
         INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
-        true, // parallel cut framework
+        true,  // parallel cut framework
         false, // gmsh output for cut library
-        true, // find point positions
-        true, // create tet cells only
+        true,  // find point positions
+        true,  // create tet cells only
         false, // screen output
-        true // cut in reference coordinates
+        true   // cut in reference coordinates
         );
 
     GEO::CUT::plain_volumecell_set mcells_out;
@@ -1273,17 +1273,16 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(),
       "CUTTYPE") == INPAR::VOLMORTAR::cuttype_directdivergence)
   {
-
     wizard->Cut(true, // include_inner
         *idispcol, // interface displacements
         INPAR::CUT::VCellGaussPts_DirectDivergence, // how to create volume cell Gauss points?
         INPAR::CUT::BCellGaussPts_DirectDivergence, // how to create boundary cell Gauss points?
-        true, // parallel cut framework
+        true,  // parallel cut framework
         false, // gmsh output for cut library
-        true, // find point positions
+        true,  // find point positions
         false, // create tet cells only
         false, // suppress screen output
-        true // cut in reference coordinates
+        true   // cut in reference coordinates
         );
 
     GEO::CUT::plain_volumecell_set mcells_out;
@@ -1323,10 +1322,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
   bool integrateele = true;
   bool converged = false;
 
-  double xi[3] =
-  { 0.0, 0.0, 0.0 };
-  double xgl[3] =
-  { 0.0, 0.0, 0.0 };
+  double xi[3]  = { 0.0, 0.0, 0.0 };
+  double xgl[3] = { 0.0, 0.0, 0.0 };
 
   //--------------------------------------------------------
   // 1. all slave nodes within with master ele ?
@@ -1350,7 +1347,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
     {
       if (mele.Shape() == DRT::Element::hex8)
       {
-        if (xi[0] > -1.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
+        if (    xi[0] > -1.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
             and xi[1] > -1.0 - VOLMORTARELETOL and xi[1] < 1.0 + VOLMORTARELETOL
             and xi[2] > -1.0 - VOLMORTARELETOL and xi[2] < 1.0 + VOLMORTARELETOL)
           integrateele = true;
@@ -1360,7 +1357,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
 
       if (mele.Shape() == DRT::Element::tet4)
       {
-        if (xi[0] > 0.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
+        if (    xi[0] > 0.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
             and xi[1] > 0.0 - VOLMORTARELETOL and xi[1] < 1.0 + VOLMORTARELETOL
             and xi[2] > 0.0 - VOLMORTARELETOL and xi[2] < 1.0 + VOLMORTARELETOL
             and (xi[0] + xi[1] + xi[2]) < 1.0 + 3 * VOLMORTARELETOL)
@@ -1384,10 +1381,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
  *----------------------------------------------------------------------*/
 bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
 {
-  double xi[3] =
-  { 0.0, 0.0, 0.0 };
-  double xgl[3] =
-  { 0.0, 0.0, 0.0 };
+  double xi[3]  = { 0.0, 0.0, 0.0 };
+  double xgl[3] = { 0.0, 0.0, 0.0 };
   bool converged = false;
 
   {
@@ -1462,7 +1457,6 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
         return false;
     }
-
   }
 
   {
@@ -1537,7 +1531,6 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
         return false;
     }
-
   }
 
   //--------------------------------------------------------
@@ -1550,24 +1543,23 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
 
     // global to local:
     if (sele.Shape() == DRT::Element::hex8)
-      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele, xgl, xi,
-          converged);
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele, xgl, xi, converged);
     else if (sele.Shape() == DRT::Element::tet4)
-      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi,
-          converged);
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi, converged);
     else
       dserror("Shape function not supported!");
 
     if (converged == true)
     {
       if (sele.Shape() == DRT::Element::hex8)
-        if (abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
+        if (    abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[1]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[2]) < 1.0 - VOLMORTARCUT2TOL)
           return true;
 
       if (sele.Shape() == DRT::Element::tet4)
-        if (xi[0] > 0.0 + VOLMORTARCUT2TOL and xi[0] < 1.0 - VOLMORTARCUT2TOL
+        if (    xi[0] > 0.0 + VOLMORTARCUT2TOL
+            and xi[0] < 1.0 - VOLMORTARCUT2TOL
             and xi[1] > 0.0 + VOLMORTARCUT2TOL
             and xi[1] < 1.0 - VOLMORTARCUT2TOL
             and xi[2] > 0.0 + VOLMORTARCUT2TOL
@@ -1598,13 +1590,14 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
     if (converged == true)
     {
       if (mele.Shape() == DRT::Element::hex8)
-        if (abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
+        if (    abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[1]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[2]) < 1.0 - VOLMORTARCUT2TOL)
           return true;
 
       if (mele.Shape() == DRT::Element::tet4)
-        if (xi[0] > 0.0 + VOLMORTARCUT2TOL and xi[0] < 1.0 - VOLMORTARCUT2TOL
+        if (    xi[0] > 0.0 + VOLMORTARCUT2TOL
+            and xi[0] < 1.0 - VOLMORTARCUT2TOL
             and xi[1] > 0.0 + VOLMORTARCUT2TOL
             and xi[1] < 1.0 - VOLMORTARCUT2TOL
             and xi[2] > 0.0 + VOLMORTARCUT2TOL

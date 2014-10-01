@@ -771,8 +771,8 @@ protected:
 
     Teuchos::RCP<Epetra_Map> gactivenodes_;         // global active slave node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gactivedofs_;          // global active slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gactiven_;             // global row map of matrix N (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gactivet_;             // global row map of matrix T (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gactiven_;             // global dof row map of matrix N (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gactivet_;             // global dof row map of matrix T (of all interfaces)
     Teuchos::RCP<Epetra_Map> gslipnodes_;           // global slip slave node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gslipdofs_;            // global slip slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gslipt_;               // global row map of matrix T for slip dofs (of all interfaces)

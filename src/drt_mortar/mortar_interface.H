@@ -665,7 +665,8 @@ public:
 
   */
   virtual void AssembleDM(LINALG::SparseMatrix& dglobal,
-                          LINALG::SparseMatrix& mglobal);
+                          LINALG::SparseMatrix& mglobal,
+                          bool onlyD=false);
 
   /*!
   \brief Assemble matrix of normals N
@@ -701,6 +702,11 @@ public:
   */
   virtual double Inttime(){return inttime_interface_;};
 
+  /*!
+  \brief return bool if interface is redistributed
+
+  */
+  virtual bool& IsRedistributed(){return redistributed_;};
   //@}
 
   //! @name Visualization and Debugging methods
@@ -731,6 +737,7 @@ protected:
   const Epetra_Comm&                 comm_;          // communicator
   Teuchos::RCP<Epetra_Comm>          lcomm_;         // interface local communicator
   std::map<int,int>                  procmap_;       // mapping global -> local communicator PIDs
+  bool                               redistributed_; // redistribution for this time step?
 
   Teuchos::RCP<DRT::Discretization>  idiscret_;      // the discretization of the mortar interface
   int                                dim_;           // dimension of problem (2D or 3D)

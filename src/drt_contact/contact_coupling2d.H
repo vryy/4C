@@ -223,6 +223,18 @@ public:
   virtual bool EvaluateCoupling();
 
   /*!
+  \brief Evaluate mortar coupling
+
+  */
+  virtual void EvaluateMortar();
+
+  /*!
+  \brief Evaluate node-to-segment coupling
+
+  */
+  virtual void EvaluateNTS();
+
+  /*!
   \brief Calculate consistent dual shape functions in boundary elements
 
   */

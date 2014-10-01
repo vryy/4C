@@ -51,6 +51,11 @@ namespace MORTAR
   class ManagerBase;
 }
 
+namespace CONTACT
+{
+  class CoInterface;
+}
+
 /*----------------------------------------------------------------------*
  |                                                          farah 11/13 |
  *----------------------------------------------------------------------*/
@@ -68,9 +73,14 @@ namespace WEAR
     //! virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
+    //! create mortar interfaces for material conf.
+    void CreateMaterialInterface();
+
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
+    //! check compatibility if input parameters
+    void CheckInput();
 
     //! read restart data
     virtual void ReadRestart(
@@ -85,12 +95,16 @@ namespace WEAR
 
   protected:
 
+    int                                                dim_;        //! problem dimension
+
     //! @name Underlying fields
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;  //! underlying structure
-    Teuchos::RCP<ALE::Ale>                           ale_;        //! underlying ALE
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>      structure_;  //! underlying structure
+    Teuchos::RCP<ALE::Ale>                             ale_;        //! underlying ALE
     //@}
 
-    Teuchos::RCP<MORTAR::ManagerBase>                cmtman_;     // contact manager
+    Teuchos::RCP<MORTAR::ManagerBase>                  cmtman_;        // contact manager
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> >   interfaces_;    // contact/wear interfaces
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> >   interfacesMat_; // contact interfaces in Mat.
 
   };  // Algorithm
 }  // namespace WEAR

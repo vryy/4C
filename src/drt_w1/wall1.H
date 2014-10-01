@@ -143,7 +143,7 @@ public:
 
   /// Get shape type of element
   virtual DiscretizationType Shape() const;
-  
+
   /// Set discretization type of element
   virtual void SetDisType(DRT::Element::DiscretizationType shape)
   {
@@ -301,11 +301,13 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_struct_reset_istep,  ///< reset elementwise internal variables
-                              ///< during iteration to last converged state
-    calc_struct_energy,       ///< calculate internal energy of element
-    calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-    calc_potential_stiff      ///< calculate volume potential
+    calc_struct_reset_istep, ///< reset elementwise internal variables
+                             ///< during iteration to last converged state
+    calc_struct_energy,      ///< calculate internal energy of element
+    calc_struct_errornorms,  ///< compute error norms (L2,H1,energy)
+    calc_potential_stiff,    ///< calculate volume potential
+
+    calc_struct_mass_volume  ///< calc volume and mass
   };
 
   /// type of 2D dimension reduction
@@ -363,7 +365,7 @@ protected:
   enum KinematicType kintype_;
   //! struct_ale
   bool structale_;
-  
+
   //! the element discretization type (shape)
   DRT::Element::DiscretizationType distype_;
 
@@ -439,13 +441,13 @@ protected:
     Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const int iel  ///< number of element nodes
   );
-  
-  /// Deformation gradient, measures distortion of the mesh of the 
+
+  /// Deformation gradient, measures distortion of the mesh of the
   /// material configuration with respect to the referential configuration
   /// in structure with ale approaches (fractional step method)
   /// \author mgit \date 04/11
   void w1_defgradmat(
-    Epetra_SerialDenseVector& F,  ///< deformation gradient (mesh distortion of material configuration)  
+    Epetra_SerialDenseVector& F,  ///< deformation gradient (mesh distortion of material configuration)
     Epetra_SerialDenseVector& Fmat,  ///< deformation gradient (mesh distortion of spatial configuration)
     Epetra_SerialDenseVector& FFmatinv,  ///< product of F and Fmat(inv)
     Epetra_SerialDenseVector& strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
@@ -454,7 +456,7 @@ protected:
     Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const int iel  ///< number of element nodes
   );
-  
+
   /// Non-linear B-operator in reference configuration
   /// \author mgit \date 04/07
   void w1_boplin_cure(

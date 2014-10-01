@@ -76,6 +76,7 @@ WEARTYPE                        explicit
 BOTH_SIDED_WEAR                 none
 WEAR_COUPALGO                   stagg
 WEARCOEFF                       0.0003
+WEARCOEFF_CONF                  sp
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 --------------------------------------------------------------------SOLVER 1

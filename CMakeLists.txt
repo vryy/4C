@@ -536,6 +536,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupanisopow.cpp
   src/drt_matelast/elast_coupblatzko.cpp
   src/drt_matelast/elast_couplogneohooke.cpp
+  src/drt_matelast/elast_couplogmixneohooke.cpp
   src/drt_matelast/elast_coupexppol.cpp
   src/drt_matelast/elast_coupneohooke.cpp
   src/drt_matelast/elast_coupvarga.cpp
@@ -1698,6 +1699,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_integrator_assemble.cpp
   src/drt_contact/contact_interface.cpp
   src/drt_contact/contact_interface_tools.cpp
+  src/drt_contact/contact_interpolator.cpp
   src/drt_contact/contact_lagrange_strategy.cpp
   src/drt_contact/contact_poro_lagrange_strategy.cpp
   src/drt_contact/contact_manager.cpp

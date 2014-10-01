@@ -1761,6 +1761,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::adhesion_bound,INPAR::CONTACT::adhesion_bound),
       &scontact);
 
+  setStringToIntegralParameter<int>("ALGORITHM","Mortar","Type of contact algorithm",
+      tuple<std::string>("mortar","Mortar",
+                         "nts","NTS"),
+      tuple<int>(
+                 INPAR::CONTACT::contact_mortar,INPAR::CONTACT::contact_mortar,
+                 INPAR::CONTACT::contact_nts,INPAR::CONTACT::contact_nts),
+      &scontact);
+
   setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
       tuple<std::string>("None","none",
                          "Stick","stick",
@@ -1949,6 +1957,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::wear_archard, INPAR::CONTACT::wear_archard),
       &wear);
 
+  setStringToIntegralParameter<int>("WEARCOEFF_CONF","material","configuration in which wcoeff is defined",
+      tuple<std::string>("material","mat",
+                         "spatial","sp"),
+      tuple<int>(
+                 INPAR::CONTACT::wear_conf_mat, INPAR::CONTACT::wear_conf_mat,
+                 INPAR::CONTACT::wear_conf_sp, INPAR::CONTACT::wear_conf_sp),
+      &wear);
+
   setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
         tuple<std::string>("Dual", "dual",
                            "Standard", "standard", "std"),
@@ -1960,6 +1976,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient for slave surface",&wear);
   DoubleParameter("WEARCOEFF_MASTER",0.0,"Wear coefficient for master surface",&wear);
   DoubleParameter("WEAR_TIMERATIO",1.0,"Time step ratio between wear and spatial time scale",&wear);
+  DoubleParameter("SSSLIP",1.0,"Fixed slip for steady state wear",&wear);
+
+  setStringToIntegralParameter<int>("SSWEAR","No","flag for steady state wear",
+                               yesnotuple,yesnovalue,&wear);
+
+  setStringToIntegralParameter<int>("VOLMASS_OUTPUT","No","flag for output of mass/volume in ref,mat and cur. conf.",
+                               yesnotuple,yesnovalue,&wear);
 
   setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
         tuple<std::string>("No","no", "none" ,

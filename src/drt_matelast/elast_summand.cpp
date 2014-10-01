@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 
 
 #include "elast_couplogneohooke.H"
+#include "elast_couplogmixneohooke.H"
 #include "elast_coupexppol.H"
 #include "elast_coupneohooke.H"
 #include "elast_coupblatzko.H"
@@ -78,6 +79,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupLogNeoHooke(curmat));
     MAT::ELASTIC::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupLogNeoHooke(params));
+  }
+  case INPAR::MAT::mes_couplogmixneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupLogMixNeoHooke(curmat));
+    MAT::ELASTIC::PAR::CoupLogMixNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupLogMixNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupLogMixNeoHooke(params));
   }
   case INPAR::MAT::mes_coupexppol:
   {
