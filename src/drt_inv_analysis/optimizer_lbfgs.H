@@ -30,7 +30,11 @@ namespace INVANA
 /*!
   \brief Limited memory bfgs algorithm with armijo rule line search
 
-  Documentation will follow.
+  Implementation of the Limited Memory BFGS algorithm as e.g. given in:\n
+  Nocedal, Jorge. "Updating quasi-Newton matrices with limited storage." Mathematics of computation 35.151 (1980): 773-782.
+
+  With a linesearch implemented from:\n
+  Kelley, Carl T. Iterative methods for optimization. Vol. 18. Siam, 1999.
 
   \author kehl
   */

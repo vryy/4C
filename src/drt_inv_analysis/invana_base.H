@@ -45,6 +45,20 @@ class OptimizerBase;
   /*!
   \brief A base class for the inverse analysis
   \author kehl
+
+  This class is a base class to setup an optimzation problem. It's main purpose is to hold
+  all base class pointers to all the functional classes used to make up an optimization
+  problem, i.e.:\n
+  - the discretization (more for convenience)\n
+  - an objective function\n
+  - a parameterization of the material parameters to be estimated\n
+  - a regularization to smooth the objective function\n
+  - an optimization algorithm\n
+
+  It triggers the optimization algorithm to start the optimization and it provides and interface function
+  Evaluate(sol, val, gradient) to be used by the optimization algorithm to query the optimization problem
+  for the actual value "val" and gradient "gradient" of the objective function given the current solution "sol".
+  Since this highly depends on the actual implementation this is pure virtual here.
  */
 
 class InvanaBase {
@@ -99,13 +113,13 @@ public:
   //! a reference to the discretization
   Teuchos::RCP<DRT::Discretization> Discret() {return discret_;}
 
-  //! a reference to the discretization
+  //! a reference to the objective function
   Teuchos::RCP<STR::INVANA::ObjectiveFunct> ObjectiveFunct() {return objfunct_;}
 
   //! a reference to the material parameter manager
   Teuchos::RCP<STR::INVANA::MatParManager> Matman(){return matman_; }
 
-  //! a reference to the material parameter manager
+  //! a reference to the regularization of the objective function
   Teuchos::RCP<STR::INVANA::RegularizationBase> Regman(){return regman_; }
 
   //! a reference to the optimization algorithm
@@ -120,13 +134,13 @@ public:
   //! the unique layout of the optimization parameters
   Teuchos::RCP<Epetra_Map> VectorRowLayout();
 
-  //! the non-unique layout (possibly also unique) of the optimization parameters
+  //! the possibly non-unique layout of the optimization parameters
   Teuchos::RCP<Epetra_Map> VectorColLayout();
 
   //! number of vectors in the optimization parameter Epetra_MultiVector
   double NumVectors();
 
-  //! retrun invana specific result test to the global problem field tests
+  //! return invana specific result test to the global problem field tests
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
 private:
@@ -137,10 +151,10 @@ private:
   //! objective function to be optimized
   Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct_;
 
-  //! handler for calls to material routines
+  //! handler for calls to the parametrization
   Teuchos::RCP<STR::INVANA::MatParManager> matman_;
 
-  //! handler for calls to regularization
+  //! handler for calls to the regularization
   Teuchos::RCP<STR::INVANA::RegularizationBase> regman_;
 
   //! optimization algorithm to solve the optimization problem

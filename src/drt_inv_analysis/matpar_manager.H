@@ -48,12 +48,12 @@ namespace INVANA
   uniform distribution, kernel based parametrization, ...). Basic functionality common to
   all parametrizations is given here.
 
-  <B>Material Parameters<\B>(MatParManager::params_) are stored as Epetra_MultiVector where each vector refers to a
+  <b>Material Parameters</b>(MatParManager::params_) are stored as Epetra_MultiVector where each vector refers to a
   physical material property (e.g. youngs modulus for St. Venant Kirchhoff, alpha "stiffness"
   and beta "stiffness" in the AAA material) corresponding to one input file material.
   The layout of each vector is given by the underlying discretization's elecolmap.
 
-  <B>Optimization parameters<\B>(MatParManager::optparams_) are stored as Epetra_MultiVector for historical reasons too.
+  <b>Optimization parameters</b>(MatParManager::optparams_) are stored as Epetra_MultiVector for historical reasons too.
   The respective parametrizations need to take care about the mapping between optparams_ and params_
   The row-wise layout (MatParManager::paramlayoutmap_) must be provided  by the respective parametrizations.
   Access to the optimization parameters is given by access functions.

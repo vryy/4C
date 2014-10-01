@@ -39,7 +39,7 @@ Maintainer: Sebastian Kehl
 
 
 /*----------------------------------------------------------------------*/
-/* standard constructor                                      keh 10/13  */
+/* standard constructor                                      keh 09/14  */
 /*----------------------------------------------------------------------*/
 STR::INVANA::InvanaAugLagr::InvanaAugLagr():
   InvanaBase(),
@@ -67,6 +67,9 @@ fprestart_(0)
 
 }
 
+/*----------------------------------------------------------------------*/
+/* Setup                                                     keh 09/14  */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::InvanaAugLagr::Setup()
 {
   if (not Discret()->Filled() || not Discret()->HaveDofs())
@@ -216,8 +219,7 @@ void STR::INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double*
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate gradient of the objective function                          */
-/* using the adjoint equations                              keh 10/13   */
+/* evaluate gradient of the objective function              keh 10/13   */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
@@ -246,6 +248,9 @@ void STR::INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol,
 
 }
 
+/*----------------------------------------------------------------------*/
+/* Reset the discretization                                 keh 10/13   */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::InvanaAugLagr::ResetDiscretization()
 {
   Teuchos::ParameterList p;

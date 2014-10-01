@@ -28,9 +28,8 @@ namespace INVANA
 
   Stepsize is computed such that the sufficient decrease condition is fulfilled.
 
-  The LineSearch is based on poynomial approximations based on the available information
-  in each line search step, i.e a quadratic model is used in the first step, while for
-  steps >1 cubic models are applied.
+  The linesearch is implemented from:\n
+  Kelley, Carl T. Iterative methods for optimization. Vol. 18. Siam, 1999.
 
   \author kehl
   */

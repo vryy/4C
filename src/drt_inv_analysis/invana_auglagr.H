@@ -39,7 +39,17 @@ class MatParManager;
 class RegularizationBase;
 
 /*!
- \brief Augmented Lagrange Functional
+ \brief Augmented Lagrange Functional for the estimation of material parameters in structures
+
+ This class constitutes an optimization problem given by an abstract objective function
+ (plus possibly a regularization) and and augmentation of a functional made up of Lagrange multipliers
+ \f$ \lambda \f$ and the residual of some forward simulation \b F according to \f$ \lambda^T \mathbf{F}\f$.
+
+ Like this the gradient of the objective function (given it is only implicitly dependend on the material
+ parameters) can be computed efficiently via the adjoint equations.
+
+ <b> IMPORTANT NOTE</b>: The adjoint equations are so far only available for a static structural problem
+ without prestressing! The implementation is in timint_adjoint.cpp.
 
  \author kehl
  */
@@ -57,15 +67,15 @@ public:
 
   virtual void Setup();
 
-  //! Evaluate the objective function
+  //! Evaluate the objective function (see base class for description of input and output)
   virtual void Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient);
 
 protected:
 
-  //! solve the primal problem
+  //! Solve the forward problem
   void SolveForwardProblem();
 
-  //! solve the adjoint problem
+  //! Solve the adjoint problem
   void SolveAdjointProblem();
 
   //! Reset discretization
@@ -96,7 +106,7 @@ private:
   //! time of steps of the forward problem
   Teuchos::RCP<std::vector<double> > time_;
 
-  //! number of simulation steps in the primal problem
+  //! number of simulation steps in the forward problem
   int msteps_;
 
   //! restart of the forward problem

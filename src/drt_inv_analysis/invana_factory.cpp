@@ -39,8 +39,8 @@ Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos
 
   Teuchos::RCP<InvanaBase> optprob=Teuchos::null;
 
-  Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct=Teuchos::null;
   // similarity measure
+  Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct=Teuchos::null;
   switch (DRT::INPUT::IntegralValue<INPAR::STR::StatInvObjFunctType>(invp,"OBJECTIVEFUNCT"))
   {
     case INPAR::STR::stat_inv_obj_disp:

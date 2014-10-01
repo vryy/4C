@@ -34,7 +34,6 @@ class InvanaBase;
 
   /*!
   \brief A factory for the inverse analysis optimization problem
-
   \author kehl
  */
 

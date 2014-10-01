@@ -44,7 +44,16 @@ class InvanaBase;
   /*!
   \brief A base optimization algorithm
 
-  Documentation will follow
+  This class hold the quantities common to all kind of optimization algorithms, i.e.:\n
+  - a reference to an optimization problem
+  - the value of some objective function\n
+  - the gradient of some opbjective function\n
+  - the current and old solution vector to the optimization problem\n
+
+  It's main purpose is the access to the optimization problem. It offers the evaluation of the value and
+  the gradient of the optimization problem to be used by the derived implementations. So these, e.g.
+  OptimizerBase::OptimizerGradDesc, OptimizerBase::OptimizerLBFGS or OptimizerBase::OptimizerMC, are
+  completely decoupled from the optimization problem to be solved.
 
   \author kehl
   */
@@ -152,7 +161,7 @@ protected:
   void UpdateGradient(){objgrad_o_->Update(1.0, *objgrad_, 0.0);}
 
   //! upate objective function value: push current to old
-   void UpdateObjFunctValue(){objval_o_=objval_;}
+  void UpdateObjFunctValue(){objval_o_=objval_;}
 
   //! update the solution (and push current to old)
    /*!

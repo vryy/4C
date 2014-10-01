@@ -19,7 +19,7 @@ Maintainer: Sebastian Kehl
 
 
 /*----------------------------------------------------------------------*/
-/* standard constructor                                      keh 10/13  */
+/* standard constructor                                      keh 09/14  */
 /*----------------------------------------------------------------------*/
 STR::INVANA::InvanaBase::InvanaBase():
 discret_(Teuchos::null),
@@ -84,8 +84,6 @@ double STR::INVANA::InvanaBase::NumVectors()
   return matman_->NumVectors();
 }
 
-/*----------------------------------------------------------------------*/
-/* Creates the field test                                               */
 Teuchos::RCP<DRT::ResultTest> STR::INVANA::InvanaBase::CreateFieldTest()
 {
   return Teuchos::rcp(new InvanaResultTest(*this));
