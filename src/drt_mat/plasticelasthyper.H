@@ -581,6 +581,7 @@ private:
     bool anisoprinc_ ;
     bool anisomod_ ;
     bool isomodvisco_ ;
+    bool viscogenmax_;
 
     /// @name Voigt index arrays
     //@{

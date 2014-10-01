@@ -181,6 +181,8 @@ private:
     virtual bool Initialized() const
     {
       return isinitvis_&&(histmodrcgcurr_!=Teuchos::null);
+      return isinitvis_&&(histstresscurr_!=Teuchos::null);
+      return isinitvis_&&(histartstresscurr_!=Teuchos::null);
     }
 
     /// number of materials
@@ -234,8 +236,11 @@ private:
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return anisomod_;}
 
-    /// return if isotropic, splitted and viscos formulation
+    /// return if isotropic, splitted and viscous formulation
     virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
+
+    /// return if viscous-genmax (ssl-model) formulation
+    virtual bool ViscoGenMax() const { return viscogenmax_;}
 
     /// get fiber vectors
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
@@ -283,7 +288,6 @@ private:
 
     /// calculates the factors associated to the hyperelastic laws
     virtual void EvaluateGammaDelta(
-        const LINALG::Matrix<6,1> rcg,
         LINALG::Matrix<3,1> prinv,
         LINALG::Matrix<3,1> modinv,
         LINALG::Matrix<3,1>& gamma,
@@ -330,7 +334,7 @@ private:
         LINALG::Matrix<5,1> moddelta
         );
 
-    /// calculates the isotropic stress and elasticity tensor for viscos decoupled configuration
+    /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
     virtual void EvaluateIsoModVisco(
         LINALG::Matrix<6,1>& stressisomodisovisco,
         LINALG::Matrix<6,1>& stressisomodvolvisco,
@@ -345,6 +349,20 @@ private:
         LINALG::Matrix<6,1> icg,
         LINALG::Matrix<6,6> id4,
         LINALG::Matrix<6,1> modrcgrate
+        );
+
+    /// calculates the stress and elasticitiy tensor for the viscous Genmax-material
+    /// depending on the viscoelastic material isochoric-principal, isochoric-modified
+    /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
+    /// tensors are added
+    virtual void EvaluateViscoGenMax(
+        LINALG::Matrix<6,1> stress,
+        LINALG::Matrix<6,6> cmat,
+        LINALG::Matrix<6,1>& Q,
+        LINALG::Matrix<6,6>& cmatq,
+        double tau,
+        double beta,
+        Teuchos::ParameterList& params
         );
 
     /// calculates the anisotropic stress and elasticity tensor for coupled configuration
@@ -469,11 +487,12 @@ private:
     );
 
     /// Flags to specify the formulations
-    bool isoprinc_;
-    bool isomod_;
-    bool anisoprinc_ ;
-    bool anisomod_ ;
-    bool isomodvisco_;
+    bool isoprinc_; ///< global indicator for isotropic principal formulation
+    bool isomod_; ///< global indicator for isotropic splitted formulation
+    bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
+    bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
+    bool isomodvisco_ ; ///< global indicator for isotropic splitted viscous formulation
+    bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
 
     /// @name Voigt index arrays
     //@{
@@ -494,6 +513,10 @@ private:
     /// visco history Cauchy-Green-Tensor
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcgcurr_; ///< current Cauchy-Green-Tensor
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcglast_; ///< Cauchy-Green-Tensor of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histartstresscurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histartstresslast_; ///< stress of last converged state
 
     bool isinitvis_;  ///< indicates if #Initialized routine has been called
   };

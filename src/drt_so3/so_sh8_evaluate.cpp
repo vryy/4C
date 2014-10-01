@@ -25,7 +25,7 @@ Maintainer: Alexander Popp
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/viscoelasthyper.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/micromaterial.H"

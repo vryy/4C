@@ -125,6 +125,7 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,anisoprinc_);
   AddtoPack(data,anisomod_);
   AddtoPack(data,isomodvisco_);
+  AddtoPack(data,viscogenmax_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -150,6 +151,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   anisoprinc_ = false;
   anisomod_ = false;
   isomodvisco_ = false;
+  viscogenmax_ = false;
 
   std::vector<char>::size_type position = 0;
   // extract type
@@ -178,18 +180,21 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   int anisoprinc;
   int anisomod;
   int isomodvisco;
+  int viscogenmax;
 
   ExtractfromPack(position,data,isoprinc);
   ExtractfromPack(position,data,isomod);
   ExtractfromPack(position,data,anisoprinc);
   ExtractfromPack(position,data,anisomod);
   ExtractfromPack(position,data,isomodvisco);
+  ExtractfromPack(position,data,viscogenmax);
 
   if (isoprinc != 0) isoprinc_ = true;
   if (isomod != 0) isomod_ = true;
   if (anisoprinc != 0) anisoprinc_ = true;
   if (anisomod != 0) anisomod_ = true;
   if (isomodvisco != 0) isomodvisco_ = true;
+  if (viscogenmax != 0) viscogenmax_ = true;
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -286,10 +291,11 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   anisoprinc_ = false ;
   anisomod_ = false;
   isomodvisco_ = false;
+  viscogenmax_ = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_,viscogenmax_);
   }
 
   return;
@@ -470,10 +476,9 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
 
   LINALG::Matrix<3,1> prinv(true);
   LINALG::Matrix<3,1> modinv(true);
-  LINALG::Matrix<6,1> pranisoinv(true);
 
-  // evluate kinematic quantities
-  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
+  // evaluate kinematic quantities
+  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
 
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -632,15 +637,14 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   LINALG::Matrix<3,1> prinv(true);
   LINALG::Matrix<3,1> modinv(true);
-  LINALG::Matrix<6,1> pranisoinv(true);
 
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
 
-  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
-  EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta);
+  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
+  EvaluateGammaDelta(prinv,modinv,gamma,delta,modgamma,moddelta);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -713,8 +717,7 @@ void MAT::ElastHyper::EvaluateKinQuant(
     LINALG::Matrix<6,6>& id4,
     LINALG::Matrix<6,6>& id4sharp,
     LINALG::Matrix<3,1>& prinv,
-    LINALG::Matrix<3,1>& modinv,
-    LINALG::Matrix<6,1>& pranisoinv)
+    LINALG::Matrix<3,1>& modinv)
 
 {
   // build Cartesian identity 2-tensor I_{AB}
@@ -764,10 +767,8 @@ void MAT::ElastHyper::EvaluateKinQuant(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateGammaDelta(
-    const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<3,1> prinv,
     LINALG::Matrix<3,1> modinv,
-    LINALG::Matrix<6,1> pranisoinv,
     LINALG::Matrix<3,1>& gamma,
     LINALG::Matrix<8,1>& delta,
     LINALG::Matrix<3,1>& modgamma,

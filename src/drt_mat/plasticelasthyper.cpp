@@ -158,6 +158,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,(int)anisoprinc_);
   AddtoPack(data,(int)anisomod_);
   AddtoPack(data,(int)isomodvisco_);
+  AddtoPack(data,(int)viscogenmax_);
 
   // plastic anisotropy
   AddtoPack(data,PlAniso_full_);
@@ -227,6 +228,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   anisoprinc_=(bool)ExtractInt(position,data);
   anisomod_=(bool)ExtractInt(position,data);
   isomodvisco_=(bool)ExtractInt(position,data);
+  viscogenmax_=(bool)ExtractInt(position,data);
 
   // plastic anisotropy
   ExtractfromPack(position,data,PlAniso_full_);
@@ -352,10 +354,11 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   anisoprinc_ = false ;
   anisomod_ = false;
   isomodvisco_ = false;
+  viscogenmax_ = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_,viscogenmax_);
   }
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.

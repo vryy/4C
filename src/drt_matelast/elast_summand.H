@@ -411,6 +411,14 @@ namespace MAT
         return;  // do nothing
       };
 
+      virtual void ReadMaterialParameters(
+        double& tau, ///< relaxation parameter tau
+        double& beta ///< emphasis of viscous to elastic part
+        )
+      {
+        return;  // do nothing
+      };
+
       /// retrieve stress and cmat
       /// of summand for fiber directions with respect to modified strains
       virtual void AddStressAnisoModified(
@@ -515,7 +523,8 @@ namespace MAT
           bool& isomod_, ///< global indicator for anisotropy
           bool& anisoprinc_, ///< global indicator for anisotropy
           bool& anisomod_, ///< global indicator for anisotropy
-          bool& isomodvisco_ ///< global indicator for isotropic, splitted and viscos formulation
+          bool& isomodvisco_, ///< global indicator for isotropic, splitted and viscos formulation
+          bool& viscogenmax_  ///< global indicator for viscous contribution according the SLS-Model
         ) = 0;
 
     };  // class Summand

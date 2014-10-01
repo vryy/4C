@@ -45,6 +45,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isovolHUdependentneohooke.H"
 #include "elast_isovolaaagasser.H"
 #include "visco_isoratedep.H"
+#include "visco_genmax.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -287,6 +288,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoRateDep(curmat));
     MAT::ELASTIC::PAR::IsoRateDep* params = static_cast<MAT::ELASTIC::PAR::IsoRateDep*>(curmat->Parameter());
     return Teuchos::rcp(new IsoRateDep(params));
+  }
+  case INPAR::MAT::mes_genmax:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::GenMax(curmat));
+    MAT::ELASTIC::PAR::GenMax* params = static_cast<MAT::ELASTIC::PAR::GenMax*>(curmat->Parameter());
+    return Teuchos::rcp(new GenMax(params));
   }
   default:
     dserror("cannot deal with type %d", curmat->Type());

@@ -134,7 +134,8 @@ namespace ELASTIC
         bool& isomod, ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
         bool& anisomod, ///< global indicator for anisotropic splitted formulation
-        bool& isomodvisco ///< global indicator for isotropic splitted viscos formulation
+        bool& isomodvisco, ///< global indicator for isotropic splitted viscos formulation
+        bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
       )
     {
       isoprinc = true;

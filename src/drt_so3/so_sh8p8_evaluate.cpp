@@ -37,7 +37,7 @@ last Maintainer:  Burkhard Bornemann
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/viscoelasthyper.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_potential/drt_potential_manager.H"
@@ -2236,10 +2236,10 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
     return visconeo->ShearMod();
     break;
   }
-  case INPAR::MAT::m_viscogenmax: /*-----------Viscous Generalized Maxwell model compatible with hyperelastic toolbox */
+  case INPAR::MAT::m_viscoelasthyper: /*-----------general visco-hyperelastic material */
   {
-    MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(Material().get());
-    return viscogenmax->ShearMod();
+    MAT::ViscoElastHyper* viscoelasthyper = static_cast <MAT::ViscoElastHyper*>(Material().get());
+    return viscoelasthyper->ShearMod();
     break;
   }
   case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */

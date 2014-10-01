@@ -243,6 +243,9 @@ private:
     /// return if isotropic, splitted and viscos formulation
     virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
 
+    /// return if viscous-genmax (ssl-model) formulation
+    virtual bool ViscoGenMax() const { return viscogenmax_;}
+
     /// get fiber vectors
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
 
@@ -274,15 +277,12 @@ private:
       LINALG::Matrix<6,6>& id4,
       LINALG::Matrix<6,6>& id4sharp,
       LINALG::Matrix<3,1>& prinv,
-      LINALG::Matrix<3,1>& modinv,
-      LINALG::Matrix<6,1>& pranisoinv);
+      LINALG::Matrix<3,1>& modinv);
 
     /// calculates the factors associated to the hyperelastic laws
     virtual void EvaluateGammaDelta(
-        const LINALG::Matrix<6,1> rcg,
         LINALG::Matrix<3,1> prinv,
         LINALG::Matrix<3,1> modinv,
-        LINALG::Matrix<6,1> pranisoinv,
         LINALG::Matrix<3,1>& gamma,
         LINALG::Matrix<8,1>& delta,
         LINALG::Matrix<3,1>& modgamma,
@@ -447,6 +447,7 @@ private:
     bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
     bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
     bool isomodvisco_ ; ///< global indicator for isotropic splitted viscous formulation
+    bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
     //@}
 
     /// @name Voigt index arrays

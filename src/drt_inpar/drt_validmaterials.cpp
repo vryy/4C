@@ -904,34 +904,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-  /*----------------------------------------------------------------------*/
-  // Generalized Maxwell Model compatible with elasthyper
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_ViscoGenMax",
-                                            "Generalized Maxwell model compatible with the collection of hyperelastic materials",
-                                            INPAR::MAT::m_viscogenmax));
-
-    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
-    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
-    AddNamedReal(m,"DENS","material mass density");
-    AddNamedReal(m,"GAMMA","fiber angle");
-    AddNamedReal(m,"RELAX_ISOT_PRINC","relaxation time - isotropic not splitted formulation - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"BETA_ISOT_PRINC","viscous constant of the generalized maxwell model - isotropic not splitted formulation - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"RELAX_ISOT_MOD_VOL","relaxation time - isotropic splitted formulation - volumetric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"BETA_ISOT_MOD_VOL","viscous constant of the generalized maxwell model - isotropic splitted formulation - volumetric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"RELAX_ISOT_MOD_ISOC","relaxation time - isotropic splitted formulation - isochoric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"BETA_ISOT_MOD_ISOC","viscous constant of the generalized maxwell model - isotropic splitted formulation - isochoric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"RELAX_ANISOT_PRINC","relaxation time - anisotropic not splitted formulation - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"BETA_ANISOT_PRINC","viscous constant of the generalized maxwell model - anisotropic not splitted formulation - Leave it to 0 if you don't use it");
-
-    // optional
-
-    AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement", -1,true);
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
   /*--------------------------------------------------------------------*/
   // logarithmic neo-Hooke material acc. to Bonet and Wood
   {
@@ -1418,6 +1390,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_isoratedep));
 
     AddNamedReal(m,"N","material parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // vicous contribution to visohyperelastic material according to SLS-Model
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("VISCO_GenMax",
+                                            "Viscous contribution according to SLS-Model",
+                                            INPAR::MAT::mes_genmax));
+
+    AddNamedReal(m,"TAU","relaxation parameter");
+    AddNamedReal(m,"BETA","emphasis of viscous to elastic part");
 
     AppendMaterialDefinition(matlist,m);
   }

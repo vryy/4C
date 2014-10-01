@@ -1,0 +1,176 @@
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    8
+//NODES       27
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE 3.23104961876730046e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 15 QUANTITY dispy VALUE -1.07594063903314746e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE 6.46209916210210511e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE -5.37965550977025989e-02 TOLERANCE 1e-6
+--------------------------------------------------------------------------IO
+OUTPUT_GID                      Yes
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   cauchy
+STRUCT_STRAIN                   Yes
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      OneStepTheta
+RESULTSEVRY                     1
+RESTARTEVRY                     100
+TIMESTEP                        0.05
+NUMSTEP                         60
+MAXTIME                         3.0
+DAMPING                         Yes
+M_DAMP                          0.1
+K_DAMP                          0.1
+TOLDISP                         1.0e-8
+TOLRES                          1.0e-4
+NORMCOMBI_DISPPRES              And
+MAXITER                         50
+MINITER                         2
+NLNSOL                          fullnewton
+PREDICT                         ConstDis
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+GAMMA                           0.5
+
+------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+//
+// One-step-theta factor in (0,1]
+THETA                           0.45
+---------------------------------------------------------------FLUID DYNAMIC
+-----------------------------------------------------------------FSI DYNAMIC
+-----------------------------------------------------------------ALE DYNAMIC
+-----------------------------------------------------------------TSI DYNAMIC
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+-------------------------------------------------------------------MATERIALS
+MAT 1   MAT_ViscoElastHyper   NUMMAT 5 MATIDS 2 3 4 5 6 DENS 0.0002
+MAT 2   ELAST_VolOgden   KAPPA 9319.236448 BETA -6
+MAT 3   ELAST_Iso1Pow C 1330.545086 D 1
+MAT 4   ELAST_Iso1Pow C 5303.961917 D 4
+MAT 5   VISCO_GenMax       TAU 0.1 BETA 1
+MAT 6   VISCO_IsoRateDep   N 1
+-------------------------------------------------------------CURVE1
+CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 2  FACTOR 0 2.0e+4
+CURVE 1 on Polygonal T 0 BYABSTIME Yes 2 3 FACTOR 2.0e+4 1.0e+4
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 2
+NDLINE  2
+NDSURF  2
+NDVOL   0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+// d4_px
+E 2 - 1 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 2
+// d3_xyz
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// d6_px_yz
+E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  2
+// d2_xz
+E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// d5_px_z
+E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  1
+// d1_x
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    9 DNODE 1
+NODE    23 DNODE 2
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    9 DLINE 1
+NODE    10 DLINE 1
+NODE    17 DLINE 1
+NODE    23 DLINE 2
+NODE    24 DLINE 2
+NODE    27 DLINE 2
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    9 DSURFACE 1
+NODE    10 DSURFACE 1
+NODE    13 DSURFACE 1
+NODE    14 DSURFACE 1
+NODE    17 DSURFACE 1
+NODE    19 DSURFACE 2
+NODE    20 DSURFACE 2
+NODE    21 DSURFACE 2
+NODE    22 DSURFACE 2
+NODE    23 DSURFACE 2
+NODE    24 DSURFACE 2
+NODE    25 DSURFACE 2
+NODE    26 DSURFACE 2
+NODE    27 DSURFACE 2
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  COORD   -5.0000000000000000e-01  -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 2  COORD   -5.0000000000000000e-01  -5.0000000000000000e-01  0.0000000000000000e+00
+NODE 3  COORD   -5.0000000000000000e-01  0.0000000000000000e+00   0.0000000000000000e+00
+NODE 4  COORD   -5.0000000000000000e-01  0.0000000000000000e+00   5.0000000000000000e-01
+NODE 5  COORD   0.0000000000000000e+00   -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 6  COORD   0.0000000000000000e+00   -5.0000000000000000e-01  0.0000000000000000e+00
+NODE 7  COORD   0.0000000000000000e+00   0.0000000000000000e+00   0.0000000000000000e+00
+NODE 8  COORD   0.0000000000000000e+00   0.0000000000000000e+00   5.0000000000000000e-01
+NODE 9  COORD   -5.0000000000000000e-01  -5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 10  COORD  -5.0000000000000000e-01  0.0000000000000000e+00   -5.0000000000000000e-01
+NODE 11  COORD  0.0000000000000000e+00   -5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 12  COORD  0.0000000000000000e+00   0.0000000000000000e+00   -5.0000000000000000e-01
+NODE 13  COORD  -5.0000000000000000e-01  5.0000000000000000e-01   0.0000000000000000e+00
+NODE 14  COORD  -5.0000000000000000e-01  5.0000000000000000e-01   5.0000000000000000e-01
+NODE 15  COORD  0.0000000000000000e+00   5.0000000000000000e-01   0.0000000000000000e+00
+NODE 16  COORD  0.0000000000000000e+00   5.0000000000000000e-01   5.0000000000000000e-01
+NODE 17  COORD  -5.0000000000000000e-01  5.0000000000000000e-01   -5.0000000000000000e-01
+NODE 18  COORD  0.0000000000000000e+00   5.0000000000000000e-01   -5.0000000000000000e-01
+NODE 19  COORD  5.0000000000000000e-01   -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 20  COORD  5.0000000000000000e-01   -5.0000000000000000e-01  0.0000000000000000e+00
+NODE 21  COORD  5.0000000000000000e-01   0.0000000000000000e+00   0.0000000000000000e+00
+NODE 22  COORD  5.0000000000000000e-01   0.0000000000000000e+00   5.0000000000000000e-01
+NODE 23  COORD  5.0000000000000000e-01   -5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 24  COORD  5.0000000000000000e-01   0.0000000000000000e+00   -5.0000000000000000e-01
+NODE 25  COORD  5.0000000000000000e-01   5.0000000000000000e-01   0.0000000000000000e+00
+NODE 26  COORD  5.0000000000000000e-01   5.0000000000000000e-01   5.0000000000000000e-01
+NODE 27  COORD  5.0000000000000000e-01   5.0000000000000000e-01   -5.0000000000000000e-01
+------------------------------------------------STRUCTURE ELEMENTS
+   1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
+   2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none
+   3 SOLIDH8 HEX8  4 3 13 14 8 7 15 16    MAT 1 KINEM nonlinear EAS none
+   4 SOLIDH8 HEX8  3 10 17 13 7 12 18 15    MAT 1 KINEM nonlinear EAS none
+   5 SOLIDH8 HEX8  5 6 7 8 19 20 21 22    MAT 1 KINEM nonlinear EAS none
+   6 SOLIDH8 HEX8  6 11 12 7 20 23 24 21    MAT 1 KINEM nonlinear EAS none
+   7 SOLIDH8 HEX8  8 7 15 16 22 21 25 26    MAT 1 KINEM nonlinear EAS none
+   8 SOLIDH8 HEX8  7 12 18 15 21 24 27 25    MAT 1 KINEM nonlinear EAS none
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------------------END
+// END

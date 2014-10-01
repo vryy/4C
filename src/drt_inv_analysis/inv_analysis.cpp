@@ -49,7 +49,6 @@ Maintainer: Sophie Rausch
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/elasthyper.H"
-#include "../drt_mat/viscogenmax.H"
 #include "../drt_mat/viscoelasthyper.H"
 #include "../linalg/linalg_utils.H"
 
@@ -1513,7 +1512,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               break;
             }
             default:
-	      dserror("cannot deal with this material");
+              dserror("cannot deal with this material");
             break;
             }
           }

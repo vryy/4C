@@ -22,10 +22,7 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_mat/visconeohooke.H"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/viscogenmax.H"
-#include "../drt_mat/elasthyper.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -77,13 +74,13 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
       sonurbs27_nlnstiffmass(lm            ,
-			     discretization,
-			     mydisp        ,
-			     myres         ,
-			     &elemat1      ,
-			     NULL          ,
-			     &elevec1      ,
-			     params        );
+          discretization,
+          mydisp        ,
+          myres         ,
+          &elemat1      ,
+          NULL          ,
+          &elevec1      ,
+          params        );
     }
     break;
 
@@ -102,13 +99,13 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       sonurbs27_nlnstiffmass(lm            ,
-			     discretization,
-			     mydisp        ,
-			     myres         ,
-			     matptr        ,
-			     NULL          ,
-			     &elevec1      ,
-			     params        );
+          discretization,
+          mydisp        ,
+          myres         ,
+          matptr        ,
+          NULL          ,
+          &elevec1      ,
+          params        );
     }
     break;
 
@@ -126,13 +123,13 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<81,81> myemat(true);
       sonurbs27_nlnstiffmass(lm            ,
-			     discretization,
-			     mydisp        ,
-			     myres         ,
-			     &myemat       ,
-			     NULL          ,
-			     &elevec1      ,
-			     params        );
+          discretization,
+          mydisp        ,
+          myres         ,
+          &myemat       ,
+          NULL          ,
+          &elevec1      ,
+          params        );
     }
     break;
 
@@ -149,13 +146,13 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       sonurbs27_nlnstiffmass(lm            ,
-			     discretization,
-			     mydisp        ,
-			     myres         ,
-			     &elemat1      ,
-			     &elemat2      ,
-			     &elevec1      ,
-			     params        );
+          discretization,
+          mydisp        ,
+          myres         ,
+          &elemat1      ,
+          &elemat2      ,
+          &elevec1      ,
+          params        );
     }
     break;
 
@@ -702,7 +699,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
       double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
       for (int nodid=0; nodid<27; ++nodid)
       {
-	elevec1[nodid*3+dim] += funct(nodid) * dim_fac;
+        elevec1[nodid*3+dim] += funct(nodid) * dim_fac;
       }
     }
 
