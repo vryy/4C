@@ -43,7 +43,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
+/*----------------------------------------------------------------------------*/
 NLNSOL::NlnProblem::NlnProblem()
 : isinit_(false),
   issetup_(false),
@@ -58,12 +58,10 @@ NLNSOL::NlnProblem::NlnProblem()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
+/*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& params,
-    NOX::Abstract::Group& noxgrp,
-    Teuchos::RCP<LINALG::SparseOperator> jac
-    )
+    const Teuchos::ParameterList& params, NOX::Abstract::Group& noxgrp,
+    Teuchos::RCP<LINALG::SparseOperator> jac)
 {
   // We need to call Setup() after Init()
   issetup_ = false;
@@ -76,7 +74,8 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
 
   // read some parameters from parameter list and store them separately
   tolresl2_ = Params().get<double>("Nonlinear Problem: Tol Res L2");
-  printconvcheck_ = Params().get<bool>("Nonlinear Problem: Print Convergence Check");
+  printconvcheck_ =
+      Params().get<bool>("Nonlinear Problem: Print Convergence Check");
 
   // Init() has been called
   SetIsInit();
@@ -85,7 +84,7 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
+/*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::Setup()
 {
   // Make sure that Init() has been called
@@ -98,10 +97,9 @@ void NLNSOL::NlnProblem::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
-void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
-    Epetra_MultiVector& f
-    ) const
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
+    Epetra_MultiVector& f) const
 {
   // Make sure that Init() and Setup() have been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
@@ -129,7 +127,7 @@ void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
   Teuchos::RCP<Epetra_MultiVector> frcp =
       Teuchos::rcp(new Epetra_MultiVector(noxFRcpEpetra->getEpetraVector()));
   if (frcp.is_null())
-    dserror("Could not extract the Epetra_Vector from the NOX::Epetra::Vector.");
+    dserror("Could not extract Epetra_Vector from NOX::Epetra::Vector.");
 
   int err = f.Update(1.0, *frcp, 0.0);
   if (err != 0) { dserror("Update failed."); }
@@ -141,7 +139,28 @@ void NLNSOL::NlnProblem::Evaluate(const Epetra_MultiVector& x,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblem::ComputeJacobian() const
+{
+  // Make sure that Init() and Setup() have been called
+  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+
+  // Check whether we have a valid residual
+  if (not NOXGroup().isF())
+    dserror("Cannot compute the Jacobian matrix, since there is no valid "
+        "residual.");
+
+  // ask time integrator to evaluate residual and apply DBCs etc.
+  NOX::Abstract::Group::ReturnType ret = NOXGroup().computeJacobian();
+  if (ret != NOX::Abstract::Group::Ok)
+    dserror("computeJacobian() returned error code %d", ret);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
@@ -152,12 +171,10 @@ bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f) const
   return ConvergenceCheck(f, fnorm2);
 }
 
-
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
+/*----------------------------------------------------------------------------*/
 bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f,
-    double& fnorm2
-    ) const
+    double& fnorm2) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -202,7 +219,7 @@ bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Return communicator */
+/*----------------------------------------------------------------------------*/
 const Epetra_Comm& NLNSOL::NlnProblem::Comm() const
 {
   // check if communicator has already been set
@@ -213,7 +230,7 @@ const Epetra_Comm& NLNSOL::NlnProblem::Comm() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to parameter list */
+/*----------------------------------------------------------------------------*/
 const Teuchos::ParameterList& NLNSOL::NlnProblem::Params() const
 {
   // check if parameter list has already been set
@@ -224,7 +241,7 @@ const Teuchos::ParameterList& NLNSOL::NlnProblem::Params() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to the NOX group */
+/*----------------------------------------------------------------------------*/
 NOX::Abstract::Group& NLNSOL::NlnProblem::NOXGroup() const
 {
   // check if NOX group has already been set
@@ -235,12 +252,16 @@ NOX::Abstract::Group& NLNSOL::NlnProblem::NOXGroup() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to the Jacobian operator */
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
 {
   // check if Jacobian operator has already been set
   if (jac_.is_null())
     dserror("Jacobian operator 'jac_' has not been initialized, yet.");
+
+  // check if Jacobian operator is valid
+  if (not NOXGroup().isJacobian())
+    dserror("Jacobian operator is not up-to-date.");
 
   return jac_->EpetraOperator();
 }

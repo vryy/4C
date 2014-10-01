@@ -38,7 +38,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
+/*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorBase::NlnOperatorBase()
 : isinit_(false),
   issetup_(false),
@@ -50,7 +50,7 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialization */
+/*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
@@ -71,7 +71,7 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to communicator */
+/*----------------------------------------------------------------------------*/
 const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
 {
   if (comm_.is_null())
@@ -81,7 +81,7 @@ const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to parameter list */
+/*----------------------------------------------------------------------------*/
 const Teuchos::ParameterList& NLNSOL::NlnOperatorBase::Params() const
 {
   // check if parameter list has already been set
@@ -92,24 +92,25 @@ const Teuchos::ParameterList& NLNSOL::NlnOperatorBase::Params() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to nonlinear problem */
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
 {
   // check if nonlinear problem has already been set
   if (nlnproblem_.is_null())
-    dserror("The nonlinear problem 'nlnproblem_' has not been initialized, yet.");
+    dserror("The nonlinear problem 'nlnproblem_' has not been initialized, "
+        "yet.");
 
   return nlnproblem_;
 }
 
 /*----------------------------------------------------------------------------*/
-/* Print summary of current iteration */
+/*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
-    const double fnorm2
-    ) const
+    const double fnorm2) const
 {
   // print only on one processor
-  if (Comm().MyPID() == 0 && Params().get<bool>("Nonlinear Operator: Print Iterations"))
+  if (Comm().MyPID() == 0
+      and Params().get<bool>("Nonlinear Operator: Print Iterations"))
   {
     IO::cout << std::setprecision(6)
              << Label() << " iteration " << iter
@@ -119,7 +120,7 @@ void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check if we still continue to iterate */
+/*----------------------------------------------------------------------------*/
 const bool NLNSOL::NlnOperatorBase::ContinueIterations(const int iter,
     const bool converged) const
 {
@@ -133,7 +134,7 @@ const bool NLNSOL::NlnOperatorBase::ContinueIterations(const int iter,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Check if iteration loop converged successfully */
+/*----------------------------------------------------------------------------*/
 const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
     const int iter,
     const bool converged
@@ -162,11 +163,13 @@ const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
 }
 
 /*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 const bool NLNSOL::NlnOperatorBase::IsSolver() const
 {
   return Params().get<bool>("Nonlinear Operator: Is Solver");
 }
 
+/*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorBase::GetMaxIter() const
 {

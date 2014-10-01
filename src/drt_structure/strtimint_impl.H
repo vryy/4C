@@ -496,12 +496,12 @@ namespace STR
     //! @name NOX solution
     //@{
 
-    //! Compute the residual of linear momentum
-    //!
-    //! Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by NOX.
-    //! This method must be supplied by the user.
-    bool computeF
-    (
+    /*! \brief Compute the residual of linear momentum
+     *
+     *  Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by
+     *  NOX. This method must be supplied by the user.
+     */
+    bool computeF(
       const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
                                //!< i.e. total displacements
       Epetra_Vector& RHS,  //!< to be filled with the \f$F\f$ values that correspond
@@ -520,7 +520,7 @@ namespace STR
                                         //!< since it
                                         //!< is only used in the Jacobian (or
                                         //!< preconditioner).
-    );
+      );
 
     //! Compute effective dynamic stiffness matrix
     bool computeJacobian
@@ -533,25 +533,25 @@ namespace STR
                             //!< NOX::Epetra::Group constructor.
     );
 
-    //! Compute preconditioner
-    //!
-    //! This method allows a user to supply their own preconditioner.
-    //! The method should compute a preconditioner based upon the
-    //! solution vector x and store it in the Epetra_Operator M.
-    //! Subsequent calls to the Epetra_Operator::Apply method will apply
-    //! this user supplied preconditioner to epetra vectors.
-    //! The Epetra_Operator M can also be an Epetra_RowMatrix that can
-    //! be used by internally constructed preconditioner objects such as AztecOO, Ifpack, and ML
-    bool computePreconditioner
-    (
-      const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
-                               //!< i.e. total displacements
-      Epetra_Operator& M,  //!< a reference to the operator that is to be filled.
-                           //!< This operator should be updated to correspond to the current
-                           //!< solution vector x.
-      Teuchos::ParameterList* precParams  //!< a pointer to a parameter list
-                                          //!< that can be used by the preconditioner.
-    );
+    /*! \brief Compute preconditioner
+     *
+     *  This method allows a user to supply their own preconditioner.
+     *  The method should compute a preconditioner based upon the solution
+     *  vector x and store it in the Epetra_Operator M. Subsequent calls to the
+     *  Epetra_Operator::Apply method will apply this user supplied
+     *  preconditioner to epetra vectors. The Epetra_Operator M can also be an
+     *  Epetra_RowMatrix that can be used by internally constructed
+     *  preconditioner objects such as AztecOO, Ifpack, and ML.
+     */
+    bool computePreconditioner(
+      const Epetra_Vector& x, //!< solution vector \f$x\f$ specified from NOX
+                              //!< i.e. total displacements
+      Epetra_Operator& M, //!< a reference to the operator that is to be filled.
+                          //!< This operator should be updated to correspond to the current
+                          //!< solution vector x.
+      Teuchos::ParameterList* precParams //!< a pointer to a parameter list
+                                         //!< that can be used by the preconditioner.
+      );
 
     //! Setup for solution with NOX
     void NoxSetup();
@@ -571,23 +571,21 @@ namespace STR
     Teuchos::RCP<Teuchos::ParameterList> NoxCreateSolverParameters();
 
     //! Create printing parameters for non-linear solution with NOX
-    Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters
-    (
-      const bool verbose = false  //!< verbosity level
-    ) const;
+    Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters(
+      const bool verbose = false //!< verbosity level
+      ) const;
 
-    /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem
-    (
-      Teuchos::ParameterList& nlParams,
-      NOX::Epetra::Vector& noxSoln,
-      Teuchos::RCP<NOX::Utils> utils
-    );
+    //! Create the linear system that is passed into NOX
+    Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
+      Teuchos::ParameterList& nlParams, ///< parameter list
+      NOX::Epetra::Vector& noxSoln, ///< solution vector to operate on
+      Teuchos::RCP<NOX::Utils> utils ///< printing utilities
+      );
 
     //! Do non-linear solve with NOX
     int NoxSolve();
 
-    // check for success of nonlinear solve otherwise return error code
+    //! check for success of nonlinear solve otherwise return error code
     int NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
     //@}
 

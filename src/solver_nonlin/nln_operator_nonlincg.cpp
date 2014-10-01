@@ -75,9 +75,10 @@ void NLNSOL::NlnOperatorNonlinCG::SetupLinearSolver()
   if (linsolvernumber == (-1))
     dserror("No valid linear solver defined!");
 
-  linsolver_ =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-      Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  linsolver_ = Teuchos::rcp(
+      new LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), Comm(),
+          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   return;
 }
@@ -130,7 +131,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // evaluate current residual
   Teuchos::RCP<Epetra_MultiVector> fnew =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-  NlnProblem()->Evaluate(x, *fnew);
+  NlnProblem()->ComputeF(x, *fnew);
 
   // prepare vector for residual from previous iteration
   Teuchos::RCP<Epetra_MultiVector> fold =
@@ -143,8 +144,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
-  if (Params().get<bool>("Nonlinear CG: Print Iterations"))
-    PrintIterSummary(iter, fnorm2);
+  PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
   // the nonlinear CG loop
@@ -152,9 +152,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   while (ContinueIterations(iter, converged))
   {
     // compute line search parameter alpha
-    linesearch_->Init(NlnProblem(), Params().sublist("Nonlinear CG: Line Search"), x, *p, fnorm2);
-    linesearch_->Setup();
-    alpha = linesearch_->ComputeLSParam();
+    alpha = ComputeStepLength(x, *p, fnorm2);
 
     // update solution
     err = x.Update(alpha, *p, 1.0);
@@ -163,7 +161,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     // evaluate residual
     err = fold->Update(1.0, *fnew, 0.0);
     if (err != 0) { dserror("Update failed."); }
-    NlnProblem()->Evaluate(x, *fnew);
+    NlnProblem()->ComputeF(x, *fnew);
     converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
     // compute beta
@@ -193,11 +191,8 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner
-(
-    const Epetra_MultiVector& f,
-    Epetra_MultiVector& x
-) const
+void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
+    const Epetra_MultiVector& f, Epetra_MultiVector& x) const
 {
   if (nlnprec_.is_null())
     dserror("Nonlinear preconditioner has not been initialized, yet. "
@@ -210,9 +205,7 @@ void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
-    const Epetra_MultiVector& fnew,
-    const Epetra_MultiVector& fold
-    ) const
+    const Epetra_MultiVector& fnew, const Epetra_MultiVector& fold) const
 {
   // ToDo We need a decision which beta is used
   ComputeBetaFletcherReeves(beta, fnew, fold);
@@ -228,9 +221,7 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNonlinCG::ComputeBetaFletcherReeves(double& beta,
-  const Epetra_MultiVector& fnew,
-  const Epetra_MultiVector& fold
-  ) const
+    const Epetra_MultiVector& fnew, const Epetra_MultiVector& fold) const
 {
   // compute numerator of beta
   fnew.Dot(fnew, &beta);
@@ -259,4 +250,15 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBetaHestenesStiefel(double& beta) const
   dserror("Not implemented, yet.");
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+const double NLNSOL::NlnOperatorNonlinCG::ComputeStepLength(
+    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
+    double fnorm2) const
+{
+  linesearch_->Init(NlnProblem(), Params().sublist("Nonlinear CG: Line Search"),
+      x, inc, fnorm2);
+  linesearch_->Setup();
+  return linesearch_->ComputeLSParam();
 }

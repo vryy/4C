@@ -124,14 +124,14 @@ namespace NLNSOL
         const double lsparamold ///< previous line search parameter
         ) const;
 
-    /*! \brief Evaluate residual
+    /*! \brief Compute nonlinear residual \f$F(x)\f$
      *
      *  Use the governing nonlinear solver object to evaluate the current
      *  residual.
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void Evaluate(const Epetra_MultiVector& x, ///< current solution
+    virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
         Epetra_MultiVector& f  ///< residual (to be filled)
         ) const;
 

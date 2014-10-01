@@ -94,7 +94,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
   // residual vector
   Teuchos::RCP<Epetra_MultiVector> rhs =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-  NlnProblem()->Evaluate(x, *rhs);
+  NlnProblem()->ComputeF(x, *rhs);
 
   // some scalars
   int iter = 0; // iteration counter
@@ -102,8 +102,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
   double fnorm2 = 1.0e+12; // residual L2 norm
   bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
 
-  if (Params().get<bool>("SD: Print Iterations"))
-    PrintIterSummary(iter, fnorm2);
+  PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
   // iteration loop
@@ -122,9 +121,8 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
     err = x.Update(steplength, *inc, 1.0);
     if (err != 0) { dserror("Failed."); }
 
-    // evaluate and check for convergence
-    NlnProblem()->Evaluate(x, *rhs);
-
+    // compute current residual and check for convergence
+    NlnProblem()->ComputeF(x, *rhs);
     converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
 
     PrintIterSummary(iter, fnorm2);
@@ -136,9 +134,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
 
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
-    const Epetra_MultiVector& rhs,
-    Epetra_MultiVector& inc
-    ) const
+    const Epetra_MultiVector& rhs, Epetra_MultiVector& inc) const
 {
   // search direction = negative residual (gradient)
   int err = inc.Update(-1.0, rhs, 0.0);
@@ -149,12 +145,11 @@ const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
 
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::NlnOperatorSD::ComputeStepLength(
-    const Epetra_MultiVector& x,
-    const Epetra_MultiVector& inc,
-    double fnorm2
-    ) const
+    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
+    double fnorm2) const
 {
-  linesearch_->Init(NlnProblem(), Params().sublist("SD: Line Search"), x, inc, fnorm2);
+  linesearch_->Init(NlnProblem(), Params().sublist("SD: Line Search"), x, inc,
+      fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }

@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file strtimint_noxgroup.H
 \brief Definitions of NOX group for non-linear solution techniques
@@ -12,34 +12,34 @@ Maintainer: Alexander Popp
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 #ifndef STRTIMINT_NOXGROUP_H
 #define STRTIMINT_NOXGROUP_H
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 #include <NOX_Epetra_Group.H>
 #include "strtimint_impl.H"
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace STR
 {
   class TimIntImpl;
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* belongs to NOX name space of Trilinos */
 namespace NOX
 {
-  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------------*/
   //! NOX::STR holds local extensions to NOX for structural time integration
   namespace STR
   {
 
     /*==================================================================*/
     /*!
-     * \brief Special NOX::Epetra::Group that always
+     * \brief Special NOX::Epetra::Group that always //ToDo (mayr) That's not correct anymore.
      *        sets Jacobian and RHS at the same time.
      *
      * \author bborn
@@ -62,6 +62,9 @@ namespace NOX
       //! Compute and store \f$F(x)\f$
       virtual NOX::Abstract::Group::ReturnType computeF();
 
+      //! Compute and store Jacobian \f$\frac{\partial F(x)}{\partial x}\f$
+      virtual NOX::Abstract::Group::ReturnType computeJacobian();
+
     private:
 
       //! structural time integrator
@@ -73,5 +76,5 @@ namespace NOX
 
 }  // namespace NOX
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMINT_NOXGROUP_H

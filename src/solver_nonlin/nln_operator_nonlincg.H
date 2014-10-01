@@ -91,7 +91,8 @@ namespace NLNSOL
      *
      * \author mayr.mt \date 03/2014
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
+    virtual int ApplyInverse(
+        const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
         Epetra_MultiVector& x ///< solution
         )  const;
 
@@ -104,6 +105,13 @@ namespace NLNSOL
     //@}
 
   protected:
+
+    //! Compute line search parameter (=step length)
+    virtual const double ComputeStepLength(
+        const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& inc, ///< search direction
+        double fnorm2 ///< current L2-norm of residual
+        ) const;
 
   private:
 

@@ -102,7 +102,8 @@ void NLNSOL::FAS::NlnLevel::Setup()
   {
     coarsesolver_ =
         operatorfactory.Create(Params().sublist("Coarse Level Solver"));
-    coarsesolver_->Init(Comm(), Params().sublist("Coarse Level Solver"), NlnProblem());
+    coarsesolver_->Init(Comm(), Params().sublist("Coarse Level Solver"),
+        NlnProblem());
     coarsesolver_->Setup();
   }
   else // otherwise create pre- and post-smoother
@@ -165,12 +166,8 @@ int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
     Teuchos::RCP<Epetra_MultiVector> tempvec =
         Teuchos::rcp(new Epetra_MultiVector(rop_->RowMap(), 1, true));
 
-#ifdef DEBUG
-    if (not rop_->DomainMap().PointSameAs(vec->Map()))
-      dserror("Maps do not match.");
-    if (not rop_->RowMap().PointSameAs(tempvec->Map()))
-      dserror("Maps do not match.");
-#endif
+    dsassert(rop_->DomainMap().PointSameAs(vec->Map()), "Maps do not match.");
+    dsassert(rop_->RowMap().PointSameAs(tempvec->Map()), "Maps do not match.");
 
     err = rop_->Apply(*vec, *tempvec);
     if (err != 0) { dserror("Failed."); }
@@ -201,12 +198,8 @@ int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
     Teuchos::RCP<Epetra_MultiVector> tempvec =
         Teuchos::rcp(new Epetra_MultiVector(pop_->RowMap(), 1, true));
 
-#ifdef DEBUG
-    if (not pop_->DomainMap().PointSameAs(vec->Map()))
-      dserror("Maps do not match.");
-    if (not pop_->RowMap().PointSameAs(tempvec->Map()))
-      dserror("Maps do not match.");
-#endif
+    dsassert(pop_->DomainMap().PointSameAs(vec->Map()), "Maps do not match.");
+    dsassert(pop_->RowMap().PointSameAs(tempvec->Map()), "Maps do not match.");
 
     err = pop_->Apply(*vec, *tempvec);
     if (err != 0) { dserror("Failed."); }
@@ -455,4 +448,46 @@ bool NLNSOL::FAS::NlnLevel::ConvergenceCheck(const Epetra_MultiVector& f,
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
   return NlnProblem()->ConvergenceCheck(f, fnorm2);
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_CrsMatrix> NLNSOL::FAS::NlnLevel::GetMatrix() const
+{
+  dsassert(HaveMatrix(), "Matrix has not been set, yet.");
+
+  return A_;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_CrsMatrix> NLNSOL::FAS::NlnLevel::GetROp() const
+{
+  dsassert(HaveROp(), "Restriction operator has not been set, yet.");
+
+  return rop_;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_CrsMatrix> NLNSOL::FAS::NlnLevel::GetPOp() const
+{
+  dsassert(HavePOp(), "Prolongation operator has not been set, yet.");
+
+  return pop_;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<NLNSOL::NlnOperatorBase>
+NLNSOL::FAS::NlnLevel::GetPreSmoother() const
+{
+  dsassert(not presmoother_.is_null(), "Presmoother has not been set, yet.");
+
+  return presmoother_;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<NLNSOL::NlnOperatorBase>
+NLNSOL::FAS::NlnLevel::GetPostSmoother() const
+{
+  dsassert(not postsmoother_.is_null(), "Postsmoother has not been set, yet.");
+
+  return postsmoother_;
 }

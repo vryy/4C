@@ -113,7 +113,24 @@ namespace NLNSOL
     //! @name Actions on the nonlinear problem at hand
     //@{
 
-    /*! \brief Evaluate the residual
+    /*! \brief Compute nonlinear residual \f$F(x)\f$
+     *
+     *  Set the most recent solution 'x' in the NOX group #noxgrp_. Afterwards,
+     *  the marching time integrator is asked to evaluate the residual via the
+     *  computeF()-call.
+     *
+     *  Updating the solution variables in the marching time integrator is done
+     *  during computeF().
+     *
+     *  Return the most recent residual in 'f'.
+     *
+     *  \author mayr.mt \date 09/2014
+     */
+    virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
+        Epetra_MultiVector& f ///< current residual (to be filled)
+        ) const;
+
+    /*! \brief Evaluate Jacobian (linearization of residual)
      *
      *  Set the most recent solution 'x' in the NOX group #noxgrp_. Afterwards,
      *  the marching time integrator is asked to evaluate the residual via the
@@ -126,9 +143,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void Evaluate(const Epetra_MultiVector& x, ///< current solution
-        Epetra_MultiVector& f ///< current residual (to be filled)
-        ) const;
+    virtual void ComputeJacobian() const;
 
     //! Check convergence
     virtual bool ConvergenceCheck(const Epetra_MultiVector& f ///< current residual
@@ -188,20 +203,25 @@ namespace NLNSOL
     //@{
 
     //! Has Init() already been called?
-    virtual bool IsInit() const { return isinit_; }
+    virtual const bool IsInit() const { return isinit_; }
 
     //! Has Setup() already been called?
-    virtual bool IsSetup() const { return issetup_; }
+    virtual const bool IsSetup() const { return issetup_; }
 
     //@}
 
   private:
+
+    //! @name Status variables
+    //@{
 
     //! Init() has been called
     bool isinit_;
 
     //! Setup() has been called
     bool issetup_;
+
+    //@}
 
     //! communicator
     Teuchos::RCP<const Epetra_Comm> comm_;

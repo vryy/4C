@@ -80,7 +80,7 @@ namespace NLNSOL
       //! @name Setup
       //@{
 
-      //! Fill base class member variables
+      //! Initialization: Fill base class member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           const Teuchos::ParameterList& params, ///< parameter list for configuration
           Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< nonlinear problem to solve
@@ -213,6 +213,13 @@ namespace NLNSOL
       virtual void PrintIterSummary(const int iter, ///< iteration counter
           const double fnorm2 ///< L2-norm of residual
           ) const;
+
+      //! Compute step length, i.e. line search parameter
+      virtual const double ComputeStepLength(
+          const Epetra_MultiVector& x, ///< current solution
+          const Epetra_MultiVector& inc, ///< search direction
+          double fnorm2 ///< current L2-norm of residual
+          ) const = 0;
 
       //@}
 

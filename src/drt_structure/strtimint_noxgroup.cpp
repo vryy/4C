@@ -1,8 +1,6 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file strtimint_noxgroup.cpp
-\brief Declarations of NOX group for non-linear solution techniques
-       used within implicit structural time integration
 
 <pre>
 Maintainer: Alexander Popp
@@ -12,16 +10,16 @@ Maintainer: Alexander Popp
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* definitions */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_noxgroup.H"
 #include "../linalg/linalg_utils.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 NOX::STR::Group::Group
 (
   ::STR::TimIntImpl& sti,
@@ -35,8 +33,8 @@ NOX::STR::Group::Group
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 {
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
@@ -46,6 +44,23 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 
   // We just evaluated the residual, so its linearization is not valid anymore.
   isValidJacobian = false;
+
+  return ret;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
+{
+  NOX::Abstract::Group::ReturnType ret
+    = NOX::Epetra::Group::computeJacobian();
+  if (ret == NOX::Abstract::Group::Ok)
+  {
+    isValidJacobian = true;
+
+    if (not isValidRHS)
+      isValidRHS = true;
+  }
 
   return ret;
 }

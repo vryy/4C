@@ -31,7 +31,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Create parameter list from xml-file */
 Teuchos::RCP<Teuchos::ParameterList>
 NLNSOL::UTILS::CreateParamListFromXML()
 {
@@ -39,7 +38,8 @@ NLNSOL::UTILS::CreateParamListFromXML()
       Teuchos::rcp(new Teuchos::ParameterList());
 
   std::string xmlfilename =
-      DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>("XML_FILE");
+      DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>(
+          "XML_FILE");
 
   // check for reasonable xml file
   if (xmlfilename == "none")

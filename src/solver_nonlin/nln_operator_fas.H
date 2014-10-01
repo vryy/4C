@@ -66,7 +66,8 @@ namespace NLNSOL
    *  Hierarchy()->NlnLevel(level)->NlnProblem()->Evaluate(x,f) is used.
    *
    *  All level smoothers and level specific stuff is stored in the
-   *  NLNSOL::FAS::AMGHierarchy in a collection of NLNSOL::FAS::NlnLevel objects.
+   *  NLNSOL::FAS::AMGHierarchy in a collection of NLNSOL::FAS::NlnLevel
+   *  objects.
    *
    *  \sa NLNSOL::NlnOperatorBase()
    *
@@ -120,15 +121,22 @@ namespace NLNSOL
 
   protected:
 
+    //! Compute step length, i.e. line search parameter
+    virtual const double ComputeStepLength(
+        const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& inc, ///< search direction
+        double fnorm2 ///< current L2-norm of residual
+        ) const { dserror("There is no line search in FAS."); return 0.0; }
+
   private:
 
     //! @name Multigrid cycles
     //@{
 
     //! V-Cycle (recursive definition)
-    virtual void VCycle(const Epetra_MultiVector& f,  ///< residual
-                        Epetra_MultiVector& x,        ///< solution
-                        const int level               ///< level ID
+    virtual void VCycle(const Epetra_MultiVector& f, ///< residual
+                        Epetra_MultiVector& x, ///< solution
+                        const int level ///< level ID
                         ) const;
 
     //! W-Cycle

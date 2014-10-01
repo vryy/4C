@@ -102,15 +102,13 @@ void NLNSOL::LineSearchBase::Safeguard(double& lsparam,
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBase::Evaluate(const Epetra_MultiVector& x,
+void NLNSOL::LineSearchBase::ComputeF(const Epetra_MultiVector& x,
     Epetra_MultiVector& f
     ) const
 {
-#ifdef DEBUG
-  if (not x.Map().PointSameAs(f.Map())) { dserror("Maps do not match."); }
-#endif
+  dsassert(x.Map().PointSameAs(f.Map()), "Maps do not match.");
 
-  nlnproblem_->Evaluate(x, f);
+  nlnproblem_->ComputeF(x, f);
 
   return;
 }
@@ -123,7 +121,7 @@ bool NLNSOL::LineSearchBase::ConvergenceCheck(const Epetra_MultiVector& f,
   return nlnproblem_->ConvergenceCheck(f, fnorm2);
 }
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 const Teuchos::ParameterList& NLNSOL::LineSearchBase::Params() const
 {
   // check if parameter list has already been set

@@ -76,8 +76,8 @@ namespace NLNSOL
    *  <h3> References </h3>
    *
    *  - Washio, T. and Oosterlee, C. W.: Krylov subspace acceleration for
-   *  nonlinear multigrid schemes, Electronic Transactions on Numerical Analysis,
-   *  Vol. 6, pp. 271 - 290, 1997
+   *  nonlinear multigrid schemes, Electronic Transactions on Numerical
+   *  Analysis, Vol. 6, pp. 271 - 290, 1997
    *
    *  - Sterck, Hans De: A Nonlinear GMRES Optimization Algorithm for
    *  Canonical Tensor Decomposition, SIAM J. Sci. Comput., Vol. 34, pp. A1351-
@@ -146,6 +146,13 @@ namespace NLNSOL
     //@}
 
   protected:
+
+    //! Compute line search parameter (=step length)
+    virtual const double ComputeStepLength(
+        const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& inc, ///< search direction
+        double fnorm2 ///< current L2-norm of residual
+        ) const;
 
   private:
 

@@ -78,7 +78,7 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
 
   Teuchos::RCP<Epetra_MultiVector> fnew =
       Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
-  Evaluate(*xnew, *fnew);
+  ComputeF(*xnew, *fnew);
 
   double fnorm2 = 1.0e+12;
   ConvergenceCheck(*fnew, fnorm2);
@@ -92,7 +92,7 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
 
     // take a reduced step
     xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
-    Evaluate(*xnew, *fnew);
+    ComputeF(*xnew, *fnew);
 
     // evaluate and compute L2-norm of residual
     ConvergenceCheck(*fnew, fnorm2);

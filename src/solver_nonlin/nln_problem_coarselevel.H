@@ -82,21 +82,22 @@ namespace NLNSOL
     //! @name Actions on the nonlinear problem at hand
     //@{
 
-    /*! \brief Evaluate the residual on a coarse level
+    /*! \brief Compute the residual on a coarse level
      *
-     *  This is an Evaluate() in a variational way. Hence, we compute
+     *  This is an ComputeF() in a variational way. Hence, we compute
      *  \f$Rf(Px)\f$, i.e. we first prolongate the current coarse level solution
-     *  to the fine level, then call Evaluate() on the fine level using the fine
+     *  to the fine level, then call ComputeF() on the fine level using the fine
      *  level nonlinear problem NLNSOL::NlnProblem, and finally restrict the
      *  residual to the current coarse level.
      *
      *  The current coarse level ID is stored internally. Thus, the
-     *  Evaluate()-call looks exactly like in the fine level case.
+     *  ComputeF()-call looks exactly like in the fine level case.
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void Evaluate(const Epetra_MultiVector& xc, ///< current solution on coarse level
-        Epetra_MultiVector& fc  ///< current residual on coarse level (to be filled)
+    virtual void ComputeF(
+        const Epetra_MultiVector& xc, ///< current solution on coarse level
+        Epetra_MultiVector& fc ///< current residual on coarse level (to be filled)
         ) const;
 
     //@}

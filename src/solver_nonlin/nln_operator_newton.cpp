@@ -80,9 +80,9 @@ void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
   if (linsolvernumber == (-1))
     dserror("No valid linear solver defined!");
 
-  linsolver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                                               Comm(),
-                                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+  linsolver_ = Teuchos::rcp(new LINALG::Solver(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), Comm(),
+      DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   return;
 }
@@ -91,7 +91,8 @@ void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(Params().sublist("Newton: Line Search"));
+  linesearch_ = linesearchfactory.Create(
+      Params().sublist("Newton: Line Search"));
 
   return;
 }
@@ -110,11 +111,13 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   // initialize stuff for Newton loop
   // ---------------------------------------------------------------------------
   // solution increment vector
-  Teuchos::RCP<Epetra_MultiVector> inc = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> inc =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // residual vector
-  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-  NlnProblem()->Evaluate(x, *rhs);
+  Teuchos::RCP<Epetra_MultiVector> rhs =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  NlnProblem()->ComputeF(x, *rhs);
 
   // some scalars
   int iter = 0; // iteration counter
@@ -132,23 +135,22 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     ++iter;
 
     // prepare linear solve
+    NlnProblem()->ComputeJacobian();
     rhs->Scale(-1.0);
     inc->PutScalar(0.0);
 
     // compute the Newton increment
     ComputeSearchDirection(rhs, inc, iter);
 
-    // line search
-    linesearch_->Init(NlnProblem(), Params().sublist("Newton: Line Search"), x, *inc, fnorm2);
-    linesearch_->Setup();
-    steplength = linesearch_->ComputeLSParam();
+    // compute line search parameter
+    steplength = ComputeStepLength(x, *inc, fnorm2);
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
     if (err != 0) { dserror("Failed."); }
 
     // evaluate and check for convergence
-    NlnProblem()->Evaluate(x, *rhs);
+    NlnProblem()->ComputeF(x, *rhs);
 
     converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
 
@@ -163,8 +165,7 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
     Teuchos::RCP<Epetra_MultiVector>& rhs,
-    Teuchos::RCP<Epetra_MultiVector>& inc,
-    const int iter) const
+    Teuchos::RCP<Epetra_MultiVector>& inc, const int iter) const
 {
   // error code for linear solver
   int linsolve_error = 0;
@@ -172,11 +173,13 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
   // compute search direction with either fixed or most recent, updated jacobian
   if (FixedJacobian())
   {
-    linsolve_error = linsolver_->Solve(jac_, inc, rhs, iter==1, iter==1, Teuchos::null);
+    linsolve_error = linsolver_->Solve(jac_, inc, rhs, iter == 1, iter == 1,
+        Teuchos::null);
   }
   else
   {
-    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc, rhs, true, iter==1, Teuchos::null);
+    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc,
+        rhs, true, iter == 1, Teuchos::null);
   }
 
   // test for failure of linear solver
@@ -189,4 +192,15 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
 const bool NLNSOL::NlnOperatorNewton::FixedJacobian() const
 {
   return Params().get<bool>("Newton: Fixed Jacobian");
+}
+
+/*----------------------------------------------------------------------------*/
+const double NLNSOL::NlnOperatorNewton::ComputeStepLength(
+    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
+    double fnorm2) const
+{
+  linesearch_->Init(NlnProblem(), Params().sublist("Newton: Line Search"), x,
+      inc, fnorm2);
+  linesearch_->Setup();
+  return linesearch_->ComputeLSParam();
 }

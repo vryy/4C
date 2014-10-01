@@ -77,7 +77,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
   Teuchos::RCP<Epetra_MultiVector> residual =
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
-  Evaluate(*xnew, *residual);
+  ComputeF(*xnew, *residual);
 
   double fnorm2fullstep = 1.0e+12;
   ConvergenceCheck(*residual, fnorm2fullstep);
@@ -93,7 +93,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
     err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
     if (err != 0) { dserror("Failed."); }
 
-    Evaluate(*xnew, *residual);
+    ComputeF(*xnew, *residual);
 
     double fnorm2halfstep = 1.0e+12;
     ConvergenceCheck(*residual, fnorm2halfstep);
@@ -136,7 +136,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
         err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
         if (err != 0) { dserror("Failed."); }
-        Evaluate(*xnew, *residual);
+        ComputeF(*xnew, *residual);
 
         ConvergenceCheck(*residual, fnorm2);
 

@@ -92,7 +92,8 @@ namespace NLNSOL
      *
      * \author mayr.mt \date 03/2014
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
+    virtual int ApplyInverse(
+        const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
         Epetra_MultiVector& x ///< solution
         )  const;
 
@@ -119,6 +120,9 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Search direction
+    //@{
+
     //! Compute the search direction
     virtual const int ComputeSearchDirection(
         Teuchos::RCP<Epetra_MultiVector>& rhs, ///< residual
@@ -126,8 +130,17 @@ namespace NLNSOL
         const int iter ///< current Newton iteration
         ) const;
 
+    //! Compute line search parameter (=step length)
+    virtual const double ComputeStepLength(
+        const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& inc, ///< search direction
+        double fnorm2 ///< current L2-norm of residual
+        ) const;
+
     //! Use a fixed Jacobian (true) or update it in every iteration (false)?
     virtual const bool FixedJacobian() const;
+
+    //@}
 
     //! @name Necessary sub-algorithms
     //@{

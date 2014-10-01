@@ -116,8 +116,8 @@ namespace FAS
 
     /*! \brief Prolongate vector to next finer level
      *
-     *  Prolongation is performed on coarser level, i.e. from 'level' to 'level-1',
-     *  since only the coarse level knows the transfer operator.
+     *  Prolongation is performed on coarser level, i.e. from 'level' to
+     *  'level-1', since only the coarse level knows the transfer operator.
      *
      *  \return integer error code (set to zero if successful)
      *
@@ -184,21 +184,19 @@ namespace FAS
     virtual const bool IsCoarsestLevel() const;
 
     //! Get matrix
-    virtual Teuchos::RCP<const Epetra_CrsMatrix> GetMatrix() const { return A_; }
-
-    virtual Teuchos::RCP<Epetra_CrsMatrix> GetMatrixWriteAccess() const { return A_; }
+    virtual Teuchos::RCP<const Epetra_CrsMatrix> GetMatrix() const;
 
     //! Get restriction operator
-    virtual Teuchos::RCP<const Epetra_CrsMatrix> GetROp() const { return rop_; }
+    virtual Teuchos::RCP<const Epetra_CrsMatrix> GetROp() const;
 
     //! Get prolongation operator
-    virtual Teuchos::RCP<const Epetra_CrsMatrix> GetPOp() const { return pop_; }
+    virtual Teuchos::RCP<const Epetra_CrsMatrix> GetPOp() const;
 
     //! Get presmoother
-    virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPreSmoother() const { return presmoother_; }
+    virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPreSmoother() const;
 
     //! Get postsmoother
-    virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPostSmoother() const { return postsmoother_; }
+    virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPostSmoother() const;
 
     //! DofRowMap of this level
     const Epetra_BlockMap& DofRowMap() const;
@@ -229,7 +227,8 @@ namespace FAS
      *  \author mayr.mt
      *  \date 10/2013
      */
-    virtual int DoPreSmoothing(const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
+    virtual int DoPreSmoothing(
+        const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
         Epetra_MultiVector& x ///< solution
         ) const;
 
@@ -355,7 +354,7 @@ namespace FAS
     //! Presmoother
     Teuchos::RCP<NLNSOL::NlnOperatorBase> presmoother_;
 
-    //! Poststmoother
+    //! Postsmoother
     Teuchos::RCP<NLNSOL::NlnOperatorBase> postsmoother_;
 
     //@}

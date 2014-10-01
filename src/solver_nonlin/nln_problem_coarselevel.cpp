@@ -37,7 +37,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-/* Constructor (empty) */
 NLNSOL::NlnProblemCoarseLevel::NlnProblemCoarseLevel()
 : hierarchy_(Teuchos::null),
   fhat_(Teuchos::null),
@@ -48,12 +47,12 @@ NLNSOL::NlnProblemCoarseLevel::NlnProblemCoarseLevel()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
 void NLNSOL::NlnProblemCoarseLevel::Setup()
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  hierarchy_ = Params().get<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >("AMG Hierarchy");
+  hierarchy_ = Params().get<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >(
+      "AMG Hierarchy");
   levelid_ = Params().get<int>("Level ID");
 
   // call base class
@@ -63,10 +62,8 @@ void NLNSOL::NlnProblemCoarseLevel::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-/* Initialize member variables */
-void NLNSOL::NlnProblemCoarseLevel::Evaluate(const Epetra_MultiVector& xc,
-    Epetra_MultiVector& fc
-    ) const
+void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
+    Epetra_MultiVector& fc) const
 {
   int err = 0;
 
@@ -81,7 +78,7 @@ void NLNSOL::NlnProblemCoarseLevel::Evaluate(const Epetra_MultiVector& xc,
   // call evaluate from the outer nonlinear solver
   Teuchos::RCP<Epetra_MultiVector> ffine =
       Teuchos::rcp(new Epetra_MultiVector(xf->Map(), true));
-  NLNSOL::NlnProblem::Evaluate(*xf,*ffine);
+  NLNSOL::NlnProblem::ComputeF(*xf,*ffine);
 
   // restrict fine level residual to current coarse level
   Teuchos::RCP<Epetra_MultiVector> fcoarse =
@@ -101,7 +98,6 @@ void NLNSOL::NlnProblemCoarseLevel::Evaluate(const Epetra_MultiVector& xc,
 }
 
 /*----------------------------------------------------------------------------*/
-/* Access to AMG-FAS Hierarchy */
 const NLNSOL::FAS::AMGHierarchy&
 NLNSOL::NlnProblemCoarseLevel::Hierarchy() const
 {
@@ -112,11 +108,9 @@ NLNSOL::NlnProblemCoarseLevel::Hierarchy() const
 }
 
 /*----------------------------------------------------------------------------*/
-/* Set coarse level residual corrections for FAS */
 void NLNSOL::NlnProblemCoarseLevel::SetFHatFBar(
     Teuchos::RCP<Epetra_MultiVector> fhat,
-    Teuchos::RCP<Epetra_MultiVector> fbar
-    )
+    Teuchos::RCP<Epetra_MultiVector> fbar)
 {
   fhat_ = fhat;
   fbar_ = fbar;
