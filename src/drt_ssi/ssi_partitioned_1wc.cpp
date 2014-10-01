@@ -18,6 +18,8 @@
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
+#include "../drt_io/io_control.H"
+
 SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Part(comm, timeparams)
@@ -67,7 +69,12 @@ void SSI::SSI_Part1WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  if(isscatrafromfile_) scatra_->ScaTraField()->ReadRestart(CurrStep()); // read results from restart file
+  if(isscatrafromfile_){
+    int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
+    if (Step()  % diffsteps ==0){
+      scatra_->ScaTraField()->ReadRestart(Step()); // read results from restart file
+    }
+  }
   else scatra_->ScaTraField()->Solve(); // really solve scatra problem
 
 
@@ -153,8 +160,18 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
     dserror("unexpected dof sets in structure field");
 
   // Flag for reading scatra result from restart file instead of computing it
-  DRT::Problem* problem = DRT::Problem::Instance();
-  isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(problem->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
+  //DRT::Problem* problem = DRT::Problem::Instance();
+  isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
+
+  /*
+  if (isscatrafromfile_){
+     std::string scatrafilename = Teuchos::getNumericStringParameter(problem->SSIControlParams()
+                                                                              ,"SCATRA_FILENAME");
+     Teuchos::RCP<IO::InputControl> inputscatra = Teuchos::rcp(new IO::InputControl(scatrafilename, comm));
+     problem->SetInputControlFile(inputscatra);
+  }
+  */
+
 
 }
 
@@ -172,9 +189,9 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
   {
     PrepareTimeStep();
     DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
-    SetScatraSolution();
     if (Step()  % diffsteps ==0)
     {
+      SetScatraSolution();
       DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     }
   }

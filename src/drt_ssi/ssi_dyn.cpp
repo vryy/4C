@@ -61,6 +61,15 @@ void ssi_drt()
   const int restart = problem->Restart();
   ssi->ReadRestart(restart);
 
+  // 3.3 AFTER restart: reset inputfilename of the problem so that results from other runs can be read
+  bool flag_readscatra = DRT::INPUT::IntegralValue<bool>(ssiparams,"SCATRA_FROM_RESTART_FILE");
+  if(coupling == INPAR::SSI::Part_ScatraToSolid and flag_readscatra ){
+       std::string filename = Teuchos::getNumericStringParameter(ssiparams,"SCATRA_FILENAME");
+       Teuchos::RCP<IO::InputControl> inputscatra = Teuchos::rcp(new IO::InputControl(filename, comm));
+       problem->SetInputControlFile(inputscatra);
+  }
+
+
   //4.- Run of the actual problem.
 
   // 4.1.- Some setup needed for the poroelastic subproblem.

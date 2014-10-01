@@ -72,9 +72,6 @@ namespace ADAPTER
     /// total number of time steps
     int NStep() const { return nstep_;}
 
-    /// return current step
-    int CurrStep() const { return step_;}
-
     /// maximum simulation time
     double MaxTime() const { return maxtime_;}
 

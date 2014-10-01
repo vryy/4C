@@ -29,6 +29,8 @@ Maintainer: Martin Kronbichler
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
+#include "../drt_io/io_control.H"
+
 namespace IO
 {
   class OutputControl;
@@ -205,6 +207,8 @@ public:
 
   /// set restart step which was read from the command line
   void SetRestartStep(int r);
+
+  void SetInputControlFile(Teuchos::RCP<IO::InputControl>& input){inputcontrol_ = input;}
 
   //@}
 
