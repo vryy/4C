@@ -3904,7 +3904,7 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
     bool semismooth =  DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-    if (apptype == INPAR::CONTACT::app_mortarcontact or INPAR::CONTACT::app_mortarcontandmt)
+    if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarcontandmt)
     {
       if (soltype==INPAR::CONTACT::solution_augmented && semismooth)
       {
