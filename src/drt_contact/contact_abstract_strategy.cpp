@@ -861,8 +861,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     {
       // check redundant input
       if (redundant != INPAR::MORTAR::redundant_none)
-        dserror(
-            "Round-Robin-Loop only for none-redundant storage of interface!");
+        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
 
       // this contains the evaluation as well as the rr loop
       interface_[i]->RoundRobinEvaluate();
@@ -874,8 +873,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     {
       // check redundant input
       if (redundant != INPAR::MORTAR::redundant_none)
-        dserror(
-            "Round-Robin-Loop only for none-redundant storage of interface!");
+        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
 
       // first perform rrloop to detect the required ghosting
       interface_[i]->RoundRobinDetectGhosting();
@@ -890,8 +888,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     {
       // check redundant input
       if (redundant != INPAR::MORTAR::redundant_none)
-        dserror(
-            "Binning strategy only for none-redundant storage of interface!");
+        dserror("Binning strategy only for none-redundant storage of interface!");
 
       // required master elements are already ghosted (preparestepcontact) !!!
       // call evaluation

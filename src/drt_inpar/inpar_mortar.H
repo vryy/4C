@@ -48,7 +48,7 @@ namespace INPAR
   /// Input parameters for MORTAR coupling
   namespace MORTAR
   {
-    
+
     /// Type of employed set of Lagrange multiplier shape functions
     /// (this enum represents the input file parameter SHAPEFCN)
     enum ShapeFcn
@@ -58,7 +58,7 @@ namespace INPAR
       shape_dual,           ///< dual shape functions
       shape_petrovgalerkin  ///< Petrov-Galerkin approach
     };
-    
+
     /// Type of Lagrange multiplier interpolation for quadratic FE case
     /// (this enum represents the input file parameter LAGMULT_QUAD)
     enum LagMultQuad
@@ -70,7 +70,7 @@ namespace INPAR
       lagmult_pwlin_pwlin, ///< piecewise linear interpolation, piecewise linear testing
       lagmult_lin_lin      ///< linear interpolation, linear testing
     };
-        
+
     /// Type of mortar coupling search algorithm
     /// (this enum represents the input file parameter SEARCH_ALGORITHM)
     enum SearchAlgorithm
@@ -102,9 +102,9 @@ namespace INPAR
     enum ParallelStrategy
     {
       ghosting_redundant,  ///< redundant storage of master or master&slave surfaces
-      roundrobinevaluate,           ///< round robin loop for interface evaluation
-      roundrobinghost,
-      binningstrategy
+      roundrobinevaluate,  ///< round robin loop for entire interface evaluation
+      roundrobinghost,     ///< round robin loop for setup of ghosting only
+      binningstrategy      ///< binning strategy
     };
 
     /// Type of parallel redistribution algorithm

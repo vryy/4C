@@ -511,14 +511,14 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         if (element->IsSlave())
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "S" << element->Id() << "};" << std::endl;
+          gmshfilecontent << "{\"" << "S" << element->Id() << "\"};" << std::endl;
           gmshfilecontentslave << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
           gmshfilecontentslave << "{\"" << "S" << element->Id() << "\"};" << std::endl;
         }
         else
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "M" << element->Id() << "};" << std::endl;
+          gmshfilecontent << "{\"" << "M" << element->Id() << "\"};" << std::endl;
           gmshfilecontentmaster << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
           gmshfilecontentmaster << "{\"" << "M" << element->Id() << "\"};" << std::endl;
         }
@@ -529,14 +529,14 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           if (element->IsSlave())
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
+            gmshfilecontent << "{\"" << "SN" << element->NodeIds()[j] << "\"};" << std::endl;
             gmshfilecontentslave << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
             gmshfilecontentslave << "{\"" << "SN" << element->NodeIds()[j] << "\"};" << std::endl;
           }
           else
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
+            gmshfilecontent << "{\"" << "MN" << element->NodeIds()[j] << "\"};" << std::endl;
             gmshfilecontentmaster << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
             gmshfilecontentmaster << "{\"" << "MN" << element->NodeIds()[j] << "\"};" << std::endl;
           }

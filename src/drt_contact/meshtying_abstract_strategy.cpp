@@ -279,22 +279,13 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
      Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
      const int step, const int iter, bool predictor)
 {
-  // mortar initialization and evaluation
+  // set displacement state
   SetState("displacement",dis);
-  InitMortar();
-  InitEvalInterface();
-  AssembleMortar();
 
-  // evaluate relative movement for friction
-  if (predictor) EvaluateRelMovPredict();
-  else           EvaluateRelMov();
-
-  // update active set
-  UpdateActiveSetSemiSmooth();
-
-  // apply contact forces and stiffness
-  Initialize();
+  // apply meshtying forces and stiffness
   Evaluate(kt,f,dis);
+
+  // output interface forces
   InterfaceForces();
 
   return;

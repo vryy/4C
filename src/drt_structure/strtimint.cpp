@@ -507,7 +507,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   discret_->GetCondition("Contact",contactconditions);
 
   // only continue if mortar contact / meshtying unmistakably chosen in input file
-  if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarmeshtying ||
+  if (apptype == INPAR::CONTACT::app_mortarcontact ||
+      apptype == INPAR::CONTACT::app_mortarmeshtying ||
       apptype == INPAR::CONTACT::app_mortarcontandmt)
   {
     // double-check for contact conditions
@@ -585,11 +586,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // visualization of initial configuration
 #ifdef MORTARGMSH3
-    if(cmtbridge_ != Teuchos::null)
-    {
-      cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
-    }
-
     if(cmtbridge_ != Teuchos::null)
     {
       cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
