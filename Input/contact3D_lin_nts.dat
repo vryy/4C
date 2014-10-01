@@ -1,16 +1,13 @@
 //
-// Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
+// Maintainer: Philipp Farah
+// farah@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15238
-//
-// necessary defines: D_SOLID3 BINIO
-//
+// 089 - 289-15257
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-3D finite deformation contact test
+3D finite deformation nod-to-segment contact test
 // - first-order interpolation (hex8 elements)
 // - semi-smooth Newton solution scheme
 // - standard Lagrange multiplier interpolation
