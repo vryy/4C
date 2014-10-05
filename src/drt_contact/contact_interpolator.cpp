@@ -181,8 +181,6 @@ void CONTACT::CoInterpolator::Interpolate2D(MORTAR::MortarElement& sele,
         GEN::pairedvector<int,double> dgap(linsize+ndof*ncol);
         GEN::pairedvector<int,double> dslipmatrix(linsize+ndof*ncol);
         GEN::pairedvector<int,double> dwear(linsize+ndof*ncol);
-        typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
         //**************************************************************
         double sxi[2] = {0.0, 0.0};
 
@@ -374,8 +372,6 @@ void CONTACT::CoInterpolator::Interpolate3D(MORTAR::MortarElement& sele,
         int linsize    = 100;
         double gpn[3]  = {0.0, 0.0, 0.0};
         GEN::pairedvector<int,double> dgap(linsize+ndof*ncol);
-        typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
         //**************************************************************
 
         // evalute the GP slave coordinate derivatives --> no entries
