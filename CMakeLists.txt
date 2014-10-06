@@ -1757,6 +1757,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_meshhandle.cpp
   src/drt_cut/cut_meshintersection.cpp
   src/drt_cut/cut_node.cpp
+  src/drt_cut/cut_output.cpp
   src/drt_cut/cut_parallel.cpp
   src/drt_cut/cut_parentintersection.cpp
   src/drt_cut/cut_point.cpp
