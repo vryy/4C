@@ -1,7 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_base.H
-
- \brief base class for all scalar structure algorithms
+ \file ssi_utils.H
 
  <pre>
    Maintainer: Julia Hoermann
@@ -11,8 +9,8 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_ALGO_H_
-#define SSI_ALGO_H_
+#ifndef SSI_UTILS_H_
+#define SSI_UTILS_H_
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
@@ -31,4 +29,4 @@ namespace SSI{
   };
 }
 
-#endif /* SSI_ALGO_H_ */
+#endif /* SSI_UTILS_H_ */

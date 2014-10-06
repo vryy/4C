@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "ssi_base.H"
 #include "ssi_partitioned.H"
+#include "ssi_utils.H"
 #include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_adapter/ad_str_wrapper.H"
@@ -30,12 +31,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
-// forward declaration
-namespace SSI{
-    namespace Utils{
-      int CheckTimeStepping(double, double);
-    };
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

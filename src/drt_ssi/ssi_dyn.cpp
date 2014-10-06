@@ -14,6 +14,7 @@
 #include "ssi_dyn.H"
 #include "ssi_partitioned_1wc.H"
 #include "ssi_partitioned_2wc.H"
+#include "ssi_utils.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -22,15 +23,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-// forward declaration
-namespace SSI{
-    namespace Utils{
-      void ChangeTimeParameter(const Epetra_Comm&,
-          Teuchos::ParameterList&,
-          Teuchos::ParameterList&,
-          Teuchos::ParameterList&);
-    };
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

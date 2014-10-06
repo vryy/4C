@@ -1,7 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_base.H
-
- \brief base class for all scalar structure algorithms
+ \file ssi_utils.H
 
  <pre>
    Maintainer: Julia Hoermann
