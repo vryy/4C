@@ -37,14 +37,12 @@ Maintainer: Matthias Mayr
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../linalg/linalg_solver.H"
-
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorNonlinCG::NlnOperatorNonlinCG()
-: linsolver_(Teuchos::null),
-  linesearch_(Teuchos::null)
+: linesearch_(Teuchos::null),
+  betatype_(NLNSOL::NlnOperatorNonlinCG::beta_none)
 {
   return;
 }
@@ -55,30 +53,13 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  SetupLinearSolver();
   SetupLineSearch();
   SetupPreconditioner();
 
+  betatype_ = beta_fletcherreeves; // ToDo: Read this from input file/parameter list
+
   // Setup() has been called
   SetIsSetup();
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorNonlinCG::SetupLinearSolver()
-{
-  // get the solver number used for structural problems
-  const int linsolvernumber = Params().get<int>("Nonlinear CG: Linear Solver");
-
-  // check if the solver ID is valid
-  if (linsolvernumber == (-1))
-    dserror("No valid linear solver defined!");
-
-  linsolver_ = Teuchos::rcp(
-      new LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), Comm(),
-          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   return;
 }
@@ -196,7 +177,7 @@ void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
 {
   if (nlnprec_.is_null())
     dserror("Nonlinear preconditioner has not been initialized, yet. "
-        "Has SetupPreconditioner been called?");
+        "Has SetupPreconditioner() been called?");
 
   nlnprec_->ApplyInverse(f, x);
 
@@ -207,11 +188,25 @@ void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
 void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
     const Epetra_MultiVector& fnew, const Epetra_MultiVector& fold) const
 {
-  // ToDo We need a decision which beta is used
-  ComputeBetaFletcherReeves(beta, fnew, fold);
-
-//  ComputeBetaPolakRibiere(beta);
-//  ComputeBetaHestenesStiefel(beta);
+  // compute beta based on user's choice
+  switch (betatype_)
+  {
+  case beta_none:
+    dserror("Formula how to compute beta has not been set, yet.");
+    break;
+  case beta_fletcherreeves:
+    ComputeBetaFletcherReeves(beta, fnew, fold);
+    break;
+  case beta_polakribiere:
+    ComputeBetaPolakRibiere(beta);
+    break;
+  case beta_hestenesstiefel:
+    ComputeBetaHestenesStiefel(beta);
+    break;
+  default:
+    dserror("Unknown formula type to compute the parameter beta.");
+    break;
+  }
 
   // 'beta' has to be > 0.0, otherwise restart the procedure with 'beta = 0.0'
   beta = std::max(beta, 0.0);

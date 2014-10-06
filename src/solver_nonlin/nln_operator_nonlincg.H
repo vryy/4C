@@ -85,7 +85,7 @@ namespace NLNSOL
     //! @name Mathematical functions
     //@{
 
-    /*! \brief Apply the preconditioner, i.e. do one step of Quasi-Newton
+    /*! \brief Apply the preconditioner
      *
      * \return Integer error code, set to 0 if successful.
      *
@@ -115,11 +115,17 @@ namespace NLNSOL
 
   private:
 
+    //! Possible formulas that can be used to compute the parameter \f$\beta\f$
+    enum BetaType
+    {
+      beta_none,
+      beta_fletcherreeves,
+      beta_polakribiere,
+      beta_hestenesstiefel,
+    };
+
     //! @name Setup
     //@{
-
-    //! Setup of linear solver
-    virtual void SetupLinearSolver();
 
     //! Setup of line search
     virtual void SetupLineSearch();
@@ -185,9 +191,6 @@ namespace NLNSOL
     //! @name Necessary sub-algorithms
     //@{
 
-    //! linear solver from baci
-    Teuchos::RCP<LINALG::Solver> linsolver_;
-
     //! line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
@@ -195,6 +198,9 @@ namespace NLNSOL
     Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
 
     //@}
+
+    //! Formula that is used to compute the parameter \f$\beta\f$
+    BetaType betatype_;
 
   }; // class NlnOperatorNonlinCG
 } // namespace NLNSOL

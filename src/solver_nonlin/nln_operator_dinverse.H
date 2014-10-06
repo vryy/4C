@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_newton.H
+\file nln_operator_dinverse.H
 
-\brief Newton-type algorithm
+\brief Use inverse of diagonal of Jacobian as preconditioner
 
 <pre>
 Maintainer: Matthias Mayr
@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef NLN_OPERATOR_NEWTON_H
-#define NLN_OPERATOR_NEWTON_H
+#ifndef NLN_OPERATOR_D_INVERSE_H
+#define NLN_OPERATOR_D_INVERSE_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -32,13 +32,6 @@ Maintainer: Matthias Mayr
 
 class Epetra_Comm;
 class Epetra_MultiVector;
-class Epetra_Operator;
-
-namespace LINALG
-{
-  class Solver;
-  class SparseOperator;
-} // namespace LINALG
 
 namespace NLNSOL
 {
@@ -54,13 +47,13 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Newton-type algorithm as nonlinear preconditioner
+  /*! \brief Use inverse of diagonal of Jacobian as preconditioner
    *
    *  \sa NLNSOL::NlnOperatorBase()
    *
-   *  \author mayr.mt \date 06/2014
+   *  \author mayr.mt \date 10/2014
    */
-  class NlnOperatorNewton : public NlnOperatorBase
+  class NlnOperatorDInverse : public NlnOperatorBase
   {
   public:
 
@@ -68,10 +61,10 @@ namespace NLNSOL
     //@{
 
     //! Constructor (empty)
-    NlnOperatorNewton();
+    NlnOperatorDInverse();
 
     //! Destructor
-    virtual ~NlnOperatorNewton(){}
+    virtual ~NlnOperatorDInverse(){}
 
     //@}
 
@@ -90,7 +83,7 @@ namespace NLNSOL
      *
      * \return Integer error code, set to 0 if successful.
      *
-     * \author mayr.mt \date 03/2014
+     * \author mayr.mt \date 08/2014
      */
     virtual int ApplyInverse(
         const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
@@ -101,7 +94,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NLNSOL::NlnOperatorNewton"; }
+    virtual const char* Label() const { return "NLNSOL::NlnOperatorDInverse"; }
 
     //@}
 
@@ -112,22 +105,25 @@ namespace NLNSOL
     //! @name Setup
     //@{
 
-    //! Setup of linear solver
-    virtual void SetupLinearSolver();
-
     //! Setup of line search
     virtual void SetupLineSearch();
 
     //@}
 
-    //! @name Search direction
+    //! @name Search Direction
     //@{
 
-    //! Compute the search direction
+    /*! \brief Compute search direction
+     *
+     *  The new search direction \f$p\f$ is computed via
+     *  \[ p = - D^{-1} f \]
+     *  with \f$D = diag(J)\f$ denoting the diagonal of the Jacobian matrix.
+     *
+     *  \author mayr.mt \date 10/2014
+     */
     virtual const int ComputeSearchDirection(
-        Teuchos::RCP<Epetra_MultiVector>& rhs, ///< residual
-        Teuchos::RCP<Epetra_MultiVector>& inc, ///< increment (to be filled)
-        const int iter ///< current Newton iteration
+        const Epetra_MultiVector& rhs, ///< residual
+        Epetra_MultiVector& inc ///< increment (to be filled)
         ) const;
 
     //! Compute line search parameter (=step length)
@@ -137,26 +133,17 @@ namespace NLNSOL
         double fnorm2 ///< current L2-norm of residual
         ) const;
 
-    //! Use a fixed Jacobian (true) or update it in every iteration (false)?
-    virtual const bool FixedJacobian() const;
-
     //@}
 
     //! @name Necessary sub-algorithms
     //@{
-
-    //! Linear solver from baci
-    Teuchos::RCP<LINALG::Solver> linsolver_;
 
     //! Line search object
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
     //@}
 
-    //! Fixed Jacobian matrix
-    Teuchos::RCP<Epetra_Operator> jac_;
-
-  }; // class NlnOperatorNewton
+  }; // class NlnOperatorDInverse
 } // namespace NLNSOL
 
-#endif /* NLN_OPERATOR_NEWTON_H */
+#endif /* NLN_OPERATOR_D_INVERSE_H */

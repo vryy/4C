@@ -20,6 +20,7 @@ Maintainer: Matthias Mayr
 
 // baci
 #include "nln_operator_base.H"
+#include "nln_operator_dinverse.H"
 #include "nln_operator_factory.H"
 #include "nln_operator_fas.H"
 #include "nln_operator_ngmres.H"
@@ -61,6 +62,10 @@ NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
   else if (optype == "Steepest Descent")
   {
     return Teuchos::rcp(new NLNSOL::NlnOperatorSD());
+  }
+  else if (optype == "Inverse Diagonal")
+  {
+    return Teuchos::rcp(new NLNSOL::NlnOperatorDInverse());
   }
   else
   {
