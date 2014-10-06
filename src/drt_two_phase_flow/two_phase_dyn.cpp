@@ -203,6 +203,8 @@ void fluid_xfem_ls_drt()
    Teuchos::RCP<DRT::Discretization> fluiddis  = problem->GetDis("fluid");
    Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
+   fluiddis->FillComplete();
+
 //   access parameter for two phase flow
    const Teuchos::ParameterList& xdyn = problem->XFEMGeneralParams();
 
