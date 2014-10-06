@@ -103,6 +103,6 @@ NODE 8   COORD  10.0000000000000001e-03   5.0000000000000001e-03   5.00000000000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP HEX8  1 2 3 4 5 6 7 8  MAT 1  FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 7.77840329682382370e-01 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 7.78036225337767395e-01 TOLERANCE 1e-4
 -------------------------------------------------------------------------END
 // END
