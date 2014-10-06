@@ -23,6 +23,8 @@ Maintainer: Martin Kronbichler
 
 #include "adapter_algorithmbase.H"
 
+#include "../drt_lib/drt_dserror.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::AlgorithmBase::AlgorithmBase(const Epetra_Comm& comm,
@@ -65,3 +67,9 @@ void ADAPTER::AlgorithmBase::PrintHeader()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::AlgorithmBase::ReadRestartfromTime(double time)
+{
+  dserror("Subclass has not implemented this restart option");
+}

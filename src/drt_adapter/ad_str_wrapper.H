@@ -284,6 +284,10 @@ namespace ADAPTER
     virtual void Output(bool forced_writerestart = false)
     { return structure_->Output(forced_writerestart); }
 
+    /// output results to screen
+    virtual void PrintStep()
+    { return structure_->PrintStep(); }
+
     /// read restart information for given time step
     virtual void ReadRestart(const int step)
     { return structure_->ReadRestart(step); }

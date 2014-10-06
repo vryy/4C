@@ -30,17 +30,25 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
+// forward declaration
+namespace SSI{
+    namespace Utils{
+      int CheckTimeStepping(double, double);
+    };
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams):
-    AlgorithmBase(comm, timeparams)
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams):
+    AlgorithmBase(comm, globaltimeparams)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  const Teuchos::ParameterList& scatradyn  = problem->ScalarTransportDynamicParams();
   // get the solver number used for ScalarTransport solver
-  const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+  const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   //2.- Setup discretizations.
   SetupDiscretizations(comm);
@@ -48,9 +56,6 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   //3.- Create the two uncoupled subproblems.
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
 
   // Set isale to false what should be the case in scatratosolid algorithm
   const INPAR::SSI::SolutionSchemeOverFields coupling
@@ -58,47 +63,12 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
 
   bool isale = true;
   if(coupling == INPAR::SSI::Part_ScatraToSolid) isale = false;
-  bool difftimestep = DRT::INPUT::IntegralValue<int>(timeparams, "DIFFTIMESTEPSIZE");
 
-  if (difftimestep) //Create subproblems with different time steps
-  {
-    double scatrastep = timeparams.get<double>("TIMESTEPSCATRA");
-    double solidstep = timeparams.get<double>("TIMESTEPSOLID");
-    int scst = scatrastep * 1000000;
-    int sost = solidstep * 1000000;
-
-    if (std::min(scatrastep,solidstep) !=  timeparams.get<double>("TIMESTEP"))
-    {
-      dserror("Global timestep must be equal to the smaller timestep of scatra or solid!");
-    }
-
-    if (scst/sost % 1 == 0 or sost/scst % 1 == 0)
-    {
-      Teuchos::ParameterList scatratimeparams = timeparams;
-      scatratimeparams.set<double>   ("TIMESTEP"    ,scatrastep);
-
-      Teuchos::ParameterList solidtimeparams = timeparams;
-      solidtimeparams.set<double>("TIMESTEP"    ,solidstep);
-
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(solidtimeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
-      scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatratimeparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
-
-    }
-    else
-      dserror("Timesteps for scatra and solid must be divisible!");
-
-  }
-  else
-  {
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
-    scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
-  }
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(structparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatraparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
-
 
 }
 
@@ -106,13 +76,33 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 01/12  |
  *----------------------------------------------------------------------*/
-void SSI::SSI_Base::ReadRestart( int restart)
+void SSI::SSI_Base::ReadRestart( int restart )
 {
+
   if (restart)
   {
     scatra_->ScaTraField()->ReadRestart(restart);
     structure_->ReadRestart(restart);
     SetTimeStep(structure_->TimeOld(), restart);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | read restart information for given time (public)        AN, JH 10/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Base::ReadRestartfromTime( double restarttime )
+{
+  if ( restarttime > 0.0 )
+  {
+
+    int restartstructure = SSI::Utils::CheckTimeStepping(structure_->Dt(), restarttime);
+    int restartscatra    = SSI::Utils::CheckTimeStepping(scatra_->ScaTraField()->Dt(), restarttime);
+
+    scatra_->ScaTraField()->ReadRestart(restartscatra);
+    structure_->ReadRestart(restartstructure);
+    SetTimeStep(structure_->TimeOld(), restartstructure);
 
   }
 

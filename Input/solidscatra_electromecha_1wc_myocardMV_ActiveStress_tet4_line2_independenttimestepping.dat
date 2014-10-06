@@ -3,7 +3,7 @@ One way electromechanics of a Contracting cylinder:
 Test example for independent time spacing off scatra and solid field, based on the testcase
 solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_line2
 Beware that the result differ respective the original testcase since probably
-the damping effects of the solid field are evaluated less often.
+the damping effects of the solid field are evalated less often.
 Maintainer: J. Hoermann
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        4153
@@ -78,7 +78,7 @@ RESTARTEVRY                     1
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMESTEP                        0.05
+TIMESTEP                        0.1
 TOLCONSTR                       1e-03
 TOLDISP                         1e-10
 TOLINCO                         1e-03
@@ -119,10 +119,8 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
 -----------------------------------------------------------------SSI CONTROL
 DIFFTIMESTEPSIZE                yes
-TIMESTEPSCATRA                  0.05
-TIMESTEPSOLID                   0.1
-UPRES                           1
-RESTARTEVRY                     1
+UPRESTIME                       0.1
+RESTARTEVRYTIME                 0.1
 NUMSTEP                         100000000
 MAXTIME                         1.0
 TIMESTEP                        0.05

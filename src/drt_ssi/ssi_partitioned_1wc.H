@@ -23,7 +23,9 @@ namespace SSI
   public:
     //! constructor
     explicit SSI_Part1WC(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams);
 
     //! virtual destructor
     virtual ~SSI_Part1WC(){};
@@ -51,7 +53,9 @@ namespace SSI
   public:
     //! constructor
     explicit SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams);
 
     //! virtual destructor
     virtual ~SSI_Part1WC_SolidToScatra(){};
@@ -66,7 +70,9 @@ namespace SSI
   public:
     //! constructor
     explicit SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams);
 
     //! virtual destructor
     virtual ~SSI_Part1WC_ScatraToSolid(){};

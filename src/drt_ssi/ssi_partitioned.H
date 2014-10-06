@@ -24,7 +24,9 @@ public:
 
   /// setup SSI algorithm
   explicit SSI_Part(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& timeparams);// Problem builder
+      const Teuchos::ParameterList& globaltimeparams,
+      const Teuchos::ParameterList& scatraparams,
+      const Teuchos::ParameterList& structparams);// Problem builder
 
   /// virtual destructor
   virtual ~SSI_Part(){};

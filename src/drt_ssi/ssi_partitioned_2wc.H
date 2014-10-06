@@ -24,7 +24,9 @@ namespace SSI
 
     //!explicit constructor
     explicit SSI_Part2WC(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams);
 
     //!virtual destructor
     virtual ~SSI_Part2WC(){};

@@ -44,6 +44,9 @@ namespace ADAPTER
     /// read restart data
     virtual void ReadRestart(int step) = 0;
 
+    /// read restart data from time
+    virtual void ReadRestartfromTime(double time);
+
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
 

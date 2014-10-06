@@ -20,8 +20,10 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Part::SSI_Part(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : SSI_Base(comm, timeparams)
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Base(comm, globaltimeparams,scatraparams,structparams)
 {
 
 }

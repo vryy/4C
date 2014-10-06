@@ -15,7 +15,6 @@
 #include "ssi_partitioned_1wc.H"
 #include "ssi_partitioned_2wc.H"
 #include "../drt_inpar/inpar_ssi.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -23,6 +22,15 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+// forward declaration
+namespace SSI{
+    namespace Utils{
+      void ChangeTimeParameter(const Epetra_Comm&,
+          Teuchos::ParameterList&,
+          Teuchos::ParameterList&,
+          Teuchos::ParameterList&);
+    };
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -34,10 +42,19 @@ void ssi_drt()
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   //2.- Parameter reading
-  const Teuchos::ParameterList& ssiparams = problem->SSIControlParams();
+  Teuchos::ParameterList& ssiparams = const_cast<Teuchos::ParameterList&>( problem->SSIControlParams() );
+  // access scatra params list
+  Teuchos::ParameterList& scatradyn = const_cast<Teuchos::ParameterList&>( problem->ScalarTransportDynamicParams() );
+  // access structural dynamic params list which will be possibly modified while creating the time integrator
+  Teuchos::ParameterList& sdyn      = const_cast<Teuchos::ParameterList&>( DRT::Problem::Instance()->StructuralDynamicParams() );
+
+//  //Modification of time parameter list
+  SSI::Utils::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
 
   const INPAR::SSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams,"COUPALGO");
+
+  //
 
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
   Teuchos::RCP<SSI::SSI_Base> ssi = Teuchos::null;
@@ -46,13 +63,13 @@ void ssi_drt()
   switch(coupling)
   {
   case INPAR::SSI::Part_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams));
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams, scatradyn, sdyn));
     break;
   case INPAR::SSI::Part_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams));
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams, scatradyn, sdyn));
     break;
   case INPAR::SSI::Part_TwoWay:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams, scatradyn, sdyn));
     break;
   default:
     dserror("unknown coupling algorithm for SSI!");
@@ -61,7 +78,14 @@ void ssi_drt()
 
   //3.2- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();
-  ssi->ReadRestart(restart);
+
+  const double restarttime = problem->RestartTime();
+  if (restarttime > 0.0)
+    ssi->ReadRestartfromTime(restarttime);
+
+  else
+    if (restart)
+      ssi->ReadRestart(restart);
 
   // 3.3 AFTER restart: reset inputfilename of the problem so that results from other runs can be read
   bool flag_readscatra = DRT::INPUT::IntegralValue<bool>(ssiparams,"SCATRA_FROM_RESTART_FILE");
@@ -70,7 +94,6 @@ void ssi_drt()
        Teuchos::RCP<IO::InputControl> inputscatra = Teuchos::rcp(new IO::InputControl(filename, comm));
        problem->SetInputControlFile(inputscatra);
   }
-
 
   //4.- Run of the actual problem.
 

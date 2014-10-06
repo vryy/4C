@@ -34,7 +34,9 @@ namespace SSI
 
     /// create using a Epetra_Comm
     explicit SSI_Base(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);// Problem builder
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams);// Problem builder
 
     /// virtual destructor
     virtual ~SSI_Base(){};
@@ -49,7 +51,10 @@ namespace SSI
     void TestResults(const Epetra_Comm& comm);
 
     /// read restart
-    void ReadRestart(int step);
+    void ReadRestart( int restart );
+
+    /// read restart from given time
+    void ReadRestartfromTime( double restarttime );
 
     //! access to structural field
     //const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
@@ -71,6 +76,10 @@ namespace SSI
   private:
     /// clone scatra discretization form structure discretization
     void SetupDiscretizations(const Epetra_Comm& comm);
+
+    /// Function for checking that the different time steps are a
+    /// multiplicative of each other
+    //void CheckTimeStepping(double dt1, double dt2);
   };
 }
 

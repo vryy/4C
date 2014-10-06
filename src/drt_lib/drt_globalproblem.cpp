@@ -157,6 +157,13 @@ int DRT::Problem::Restart() const
   return restartstep_;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::Problem::RestartTime() const
+{
+  return restarttime_;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -347,6 +354,21 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     const int restartflaginfile = type.get<int>("RESTART");
     if ((restartflaginfile > 0) and (restartflaginfile != restartstep_))
       dserror("Restart flags in input file and command line are non-zero and different!");
+  }
+
+  // Set restart time
+  restarttime_ = type.get<double>("RESTARTTIME");
+  if (restarttime_>0.0)
+  {
+    // Currently this option is implemented only for scalar structure interaction problems
+    if (ProblemType() != prb_ssi)
+      dserror("Restart with time option currently only implemented for SSI problems");
+    // The value restartstep_ is used very deep down in Baci. Therefore we demand the user
+    // to set this value, if one wants to use restart time option.
+    // If this feature should be expanded for all problemtyps another handling of the
+    // restartstep_ has to be considered
+    if (restartstep_==0)
+      dserror("Restart with time option needs a RESTART flag different from 0");
   }
 
   // 3) set random seed

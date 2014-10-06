@@ -21,8 +21,10 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : SSI_Part(comm, timeparams),
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part(comm, globaltimeparams, scatraparams, structparams),
     scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Phinp())))),
     dispincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_()->Dispnp()))))
 {
@@ -38,6 +40,10 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
       dserror("unexpected dof sets in scatra field");
     if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
       dserror("unexpected dof sets in structure field");
+
+    if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE")){
+      dserror("Different time stepping for two way coupling not implemented yet.");
+    }
 
     const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
     // Get the parameters for the ConvergenceCheck

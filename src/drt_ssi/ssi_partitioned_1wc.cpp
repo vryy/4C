@@ -19,8 +19,10 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : SSI_Part(comm, timeparams)
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part(comm, globaltimeparams,scatraparams,structparams)
 {
 
 }
@@ -44,8 +46,10 @@ void SSI::SSI_Part1WC::DoStructStep()
   structure_-> PrepareOutput();
   // update all single field solvers
   structure_-> Update();
-  // write output to screen and files
+  // write output to files
   structure_-> Output();
+  // write output to screen
+  structure_->PrintStep();
 }
 
 /*----------------------------------------------------------------------*/
@@ -69,8 +73,8 @@ void SSI::SSI_Part1WC::DoScatraStep()
   // -------------------------------------------------------------------
   if(isscatrafromfile_){
     int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
-    if (Step()  % diffsteps ==0){
-      scatra_->ScaTraField()->ReadRestart(Step()); // read results from restart file
+    if (scatra_->ScaTraField()->Step() % diffsteps ==0){
+      scatra_->ScaTraField()->ReadRestart(scatra_->ScaTraField()->Step()); // read results from restart file
     }
   }
   else scatra_->ScaTraField()->Solve(); // really solve scatra problem
@@ -99,7 +103,7 @@ void SSI::SSI_Part1WC::DoScatraStep()
 void SSI::SSI_Part1WC::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  //PrintHeader();
 
   //PrepareTimeStep of single fields is called in DoStructStep and DoScatraStep
 }
@@ -107,8 +111,10 @@ void SSI::SSI_Part1WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : SSI_Part1WC(comm, timeparams)
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams)
 {
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<DRT::DofSet> structdofset
@@ -135,7 +141,7 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
     PrepareTimeStep();
     DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     SetStructSolution();
-    if (Step() % diffsteps == 0)
+    if (structure_->Step() % diffsteps == 0)
     {
       DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
     }
@@ -146,8 +152,10 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : SSI_Part1WC(comm, timeparams)
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams)
 {
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
@@ -187,7 +195,7 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
   {
     PrepareTimeStep();
     DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
-    if (Step()  % diffsteps ==0)
+    if (scatra_->ScaTraField()->Step()  % diffsteps ==0)
     {
       SetScatraSolution();
       DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.

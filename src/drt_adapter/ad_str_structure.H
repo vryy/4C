@@ -322,6 +322,9 @@ namespace ADAPTER {
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
 
+    /// output results to screen
+    virtual void PrintStep() = 0;
+
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
