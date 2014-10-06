@@ -3121,9 +3121,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
                                                     IsNurbs<distype>::isnurbs);
 
     double Axi[3];
-    for(int i=0;i<my::nsd_;i++)
+    for(int i=0;i<my::bdrynsd_;i++)
       Axi[i] = my::xsi_(i);
-    for(int i=my::nsd_;i<3;i++)
+    for(int i=my::bdrynsd_;i<3;i++)
       Axi[i] = 0.0;
     VOLMORTAR::UTILS::dual_shape_function<distype>(dualfunct,Axi,*ele);
 
@@ -3308,9 +3308,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
                                                    IsNurbs<distype>::isnurbs);
 
    double Axi[3];
-   for(int i=0;i<my::nsd_;i++)
+   for(int i=0;i<my::bdrynsd_;i++)
      Axi[i] = my::xsi_(i);
-   for(int i=my::nsd_;i<3;i++)
+   for(int i=my::bdrynsd_;i<3;i++)
      Axi[i] = 0.0;
    VOLMORTAR::UTILS::dual_shape_function<distype>(dualfunct,Axi,*ele);
 
