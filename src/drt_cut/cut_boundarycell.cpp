@@ -306,3 +306,15 @@ LINALG::Matrix<3,1> GEO::CUT::ArbitraryBoundaryCell::GetNormalVector()
 {
   return normal_;
 }
+
+/*------------------------------------------------------------------------*
+ * Print end points of boundarycell (just for debugging)          sudhakar 10/14
+ *------------------------------------------------------------------------*/
+void GEO::CUT::BoundaryCell::Print()
+{
+  std::cout<<"The coordinates of boundary cell are \n";
+  for( unsigned i=0; i<points_.size(); i++ )
+  {
+    std::cout<<xyz_(0,i)<<"\t"<<xyz_(1,i)<<"\t"<<xyz_(2,i)<<"\n";
+  }
+}

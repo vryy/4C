@@ -290,6 +290,12 @@ public:
 
   void GnuplotDump();
 
+  /*!
+  \brief When the cut library breaks down, this writes the element geometry and all the cut sides to inspect
+  visually whether the cut configuration is appropriate
+   */
+  void GmshFailureElementDump();
+
   void DumpFacets();
 
   /*!

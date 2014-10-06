@@ -105,6 +105,26 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
     plain_int_set & row = i->second;
     if ( row.size() < 2 )
     {
+      // -------------------------------------------------------------------    (sudhakar 08/14)
+      // one of the possible reasons this may occur is the following:
+      // A background element is cut by two cut sides, that are not connected
+      // This is not a multiple cut situation ==> this works with cut algorithm
+      // See the 2D example here
+      //
+      //        ++++++++++++++++              ++++++++++++++
+      //        +              +              +            +
+      //        +              +              +            +
+      //  o------------------------o          +            +
+      //        +              +          o-------o   o-----------o
+      //        +              +              +            +
+      //  o------------------------o          +            +
+      //        +              +              +            +
+      //        ++++++++++++++++              ++++++++++++++
+      //     (multiple cut --> okay)     (open-point in colored graph)
+      //
+      // In such situations, geometrically two separate volumecells can't be formed
+      // Check your cut_mesh from cut_mesh*.pos
+      // -------------------------------------------------------------------
       throw std::runtime_error( "open point in colored graph" );
     }
   }

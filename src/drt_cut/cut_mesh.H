@@ -477,16 +477,11 @@ public:
   /// Erases a node of the cutmesh
   void EraseNode( int nid ) { nodes_.erase( nid ); }
 
-
-
 private:
 
   /*========================================================================*/
   //! @name private member functions
   /*========================================================================*/
-
-  /// ?
-  void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );
 
   /// ?
   Edge* GetEdge( const plain_int_set & nids,

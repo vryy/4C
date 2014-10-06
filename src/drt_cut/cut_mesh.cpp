@@ -24,7 +24,7 @@ Maintainer: Benedikt Schott
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
 #include "cut_integrationcell.H"
-
+#include "cut_output.H"
 #include "cut_parallel.H"
 
 #include "../drt_geometry/element_volume.H"
@@ -1884,49 +1884,14 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
           ++i )
     {
       Element & e = *i->second;
-      //e.DumpGmsh( file );
-      {
-        const std::vector<Node*> & nodes = e.Nodes();
-        char elementtype;
-        switch ( nodes.size() )
-        {
-        case 8:
-          elementtype = 'H';
-          break;
-        case 4:
-          elementtype = 'S';
-          break;
-        case 6:
-          elementtype = 'I';
-          break;
-        default:
-          throw std::runtime_error( "unknown element type" );
-        }
-        DumpGmsh( file, nodes, elementtype );
-      }
+      GEO::CUT::OUTPUT::GmshElementDump( file, &e );
     }
     for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
           i!=shadow_elements_.end();
           ++i )
     {
       Element & e = *i->second;
-      const std::vector<Node*> & nodes = e.Nodes();
-      char elementtype;
-      switch ( nodes.size() )
-      {
-      case 8:
-        elementtype = 'H';
-        break;
-      case 4:
-        elementtype = 'S';
-        break;
-      case 6:
-        elementtype = 'I';
-        break;
-      default:
-        throw std::runtime_error( "unknown element type" );
-      }
-      DumpGmsh( file, nodes, elementtype );
+      GEO::CUT::OUTPUT::GmshElementDump( file, &e );
     }
   }
   else
@@ -1936,56 +1901,12 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
           ++i )
     {
       Side & s = *i->second;
-      {
-        const std::vector<Node*> & nodes = s.Nodes();
-        char elementtype;
-        switch ( nodes.size() )
-        {
-        case 3:
-          elementtype = 'T';
-          break;
-        case 4:
-          elementtype = 'Q';
-          break;
-        default:
-          throw std::runtime_error( "unknown element type" );
-        }
-        DumpGmsh( file, nodes, elementtype );
-      }
+      GEO::CUT::OUTPUT::GmshSideDump( file, &s );
     }
   }
   file << "};\n";
 }
 
-
-/*-------------------------------------------------------------------------------------*
- * ?
- *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype )
-{
-  file << "S" << elementtype
-       << "(";
-  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-  {
-    Node * n = *i;
-    double x[3];
-    n->Coordinates( x );
-    if ( i!=nodes.begin() )
-      file << ",";
-    file << x[0] << "," << x[1] << "," << x[2];
-  }
-  file << "){";
-  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-  {
-    Node * n = *i;
-    Point * p = n->point();
-    if ( i!=nodes.begin() )
-      file << ",";
-    file << p->Position();
-    //file << n->DofSets().size();
-  }
-  file << "};\n";
-}
 
 
 /*-------------------------------------------------------------------------------------*

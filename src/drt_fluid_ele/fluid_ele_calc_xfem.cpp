@@ -109,90 +109,16 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
 {
   int err=0;
 
-  const INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
-
-  if( vcellgausspts == INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation"
+  for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
   {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intpoints_cell = *i;
-      err = my::Evaluate( ele, discretization, lm, params, mat,
-                     elemat1_epetra, elemat2_epetra,
-                     elevec1_epetra, elevec2_epetra, elevec3_epetra,
-                     intpoints_cell, offdiag);
-      if(err)
-        return err;
-    }
+    const DRT::UTILS::GaussIntegration intpoints_cell = *i;
+    err = my::Evaluate( ele, discretization, lm, params, mat,
+                   elemat1_epetra, elemat2_epetra,
+                   elevec1_epetra, elevec2_epetra, elevec3_epetra,
+                   intpoints_cell, offdiag);
+    if(err)
+      return err;
   }
-  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_MomentFitting ) // standard "MomentFitting" method
-  {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intpoints_cell = *i;
-      err = my::Evaluate( ele, discretization, lm, params, mat,
-                     elemat1_epetra, elemat2_epetra,
-                     elevec1_epetra, elevec2_epetra, elevec3_epetra,
-                     intpoints_cell, offdiag);
-      if(err)
-        return err;
-    }
-  }
-  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_DirectDivergence)  // DirectDivergence approach
-  {
-
-    LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elemat1(elemat1_epetra,true);
-    //LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat2(elemat2_epetra,true);
-    LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elevec1(elevec1_epetra,true);
-
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intcell = *i;
-      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
-
-      // This happens when the volume of the cell is too small that the integration method
-      // predicts negative volume for this
-      if( vc->IsNegligiblySmall() )
-        continue;
-
-      //----------------------------------------------------------------------
-      //integration over the main gauss points to get the required integral
-      //----------------------------------------------------------------------
-      int mainPtno = 0;
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-      {
-        Epetra_SerialDenseMatrix elematTemp1(my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_); //Sudhakar : Is this efficient?
-        Epetra_SerialDenseMatrix elematTemp2(my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_);
-        Epetra_SerialDenseVector elevecTemp1(my::numdofpernode_*my::nen_);
-
-        // get internal Gaussian rule for every main Gauss point
-        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
-        mainPtno++;
-
-        //----------------------------------------------------------------------
-        //integration over the internal gauss points - to get modified integrand
-        //----------------------------------------------------------------------
-
-        err = my::Evaluate( ele, discretization, lm, params, mat,
-                        elematTemp1, elematTemp2,
-                        elevecTemp1, elevec2_epetra, elevec3_epetra,
-                        gint, offdiag );
-
-
-        if(err)
-          return err;
-
-        LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elem1(elematTemp1,true);
-        LINALG::Matrix<my::numdofpernode_*my::nen_,my::numdofpernode_*my::nen_> elem2(elematTemp2,true);
-        LINALG::Matrix<my::numdofpernode_*my::nen_,1> elev1(elevecTemp1,true);
-
-        elemat1.Update(iquad.Weight(), elem1, 1.0);
-        //elemat2.Update(1.0, elem2, 1.0);
-        elevec1.Update(iquad.Weight(), elev1, 1.0);
-      }
-    }
-  }
-  else dserror("unsupported type of VCellGaussPts");
-
   return err;
 }
 
@@ -211,71 +137,15 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
 {
   int err=0;
 
-  const INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
-
-  if( vcellgausspts==INPAR::CUT::VCellGaussPts_Tessellation ) // standard "Tessellation" or "MomentFitting" method
+  for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
   {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration gint = *i;
-      err = my::IntegrateShapeFunction( ele, discretization, lm,
-                     elevec1_epetra,
-                     gint);
-      if(err)
-        return err;
-    }
+    const DRT::UTILS::GaussIntegration gint = *i;
+    err = my::IntegrateShapeFunction( ele, discretization, lm,
+                   elevec1_epetra,
+                   gint);
+    if(err)
+      return err;
   }
-  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_MomentFitting ) // standard "Tessellation" or "MomentFitting" method
-  {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration gint = *i;
-      err = my::IntegrateShapeFunction( ele, discretization, lm,
-                     elevec1_epetra,
-                     gint);
-      if(err)
-        return err;
-    }
-  }
-  else if( vcellgausspts==INPAR::CUT::VCellGaussPts_DirectDivergence )  // DirectDivergence approach
-  {
-
-    LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elevec1(elevec1_epetra,true);
-
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intcell = *i;
-      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
-
-      //----------------------------------------------------------------------
-      //integration over the main gauss points to get the required integral
-      //----------------------------------------------------------------------
-      int mainPtno = 0;
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-      {
-        Epetra_SerialDenseVector elevecTemp1(my::numdofpernode_*my::nen_);
-
-        // get internal Gaussian rule for every main Gauss point
-        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
-        mainPtno++;
-
-        //----------------------------------------------------------------------
-        //integration over the internal gauss points - to get modified integrand
-        //----------------------------------------------------------------------
-
-        err = my::IntegrateShapeFunction( ele, discretization, lm, elevecTemp1, gint);
-
-
-        if(err)
-          return err;
-
-        LINALG::Matrix<my::numdofpernode_*my::nen_,            1> elev1(elevecTemp1,true);
-
-        elevec1.Update(iquad.Weight(), elev1, 1.0);
-      }
-    }
-  }
-  else dserror("unsupported type of VCellGaussPts");
 
   return err;
 }
@@ -2370,9 +2240,6 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
     const double                                                                                mhvs_param         ///< stabilizing parameter for viscous stress-based LM
 )
 {
-
-  INPAR::CUT::VCellGaussPts vcellgausspts = fldparaxfem_->VolumeCellGaussPoints();
-
   // full L2-projection means integration over the full background element,
   // not only the physical part
   if (hybrid_lm_l2_proj == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
@@ -2393,9 +2260,8 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
       }
     }
   }
-  else if (vcellgausspts == INPAR::CUT::VCellGaussPts_Tessellation or vcellgausspts == INPAR::CUT::VCellGaussPts_MomentFitting)
+  else
   {
-
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
       const DRT::UTILS::GaussIntegration intcell = *i;
@@ -2410,87 +2276,6 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
         else
         {
           MHCS_Evaluate_VolBased(evelaf, epreaf, bK_ss, invbK_ss, K_su, rhs_s);
-        }
-      }
-    }
-  }
-  else if (vcellgausspts == INPAR::CUT::VCellGaussPts_DirectDivergence )  // DirectDivergence method
-  {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intcell = *i;
-      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
-
-      //----------------------------------------------------------------------
-      //integration over the main gauss points to get the required integral
-      //----------------------------------------------------------------------
-      int mainPtno = 0;
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-      {
-        // to store values temporarily
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,numstressdof_,my::numdofpernode_>     K_suTemp;
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::numdofpernode_,numstressdof_>     K_usTemp;
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,numstressdof_,1>                             rhs_sTemp;
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,my::nsd_,my::nsd_>                    K_uuTemp;
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_, 1>                                 rhs_uuTemp;
-        LINALG::Matrix<my::nen_,my::nen_>                                                           invbK_ssTemp;
-
-        // get internal Gaussian rule for every main Gauss point
-        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule(mainPtno);
-        mainPtno++;
-
-        //----------------------------------------------------------------------
-        //integration over the internal gauss points - to get modified integrand
-        //----------------------------------------------------------------------
-        for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
-        {
-          my::EvalShapeFuncAndDerivsAtIntPoint( quadint.Point(), quadint.Weight() );
-          if (is_MHVS)
-          {
-            MHVS_Evaluate_VolBased(
-                evelaf, bK_ss, invbK_ssTemp, K_suTemp, rhs_sTemp, K_usTemp, K_uuTemp, rhs_uuTemp, mhvs_param);
-          }
-          else
-          {
-            MHCS_Evaluate_VolBased(
-                evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhs_sTemp);
-          }
-        }
-
-        // Update
-        invbK_ss.Update( iquad.Weight(), invbK_ssTemp, 1.0);
-
-        for (int ivel = 0; ivel < my::nsd_; ++ ivel)
-        {
-          for (int jvel = 0; jvel < my::nsd_; ++jvel)
-          {
-            K_su(stressIndex(ivel,jvel),ivel)->Update( iquad.Weight(), *K_suTemp(stressIndex(ivel,jvel),ivel), 1.0);
-          }
-        }
-
-        for (int isigma = 0; isigma < my::numderiv2_; ++ isigma)
-          rhs_s(isigma,0)->Update( iquad.Weight(), *rhs_sTemp(isigma,0), 1.0);
-
-        // in case of a Cauchy stress-based approach, fill the pressure column block of K_su
-        // and we're done
-        if (! is_MHVS)
-        {
-          K_su( Sigmaxx, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmaxx, Pres ), 1.0 );
-          K_su( Sigmayy, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmayy, Pres ), 1.0 );
-          K_su( Sigmazz, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmazz, Pres ), 1.0 );
-
-          continue;
-        }
-
-        for (int ivel = 0; ivel < my::nsd_; ++ ivel)
-        {
-          for (int jvel = 0; jvel < my::nsd_; ++jvel)
-          {
-            K_us(ivel, stressIndex(ivel,jvel))->Update( iquad.Weight(), *K_usTemp(ivel, stressIndex(ivel,jvel)), 1.0);
-
-            K_uu(ivel, jvel)->Update( iquad.Weight(), *K_uuTemp(ivel,jvel), 1.0);
-          }
-          rhs_uu(ivel,0)->Update( iquad.Weight(), *rhs_uuTemp(ivel,0),1.0);
         }
       }
     }

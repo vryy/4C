@@ -264,7 +264,7 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
       {
         if( isClockwise )
         {
-      	  leftind.push_back(i);
+          leftind.push_back(i);
         }
         else
         {
@@ -303,7 +303,7 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
             This works only for simple polygons (not doubly connected, not self-intersecting)
                                                                                           Sudhakar 01/13
 *------------------------------------------------------------------------------------------------------*/
-std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts )
+/*std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts )
 {
   std::vector<double> eqn_plane(4);
   if( ptlist.size() == 3 )
@@ -334,7 +334,7 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>
     else
     {
       std::vector<Point*> pttemp = ptlist;
-      std::vector<Point*> preparedPoints = PreparePoints( pttemp );
+      std::vector<Point*> preparedPoints = Get3NoncollinearPts( pttemp );
       eqn_plane = EqnPlane( preparedPoints[0], preparedPoints[1], preparedPoints[2] );
     }
     return eqn_plane;
@@ -390,7 +390,7 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>
     dserror("equation not computed");
 
   return eqn_plane;
-}
+}*/
 
 /*-----------------------------------------------------------------------------------------------------*
             Find the equation of plane that contains these non-collinear points
@@ -425,7 +425,27 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlane( Point* & pt1, Point* & pt2, Poin
        This method is applicable for convex, concave, and polygons with in-line vertices
        Does not require deleting of any vertices ---> so very general and robust
 *-------------------------------------------------------------------------------------------------------------*/
-std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<std::vector<double> >& vertices )
+std::vector<double> GEO::CUT::KERNEL::EqnPlaneOfPolygon( const std::vector<Point*>& ptlist )
+{
+  std::vector<std::vector<double> > vertices( ptlist.size() );
+
+  for( unsigned i=0; i < ptlist.size(); i++ )
+  {
+    Point* pt = ptlist[i];
+    std::vector<double> coo(3);
+    pt->Coordinates( &coo[0] );
+    vertices[i] = coo;
+  }
+
+  return EqnPlaneOfPolygon( vertices );
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+           Newell's method of finding equation of plane of a polygon                               sudhakar 11/13
+       This method is applicable for convex, concave, and polygons with in-line vertices
+       Does not require deleting of any vertices ---> so very general and robust
+*-------------------------------------------------------------------------------------------------------------*/
+std::vector<double> GEO::CUT::KERNEL::EqnPlaneOfPolygon( const std::vector<std::vector<double> >& vertices )
 {
   std::vector<double> eqn_plane(4), middle(3);
   std::fill( eqn_plane.begin(), eqn_plane.end(), 0.0 );
@@ -588,7 +608,7 @@ bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
   }
   else
   {
-    std::vector<Point*> preparedPoints = PreparePoints( polyPoints );
+    std::vector<Point*> preparedPoints = Get3NoncollinearPts( polyPoints );
     eqn = EqnPlane( preparedPoints[0], preparedPoints[1], preparedPoints[2] );
   }
 
@@ -730,7 +750,7 @@ bool GEO::CUT::KERNEL::HaveInlinePts( std::vector<Point*>& poly )
 /*--------------------------------------------------------------------------------------*
     Finds tree points of the polygon which are not collinear                 Wirtz 05/13
 *---------------------------------------------------------------------------------------*/
-std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::PreparePoints( std::vector<Point*> & polyPoints )
+std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts( std::vector<Point*> & polyPoints )
 {
 
   std::vector<Point*> preparedPoints;

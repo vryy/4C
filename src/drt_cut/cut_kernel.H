@@ -159,13 +159,18 @@ namespace GEO
                                        bool InSplit = true,
                                        bool DeleteInlinePts = false );
 
-      std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts = false );
+      //std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts = false );
 
 
       /*!
       \brief Compute the equation of plane of this polygon using Newell's method
        */
-      std::vector<double> EqnPlanePolygon( const std::vector<std::vector<double> >& vertices );
+      std::vector<double> EqnPlaneOfPolygon( const std::vector<Point*>& ptlist );
+
+      /*!
+      \brief Compute the equation of plane of this polygon using Newell's method
+       */
+      std::vector<double> EqnPlaneOfPolygon( const std::vector<std::vector<double> >& vertices );
 
       /*!
       \brief Find the equation of plane that contains these non-collinear points
@@ -202,7 +207,7 @@ namespace GEO
       /*!
       \brief Finds tree points of the polygon which are not collinear
       */
-      std::vector<Point*> PreparePoints( std::vector<Point*> & polyPoints );
+      std::vector<Point*> Get3NoncollinearPts( std::vector<Point*> & polyPoints );
 
       /*!
        \brief Find the appropriate coordinate plane to which the given geometry can be

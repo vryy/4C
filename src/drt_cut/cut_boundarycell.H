@@ -103,6 +103,10 @@ public:
    */
   virtual LINALG::Matrix<3,1> GetNormalVector()=0;
 
+  /*!
+  \brief Print the corner points on screen
+   */
+  void Print();
 
   /*!
   \brief Computes the location of Gauss points on the boundarycell (x_gp_lin) from the standard Gauss point location (eta)
@@ -150,7 +154,7 @@ public:
     {
       LINALG::Matrix<3,1> glo (&xyzeGlo(0,i)),loc;
 
-			// map w.r to linear shadow element
+      // map w.r to linear shadow element
       if( not shadow )
       {
         elem1->LocalCoordinates(glo,loc);

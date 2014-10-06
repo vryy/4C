@@ -795,6 +795,30 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     //--------------------------------------------------------------------
     const Side* parside = fac->ParentSide();
     const std::vector<Node*> &par_nodes = parside->Nodes();
+
+    std::vector<double> eqnpar(4),eqnfac(4);
+    bool rever = false;
+
+#if 1
+    std::vector<Point*> pts_par( par_nodes.size() );
+    for( unsigned parnode=0; parnode<par_nodes.size(); parnode++ )
+      pts_par[parnode] = par_nodes[parnode]->point();
+    eqnpar = KERNEL::EqnPlaneOfPolygon( pts_par );
+
+    std::vector<Point*> corners = fac->CornerPoints();
+    std::vector<Point*> cornersTemp (corners);
+
+    // when finding eqn of plane for the facet, inline points should not be taken
+   CUT::KERNEL::DeleteInlinePts( cornersTemp );
+
+   if( cornersTemp.size()!=0 )
+   {
+     eqnfac = KERNEL::EqnPlaneOfPolygon( corners );
+     rever = ToReverse( posi, eqnpar, eqnfac );
+   }
+#endif
+
+#if 0
     std::vector<Point*> parpts(3);
 
     parpts[0] = par_nodes[0]->point();
@@ -817,6 +841,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
      eqnfac = KERNEL::EqnPlanePolygon( cornersTemp );
      rever = ToReverse( posi, eqnpar, eqnfac );
    }
+#endif
 
    if(rever)                                       // normal from facet is in wrong direction
    {
@@ -965,25 +990,18 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
    When DirectDivergence method is used for gauss point generation, for every gauss point
    on the facet, an internal gauss rule is to be generated to find the modified integrand
 *-------------------------------------------------------------------------------------------*/
-void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaussRule( Teuchos::RCP<DRT::UTILS::GaussPoints>& gp )
 {
-  DRT::UTILS::GaussIntegration grule(gp_);
+  DRT::UTILS::GaussIntegration grule(gp);
 
-  intGP_.resize( grule.NumPoints(), grule );
+  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
-  if( grule.NumPoints() == 0 )
-    std::cout<<"WARNING::: This volumecell does not have a single Gauss point-----------------------\n";//blockkk?
-
-  int num = 0;
   for ( DRT::UTILS::GaussIntegration::iterator quadint=grule.begin(); quadint!=grule.end(); ++quadint )
   {
     const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
     LINALG::Matrix<3,1> intpt( etaFacet );
 
     DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 6 ); //internal gauss rule for interval (-1,1)
-
-    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
-                         DRT::UTILS::CollectedGaussPoints( 0 ) );
 
     //x-coordinate of main Gauss point is projected in the reference plane
     double xbegin = (RefEqnPlane_[3]-RefEqnPlane_[1]*etaFacet(1,0)-
@@ -1006,17 +1024,12 @@ void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
       if( xbegin>etaFacet(0,0) )
         weight = -1.0*weight;
 
+      weight = weight * quadint.Weight();          // multiply with weight of main Gauss points so that internal and main pts can be combined
+                                                   // into a single data structure
       cgp->Append( intpt, weight );
     }
-
-    DRT::UTILS::GaussIntegration gint(cgp);
-
-    intGP_[num] = gint;
-    num++;
   }
-
-  if( grule.NumPoints() != num )
-    dserror( "some facet points missed?" );
+  return cgp;
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -1083,16 +1096,16 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   DirectDivergence dd(this,elem,posi,mesh);
 
   RefEqnPlane_.reserve(4);                   //it has to store a,b,c,d in ax+by+cz=d
-  gp_ = dd.VCIntegrationRule( RefEqnPlane_ );// compute main gauss points
 
-  GenerateInternalGaussRule();               // compute internal gauss points for every main gauss point
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp = dd.VCIntegrationRule( RefEqnPlane_ );// compute main gauss points
+  gp_ = GenerateInternalGaussRule( gp );               // compute internal gauss points for every main gauss point
 
   // compute volume of this cell
   // also check whether generated gauss rule predicts volume accurately
   // also check this vc can be eliminated due to its very small volume
   DRT::UTILS::GaussIntegration gpi(gp_);
   bool isNegVol = false;
-  dd.DebugVolume( gpi, RefEqnPlane_, intGP_, isNegVol );
+  dd.DebugVolume( gpi, isNegVol );
 
   // then this vol is extremely small that we erase the gauss points
   if( isNegVol )

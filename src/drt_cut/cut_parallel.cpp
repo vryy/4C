@@ -23,6 +23,7 @@ Maintainer: Benedikt Schott
 #include "cut_volumecell.H"
 
 #include "cut_parallel.H"
+#include "cut_output.H"
 
 
 
@@ -667,6 +668,12 @@ void GEO::CUT::Parallel::exportDofSetData(bool include_inner)
               if( (int)(nds.size())== 0 )
               {
                 std::cout << "position of found vc is " << my_vc->Position() << std::endl;
+
+                std::stringstream str;
+                str << "cut_element" << my_vc->ParentElement()->Id() << "_fail.pos";
+                std::ofstream file( str.str().c_str() );
+                GEO::CUT::OUTPUT::GmshCompleteCutElement( file, my_vc->ParentElement() );
+                std::cout<<"Is the element cut = "<<my_vc->ParentElement()->IsCut()<<"\n";
                 dserror("the nds-vector of volume cell in element %d on proc %d has size %d", my_vc->ParentElement()->Id(), myrank_, (int)(nds.size()) );
               }
               if(index >= (int)(nds.size()))

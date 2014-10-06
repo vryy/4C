@@ -20,7 +20,7 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 {
 #if 1  //Newell's method of determining equation of plane
 
-  std::vector<double> eqn_plane = KERNEL::EqnPlanePolygon( cornersLocal );
+  std::vector<double> eqn_plane = KERNEL::EqnPlaneOfPolygon( cornersLocal );
 #endif
 
 
@@ -211,24 +211,24 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
     bool iscut = face1_->OnCutSide();
     if(iscut)
     {
-			if(position_==-2)
-			{
+      if(position_==-2)
+      {
         if(eqn_plane[0]*eqn_par[0]<0.0)
           clockwise_ = 1;
-			}
-			else
-			{
+      }
+      else
+      {
         if(eqn_plane[0]*eqn_par[0]>0.0)
           clockwise_ = 1;
-			}
+      }
     }
     else
     {
-			const std::vector<Side*> &ele_sides = elem1_->Sides();
+      const std::vector<Side*> &ele_sides = elem1_->Sides();
 
-			int parentSideno = 0;
-			for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
-			{
+      int parentSideno = 0;
+      for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
+      {
         Side*sss = *i;
         if(sss==parent)
         {
@@ -236,23 +236,23 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
         }
         parentSideno++;
 
-			}
+      }
 
 //should check whether this is sufficient or do we need to find the number of side in the element and
 //use their orientation to get clockwise ordering
 //                std::cout<<"parent side no = "<<parentSideno<<"\n";
-//			std::cout<<"parentSideno = "<<parentSideno<<"corner = "<<corners[0][0]<<"\n";
+//      std::cout<<"parentSideno = "<<parentSideno<<"corner = "<<corners[0][0]<<"\n";
 //ParentSideno=1 is x=1 face and 3 is x=-1 face
 #if 0 //this is only for hex
-			if(parentSideno==1 && eqn_plane_[0]<0.0)
-				clockwise_ = 1;
-			if(parentSideno==3 && eqn_plane_[0]>0.0)
-				clockwise_ = 1;
+      if(parentSideno==1 && eqn_plane_[0]<0.0)
+        clockwise_ = 1;
+      if(parentSideno==3 && eqn_plane_[0]>0.0)
+        clockwise_ = 1;
 #endif
 
-		// After an element is mapped in local coordinate system, it has
-		// non-zero x-normal component only for checked "parentSideno"
-		// (See BaciReport for ordering of sides and nodes in Baci)
+    // After an element is mapped in local coordinate system, it has
+    // non-zero x-normal component only for checked "parentSideno"
+    // (See BaciReport for ordering of sides and nodes in Baci)
     switch ( elem1_->Shape() )
     {
       case DRT::Element::hex8:
@@ -291,10 +291,10 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
         throw std::runtime_error( "unsupported integration cell type" );
     }
 
-			/*if(corners[0][0]==1 && eqn_plane_[0]<0.0)
-				clockwise_ = 1;
-			if(corners[0][0]==-1 && eqn_plane_[0]>0.0)
-				clockwise_ = 1;*/
+      /*if(corners[0][0]==1 && eqn_plane_[0]<0.0)
+        clockwise_ = 1;
+      if(corners[0][0]==-1 && eqn_plane_[0]>0.0)
+        clockwise_ = 1;*/
   }
 
 #endif
@@ -388,10 +388,10 @@ double GEO::CUT::FacetIntegration::getNormal(std::string intType)
 *--------------------------------------------------------------------------------------*/
 double GEO::CUT::FacetIntegration::integrate_facet()
 {
-		std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
-		if(global_==true)
-		{
-		  std::vector<Point*>co =  face1_->CornerPoints();
+    std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
+    if(global_==true)
+    {
+      std::vector<Point*>co =  face1_->CornerPoints();
       for(std::vector<Point*>::iterator i=co.begin();i!=co.end();i++)
       {
         Point* po = *i;
@@ -400,7 +400,7 @@ double GEO::CUT::FacetIntegration::integrate_facet()
         for(unsigned j=0;j<3;j++)
           cornersLocal[i-co.begin()][j] = xo[j];
       }
-		}
+    }
 
     eqn_plane_ = equation_plane(cornersLocal);
 
@@ -423,86 +423,86 @@ double GEO::CUT::FacetIntegration::integrate_facet()
     {
       std::vector<double> alpha;
       alpha = compute_alpha(eqn_plane_,"x");
-			for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
-			{
-				const std::vector<double> coords1 = *k;
-				std::vector<double> coords2;
-				//for the last line the end point is the first point of the facet
-				if(k!=(cornersLocal.end()-1))
+      for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
+      {
+        const std::vector<double> coords1 = *k;
+        std::vector<double> coords2;
+        //for the last line the end point is the first point of the facet
+        if(k!=(cornersLocal.end()-1))
           coords2 = *(k+1);
-				else
+        else
           coords2= *(cornersLocal.begin());
 
   //first index decides the x or y coordinate, second index decides the start point or end point
-				LINALG::Matrix<2,2> coordLine;
+        LINALG::Matrix<2,2> coordLine;
 
-	//The facet is projected over y-z plane and then the integration is performed
-	//so only y- and z-coordinates are passed to make the lines
-	//[0]-- indicates y and [1] indicate z because we are now in y-z plane
-				coordLine(0,0) = coords1[1];
-				coordLine(1,0) = coords1[2];
-				coordLine(0,1) = coords2[1];
-				coordLine(1,1) = coords2[2];
+  //The facet is projected over y-z plane and then the integration is performed
+  //so only y- and z-coordinates are passed to make the lines
+  //[0]-- indicates y and [1] indicate z because we are now in y-z plane
+        coordLine(0,0) = coords1[1];
+        coordLine(1,0) = coords1[2];
+        coordLine(0,1) = coords2[1];
+        coordLine(1,1) = coords2[2];
 
-				LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-				facet_integ += line1.integrate_line();
-			}
+        LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
+        facet_integ += line1.integrate_line();
+      }
     }
     else
     {
 //to reduce the truncation error introduced during the projection of plane,
 //the plane, along which the normal component is maximum, is chosen
       std::string projType;
-			if(fabs(eqn_plane_[0])<1e-8)
-			{
-				if(fabs(eqn_plane_[1])<1e-8)
-					projType = "z";
-				else if(fabs(eqn_plane_[2])<1e-8)
-					projType = "y";
-				else
-				{
-					if(fabs(eqn_plane_[1])>fabs(eqn_plane_[2]))
-						projType = "y";
-					else
-						projType = "z";
-				}
-			}
-			else if(fabs(eqn_plane_[1])<1e-8)
-			{
-				if(fabs(eqn_plane_[2])<1e-8)
-					projType = "x";
-				else
-				{
-					if(fabs(eqn_plane_[0])>fabs(eqn_plane_[2]))
-						projType = "x";
-					else
-						projType = "z";
-				}
-			}
-			else if(fabs(eqn_plane_[2])<1e-8)
-			{
-				if(fabs(eqn_plane_[1])>fabs(eqn_plane_[0]))
-					projType = "y";
-				else
-					projType = "x";
-			}
-			else
-			{
-				if(fabs(eqn_plane_[0])>=fabs(eqn_plane_[1]) && fabs(eqn_plane_[0])>=fabs(eqn_plane_[2]))
-					projType = "x";
-				else if(fabs(eqn_plane_[1])>=fabs(eqn_plane_[2]) && fabs(eqn_plane_[1])>=fabs(eqn_plane_[0]))
-					projType = "y";
-				else
-					projType = "z";
-			}
+      if(fabs(eqn_plane_[0])<1e-8)
+      {
+        if(fabs(eqn_plane_[1])<1e-8)
+          projType = "z";
+        else if(fabs(eqn_plane_[2])<1e-8)
+          projType = "y";
+        else
+        {
+          if(fabs(eqn_plane_[1])>fabs(eqn_plane_[2]))
+            projType = "y";
+          else
+            projType = "z";
+        }
+      }
+      else if(fabs(eqn_plane_[1])<1e-8)
+      {
+        if(fabs(eqn_plane_[2])<1e-8)
+          projType = "x";
+        else
+        {
+          if(fabs(eqn_plane_[0])>fabs(eqn_plane_[2]))
+            projType = "x";
+          else
+            projType = "z";
+        }
+      }
+      else if(fabs(eqn_plane_[2])<1e-8)
+      {
+        if(fabs(eqn_plane_[1])>fabs(eqn_plane_[0]))
+          projType = "y";
+        else
+          projType = "x";
+      }
+      else
+      {
+        if(fabs(eqn_plane_[0])>=fabs(eqn_plane_[1]) && fabs(eqn_plane_[0])>=fabs(eqn_plane_[2]))
+          projType = "x";
+        else if(fabs(eqn_plane_[1])>=fabs(eqn_plane_[2]) && fabs(eqn_plane_[1])>=fabs(eqn_plane_[0]))
+          projType = "y";
+        else
+          projType = "z";
+      }
 
-			if(projType!="x" && projType!="y" && projType!="z")
-			{
-				dserror("projection plane is not defined");
-				exit(1);
-			}
+      if(projType!="x" && projType!="y" && projType!="z")
+      {
+        dserror("projection plane is not defined");
+        exit(1);
+      }
 
-			BoundaryFacetIntegration(cornersLocal,facet_integ,projType);
+      BoundaryFacetIntegration(cornersLocal,facet_integ,projType);
 
     }
 
@@ -524,86 +524,86 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
                                                            double &facet_integ,
                                                            std::string intType )
 {
-	std::vector<double> alpha;
-	double abs_normal=0.0;
+  std::vector<double> alpha;
+  double abs_normal=0.0;
 
-	for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
-	{
-		const std::vector<double> coords1 = *k;
-		std::vector<double> coords2;
+  for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
+  {
+    const std::vector<double> coords1 = *k;
+    std::vector<double> coords2;
 
-		//for the last line the end point is the first point of the facet
-		if(k!=(cornersLocal.end()-1))
+    //for the last line the end point is the first point of the facet
+    if(k!=(cornersLocal.end()-1))
       coords2 = *(k+1);
-		else
+    else
       coords2= *(cornersLocal.begin());
 
-		//first index decides the x or y coordinate, second index decides the start point or end point
-		LINALG::Matrix<2,2> coordLine;
-		if(intType=="x")
-		{
-			if(k==cornersLocal.begin())
-			{
-				alpha = compute_alpha(eqn_plane_,"x");
-				abs_normal = getNormal(intType);
-			}
-	//The facet is projected over y-z plane and then the integration is performed
-	//so only y- and z-coordinates are passed to make the lines
-	//(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
+    //first index decides the x or y coordinate, second index decides the start point or end point
+    LINALG::Matrix<2,2> coordLine;
+    if(intType=="x")
+    {
+      if(k==cornersLocal.begin())
+      {
+        alpha = compute_alpha(eqn_plane_,"x");
+        abs_normal = getNormal(intType);
+      }
+  //The facet is projected over y-z plane and then the integration is performed
+  //so only y- and z-coordinates are passed to make the lines
+  //(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
       coordLine(0,0) = coords1[1];
       coordLine(1,0) = coords1[2];
       coordLine(0,1) = coords2[1];
       coordLine(1,1) = coords2[2];
 
-			LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-			line1.set_integ_type("x");
-			facet_integ += line1.integrate_line();
-		}
-		else if(intType=="y")
-		{
-			if(k==cornersLocal.begin())
-			{
-				alpha = compute_alpha(eqn_plane_,"y");
-				abs_normal = getNormal(intType);
-			}
-	//The facet is projected over y-z plane and then the integration is performed
-	//so only y- and z-coordinates are passed to make the lines
-	//(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
+      LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
+      line1.set_integ_type("x");
+      facet_integ += line1.integrate_line();
+    }
+    else if(intType=="y")
+    {
+      if(k==cornersLocal.begin())
+      {
+        alpha = compute_alpha(eqn_plane_,"y");
+        abs_normal = getNormal(intType);
+      }
+  //The facet is projected over y-z plane and then the integration is performed
+  //so only y- and z-coordinates are passed to make the lines
+  //(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
       coordLine(0,0) = coords1[2];
       coordLine(1,0) = coords1[0];
       coordLine(0,1) = coords2[2];
       coordLine(1,1) = coords2[0];
-			LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-			line1.set_integ_type("y");
-			facet_integ += line1.integrate_line();
-		}
+      LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
+      line1.set_integ_type("y");
+      facet_integ += line1.integrate_line();
+    }
 
-		else if(intType=="z")
-		{
-			if(k==cornersLocal.begin())
-			{
-				alpha = compute_alpha(eqn_plane_,"z");
-				abs_normal = getNormal(intType);
-			}
-	//The facet is projected over y-z plane and then the integration is performed
-	//so only y- and z-coordinates are passed to make the lines
-	//(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
+    else if(intType=="z")
+    {
+      if(k==cornersLocal.begin())
+      {
+        alpha = compute_alpha(eqn_plane_,"z");
+        abs_normal = getNormal(intType);
+      }
+  //The facet is projected over y-z plane and then the integration is performed
+  //so only y- and z-coordinates are passed to make the lines
+  //(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
       coordLine(0,0) = coords1[0];
       coordLine(1,0) = coords1[1];
       coordLine(0,1) = coords2[0];
       coordLine(1,1) = coords2[1];
-			LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-			line1.set_integ_type("z");
-			facet_integ += line1.integrate_line();
-		}
-		else
-		{
-			dserror("The facet integration type not supported");
-			exit(1);
-		}
-	}
+      LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
+      line1.set_integ_type("z");
+      facet_integ += line1.integrate_line();
+    }
+    else
+    {
+      dserror("The facet integration type not supported");
+      exit(1);
+    }
+  }
 
-	facet_integ = facet_integ/abs_normal;
+  facet_integ = facet_integ/abs_normal;
 }
 
 /*-------------------------------------------------------------------------------------------------*

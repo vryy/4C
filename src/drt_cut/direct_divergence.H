@@ -46,16 +46,12 @@ namespace GEO
         rule and compare it with full application of divergence theorem
          */
         void DebugVolume( const DRT::UTILS::GaussIntegration & gpv,
-                          const std::vector<double> &RefPlaneEqn,
-                          const std::vector<DRT::UTILS::GaussIntegration> intGRule,
                           bool& isNeg );
 
         /*!
         \brief Integration of specific predefined functions using the Gaussian rule generated from DirectDivergence
         */
-        void IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv,
-                                        const std::vector<double> &RefPlaneEqn,
-                                        const std::vector<DRT::UTILS::GaussIntegration> intGRule );
+        void IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv );
 
         /*!
         \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh output.

@@ -211,11 +211,6 @@ public:
   std::vector<double> GetRefEqnPlane(){return RefEqnPlane_;}
 
   /*!
-  \brief Return internal gauss rule for a particular facet integration point
-   */
-  DRT::UTILS::GaussIntegration GetInternalRule( int facetIntNo ){ return intGP_[facetIntNo]; }
-
-  /*!
   \brief Return Ids of all the points associated with this volumecell
    */
   std::set<int> VolumeCellPointIds();
@@ -273,7 +268,7 @@ private:
   /*!
   \brief Generate internal gauss rule for every integration point on the facet when DirectDivergence method is used
    */
-  void GenerateInternalGaussRule();
+  Teuchos::RCP<DRT::UTILS::GaussPoints> GenerateInternalGaussRule( Teuchos::RCP<DRT::UTILS::GaussPoints>& gp );
 
   /// the element this is a part of
   Element * element_;
@@ -319,10 +314,6 @@ private:
 
   /// Gauss rule for this volumecell. In case of DirectDivergence method, this just stores main Gauss points
   Teuchos::RCP<DRT::UTILS::GaussPoints>  gp_;
-
-  /// The internal Gauss rule for every facet gauss point
-  std::vector<DRT::UTILS::GaussIntegration> intGP_;
-
 };
 
 }

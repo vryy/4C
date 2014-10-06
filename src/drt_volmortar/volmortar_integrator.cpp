@@ -509,30 +509,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
   //**********************************************************************
   for (int gp=0;gp<intpoints->NumPoints();++gp)
   {
-    // get inner gp rule
-    DRT::UTILS::GaussIntegration innerpoints = vc.GetInternalRule(gp);
-
     double weight_out = intpoints->Weight(gp);
+    // coordinates and weight
+    double eta[3] = {intpoints->Point(gp)[0], intpoints->Point(gp)[1], intpoints->Point(gp)[2]};
 
-    // inner gp loop
-    for (int gpi=0;gpi<innerpoints.NumPoints();++gpi)
-    {
-      // coordinates and weight
-      double eta[3] = {innerpoints.Point(gpi)[0], innerpoints.Point(gpi)[1], innerpoints.Point(gpi)[2]};
-      double wgt = innerpoints.Weight(gpi);
+    double globgp[3] = {0.0, 0.0, 0.0};
 
-      double globgp[3] = {0.0, 0.0, 0.0};
+    if(switched_conf)
+      UTILS::LocalToGlobal<distypeS>(Aele,eta,globgp);
+    else
+      UTILS::LocalToGlobal<distypeM>(Bele,eta,globgp);
 
-      if(switched_conf)
-        UTILS::LocalToGlobal<distypeS>(Aele,eta,globgp);
-      else
-        UTILS::LocalToGlobal<distypeM>(Bele,eta,globgp);
-
-      // map gp into A and B para space
-      double Axi[3] = {0.0, 0.0, 0.0};
-      double Bxi[3] = {0.0, 0.0, 0.0};
-      MORTAR::UTILS::GlobalToLocal<distypeS>(Aele,globgp,Axi);
-      MORTAR::UTILS::GlobalToLocal<distypeM>(Bele,globgp,Bxi);
+    // map gp into A and B para space
+    double Axi[3] = {0.0, 0.0, 0.0};
+    double Bxi[3] = {0.0, 0.0, 0.0};
+    MORTAR::UTILS::GlobalToLocal<distypeS>(Aele,globgp,Axi);
+    MORTAR::UTILS::GlobalToLocal<distypeM>(Bele,globgp,Bxi);
 
 //      std::cout << "-------------------------------------" << std::endl;
 //      std::cout << "globgp= " << globgp[0] << "  " << globgp[1] << "  " << globgp[2] << std::endl;
@@ -540,95 +532,94 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
 //      std::cout << "Axi= " << Axi[0] << "  " << Axi[1] << "  " << Axi[2] << std::endl;
 //      std::cout << "Bxi= " << Bxi[0] << "  " << Bxi[1] << "  " << Bxi[2] << std::endl;
 
-      // evaluate the integration cell Jacobian
-      double jac = 0.0;
+    // evaluate the integration cell Jacobian
+    double jac = 0.0;
 
-      if(switched_conf)
-        jac    = UTILS::Jacobian<distypeS>(Axi,Aele);
-      else
-        jac    = UTILS::Jacobian<distypeM>(Bxi,Bele);
+    if(switched_conf)
+      jac    = UTILS::Jacobian<distypeS>(Axi,Aele);
+    else
+      jac    = UTILS::Jacobian<distypeM>(Bxi,Bele);
 
-      // Check parameter space mapping
-      //CheckMapping3D(Aele,Bele,Axi,Bxi);
+    // Check parameter space mapping
+    //CheckMapping3D(Aele,Bele,Axi,Bxi);
 
-      // evaluate trace space shape functions (on both elements)
-      UTILS::shape_function<distypeS>(sval_A, Axi);
-      UTILS::shape_function<distypeM>(mval_A, Bxi);
+    // evaluate trace space shape functions (on both elements)
+    UTILS::shape_function<distypeS>(sval_A, Axi);
+    UTILS::shape_function<distypeM>(mval_A, Bxi);
 
-      // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::dual_shape_function<distypeS>(lmval_A, Axi,Aele,dualquad_);
-      UTILS::dual_shape_function<distypeM>(lmval_B, Bxi,Bele,dualquad_);
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    UTILS::dual_shape_function<distypeS>(lmval_A, Axi,Aele,dualquad_);
+    UTILS::dual_shape_function<distypeM>(lmval_B, Bxi,Bele,dualquad_);
 
-      // compute cell D/M matrix ****************************************
-      // dual shape functions
-      for (int j=0;j<ns_;++j)
+    // compute cell D/M matrix ****************************************
+    // dual shape functions
+    for (int j=0;j<ns_;++j)
+    {
+      DRT::Node* cnode = Aele.Nodes()[j];
+      int nsdof=Adis->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
       {
-        DRT::Node* cnode = Aele.Nodes()[j];
-        int nsdof=Adis->NumDof(1,cnode);
+        int row = Adis->Dof(1,cnode,jdof);
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
+        // integrate M and D
+        for (int k=0; k<nm_; ++k)
         {
-          int row = Adis->Dof(1,cnode,jdof);
+          DRT::Node* mnode = Bele.Nodes()[k];
+          int nmdof=Bdis->NumDof(0,mnode);
 
-          // integrate M and D
-          for (int k=0; k<nm_; ++k)
+          for (int kdof=0;kdof<nmdof;++kdof)
           {
-            DRT::Node* mnode = Bele.Nodes()[k];
-            int nmdof=Bdis->NumDof(0,mnode);
+            int col = Bdis->Dof(0,mnode,kdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
-            {
-              int col = Bdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval_A(j)*mval_A(k)*jac*wgt*weight_out;
+            // multiply the two shape functions
+            double prod = lmval_A(j)*mval_A(k)*jac*weight_out;
 //              std::cout << "PROD1 = " << prod  << " row= " << row << "  col= " << col << "  j= " << j<<  "  nsdof= " << nsdof<< std::endl;
 //              cnode->Print(cout);
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
-              }
+            // dof to dof
+            if (jdof==kdof)
+            {
+              if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
+              if (abs(prod)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
             }
           }
         }
       }
+    }
 
-      // compute cell D/M matrix ****************************************
-      // dual shape functions
-      for (int j=0;j<nm_;++j)
+    // compute cell D/M matrix ****************************************
+    // dual shape functions
+    for (int j=0;j<nm_;++j)
+    {
+      DRT::Node* cnode = Bele.Nodes()[j];
+      int nsdof=Bdis->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
       {
-        DRT::Node* cnode = Bele.Nodes()[j];
-        int nsdof=Bdis->NumDof(1,cnode);
+        int row = Bdis->Dof(1,cnode,jdof);
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
+        // integrate M and D
+        for (int k=0; k<ns_; ++k)
         {
-          int row = Bdis->Dof(1,cnode,jdof);
+          DRT::Node* mnode = Aele.Nodes()[k];
+          int nmdof=Adis->NumDof(0,mnode);
 
-          // integrate M and D
-          for (int k=0; k<ns_; ++k)
+          for (int kdof=0;kdof<nmdof;++kdof)
           {
-            DRT::Node* mnode = Aele.Nodes()[k];
-            int nmdof=Adis->NumDof(0,mnode);
+            int col = Adis->Dof(0,mnode,kdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
-            {
-              int col = Adis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval_B(j)*sval_A(k)*jac*wgt*weight_out;
+            // multiply the two shape functions
+            double prod = lmval_B(j)*sval_A(k)*jac*weight_out;
 //              std::cout << "PROD2 = " << prod  << " row= " << row << "  col= " << col<< std::endl;
 //              cnode->Print(cout);
 
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
-              }
+            // dof to dof
+            if (jdof==kdof)
+            {
+              if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
+              if (abs(prod)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
             }
           }
         }

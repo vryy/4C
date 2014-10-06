@@ -109,13 +109,12 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 
     std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_,true);
 
-    std::vector<double> RefPlaneTemp = KERNEL::EqnPlanePolygon(cornersLocal );
+    std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon(cornersLocal );
     eqnAllFacets[i-facete.begin()] = RefPlaneTemp;
 
     // consider only facet whose x-direction normal componenet is non-zero
     if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE )
     {
-
       if( warpFac.size() > 0 ) // if there are warped facets that are not yet processed
       {
          if( i == warpFac[0] )
@@ -316,8 +315,6 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
      Then the volume in local coordinates is converted to global coordinate value
 *---------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration & gpv,
-                                              const std::vector<double> &RefPlaneEqn,
-                                              const std::vector<DRT::UTILS::GaussIntegration> intGRule,
                                               bool& isNeg )
 {
 
@@ -329,15 +326,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
     const LINALG::Matrix<3,1> etaFacet( iquad.Point() );
     const double weiFacet = iquad.Weight();
 
-    double integVal = 0.0;
-    DRT::UTILS::GaussIntegration gi = intGRule[numint];
-
-    for ( DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
-    {
-      double weight = iqu.Weight();
-      integVal += 1.0*weight; //Integration of 1.0 since volume is computed
-    }
-    TotalInteg += integVal*weiFacet;
+    TotalInteg += weiFacet;
     numint++;
   }
 
@@ -404,11 +393,13 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
     {
       isNeg = true;
       volcell_->SetVolume(0.0);
-      std::cout<<"----WARNING:::negligible volumecell---------------" << std::endl;
+      std::cout<<"----WARNING:::negligible volumecell parent id = "<<volcell_->ParentElement()->Id()<<"---------------" << std::endl;
       std::cout<<"volume in local coordinates = "<< TotalInteg<<"\t volume in global coordinates = "<<volGlobal<< std::endl;
 
       return;
     }
+
+    elem1_->DebugDump();
     dserror("negative volume predicted by the DirectDivergence integration rule; volume = %0.20f",TotalInteg);
   }
 
@@ -424,7 +415,6 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
     dserror("volume prediction is wrong");
   }
 #endif
-
   volcell_->SetVolume(volGlobal);
 }
 
@@ -432,35 +422,18 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
          Integrate given polynomials using the gaussian rule generated using directDivergence.   sudhakar 04/12
          Can be used for post-processing
 *---------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::DirectDivergence::IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv,
-                                                            const std::vector<double> &RefPlaneEqn,
-                                                            const std::vector<DRT::UTILS::GaussIntegration> intGRule )
+void GEO::CUT::DirectDivergence::IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv )
 {
-
-  int numint=0;
   double TotalInteg=0.0;
 
   for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
   {
     const LINALG::Matrix<3,1> etaFacet( iquad.Point() );
     const double weiFacet = iquad.Weight();
-
-    double integVal = 0.0;
-    DRT::UTILS::GaussIntegration gi = intGRule[numint];
-
-    for ( DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
-    {
-      double weight = iqu.Weight();
-
-      const LINALG::Matrix<3,1> eta( iqu.Point() );
-      double xx = eta(0,0);
-      double yy = eta(1,0);
-      double zz = eta(2,0);
-
-      integVal += (pow(xx,6)+xx*pow(yy,4)*zz+xx*xx*yy*yy*zz*zz+pow(zz,6))*weight; //Integration of 1.0 since volume is computed
-    }
-    TotalInteg += integVal*weiFacet;
-    numint++;
+    double xx = etaFacet(0,0);
+    double yy = etaFacet(1,0);
+    double zz = etaFacet(2,0);
+    TotalInteg += (pow(xx,6)+xx*pow(yy,4)*zz+xx*xx*yy*yy*zz*zz+pow(zz,6))*weiFacet;
   }
 
   std::cout<<std::setprecision(20)<<"the integral = "<<TotalInteg<<"\n";

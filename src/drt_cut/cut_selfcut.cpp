@@ -2804,8 +2804,7 @@ bool GEO::CUT::SelfCut::CheckNormal(std::vector<double> cutsideplane,
 {
 
   std::vector<Point*> maincyclepoints = maincycle();
-  std::vector<double> maincycleplane = KERNEL::EqnPlanePolygon(maincyclepoints,
-      false);
+  std::vector<double> maincycleplane = KERNEL::EqnPlaneOfPolygon(maincyclepoints);
   if (fabs(cutsideplane[0]) > TOL_EQN_PLANE
       and cutsideplane[0] * maincycleplane[0] < 0.0)
   {

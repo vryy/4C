@@ -5,6 +5,7 @@
 #include "cut_integrationcellcreator.H"
 #include "cut_volumecellgenerator.H"
 #include "cut_facetgraph.H"
+#include "cut_output.H"
 
 #include "../drt_inpar/inpar_cut.H"
 
@@ -1414,6 +1415,22 @@ void GEO::CUT::Element::DebugDump()
     }
     std::cout << "\n";
   }
+
+  GmshFailureElementDump();
+
+}
+
+/*------------------------------------------------------------------------------*
+ * When cut library is broken, write complete cut                       sudhakar 06/14
+ * configuration in to gmsh output file
+ *------------------------------------------------------------------------------*/
+void GEO::CUT::Element::GmshFailureElementDump()
+{
+  std::stringstream str;
+  str << "cut_element" << Id() << "_fail.pos";
+  std::ofstream file( str.str().c_str() );
+
+  GEO::CUT::OUTPUT::GmshCompleteCutElement( file, this );
 }
 
 void GEO::CUT::Element::GnuplotDump()
