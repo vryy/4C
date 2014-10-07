@@ -716,7 +716,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       //----------------------------------------------------------------
 
       // including stabilization
-      // if (reamanager_->Active())
+      if (reamanager_->Active())
         CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,phinp,reamanager_,conv,sgconv,diff);
 
       //----------------------------------------------------------------

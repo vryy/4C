@@ -275,6 +275,9 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     virtual void SetReaBodyForce(const double reabodyforce, const int k)
     {
       reabodyforce_[k] = reabodyforce;
+      if( reabodyforce!=0.0 )
+        include_me_=true;
+
       return;
     }
 
