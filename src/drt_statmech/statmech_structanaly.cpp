@@ -40,7 +40,8 @@ void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&   
     std::stringstream dispnode;
     // retrieve translational node displacements
     for(int i=0; i<discret_->DofColMap()->NumMyElements(); i=i+6)
-        dispnode << discol[i]<<" "<< discol[i+1]<<" "<< discol[i+2]<<std::endl;
+      dispnode << discol[i]<<" "<< discol[i+1]<<" "<< discol[i+2]<<std::endl;
+
     fputs(dispnode.str().c_str(), fp);
     fclose(fp);
   }

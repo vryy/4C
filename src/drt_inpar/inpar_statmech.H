@@ -32,7 +32,7 @@ namespace INPAR
       thermalbath_shearflow  ///< structures immersed into shear flow
     };
 
-    /// (this enum represents the input file parameter STAT_OUTPUT)
+    /// (this enum represents the input file parameter SPECIAL_OUTPUT)
     enum StatOutput
     {
       statout_none,  ///< no special output
@@ -43,7 +43,7 @@ namespace INPAR
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
       statout_networkcreep, ///< measuring displacements upon force application
       statout_networkrelax, ///< measuring stress relaxation of a network
-      statout_gmsh, ///< writing special output in order to generate a Gmsh movie
+      statout_networkdispfield, ///< output network nodal displacement field
       statout_structanaly, ///< writing special output in order to determine network structure
       statout_octree, ///< writing output for octree visualization and checks
       statout_loom, ///< writing output for loom setup: a) nearest neighbor b) attractive forces c) coverage

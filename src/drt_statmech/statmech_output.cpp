@@ -919,11 +919,25 @@ void STATMECH::StatMechManager::Output(const int                            ndim
 
         if(!discret_->Comm().MyPID())
         {
-          std::stringstream filecontent;
           std::ostringstream outputfilename;
           outputfilename << outputrootpath_ << "/StatMechOutput/CreepDisplacement_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
           CreepDisplacementOutput(discol, outputfilename);
         }
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_networkdispfield:
+    {
+      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      int numstep = sdyn.get<int>("NUMSTEP", -1);
+      if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-10)
+      {
+          std::ostringstream dispfilename;
+          std::ostringstream nodeposfilename;
+          dispfilename << outputrootpath_ << "/StatMechOutput/Displacements_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          nodeposfilename << outputrootpath_ << "/StatMechOutput/NodePositions_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          OutputNodalDisplacements(dis, dispfilename);
+          OutputNodalPositions(dis,nodeposfilename);
       }
     }
     break;
@@ -981,7 +995,6 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         std::ostringstream filename4;
         filename4 << outputrootpath_ << "/StatMechOutput/CrosslinkerCoverage.dat";
         CrosslinkCoverageOutput(dis, filename4);
-
         // node coords output for modal analysis
       }
     }
