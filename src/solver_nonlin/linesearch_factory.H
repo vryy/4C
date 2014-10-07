@@ -22,11 +22,13 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_RCP.hpp>
 
-// baci
-#include "linesearch_base.H"
-
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
+
+namespace NLNSOL
+{
+  class LineSearchBase;
+} // namespace NLNSOL
 
 namespace Teuchos
 {
