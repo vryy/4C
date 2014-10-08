@@ -54,7 +54,6 @@ TOLDISP                         1.0E-8
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes

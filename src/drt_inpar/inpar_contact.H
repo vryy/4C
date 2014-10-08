@@ -54,9 +54,6 @@ namespace INPAR
     enum ApplicationType
     {
       app_none,             ///< no meshtying or contact
-      app_mortarcontact,    ///< mortar contact
-      app_mortarmeshtying,  ///< mortar meshtying
-      app_mortarcontandmt,  ///< mortar meshtying and contact
       app_beamcontact       ///< beam contact
     };
 

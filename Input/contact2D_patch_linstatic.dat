@@ -61,7 +61,6 @@ MAXITER                         1
 DIVERCONT                       continue
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 FRICTION                        None

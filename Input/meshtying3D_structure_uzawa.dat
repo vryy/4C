@@ -58,7 +58,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarMeshtying
 STRATEGY                        Uzawa
 PENALTYPARAM                    1.0e6
 UZAWAMAXSTEPS                   10

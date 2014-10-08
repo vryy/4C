@@ -43,7 +43,6 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial                     // None, Current
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
-APPLICATION                     MortarContact
 FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000
@@ -59,7 +58,7 @@ HEATTRANSMASTER                 200
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
@@ -176,7 +175,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
@@ -208,7 +207,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Contact_Solver
@@ -240,7 +239,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 400 NUE 0.0 DENS 1 THEXPANS 1 CAPA 420 CONDUCT 52 INITTEMP 273

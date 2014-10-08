@@ -65,7 +65,6 @@ ALPHA_M                         0.5
 ALPHA_F                         0.5
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 FRICTION                        None
@@ -73,9 +72,6 @@ FRICTION                        None
 SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -495,7 +495,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   const Teuchos::ParameterList&   smortar  = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"SHAPEFCN");
-  INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
   INPAR::CONTACT::SystemType      systype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact,"SYSTEM");
 
@@ -506,271 +505,271 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   discret_->GetCondition("Mortar",mortarconditions);
   discret_->GetCondition("Contact",contactconditions);
 
-  // only continue if mortar contact / meshtying unmistakably chosen in input file
-  if (apptype == INPAR::CONTACT::app_mortarcontact ||
-      apptype == INPAR::CONTACT::app_mortarmeshtying ||
-      apptype == INPAR::CONTACT::app_mortarcontandmt)
+  // double-check for contact/meshtying conditions
+  if ((int)mortarconditions.size()==0 and (int)contactconditions.size()==0 )
+    return;
+
+  // store integration parameter alphaf into cmtman_ as well
+  // (for all cases except OST, GenAlpha and GEMM this is zero)
+  // (note that we want to hand in theta in the OST case, which
+  // is defined just the other way round as alphaf in GenAlpha schemes.
+  // Thus, we have to hand in 1-theta for OST!!!)
+  double alphaf = 0.0;
+  bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact,"CONTACTFORCE_ENDTIME");
+  if (!do_endtime)
   {
-    // double-check for contact conditions
-    if ((int)mortarconditions.size()==0 and (int)contactconditions.size()==0 )
-      dserror("ERROR: No contact/meshtying conditions provided, check your input file!");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+        "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+        "DYNAMICTYP") == INPAR::STR::dyna_gemm)
+      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+        "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
+      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+  }
 
-    // store integration parameter alphaf into cmtman_ as well
-    // (for all cases except OST, GenAlpha and GEMM this is zero)
-    // (note that we want to hand in theta in the OST case, which
-    // is defined just the other way round as alphaf in GenAlpha schemes.
-    // Thus, we have to hand in 1-theta for OST!!!)
-    double alphaf = 0.0;
-    bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact,"CONTACTFORCE_ENDTIME");
-    if (!do_endtime)
-    {
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
-          "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
-        alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
-          "DYNAMICTYP") == INPAR::STR::dyna_gemm)
-        alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
-          "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
-        alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-    }
+  // create instance for meshtying contact bridge
+  cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(
+      *discret_,
+      mortarconditions,
+      contactconditions,
+      alphaf));
 
-    // create instance for meshtying contact bridge
-    cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(*discret_, apptype, alphaf));
-    cmtbridge_->StoreDirichletStatus(dbcmaps_);
-    cmtbridge_->SetState(zeros_);
+  cmtbridge_->StoreDirichletStatus(dbcmaps_);
+  cmtbridge_->SetState(zeros_);
 
-    // create old style dirichtoggle vector (supposed to go away)
-    dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
-    Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
-    temp->PutScalar(1.0);
-    LINALG::Export(*temp,*dirichtoggle_);
+  // create old style dirichtoggle vector (supposed to go away)
+  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*dirichtoggle_);
 
-    // contact and constraints together not yet implemented
-    if (conman_->HaveConstraint())
-      dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
+  // contact and constraints together not yet implemented
+  if (conman_->HaveConstraint())
+    dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
 
-    // print messages for multifield problems (e.g FSI)
-    const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    const std::string probname = DRT::Problem::Instance()->ProblemName();
-    if (probtype != prb_structure && !myrank_)
-    {
-      // warnings
+  // print messages for multifield problems (e.g FSI)
+  const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  const std::string probname = DRT::Problem::Instance()->ProblemName();
+  if (probtype != prb_structure && !myrank_)
+  {
+    // warnings
 #ifdef CONTACTPSEUDO2D
-      std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
-           << "is a real 3D problem, switch it off!" << END_COLOR << std::endl;
+    std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
+         << "is a real 3D problem, switch it off!" << END_COLOR << std::endl;
 #else
-      std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
-           << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << std::endl;
+    std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
+         << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << std::endl;
 #endif // #ifdef CONTACTPSEUDO2D
 
-    }
+  }
 
-    // initialization of meshtying
-    if(cmtbridge_->HaveMeshtying())
-    {
-      // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
-      // (1) Do mortar coupling in reference configuration and
-      // perform mesh initialization for rotational invariance
-      cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
-      cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
-    }
+  // initialization of meshtying
+  if(cmtbridge_->HaveMeshtying())
+  {
+    // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
+    // (1) Do mortar coupling in reference configuration and
+    // perform mesh initialization for rotational invariance
+    cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
+    cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+  }
 
-    // initialization of contact
-    if(cmtbridge_->HaveContact())
-    {
-      // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
-      // (1) Explicitly store gap-scaling factor kappa
-      cmtbridge_->ContactManager()->GetStrategy().SaveReferenceState(zeros_);
-    }
+  // initialization of contact
+  if(cmtbridge_->HaveContact())
+  {
+    // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
+    // (1) Explicitly store gap-scaling factor kappa
+    cmtbridge_->ContactManager()->GetStrategy().SaveReferenceState(zeros_);
+  }
 
-    // visualization of initial configuration
+  // visualization of initial configuration
 #ifdef MORTARGMSH3
-    if(cmtbridge_ != Teuchos::null)
-    {
-      cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
-    }
+  if(cmtbridge_ != Teuchos::null)
+  {
+    cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
+  }
 #endif // #ifdef MORTARGMSH3
 
-    //**********************************************************************
-    // prepare solvers for contact/meshtying problem
-    //**********************************************************************
+  //**********************************************************************
+  // prepare solvers for contact/meshtying problem
+  //**********************************************************************
+  {
+    // only plausibility check, that a contact solver is available
+    if (contactsolver_ == Teuchos::null)
+      dserror("no contact solver in STR::TimInt::PrepareContactMeshtying? cannot be");
+  }
+
+  //**********************************************************************
+  // feed solver/preconditioner with additional information about the contact/meshtying problem
+  //**********************************************************************
+  {
+#if 0 // do we need this? feed solvers with latest information. why not using Aztec parameters?
+    if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
     {
-      // only plausibility check, that a contact solver is available
-      if (contactsolver_ == Teuchos::null)
-        dserror("no contact solver in STR::TimInt::PrepareContactMeshtying? cannot be");
+      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
+      Teuchos::RCP<Epetra_Map> masterDofMap;
+      Teuchos::RCP<Epetra_Map> slaveDofMap;
+      Teuchos::RCP<Epetra_Map> innerDofMap;
+      Teuchos::RCP<Epetra_Map> activeDofMap;
+      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      //if(cstrat != Teuchos::null) { // dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
+      strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
+      //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
+
+      //std::cout << contactsolver_->Params() << std::endl;
     }
 
-    //**********************************************************************
-    // feed solver/preconditioner with additional information about the contact/meshtying problem
-    //**********************************************************************
+    // TODO fix me
+    if (contactsolver_->Params().isSublist("MueLu (Contact2) Parameters"))
     {
-#if 0 // do we need this? feed solvers with latest information. why not using Aztec parameters?
-      if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
-      {
-        Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
-        Teuchos::RCP<Epetra_Map> masterDofMap;
-        Teuchos::RCP<Epetra_Map> slaveDofMap;
-        Teuchos::RCP<Epetra_Map> innerDofMap;
-        Teuchos::RCP<Epetra_Map> activeDofMap;
-        // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
-        Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-        //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-        //if(cstrat != Teuchos::null) { // dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
+      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact2) Parameters");
+      Teuchos::RCP<Epetra_Map> masterDofMap;
+      Teuchos::RCP<Epetra_Map> slaveDofMap;
+      Teuchos::RCP<Epetra_Map> innerDofMap;
+      Teuchos::RCP<Epetra_Map> activeDofMap;
+      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      //if(cstrat != Teuchos::null) { //dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
         strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
         mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
         mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
         mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
         mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
-        //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
-
-        //std::cout << contactsolver_->Params() << std::endl;
-      }
-
-      // TODO fix me
-      if (contactsolver_->Params().isSublist("MueLu (Contact2) Parameters"))
-      {
-        Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact2) Parameters");
-        Teuchos::RCP<Epetra_Map> masterDofMap;
-        Teuchos::RCP<Epetra_Map> slaveDofMap;
-        Teuchos::RCP<Epetra_Map> innerDofMap;
-        Teuchos::RCP<Epetra_Map> activeDofMap;
-        // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
-        Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-        //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-        //if(cstrat != Teuchos::null) { //dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
-          strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
-        //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
-        //std::cout << contactsolver_->Params() << std::endl;
-      }
+      //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
+      //std::cout << contactsolver_->Params() << std::endl;
+    }
 #endif
 
-    }
+  }
 
-    // output of strategy / shapefcn / system type to screen
+  // output of strategy / shapefcn / system type to screen
+  {
+    // output
+    if (!myrank_)
     {
-      // output
-      if (!myrank_)
+      // saddle point formulation
+      if (systype == INPAR::CONTACT::system_saddlepoint)
       {
-        // saddle point formulation
-        if (systype == INPAR::CONTACT::system_saddlepoint)
+        if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
         {
-          if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Standard Lagrange multiplier strategy ====================" << std::endl;
-            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Lagrange multiplier strategy ========================" << std::endl;
-            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
-            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Standard Penalty strategy ================================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Penalty strategy ====================================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Uzawa Augmented Lagrange strategy ========================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_augmented && shapefcn == INPAR::MORTAR::shape_standard)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Augmented Lagrange strategy ==============================" << std::endl;
-            std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Standard Lagrange multiplier strategy ====================" << std::endl;
+          std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
         }
-
-        // condensed formulation
-        else if (systype == INPAR::CONTACT::system_condensed)
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
         {
-          if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Lagrange multiplier strategy ========================" << std::endl;
-            std::cout << "===== (Condensed formulation) ==================================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
-            std::cout << "===== (Condensed formulation) ==================================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Standard Penalty strategy ================================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Penalty strategy ====================================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Uzawa Augmented Lagrange strategy ========================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
-          {
-            std::cout << "================================================================" << std::endl;
-            std::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================" << std::endl;
-            std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
-            std::cout << "================================================================\n" << std::endl;
-          }
-          else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Dual Lagrange multiplier strategy ========================" << std::endl;
+          std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
         }
-
-        // invalid system type
-        else dserror("ERROR: Invalid system type for contact/meshtying");
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
+          std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Standard Penalty strategy ================================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Dual Penalty strategy ====================================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Uzawa Augmented Lagrange strategy ========================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_augmented && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Augmented Lagrange strategy ==============================" << std::endl;
+          std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
       }
+
+      // condensed formulation
+      else if (systype == INPAR::CONTACT::system_condensed)
+      {
+        if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Dual Lagrange multiplier strategy ========================" << std::endl;
+          std::cout << "===== (Condensed formulation) ==================================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
+          std::cout << "===== (Condensed formulation) ==================================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Standard Penalty strategy ================================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Dual Penalty strategy ====================================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Uzawa Augmented Lagrange strategy ========================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================" << std::endl;
+          std::cout << "===== (Pure displacement formulation) ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
+        else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+      }
+
+      // invalid system type
+      else dserror("ERROR: Invalid system type for contact/meshtying");
     }
   }
+
 
   return;
 }

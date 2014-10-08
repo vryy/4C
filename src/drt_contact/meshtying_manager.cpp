@@ -399,12 +399,23 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   int dim = DRT::Problem::Instance()->NDim();
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
 
-  // *********************************************************************
-  // this is mortar meshtying
-  // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying and
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
-    dserror("You should not be here...");
+  // get mortar information
+  std::vector<DRT::Condition*> mtcond(0);
+  std::vector<DRT::Condition*> ccond(0);
+
+  Discret().GetCondition("Mortar", mtcond);
+  Discret().GetCondition("Contact",ccond);
+
+  bool onlymeshtying       = false;
+  bool meshtyingandcontact = false;
+
+  // check for case
+  if(mtcond.size()!=0 and ccond.size()!=0)
+    meshtyingandcontact = true;
+
+  if(mtcond.size()!=0 and ccond.size()==0)
+    onlymeshtying = true;
+
 
   // *********************************************************************
   // invalid parameter combinations
@@ -425,7 +436,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
                                                meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") == INPAR::CONTACT::app_mortarmeshtying &&
+  if (onlymeshtying &&
             DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(meshtying,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for mortar meshtying");
 
@@ -435,7 +446,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
+      onlymeshtying)
     dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
@@ -476,7 +487,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin and
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
+      onlymeshtying)
     dserror("Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
@@ -537,7 +548,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   // predefined params for meshtying and contact
   // *********************************************************************
-  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") == INPAR::CONTACT::app_mortarcontandmt)
+  if(meshtyingandcontact)
   {
     // set options for mortar coupling
     mtparams.set<std::string>("SEARCH_ALGORITHM","Binarytree");

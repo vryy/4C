@@ -127,6 +127,21 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // what's the current problem type?
   PROBLEM_TYP probtype = problem->ProblemType();
 
+  // get mortar information
+  std::vector<DRT::Condition*> mtcond(0);
+  std::vector<DRT::Condition*> ccond(0);
+  actdis->GetCondition("Mortar", mtcond);
+  actdis->GetCondition("Contact",ccond);
+  bool onlymeshtying       = false;
+  bool onlycontact         = false;
+  bool meshtyingandcontact = false;
+  if(mtcond.size()!=0 and ccond.size()!=0)
+    meshtyingandcontact = true;
+  if(mtcond.size()!=0 and ccond.size()==0)
+    onlymeshtying = true;
+  if(mtcond.size()==0 and ccond.size()!=0)
+    onlycontact = true;
+
   // set degrees of freedom in the discretization
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
 
@@ -199,20 +214,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
   const Teuchos::ParameterList& scontact = problem->ContactDynamicParams();
   INPAR::CONTACT::ApplicationType bContact = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
-  switch (bContact)
-  {
-    case INPAR::CONTACT::app_none:
-      break;
-    case INPAR::CONTACT::app_mortarcontact:
-    case INPAR::CONTACT::app_mortarmeshtying:
-    case INPAR::CONTACT::app_mortarcontandmt:
-    case INPAR::CONTACT::app_beamcontact:
-      contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
-      break;
-    default:
-      dserror("Cannot cope with choice of contact or meshtying type");
-      break;
-  }
+
+  if((bContact == INPAR::CONTACT::app_beamcontact ) or onlymeshtying or onlycontact or meshtyingandcontact)
+    contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
 
   // create contact/meshtying solver only if contact/meshtying problem.
   //Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
@@ -587,8 +591,22 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
+  // get mortar information
+  std::vector<DRT::Condition*> mtcond(0);
+  std::vector<DRT::Condition*> ccond(0);
+  actdis->GetCondition("Mortar", mtcond);
+  actdis->GetCondition("Contact",ccond);
+  bool onlymeshtying       = false;
+  bool onlycontact         = false;
+  bool meshtyingandcontact = false;
+  if(mtcond.size()!=0 and ccond.size()!=0)
+    meshtyingandcontact = true;
+  if(mtcond.size()!=0 and ccond.size()==0)
+    onlymeshtying = true;
+  if(mtcond.size()==0 and ccond.size()!=0)
+    onlycontact = true;
+
   const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->ContactDynamicParams();
-//  INPAR::CONTACT::ApplicationType apptype    = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
     case INPAR::CONTACT::system_saddlepoint:
@@ -622,10 +640,8 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
       // feed the solver object with additional information
-      INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
-      if     (apptype == INPAR::CONTACT::app_mortarcontact) solver->Params().set<bool>("CONTACT",true);
-      else if(apptype==INPAR::CONTACT::app_mortarmeshtying) solver->Params().set<bool>("MESHTYING",true);
-      else if(apptype==INPAR::CONTACT::app_mortarcontandmt) solver->Params().set<bool>("CONTACT",true);
+      if     (onlycontact or meshtyingandcontact) solver->Params().set<bool>("CONTACT",true);
+      else if(onlymeshtying)                      solver->Params().set<bool>("MESHTYING",true);
       else dserror("this cannot be: no saddlepoint problem for beamcontact or pure structure problem.");
 
       INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams,"STRATEGY");

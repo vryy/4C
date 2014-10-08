@@ -71,7 +71,6 @@ ALPHA_F                         0.5
 THETA                           1.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 FRICTION                        None

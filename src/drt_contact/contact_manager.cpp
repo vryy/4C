@@ -694,15 +694,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
-  // this is mortar contact
-  // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(contact,
-      "APPLICATION") != INPAR::CONTACT::app_mortarcontact
-      and DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(contact,
-          "APPLICATION") != INPAR::CONTACT::app_mortarcontandmt)
-    dserror("You should not be here...");
-
-  // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,

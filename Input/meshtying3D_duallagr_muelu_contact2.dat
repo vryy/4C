@@ -54,7 +54,6 @@ MAXITER                         50
 DIVERCONT                       continue
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 ERROR_NORMS                     bending
 SYSTEM                          condensed
@@ -126,9 +125,9 @@ ML_PROLONG_THRES                0.0                           // threshold for p
 ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  SGS                           // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                       // Umfpack KLU Superlu
-ML_SMOTIMES                     3 3 3 3                      
-ML_DAMPFINE                     0.9 //1.95 //1.8             
-ML_DAMPMED                      0.9 //1.95 //1.8             
+ML_SMOTIMES                     3 3 3 3
+ML_DAMPFINE                     0.9 //1.95 //1.8
+ML_DAMPMED                      0.9 //1.95 //1.8
 ML_DAMPCOARSE                   0.9 //1.95 //1.8              // damping coarse grid
 SUB_SOLVER1                     -1                            // SchurComplement smoother (finest & intermedium levels)
 SUB_SOLVER2                     -1                            // SchurComplement smoother (coarsest level)

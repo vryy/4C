@@ -64,7 +64,6 @@ ALPHA_M                         0.5
 ALPHA_F                         0.5
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 //SYSTEM                        saddlepoint
 -------------------------------------------------------------MORTAR COUPLING

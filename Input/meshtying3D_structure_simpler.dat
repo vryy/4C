@@ -59,7 +59,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   4
-APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 TOLLAGR                         1.0E-8

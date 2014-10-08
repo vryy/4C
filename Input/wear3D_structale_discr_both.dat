@@ -55,7 +55,6 @@ MAXITER                         50
 PREDICT                         TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes

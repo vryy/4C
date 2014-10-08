@@ -60,7 +60,6 @@ MAXITER                         1
 DIVERCONT                       continue
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              No

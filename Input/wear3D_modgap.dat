@@ -55,7 +55,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  200

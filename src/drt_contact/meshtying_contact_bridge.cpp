@@ -39,31 +39,46 @@ Maintainer: Philipp Farah
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_mortar/mortar_manager_base.H"
-//#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
  *----------------------------------------------------------------------*/
 CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(
     DRT::Discretization& dis,
-    INPAR::CONTACT::ApplicationType apptype,
+    std::vector<DRT::Condition*>& mtcond,
+    std::vector<DRT::Condition*>& ccond,
     double alphaf)
  : cman_(Teuchos::null),
    mtman_(Teuchos::null)
 {
+  bool onlymeshtying       = false;
+  bool onlycontact         = false;
+  bool meshtyingandcontact = false;
+
+  // check for case
+  if(mtcond.size()!=0 and ccond.size()!=0)
+    meshtyingandcontact = true;
+
+  if(mtcond.size()!=0 and ccond.size()==0)
+    onlymeshtying = true;
+
+  if(mtcond.size()==0 and ccond.size()!=0)
+    onlycontact = true;
+
   // create meshtying and contact manager
-  if (apptype == INPAR::CONTACT::app_mortarmeshtying)
+  if (onlymeshtying)
   {
     mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis,alphaf));
   }
-  else if (apptype == INPAR::CONTACT::app_mortarcontact)
+  else if (onlycontact)
   {
     cman_ = Teuchos::rcp(new CONTACT::CoManager(dis,alphaf));
   }
-  else if (apptype == INPAR::CONTACT::app_mortarcontandmt)
+  else if (meshtyingandcontact)
   {
     mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis,alphaf));
     cman_  = Teuchos::rcp(new CONTACT::CoManager(dis,alphaf));

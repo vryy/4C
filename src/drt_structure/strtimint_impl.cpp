@@ -1304,14 +1304,12 @@ bool STR::TimIntImpl::Converged()
   if (HaveContactMeshtying())
   {
     // check which case (application, strategy) we are in
-    INPAR::CONTACT::ApplicationType apptype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
     bool semismooth = DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
-    if (apptype == INPAR::CONTACT::app_mortarcontact &&
+    if (cmtbridge_->HaveContact() &&
         (stype == INPAR::CONTACT::solution_lagmult || stype == INPAR::CONTACT::solution_augmented) && semismooth)
       ccontact = cmtbridge_->GetStrategy().ActiveSetSemiSmoothConverged();
 
@@ -2870,10 +2868,6 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // get some parameters
   //********************************************************************
-  // application type
-  INPAR::CONTACT::ApplicationType apptype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
-
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
@@ -2897,7 +2891,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop (which is then basically a standard Newton).
     //********************************************************************
-    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
+    if (cmtbridge_->HaveContact() && semismooth)
     {
       // nonlinear iteration
      int error = NewtonFull();
@@ -2911,7 +2905,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     // linearization (=geometrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-    else if (apptype == INPAR::CONTACT::app_mortarcontact && !semismooth)
+    else if (cmtbridge_->HaveContact() && !semismooth)
     {
       // active set strategy
       int activeiter = 0;
@@ -2956,7 +2950,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   else if (soltype == INPAR::CONTACT::solution_augmented)
   {
-    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
+    if (cmtbridge_->HaveContact() && semismooth)
     {
       int error = 0;
       // nonlinear iteration
@@ -3734,9 +3728,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
   if (HaveContactMeshtying())
   {
     // only print something for contact, not for meshtying
-    INPAR::CONTACT::ApplicationType apptype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
-    if (apptype == INPAR::CONTACT::app_mortarcontact or apptype == INPAR::CONTACT::app_mortarcontandmt)
+    if (cmtbridge_->HaveContact())
     {
       oss << std::setw(11)<< "#active";
       if (cmtbridge_->GetStrategy().Friction())
@@ -3901,11 +3893,9 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
   if (HaveContactMeshtying())
   {
     // only print something for contact, not for meshtying
-    INPAR::CONTACT::ApplicationType apptype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
     bool semismooth =  DRT::INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-    if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarcontandmt)
+    if (cmtbridge_->HaveContact())
     {
       if (soltype==INPAR::CONTACT::solution_augmented && semismooth)
       {
@@ -4339,8 +4329,6 @@ void STR::TimIntImpl::RecoverSTCSolution()
 }
 
 
-
-
 /*----------------------------------------------------------------------*/
 /* solution with nonlinear iteration for contact / meshtying AND Windkessel bcs*/
 int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
@@ -4348,10 +4336,6 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
   //********************************************************************
   // get some parameters
   //********************************************************************
-  // application type
-  INPAR::CONTACT::ApplicationType apptype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtbridge_->GetStrategy().Params(),"APPLICATION");
-
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
@@ -4375,7 +4359,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop (which is then basically a standard Newton).
     //********************************************************************
-    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
+    if (cmtbridge_->HaveContact() && semismooth)
     {
       // nonlinear iteration
      int error = UzawaLinearNewtonFull();
@@ -4389,7 +4373,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     // linearization (=geometrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-    else if ((apptype == INPAR::CONTACT::app_mortarcontact or apptype == INPAR::CONTACT::app_mortarcontandmt )&& !semismooth)
+    else if (cmtbridge_->HaveContact() && !semismooth)
     {
       // active set strategy
       int activeiter = 0;

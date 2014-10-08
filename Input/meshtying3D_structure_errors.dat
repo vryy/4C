@@ -59,7 +59,6 @@ MAXITER                         1
 DIVERCONT                       continue
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 ERROR_NORMS                     bending
 -------------------------------------------------------------MORTAR COUPLING

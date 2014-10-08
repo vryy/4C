@@ -59,14 +59,10 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -58,7 +58,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
@@ -67,9 +66,6 @@ SHAPEFCN                        Dual
 //                                                             // number of elements per proc = 0 here
 PARALLEL_REDIST                 Static
 MIN_ELEPROC                     0
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -56,6 +56,7 @@ Maintainer: Philipp Farah
 namespace DRT
 {
  class Discretization;
+ class Condition;
 }
 
 namespace LINALG
@@ -80,7 +81,8 @@ public:
   //@}
 
   MeshtyingContactBridge(DRT::Discretization& dis,
-                         INPAR::CONTACT::ApplicationType apptype,
+                         std::vector<DRT::Condition*>& mtcond,
+                         std::vector<DRT::Condition*>& ccond,
                          double alphaf);
 
   /*!

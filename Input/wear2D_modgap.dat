@@ -69,7 +69,6 @@ ALPHA_M                         0.0
 ALPHA_F                         0.0
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
@@ -90,7 +89,6 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

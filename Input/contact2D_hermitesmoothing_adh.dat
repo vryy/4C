@@ -62,7 +62,6 @@ GAMMA                 0.611
 ALPHA_M               0.333
 ALPHA_F               0.444
 ---------------------------------------------------CONTACT DYNAMIC
-APPLICATION          MortarContact
 LINEAR_SOLVER        2
 SYSTEM               sp
 SEMI_SMOOTH_NEWTON   Yes

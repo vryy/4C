@@ -56,10 +56,8 @@ NORM_DISP             Abs
 NORMCOMBI_RESFDISP    And
 MAXITER               50
 PREDICT               TangDis
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
-APPLICATION          MortarMeshtyingAndContact
 STRATEGY             Penalty
 PENALTYPARAM         100
 PENALTYPARAMTAN      1000

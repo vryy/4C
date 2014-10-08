@@ -53,7 +53,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Augmented
 FRICTION                        None
 SYSTEM                          SaddlePoint
@@ -65,9 +64,6 @@ SHAPEFCN                        std
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
 PARALLEL_REDIST                 Dynamic
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

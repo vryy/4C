@@ -59,7 +59,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e3

@@ -1739,15 +1739,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
        tuple<std::string>("None","none",
-                          "MortarContact","mortarcontact",
-                          "MortarMeshtying","mortarmeshtying",
-                          "MortarMeshtyingAndContact","mortarmeshtyingandcontact",
                           "BeamContact","beamcontact"),
        tuple<int>(
                   INPAR::CONTACT::app_none,INPAR::CONTACT::app_none,
-                  INPAR::CONTACT::app_mortarcontact,INPAR::CONTACT::app_mortarcontact,
-                  INPAR::CONTACT::app_mortarmeshtying,INPAR::CONTACT::app_mortarmeshtying,
-                  INPAR::CONTACT::app_mortarcontandmt,INPAR::CONTACT::app_mortarcontandmt,
                   INPAR::CONTACT::app_beamcontact, INPAR::CONTACT::app_beamcontact),
        &scontact);
 

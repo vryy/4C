@@ -52,7 +52,6 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
@@ -67,7 +66,7 @@ AZITER                          300
 AZOMEGA                         0
 AZOUTPUT                        10
 AZPOLY                          3
-AZPREC                          ML //MueLu_sym //ILU //MueLu_contact2 //ILU 
+AZPREC                          ML //MueLu_sym //ILU //MueLu_contact2 //ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -92,7 +91,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
 VERBOSITY                       0
@@ -132,7 +131,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Jacobi
 ML_SMOOTHERFINE                 Jacobi
 ML_SMOOTHERMED                  Jacobi
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 MueLu_INITSMOOTHER              Jacobi
 MueLu_INITSMOO_SWEEPS           3
 MueLu_INITSMOO_DAMPING          1.0

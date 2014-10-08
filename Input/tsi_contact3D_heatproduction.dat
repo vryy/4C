@@ -44,7 +44,6 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial                     // None, Current
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
-APPLICATION                     MortarContact
 FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000

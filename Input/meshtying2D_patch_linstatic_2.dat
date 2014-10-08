@@ -60,7 +60,6 @@ MAXITER                         1
 DIVERCONT                       continue
 LINEAR_SOLVER                   1
 -------------------------------------------------------------CONTACT DYNAMIC
-APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 FRICTION                        None

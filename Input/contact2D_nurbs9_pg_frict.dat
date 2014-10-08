@@ -69,7 +69,6 @@ LINEAR_SOLVER                   1
 THETA                           0.66
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SYSTEM                          condensed
 FRICTION                        coulomb
