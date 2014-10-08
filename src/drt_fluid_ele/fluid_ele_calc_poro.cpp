@@ -5854,6 +5854,10 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
   LINALG::Matrix<my::nsd_,my::nen_> edispnp(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
 
+  LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
+  LINALG::Matrix<my::nen_,1> epressnp(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, &epressnp,"velnp");
+
   // get new node positions of ALE mesh
   my::xyze_ += edispnp;
 
@@ -5863,7 +5867,15 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
     // evaluate shape functions and derivatives at integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
-    //-----------------------------------auxilary variables for computing the porosity
+    const double det0 = SetupMaterialDerivatives();
+
+    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+    J_ = my::det_/det0;
+
+    //pressure at integration point
+    press_ = my::funct_.Dot(epressnp);
+
+    //-----------------------------------computing the porosity
     porosity_=0.0;
 
     // compute scalar at n+alpha_F or n+1
@@ -5880,7 +5892,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
                       NULL,
                       NULL,
                       NULL,
-                      NULL, //dphi_dJJ not needed
+                      NULL,
                       NULL,
                       false);
 
