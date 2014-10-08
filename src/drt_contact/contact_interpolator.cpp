@@ -368,10 +368,8 @@ void CONTACT::CoInterpolator::Interpolate3D(MORTAR::MortarElement& sele,
         meles[nummaster]->GetNodalCoordsOld(*mcoordold);
         sele.GetNodalLagMult(*lagmult);
 
-        // TODO: calculate reasonable linsize
-        int linsize    = 100;
+        int linsize    = mynode->GetLinsize();
         double gpn[3]  = {0.0, 0.0, 0.0};
-        GEN::pairedvector<int,double> dgap(linsize+ndof*ncol);
         //**************************************************************
 
         // evalute the GP slave coordinate derivatives --> no entries
@@ -963,7 +961,9 @@ void CONTACT::CoInterpolator::nwGap3D(CoNode& mynode,
   // linearization
   // **************************
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
-  GEN::pairedvector<int,double> dgapgp(10*ncol);
+
+  //TODO: linsize wor parallel simulations buggy. 100 for safety
+  GEN::pairedvector<int,double> dgapgp(3*ncol+3*mynode.GetLinsize()+100);
 
   //*************************************************************
   for (_CI p=mynode.CoData().GetDerivN()[0].begin();p!=mynode.CoData().GetDerivN()[0].end();++p)
