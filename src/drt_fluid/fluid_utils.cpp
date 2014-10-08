@@ -789,13 +789,45 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
   dis->ClearState();
   dis->SetState("vel",velocity);
 
-  // get node row map of fluid field --> will be used for setting up linear system
-  const Epetra_Map* noderowmap = dis->NodeRowMap();
+  // handle pbcs if existing
+  // build inverse map from slave to master nodes
+  std::map<int,int> slavetomastercolnodesmap;
+  {
+    Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
+
+    for(std::map<int,std::vector<int> >::const_iterator masterslavepair = allcoupledcolnodes->begin();
+        masterslavepair != allcoupledcolnodes->end() ; ++masterslavepair)
+    {
+      // loop slave nodes associated with master
+      for(std::vector<int>::const_iterator iter=masterslavepair->second.begin(); iter!=masterslavepair->second.end(); ++iter)
+      {
+        const int slavegid = *iter;
+        slavetomastercolnodesmap[slavegid] = masterslavepair->first;
+      }
+    }
+  }
+
+  // get reduced node row map of fluid field --> will be used for setting up linear system
+  const Epetra_Map* fullnoderowmap = dis->NodeRowMap();
+  // remove pbc slave nodes from full noderowmap
+  std::vector<int> reducednoderowmap;
+  // a little more memory than necessary is possibly reserved here
+  reducednoderowmap.reserve(fullnoderowmap->NumMyElements());
+  for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
+  {
+    const int nodeid = fullnoderowmap->GID(i);
+    // do not add slave pbc nodes here
+    if(slavetomastercolnodesmap.count(nodeid) == 0)
+      reducednoderowmap.push_back(nodeid);
+  }
+
+  // build node row map which does not include slave pbc nodes
+  Epetra_Map noderowmap(-1,(int)reducednoderowmap.size(),&reducednoderowmap[0],0,fullnoderowmap->Comm());
 
   // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*noderowmap,108,false,true));
+  Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(noderowmap,108,false,true));
   // create empty right hand side
-  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,dimsquare));
+  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap,dimsquare));
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -839,7 +871,15 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
     DRT::Node** nodes = actele->Nodes();
     for(int n=0; n<numnode; ++n)
     {
-      lm[n] = nodes[n]->Id();
+      const int nodeid = nodes[n]->Id();
+
+      std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+      if(slavemasterpair != slavetomastercolnodesmap.end())
+        lm[n] = slavemasterpair->second;
+      else
+        lm[n] = nodeid;
+
+      // owner of pbc master and slave nodes are identical
       lmowner[n] = nodes[n]->Owner();
     }
 
@@ -905,14 +945,16 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
     preclist.set("null space: add default vectors",false);
 
     // allocate the local length of the rowmap
-    const int lrows = dis->NodeRowMap()->NumMyElements();
+    const int lrows = noderowmap.NumMyElements();
     Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(lrows));
     double* nullsp = &((*ns)[0]);
+
+    // compute null space manually
+    for (int j=0; j<lrows; ++j)
+      nullsp[j] = 1.0;
+
     preclist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
     preclist.set("null space: vectors",nullsp);
-
-    // compute null space directly. that will call eletypes.
-    dis->ComputeNullSpace(ns, 1, 1);
   }
   break;
   case INPAR::SOLVER::azprec_ILU:
@@ -924,11 +966,37 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
   break;
   }
 
-  // solution vector based on node row map
-  Teuchos::RCP<Epetra_MultiVector> nodevec = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,dimsquare));
+  // solution vector based on reduced node row map
+  Teuchos::RCP<Epetra_MultiVector> nodevec = Teuchos::rcp(new Epetra_MultiVector(noderowmap,dimsquare));
 
   // solve for dim*dim right hand sides at the same time using Belos solver
   solver->Solve(massmatrix->EpetraOperator(), nodevec, rhs, true, true);
 
-  return nodevec;
+  // if no pbc are involved leave here
+  if(noderowmap.PointSameAs(*fullnoderowmap))
+    return nodevec;
+
+  // solution vector based on full row map in which the solution of the master node is inserted into slave nodes
+  Teuchos::RCP<Epetra_MultiVector> fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap,dimsquare));
+
+  for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
+  {
+    const int nodeid = fullnoderowmap->GID(i);
+
+    std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+    if(slavemasterpair != slavetomastercolnodesmap.end())
+    {
+      const int mastergid = slavemasterpair->second;
+      const int masterlid = noderowmap.LID(mastergid);
+      for(int j=0; j<dimsquare; ++j)
+        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[masterlid]));
+    }
+    else
+    {
+      for(int j=0; j<dimsquare; ++j)
+        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[i]));
+    }
+  }
+
+  return fullnodevec;
 }
