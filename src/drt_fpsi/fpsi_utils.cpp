@@ -677,7 +677,7 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
 
     if(comm.MyPID()==proc and mapcurr != interfacefacingelementmap.end())
       ++mapcurr;
-    else if((comm.MyPID()==proc and mapcurr == interfacefacingelementmap.end()))
+    if((comm.MyPID()==proc and mapcurr == interfacefacingelementmap.end()))
       done = 1;
 
 
