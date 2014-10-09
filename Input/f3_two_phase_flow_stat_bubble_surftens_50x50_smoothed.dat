@@ -38,14 +38,14 @@ NUMSTEP                         15
 RESTARTEVRY                     20
 TIMESTEP                        50.0
 UPRES                           1
-INTERFACE_THICKNESS		0.04
+INTERFACE_THICKNESS  0.04
 ---------------------------------------------------------------FLUID DYNAMIC
-PHYSICAL_TYPE			Stokes
+PHYSICAL_TYPE  Stokes
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
 TIMEINTEGR                      Stationary
-NONLINITER                      fixed_point_like			//Newton
+NONLINITER                      fixed_point_like  //Newton
 ITEMAX                          20                              // 20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-10
@@ -70,13 +70,13 @@ TIMESTEP                        50.0
 GMSH_OUTPUT                     yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt 		//Taylor_Hughes_Zarins_Whiting_Jansen
+DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt   //Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
-SUPG                            no				//yes
+SUPG                            no   //yes
 VSTAB                           no_vstab
-GRAD_DIV                        no				//yes
+GRAD_DIV                        no   //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point

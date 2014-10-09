@@ -74,12 +74,12 @@ FRICTION                        none
 SEMI_SMOOTH_CN                  1
 SEMI_SMOOTH_CT                  1
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        pg
+LM_SHAPEFCN                     pg
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 INTTYPE                         elements
 NUMGP_PER_DIM                   5
-LAGMULT_QUAD                    quad_quad
+LM_QUAD                         quad
 LM_DUAL_CONSISTENT              No
 PARALLEL_REDIST                 dynamic
 --------------------------------------------------------------------SOLVER 1

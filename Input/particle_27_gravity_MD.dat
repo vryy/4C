@@ -53,9 +53,9 @@ TOLRES                          1.0E-08
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      ExplicitEuler
-RESULTSEVRY                     10  
+RESULTSEVRY                     10
 RESTARTEVRY                     50
-RESEVRYERGY                     10 
+RESEVRYERGY                     10
 TIMESTEP                        0.01
 NUMSTEP                         1000
 MAXTIME                         10.0
@@ -153,7 +153,7 @@ NODE 8 COORD 0.500000000000001e+00 0.500000000000001e+00 0.800000000000001e+00
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0E9 NUE 0.3 DENS 1.0
-MAT 2 MAT_Particle DENSITY 7.85E3 INITRADIUS 0.01 
+MAT 2 MAT_Particle DENSITY 7.85E3 INITRADIUS 0.01
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/5.0 t1 0. t2 0.0
 ----------------------------------------------------------------------FUNCT1

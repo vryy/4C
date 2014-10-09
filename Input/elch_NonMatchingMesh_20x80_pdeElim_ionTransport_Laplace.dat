@@ -55,7 +55,7 @@ ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     11604.506 // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC_PDE_ELIM
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 PARALLEL_REDIST                 no
 REDUNDANT_STORAGE               all
 MESH_RELOCATION                 no

@@ -79,7 +79,7 @@ public:
   contact_manager.cpp for the BACI mortar contact implementation or
   meshtying_manager.H and meshtying_manager.coo for the BACI mortar
   meshtying implementation).
-  
+
   This constructor then has to be fed with a discretization that is expected
   to carry at least two mortar boundary conditions (one is only sufficient
   in the case of self contact simulations). It extracts all mortar boundary
@@ -104,20 +104,20 @@ public:
 
   */
   const Epetra_Comm& Comm() const { return *comm_;}
-  
+
   /*!
   \brief Return the object for the solving strategy.
- 
+
   All necessary steps for the computation algorithm
   have to be specialized in subclasses of StrategyBase
- 
+
   */
   MORTAR::StrategyBase& GetStrategy() { return *strategy_;}
 
   //@}
-  
+
   //! @name Purely virtual functions
-      
+
   // All these functions are defined in one or more specific derived classes,
   // such as CONTACT::CManager or CONTACT::MtManager. As the base class
   // MORTAR::ManagerBase is always called from the control routine (time
@@ -126,7 +126,7 @@ public:
   virtual void PostprocessTractions(IO::DiscretizationWriter& output) = 0;
   virtual void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero) = 0;
   virtual void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart=false) = 0;
-  
+
   //@}
 
 protected:

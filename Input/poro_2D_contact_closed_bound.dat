@@ -48,11 +48,11 @@ LINEAR_SOLVER                   1
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ----------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    1.3
 SEARCH_USE_AUX_POS              Yes
-LAGMULT_QUAD                    undefined
+LM_QUAD                         undefined
 CROSSPOINTS                     No
 LM_DUAL_CONSISTENT              Yes
 LM_NODAL_SCALE                  No

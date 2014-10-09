@@ -108,7 +108,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
   default:
     dserror("ERROR: ElementIntegrator: This contact element type is not implemented!");
   } // switch(eletype)
-  
+
   return;
 }
 

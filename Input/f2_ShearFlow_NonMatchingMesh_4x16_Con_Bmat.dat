@@ -76,7 +76,7 @@ VSTAB                           no_vstab
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 static

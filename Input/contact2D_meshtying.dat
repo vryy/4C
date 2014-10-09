@@ -69,7 +69,7 @@ FRICTION             none
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.5
-SHAPEFCN             pg
+LM_SHAPEFCN          pg
 PARALLEL_REDIST      dynamic
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver

@@ -61,8 +61,8 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 PENALTYPARAM                    1.0e6
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
-LAGMULT_QUAD                    quad_quad
+LM_SHAPEFCN                     Dual
+LM_QUAD                         quad
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

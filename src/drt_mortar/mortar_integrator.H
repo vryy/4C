@@ -207,7 +207,7 @@ public:
        double& sxia, double& sxib,
        MORTAR::MortarElement& mele,
        double& mxia, double& mxib);
-    
+
   /*!
   \brief Build all integrals and linearizations without segmentation
          (i.e. M, g, LinM, Ling and possibly D, LinD)
@@ -240,7 +240,7 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
-  
+
 //protected:
   /*!
   \brief Initialize Gauss rule (points, weights) for this MortarIntegrator

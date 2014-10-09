@@ -42,7 +42,7 @@ LINEAR_SOLVER                   1
 INITIALFIELD field_by_function //zero_field
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
-NONLINITER                      Newton //fixed_point_like //Newton 
+NONLINITER                      Newton //fixed_point_like //Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
@@ -52,7 +52,7 @@ NUMSTEP                         80
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        0.01//0.1
-THETA                           1.0 //0.55 //0.5 //0.67      
+THETA                           1.0 //0.55 //0.5 //0.67
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -62,7 +62,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall 
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -144,14 +144,14 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -1+10.0*x// pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0+30.0*y+60.0*z 
-FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0+30.0*y+60.0*z
+FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ---------------------------------------------FUNCT3 // displacement function
-FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(0.05-10^(-0.07/0.01)) 
-FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(0.05-10^(-0.07/0.01))
+FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5

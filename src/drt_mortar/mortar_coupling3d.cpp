@@ -59,10 +59,10 @@ MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
     bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele) :
     idiscret_(idiscret), dim_(dim), shapefcn_(
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "SHAPEFCN")), quad_(
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")), quad_(
         quad), lmquadtype_(
         DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,
-            "LAGMULT_QUAD")), sele_(sele), mele_(mele), imortar_(params)
+            "LM_QUAD")), sele_(sele), mele_(mele), imortar_(params)
 {
   // empty constructor body
   return;
@@ -3754,8 +3754,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // cases (2) and (3)
     // *******************************************************************
     else if (Quad()
-        && (lmtype == INPAR::MORTAR::lagmult_quad_quad
-            || lmtype == INPAR::MORTAR::lagmult_lin_lin))
+        && (lmtype == INPAR::MORTAR::lagmult_quad
+            || lmtype == INPAR::MORTAR::lagmult_lin))
     {
       // dynamic_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref =
@@ -3771,7 +3771,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
     {
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual)
@@ -4218,7 +4218,7 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
     MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele) :
     idiscret_(idiscret), dim_(dim), integrationtype_(
         DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")), shapefcn_(
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "SHAPEFCN")), lmnodalscale_(
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")), lmnodalscale_(
         DRT::INPUT::IntegralValue<int>(params, "LM_NODAL_SCALE")), lmdualconsistent_(
         DRT::INPUT::IntegralValue<int>(params, "LM_DUAL_CONSISTENT")), quad_(
         quad), imortar_(params), sele_(sele), mele_(mele)

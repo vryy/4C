@@ -59,8 +59,8 @@ STRATEGY                        Lagrange
 ERROR_NORMS                     bending
 SYSTEM                          saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
-LAGMULT_QUAD                    quad_quad
+LM_SHAPEFCN                     Dual
+LM_QUAD                         quad
 INTTYPE                         elements
 NUMGP_PER_DIM                   7
 --------------------------------------------------------------------SOLVER 1

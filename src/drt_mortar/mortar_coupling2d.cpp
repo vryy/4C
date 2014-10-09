@@ -623,8 +623,8 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   // *******************************************************************
   // cases (1), (2) and (3)
   // *******************************************************************
-  if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad_quad)
-      || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin_lin))
+  if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad)
+      || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
   {
     // do the overlap integration (integrate and linearize both M and gap)
     MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateSegment2D(
@@ -634,7 +634,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   // *******************************************************************
   // case (4)
   // *******************************************************************
-  else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+  else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
   {
     dserror("ERROR: Piecewise linear LM interpolation not (yet?) implemented in 2D");
   }
@@ -793,8 +793,8 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
     // *******************************************************************
     // cases (1), (2) and (3)
     // *******************************************************************
-    if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad_quad)
-        || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin_lin))
+    if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad)
+        || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
     {
       MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)->IntegrateEleBased2D(
           SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());

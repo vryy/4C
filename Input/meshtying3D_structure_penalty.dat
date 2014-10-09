@@ -61,7 +61,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Penalty
 PENALTYPARAM                    1.0e6
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

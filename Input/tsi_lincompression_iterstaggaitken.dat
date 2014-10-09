@@ -106,7 +106,7 @@ COUPVARIABLE                    Temperature  // Displacement,TemperatureDisplace
 //FIXEDOMEGA                    1.0   // default
 MAXOMEGA                        2.0
 --------------------------------------------------------------------SOLVER 1
-NAME                            Thermal_Solver              
+NAME                            Thermal_Solver
 SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver

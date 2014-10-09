@@ -120,7 +120,7 @@ LINEAR_SOLVER                   3
 NORMCOMBI_RESFINC               And
 NORM_RESF                       Rel  // Abs,Rel,Mix
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structural Solver               
+NAME                            Structural Solver
 SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Thermal Solver

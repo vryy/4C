@@ -73,7 +73,7 @@ public:
   makes the nodes and elements of a contact interfaces redundant on all
   processors that either own a node or an element on the interfaces in the
   input discretization.
-  
+
   In addition, it creates the necessary solver strategy object which handles
   the whole contact evaluation.
 
@@ -120,7 +120,7 @@ public:
   active set status of each slave node.
 
   \param output (in): IO::Discretization writer for restart
-  
+
   */
   void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
 
@@ -136,17 +136,17 @@ public:
   \param reader (in): IO::Discretization reader for restart
   \param dis (in)   : global dof displacement vector
   \param zero (in)  : global dof zero vector
-  
+
   */
   void ReadRestart(IO::DiscretizationReader& reader,
                    Teuchos::RCP<Epetra_Vector> dis,
                    Teuchos::RCP<Epetra_Vector> zero);
-  
+
   /*!
   \brief Write interface tractions for postprocessing
-  
+
   \param output (in): IO::Discretization writer for restart
-  
+
   */
   void PostprocessTractions(IO::DiscretizationWriter& output);
 

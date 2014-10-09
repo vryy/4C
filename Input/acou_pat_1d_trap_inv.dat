@@ -8,13 +8,13 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-Test case to check the inverse analysis. The same discretization 
-as the other one dimensional test cases. Here, the trapezoidal 
-rule is chosen as time integration, since it is not tested in a 
+Test case to check the inverse analysis. The same discretization
+as the other one dimensional test cases. Here, the trapezoidal
+rule is chosen as time integration, since it is not tested in a
 forward calculation. Measured values were created with a forward
 run, to be able to test the implementation of the inverse analysis.
-The result test checks the reaction coefficient of the first 
-transport element, after optimization. 
+The result test checks the reaction coefficient of the first
+transport element, after optimization.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    250
 //NODES       264
@@ -40,21 +40,21 @@ ERRORMAPS                       No
 TIMEINT                         trap
 INV_ANALYSIS                    pat
 ------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
-MONITORFILE                     acou_pat_1d_trap_inv.monitor 
+MONITORFILE                     acou_pat_1d_trap_inv.monitor
 FDCHECK                         No
-PARAMETRIZATION			elementwise
+PARAMETRIZATION  elementwise
 INV_TOL                         1e-3
 INV_MAX_RUN                     20
 INV_TOL_GRAD_YN                 No
 INV_LS_MAX_RUN                  3
 ALPHA_MUA                       0.0
 BETA_MUA                        0.0
-OPTIMIZATION			LBFGS   
-SIZESTORAGE                     10 
-ELE_SCALING			No
-LS_STEPLENGTHRED		0.5  
+OPTIMIZATION  LBFGS
+SIZESTORAGE                     10
+ELE_SCALING  No
+LS_STEPLENGTHRED  0.5
 -------------------------------------------------------STAT INVERSE ANALYSIS
-PARAMLIST                       2 REAC 
+PARAMLIST                       2 REAC
 METAPARAMS                      no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
@@ -181,7 +181,7 @@ NDVOL   0
 DLINE  1
 E 1 -
 -------------------------------DESIGN PRESSURE MONITOR LINE CONDITIONS
-DLINE 1 
+DLINE 1
 E 1 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3

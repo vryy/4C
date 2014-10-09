@@ -60,10 +60,10 @@ SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  10000
 SEMI_SMOOTH_CT                  10000
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
-LAGMULT_QUAD                    quad_quad
+LM_QUAD                         quad
 PARALLEL_REDIST                 Dynamic
 LM_DUAL_CONSISTENT              no
 ---------------------------------------------------------------FLUID DYNAMIC

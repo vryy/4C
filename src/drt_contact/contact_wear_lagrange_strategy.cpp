@@ -620,7 +620,7 @@ void CONTACT::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::Sp
                                                    Teuchos::RCP<Epetra_Vector>& feff,
                                                    Teuchos::RCP<Epetra_Vector>& gact)
 {
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
@@ -1544,7 +1544,7 @@ void CONTACT::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::Spars
                                                    Teuchos::RCP<Epetra_Vector>& feff,
                                                    Teuchos::RCP<Epetra_Vector>& gact)
 {
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   INPAR::CONTACT::WearShape wearshapefcn = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(Params(),"WEAR_SHAPEFCN");
 
   // double-check if this is a dual LM system
@@ -4100,7 +4100,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
   {
     // only for dual Lagrange multiplier so far
     // diagonality of mortar matrix D is assumed
-    INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+    INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
     if (shapefcn == INPAR::MORTAR::shape_standard)
       dserror("ERROR: Evaluation of wear only for dual shape functions so far.");
 
@@ -4327,7 +4327,7 @@ void CONTACT::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   //**********************************************************************

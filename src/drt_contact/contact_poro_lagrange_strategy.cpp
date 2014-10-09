@@ -370,7 +370,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroContact(Teuchos::RCP<LINALG::Spa
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   // shape function
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -703,7 +703,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
     Feff->Complete();
 
        // shape function
-    INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+    INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
 
     //**********************************************************************
     //**********************************************************************
@@ -1321,7 +1321,7 @@ void CONTACT::PoroLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi,Teu
   CoLagrangeStrategy::Recover(disi); //Update Structural Part! --> Here just Part from Coupling Matrix will be added!
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   //**********************************************************************
@@ -1435,7 +1435,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
   if (no_penetration_ && !IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************

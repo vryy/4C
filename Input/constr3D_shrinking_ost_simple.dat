@@ -67,7 +67,7 @@ THETA                           0.7
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2                             // constraint simpler primary solver block
 --------------------------------------------------------------------SOLVER 2
-NAME                            Contact LINEAR solver (used for constraint simpler) 
+NAME                            Contact LINEAR solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -99,7 +99,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Aztec_MSR
 SUB_SOLVER1                     4
 SUB_SOLVER2                     3
@@ -136,10 +136,10 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
-NAME                            Contact SIMPLER solver (used for constraint simpler) 
+NAME                            Contact SIMPLER solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -171,7 +171,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 4
 NAME                            SIMPLE_predict
@@ -206,7 +206,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.02

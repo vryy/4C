@@ -42,7 +42,7 @@ MAXTIME                         1000
 NUMSTEP                         10
 RESTARTEVRY                     10
 THETA                           0.5
-TIMEINTEGR 			BDF2
+TIMEINTEGR   BDF2
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
@@ -52,13 +52,13 @@ CALCERROR                       No
 BLOCKPRECOND                    No
 MESHTYING                       Condensed_Bmat_merged
 OUTMEAN                         yes
-SCATRATYPE			ConvectionDiffusion
+SCATRATYPE  ConvectionDiffusion
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          2
 EXPLPREDICT                     Yes
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 PARALLEL_REDIST                 static
 REDUNDANT_STORAGE               all
 MESH_RELOCATION                 no

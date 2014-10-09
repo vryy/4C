@@ -65,7 +65,7 @@ STRATEGY                        Lagrange
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              No
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

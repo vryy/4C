@@ -74,7 +74,7 @@ FRICTION                        Tresca
 SEMI_SMOOTH_NEWTON              No
 SEMI_SMOOTH_CT                  1.0
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 Static

@@ -281,7 +281,7 @@ public:
    */
   INPAR::MORTAR::LagMultQuad LagMultQuad()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_QUAD");
   }
 
   //@}
@@ -388,7 +388,7 @@ public:
    */
   INPAR::MORTAR::LagMultQuad LagMultQuad()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_QUAD");
   }
 
   /*!
@@ -421,7 +421,7 @@ public:
    */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN");
   }
 
   /*!
@@ -486,7 +486,7 @@ public:
    */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN");
+    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN");
   }
 
   /*!

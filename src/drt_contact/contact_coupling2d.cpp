@@ -132,8 +132,8 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   // *******************************************************************
   // cases (1), (2) and (3)
   // *******************************************************************
-  if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad_quad)
-      || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin_lin))
+  if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad)
+      || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
   {
     // ***********************************************************
     //                   Integrate stuff !!!                    //
@@ -150,7 +150,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   // *******************************************************************
   // case (4)
   // *******************************************************************
-  else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+  else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
   {
     dserror("ERROR: Piecewise linear LM not (yet?) implemented in 2D");
   }
@@ -341,8 +341,8 @@ void CONTACT::CoCoupling2dManager::EvaluateMortar()
     // *******************************************************************
     // cases (1), (2) and (3)
     // *******************************************************************
-    if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad_quad)
-        || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin_lin))
+    if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad)
+        || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
     {
       // Test whether projection from slave to master surface is feasible --> important for dual LM Fnc.
       // Contact_interface.cpp --> AssembleG
@@ -438,7 +438,7 @@ void CONTACT::CoCoupling2dManager::EvaluateMortar()
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
     {
       dserror("ERROR: Piecewise linear LM not (yet?) implemented in 2D");
     }

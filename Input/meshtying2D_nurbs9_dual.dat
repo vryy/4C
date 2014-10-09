@@ -72,12 +72,12 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          condensed
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        dual
+LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 INTTYPE                         elements
 NUMGP_PER_DIM                   3
-LAGMULT_QUAD                    quad_quad
+LM_QUAD                         quad
 LM_DUAL_CONSISTENT              No
 PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1

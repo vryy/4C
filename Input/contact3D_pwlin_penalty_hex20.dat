@@ -67,8 +67,8 @@ LINEAR_SOLVER                   2
 STRATEGY                        Penalty
 PENALTYPARAM                    20000
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
-LAGMULT_QUAD                    pwlin_pwlin
+LM_SHAPEFCN                     Standard
+LM_QUAD                         pwlin
 LM_DUAL_CONSISTENT              no
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

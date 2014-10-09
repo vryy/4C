@@ -68,7 +68,7 @@ SEMI_SMOOTH_CT                  1000.0
 INITCONTACTBYGAP                yes
 INITCONTACTGAPVALUE             1
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        dual
+LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 INTTYPE                         Segments

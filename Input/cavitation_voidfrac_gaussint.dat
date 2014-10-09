@@ -26,9 +26,9 @@ TYPE                            Particle
 CUTOFF_RADIUS                   0.5
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-GRAVITY_ACCELERATION            -9.81 0.0 0.0  
+GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO                        cavitation_oneway 
+COUPALGO                        cavitation_oneway
 UPRES                           5
 RESTARTEVRY                     15
 TIMESTEP                        5.0e-3

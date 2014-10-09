@@ -60,7 +60,7 @@ SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  50
 SYSTEM                          sp
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        standard
+LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.8
 PARALLEL_REDIST                 dynamic

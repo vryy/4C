@@ -16,7 +16,7 @@ DIM                             3
 MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Two_Phase_Flow			//Combustion
+PROBLEMTYP                      Two_Phase_Flow  //Combustion
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_GID                      No
@@ -30,25 +30,25 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------TWO PHASE FLOW	//COMBUSTION CONTROL
-CONVTOL                         1e-05			//Conv tolerance for?
-ITEMAX                          1			//Maximum number of Outerloop iterations for a timestep.
+----------------------------------------------------------TWO PHASE FLOW //COMBUSTION CONTROL
+CONVTOL                         1e-05  //Conv tolerance for?
+ITEMAX                          1  //Maximum number of Outerloop iterations for a timestep.
 MAXTIME                         100.0
-NUMSTEP                         5	//2000
+NUMSTEP                         5 //2000
 RESTARTEVRY                     2
 TIMESTEP                        0.02  //0.2
 UPRES                           1
-INTERFACE_THICKNESS		0.09375  //0.03125			//3eps=0.09375
+INTERFACE_THICKNESS  0.09375  //0.03125  //3eps=0.09375
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                Signed_Distance_Function
 REINITINTERVAL                  10
 REINIT_INITIAL                  yes
 ---------------------------------------------------------------FLUID DYNAMIC
-PHYSICAL_TYPE			Incompressible
+PHYSICAL_TYPE  Incompressible
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
-TIMEINTEGR                      Af_Gen_Alpha		 //One_Step_Theta
+TIMEINTEGR                      Af_Gen_Alpha   //One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
@@ -56,8 +56,8 @@ CONVTOL                         1.0E-6 //1.0E-10
 UPRES                           1
 RESTARTEVRY                     2
 NUMSTASTEPS                     0
-THETA                           0.5	//0.65
-START_THETA                     0.5	//0.65
+THETA                           0.5 //0.65
+START_THETA                     0.5 //0.65
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -71,7 +71,7 @@ PREDICTOR                       steady_state
 MAXTIME                         9
 NUMSTEP                         450
 TIMESTEP                        0.02
-//GMSH_OUTPUT			yes		
+//GMSH_OUTPUT  yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
@@ -87,7 +87,7 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE 			LevelSet //ConvectionDiffusion
+SCATRATYPE   LevelSet //ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1
@@ -96,7 +96,7 @@ MAXTIME                         9
 NUMSTEP                         450
 RESTARTEVRY                     20
 THETA                           0.5
-TIMEINTEGR                      One_Step_Theta	//Gen_Alpha
+TIMEINTEGR                      One_Step_Theta //Gen_Alpha
 TIMESTEP                        0.02
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes

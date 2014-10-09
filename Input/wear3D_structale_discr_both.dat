@@ -65,7 +65,7 @@ SYSTEM                          Saddlepoint
 LINEAR_SOLVER                   2
 ALE_TYPE                        incr_lin
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        standard
+LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
 PARALLEL_REDIST                 dynamic

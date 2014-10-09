@@ -55,7 +55,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0

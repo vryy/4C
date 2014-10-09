@@ -57,7 +57,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          sp
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        dual
+LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.8
 INTTYPE                         elements

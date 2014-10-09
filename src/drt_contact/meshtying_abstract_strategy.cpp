@@ -235,7 +235,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // {d}, we have to apply the transformation matrix T and vice versa
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual && Dim()==3)
     for (int i=0; i<(int)interface_.size(); ++i)
       dualquadslave3d_ += interface_[i]->Quadslave();
@@ -402,7 +402,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   if (quadratic)
     dserror("ERROR: RestrictMeshtyingZone only implemented for first-order elements");
 
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   if (   (shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
       && DRT::INPUT::IntegralValue<int>(Params(),"LM_DUAL_CONSISTENT")==false
      )

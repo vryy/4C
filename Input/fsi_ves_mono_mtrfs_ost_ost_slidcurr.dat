@@ -37,7 +37,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 REDUNDANT_STORAGE               all
 MESH_RELOCATION                 initial
 ----------------------------------------------------------STRUCTURAL DYNAMIC

@@ -35,7 +35,7 @@ TIMEINTEGR                      Gen_Alpha
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         5
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) 
+MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01                          // Cr = 1.5
 THETA                           0.5
 VELOCITYFIELD                   function

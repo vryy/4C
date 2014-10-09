@@ -120,7 +120,7 @@ MORTAR::MortarInterface::MortarInterface(
 
   // overwrite shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ShapeFcn>(IParams(), "SHAPEFCN");
+      INPAR::MORTAR::ShapeFcn>(IParams(), "LM_SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual)
     shapefcn_ = INPAR::MORTAR::shape_dual;
   else if (shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
@@ -511,7 +511,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   //**********************************************************************
   // check for linear interpolation of 2D/3D quadratic Lagrange multipliers
   bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
-      IParams(), "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin);
+      IParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   // modify crosspoints / edge nodes
   if (lagmultlin)

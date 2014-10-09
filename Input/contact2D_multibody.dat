@@ -68,7 +68,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 No

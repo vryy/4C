@@ -127,15 +127,15 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -1+10.0*x// pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.1 
-FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.1
+FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ---------------------------------------------FUNCT3 // displacement function
-FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0 
-FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT3                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6

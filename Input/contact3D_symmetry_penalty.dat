@@ -59,7 +59,7 @@ STRATEGY             Penalty
 FRICTION             none
 PENALTYPARAM         1
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN             std
+LM_SHAPEFCN          std
 SEARCH_PARAM         0.3
 INTTYPE              Elements
 NUMGP_PER_DIM        2

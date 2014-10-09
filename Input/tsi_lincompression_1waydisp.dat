@@ -102,7 +102,7 @@ UPRES                           1
 CONVTOL                         1e-06
 COUPVARIABLE                    Displacement  // Displacement,Temperature
 --------------------------------------------------------------------SOLVER 1
-NAME                            Thermal_Solver              
+NAME                            Thermal_Solver
 SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver

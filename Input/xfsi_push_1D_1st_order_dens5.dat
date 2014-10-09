@@ -101,7 +101,7 @@ TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes //yes               
+GRAD_DIV                        no //yes //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -158,14 +158,14 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0// pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //5.0+30.0*y+60.0*z 
-FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //5.0+30.0*y+60.0*z
+FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ---------------------------------------------FUNCT3 // displacement function
-FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT3                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5

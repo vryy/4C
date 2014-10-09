@@ -87,7 +87,7 @@ BETA                            0.0
 ML_SOLVER                       1
 //--------------------------------------------------------------------SOLVER 1
 //NAME                            Fluid_Solver
-//SOLVER                          UMFPACK 
+//SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR           // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

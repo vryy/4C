@@ -62,8 +62,8 @@ CONTACT::CoIntegrator::CoIntegrator(Teuchos::ParameterList& params,
                                     const Epetra_Comm& comm) :
 imortar_(params),
 Comm_(comm),
-shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN")),
-lagmultquad_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD")),
+shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN")),
+lagmultquad_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_QUAD")),
 nodalscale_(DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")),
 gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(imortar_,"WEARLAW")),
@@ -627,7 +627,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
   // decide whether linear LM are used for quadratic FE here
   bool linlm = false;
-  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
   {
     bound = false; // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
@@ -1375,7 +1375,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
   // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
   bool dualquad3d = false;
   if ( (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-       (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad) &&
+       (LagMultQuad() == INPAR::MORTAR::lagmult_quad) &&
        (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
     dualquad3d = true;
@@ -2142,7 +2142,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
   bool dualquad3d = false;
   if ( (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-       (lmtype == INPAR::MORTAR::lagmult_quad_quad) &&
+       (lmtype == INPAR::MORTAR::lagmult_quad) &&
        (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
     dualquad3d = true;
@@ -2310,7 +2310,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     // integrate and lin gp gap
     if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-            lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+            lmtype == INPAR::MORTAR::lagmult_pwlin)
       GP_3D_G_Quad_pwlin(sele,sintele,mele,sval,mval,lmintval,scoord,mcoord,sderiv,
            mderiv,gap,gpn,lengthn,jac,wgt,dsxigp,dmxigp,dgapgp,dnmap_unit);
     else
@@ -2334,7 +2334,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     // compute cell linearization
     //********************************************************************
     if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-            lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+            lmtype == INPAR::MORTAR::lagmult_pwlin)
     {
       for (int iter=0;iter<nintrow;++iter)
       {
@@ -2865,7 +2865,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
     const double jac = sintele.Jacobian(eta);
 
     // compute cell gap vector *******************************************
-    if (lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
+    if (lmtype==INPAR::MORTAR::lagmult_pwlin)
     {
       for (int j=0;j<nintrow;++j)
       {
@@ -3936,7 +3936,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
   // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
   if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin))
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin))
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -3989,7 +3989,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
   else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_pwlin_pwlin)
+      LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -4042,7 +4042,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
   // CASE 4: Dual LM shape functions and quadratic interpolation
   else if (ShapeFcn() == INPAR::MORTAR::shape_dual &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
+      LagMultQuad() == INPAR::MORTAR::lagmult_quad)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -4478,7 +4478,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     // compute cell gap vector *******************************************
     // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
     if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-        (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin))
+        (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin))
     {
       for (int j=0;j<nrow;++j)
       {
@@ -4497,7 +4497,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     // CASE 3: Standard LM shape functions and piecewise linear interpolation
     // Attention:  for this case, lmval represents lmintval !!!
     else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-        LagMultQuad() == INPAR::MORTAR::lagmult_pwlin_pwlin)
+        LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
     {
       if (nintrow == 0)
         dserror("ERROR!");
@@ -4518,7 +4518,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
 
     // CASE 4: Dual LM shape functions and quadratic interpolation
     else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-        LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
+        LagMultQuad() == INPAR::MORTAR::lagmult_quad)
     {
       for (int j=0;j<nrow;++j)
       {
@@ -4820,7 +4820,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
   // Attention:  for this case, lmval represents lmintval !!!
   if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_pwlin_pwlin)
+      LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
   {
     for (int j=0;j<nintrow;++j)
     {
@@ -5297,7 +5297,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(
 
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
   if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-           LagMultQuad() == INPAR::MORTAR::lagmult_pwlin_pwlin)
+           LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
   {
     // get the corresponding map as a reference
     std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
@@ -5367,7 +5367,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
   // compute cell gap linearization ************************************
   // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
   if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin))
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin))
   {
     // get the corresponding map as a reference
     std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
@@ -5397,7 +5397,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
 
   // CASE 4: Dual LM shape functions and quadratic interpolation
   else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
+      LagMultQuad() == INPAR::MORTAR::lagmult_quad)
   {
     // get the corresponding map as a reference
     std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
@@ -5489,8 +5489,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Ele_Lin(
   }
   // standard shape functions
   else if( ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
-      (LagMultQuad() ==INPAR::MORTAR::lagmult_lin_lin && dt_s==DRT::Element::quad9) ))
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
+      (LagMultQuad() ==INPAR::MORTAR::lagmult_lin && dt_s==DRT::Element::quad9) ))
   {
     // (1) Lin(Phi) - dual shape functions --> 0
     // this vanishes here since there are no deformation-dependent dual functions
@@ -5514,7 +5514,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Ele_Lin(
 
   // dual shape functions
   else if( ShapeFcn() == INPAR::MORTAR::shape_dual &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3) )
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3) )
   {
     // (1) Lin(Phi) - dual shape functions
     if (duallin)
@@ -6021,8 +6021,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
 
   // standard shape functions
   if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
-      (LagMultQuad() ==INPAR::MORTAR::lagmult_lin_lin && dt_s==DRT::Element::quad9) ) )
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
+      (LagMultQuad() ==INPAR::MORTAR::lagmult_lin && dt_s==DRT::Element::quad9) ) )
   {
     // integrate LinM
     for (int k=0; k<nmnode; ++k)
@@ -6090,7 +6090,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
   // dual shape functions
   //************************************
   else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3))
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3))
   {
     // get the D-map as a reference
     std::map<int,double>& ddmap_jj = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
@@ -6672,7 +6672,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
   // compute cell D/M linearization ************************************
   // CASE 1: Standard LM shape functions and quadratic interpolation
   if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
+      LagMultQuad() == INPAR::MORTAR::lagmult_quad)
   {
     // integrate LinM
     for (int k=0; k<ncol; ++k)
@@ -6747,7 +6747,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
   // CASE 2: Standard LM shape functions and linear interpolation
   // (this has to be treated seperately here for LinDM because of bound)
   else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin)
+      LagMultQuad() == INPAR::MORTAR::lagmult_lin)
   {
     bool jbound = mymrtrnode->IsOnBound();
 
@@ -6879,7 +6879,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
   }
   // CASE 4: Dual LM shape functions and quadratic interpolation
   else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-           LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
+           LagMultQuad() == INPAR::MORTAR::lagmult_quad)
   {
     // for dual shape functions ddmap_jj and dmmap_jk can be calculated together
     std::map<int,double>& ddmap_jj = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
@@ -10432,7 +10432,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
 //    // CASE 4: Dual LM shape functions and quadratic interpolation
 //    else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-//        LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad)
+//        LagMultQuad() == INPAR::MORTAR::lagmult_quad)
 //    {
 //      for (int j=0;j<nrow;++j)
 //      {

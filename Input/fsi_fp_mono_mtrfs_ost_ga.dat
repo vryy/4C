@@ -47,8 +47,8 @@ BASETOL                         1e-06
 INFNORMSCALING                  Yes
 ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov
-PCITER                          1 1 1                        
-PCOMEGA                         1.0 1.0 1.0                  
+PCITER                          1 1 1
+PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    4
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
@@ -88,7 +88,7 @@ THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 REDUNDANT_STORAGE               all
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction

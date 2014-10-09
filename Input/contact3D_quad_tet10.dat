@@ -67,8 +67,8 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 //SYSTEM                        saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
-LAGMULT_QUAD                    quad_quad
+LM_SHAPEFCN                     Dual
+LM_QUAD                         quad
 LM_DUAL_CONSISTENT              no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

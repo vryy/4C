@@ -65,11 +65,11 @@ SYSTEM                          Saddlepoint
 LINEAR_SOLVER                   2
 ALE_TYPE                        incr_lin
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        std
+LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
 PARALLEL_REDIST                 dynamic
-LAGMULT_QUAD                    quad_quad
+LM_QUAD                         quad
 LM_DUAL_CONSISTENT              no
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard

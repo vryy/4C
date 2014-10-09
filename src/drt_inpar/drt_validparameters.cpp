@@ -1619,7 +1619,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for mortar coupling */
   Teuchos::ParameterList& mortar = list->sublist("MORTAR COUPLING",false,"");
 
-  setStringToIntegralParameter<int>("SHAPEFCN","Dual","Type of employed set of shape functions",
+  setStringToIntegralParameter<int>("LM_SHAPEFCN","Dual","Type of employed set of shape functions",
         tuple<std::string>("Dual", "dual",
                            "Standard", "standard", "std",
                            "PetrovGalerkin", "petrovgalerkin", "pg"),
@@ -1644,20 +1644,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("SEARCH_USE_AUX_POS","Yes","If chosen auxiliary position is used for computing dops",
                                yesnotuple,yesnovalue,&mortar);
 
-  setStringToIntegralParameter<int>("LAGMULT_QUAD","undefined","Type of LM interpolation/weighting function",
+  setStringToIntegralParameter<int>("LM_QUAD","undefined","Type of LM interpolation for quadratic FE",
        tuple<std::string>("undefined",
-                          "quad_quad", "quadratic_quadratic",
-                          "quad_pwlin", "quadratic_piecewiselinear",
-                          "quad_lin", "quadratic_linear",
-                          "pwlin_pwlin", "piecewiselinear_piecewiselinear",
-                          "lin_lin","linear_linear"),
+                          "quad", "quadratic",
+                          "pwlin", "piecewiselinear",
+                          "lin","linear"),
        tuple<int>(
                   INPAR::MORTAR::lagmult_undefined,
-                  INPAR::MORTAR::lagmult_quad_quad, INPAR::MORTAR::lagmult_quad_quad,
-                  INPAR::MORTAR::lagmult_quad_pwlin, INPAR::MORTAR::lagmult_quad_pwlin,
-                  INPAR::MORTAR::lagmult_quad_lin, INPAR::MORTAR::lagmult_quad_lin,
-                  INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
-                  INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
+                  INPAR::MORTAR::lagmult_quad, INPAR::MORTAR::lagmult_quad,
+                  INPAR::MORTAR::lagmult_pwlin, INPAR::MORTAR::lagmult_pwlin,
+                  INPAR::MORTAR::lagmult_lin, INPAR::MORTAR::lagmult_lin),
        &mortar);
 
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
@@ -1735,7 +1731,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC",false,"");
 
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for meshtying and contact",&scontact);
-//  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for meshtying and contact in saddlepoint formulation",&scontact);
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
        tuple<std::string>("None","none",
@@ -1893,7 +1888,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("MESH_ADAPTIVE_CT","no",
-                                     "use 2D integration for pseudo 3D",
+                                     "use a scaling of ct with the local mesh size",
                                      yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/

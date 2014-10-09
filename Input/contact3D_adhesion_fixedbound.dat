@@ -70,7 +70,7 @@ SYSTEM                          Saddlepoint
 FRICTION                        None
 ADHESION                        bounded
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 --------------------------------------------------------------------SOLVER 1

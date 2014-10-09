@@ -9,8 +9,8 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 Contracting Cylinder
-  - Test for SolidScatra Elements using the ELAST_CoupAnisoNeoHooke_VarProp 
-    Material with Tet4 Elements. 
+  - Test for SolidScatra Elements using the ELAST_CoupAnisoNeoHooke_VarProp
+    Material with Tet4 Elements.
   - Test case uses a linear activation function for FUNCT1
   - Beware that there is no fixation involved. The system is still, since
     the dynamic case is used.
@@ -79,7 +79,7 @@ TIMESTEP                        0.01
 TOLCONSTR                       1e-03
 TOLDISP                         1e-09 // 10^-12 m
 TOLINCO                         1e-03
-TOLPRE                          1e-03 
+TOLPRE                          1e-03
 TOLRES                          1e-06 // 10^-12 N
 UZAWAALGO                       direct
 UZAWAMAXITER                    50

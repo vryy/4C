@@ -61,7 +61,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 //                                                             // exemplarily test static redistribution with minimum
 //                                                             // number of elements per proc = 0 here
 PARALLEL_REDIST                 Static

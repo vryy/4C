@@ -528,7 +528,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ShapeFcn>(Params(), "SHAPEFCN");
+      INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   if ((shapefcn == INPAR::MORTAR::shape_dual
       || shapefcn == INPAR::MORTAR::shape_petrovgalerkin) && Dim() == 3)
     for (int i = 0; i < (int) interface_.size(); ++i)

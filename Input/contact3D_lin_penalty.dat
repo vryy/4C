@@ -70,7 +70,7 @@ FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 LM_DUAL_CONSISTENT              no

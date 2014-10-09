@@ -75,12 +75,12 @@ FRICTION                        coulomb
 SEMI_SMOOTH_CN                  1
 SEMI_SMOOTH_CT                  1
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        pg
+LM_SHAPEFCN                     pg
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 INTTYPE                         elements
 NUMGP_PER_DIM                   5
-LAGMULT_QUAD                    quad_quad
+LM_QUAD                         quad
 LM_DUAL_CONSISTENT              No
 PARALLEL_REDIST                 dynamic
 --------------------------------------------------------------------SOLVER 1
@@ -94,7 +94,7 @@ NDPOINT                         8
 NDLINE                          16
 NDSURF                          2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
- DPOINT                          0
+DPOINT                          0
 // E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
 // E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
 // E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none

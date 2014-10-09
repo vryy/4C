@@ -85,14 +85,14 @@ DLINE                           1
 E 4 - none 1 1 0 0 0 0 -1.0 1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topright   
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topleft    
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topright
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topleft
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomright
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomleft 
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomleft
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Line_top   
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0 // Line_left  
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Line_top
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0 // Line_left
 E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Line_bottom
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 25 DNODE 1 // Node_topright
@@ -147,31 +147,31 @@ NODE 23 DSURFACE 1
 NODE 24 DSURFACE 1
 NODE 25 DSURFACE 1
 -----------------------------------------------------------------NODE COORDS
-POINT 1  COORD  -0.5  -0.5  0.0 
-POINT 2  COORD  -0.25 -0.5  0.0 
-POINT 3  COORD   0.0  -0.5  0.0 
-POINT 4  COORD   0.25 -0.5  0.0 
-POINT 5  COORD   0.5  -0.5  0.0 
-POINT 6  COORD  -0.5  -0.25 0.0 
-POINT 7  COORD  -0.25 -0.25 0.0 
-POINT 8  COORD   0.0  -0.25 0.0 
-POINT 9  COORD   0.25 -0.25 0.0 
-POINT 10 COORD   0.5  -0.25 0.0 
-POINT 11 COORD  -0.5   0.0  0.0 
-POINT 12 COORD  -0.25  0.0  0.0 
-POINT 13 COORD   0.0   0.0  0.0 
-POINT 14 COORD   0.25  0.0  0.0 
-POINT 15 COORD   0.5   0.0  0.0 
-POINT 16 COORD  -0.5   0.25 0.0 
-POINT 17 COORD  -0.25  0.25 0.0 
-POINT 18 COORD   0.0   0.25 0.0 
-POINT 19 COORD   0.25  0.25 0.0 
-POINT 20 COORD   0.5   0.25 0.0 
-POINT 21 COORD  -0.5   0.5  0.0 
-POINT 22 COORD  -0.25  0.5  0.0 
-POINT 23 COORD   0.0   0.5  0.0 
-POINT 24 COORD   0.25  0.5  0.0 
-POINT 25 COORD   0.5   0.5  0.0 
+POINT 1  COORD  -0.5  -0.5  0.0
+POINT 2  COORD  -0.25 -0.5  0.0
+POINT 3  COORD   0.0  -0.5  0.0
+POINT 4  COORD   0.25 -0.5  0.0
+POINT 5  COORD   0.5  -0.5  0.0
+POINT 6  COORD  -0.5  -0.25 0.0
+POINT 7  COORD  -0.25 -0.25 0.0
+POINT 8  COORD   0.0  -0.25 0.0
+POINT 9  COORD   0.25 -0.25 0.0
+POINT 10 COORD   0.5  -0.25 0.0
+POINT 11 COORD  -0.5   0.0  0.0
+POINT 12 COORD  -0.25  0.0  0.0
+POINT 13 COORD   0.0   0.0  0.0
+POINT 14 COORD   0.25  0.0  0.0
+POINT 15 COORD   0.5   0.0  0.0
+POINT 16 COORD  -0.5   0.25 0.0
+POINT 17 COORD  -0.25  0.25 0.0
+POINT 18 COORD   0.0   0.25 0.0
+POINT 19 COORD   0.25  0.25 0.0
+POINT 20 COORD   0.5   0.25 0.0
+POINT 21 COORD  -0.5   0.5  0.0
+POINT 22 COORD  -0.25  0.5  0.0
+POINT 23 COORD   0.0   0.5  0.0
+POINT 24 COORD   0.25  0.5  0.0
+POINT 25 COORD   0.5   0.5  0.0
 ----------------------------------------------------------FLUID ELEMENTS
 1   MEFLUID QUAD4 1 2 7 6 MAT 1 NA Euler GP 2 2
 2   MEFLUID QUAD4 2 3 8 7 MAT 1 NA Euler GP 2 2

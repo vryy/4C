@@ -138,22 +138,22 @@ ML_DAMPMED                      0.6                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -----------------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicstructuresplit
-MAXTIME                         10000.0                       
+MAXTIME                         10000.0
 NUMSTEP                         10
 RESTARTEVRY                     100
 SECONDORDER                     yes
 TIMESTEP                        25.0
-UPRES                           1     
+UPRES                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1.0e-06
-CONVTOL                         1.0e-06                    
+CONVTOL                         1.0e-06
 INFNORMSCALING                  yes
 ITEMAX                          100
-LINEARBLOCKSOLVER               PreconditionedKrylov 
-PCITER                          1 1 1 
+LINEARBLOCKSOLVER               PreconditionedKrylov
+PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    0
-SHAPEDERIVATIVES                yes 
+SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                no
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000

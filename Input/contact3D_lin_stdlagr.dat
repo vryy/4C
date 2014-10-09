@@ -69,7 +69,7 @@ STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 FRICTION                        None
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 --------------------------------------------------------------------SOLVER 1

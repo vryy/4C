@@ -1943,14 +1943,14 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   {
     // get LM interpolation and testing type
     INPAR::MORTAR::LagMultQuad lmtype =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LM_QUAD");
 
     // build linear integration elements from quadratic CElements
     std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
     SplitIntElements(sele,sauxelements);
 
     // different options for mortar integration
-    if (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin)
+    if (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin)
     {
       // do the element integration of kappa and store into gap
       int nrow = sele.NumNode();
@@ -1964,7 +1964,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       integrator.AssembleG(Comm(),sele,*gseg);
     }
 
-    else if (lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+    else if (lmtype == INPAR::MORTAR::lagmult_pwlin)
     {
       // integrate each int element seperately
       for (int i=0;i<(int)sauxelements.size();++i)

@@ -698,7 +698,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
       "STRATEGY") != INPAR::CONTACT::solution_lagmult
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
           == INPAR::MORTAR::shape_petrovgalerkin)
     dserror(
         "Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
@@ -745,7 +745,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
       "STRATEGY") == INPAR::CONTACT::solution_lagmult
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
           == INPAR::MORTAR::shape_standard
       && DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,
           "SYSTEM") == INPAR::CONTACT::system_condensed)
@@ -767,7 +767,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
       && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,
           "STRATEGY") != INPAR::CONTACT::solution_lagmult
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
           != INPAR::MORTAR::shape_standard)
     dserror(
         "ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier strategy.");
@@ -775,7 +775,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE")
           == INPAR::MORTAR::inttype_elements
-      && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
+      && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
           == INPAR::MORTAR::shape_dual))
     dserror(
         "ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
@@ -809,7 +809,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("Regularization parameter cn, must be greater than 0 for contact problems");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_augmented &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("The augmented Lagrange formulation does not support dual shape functions.");
 
   // *********************************************************************
@@ -834,7 +834,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin)
+          "LM_QUAD") == INPAR::MORTAR::lagmult_lin)
     dserror(
         "ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
@@ -863,7 +863,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") != INPAR::MORTAR::lagmult_undefined)
+          "LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
     dserror(
         "ERROR: Consistent dual shape functions in boundary elements only for linear shape functions.");
 
@@ -881,7 +881,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
       || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") != INPAR::MORTAR::lagmult_undefined)
+          "LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
     dserror("ERROR: Mesh adaptive cn and ct only for first order elements");
 
   if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
@@ -902,14 +902,14 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
 
   if (problemtype == prb_tsi
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
           != INPAR::MORTAR::shape_standard
       && DRT::INPUT::IntegralValue<int>(tsic, "THERMOLAGMULT") == false)
     dserror(
         "Thermal contact without Lagrange Multipliers only for standard shape functions");
 
   if (problemtype == prb_tsi
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
           == INPAR::MORTAR::shape_standard
       && DRT::INPUT::IntegralValue<int>(tsic, "THERMOLAGMULT") == true)
     dserror(
@@ -984,33 +984,17 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-      "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin
-      || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin)
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
-          == INPAR::MORTAR::shape_standard)
-    dserror(
-        "Only quad/quad, lin/lin, pwlin/pwlin (for LM) implemented for quadratic contact with STANDARD shape fct.");
 
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-      "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin
-      || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin
-      || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin
-      || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,
-          "LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin)
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "SHAPEFCN")
-          == INPAR::MORTAR::shape_dual)
-    dserror(
-        "Only quadratic/quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin
+    || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin)
+    && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
+    dserror("Only quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
 
   // *********************************************************************
   // poroelastic contact
   // *********************************************************************
   if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("POROCONTACT: Only dual shape functions implemented yet!");
 
   if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&

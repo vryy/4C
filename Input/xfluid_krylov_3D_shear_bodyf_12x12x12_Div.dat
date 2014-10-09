@@ -61,7 +61,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall 
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -123,9 +123,9 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
-FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 4.0  // pressure
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

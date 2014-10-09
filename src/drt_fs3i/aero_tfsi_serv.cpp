@@ -504,7 +504,7 @@ void FS3I::UTILS::AeroCouplingUtils::MortarParams
   mortarparams.set<double>("SEARCH_PARAM", 0.1);
   mortarparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
   mortarparams.set<std::string>("PARALLEL_REDIST","no");
-  mortarparams.set<std::string>("SHAPEFCN","dual");
+  mortarparams.set<std::string>("LM_SHAPEFCN","dual");
   // master side is given to the mortar interface once in the beginning with full overlap
   mortarparams.set<std::string>("REDUNDANT_STORAGE","Master");
   // for triangles which will all be lying in a quad element on the master side, this should be a good set of params

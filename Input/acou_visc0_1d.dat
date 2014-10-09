@@ -84,7 +84,7 @@ VERBOSITY                       0
 STRATIMIKOS_XMLFILE             none
 SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_AcousticVisc DENSITY 1000.0 C 1500.0 VISC 0 THERM 0e-9 
+MAT 1 MAT_AcousticVisc DENSITY 1000.0 C 1500.0 VISC 0 THERM 0e-9
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION exp(400000*(-(x-0.005)^2.0))

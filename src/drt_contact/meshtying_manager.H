@@ -72,7 +72,7 @@ public:
   makes the nodes and elements of a meshtying interfaces redundant on all
   processors that either own a node or an element on the interfaces in the
   input discretization.
-  
+
   In addition, it creates the necessary solver strategy object which handles
   the whole meshtying evaluation.
 
@@ -118,7 +118,7 @@ public:
   case are the current Lagrange multiplier values.
 
   \param output (in): IO::Discretization writer for restart
-  
+
   */
   void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart=false);
 
@@ -126,24 +126,24 @@ public:
   \brief Read restart information for contact
 
   This method has the inverse functionality of WriteRestart, as
-  it reads the restart Lagrange mulitplier vectors. Moreover, 
+  it reads the restart Lagrange mulitplier vectors. Moreover,
   all mortar coupling quantities (e.g. D and M) have to be
   re-computed upon restart..
 
   \param reader (in): IO::Discretization reader for restart
   \param dis (in)   : global dof displacement vector
   \param zero (in)  : global dof zero vector
-  
+
   */
   void ReadRestart(IO::DiscretizationReader& reader,
                    Teuchos::RCP<Epetra_Vector> dis,
                    Teuchos::RCP<Epetra_Vector> zero);
-  
+
   /*!
   \brief Write interface tractions for postprocessing
-  
+
   \param output (in): IO::Discretization writer for restart
-  
+
   */
   void PostprocessTractions(IO::DiscretizationWriter& output);
 

@@ -73,12 +73,12 @@ STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 SEMI_SMOOTH_CN                  1.0
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 INTTYPE                         elements
 NUMGP_PER_DIM                   5
-LAGMULT_QUAD                    quad_quad
+LM_QUAD                         quad
 LM_DUAL_CONSISTENT              No
 PARALLEL_REDIST                 dynamic
 --------------------------------------------------------------------SOLVER 1

@@ -75,7 +75,7 @@ SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  10
 SEMI_SMOOTH_CT                  10
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 Static

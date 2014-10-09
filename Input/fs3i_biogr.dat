@@ -3,7 +3,7 @@
 // coroneo@lnm.mw.tum.de
 // 089/289-15236
 //
-// Test for checking biofilm growth algorithm 
+// Test for checking biofilm growth algorithm
 //
 ==================================================================
 General Data File BACI
@@ -148,8 +148,8 @@ CONVTOL                         1.0e-06
 INFNORMSCALING                  yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-PCITER                          1 1 1 1             
-PCOMEGA                         1.0 1.0 1.0 1.0     
+PCITER                          1 1 1 1
+PCOMEGA                         1.0 1.0 1.0 1.0
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                no

@@ -31,10 +31,10 @@ LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.02
-//BOUNDINGBOX                   -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999 
+//BOUNDINGBOX                   -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-GRAVITY_ACCELERATION            -9.81 0.0 0.0  
+GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_twowaymomentum
 UPRES                           10

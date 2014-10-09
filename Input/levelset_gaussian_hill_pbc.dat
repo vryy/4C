@@ -45,8 +45,8 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ------------------------------------------------------------LEVEL-SET CONTROL
 NUMSTEP                         100
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) 
-TIMESTEP                        0.01  
+MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
+TIMESTEP                        0.01
 UPRES                           1
 RESTARTEVRY                     10
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
@@ -54,7 +54,7 @@ INCLUDE_PARTICLE                no //yes //no
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.1
-//BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
+//BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -64,7 +64,7 @@ TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         100
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) 
+MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01                          // Cr = 1.5
 THETA                           0.5
 VELOCITYFIELD                   function

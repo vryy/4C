@@ -61,7 +61,7 @@ MAXITER                         50
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

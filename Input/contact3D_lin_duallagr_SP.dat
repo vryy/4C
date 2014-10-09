@@ -55,7 +55,7 @@ TOLLAGR              1e+1
 NORMCOMBI_RESFCONTCONSTR And
 NORMCOMBI_DISPLAGR   And
 ---------------------------------------------------MORTAR COUPLING
-SHAPEFCN             Dual
+LM_SHAPEFCN          Dual
 PARALLEL_REDIST      None
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver

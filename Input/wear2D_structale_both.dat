@@ -62,7 +62,7 @@ SEMI_SMOOTH_CT                  100
 LINEAR_SOLVER                   2
 ALE_TYPE                        incr_lin
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
 PARALLEL_REDIST                 dynamic

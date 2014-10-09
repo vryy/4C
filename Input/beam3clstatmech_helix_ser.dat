@@ -12,7 +12,7 @@ Testing of beam3cl element serial processing
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      200                           // nfil=21 periodlength=[5 1 1] um fiber_division=5 fiber_length=[5 1 1]um
 //NODES                         221                           // ca=2.9982uM n=0mol V=5e-15l -->elementlength=0.2um
-DIM                             3 //rumpf2.txt /begin        
+DIM                             3 //rumpf2.txt /begin
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
@@ -42,8 +42,8 @@ DYNAMICTYP                      StatMech
 RESULTSEVRY 0 //100000
 RESTARTEVRY 1000 //100000
 NLNSOL                          ptc                           // fullnewton modnewton nlncg ptc
-TIMESTEP                        0.01 //neuer Timestep        
-NUMSTEP                         4 //1150000 //anpassen //rumpf2.txt end 
+TIMESTEP                        0.01 //neuer Timestep
+NUMSTEP                         4 //1150000 //anpassen //rumpf2.txt end
 MAXTIME                         10000
 DAMPING                         No
 M_DAMP                          0
@@ -57,7 +57,7 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         15
 ITERNORM                        L2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           1 //header_01 end            
+THETA                           1 //header_01 end
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     none
@@ -66,25 +66,25 @@ PENALTYPARAM                    25
 UZAWACONSTRTOL                  0.25
 UZAWAMAXSTEPS                   20
 -------------------------------------------------------STATISTICAL MECHANICS
-//====                          GENERAL STATMECH SIMULATION FLAGS ==== 
+//====                          GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH                     uniform
 FRICTION_MODEL                  anisotropicconsistent         // isotropicconsistent isotropiclumped
 DBCTYPE                         std                           // none shearfixed sheartrans pinnodes, choose DBC type
 CHECKORIENT                     Yes                           // check orientation betw. two filaments before linking them
 FIXEDSEED                       Yes                           // (de)activate pesudo-randomness
 INITIALSEED                     1                             // manipulate initial seed of pseudo random numbers
-//==============                OUTPUT SET UP ============== 
+//==============                OUTPUT SET UP ==============
 GMSHOUTPUT                      No                            // visualization via Gmsh
 GMSHNETSTRUCT                   No                            // visualize structure detection
 PlotFactorThick                 0                             // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT                  none                          // densitydensitycorr viscoelasticity
 GMSHOUTINTERVALS                1                             // gmsh output interval
 OUTPUTINTERVALS                 5000                          // specialoutput interval
-//==============                EVENT TRIGGERS ============= 
+//==============                EVENT TRIGGERS =============
 ACTIONTIME                      0 0 10000                     // start actions equilibration time, kt switch time,...,STARTTIMEACT
 ACTIONDT                        0.01 0.01 0.001               // time step sizes corresponding to ACTIONTIME
 STARTTIMEOUT                    0                             // start writing output
-//=============                 SIMULATION SPECS ============ 
+//=============                 SIMULATION SPECS ============
 PERIODLENGTH                    5 1 1                         // edge lengths of the cuboid volume
 SEARCHRES                       50                            // resolution for search routine linkers x binding spots
 HISTOGRAMBINS                   60                            // number of bins for specialoutput densitydensitycorr
@@ -100,7 +100,7 @@ K_OFF_start                     30                            // in analogy to k
 K_OFF_end                       30                             // in analogy to k_on
 DBCDISPDIR                      1                             // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
 CURVENUMBER                     1                             // applied time curve after starttimeact_
-//==============                FILAMENT MODEL ============= 
+//==============                FILAMENT MODEL =============
 FILAMENTMODEL                   helical
 NUM_EVAL_ELEMENTS               200                           // number of (initial) beam elements
 RISEPERBSPOT                    0.00277 //0.01                // rise per monomer in the actin helix
@@ -108,7 +108,7 @@ ROTPERBSPOT                     -2.8999                       // rotation per mo
 BSPOTOFFSET                     -1.5707963                    // angular offset of binding spots per filament with respect to the nodes' material triads
 PHIBSPOT                        0.5234                        // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
 BSPOTINTERVAL                   1                             // every n-th binding spot is available for binding
-//============                  CROSSLINKER MODEL ============ 
+//============                  CROSSLINKER MODEL ============
 LINKERMODEL                     stdintpol
 N_crosslink                     1000                          // number of crosslinkers in the simulated volume
 INITOCCUPIEDBSPOTS              400                           // number of crosslinker elements set up before the first time step
@@ -122,7 +122,7 @@ CORIENT                         0                             // stiffness of th
 PHI0                            0                             // preferred binding angle betw. two filaments
 PHI0DEV                         6.28318530717959              // deviation from phi0
 REDUCECROSSLINKSBY              0                             // reduce the linker number by this number at starttimeact_
-//==============                PTC parameters ============= 
+//==============                PTC parameters =============
 CTRANSPTC0                      0                             // translational PTC damping
 CROTPTC0                        0.145                         // rotational PTC damping
 ALPHAPTC                        6                             // PTC damping exponent

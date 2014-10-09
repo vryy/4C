@@ -31,11 +31,11 @@ NUMTHERMDIS                     0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_incremental
-TIMEINTEGR                      BDF2 
+TIMEINTEGR                      BDF2
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         5
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) 
+MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01                          // Cr = 1.5
 THETA                           0.5
 VELOCITYFIELD                   function
@@ -48,7 +48,7 @@ MATID                           4
 SCATRATYPE                      ConvectionDiffusion
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Madureira_Valentin_wo_dt
-EVALUATION_MAT			integration_point
+EVALUATION_MAT  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

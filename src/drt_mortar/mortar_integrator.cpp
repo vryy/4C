@@ -327,9 +327,9 @@ template<DRT::Element::DiscretizationType distypeS,
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
     Teuchos::ParameterList& params) :
     imortar_(params), shapefcn_(
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "SHAPEFCN")), lmquadtype_(
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")), lmquadtype_(
         DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,
-            "LAGMULT_QUAD")), scale_(
+            "LM_QUAD")), scale_(
         DRT::INPUT::IntegralValue<int>(imortar_, "LM_NODAL_SCALE"))
 {
   InitializeGP();
@@ -786,7 +786,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
 
     // decide whether linear LM are used for quadratic FE here
     bool linlm = false;
-    if (lmquadtype_ == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
+    if (lmquadtype_ == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
     {
       bound = false; // crosspoints and linear LM NOT at the same time!!!!
       linlm = true;
@@ -936,7 +936,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 
   // decide whether linear LM are used for quadratic FE here
   bool linlm = false;
-  if (lmtype == INPAR::MORTAR::lagmult_lin_lin
+  if (lmtype == INPAR::MORTAR::lagmult_lin
       && sele.Shape() == DRT::Element::line3)
   {
     bound = false; // crosspoints and linear LM NOT at the same time!!!!
@@ -1204,8 +1204,8 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
 
   // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
   if (shapefcn_ == INPAR::MORTAR::shape_standard
-      && (lmquadtype_ == INPAR::MORTAR::lagmult_quad_quad
-          || lmquadtype_ == INPAR::MORTAR::lagmult_lin_lin))
+      && (lmquadtype_ == INPAR::MORTAR::lagmult_quad
+          || lmquadtype_ == INPAR::MORTAR::lagmult_lin))
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -1260,7 +1260,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
 
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
   else if (shapefcn_ == INPAR::MORTAR::shape_standard
-      && lmquadtype_ == INPAR::MORTAR::lagmult_pwlin_pwlin)
+      && lmquadtype_ == INPAR::MORTAR::lagmult_pwlin)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -1315,7 +1315,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
 
   // CASE 4: Dual LM shape functions and quadratic interpolation
   else if (shapefcn_ == INPAR::MORTAR::shape_dual
-      && lmquadtype_ == INPAR::MORTAR::lagmult_quad_quad)
+      && lmquadtype_ == INPAR::MORTAR::lagmult_quad)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -1351,7 +1351,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
   // CASE 5: Dual LM shape functions and linear interpolation
   // (here, we must NOT ignore the small off-diagonal terms for accurate convergence)
   else if (shapefcn_ == INPAR::MORTAR::shape_dual
-      && lmquadtype_ == INPAR::MORTAR::lagmult_lin_lin)
+      && lmquadtype_ == INPAR::MORTAR::lagmult_lin)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -1945,8 +1945,8 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   // this is the case for dual quadratic and linear Lagrange multipliers on quad9/quad8/tri6 elements
   bool dualquad3d = false;
   if ((shapefcn_ == INPAR::MORTAR::shape_dual)
-      && (lmtype == INPAR::MORTAR::lagmult_quad_quad
-          || lmtype == INPAR::MORTAR::lagmult_lin_lin)
+      && (lmtype == INPAR::MORTAR::lagmult_quad
+          || lmtype == INPAR::MORTAR::lagmult_lin)
       && (sele.Shape() == DRT::Element::quad9
           || sele.Shape() == DRT::Element::quad8
           || sele.Shape() == DRT::Element::tri6))

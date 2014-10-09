@@ -51,7 +51,7 @@ NUMSTEP                         1//2
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        1.0//0.1
-THETA                           1.0 //0.5 //0.67             
+THETA                           1.0 //0.5 //0.67
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -104,7 +104,7 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 --------------------------------------------FUNCT2 // initial solid velocity
 FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0// -1.0 //101.0 //0.01*(-y)  // 0.0100051*(-y)
 FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x  // 0.0100051*x
-FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

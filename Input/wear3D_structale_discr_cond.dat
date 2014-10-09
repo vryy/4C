@@ -65,7 +65,7 @@ SYSTEM                          condensed
 LINEAR_SOLVER                   2
 ALE_TYPE                        classic_lin
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.8
 PARALLEL_REDIST                 dynamic

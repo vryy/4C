@@ -53,10 +53,10 @@ TOLRES                          1.0E-08
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      ExplicitEuler
-RESULTSEVRY                     1   
+RESULTSEVRY                     1
 RESTARTEVRY                     1000000
-TIMESTEP                        3   
-NUMSTEP                         1   
+TIMESTEP                        3
+NUMSTEP                         1
 GRAVITY_ACCELERATION 0.0 0.0 0.0
 CONTACT_STRATEGY                NormalContact_MD
 NORMAL_CONTACT_LAW              LinearSpring

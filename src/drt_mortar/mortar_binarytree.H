@@ -74,7 +74,7 @@ enum BinaryTreeNodeType
 };
 
 //@}
-  
+
 /*!
 \brief A class representing one tree node of the binary search tree
 
@@ -85,7 +85,7 @@ Refer also to the Semesterarbeit of Thomas Eberl, 2009
 class BinaryTreeNode
 {
 public:
-  
+
   /*!
   \brief constructor of a tree node
 
@@ -187,7 +187,7 @@ public:
 
   */
   virtual BinaryTreeNodeType Type() const { return type_; }
-  
+
   /*!
   \brief Set type of treenode
 
@@ -217,13 +217,13 @@ public:
 
   */
   void SetChildren(Teuchos::RCP<BinaryTreeNode> leftchild,Teuchos::RCP<BinaryTreeNode> rightchild);
-  
+
   /*!
   \brief Set parent of treenode
 
   */
   virtual void SetParent(Teuchos::RCP<BinaryTreeNode> parent) { parent_=parent; }
-    
+
   /*!
   \brief Return slabs of DOP
 
@@ -235,16 +235,16 @@ public:
 
   */
   virtual int Kdop() const { return kdop_; }
-      
+
   /*!
   \brief Return layer of current TreeNode
 
   */
   virtual int Layer() const { return layer_; }
-  
+
   /*!
   \brief Set layer of current TreeNode
-  
+
   */
   virtual void SetLayer(int layer) { layer_ = layer; }
 
@@ -253,13 +253,13 @@ public:
 
   */
   virtual std::vector<int>& Elelist() { return elelist_; }
-  
+
   /*!
   \brief Return dim of Problem
 
   */
   virtual const int& Dim() { return dim_; }
-  
+
   /*!
   \brief Return different maps of tree nodes
 
@@ -301,7 +301,7 @@ public:
                                                                  double* position2);
 
   //@}
-    
+
 private:
 
   // don't want = operator and cctor
@@ -355,7 +355,7 @@ private:
 
   //! reference to map of all master leaf treenodes
   std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > &  mleafsmap_;
-  
+
 }; // class BinaryTreeNode
 
 
@@ -369,7 +369,7 @@ Refer also to the Semesterarbeit of Thomas Eberl, 2009
 class BinaryTree
 {
 public:
-  
+
   /*!
   \brief Standard constructor
 
@@ -399,15 +399,15 @@ public:
 
   */
   void PrintTree(Teuchos::RCP<BinaryTreeNode> treenode);
-  
+
   /*!
   \brief Print full tree out of map of treenodes
-  
+
   */
   void PrintTreeOfMap(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & treenodesmap);
 
   //@}
-  
+
   //! @name Access methods
 
   /*!
@@ -491,7 +491,7 @@ public:
   //@}
 
   //! @name Evaluation methods
-    
+
   /*!
   \brief Calculate minimal element length / inflation factor "enlarge"
 

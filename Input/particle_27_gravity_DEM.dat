@@ -53,11 +53,11 @@ TOLRES                          1.0E-08
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-RESULTSEVRY                     10  
-RESTARTEVRY                     500 
+RESULTSEVRY                     10
+RESTARTEVRY                     500
 TIMESTEP                        1.0E-4
 NUMSTEP                         3000
-MAXTIME                         3.0 
+MAXTIME                         3.0
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 CONTACT_STRATEGY                NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpring

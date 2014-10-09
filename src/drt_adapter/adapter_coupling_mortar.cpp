@@ -124,7 +124,7 @@ void ADAPTER::CouplingMortar::Setup(
     input.set<bool>("NURBS",false);
 
   // check for invalid parameter values
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     if(myrank== 0) dserror("Mortar coupling adapter only works for dual shape functions");
   //if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
     //if(myrank== 0) dserror("Mortar coupling adapter only works for segment-based integration");
@@ -379,7 +379,7 @@ void ADAPTER::CouplingMortar::Setup(
   // initial mesh relocation:
   // For curved internal or fsi coupling interfaces, a mesh relocation is critical,
   // since the integration over curved interface (generation of mortar coupling
-  // matrices) results in inaccuracies. These inaccuracies may lead to undesired node 
+  // matrices) results in inaccuracies. These inaccuracies may lead to undesired node
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
@@ -396,11 +396,11 @@ void ADAPTER::CouplingMortar::Setup(
       std::cout << "Additional information is provided by comments in the code!" << std::endl;
     }
 
-    // Originally, this method was written for structural problems coupling the 
-    // spatial displacements. Therefore, the slave and master map could be also used 
-    // to store the coordinates of the interface nodes, which is necessary to perform 
+    // Originally, this method was written for structural problems coupling the
+    // spatial displacements. Therefore, the slave and master map could be also used
+    // to store the coordinates of the interface nodes, which is necessary to perform
     // the mesh relocation. Hence, this method cannot be used for problem types such
-    // as elch, scatra, etc., having less coupling degrees of freedom than spatial 
+    // as elch, scatra, etc., having less coupling degrees of freedom than spatial
     // dimensions.
     Teuchos::RCP<Epetra_Vector> idisp(Teuchos::null);
     MeshRelocation(slavedis,aledis,redistmaster,redistslave,idisp,comm,slavewithale);
@@ -603,7 +603,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
 {
   // problem dimension
   const int dim = DRT::Problem::Instance()->NDim();
-  
+
   //**********************************************************************
   // (0) check constraints in reference configuration
   //**********************************************************************
@@ -646,11 +646,11 @@ void ADAPTER::CouplingMortar::MeshRelocation(
         val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
       }
    }
-    
+
     // do assembly
     LINALG::Assemble(*xs,val,lm,lmowner);
   }
-  
+
   // loop over all master row nodes
   for (int j=0; j<interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
@@ -685,11 +685,11 @@ void ADAPTER::CouplingMortar::MeshRelocation(
         val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
       }
     }
-    
+
     // do assembly
     LINALG::Assemble(*xm,val,lm,lmowner);
   }
-  
+
   // compute g-vector at global level
   Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   D_->Multiply(false,*xs,*Dxs);
@@ -751,7 +751,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
   // the first modification (MortarNode) is always performed, but the
   // second modification (DRT::Node) is only performed if the respective
   // node in contained in the problem node column map.
-  //**************************************************************
+  //**********************************************************************
 
   //**********************************************************************
   // (1) get master positions on global level
@@ -791,7 +791,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
   // this is trivial for dual Lagrange multipliers
   DinvM_->Multiply(false,*Xmaster,*Xslavemod);
 
-  
+
   //**********************************************************************
   // (3) perform mesh relocation node by node
   //**********************************************************************
@@ -1003,7 +1003,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
         val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
       }
     }
-    
+
     // do assembly
     LINALG::Assemble(*xs,val,lm,lmowner);
   }
@@ -1039,7 +1039,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
         val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
       }
     }
-    
+
     // do assembly
     LINALG::Assemble(*xm,val,lm,lmowner);
   }
@@ -1239,7 +1239,7 @@ void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   // mesh relocation if required:
   // For curved internal or fsi coupling interfaces, a mesh relocation is critical,
   // since the integration over curved interface (generation of mortar coupling
-  // matrices) results in inaccuracies. These inaccuracies may lead to undesired node 
+  // matrices) results in inaccuracies. These inaccuracies may lead to undesired node
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!

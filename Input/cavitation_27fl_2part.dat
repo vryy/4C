@@ -31,10 +31,10 @@ LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.2 //0.2                     // 0.4
-BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999 
+BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-GRAVITY_ACCELERATION            0.0 0.0 -9.81                
+GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
 MAXTIME                         0.5
@@ -164,7 +164,7 @@ DPARTICLE                       1
 // particle inflow
 E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 100
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
-NODE                            0 DPARTICLE 1                
+NODE                            0 DPARTICLE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

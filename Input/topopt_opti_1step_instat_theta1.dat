@@ -44,11 +44,11 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 -----------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
 CONV_CHECK_TYPE                 Residuum
-DISSIPATION_FAC			1.0
+DISSIPATION_FAC  1.0
 INCTOL                          1e-6
 MAXTIME                         0.9
 NUMSTEP                         9
-OBJECTIVE_DISSIPATION		yes
+OBJECTIVE_DISSIPATION  yes
 RESTARTEVRY                     100000
 RESTOL                          1e-6
 RESTART_ACTION                  Fluid_Time_Step

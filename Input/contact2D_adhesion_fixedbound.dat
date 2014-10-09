@@ -72,7 +72,7 @@ ADHESION             bounded
 ---------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.5
-SHAPEFCN             std//dual
+LM_SHAPEFCN          std//dual
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu//UMFPACK

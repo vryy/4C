@@ -35,7 +35,7 @@ TIMEINTEGR                      Gen_Alpha
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         5
-MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) 
+MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01                          // Cr = 1.5
 THETA                           0.5
 VELOCITYFIELD                   function
@@ -59,7 +59,7 @@ EVALUATION_TAU                  integration_point
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_biofilm DIFFUSIVITY 0.0006666666666 REARATE 2.00 SATCOEFF 0.300 
+MAT 1 MAT_biofilm DIFFUSIVITY 0.0006666666666 REARATE 2.00 SATCOEFF 0.300
 MAT 2 MAT_biofilm DIFFUSIVITY 0.0000333333333 REARATE 0.20 SATCOEFF 0.030
 MAT 3 MAT_biofilm DIFFUSIVITY 0.0033333333333 REARATE 0.02 SATCOEFF 0.003
 MAT 4 MAT_matlist LOCAL No NUMMAT 3 MATIDS 1 2 3 END

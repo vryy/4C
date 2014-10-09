@@ -66,8 +66,8 @@ SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e3
 SEMI_SMOOTH_CT                  1.0
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
-LAGMULT_QUAD                    lin_lin
+LM_SHAPEFCN                     Standard
+LM_QUAD                         lin
 LM_DUAL_CONSISTENT              no
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

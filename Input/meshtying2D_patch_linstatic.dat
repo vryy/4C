@@ -68,7 +68,7 @@ FRICTION                        None
 SEMI_SMOOTH_NEWTON              No
 LINEAR_SOLVER                   2
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Standard
+LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 ---------------------------------------------------------------FLUID DYNAMIC

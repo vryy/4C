@@ -62,8 +62,8 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 ERROR_NORMS                     bending
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                        Dual
-LAGMULT_QUAD                    quad_quad
+LM_SHAPEFCN                     Dual
+LM_QUAD                         quad
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

@@ -19,7 +19,7 @@ General Data File CCARAT
  delete this test since it is based on a simple analytical solution. With respect
  to a future incorporation of the functionality of the combustion code into
  the standard fluid code, it might be helpful to ensure a proper reimplementation.
- 
+
 - COMBUST3 element
 - two stationary Couette flows (shear flows)
 - decoupled at inclined interface (45° angle)

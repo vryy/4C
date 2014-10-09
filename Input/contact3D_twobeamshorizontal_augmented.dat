@@ -67,7 +67,7 @@ SEMI_SMOOTH_CN          1.0e2
 SEMI_SMOOTH_CT          1.0e2
 MESH_ADAPTIVE_CN        No
 -------------------------------------------------------------MORTAR COUPLING
-SHAPEFCN                std
+LM_SHAPEFCN             std
 SEARCH_ALGORITHM        BinaryTree
 SEARCH_PARAM            1.0
 INTTYPE                 elements

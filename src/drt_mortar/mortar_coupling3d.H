@@ -818,7 +818,7 @@ public:
   INPAR::MORTAR::LagMultQuad LagMultQuad()
   {
     return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,
-        "LAGMULT_QUAD");
+        "LM_QUAD");
   }
 
   /*!

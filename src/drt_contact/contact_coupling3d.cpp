@@ -183,17 +183,17 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     // cases (2) and (3)
     // *******************************************************************
-    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
+    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() && (lmtype==INPAR::MORTAR::lagmult_quad || lmtype==INPAR::MORTAR::lagmult_lin))
     {
       // check for dual shape functions and linear LM interpolation
       if ((ShapeFcn() == INPAR::MORTAR::shape_dual
           || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-          && lmtype == INPAR::MORTAR::lagmult_lin_lin)
+          && lmtype == INPAR::MORTAR::lagmult_lin)
         dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
       // check for standard shape functions and quadratic LM interpolation
       if (ShapeFcn() == INPAR::MORTAR::shape_standard
-          && lmtype == INPAR::MORTAR::lagmult_quad_quad
+          && lmtype == INPAR::MORTAR::lagmult_quad
           && (SlaveElement().Shape() == DRT::Element::quad8
               || SlaveElement().Shape() == DRT::Element::tri6))
         dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
@@ -211,7 +211,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
+    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin)
     {
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual
@@ -1423,7 +1423,7 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
   {
     // check for standard shape functions and quadratic LM interpolation
     if (ShapeFcn() == INPAR::MORTAR::shape_standard
-        && LagMultQuad() == INPAR::MORTAR::lagmult_quad_quad
+        && LagMultQuad() == INPAR::MORTAR::lagmult_quad
         && (SlaveElement().Shape() == DRT::Element::quad8
             || SlaveElement().Shape() == DRT::Element::tri6))
       dserror(
