@@ -414,8 +414,9 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
   for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
   {
     std::vector<double> coords = i_node->second;
-    dat << "NODE " << i_node->first << "  " << '\t' << "COORD" << '\t';
-    for(unsigned int i=0; i<coords.size(); ++i) dat << std::scientific << coords[i] << '\t';
+    dat << "NODE " << std::setw(9) << i_node->first << " COORD";
+    for(unsigned int i=0; i<coords.size(); ++i)
+      dat << " " << std::setw(23) << std::scientific << coords[i];
     dat << std::endl;
   }
   return;
