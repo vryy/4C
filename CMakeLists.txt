@@ -591,6 +591,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
   src/drt_adapter/adapter_coupling.cpp
   src/drt_adapter/adapter_coupling_mortar.cpp
+  src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
   src/drt_adapter/adapter_coupling_volmortar.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
